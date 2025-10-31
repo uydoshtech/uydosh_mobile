@@ -1,0 +1,88 @@
+import "package:get_it/get_it.dart";
+
+import "package:uy_dosh/base/api/auth_token_repository.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/api/client/public_api_client.dart";
+import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
+import "package:uy_dosh/base/api/public_dio_configurator.dart";
+import "package:uy_dosh/domain/services/amenity_service.dart";
+import "package:uy_dosh/domain/services/auth_service.dart";
+import "package:uy_dosh/domain/services/favorite_service.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/location_service.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/otp_service.dart";
+import "package:uy_dosh/domain/services/otp_service_impl.dart";
+import "package:uy_dosh/domain/services/region_service.dart";
+import "package:uy_dosh/domain/services/subway_station_service.dart";
+import "package:uy_dosh/domain/services/university_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/services/complaint_service.dart";
+
+final getIt = GetIt.instance;
+
+Future<void> configureDependencies() async {
+  // Register services with meaningful names
+  getIt.registerLazySingleton<IPublicDioConfigurator>(
+    PublicDioConfigurator.new,
+  );
+
+  getIt.registerLazySingleton<IPublicApiClient>(
+    () => PublicApiClient(configurator: getIt<IPublicDioConfigurator>()),
+  );
+
+  getIt.registerLazySingleton<ILocationService>(
+    () => LocationService(getIt<IPublicApiClient>()),
+  );
+
+  getIt.registerLazySingleton<ISubwayStationService>(
+    () => SubwayStationService(getIt<IPublicApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IOAuthApiClient>(
+    () => OAuthApiClient(
+      configurator: OAuthDioConfigurator(tokenRepo: AuthTokenRepository()),
+    ),
+  );
+
+  getIt.registerLazySingleton<IListingService>(
+    () => ListingService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IFavoriteService>(
+    () => FavoriteService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IUserProfileService>(
+    () =>
+        UserProfileService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IAmenityService>(
+    () => AmenityService(getIt<IPublicApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IUniversityService>(
+    () => UniversityService(getIt<IPublicApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IRegionService>(
+    () => RegionService(getIt<IPublicApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IAuthService>(
+    () => AuthService(getIt<IPublicApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IOtpService>(
+    () => OtpService(getIt<IPublicApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IMessagingService>(
+    () => MessagingService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IComplaintService>(
+    () => ComplaintService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
+  );
+}

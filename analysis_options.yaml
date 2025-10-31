@@ -1,0 +1,132 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Error rules:
+    always_use_package_imports: true
+    avoid_dynamic_calls: true
+    avoid_empty_else: true
+    avoid_relative_lib_imports: true
+    avoid_type_to_string: true
+    avoid_types_as_parameter_names: true
+    cancel_subscriptions: true
+    control_flow_in_finally: true
+    empty_statements: true
+    invalid_case_patterns: true
+    no_duplicate_case_values: true
+    no_logic_in_create_state: true
+    no_self_assignments: true
+    no_wildcard_variable_uses: true
+    prefer_void_to_null: true
+    unnecessary_statements: true
+    use_build_context_synchronously: true
+    use_key_in_widget_constructors: true
+    valid_regexps: true
+
+    # Style rules:
+    always_declare_return_types: true
+    always_put_control_body_on_new_line: false
+    always_put_required_named_parameters_first: true
+    always_specify_types: false
+    annotate_overrides: true
+    avoid_catching_errors: true
+    avoid_double_and_int_checks: true
+    avoid_field_initializers_in_const_classes: true
+    avoid_init_to_null: true
+    avoid_multiple_declarations_per_line: true
+    avoid_positional_boolean_parameters: true
+    avoid_renaming_method_parameters: true
+    avoid_return_types_on_setters: true
+    avoid_returning_null_for_void: true
+    avoid_shadowing_type_parameters: true
+    avoid_single_cascade_in_expression_statements: true
+    avoid_types_on_closure_parameters: true
+    avoid_unnecessary_containers: true
+    avoid_void_async: true
+    await_only_futures: true
+    camel_case_extensions: true
+    camel_case_types: true
+    cast_nullable_to_non_nullable: true
+    combinators_ordering: true
+    conditional_uri_does_not_exist: true
+    constant_identifier_names: false
+    directives_ordering: true
+    empty_constructor_bodies: true
+    eol_at_end_of_file: true
+    exhaustive_cases: true
+    file_names: true
+    join_return_with_assignment: true
+    leading_newlines_in_multiline_strings: true
+    library_names: true
+    lines_longer_than_80_chars: false
+    matching_super_parameters: true
+    no_runtimeType_toString: true
+    non_constant_identifier_names: true
+    omit_local_variable_types: true
+    only_throw_errors: true
+    parameter_assignments: true
+    prefer_conditional_assignment: true
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_constructors_over_static_methods: true
+    prefer_double_quotes: true
+    prefer_single_quotes: false
+    prefer_final_in_for_each: true
+    prefer_final_locals: true
+    prefer_final_parameters: false
+    prefer_function_declarations_over_variables: true
+    prefer_if_null_operators: true
+    prefer_initializing_formals: true
+    prefer_interpolation_to_compose_strings: true
+    prefer_is_not_operator: true
+    prefer_null_aware_method_calls: true
+    recursive_getters: true
+    sized_box_for_whitespace: true
+    sized_box_shrink_expand: true
+    sort_child_properties_last: true
+    sort_constructors_first: true
+    sort_unnamed_constructors_first: true
+    unnecessary_await_in_return: true
+    unnecessary_brace_in_string_interps: true
+    unnecessary_breaks: true
+    unnecessary_constructor_name: true
+    unnecessary_getters_setters: true
+    unnecessary_lambdas: true
+    unnecessary_new: true
+    unnecessary_null_aware_assignments: true
+    unnecessary_null_aware_operator_on_extension_on_nullable: true
+    unnecessary_null_checks: true
+    unnecessary_null_in_if_null_operators: true
+    unnecessary_nullable_for_final_variable_declarations: true
+    unnecessary_parenthesis: true
+    unnecessary_raw_strings: true
+    unnecessary_string_escapes: true
+    unnecessary_this: true
+    unnecessary_to_list_in_spreads: true
+    use_colored_box: true
+    use_decorated_box: true
+    use_enums: true
+    use_full_hex_values_for_flutter_colors: true
+    use_if_null_to_convert_nulls_to_bools: true
+    use_is_even_rather_than_modulo: true
+    use_string_buffers: true
+    use_super_parameters: true
+
+    # Pub rules:
+    implementation_imports: false
+    depend_on_referenced_packages: false
+    secure_pubspec_urls: true
+    sort_pub_dependencies: false
+
+analyzer:
+  exclude:
+    - build/**
+    - template/**
+    - lib/**.freezed.dart
+    - lib/**.g.dart
+    - lib/**.feature_flags.dart
+    - lib/**.gr.dart
+    - lib/localization/generated/**
+    - lib/localization/gen/**

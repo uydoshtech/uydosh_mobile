@@ -1,0 +1,39 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'location.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$LocationImpl _$$LocationImplFromJson(Map<String, dynamic> json) =>
+    _$LocationImpl(
+      id: (json['id'] as num).toInt(),
+      nameUz: json['name_uz'] as String?,
+      nameRu: json['name_ru'] as String?,
+      nameEn: json['name_en'] as String?,
+      shortNameUz: json['short_name_uz'] as String?,
+      shortNameRu: json['short_name_ru'] as String?,
+      shortNameEn: json['short_name_en'] as String?,
+      shortName: json['short_name'] as String?,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      createdAt: json['created_at'] as String,
+      updatedAt: json['updated_at'] as String,
+    );
+
+Map<String, dynamic> _$$LocationImplToJson(_$LocationImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'name_uz': instance.nameUz,
+      'name_ru': instance.nameRu,
+      'name_en': instance.nameEn,
+      'short_name_uz': instance.shortNameUz,
+      'short_name_ru': instance.shortNameRu,
+      'short_name_en': instance.shortNameEn,
+      'short_name': instance.shortName,
+      'latitude': instance.latitude,
+      'longitude': instance.longitude,
+      'created_at': instance.createdAt,
+      'updated_at': instance.updatedAt,
+    };
