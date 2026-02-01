@@ -66,6 +66,8 @@ class UpdateProfileRequest implements IJsonEncodable {
   Map<String, dynamic> toJson() {
     // Use the generated toJson method which properly maps fields using @JsonKey annotations
     // This will convert: regionId -> region_id, universityId -> university_id, aboutMe -> about_me
-    return _$UpdateProfileRequestToJson(this);
+    final json = _$UpdateProfileRequestToJson(this);
+    json.removeWhere((key, value) => value == null);
+    return json;
   }
 }
