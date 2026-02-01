@@ -24,6 +24,8 @@ class AppStrings {
       "create_listing": "Create",
       "profile": "Profile",
       "profile_completion": "Profile completion",
+      "profile_completion_hint":
+          "A completed profile means more accurate matches and comfortable co-living.",
       "name": "Name",
       "im_from": "I'm from:",
 
@@ -544,6 +546,8 @@ class AppStrings {
       "create_listing": "Создать",
       "profile": "Профиль",
       "profile_completion": "Заполнение профиля",
+      "profile_completion_hint":
+          "Заполненный профиль = более точные совпадения и комфортное соседство.",
       "name": "Имя",
       "im_from": "Я из:",
 
@@ -1066,6 +1070,8 @@ class AppStrings {
       "create_listing": "Yaratish",
       "profile": "Profil",
       "profile_completion": "Profil to'ldirilishi",
+      "profile_completion_hint":
+          "Profil to'liq bo'lsa, mosliklar aniqroq va qo'shnichilik qulayroq bo'ladi.",
       "name": "Ism",
       "im_from": "Men:",
 
