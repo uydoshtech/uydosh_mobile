@@ -44,10 +44,12 @@ def create_icon_sizes(source_image_path, output_dir="generated_icons"):
                 "iPhone_180": 180,
                 "iPhone_120": 120,
                 "iPhone_87": 87,
+                "iPhone_58": 58,
                 "iPhone_80": 80,
                 "iPhone_60": 60,
                 "iPhone_40": 40,
                 "iPhone_29": 29,
+                "iPhone_20": 20,
                 "iPad_167": 167,
                 "iPad_152": 152,
                 "iPad_76": 76

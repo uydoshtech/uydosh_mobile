@@ -14,17 +14,19 @@ def setup_ios_icons():
     
     # iOS icon mapping (generated_name -> iOS_name)
     ios_icon_mapping = {
-        "AppStore.png": "Icon-App-1024x1024@1x.png",
-        "iPhone_180.png": "Icon-App-60x60@3x.png",
-        "iPhone_120.png": "Icon-App-60x60@2x.png",
-        "iPhone_87.png": "Icon-App-29x29@3x.png",
-        "iPhone_80.png": "Icon-App-40x40@2x.png",
-        "iPhone_60.png": "Icon-App-60x60@1x.png",
-        "iPhone_40.png": "Icon-App-40x40@1x.png",
-        "iPhone_29.png": "Icon-App-29x29@1x.png",
-        "iPad_167.png": "Icon-App-83.5x83.5@2x.png",
-        "iPad_152.png": "Icon-App-76x76@2x.png",
-        "iPad_76.png": "Icon-App-76x76@1x.png"
+        "AppStore.png": ["Icon-App-1024x1024@1x.png"],
+        "iPhone_180.png": ["Icon-App-60x60@3x.png"],
+        "iPhone_120.png": ["Icon-App-60x60@2x.png", "Icon-App-40x40@3x.png"],
+        "iPhone_87.png": ["Icon-App-29x29@3x.png"],
+        "iPhone_80.png": ["Icon-App-40x40@2x.png"],
+        "iPhone_60.png": ["Icon-App-20x20@3x.png"],
+        "iPhone_58.png": ["Icon-App-29x29@2x.png"],
+        "iPhone_40.png": ["Icon-App-20x20@2x.png", "Icon-App-40x40@1x.png"],
+        "iPhone_29.png": ["Icon-App-29x29@1x.png"],
+        "iPhone_20.png": ["Icon-App-20x20@1x.png"],
+        "iPad_167.png": ["Icon-App-83.5x83.5@2x.png"],
+        "iPad_152.png": ["Icon-App-76x76@2x.png"],
+        "iPad_76.png": ["Icon-App-76x76@1x.png"]
     }
     
     ios_source_dir = "generated_icons/ios"
@@ -48,15 +50,16 @@ def setup_ios_icons():
             print(f"  📋 Backed up: {file}")
     
     # Copy and rename new icons
-    for source_name, target_name in ios_icon_mapping.items():
+    for source_name, target_names in ios_icon_mapping.items():
         source_path = os.path.join(ios_source_dir, source_name)
-        target_path = os.path.join(ios_target_dir, target_name)
-        
-        if os.path.exists(source_path):
+        if not os.path.exists(source_path):
+            print(f"  ❌ Source not found: {source_name}")
+            continue
+
+        for target_name in target_names:
+            target_path = os.path.join(ios_target_dir, target_name)
             shutil.copy2(source_path, target_path)
             print(f"  ✅ {source_name} -> {target_name}")
-        else:
-            print(f"  ❌ Source not found: {source_name}")
     
     print("✅ iOS app icons setup completed!")
     return True
