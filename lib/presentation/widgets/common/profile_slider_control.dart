@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 
 class ProfileSliderControl extends StatelessWidget {
@@ -31,20 +32,16 @@ class ProfileSliderControl extends StatelessWidget {
     final isLightTheme = currentTheme == AppTheme.lightTheme;
     final isBlueTheme = currentTheme == AppTheme.blueTheme;
     final currentValue = value ?? min;
+    final sectionBackground =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceVariant;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color:
-            isBlueTheme
-                ? Theme.of(context).colorScheme.primary
-                : (isLightTheme ? Colors.grey[50] : Colors.grey[800]),
+        color: sectionBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color:
-              isBlueTheme
-                  ? Colors.blue[600]!
-                  : (isLightTheme ? Colors.grey[300]! : Colors.grey[600]!),
+          color: theme.colorScheme.outline,
           width: 1,
         ),
       ),

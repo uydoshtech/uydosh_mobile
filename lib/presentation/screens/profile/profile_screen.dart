@@ -926,7 +926,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Icon(
                     Icons.check_circle,
                     size: 18,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
               ],
             ),
@@ -952,7 +952,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       context,
                     ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).progressIndicatorTheme.color ??
+                      Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),

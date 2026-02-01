@@ -19,6 +19,7 @@ import "package:uy_dosh/presentation/widgets/common/profile_toggle_control.dart"
 import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 
 class EditProfileScreen extends StatefulWidget {
   EditProfileScreen({super.key, required this.profile});
@@ -730,6 +731,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     int maxLines = 1,
   }) {
     final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -763,7 +765,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             filled: true,
-            fillColor: theme.colorScheme.surfaceVariant,
+            fillColor:
+                isBlueTheme
+                    ? BlueThemeColors.surface
+                    : theme.colorScheme.surfaceVariant,
           ),
         ),
       ],
@@ -798,6 +803,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildRegionSelector(BuildContext context) {
     final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
@@ -815,7 +821,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceVariant,
+                color:
+                    isBlueTheme
+                        ? BlueThemeColors.surface
+                        : theme.colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: theme.colorScheme.outline),
               ),
@@ -990,6 +999,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildUniversitySelector(BuildContext context) {
     final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
@@ -1007,7 +1017,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceVariant,
+                color:
+                    isBlueTheme
+                        ? BlueThemeColors.surface
+                        : theme.colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: theme.colorScheme.outline),
               ),

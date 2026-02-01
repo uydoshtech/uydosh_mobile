@@ -332,6 +332,11 @@ class AppTheme {
         thickness: 1,
       ),
 
+      // Progress indicator theme
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: Colors.white,
+      ),
+
       // Icon theme
       iconTheme: IconThemeData(color: BlueThemeColors.iconPrimary, size: 24),
 

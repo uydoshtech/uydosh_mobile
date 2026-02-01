@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 
 class ProfileToggleControl extends StatelessWidget {
@@ -18,22 +19,18 @@ class ProfileToggleControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isLightTheme = ThemeState().isLightTheme;
     final isBlueTheme = ThemeState().isBlueTheme;
+    final isWhiteTheme = !isBlueTheme;
+    final sectionBackground =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceVariant;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color:
-            isBlueTheme
-                ? Theme.of(context).colorScheme.primary
-                : (isLightTheme ? Colors.grey[50] : Colors.grey[800]),
+        color: sectionBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color:
-              isBlueTheme
-                  ? Colors.blue[600]!
-                  : (isLightTheme ? Colors.grey[300]! : Colors.grey[600]!),
+          color: theme.colorScheme.outline,
           width: 1,
         ),
       ),
@@ -45,7 +42,7 @@ class ProfileToggleControl extends StatelessWidget {
               color:
                   isBlueTheme
                       ? Colors.white
-                      : (isLightTheme ? Colors.grey[600] : Colors.grey[400]),
+                      : theme.colorScheme.onSurfaceVariant,
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -58,7 +55,7 @@ class ProfileToggleControl extends StatelessWidget {
                 color:
                     isBlueTheme
                         ? Colors.white
-                        : (isLightTheme ? Colors.grey[800] : Colors.grey[200]),
+                        : theme.colorScheme.onSurface,
               ),
             ),
           ),
@@ -66,10 +63,28 @@ class ProfileToggleControl extends StatelessWidget {
             value: value ?? false,
             onChanged: onChanged,
             activeColor:
-                isLightTheme ? Colors.white : (Colors.blue[600] ?? Colors.blue),
-            activeTrackColor: isLightTheme ? Colors.black : Colors.blue[600],
-            inactiveThumbColor: isLightTheme ? Colors.grey[400] : null,
-            inactiveTrackColor: isLightTheme ? Colors.grey[600] : null,
+                isBlueTheme
+                    ? BlueThemeColors.buttonPrimary
+                    : Colors.white,
+            activeTrackColor:
+                isBlueTheme
+                    ? BlueThemeColors.buttonPrimary.withValues(alpha: 0.3)
+                    : Colors.black,
+            inactiveThumbColor:
+                isWhiteTheme ? Colors.white : theme.colorScheme.onSurfaceVariant,
+            inactiveTrackColor:
+                isWhiteTheme
+                    ? theme.colorScheme.outline.withValues(alpha: 0.6)
+                    : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            trackOutlineColor:
+                isWhiteTheme
+                    ? MaterialStateProperty.resolveWith(
+                      (states) =>
+                          states.contains(MaterialState.selected)
+                              ? Colors.transparent
+                              : theme.colorScheme.outline,
+                    )
+                    : null,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ],

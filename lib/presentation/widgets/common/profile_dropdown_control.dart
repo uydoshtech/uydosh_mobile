@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 
 class ProfileDropdownControl extends StatelessWidget {
   const ProfileDropdownControl({
@@ -23,19 +24,16 @@ class ProfileDropdownControl extends StatelessWidget {
     final isLightTheme = ThemeState().isLightTheme;
     final isBlueTheme = ThemeState().isBlueTheme;
 
+    final sectionBackground =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceVariant;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color:
-            isBlueTheme
-                ? Theme.of(context).colorScheme.primary
-                : (isLightTheme ? Colors.grey[50] : Colors.grey[800]),
+        color: sectionBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color:
-              isBlueTheme
-                  ? Colors.blue[600]!
-                  : (isLightTheme ? Colors.grey[300]! : Colors.grey[600]!),
+          color: theme.colorScheme.outline,
           width: 1,
         ),
       ),
