@@ -196,6 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
+        final isComplete = _calculateProfileCompletionPercent(profile) >= 100;
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -205,27 +206,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Center(
                 child: Column(
                   children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                            spreadRadius: 2,
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        if (isComplete)
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.success,
+                                width: 3,
+                              ),
+                            ),
+                            child: _buildProfileAvatar(),
+                          )
+                        else
+                          _buildProfileAvatar(),
+                        if (isComplete)
+                          Container(
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: AppColors.success,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.surface,
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              size: 14,
+                              color: Colors.white,
+                            ),
                           ),
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: _buildProfilePicture(),
+                      ],
                     ),
                   ],
                 ),
@@ -234,8 +250,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 20),
 
               // Profile completion indicator
-              _buildProfileCompletionCard(profile, context),
-              const SizedBox(height: 16),
+              if (!isComplete) ...[
+                _buildProfileCompletionCard(profile, context),
+                const SizedBox(height: 16),
+              ] else ...[
+                const SizedBox(height: 16),
+              ],
 
               // Merged Profile Information Card
               Card(
@@ -971,6 +991,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileAvatar() {
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: _buildProfilePicture(),
     );
   }
 
