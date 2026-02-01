@@ -265,17 +265,21 @@ class ComplaintService implements IComplaintService {
   Future<int> getListingComplaintsCount(int listingId) async {
     try {
       final response = await _publicApiClient.get<dynamic>(
-        '/listings/$listingId/complaints',
+        '/complaints/counts-by-listing?listing_id=$listingId',
         (json) => json,
       );
 
-      final paginationTotal = _extractPaginationTotal(response);
-      if (paginationTotal != null) {
-        return paginationTotal;
+      if (response is Map) {
+        final data = response['data'];
+        if (data is Map && data['count'] is num) {
+          return (data['count'] as num).toInt();
+        }
+        if (response['count'] is num) {
+          return (response['count'] as num).toInt();
+        }
       }
 
-      final complaintsData = _extractComplaintsData(response);
-      return complaintsData?.length ?? 0;
+      return 0;
     } catch (e) {
       rethrow;
     }

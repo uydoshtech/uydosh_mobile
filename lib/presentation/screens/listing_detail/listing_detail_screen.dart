@@ -152,6 +152,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   // Loading state for delete button
   bool _isDeleting = false;
 
+  // Loading state for complaints count
+  bool _isLoadingComplaintsCount = false;
+  int? _complaintsCount;
+  int? _complaintsCountListingId;
+
 
   @override
   void initState() {
@@ -408,6 +413,53 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       // Don"t show error to user for this check, just log it
       // The heart icon will show as unfavorited by default
     }
+  }
+
+  Future<void> _loadComplaintCount(int listingId) async {
+    if (_isLoadingComplaintsCount && _complaintsCountListingId == listingId) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingComplaintsCount = true;
+      _complaintsCountListingId = listingId;
+    });
+
+    try {
+      final complaintService = getIt<IComplaintService>();
+      final count = await complaintService.getListingComplaintsCount(listingId);
+
+      if (!mounted) return;
+      setState(() {
+        _complaintsCount = count;
+        _isLoadingComplaintsCount = false;
+      });
+    } catch (e) {
+      logger.d("Error loading complaints count: $e");
+      if (!mounted) return;
+      setState(() {
+        _isLoadingComplaintsCount = false;
+      });
+    }
+  }
+
+  String _buildComplaintsButtonLabel() {
+    final base = LanguageAwareStringHelper.getCurrent(
+      context,
+      "view_listing_complaints",
+    );
+
+    if (_isLoadingComplaintsCount && _complaintsCount == null) {
+      return "$base ...";
+    }
+    if (_complaintsCount != null) {
+      final countText = LanguageAwareStringHelper.getCurrent(
+        context,
+        "complaints_count_short",
+      ).replaceAll("{count}", _complaintsCount!.toString());
+      return "$base • $countText";
+    }
+    return base;
   }
 
   // Helper method to get the appropriate name based on current language
@@ -1042,6 +1094,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           "complaint_created_success",
         ),
       );
+      _loadComplaintCount(listingDetail.id);
     }
   }
 
@@ -1436,6 +1489,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           loaded: (loadedState) {
             // Check favorite status after listing data is loaded
             _checkFavoriteStatusFromServer();
+            _loadComplaintCount(loadedState.listingDetail.id);
           },
           error: (_) {},
         );
@@ -2096,24 +2150,22 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                 ),
               ],
               const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _viewListingComplaints(listingDetail.id),
-                  icon: const Icon(Icons.report_outlined),
-                  label: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "view_listing_complaints",
+              if (_complaintsCount == null || _complaintsCount! > 0)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _viewListingComplaints(listingDetail.id),
+                    icon: const Icon(Icons.report_outlined),
+                    label: Text(
+                      _buildComplaintsButtonLabel(),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: AppColors.error,
+                      foregroundColor: AppColors.textLight,
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: AppColors.error,
-                    foregroundColor: AppColors.textLight,
-                  ),
                 ),
-              ),
             ],
           ),
         );
