@@ -958,12 +958,29 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.home,
-                        size: 40,
-                        color: _getOnboardingTextColor(),
+                      IconButton(
+                        icon: Icon(
+                          Icons.close,
+                          color: _getOnboardingTextColor(),
+                        ),
+                        tooltip: LanguageAwareStringHelper.getCurrent(
+                          context,
+                          "close",
+                        ),
+                        onPressed: () {
+                          if (Navigator.of(context).canPop()) {
+                            Navigator.of(context).pop();
+                            return;
+                          }
+
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => AppRouter.initialRoute,
+                            ),
+                          );
+                        },
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 8),
                       Text(
                         "UyDosh",
                         style: TextStyle(
