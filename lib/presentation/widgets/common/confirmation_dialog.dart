@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:uy_dosh/base/constants/app_colors.dart';
+import 'package:uy_dosh/base/state/theme_state.dart';
 import '../language_switcher.dart';
 
 /// A reusable confirmation dialog that follows the app's theme guidelines
@@ -56,6 +58,20 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeState = ThemeState();
+    final isBlueTheme = themeState.isBlueTheme;
+    final cancelTextColor = isBlueTheme
+        ? BlueThemeColors.error
+        : (themeState.isLightTheme
+            ? AppColors.error
+            : Theme.of(context).colorScheme.onSurface);
+    final confirmTextColor = isBlueTheme
+        ? Colors.white
+        : confirmButtonColor ??
+            (isDestructive
+                ? Theme.of(context).colorScheme.error
+                : Theme.of(context).colorScheme.primary);
+
     return AlertDialog(
       backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
       title: Text(
@@ -80,9 +96,7 @@ class ConfirmationDialog extends StatelessWidget {
             Navigator.of(context).pop(false);
             onCancel?.call();
           },
-          style: TextButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.onSurface,
-          ),
+          style: TextButton.styleFrom(foregroundColor: cancelTextColor),
           child: Text(
             LanguageAwareStringHelper.getCurrent(context, cancelButtonKey),
             style: const TextStyle(fontSize: 16),
@@ -94,13 +108,7 @@ class ConfirmationDialog extends StatelessWidget {
             Navigator.of(context).pop(true);
             onConfirm?.call();
           },
-          style: TextButton.styleFrom(
-            foregroundColor:
-                confirmButtonColor ??
-                (isDestructive
-                    ? Theme.of(context).colorScheme.error
-                    : Theme.of(context).colorScheme.primary),
-          ),
+          style: TextButton.styleFrom(foregroundColor: confirmTextColor),
           child: Text(
             LanguageAwareStringHelper.getCurrent(context, confirmButtonKey),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
