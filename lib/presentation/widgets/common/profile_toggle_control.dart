@@ -65,7 +65,11 @@ class ProfileToggleControl extends StatelessWidget {
           Switch(
             value: value ?? false,
             onChanged: onChanged,
-            activeColor: Colors.blue[600],
+            activeColor:
+                isLightTheme ? Colors.white : (Colors.blue[600] ?? Colors.blue),
+            activeTrackColor: isLightTheme ? Colors.black : Colors.blue[600],
+            inactiveThumbColor: isLightTheme ? Colors.grey[400] : null,
+            inactiveTrackColor: isLightTheme ? Colors.grey[600] : null,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ],
