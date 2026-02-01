@@ -1278,6 +1278,19 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     }
   }
 
+  Future<void> _confirmOpenInYandexMaps(ListingDetail listingDetail) async {
+    final shouldOpen = await CommonConfirmationDialogs.showGenericConfirmation(
+      context: context,
+      titleKey: "open_in_yandex_maps",
+      messageKey: "open_in_yandex_maps_confirmation",
+      confirmButtonKey: "confirm",
+    );
+
+    if (shouldOpen ?? false) {
+      await _openInYandexMaps(listingDetail);
+    }
+  }
+
   Future<void> _openInYandexMaps(ListingDetail listingDetail) async {
     try {
       // Get coordinates from the listing detail
@@ -1297,10 +1310,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       final longitude = coordinates["longitude"]!;
 
       // Create Yandex Maps URL
-      final yandexMapsUrl = "https://yandex.com/maps/?pt=$longitude,$latitude&z=16&l=map";
-      
+      final yandexMapsUrl =
+          "https://yandex.com/maps/?pt=$longitude,$latitude&z=16&l=map";
+
       final uri = Uri.parse(yandexMapsUrl);
-      
+
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
@@ -2005,7 +2019,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                         // Open in Yandex Maps Button
                         Center(
                           child: TextButton.icon(
-                            onPressed: () => _openInYandexMaps(listingDetail),
+                            onPressed: () => _confirmOpenInYandexMaps(listingDetail),
                             icon: const Icon(
                               Icons.open_in_new,
                               size: 18,

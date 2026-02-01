@@ -33,14 +33,21 @@ import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 
 class AuthWizardScreen extends StatefulWidget {
-  const AuthWizardScreen({super.key});
+  const AuthWizardScreen({
+    super.key,
+    this.initialPage = 0,
+    this.skipExistingSessionCheck = false,
+  });
+
+  final int initialPage;
+  final bool skipExistingSessionCheck;
 
   @override
   State<AuthWizardScreen> createState() => _AuthWizardScreenState();
 }
 
 class _AuthWizardScreenState extends State<AuthWizardScreen> {
-  final PageController _pageController = PageController(initialPage: 0);
+  late final PageController _pageController;
   final ScrollController _profileScrollController = ScrollController();
   int _currentPage = 0; // Start with language selection page
 
@@ -83,6 +90,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: widget.initialPage);
+    _currentPage = widget.initialPage;
+    _nameController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
 
     // Initialize university service
     _universityService = getIt<IUniversityService>();
@@ -93,11 +107,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     // Initialize region service
     _regionService = getIt<IRegionService>();
 
-    // Set the default language to Uzbek when the screen initializes
-    LanguageState().setLanguage("uz");
+    // Set the default language to Uzbek only for fresh onboarding
+    if (widget.initialPage == 0) {
+      LanguageState().setLanguage("uz");
+    }
 
     // Check if user already has a valid Firebase session
-    _checkExistingSession();
+    if (!widget.skipExistingSessionCheck) {
+      _checkExistingSession();
+    }
 
     // Listen to Firebase auth state changes
     _auth.authStateChanges().listen((User? user) {
@@ -2351,7 +2369,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return _nextPage;
       case 2:
         // Profile setup - require gender, region, student status, and university if student
-        if (_selectedGender == null ||
+        if (_nameController.text.trim().isEmpty ||
+            _selectedGender == null ||
             _selectedRegionId == null ||
             _isStudent == null)
           return null;

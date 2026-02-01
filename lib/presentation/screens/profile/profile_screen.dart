@@ -10,6 +10,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
@@ -65,6 +66,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  bool _redirectedToProfileSetup = false;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -72,82 +75,119 @@ class _ProfileScreenState extends State<ProfileScreen> {
           (context) =>
               CurrentUserProfileBloc(getIt<IUserProfileService>())
                 ..add(const CurrentUserProfileEvent.fetchProfile()),
-      child: ListenableBuilder(
-        listenable: ThemeState(),
-        builder: (context, child) {
-          return BlocSelector<
-            CurrentUserProfileBloc,
-            CurrentUserProfileState,
-            _ProfileScreenData
-          >(
-            selector:
-                (state) => state.map(
-                  initial:
-                      (_) => _ProfileScreenData(
-                        isLoading: true,
-                        hasError: false,
-                        errorMessage: "",
-                        profile: null,
-                      ),
-                  loading:
-                      (_) => _ProfileScreenData(
-                        isLoading: true,
-                        hasError: false,
-                        errorMessage: "",
-                        profile: null,
-                      ),
-                  loaded:
-                      (loadedState) => _ProfileScreenData(
-                        isLoading: false,
-                        hasError: false,
-                        errorMessage: "",
-                        profile: loadedState.profile,
-                      ),
-                  error:
-                      (errorState) => _ProfileScreenData(
-                        isLoading: false,
-                        hasError: true,
-                        errorMessage: errorState.message,
-                        profile: null,
-                      ),
-                ),
-            builder: (context, data) {
-              return Scaffold(
-                appBar: AppBar(
-                  title: Text(
-                    LanguageAwareStringHelper.getCurrent(context, "profile"),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+      child: BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
+        listener: (context, state) {
+          state.maybeWhen(
+            error: (message) {
+              if (message != profileNotFoundErrorCode ||
+                  _redirectedToProfileSetup) {
+                return;
+              }
+              _redirectedToProfileSetup = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder:
+                        (context) => const AuthWizardScreen(
+                          initialPage: 2,
+                          skipExistingSessionCheck: true,
+                        ),
                   ),
-                  actions: [
-                    ActionDropdownMenu(
-                      items: _buildActionMenuItems(context),
-                      icon: Icons.more_vert,
-                      tooltip: LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "menu_settings",
-                      ),
-                      padding: const EdgeInsets.only(right: 16.0),
-                    ),
-                  ],
-                ),
-                body:
-                    data.isLoading
-                        ? CenteredHouseLoadingIndicator(
-                          text: LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "loading",
-                          ),
-                        )
-                        : data.hasError
-                        ? _buildErrorState(data.errorMessage, context)
-                        : _buildProfileContent(data.profile!),
-              );
+                );
+              });
             },
+            orElse: () {},
           );
         },
+        child: ListenableBuilder(
+          listenable: ThemeState(),
+          builder: (context, child) {
+            return BlocSelector<
+              CurrentUserProfileBloc,
+              CurrentUserProfileState,
+              _ProfileScreenData
+            >(
+              selector:
+                  (state) => state.map(
+                    initial:
+                        (_) => _ProfileScreenData(
+                          isLoading: true,
+                          hasError: false,
+                          errorMessage: "",
+                          profile: null,
+                        ),
+                    loading:
+                        (_) => _ProfileScreenData(
+                          isLoading: true,
+                          hasError: false,
+                          errorMessage: "",
+                          profile: null,
+                        ),
+                    loaded:
+                        (loadedState) => _ProfileScreenData(
+                          isLoading: false,
+                          hasError: false,
+                          errorMessage: "",
+                          profile: loadedState.profile,
+                        ),
+                    error:
+                        (errorState) => _ProfileScreenData(
+                          isLoading: false,
+                          hasError: true,
+                          errorMessage: errorState.message,
+                          profile: null,
+                        ),
+                  ),
+              builder: (context, data) {
+                if (data.hasError &&
+                    data.errorMessage == profileNotFoundErrorCode) {
+                  return Scaffold(
+                    body: CenteredHouseLoadingIndicator(
+                      text: LanguageAwareStringHelper.getCurrent(
+                        context,
+                        "loading",
+                      ),
+                    ),
+                  );
+                }
+                return Scaffold(
+                  appBar: AppBar(
+                    title: Text(
+                      LanguageAwareStringHelper.getCurrent(context, "profile"),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    actions: [
+                      ActionDropdownMenu(
+                        items: _buildActionMenuItems(context),
+                        icon: Icons.more_vert,
+                        tooltip: LanguageAwareStringHelper.getCurrent(
+                          context,
+                          "menu_settings",
+                        ),
+                        padding: const EdgeInsets.only(right: 16.0),
+                      ),
+                    ],
+                  ),
+                  body:
+                      data.isLoading
+                          ? CenteredHouseLoadingIndicator(
+                            text: LanguageAwareStringHelper.getCurrent(
+                              context,
+                              "loading",
+                            ),
+                          )
+                          : data.hasError
+                          ? _buildErrorState(data.errorMessage, context)
+                          : _buildProfileContent(data.profile!),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
