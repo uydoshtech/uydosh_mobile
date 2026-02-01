@@ -73,7 +73,10 @@ class GhostButton extends StatelessWidget {
 
   // Theme-dependent color method for button background
   Color _getBackgroundColor() {
-    if (ThemeState().isLightTheme) {
+    if (isOnboardingButton && !ThemeState().isLightTheme &&
+        !ThemeState().isBlueTheme) {
+      return Colors.white; // White background for purple onboarding buttons
+    } else if (ThemeState().isLightTheme) {
       return Colors.transparent; // Transparent for light theme (ghost button)
     } else if (ThemeState().isBlueTheme) {
       return Colors.transparent; // Transparent for blue theme (ghost button)
@@ -90,7 +93,10 @@ class GhostButton extends StatelessWidget {
     }
 
     // Otherwise use theme-dependent color
-    if (ThemeState().isLightTheme) {
+    if (isOnboardingButton && !ThemeState().isLightTheme &&
+        !ThemeState().isBlueTheme) {
+      return Colors.black; // Black text on white for purple onboarding buttons
+    } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black text for light theme (ghost button)
     } else if (ThemeState().isBlueTheme) {
       return Colors.white; // White text for blue theme (ghost button)
@@ -107,7 +113,10 @@ class GhostButton extends StatelessWidget {
     }
 
     // Otherwise use theme-dependent color
-    if (ThemeState().isLightTheme) {
+    if (isOnboardingButton && !ThemeState().isLightTheme &&
+        !ThemeState().isBlueTheme) {
+      return Colors.black; // Black border for purple onboarding buttons
+    } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black border for light theme (ghost button)
     } else if (ThemeState().isBlueTheme) {
       return BlueThemeColors
