@@ -290,40 +290,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(height: 24),
                       ],
 
-                      // Wake-up Time field
-                      if (profile.wakeupTime != null) ...[
-                        _buildProfileField(
-                          icon: Icons.wb_sunny,
-                          label: LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "wakeup_time",
-                          ),
-                          value: _getTimePreferenceText(
-                            profile.wakeupTime!,
-                            context,
-                          ),
-                          context: context,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Sleep Time field
-                      if (profile.sleepTime != null) ...[
-                        _buildProfileField(
-                          icon: Icons.bedtime,
-                          label: LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "sleep_time",
-                          ),
-                          value: _getTimePreferenceText(
-                            profile.sleepTime!,
-                            context,
-                          ),
-                          context: context,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
                       // Gender field
                       if (profile.gender != null) ...[
                         Row(
@@ -654,6 +620,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
+
+                        // Wake-up Time field
+                        if (profile.wakeupTime != null) ...[
+                          _buildProfileField(
+                            icon: Icons.wb_sunny,
+                            label: LanguageAwareStringHelper.getCurrent(
+                              context,
+                              "wakeup_time",
+                            ),
+                            value: _getTimePreferenceText(
+                              profile.wakeupTime!,
+                              context,
+                            ),
+                            context: context,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Sleep Time field
+                        if (profile.sleepTime != null) ...[
+                          _buildProfileField(
+                            icon: Icons.bedtime,
+                            label: LanguageAwareStringHelper.getCurrent(
+                              context,
+                              "sleep_time",
+                            ),
+                            value: _getTimePreferenceText(
+                              profile.sleepTime!,
+                              context,
+                            ),
+                            context: context,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
 
                         // Employed field
                         if (profile.employed != null) ...[

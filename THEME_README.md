@@ -1,13 +1,13 @@
 # UyDosh Theme System
 
-This document explains how to use the new dual-theme system in the UyDosh app.
+This document explains how to use the theme system in the UyDosh app.
 
 ## Overview
 
 The app now supports two visual themes:
 
-1. **Purple Theme** (Original) - The default theme with deep purple colors
-2. **Blue Theme** (New) - A new theme using the two blue colors from your image:
+1. **Light Theme** (Default) - A clean light theme with dark text
+2. **Blue Theme** (New) - A theme using the two blue colors from your image:
    - Primary: `#3A7BBF` (Medium blue from inner square)
    - Secondary: `#70C0C8` (Light teal from outer square)
 
@@ -16,7 +16,7 @@ The app now supports two visual themes:
 ### 1. Theme Switcher Button
 - Look for the **palette icon** (🎨) in the top-right corner of the splash screen
 - Tap it to open the theme selection dialog
-- Choose between "Purple Theme" and "Blue Theme"
+- Choose between "Light Theme" and "Blue Theme"
 - Tap "Apply Theme" to switch
 
 ### 2. Theme Comparison
@@ -34,11 +34,11 @@ The app now supports two visual themes:
 
 ## Theme Features
 
-### Purple Theme (Original)
-- Primary: Deep purple (`#673AB7`)
-- Secondary: Blue (`#2196F3`)
-- Background: Dark (`#121212`)
-- Surface: Dark (`#1E1E1E`)
+### Light Theme (Default)
+- Primary: Dark text (`#000000`)
+- Secondary: Light accents (`#2196F3`)
+- Background: White (`#FFFFFF`)
+- Surface: Light gray (`#F8F9FA`)
 
 ### Blue Theme (New)
 - Primary: Medium blue (`#3A7BBF`)
@@ -78,7 +78,7 @@ To add more themes:
 
 ## Notes
 
-- The blue theme maintains the same dark aesthetic as the purple theme
+- The blue theme maintains a dark aesthetic for contrast
 - All UI components automatically adapt to the selected theme
 - Theme switching is immediate and affects the entire app
 - The theme system is extensible for future themes

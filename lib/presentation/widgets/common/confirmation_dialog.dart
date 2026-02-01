@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uy_dosh/base/constants/app_colors.dart';
 import 'package:uy_dosh/base/state/theme_state.dart';
 import '../language_switcher.dart';
 
@@ -60,13 +59,9 @@ class ConfirmationDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeState = ThemeState();
     final isBlueTheme = themeState.isBlueTheme;
-    final cancelTextColor = isBlueTheme
-        ? BlueThemeColors.error
-        : (themeState.isLightTheme
-            ? AppColors.error
-            : Theme.of(context).colorScheme.onSurface);
+    final cancelTextColor = isBlueTheme ? Colors.white : Colors.black;
     final confirmTextColor = isBlueTheme
-        ? Colors.white
+        ? Colors.red
         : confirmButtonColor ??
             (isDestructive
                 ? Theme.of(context).colorScheme.error
