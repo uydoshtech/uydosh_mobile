@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uy_dosh/base/api/client/json_encodable.dart';
+import 'package:uy_dosh/domain/models/complaint_category.dart';
 
 part 'complaint.freezed.dart';
 part 'complaint.g.dart';
@@ -11,6 +12,7 @@ class Complaint with _$Complaint {
     @JsonKey(name: 'complainant_id') required int complainantId,
     @JsonKey(name: 'listing_id') required int listingId,
     @JsonKey(name: 'category_id') required int categoryId,
+    @JsonKey(name: 'category') ComplaintCategory? category,
     required String status,
     @JsonKey(name: 'created_at') String? createdAt,
     @JsonKey(name: 'updated_at') String? updatedAt,

@@ -37,6 +37,7 @@ import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
+import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
@@ -150,6 +151,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
   // Loading state for delete button
   bool _isDeleting = false;
+
 
   @override
   void initState() {
@@ -1041,6 +1043,18 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         ),
       );
     }
+  }
+
+  void _viewListingComplaints(int listingId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) => BlocProvider<ComplaintBloc>(
+              create: (context) => ComplaintBloc(getIt<IComplaintService>()),
+              child: ListingComplaintsScreen(listingId: listingId),
+            ),
+      ),
+    );
   }
 
   void _startConversation(ListingDetail listingDetail) async {
@@ -2080,6 +2094,25 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                   ),
                 ),
               ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _viewListingComplaints(listingDetail.id),
+                  icon: const Icon(Icons.report_outlined),
+                  label: Text(
+                    LanguageAwareStringHelper.getCurrent(
+                      context,
+                      "view_listing_complaints",
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: AppColors.error,
+                    foregroundColor: AppColors.textLight,
+                  ),
+                ),
+              ),
             ],
           ),
         );

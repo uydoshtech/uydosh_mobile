@@ -28,6 +28,8 @@ mixin _$Complaint {
   int get listingId => throw _privateConstructorUsedError;
   @JsonKey(name: 'category_id')
   int get categoryId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'category')
+  ComplaintCategory? get category => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   String? get createdAt => throw _privateConstructorUsedError;
@@ -54,6 +56,7 @@ abstract class $ComplaintCopyWith<$Res> {
     @JsonKey(name: 'complainant_id') int complainantId,
     @JsonKey(name: 'listing_id') int listingId,
     @JsonKey(name: 'category_id') int categoryId,
+    @JsonKey(name: 'category') ComplaintCategory? category,
     String status,
     @JsonKey(name: 'created_at') String? createdAt,
     @JsonKey(name: 'updated_at') String? updatedAt,
@@ -79,6 +82,7 @@ class _$ComplaintCopyWithImpl<$Res, $Val extends Complaint>
     Object? complainantId = null,
     Object? listingId = null,
     Object? categoryId = null,
+    Object? category = freezed,
     Object? status = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
@@ -105,6 +109,11 @@ class _$ComplaintCopyWithImpl<$Res, $Val extends Complaint>
                     ? _value.categoryId
                     : categoryId // ignore: cast_nullable_to_non_nullable
                         as int,
+            category:
+                freezed == category
+                    ? _value.category
+                    : category // ignore: cast_nullable_to_non_nullable
+                        as ComplaintCategory?,
             status:
                 null == status
                     ? _value.status
@@ -140,6 +149,7 @@ abstract class _$$ComplaintImplCopyWith<$Res>
     @JsonKey(name: 'complainant_id') int complainantId,
     @JsonKey(name: 'listing_id') int listingId,
     @JsonKey(name: 'category_id') int categoryId,
+    @JsonKey(name: 'category') ComplaintCategory? category,
     String status,
     @JsonKey(name: 'created_at') String? createdAt,
     @JsonKey(name: 'updated_at') String? updatedAt,
@@ -164,6 +174,7 @@ class __$$ComplaintImplCopyWithImpl<$Res>
     Object? complainantId = null,
     Object? listingId = null,
     Object? categoryId = null,
+    Object? category = freezed,
     Object? status = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
@@ -190,6 +201,11 @@ class __$$ComplaintImplCopyWithImpl<$Res>
                 ? _value.categoryId
                 : categoryId // ignore: cast_nullable_to_non_nullable
                     as int,
+        category:
+            freezed == category
+                ? _value.category
+                : category // ignore: cast_nullable_to_non_nullable
+                    as ComplaintCategory?,
         status:
             null == status
                 ? _value.status
@@ -218,6 +234,7 @@ class _$ComplaintImpl implements _Complaint {
     @JsonKey(name: 'complainant_id') required this.complainantId,
     @JsonKey(name: 'listing_id') required this.listingId,
     @JsonKey(name: 'category_id') required this.categoryId,
+    @JsonKey(name: 'category') this.category,
     required this.status,
     @JsonKey(name: 'created_at') this.createdAt,
     @JsonKey(name: 'updated_at') this.updatedAt,
@@ -238,6 +255,9 @@ class _$ComplaintImpl implements _Complaint {
   @JsonKey(name: 'category_id')
   final int categoryId;
   @override
+  @JsonKey(name: 'category')
+  final ComplaintCategory? category;
+  @override
   final String status;
   @override
   @JsonKey(name: 'created_at')
@@ -248,7 +268,7 @@ class _$ComplaintImpl implements _Complaint {
 
   @override
   String toString() {
-    return 'Complaint(id: $id, complainantId: $complainantId, listingId: $listingId, categoryId: $categoryId, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Complaint(id: $id, complainantId: $complainantId, listingId: $listingId, categoryId: $categoryId, category: $category, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -263,6 +283,8 @@ class _$ComplaintImpl implements _Complaint {
                 other.listingId == listingId) &&
             (identical(other.categoryId, categoryId) ||
                 other.categoryId == categoryId) &&
+            (identical(other.category, category) ||
+                other.category == category) &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
@@ -278,6 +300,7 @@ class _$ComplaintImpl implements _Complaint {
     complainantId,
     listingId,
     categoryId,
+    category,
     status,
     createdAt,
     updatedAt,
@@ -303,6 +326,7 @@ abstract class _Complaint implements Complaint {
     @JsonKey(name: 'complainant_id') required final int complainantId,
     @JsonKey(name: 'listing_id') required final int listingId,
     @JsonKey(name: 'category_id') required final int categoryId,
+    @JsonKey(name: 'category') final ComplaintCategory? category,
     required final String status,
     @JsonKey(name: 'created_at') final String? createdAt,
     @JsonKey(name: 'updated_at') final String? updatedAt,
@@ -322,6 +346,9 @@ abstract class _Complaint implements Complaint {
   @override
   @JsonKey(name: 'category_id')
   int get categoryId;
+  @override
+  @JsonKey(name: 'category')
+  ComplaintCategory? get category;
   @override
   String get status;
   @override

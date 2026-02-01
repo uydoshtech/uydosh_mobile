@@ -12,6 +12,12 @@ _$ComplaintImpl _$$ComplaintImplFromJson(Map<String, dynamic> json) =>
       complainantId: (json['complainant_id'] as num).toInt(),
       listingId: (json['listing_id'] as num).toInt(),
       categoryId: (json['category_id'] as num).toInt(),
+      category:
+          json['category'] == null
+              ? null
+              : ComplaintCategory.fromJson(
+                json['category'] as Map<String, dynamic>,
+              ),
       status: json['status'] as String,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
@@ -23,6 +29,7 @@ Map<String, dynamic> _$$ComplaintImplToJson(_$ComplaintImpl instance) =>
       'complainant_id': instance.complainantId,
       'listing_id': instance.listingId,
       'category_id': instance.categoryId,
+      'category': instance.category,
       'status': instance.status,
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,

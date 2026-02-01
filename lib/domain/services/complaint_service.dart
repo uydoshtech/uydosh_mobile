@@ -16,12 +16,14 @@ abstract class IComplaintService {
     int? page,
     int? limit,
     String? status,
+    int? listingId,
   });
   Future<Complaint> getComplaint(int id);
   Future<Complaint> updateComplaintStatus(int id, String status);
   Future<void> deleteComplaint(int id);
   Future<List<Complaint>> getUserComplaints(int userId);
   Future<List<Complaint>> getListingComplaints(int listingId);
+  Future<int> getListingComplaintsCount(int listingId);
 }
 
 class ComplaintService implements IComplaintService {
@@ -150,12 +152,14 @@ class ComplaintService implements IComplaintService {
     int? page,
     int? limit,
     String? status,
+    int? listingId,
   }) async {
     try {
       final queryParams = <String, String>{};
       if (page != null) queryParams['page'] = page.toString();
       if (limit != null) queryParams['limit'] = limit.toString();
       if (status != null) queryParams['status'] = status;
+      if (listingId != null) queryParams['listing_id'] = listingId.toString();
 
       final queryString = queryParams.entries
           .map((e) => '${e.key}=${e.value}')
@@ -166,16 +170,8 @@ class ComplaintService implements IComplaintService {
         (json) => json,
       );
 
-      List<dynamic> complaintsData;
-      if (response is Map && response.containsKey('data')) {
-        complaintsData = response['data'] as List<dynamic>;
-      } else if (response is List) {
-        complaintsData = response as List<dynamic>;
-      } else {
-        complaintsData = <dynamic>[];
-      }
-
-      return complaintsData
+      final complaintsData = _extractComplaintsData(response);
+      return (complaintsData ?? <dynamic>[])
           .map((item) => Complaint.fromJson(item as Map<String, dynamic>))
           .toList();
     } catch (e) {
@@ -234,16 +230,8 @@ class ComplaintService implements IComplaintService {
         (json) => json,
       );
 
-      List<dynamic> complaintsData;
-      if (response is Map && response.containsKey('data')) {
-        complaintsData = response['data'] as List<dynamic>;
-      } else if (response is List) {
-        complaintsData = response as List<dynamic>;
-      } else {
-        complaintsData = <dynamic>[];
-      }
-
-      return complaintsData
+      final complaintsData = _extractComplaintsData(response);
+      return (complaintsData ?? <dynamic>[])
           .map((item) => Complaint.fromJson(item as Map<String, dynamic>))
           .toList();
     } catch (e) {
@@ -259,21 +247,88 @@ class ComplaintService implements IComplaintService {
         (json) => json,
       );
 
-      List<dynamic> complaintsData;
-      if (response is Map && response.containsKey('data')) {
-        complaintsData = response['data'] as List<dynamic>;
-      } else if (response is List) {
-        complaintsData = response as List<dynamic>;
-      } else {
-        complaintsData = <dynamic>[];
+      final complaintsData = _extractComplaintsData(response);
+      if (complaintsData != null) {
+        return complaintsData
+            .map((item) => Complaint.fromJson(item as Map<String, dynamic>))
+            .toList();
       }
 
-      return complaintsData
-          .map((item) => Complaint.fromJson(item as Map<String, dynamic>))
-          .toList();
+      // Fallback to the complaints list endpoint if response shape is unknown
+      return await getComplaints(listingId: listingId);
     } catch (e) {
       rethrow;
     }
+  }
+
+  @override
+  Future<int> getListingComplaintsCount(int listingId) async {
+    try {
+      final response = await _publicApiClient.get<dynamic>(
+        '/listings/$listingId/complaints',
+        (json) => json,
+      );
+
+      final paginationTotal = _extractPaginationTotal(response);
+      if (paginationTotal != null) {
+        return paginationTotal;
+      }
+
+      final complaintsData = _extractComplaintsData(response);
+      return complaintsData?.length ?? 0;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  List<dynamic>? _extractComplaintsData(dynamic response) {
+    if (response is Map) {
+      final data = response['data'];
+      final dataList = _extractListFromDataContainer(data);
+      if (dataList != null) {
+        return dataList;
+      }
+
+      final contentList = _extractListFromDataContainer(response['content']);
+      if (contentList != null) {
+        return contentList;
+      }
+    }
+    if (response is List) {
+      return response;
+    }
+    return null;
+  }
+
+  List<dynamic>? _extractListFromDataContainer(dynamic container) {
+    if (container is List) {
+      return container;
+    }
+    if (container is Map) {
+      final content = container['content'];
+      if (content is List) {
+        return content;
+      }
+      final items = container['items'];
+      if (items is List) {
+        return items;
+      }
+      final results = container['results'];
+      if (results is List) {
+        return results;
+      }
+    }
+    return null;
+  }
+
+  int? _extractPaginationTotal(dynamic response) {
+    if (response is Map) {
+      final pagination = response['pagination'];
+      if (pagination is Map && pagination['total'] is num) {
+        return (pagination['total'] as num).toInt();
+      }
+    }
+    return null;
   }
 }
 
