@@ -23,6 +23,7 @@ class AppStrings {
       "location": "Location",
       "create_listing": "Create",
       "profile": "Profile",
+      "profile_completion": "Profile completion",
       "name": "Name",
       "im_from": "I'm from:",
 
@@ -542,6 +543,7 @@ class AppStrings {
       "location": "Район",
       "create_listing": "Создать",
       "profile": "Профиль",
+      "profile_completion": "Заполнение профиля",
       "name": "Имя",
       "im_from": "Я из:",
 
@@ -1063,6 +1065,7 @@ class AppStrings {
       "location": "Tuman",
       "create_listing": "Yaratish",
       "profile": "Profil",
+      "profile_completion": "Profil to'ldirilishi",
       "name": "Ism",
       "im_from": "Men:",
 

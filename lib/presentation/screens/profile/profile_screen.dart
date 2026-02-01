@@ -233,6 +233,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               const SizedBox(height: 20),
 
+              // Profile completion indicator
+              _buildProfileCompletionCard(profile, context),
+              const SizedBox(height: 16),
+
               // Merged Profile Information Card
               Card(
                 elevation: 4,
@@ -885,6 +889,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildProfileCompletionCard(
+    UserProfile profile,
+    BuildContext context,
+  ) {
+    final completionPercent = _calculateProfileCompletionPercent(profile);
+    final completionFraction = completionPercent / 100;
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              LanguageAwareStringHelper.getCurrent(
+                context,
+                "profile_completion",
+              ),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: completionFraction,
+                minHeight: 8,
+                backgroundColor:
+                    Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "$completionPercent%",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTappableDetailCard({
     required IconData icon,
     required String title,
@@ -1122,6 +1182,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
         profile.petsPreference != null ||
         profile.wakeupTime != null ||
         profile.sleepTime != null;
+  }
+
+  int _calculateProfileCompletionPercent(UserProfile profile) {
+    const totalFields = 17;
+    final completedFields = _countCompletedProfileFields(profile);
+    return ((completedFields / totalFields) * 100).round();
+  }
+
+  int _countCompletedProfileFields(UserProfile profile) {
+    var completedFields = 0;
+
+    if (_hasText(profile.name)) completedFields++;
+    if (profile.gender != null) completedFields++;
+    if (profile.region != null) completedFields++;
+    if (profile.university != null) completedFields++;
+    if (_hasText(profile.aboutMe)) completedFields++;
+    if (_hasText(profile.telegram)) completedFields++;
+    if (profile.employed != null) completedFields++;
+    if (profile.cleanliness != null) completedFields++;
+    if (profile.noiseLevel != null) completedFields++;
+    if (profile.sociability != null) completedFields++;
+    if (profile.guestsAllowed != null) completedFields++;
+    if (_hasText(profile.smokingPreference)) completedFields++;
+    if (_hasText(profile.alcoholPreference)) completedFields++;
+    if (profile.cookingHabits != null) completedFields++;
+    if (profile.petsPreference != null) completedFields++;
+    if (_hasText(profile.wakeupTime)) completedFields++;
+    if (_hasText(profile.sleepTime)) completedFields++;
+
+    return completedFields;
+  }
+
+  bool _hasText(String? value) {
+    return value != null && value.trim().isNotEmpty;
   }
 
   // Helper method to build profile field
