@@ -50,6 +50,7 @@ abstract class IListingService {
     int? gender,
     double? minPrice,
     double? maxPrice,
+    int createdWithinDays = 30,
   });
 
   Future<List<Listing>> getListingsBySubwayStation(
@@ -57,12 +58,14 @@ abstract class IListingService {
     int page = 1,
     int limit = 10,
     String? language,
+    int createdWithinDays = 30,
   });
   Future<List<Listing>> getListingsByLocation(
     int locationId, {
     int page = 1,
     int limit = 10,
     String? language,
+    int createdWithinDays = 30,
   });
   Future<ListingDetail> getListingDetail(int listingId, {String? language});
   Future<ListingDetail> createListing({
@@ -113,6 +116,7 @@ abstract class IListingService {
     double? minPrice,
     double? maxPrice,
     bool? privateRoom,
+    int createdWithinDays = 30,
   });
 
   // Get listings for a specific user
@@ -176,6 +180,7 @@ class ListingService implements IListingService {
     int? gender,
     double? minPrice,
     double? maxPrice,
+    int createdWithinDays = 30,
   }) async {
     // Use provided language or fall back to current app language
     final currentLanguage = language ?? LanguageState().currentLanguage;
@@ -187,6 +192,9 @@ class ListingService implements IListingService {
         'isActive': isActive,
         'language': currentLanguage,
       };
+      if (createdWithinDays > 0) {
+        queryParams['createdWithinDays'] = createdWithinDays;
+      }
 
       // Add listing type ID filter if provided
       if (listingTypeId != null) {
@@ -337,13 +345,14 @@ class ListingService implements IListingService {
     int page = 1,
     int limit = 10,
     String? language,
+    int createdWithinDays = 30,
   }) async {
     // Use provided language or fall back to current app language
     final currentLanguage = language ?? LanguageState().currentLanguage;
 
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
-        '/listings/search?subwayStationId=$subwayStationId&page=$page&limit=$limit&language=$currentLanguage',
+        '/listings/search?subwayStationId=$subwayStationId&page=$page&limit=$limit&language=$currentLanguage&createdWithinDays=$createdWithinDays',
         (json) => json,
         basePath: EnvironmentUtil.basePath,
       );
@@ -376,13 +385,14 @@ class ListingService implements IListingService {
     int page = 1,
     int limit = 10,
     String? language,
+    int createdWithinDays = 30,
   }) async {
     // Use provided language or fall back to current app language
     final currentLanguage = language ?? LanguageState().currentLanguage;
 
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
-        '/listings?locationId=$locationId&page=$page&limit=$limit&language=$currentLanguage',
+        '/listings?locationId=$locationId&page=$page&limit=$limit&language=$currentLanguage&createdWithinDays=$createdWithinDays',
         (json) => json,
         basePath: EnvironmentUtil.basePath,
       );
@@ -771,6 +781,7 @@ class ListingService implements IListingService {
     double? minPrice,
     double? maxPrice,
     bool? privateRoom,
+    int createdWithinDays = 30,
   }) async {
     // Use provided language or fall back to current app language
     final currentLanguage = language ?? LanguageState().currentLanguage;
@@ -782,6 +793,9 @@ class ListingService implements IListingService {
         'isActive': isActive,
         'language': currentLanguage,
       };
+      if (createdWithinDays > 0) {
+        queryParams['createdWithinDays'] = createdWithinDays;
+      }
 
       // Add listing type ID filter if provided
       if (listingTypeId != null) {
@@ -857,6 +871,7 @@ class ListingService implements IListingService {
       logger.d('Min Price: $minPrice');
       logger.d('Max Price: $maxPrice');
       logger.d('Private Room: $privateRoom');
+      logger.d('Created Within Days: $createdWithinDays');
       logger.d('===============================================\x1B[0m');
 
       final response = await _apiClient.get<Map<String, dynamic>>(

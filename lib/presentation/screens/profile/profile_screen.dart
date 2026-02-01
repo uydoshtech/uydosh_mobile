@@ -897,6 +897,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ) {
     final completionPercent = _calculateProfileCompletionPercent(profile);
     final completionFraction = completionPercent / 100;
+    final isComplete = completionPercent >= 100;
 
     return Card(
       elevation: 4,
@@ -906,16 +907,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "profile_completion",
-              ),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    LanguageAwareStringHelper.getCurrent(
+                      context,
+                      "profile_completion",
+                    ),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                if (isComplete)
+                  Icon(
+                    Icons.check_circle,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
