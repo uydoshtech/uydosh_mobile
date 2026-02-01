@@ -2057,11 +2057,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                         // Open in Yandex Maps Button
                         Center(
                           child: TextButton.icon(
-                            onPressed: () => _confirmOpenInYandexMaps(listingDetail),
+                            onPressed: () =>
+                                _confirmOpenInYandexMaps(listingDetail),
                             icon: const Icon(
-                              Icons.open_in_new,
+                              Icons.link,
                               size: 18,
-                              color: Colors.red,
+                              color: AppColors.textDark,
                             ),
                             label: Text(
                               LanguageAwareStringHelper.getCurrent(
@@ -2071,7 +2072,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.red,
+                                color: AppColors.textDark,
                               ),
                             ),
                             style: TextButton.styleFrom(
@@ -2082,7 +2083,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                                 side: const BorderSide(
-                                  color: Colors.red,
+                                  color: AppColors.textDark,
                                   width: 1,
                                 ),
                               ),

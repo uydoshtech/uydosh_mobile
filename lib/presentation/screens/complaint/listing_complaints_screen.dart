@@ -5,6 +5,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
+import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -33,8 +34,29 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          LanguageAwareStringHelper.getCurrent(context, "listing_complaints"),
+        title: BlocBuilder<ComplaintBloc, ComplaintState>(
+          builder: (context, state) {
+            return state.maybeMap(
+              complaintsLoaded: (loadedState) {
+                final title =
+                    LanguageAwareStringHelper.getCurrent(
+                      context,
+                      "listing_complaints_header",
+                    ).replaceAll(
+                      "{count}",
+                      "${loadedState.complaints.length}",
+                    );
+                return Text(title);
+              },
+              orElse:
+                  () => Text(
+                    LanguageAwareStringHelper.getCurrent(
+                      context,
+                      "listing_complaints",
+                    ),
+                  ),
+            );
+          },
         ),
         leading: IconButton(
           icon: const ThemeIcon(icon: Icons.arrow_back),
@@ -98,29 +120,103 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: complaints.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final complaint = complaints[index];
-        return Card(
-          child: ListTile(
-            leading: const ThemeIcon(icon: Icons.report_outlined),
-            title: Text(_buildComplaintTitle(complaint)),
-            subtitle: _buildComplaintSubtitle(complaint),
-            trailing: _buildStatusChip(complaint.status),
+    final complaintGroups = _groupComplaintsByCategory(complaints);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            itemCount: complaintGroups.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final group = complaintGroups[index];
+              return Card(
+                child: ListTile(
+                  leading: const ThemeIcon(
+                    icon: Icons.report_outlined,
+                    size: 28,
+                    color: AppColors.error,
+                  ),
+                  title: Text(
+                    _buildGroupTitle(group),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: _buildGroupSubtitle(group),
+                  trailing: _buildCountChip(group.count),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
-  String _buildComplaintTitle(Complaint complaint) {
-    final category = complaint.category;
+  List<_ComplaintGroup> _groupComplaintsByCategory(
+    List<Complaint> complaints,
+  ) {
+    final grouped = <int, List<Complaint>>{};
+    for (final complaint in complaints) {
+      final categoryId = complaint.categoryId;
+      final bucket = grouped[categoryId] ?? <Complaint>[];
+      bucket.add(complaint);
+      grouped[categoryId] = bucket;
+    }
+
+    final groups =
+        grouped.entries.map((entry) {
+          final items = entry.value;
+          final latestComplaint = _getLatestComplaint(items);
+          return _ComplaintGroup(
+            categoryId: entry.key,
+            category: items.first.category,
+            complaints: items,
+            latestComplaint: latestComplaint,
+          );
+        }).toList();
+
+    groups.sort((a, b) {
+      final aDate = _parseComplaintDate(a.latestComplaint?.createdAt);
+      final bDate = _parseComplaintDate(b.latestComplaint?.createdAt);
+      if (aDate == null && bDate == null) return 0;
+      if (aDate == null) return 1;
+      if (bDate == null) return -1;
+      return bDate.compareTo(aDate);
+    });
+
+    return groups;
+  }
+
+  Complaint? _getLatestComplaint(List<Complaint> complaints) {
+    Complaint? latest;
+    DateTime? latestDate;
+    for (final complaint in complaints) {
+      final parsed = _parseComplaintDate(complaint.createdAt);
+      if (parsed == null) {
+        continue;
+      }
+      if (latestDate == null || parsed.isAfter(latestDate)) {
+        latestDate = parsed;
+        latest = complaint;
+      }
+    }
+    return latest ?? (complaints.isNotEmpty ? complaints.first : null);
+  }
+
+  DateTime? _parseComplaintDate(String? rawDate) {
+    if (rawDate == null || rawDate.isEmpty) {
+      return null;
+    }
+    return DateTime.tryParse(rawDate);
+  }
+
+  String _buildGroupTitle(_ComplaintGroup group) {
+    final category = group.category;
     if (category == null) {
-      final complaintId = complaint.id ?? 0;
-      return "${LanguageAwareStringHelper.getCurrent(context, "complaint_id")}: $complaintId";
+      return LanguageAwareStringHelper.getCurrent(context, "unknown");
     }
 
     final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
@@ -137,28 +233,34 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
     }
   }
 
-  Widget _buildComplaintSubtitle(Complaint complaint) {
-    final dateText = _formatComplaintDate(complaint);
-    return Row(
+  Widget _buildGroupSubtitle(_ComplaintGroup group) {
+    final dateText = _formatComplaintDate(group.latestComplaint);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.calendar_today_outlined,
-          size: 16,
-          color: AppColors.textGrey,
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            dateText,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+        Row(
+          children: [
+            Icon(
+              Icons.calendar_today_outlined,
+              size: 16,
+              color: AppColors.textGrey,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                dateText,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  String _formatComplaintDate(Complaint complaint) {
-    if (complaint.createdAt == null || complaint.createdAt!.isEmpty) {
+  String _formatComplaintDate(Complaint? complaint) {
+    if (complaint?.createdAt == null || complaint!.createdAt!.isEmpty) {
       return LanguageAwareStringHelper.getCurrent(context, "unknown");
     }
     final date = DateTime.tryParse(complaint.createdAt!);
@@ -168,10 +270,13 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
     return AppDateUtils.formatDateWithShortMonth(context, date);
   }
 
-  Widget _buildStatusChip(String status) {
-    final normalized = status.toLowerCase();
-    final label = _getStatusLabel(normalized);
-    final color = _getStatusColor(normalized);
+  Widget _buildCountChip(int count) {
+    final color = AppColors.primary;
+    final label =
+        LanguageAwareStringHelper.getCurrent(
+          context,
+          "complaints_count_short",
+        ).replaceAll("{count}", "$count");
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -189,41 +294,6 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
         ),
       ),
     );
-  }
-
-  String _getStatusLabel(String status) {
-    switch (status) {
-      case "pending":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "complaint_status_pending",
-        );
-      case "resolved":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "complaint_status_resolved",
-        );
-      case "dismissed":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "complaint_status_dismissed",
-        );
-      default:
-        return status;
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case "pending":
-        return AppColors.warning;
-      case "resolved":
-        return AppColors.success;
-      case "dismissed":
-        return AppColors.error;
-      default:
-        return AppColors.textGrey;
-    }
   }
 
   Widget _buildErrorState(BuildContext context, String message) {
@@ -251,4 +321,20 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       ),
     );
   }
+}
+
+class _ComplaintGroup {
+  final int categoryId;
+  final ComplaintCategory? category;
+  final List<Complaint> complaints;
+  final Complaint? latestComplaint;
+
+  _ComplaintGroup({
+    required this.categoryId,
+    required this.category,
+    required this.complaints,
+    required this.latestComplaint,
+  });
+
+  int get count => complaints.length;
 }
