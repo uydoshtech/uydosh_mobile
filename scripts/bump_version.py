@@ -60,8 +60,16 @@ def update_version_constants(major, minor, patch, build_number):
         content = f.read()
     
     # Update version constants
-    content = re.sub(r"static const String version = '\d+\.\d+\.\d+';", f"static const String version = '{major}.{minor}.{patch}';", content)
-    content = re.sub(r"static const String buildNumber = '\d+';", f"static const String buildNumber = '{build_number}';", content)
+    content = re.sub(
+        r"static const String version = ['\"]\d+\.\d+\.\d+['\"];",
+        f"static const String version = \"{major}.{minor}.{patch}\";",
+        content,
+    )
+    content = re.sub(
+        r"static const String buildNumber = ['\"]\d+['\"];",
+        f"static const String buildNumber = \"{build_number}\";",
+        content,
+    )
     
     with open(constants_path, 'w') as f:
         f.write(content)

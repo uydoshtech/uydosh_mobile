@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_version.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
@@ -632,15 +633,17 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                       fontSize: 12,
                     ),
                   );
-                } else {
-                  return Text(
-                    "v1.1.1.1",
-                    style: TextStyle(
-                      color: _getSecondaryTextColor(),
-                      fontSize: 12,
-                    ),
-                  );
                 }
+
+                final formattedVersion =
+                    AppVersion.fullVersion.replaceAll("+", ".");
+                return Text(
+                  "v$formattedVersion",
+                  style: TextStyle(
+                    color: _getSecondaryTextColor(),
+                    fontSize: 12,
+                  ),
+                );
               },
             ),
           ),

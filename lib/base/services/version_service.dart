@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:uy_dosh/base/constants/app_version.dart';
 
 class VersionService {
   static const String _versionKey = 'version';
@@ -26,14 +27,14 @@ class VersionService {
         final String buildNumber = match.group(2)!;
         _cachedVersion = '$semanticVersion+$buildNumber';
         return _cachedVersion!;
-      } else {
-        // Fallback to a default version if parsing fails
-        _cachedVersion = '1.0.0+1';
-        return _cachedVersion!;
       }
+
+      // Fallback to a generated version if parsing fails
+      _cachedVersion = AppVersion.fullVersion;
+      return _cachedVersion!;
     } catch (e) {
-      // Fallback to a default version if reading fails
-      _cachedVersion = '1.0.0+1';
+      // Fallback to a generated version if reading fails
+      _cachedVersion = AppVersion.fullVersion;
       return _cachedVersion!;
     }
   }
