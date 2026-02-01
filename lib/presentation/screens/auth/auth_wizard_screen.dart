@@ -1012,6 +1012,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                         context,
                                         "light_theme",
                                       ),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -1027,6 +1030,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                         context,
                                         "blue_theme",
                                       ),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -1041,6 +1047,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                       LanguageAwareStringHelper.getCurrent(
                                         context,
                                         "purple_theme",
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.black,
                                       ),
                                     ),
                                   ],
