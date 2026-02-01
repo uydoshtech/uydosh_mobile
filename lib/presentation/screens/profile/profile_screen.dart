@@ -475,8 +475,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap:
                             profile.telegram != null &&
                                     profile.telegram!.isNotEmpty
-                                ? () =>
-                                    _openTelegram(profile.telegram!, context)
+                                ? () => _confirmOpenTelegram(
+                                  profile.telegram!,
+                                  context,
+                                )
                                 : null,
                         borderRadius: BorderRadius.circular(8),
                         child: Padding(
@@ -1076,6 +1078,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       ToastTheme.showError(context, message: "Could not open Telegram");
+    }
+  }
+
+  Future<void> _confirmOpenTelegram(
+    String telegramUsername,
+    BuildContext context,
+  ) async {
+    final shouldOpen = await CommonConfirmationDialogs.showGenericConfirmation(
+      context: context,
+      titleKey: "open_in_telegram",
+      messageKey: "open_in_telegram_confirmation",
+      confirmButtonKey: "confirm",
+    );
+
+    if (shouldOpen ?? false) {
+      await _openTelegram(telegramUsername, context);
     }
   }
 

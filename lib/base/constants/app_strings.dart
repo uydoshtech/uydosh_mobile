@@ -312,6 +312,8 @@ class AppStrings {
       "rating": "Rating",
       "about_me": "About Me",
       "telegram": "Telegram",
+      "open_in_telegram": "Open in Telegram",
+      "open_in_telegram_confirmation": "Telegram will be opened.",
 
       // New profile fields
       "employed": "Employed",
@@ -835,6 +837,8 @@ class AppStrings {
       "rating": "Рейтинг",
       "about_me": "Обо мне",
       "telegram": "Telegram",
+      "open_in_telegram": "Открыть в Telegram",
+      "open_in_telegram_confirmation": "Telegram откроется в приложении или браузере.",
 
       // New profile fields
       "employed": "Работает",
@@ -1364,6 +1368,8 @@ class AppStrings {
       "rating": "Reyting",
       "about_me": "Men haqimda",
       "telegram": "Telegram",
+      "open_in_telegram": "Telegramda ochish",
+      "open_in_telegram_confirmation": "Telegram ilova yoki brauzerda ochiladi.",
 
       // New profile fields
       "employed": "Ishlaydi",
