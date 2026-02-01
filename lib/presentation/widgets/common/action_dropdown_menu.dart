@@ -30,27 +30,40 @@ class ActionDropdownMenu extends StatelessWidget {
       onSelected: (String value) {
         HapticFeedback.lightImpact();
         final item = items.firstWhere((item) => item.value == value);
+        if (!item.enabled) {
+          return;
+        }
         item.onPressed();
       },
       color: Theme.of(context).popupMenuTheme.color,
       itemBuilder: (BuildContext context) {
         return items.map((item) {
+          final baseTextStyle = Theme.of(context).popupMenuTheme.textStyle;
+          final disabledColor = Theme.of(context).disabledColor;
+          final effectiveTextStyle =
+              item.enabled
+                  ? baseTextStyle
+                  : baseTextStyle?.copyWith(color: disabledColor) ??
+                      TextStyle(color: disabledColor);
+
           return PopupMenuItem<String>(
             value: item.value,
+            enabled: item.enabled,
             child: Row(
               children: [
                 Icon(
                   item.icon,
                   size: 20,
                   color:
-                      item.iconColor ??
-                      Theme.of(context).popupMenuTheme.textStyle?.color,
+                      item.enabled
+                          ? (item.iconColor ?? baseTextStyle?.color)
+                          : disabledColor,
                 ),
                 const SizedBox(width: 12),
                 LanguageAwareStringHelper.getText(
                   item.textKey,
                   context,
-                  style: Theme.of(context).popupMenuTheme.textStyle,
+                  style: effectiveTextStyle,
                 ),
               ],
             ),
@@ -83,6 +96,7 @@ class ActionMenuItem {
     required this.textKey,
     required this.onPressed,
     this.iconColor,
+    this.enabled = true,
   });
 
   final String value;
@@ -90,4 +104,5 @@ class ActionMenuItem {
   final String textKey;
   final VoidCallback onPressed;
   final Color? iconColor;
+  final bool enabled;
 }

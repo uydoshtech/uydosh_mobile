@@ -18,6 +18,7 @@ class AppStrings {
       "edit": "Edit",
       "share": "Share",
       "complain": "Complain",
+      "sign_in": "Sign in",
 
       "location": "Location",
       "create_listing": "Create",
@@ -536,6 +537,7 @@ class AppStrings {
       "edit": "Редактировать",
       "share": "Поделиться",
       "complain": "Пожаловаться",
+      "sign_in": "Войти",
 
       "location": "Район",
       "create_listing": "Создать",
@@ -1056,6 +1058,7 @@ class AppStrings {
       "edit": "Tahrirlash",
       "share": "Ulashish",
       "complain": "Shikoyat qilish",
+      "sign_in": "Kirish",
 
       "location": "Tuman",
       "create_listing": "Yaratish",

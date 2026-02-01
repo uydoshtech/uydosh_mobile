@@ -46,6 +46,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:http/http.dart" as http;
 import "package:uy_dosh/base/util/environment_util.dart";
@@ -634,6 +635,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     ToastTheme.showError(context, message: message);
   }
 
+  void _navigateToSignIn() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const AuthWizardScreen()),
+    );
+  }
+
   void _editListing() {
     // Get the current listing detail from the bloc state
     final currentState = context.read<ListingDetailBloc>().state;
@@ -887,17 +894,30 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     final isOwner = userListingState.isOwner(listingDetail.user.id);
     final authState = AuthenticationState();
     final isAuthenticated = authState.isAuthenticated;
+    final menuEnabled = isAuthenticated;
 
     List<ActionMenuItem> items = [];
 
+    if (!isAuthenticated) {
+      items.add(
+        ActionMenuItem(
+          value: "sign_in",
+          icon: Icons.login,
+          textKey: "sign_in",
+          onPressed: _navigateToSignIn,
+        ),
+      );
+    }
+
     // Chat option - only show when authenticated and not owner
-    if (isAuthenticated && !isOwner) {
+    if (!isOwner) {
       items.add(
         ActionMenuItem(
           value: "chat",
           icon: CupertinoIcons.bubble_left_bubble_right,
           textKey: "chat",
           onPressed: () => _startConversation(listingDetail),
+          enabled: isAuthenticated,
         ),
       );
     }
@@ -914,12 +934,13 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                 listingDetail.user.id,
                 phoneNumber: listingDetail.user.phone,
               ),
+          enabled: menuEnabled,
         ),
       );
     }
 
     // Favorite option - only show when authenticated and not owner
-    if (isAuthenticated && !isOwner) {
+    if (!isOwner) {
       final favoritesState = FavoritesState();
       final isFavorite = favoritesState.isFavorite(widget.listingId);
 
@@ -930,6 +951,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           textKey: isFavorite ? "remove_from_favorites" : "add_to_favorites",
           onPressed: _toggleFavorite,
           iconColor: isFavorite ? AppColors.favoriteActive : null,
+          enabled: isAuthenticated,
         ),
       );
     }
@@ -978,6 +1000,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         icon: Icons.ios_share,
         textKey: "share",
         onPressed: _shareListing,
+        enabled: menuEnabled,
       ),
     );
 
@@ -989,6 +1012,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           icon: CupertinoIcons.exclamationmark_circle_fill,
           textKey: "complain",
           onPressed: () => _createComplaint(listingDetail),
+          enabled: menuEnabled,
         ),
       );
     }
