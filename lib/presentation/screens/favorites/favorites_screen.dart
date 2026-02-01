@@ -540,7 +540,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return Colors.black; // Default to light theme indicator color
     }
   }
 
@@ -549,7 +549,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight; // White for blue theme
     } else {
-      return AppColors.textGrey400; // Grey for purple theme
+      return AppColors.textGrey400; // Grey for light theme
     }
   }
 
@@ -558,7 +558,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight; // White for blue theme
     } else {
-      return AppColors.textGrey600; // Grey for purple theme
+      return AppColors.textGrey600; // Grey for light theme
     }
   }
 

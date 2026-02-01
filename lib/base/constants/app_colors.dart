@@ -159,7 +159,7 @@ class AppColors {
     Color(0xFFE57373),
   ];
 
-  // Onboarding Colors - Specific colors for onboarding screen in purple theme
+  // Onboarding Colors - Specific colors for default theme onboarding
   static const Color onboardingPrimary = Color(
     0xFF9B6DFF,
   ); // Light purple for onboarding primary (matches original)

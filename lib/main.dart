@@ -117,7 +117,7 @@ void main() async {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
           useMaterial3: true,
-          scaffoldBackgroundColor: AppColors.primary, // Deep purple background
+          scaffoldBackgroundColor: AppColors.primary, // Deep primary background
         ),
         home: const Scaffold(
           body: Center(
@@ -274,12 +274,7 @@ class _SplashScreenState extends State<SplashScreen>
   /// Get theme-specific gradient colors for the splash screen background
   List<Color> _getThemeGradientColors() {
     final themeState = ThemeState();
-    if (themeState.isPurpleTheme) {
-      return [
-        AppColors.primaryLight, // Light purple (#9B6DFF)
-        AppColors.primaryDark, // Dark purple (#4A148C)
-      ];
-    } else if (themeState.isBlueTheme) {
+    if (themeState.isBlueTheme) {
       return [
         BlueThemeColors.primaryLight, // Light blue (#3A7BBF)
         BlueThemeColors.primaryDark, // Dark blue (#142A45)
@@ -296,7 +291,7 @@ class _SplashScreenState extends State<SplashScreen>
   /// Get theme-specific text colors for the splash screen
   Color _getThemeTextColor() {
     final themeState = ThemeState();
-    if (themeState.isPurpleTheme || themeState.isBlueTheme) {
+    if (themeState.isBlueTheme) {
       return AppColors.textLight; // White text for dark themes
     } else {
       return LightThemeColors.textPrimary; // Black text for light theme
@@ -306,7 +301,7 @@ class _SplashScreenState extends State<SplashScreen>
   /// Get theme-specific secondary text color for the splash screen
   Color _getThemeSecondaryTextColor() {
     final themeState = ThemeState();
-    if (themeState.isPurpleTheme || themeState.isBlueTheme) {
+    if (themeState.isBlueTheme) {
       return AppColors.textLight70; // White with 70% opacity for dark themes
     } else {
       return LightThemeColors.textSecondary; // Medium gray for light theme

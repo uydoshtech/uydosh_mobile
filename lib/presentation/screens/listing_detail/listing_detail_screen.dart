@@ -2325,7 +2325,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       // Light theme - use black for icons and text
       return Colors.black;
     } else {
-      // Purple theme - use existing purple icon color
+      // Default theme - use primary icon color
       return AppColors.iconPrimary; // This is Color(0xFF6B46C1)
     }
   }
@@ -2339,7 +2339,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       // Light theme - use white background
       return Colors.white;
     } else {
-      // Purple theme - use existing semi-transparent purple background
+      // Default theme - use semi-transparent primary background
       return AppColors.primary.withValues(alpha: 0.1);
     }
   }
@@ -2353,7 +2353,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       // Light theme - use black border
       return Colors.black;
     } else {
-      // Purple theme - use existing purple border
+      // Default theme - use primary border
       return AppColors.primary;
     }
   }
@@ -2363,7 +2363,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight;
     } else {
-      return AppColors.textGrey; // Default grey for purple theme
+      return AppColors.textGrey; // Default grey for light theme
     }
   }
 
@@ -2372,7 +2372,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight;
     } else {
-      return AppColors.textDark87; // Default dark text for purple theme
+      return AppColors.textDark87; // Default dark text for light theme
     }
   }
 
@@ -2381,7 +2381,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight;
     } else {
-      return AppColors.textDark87; // Default dark text for purple theme
+      return AppColors.textDark87; // Default dark text for light theme
     }
   }
 
@@ -2390,7 +2390,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight;
     } else {
-      return AppColors.textGrey600; // Default grey for purple theme
+      return AppColors.textGrey600; // Default grey for light theme
     }
   }
 
@@ -2450,7 +2450,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     if (ThemeState().isBlueTheme) {
       return AppColors.buttonPrimary; // Blue for blue theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return AppColors.primary; // Primary for non-blue theme
     }
   }
 
@@ -2461,7 +2461,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return AppColors.primary; // Primary for non-blue theme
     }
   }
 
@@ -2472,7 +2472,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black text for light theme
     } else {
-      return AppColors.primary; // Purple text for purple theme
+      return AppColors.primary; // Primary text for non-blue theme
     }
   }
 
@@ -2483,18 +2483,18 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     } else if (ThemeState().isBlueTheme) {
       return Colors.white; // White for blue theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return AppColors.primary; // Primary for non-blue theme
     }
   }
 
   // Theme-dependent color method for private room icon
   Color _getPrivateRoomIconColor() {
     if (ThemeState().isLightTheme) {
-      return AppColors.primary; // Purple for light theme
+      return AppColors.primary; // Primary for light theme
     } else if (ThemeState().isBlueTheme) {
       return Colors.white; // White for blue theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return AppColors.primary; // Primary for non-blue theme
     }
   }
 
@@ -2503,7 +2503,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     if (ThemeState().isBlueTheme) {
       return AppColors.buttonPrimary; // Blue for blue theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return AppColors.primary; // Primary for non-blue theme
     }
   }
 

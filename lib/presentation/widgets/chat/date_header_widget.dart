@@ -77,8 +77,6 @@ class DateHeaderWidget extends StatelessWidget {
       return Colors.black;
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.textPrimary;
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.textPrimary;
     }
     return Colors.black;
   }
@@ -89,8 +87,6 @@ class DateHeaderWidget extends StatelessWidget {
       return Colors.white;
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.background;
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.primary;
     }
     return Colors.white;
   }
@@ -101,8 +97,6 @@ class DateHeaderWidget extends StatelessWidget {
       return Colors.grey[300]!;
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.divider;
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.divider;
     }
     return Colors.grey[300]!;
   }
@@ -113,8 +107,6 @@ class DateHeaderWidget extends StatelessWidget {
       return Colors.grey[300]!;
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.divider;
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.divider;
     }
     return Colors.grey[300]!;
   }

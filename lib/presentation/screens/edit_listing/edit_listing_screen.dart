@@ -341,7 +341,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return Colors.black; // Default to light theme border color
     }
   }
 
@@ -512,15 +512,12 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                     fontWeight: FontWeight.w600,
                                                     color:
                                                         ThemeState()
-                                                                .isPurpleTheme
+                                                                .isLightTheme
                                                             ? Colors.black
                                                                 .withOpacity(
                                                                   0.7,
                                                                 )
-                                                            : (ThemeState()
-                                                                    .isLightTheme
-                                                                ? Colors.black
-                                                                : Colors.white),
+                                                            : Colors.white,
                                                   ),
                                                   overflow:
                                                       TextOverflow.ellipsis,
@@ -577,16 +574,13 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                           FontWeight.w600,
                                                       color:
                                                           ThemeState()
-                                                                  .isPurpleTheme
+                                                                  .isLightTheme
                                                               ? Colors.black
-                                                              : (ThemeState()
-                                                                      .isLightTheme
-                                                                  ? Colors.black
-                                                                  : Theme.of(
-                                                                        context,
-                                                                      )
-                                                                      .colorScheme
-                                                                      .onSurfaceVariant),
+                                                              : Theme.of(
+                                                                    context,
+                                                                  )
+                                                                  .colorScheme
+                                                                  .onSurfaceVariant,
                                                     ),
                                                     overflow:
                                                         TextOverflow.ellipsis,
@@ -678,11 +672,9 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                                         FontWeight
                                                                             .w600,
                                                                     color:
-                                                                        ThemeState().isPurpleTheme
+                                                                        ThemeState().isLightTheme
                                                                             ? Colors.black
-                                                                            : (ThemeState().isLightTheme
-                                                                                ? Colors.black
-                                                                                : Theme.of(context).colorScheme.onSurfaceVariant),
+                                                                            : Theme.of(context).colorScheme.onSurfaceVariant,
                                                                     overflow:
                                                                         TextOverflow
                                                                             .ellipsis,
@@ -722,7 +714,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
                                             color:
-                                                ThemeState().isPurpleTheme
+                                                ThemeState().isLightTheme
                                                     ? Colors.black.withOpacity(
                                                       0.7,
                                                     )
@@ -865,12 +857,9 @@ class _EditListingScreenState extends State<EditListingScreen>
                         ),
                         style: TextStyle(
                           color:
-                              ThemeState().isPurpleTheme
+                              ThemeState().isLightTheme
                                   ? Colors.black
-                                  : (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? theme.colorScheme.onSurfaceVariant
-                                      : Colors.black),
+                                  : theme.colorScheme.onSurfaceVariant,
                         ),
                         maxLength: 50,
                         buildCounter: (
@@ -984,12 +973,9 @@ class _EditListingScreenState extends State<EditListingScreen>
                         ),
                         style: TextStyle(
                           color:
-                              ThemeState().isPurpleTheme
+                              ThemeState().isLightTheme
                                   ? Colors.black
-                                  : (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? theme.colorScheme.onSurfaceVariant
-                                      : Colors.black),
+                                  : theme.colorScheme.onSurfaceVariant,
                         ),
                         maxLines: 5,
                         maxLength: 1000,
@@ -1157,16 +1143,11 @@ class _EditListingScreenState extends State<EditListingScreen>
                                           ),
                                           style: TextStyle(
                                             color:
-                                                ThemeState().isPurpleTheme
+                                                ThemeState().isLightTheme
                                                     ? Colors.black
-                                                    : (Theme.of(
-                                                              context,
-                                                            ).brightness ==
-                                                            Brightness.dark
-                                                        ? theme
-                                                            .colorScheme
-                                                            .onSurfaceVariant
-                                                        : Colors.black),
+                                                    : theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
                                           ),
                                           readOnly:
                                               true, // Make it read-only so users must use the date picker
@@ -1232,16 +1213,11 @@ class _EditListingScreenState extends State<EditListingScreen>
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500,
                                             color:
-                                                ThemeState().isPurpleTheme
+                                                ThemeState().isLightTheme
                                                     ? Colors.black
-                                                    : (Theme.of(
-                                                              context,
-                                                            ).brightness ==
-                                                            Brightness.dark
-                                                        ? theme
-                                                            .colorScheme
-                                                            .onSurfaceVariant
-                                                        : Colors.black),
+                                                    : theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
                                           ),
                                         ),
                                       ],

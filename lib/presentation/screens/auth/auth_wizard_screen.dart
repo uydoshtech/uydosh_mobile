@@ -1055,24 +1055,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   ],
                                 ),
                               ),
-                              PopupMenuItem<String>(
-                                value: AppTheme.purpleTheme,
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.palette, color: Colors.purple),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "purple_theme",
-                                      ),
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ],
                         child: Icon(
                           Icons.palette,
@@ -1374,7 +1356,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       final svgAsset =
                           currentTheme == AppTheme.lightTheme
                               ? "assets/images/ios_dark_rd_ctn.svg" // Black for light theme
-                              : "assets/images/ios_neutral_rd_ctn.svg"; // Neutral for purple and blue themes
+                              : "assets/images/ios_neutral_rd_ctn.svg"; // Neutral for blue theme
 
                       return SvgPicture.asset(svgAsset, width: 199, height: 44);
                     },
@@ -1497,7 +1479,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 keyboardType: TextInputType.text,
                 style: TextStyle(
                   color:
-                      _getInputTextColor(), // Use black text for better visibility in blue/purple themes
+                      _getInputTextColor(), // Use black text for better visibility in blue theme
                 ),
                 decoration: InputDecoration(
                   hintText: LanguageAwareStringHelper.getCurrent(
@@ -1918,7 +1900,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color:
-                    _getBottomSheetTextColor(), // Use black text for better visibility in blue/purple themes
+                    _getBottomSheetTextColor(), // Use black text for better visibility in blue theme
               ),
             ),
           ),
@@ -1954,7 +1936,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color:
-                                _getBottomSheetTextColor(), // Use black text for better visibility in blue/purple themes
+                                _getBottomSheetTextColor(), // Use black text for better visibility in blue theme
                             height: 1.2,
                           ),
                           textAlign: TextAlign.center,
@@ -2248,7 +2230,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color:
-                    _getBottomSheetTextColor(), // Use black text for better visibility in blue/purple themes
+                    _getBottomSheetTextColor(), // Use black text for better visibility in blue theme
               ),
             ),
           ),
@@ -2284,7 +2266,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color:
-                                _getBottomSheetTextColor(), // Use black text for better visibility in blue/purple themes
+                                _getBottomSheetTextColor(), // Use black text for better visibility in blue theme
                             height: 1.2,
                           ),
                           textAlign: TextAlign.center,
@@ -2461,77 +2443,56 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   Color _getOnboardingBackgroundColor() {
     if (ThemeState().isBlueTheme) {
       return BlueThemeColors.onboardingBackground;
-    } else if (ThemeState().isLightTheme) {
-      return LightThemeColors.onboardingBackground;
-    } else {
-      return AppColors.onboardingBackground;
     }
+    return LightThemeColors.onboardingBackground;
   }
 
   /// Get theme-aware selected button background color with proper contrast
   Color _getSelectedButtonBackgroundColor() {
     if (ThemeState().isBlueTheme) {
       return BlueThemeColors.primary; // Blue background
-    } else if (ThemeState().isLightTheme) {
-      return Colors.transparent; // Transparent background for light theme
-    } else {
-      return AppColors.primary; // Purple background
     }
+    return Colors.transparent; // Transparent background for light theme
   }
 
   /// Get theme-aware selected button text color with proper contrast
   Color _getSelectedButtonTextColor() {
     if (ThemeState().isBlueTheme) {
       return Colors.white; // White text on blue
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black text on transparent background
-    } else {
-      return Colors.white; // White text on purple
     }
+    return Colors.black; // Black text on transparent background
   }
 
   /// Get theme-aware selected button border color
   Color _getSelectedButtonBorderColor() {
     if (ThemeState().isBlueTheme) {
       return Colors.white; // White border for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black border for light theme
-    } else {
-      return Colors.white; // White border for purple theme
     }
+    return Colors.black; // Black border for light theme
   }
 
   /// Get theme-aware unselected button background color
   Color _getUnselectedButtonBackgroundColor() {
     if (ThemeState().isBlueTheme) {
       return BlueThemeColors.primary; // Blue background for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.transparent; // Transparent background for light theme
-    } else {
-      return AppColors.primary; // Purple background for purple theme
     }
+    return Colors.transparent; // Transparent background for light theme
   }
 
   /// Get theme-aware unselected button border color
   Color _getUnselectedButtonBorderColor() {
     if (ThemeState().isBlueTheme) {
       return Colors.white; // White border for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.grey.shade300; // Light grey border for light theme
-    } else {
-      return Colors.white; // White border for purple theme
     }
+    return Colors.grey.shade300; // Light grey border for light theme
   }
 
   /// Get theme-aware unselected button text color
   Color _getUnselectedButtonTextColor() {
     if (ThemeState().isBlueTheme) {
       return Colors.white; // White text on blue
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black text on transparent background
-    } else {
-      return Colors.white; // White text on purple
     }
+    return Colors.black; // Black text on transparent background
   }
 
   /// Get theme-aware input text color for better visibility
@@ -2539,35 +2500,24 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     if (ThemeState().isBlueTheme) {
       return Colors
           .black; // Black text on white/light blue background for better visibility
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black text on white background
-    } else {
-      return Colors
-          .black; // Black text on white background for better visibility in purple theme
     }
+    return Colors.black; // Black text on white background
   }
 
   /// Get theme-aware bottom sheet background color
   Color _getBottomSheetBackgroundColor() {
     if (ThemeState().isBlueTheme) {
       return Colors.white; // White background for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return LightThemeColors.onboardingCard;
-    } else {
-      return AppColors.onboardingCard;
     }
+    return LightThemeColors.onboardingCard;
   }
 
   /// Get theme-aware bottom sheet text color
   Color _getBottomSheetTextColor() {
     if (ThemeState().isBlueTheme) {
       return Colors.black; // Black text on white background for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black text on white background
-    } else {
-      return Colors
-          .black; // Black text on white background for better visibility in purple theme
     }
+    return Colors.black; // Black text on white background
   }
 
   /// Get theme-aware bottom sheet handle bar color

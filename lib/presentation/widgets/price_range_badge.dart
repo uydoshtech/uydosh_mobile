@@ -6,7 +6,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// A reusable component for displaying price range information
 /// Handles both badge display and utility functions for price range formatting
-/// Fully theme-aware for purple, blue, and light themes
+/// Fully theme-aware for blue and light themes
 class PriceRangeBadge extends StatelessWidget {
   const PriceRangeBadge({
     super.key,
@@ -92,23 +92,23 @@ class PriceRangeBadge extends StatelessWidget {
     );
   }
 
-  /// Get theme-aware active color (green for purple/light, inverted for blue)
+  /// Get theme-aware active color (green for light, inverted for blue)
   Color _getThemeAwareActiveColor(ThemeState themeState) {
     if (themeState.isBlueTheme) {
       // Blue theme: white text on green background
       return Colors.white;
     }
-    // Purple and light themes: use standard green
+    // Light theme: use standard green
     return AppColors.statusActive;
   }
 
-  /// Get theme-aware inactive color (red for purple/light, inverted for blue)
+  /// Get theme-aware inactive color (red for light, inverted for blue)
   Color _getThemeAwareInactiveColor(ThemeState themeState) {
     if (themeState.isBlueTheme) {
       // Blue theme: invert red to light blue-gray
       return const Color(0xFF7A8A9A);
     }
-    // Purple and light themes: use standard red
+    // Light theme: use standard red
     return AppColors.statusInactive;
   }
 
@@ -117,13 +117,9 @@ class PriceRangeBadge extends StatelessWidget {
     if (themeState.isBlueTheme) {
       // Blue theme: use green background for price badges
       return AppColors.statusActive; // Green background
-    } else if (themeState.isPurpleTheme) {
-      // Purple theme: use white background
-      return Colors.white;
-    } else {
-      // Light theme: use white background
-      return Colors.white;
     }
+    // Light theme: use white background
+    return Colors.white;
   }
 }
 
@@ -194,7 +190,7 @@ class PriceRangeHelper {
 
 /// A simple widget for displaying just the price range text
 /// Useful for simple text display without badge styling
-/// Fully theme-aware for purple, blue, and light themes
+/// Fully theme-aware for blue and light themes
 class PriceRangeText extends StatelessWidget {
   const PriceRangeText({
     super.key,
@@ -239,30 +235,30 @@ class PriceRangeText extends StatelessWidget {
     );
   }
 
-  /// Get theme-aware active color (green for purple/light, inverted for blue)
+  /// Get theme-aware active color (green for light, inverted for blue)
   Color _getThemeAwareActiveColor(ThemeState themeState) {
     if (themeState.isBlueTheme) {
       // Blue theme: invert green to white
       return Colors.white;
     }
-    // Purple and light themes: use standard green
+    // Light theme: use standard green
     return AppColors.statusActive;
   }
 
-  /// Get theme-aware inactive color (red for purple/light, inverted for blue)
+  /// Get theme-aware inactive color (red for light, inverted for blue)
   Color _getThemeAwareInactiveColor(ThemeState themeState) {
     if (themeState.isBlueTheme) {
       // Blue theme: invert red to light blue-gray
       return const Color(0xFF7A8A9A);
     }
-    // Purple and light themes: use standard red
+    // Light theme: use standard red
     return AppColors.statusInactive;
   }
 }
 
 /// A compact price range display widget
 /// Smaller than PriceRangeBadge, useful for tight spaces
-/// Fully theme-aware for purple, blue, and light themes
+/// Fully theme-aware for blue and light themes
 class CompactPriceRangeBadge extends StatelessWidget {
   const CompactPriceRangeBadge({
     super.key,
@@ -320,7 +316,7 @@ class CompactPriceRangeBadge extends StatelessWidget {
     );
   }
 
-  /// Get theme-aware active color (green for purple/light, inverted for blue)
+  /// Get theme-aware active color (green for light, inverted for blue)
   Color _getThemeAwareActiveColor(ThemeState themeState) {
     if (themeState.isBlueTheme) {
       // Blue theme: invert green to white
@@ -330,7 +326,7 @@ class CompactPriceRangeBadge extends StatelessWidget {
     return AppColors.statusActive;
   }
 
-  /// Get theme-aware inactive color (red for purple/light, inverted for blue)
+  /// Get theme-aware inactive color (red for light, inverted for blue)
   Color _getThemeAwareInactiveColor(ThemeState themeState) {
     if (themeState.isBlueTheme) {
       // Blue theme: invert red to light blue-gray
@@ -345,12 +341,8 @@ class CompactPriceRangeBadge extends StatelessWidget {
     if (themeState.isBlueTheme) {
       // Blue theme: use green background for price badges
       return AppColors.statusActive; // Green background
-    } else if (themeState.isPurpleTheme) {
-      // Purple theme: use white background
-      return Colors.white;
-    } else {
-      // Light theme: use white background
-      return Colors.white;
     }
+    // Light theme: use white background
+    return Colors.white;
   }
 }

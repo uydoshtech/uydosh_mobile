@@ -217,7 +217,6 @@ class AppStrings {
       // ===== THEME & APPEARANCE =====
       "settings": "Settings",
       "theme": "Theme",
-      "purple_theme": "Purple",
       "blue_theme": "Blue",
       "light_theme": "Light",
       "theme_changed_to": "Theme changed to {theme}",
@@ -743,7 +742,6 @@ class AppStrings {
       // ===== THEME & APPEARANCE =====
       "settings": "Настройки",
       "theme": "Тема",
-      "purple_theme": "Фиолетовая",
       "blue_theme": "Синяя",
       "light_theme": "Светлая",
       "theme_changed_to": "Тема изменена на {theme}",
@@ -1272,7 +1270,6 @@ class AppStrings {
       // ===== THEME & APPEARANCE =====
       "settings": "Sozlamalar",
       "theme": "Mavzu",
-      "purple_theme": "Binafsha",
       "blue_theme": "Ko'k",
       "light_theme": "Yorug'",
       "theme_changed_to": "Mavzu o'zgartirildi: {theme}",

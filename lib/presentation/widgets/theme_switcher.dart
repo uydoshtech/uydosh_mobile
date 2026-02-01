@@ -87,30 +87,6 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
                       ],
                     ),
                   ),
-                  PopupMenuItem(
-                    value: AppTheme.purpleTheme,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: Colors.purple,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "purple_theme",
-                          ),
-                          style: Theme.of(context).popupMenuTheme.textStyle,
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
             child: Padding(
               padding: const EdgeInsets.all(16.0),

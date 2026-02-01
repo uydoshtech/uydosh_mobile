@@ -34,7 +34,7 @@ class PhotoIcon extends StatelessWidget {
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black icon for light theme
     } else {
-      return AppColors.iconPrimary; // Purple icon for purple theme
+      return AppColors.iconPrimary; // Primary icon for default theme
     }
   }
 
@@ -43,13 +43,13 @@ class PhotoIcon extends StatelessWidget {
     if (ThemeState().isBlueTheme) {
       return AppColors.iconPrimary.withValues(
         alpha: 0.1,
-      ); // Semi-transparent purple background
+      ); // Semi-transparent primary background
     } else if (ThemeState().isLightTheme) {
       return Colors.transparent; // No background for light theme
     } else {
       return AppColors.iconPrimary.withValues(
         alpha: 0.1,
-      ); // Semi-transparent purple background
+      ); // Semi-transparent primary background
     }
   }
 }

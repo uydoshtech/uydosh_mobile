@@ -787,7 +787,7 @@ class _ListingTileState extends State<ListingTile>
       // Light theme - use black for icons
       return Colors.black;
     } else {
-      // Purple theme - use existing purple icon color
+      // Default theme - use primary icon color
       return AppColors.iconPrimary; // This is Color(0xFF6B46C1)
     }
   }
@@ -797,7 +797,7 @@ class _ListingTileState extends State<ListingTile>
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight;
     } else {
-      return AppColors.textDark87; // Default dark text for purple theme
+      return AppColors.textDark87; // Default dark text for light theme
     }
   }
 
@@ -806,7 +806,7 @@ class _ListingTileState extends State<ListingTile>
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight;
     } else {
-      return Colors.black; // Default grey for purple theme
+      return Colors.black; // Default text for light theme
     }
   }
 
@@ -815,7 +815,7 @@ class _ListingTileState extends State<ListingTile>
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight;
     } else {
-      return Colors.black; // Default grey for purple theme
+      return Colors.black; // Default text for light theme
     }
   }
 
@@ -824,7 +824,7 @@ class _ListingTileState extends State<ListingTile>
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight;
     } else {
-      return Colors.black; // Default grey for purple theme
+      return Colors.black; // Default text for light theme
     }
   }
 
@@ -833,7 +833,7 @@ class _ListingTileState extends State<ListingTile>
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight;
     } else {
-      return AppColors.textGrey400; // Default grey for purple theme
+      return AppColors.textGrey400; // Default grey for light theme
     }
   }
 

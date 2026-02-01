@@ -46,7 +46,7 @@ class ThemeIcon extends StatelessWidget {
     } else if (ThemeState().isBlueTheme) {
       return Colors.white; // White icons for blue theme
     } else {
-      return Colors.white; // White icons for purple theme
+      return Colors.white; // Default icons for non-light theme
     }
   }
 }

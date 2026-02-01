@@ -75,10 +75,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       case AppTheme.blueTheme:
         return AppColors.textLight;
       case AppTheme.lightTheme:
-        return Colors.black; // Black text for light theme
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.textDark87;
+        return Colors.black; // Black text for light theme
     }
   }
 
@@ -88,10 +86,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       case AppTheme.blueTheme:
         return AppColors.textLight70;
       case AppTheme.lightTheme:
-        return Colors.grey[600]!; // Dark grey for secondary text in light theme
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.textDark54;
+        return Colors.grey[600]!; // Dark grey for secondary text in light theme
     }
   }
 
@@ -101,10 +97,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       case AppTheme.blueTheme:
         return AppColors.textLight;
       case AppTheme.lightTheme:
-        return Colors.black;
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.primary;
+        return Colors.black;
     }
   }
 
@@ -114,11 +108,9 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       case AppTheme.blueTheme:
         return AppColors.textLight70;
       case AppTheme.lightTheme:
+      default:
         return Colors
             .grey[600]!; // Dark grey for secondary icons in light theme
-      case AppTheme.purpleTheme:
-      default:
-        return AppColors.textDark54;
     }
   }
 
@@ -128,10 +120,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       case AppTheme.blueTheme:
         return AppColors.textLight;
       case AppTheme.lightTheme:
-        return Colors.grey[400]!; // Light grey border for light theme
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.textDark87;
+        return Colors.grey[400]!; // Light grey border for light theme
     }
   }
 
@@ -141,10 +131,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       case AppTheme.blueTheme:
         return AppColors.primary;
       case AppTheme.lightTheme:
-        return Colors.grey[200]!; // Light grey background for light theme
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.primary;
+        return Colors.grey[200]!; // Light grey background for light theme
     }
   }
 
@@ -158,14 +146,11 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
         dividerColor = AppColors.textLight;
         break;
       case AppTheme.lightTheme:
+      default:
         // Use a darker color for better visibility in light theme
         dividerColor = const Color(
           0xFFD1D5DB,
         ); // Medium gray for better contrast
-        break;
-      case AppTheme.purpleTheme:
-      default:
-        dividerColor = AppColors.divider;
         break;
     }
 

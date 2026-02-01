@@ -71,7 +71,6 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
             const SizedBox(height: 16),
             _buildThemeOption(AppTheme.lightTheme),
             _buildThemeOption(AppTheme.blueTheme),
-            _buildThemeOption(AppTheme.purpleTheme),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(8),
@@ -137,12 +136,6 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
           _getCurrentLanguage(context),
         );
         break;
-      case AppTheme.purpleTheme:
-        displayName = AppStrings.get(
-          "purple_theme",
-          _getCurrentLanguage(context),
-        );
-        break;
       default:
         displayName = AppStrings.get(
           "light_theme",
@@ -158,9 +151,6 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
         break;
       case AppTheme.blueTheme:
         themeColor = Colors.blue;
-        break;
-      case AppTheme.purpleTheme:
-        themeColor = Colors.purple;
         break;
       default:
         themeColor = AppColors.primary;

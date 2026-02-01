@@ -31,8 +31,6 @@ class ThemeState extends ChangeNotifier {
         return AppStrings.get("light_theme", currentLanguage);
       case AppTheme.blueTheme:
         return AppStrings.get("blue_theme", currentLanguage);
-      case AppTheme.purpleTheme:
-        return AppStrings.get("purple_theme", currentLanguage);
       default:
         return AppStrings.get("light_theme", currentLanguage);
     }
@@ -49,7 +47,8 @@ class ThemeState extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final savedTheme = prefs.getString(StorageKeys.selectedTheme);
       if (savedTheme != null && savedTheme.isNotEmpty) {
-        _currentTheme = savedTheme;
+        _currentTheme =
+            savedTheme == "purple" ? AppTheme.lightTheme : savedTheme;
         logger.d('Loaded saved theme: $_currentTheme');
       } else {
         logger.d('No saved theme found, using default: $_currentTheme');
@@ -85,15 +84,10 @@ class ThemeState extends ChangeNotifier {
   Future<void> toggleTheme() async {
     if (_currentTheme == AppTheme.lightTheme) {
       await changeTheme(AppTheme.blueTheme);
-    } else if (_currentTheme == AppTheme.blueTheme) {
-      await changeTheme(AppTheme.purpleTheme);
     } else {
       await changeTheme(AppTheme.lightTheme);
     }
   }
-
-  /// Check if current theme is purple
-  bool get isPurpleTheme => _currentTheme == AppTheme.purpleTheme;
 
   /// Check if current theme is blue
   bool get isBlueTheme => _currentTheme == AppTheme.blueTheme;

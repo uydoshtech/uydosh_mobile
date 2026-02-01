@@ -284,8 +284,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return Colors.white; // White background for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.background; // Blue background for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.primary; // Purple background for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -296,8 +294,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return Colors.black; // Black text for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.textPrimary; // White text for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.textPrimary; // White text for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -308,8 +304,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return Colors.black; // Black primary for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.primary; // Blue primary for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.primary; // Purple primary for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -320,8 +314,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return Colors.grey[600]!; // Grey text for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.textSecondary; // Light blue text for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.textSecondary; // Light grey text for purple theme
     }
     return Colors.grey[600]!; // Default to grey
   }
@@ -332,8 +324,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return Colors.black; // Black button for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.buttonPrimary; // Blue button for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.buttonPrimary; // Purple button for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -344,8 +334,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return Colors.white; // White text on black button for light theme
     } else if (themeState.isBlueTheme) {
       return Colors.white; // White text on blue button for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.white; // White text on purple button for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -356,8 +344,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return Colors.white; // White cards for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.card; // Blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.cardBackground; // White cards for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -371,9 +357,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     } else if (themeState.isBlueTheme) {
       return Colors
           .white; // White border for blue theme (contrast against blue background)
-    } else if (themeState.isPurpleTheme) {
-      return Colors
-          .white; // White border for purple theme (contrast against purple background)
     }
     return Colors.black; // Default to black
   }
@@ -385,8 +368,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return Colors.white; // White text on black background for light theme
     } else if (themeState.isBlueTheme) {
       return Colors.white; // White text on blue background for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.white; // White text on purple background for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -398,8 +379,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return Colors.black; // Black text on white background for light theme
     } else if (themeState.isBlueTheme) {
       return Colors.white; // White text on dark blue background for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.black; // Black text on white background for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -1085,8 +1064,6 @@ class ConversationTile extends StatelessWidget {
       return Colors.white; // White cards for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.card; // Blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.cardBackground; // White cards for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -1098,8 +1075,6 @@ class ConversationTile extends StatelessWidget {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .textPrimary; // White text on blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.black; // Black text on white cards for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -1111,8 +1086,6 @@ class ConversationTile extends StatelessWidget {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .textSecondary; // Light blue text on blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.grey[600]!; // Grey text on white cards for purple theme
     }
     return Colors.grey[600]!; // Default to grey
   }
@@ -1124,8 +1097,6 @@ class ConversationTile extends StatelessWidget {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .iconPrimary; // White icons on blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.grey[600]!; // Black icons on white cards for purple theme
     }
     return Colors.grey[600]!; // Default to grey
   }
@@ -1136,8 +1107,6 @@ class ConversationTile extends StatelessWidget {
       return Colors.grey[300]!; // Light grey avatar for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.primary; // Blue avatar for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.primary; // Purple avatar for purple theme
     }
     return Colors.grey[300]!; // Default to light grey
   }
@@ -1149,9 +1118,6 @@ class ConversationTile extends StatelessWidget {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .textPrimary; // White icon on blue avatar for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors
-          .textPrimary; // White icon on purple avatar for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -1482,8 +1448,6 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
       return Colors.white; // White cards for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.card; // Blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.cardBackground; // White cards for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -1495,8 +1459,6 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .textPrimary; // White text on blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.black; // Black text on white cards for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -1508,8 +1470,6 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .textSecondary; // Light blue text on blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.grey[600]!; // Grey text on white cards for purple theme
     }
     return Colors.grey[600]!; // Default to grey
   }
@@ -1521,8 +1481,6 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .iconPrimary; // White icons on blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.grey[600]!; // Black icons on white cards for purple theme
     }
     return Colors.grey[600]!; // Default to grey
   }
@@ -2067,8 +2025,6 @@ class OutgoingConversationTile extends StatelessWidget {
       return Colors.white; // White cards for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.card; // Blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.cardBackground; // White cards for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -2080,8 +2036,6 @@ class OutgoingConversationTile extends StatelessWidget {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .textPrimary; // White text on blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.black; // Black text on white cards for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -2093,8 +2047,6 @@ class OutgoingConversationTile extends StatelessWidget {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .textSecondary; // Light blue text on blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.grey[600]!; // Grey text on white cards for purple theme
     }
     return Colors.grey[600]!; // Default to grey
   }
@@ -2106,8 +2058,6 @@ class OutgoingConversationTile extends StatelessWidget {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .iconPrimary; // White icons on blue cards for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.grey[600]!; // Black icons on white cards for purple theme
     }
     return Colors.grey[600]!; // Default to grey
   }
@@ -2118,8 +2068,6 @@ class OutgoingConversationTile extends StatelessWidget {
       return Colors.grey[300]!; // Light grey avatar for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.primary; // Blue avatar for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.primary; // Purple avatar for purple theme
     }
     return Colors.grey[300]!; // Default to light grey
   }
@@ -2131,9 +2079,6 @@ class OutgoingConversationTile extends StatelessWidget {
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors
           .textPrimary; // White icon on blue avatar for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors
-          .textPrimary; // White icon on purple avatar for purple theme
     }
     return Colors.black; // Default to black
   }

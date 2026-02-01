@@ -270,8 +270,6 @@ class _ChatScreenState extends State<ChatScreen> {
       return Colors.white; // White background for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.background; // Blue background for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.primary; // Purple background for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -282,8 +280,6 @@ class _ChatScreenState extends State<ChatScreen> {
       return Colors.white; // White app bar for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.background; // Blue app bar for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.primary; // Purple app bar for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -294,8 +290,6 @@ class _ChatScreenState extends State<ChatScreen> {
       return Colors.black; // Black text for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.textPrimary; // White text for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.textPrimary; // White text for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -306,8 +300,6 @@ class _ChatScreenState extends State<ChatScreen> {
       return Colors.black; // Black send button for light theme
     } else if (themeState.isBlueTheme) {
       return Colors.white; // White send button for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.white; // White send button for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -318,8 +310,6 @@ class _ChatScreenState extends State<ChatScreen> {
       return Colors.white; // White input background for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.background; // Blue input background for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.primary; // Purple input background for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -332,8 +322,6 @@ class _ChatScreenState extends State<ChatScreen> {
       ); // Light grey border for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.divider; // Blue border for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.divider; // Purple border for purple theme
     }
     return Colors.grey.withValues(alpha: 0.2); // Default to light grey
   }
@@ -969,8 +957,6 @@ class _MessageBubbleState extends State<MessageBubble>
       return Colors.white; // White background for own messages in light theme
     } else if (themeState.isBlueTheme) {
       return Colors.white; // White background for own messages in blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.white; // White background for own messages in purple theme
     }
     return Colors.white; // Default to white
   }
@@ -981,8 +967,6 @@ class _MessageBubbleState extends State<MessageBubble>
       return Colors.black; // Black text for own messages in light theme
     } else if (themeState.isBlueTheme) {
       return Colors.black; // Black text for own messages in blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.black; // Black text for own messages in purple theme
     }
     return Colors.black; // Default to black
   }
@@ -995,9 +979,6 @@ class _MessageBubbleState extends State<MessageBubble>
     } else if (themeState.isBlueTheme) {
       return Colors
           .grey[300]!; // Light grey border for own messages in blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors
-          .grey[300]!; // Light grey border for own messages in purple theme
     }
     return Colors.grey[300]!; // Default to light grey
   }
@@ -1010,9 +991,6 @@ class _MessageBubbleState extends State<MessageBubble>
     } else if (themeState.isBlueTheme) {
       return Colors
           .grey[700]!; // Dark grey background for other messages in blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors
-          .grey[700]!; // Dark grey background for other messages in purple theme
     }
     return Colors.grey[200]!; // Default to light grey
   }
@@ -1023,8 +1001,6 @@ class _MessageBubbleState extends State<MessageBubble>
       return Colors.black; // Black text for other messages in light theme
     } else if (themeState.isBlueTheme) {
       return Colors.white; // White text for other messages in blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.white; // White text for other messages in purple theme
     }
     return Colors.black; // Default to black
   }
@@ -1035,8 +1011,6 @@ class _MessageBubbleState extends State<MessageBubble>
       return Colors.black; // Black avatar for current user in light theme
     } else if (themeState.isBlueTheme) {
       return Colors.black; // Black avatar for current user in blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.black; // Black avatar for current user in purple theme
     }
     return Colors.black; // Default to black
   }
@@ -1049,9 +1023,6 @@ class _MessageBubbleState extends State<MessageBubble>
     } else if (themeState.isBlueTheme) {
       return Colors
           .white; // White icon on black avatar for current user in blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors
-          .white; // White icon on black avatar for current user in purple theme
     }
     return Colors.white; // Default to white
   }
@@ -1064,9 +1035,6 @@ class _MessageBubbleState extends State<MessageBubble>
     } else if (themeState.isBlueTheme) {
       return Colors
           .white; // White avatar for other user in blue theme (inverted)
-    } else if (themeState.isPurpleTheme) {
-      return Colors
-          .white; // White avatar for other user in purple theme (inverted)
     }
     return Colors.white; // Default to white
   }
@@ -1079,9 +1047,6 @@ class _MessageBubbleState extends State<MessageBubble>
     } else if (themeState.isBlueTheme) {
       return Colors
           .black; // Black icon on white avatar for other user in blue theme (inverted)
-    } else if (themeState.isPurpleTheme) {
-      return Colors
-          .black; // Black icon on white avatar for other user in purple theme (inverted)
     }
     return Colors.black; // Default to black
   }

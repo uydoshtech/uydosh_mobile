@@ -579,9 +579,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Get the color for the refresh indicator arrow and progress
   Color _getRefreshIndicatorColor() {
     final currentTheme = ThemeState().currentTheme;
-    if (currentTheme == AppTheme.blueTheme ||
-        currentTheme == AppTheme.purpleTheme) {
-      return Colors.white; // White arrow for blue and purple themes
+    if (currentTheme == AppTheme.blueTheme) {
+      return Colors.white; // White arrow for blue theme
     }
     return Theme.of(
       context,
@@ -591,8 +590,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Get the background color for the refresh indicator
   Color _getRefreshIndicatorBackgroundColor() {
     final currentTheme = ThemeState().currentTheme;
-    if (currentTheme == AppTheme.blueTheme ||
-        currentTheme == AppTheme.purpleTheme) {
+    if (currentTheme == AppTheme.blueTheme) {
       return Colors.white.withValues(
         alpha: 0.2,
       ); // Semi-transparent white background
@@ -612,9 +610,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           Theme.of(context).appBarTheme.backgroundColor ??
           (ThemeState().isBlueTheme
               ? BlueThemeColors.surface
-              : ThemeState().isLightTheme
-              ? Colors.black
-              : AppColors.primary),
+              : Theme.of(context).colorScheme.primary),
       foregroundColor:
           Theme.of(context).appBarTheme.foregroundColor ?? Colors.white,
       elevation: 0,

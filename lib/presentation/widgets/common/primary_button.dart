@@ -68,11 +68,8 @@ class PrimaryButton extends StatelessWidget {
   Color _getBackgroundColor() {
     if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme
-    } else if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.buttonPrimary; // Blue for blue theme
-    } else {
-      return AppColors.buttonPrimary; // Purple for purple theme
     }
+    return BlueThemeColors.buttonPrimary; // Blue for non-light themes
   }
 
   // Always use white text for solid appearance
@@ -82,9 +79,6 @@ class PrimaryButton extends StatelessWidget {
 
   // Theme-dependent border method
   BorderSide? _getBorderSide() {
-    if (ThemeState().isPurpleTheme) {
-      return const BorderSide(color: Colors.white, width: 2.0);
-    }
     return null; // No border for other themes
   }
 }

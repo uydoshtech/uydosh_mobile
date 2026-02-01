@@ -109,8 +109,6 @@ class QuickQuestionsWidget extends StatelessWidget {
       return Colors.white; // White background for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.background; // Blue background for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.primary; // Purple background for purple theme
     }
     return Colors.white; // Default to white
   }
@@ -121,8 +119,6 @@ class QuickQuestionsWidget extends StatelessWidget {
       return Colors.black; // Black text for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.textPrimary; // White text for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.textPrimary; // White text for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -135,10 +131,6 @@ class QuickQuestionsWidget extends StatelessWidget {
       return Colors.white.withValues(
         alpha: 0.2,
       ); // Semi-transparent white pills for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return Colors.white.withValues(
-        alpha: 0.2,
-      ); // Semi-transparent white pills for purple theme
     }
     return Colors.black; // Default to black
   }
@@ -149,8 +141,6 @@ class QuickQuestionsWidget extends StatelessWidget {
       return Colors.white; // White text for light theme pills
     } else if (themeState.isBlueTheme) {
       return Colors.white; // White text for blue theme pills
-    } else if (themeState.isPurpleTheme) {
-      return Colors.white; // White text for purple theme pills
     }
     return Colors.white; // Default to white text
   }
@@ -163,8 +153,6 @@ class QuickQuestionsWidget extends StatelessWidget {
       ); // Light grey border for light theme
     } else if (themeState.isBlueTheme) {
       return BlueThemeColors.divider; // Blue border for blue theme
-    } else if (themeState.isPurpleTheme) {
-      return AppColors.divider; // Purple border for purple theme
     }
     return Colors.grey.withValues(alpha: 0.2); // Default to light grey
   }

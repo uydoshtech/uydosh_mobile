@@ -257,7 +257,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
     } else if (ThemeState().isLightTheme) {
       return Colors.white; // White for light theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return Colors.white; // Default to light theme background
     }
   }
 
@@ -268,7 +268,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return Colors.black; // Default to light theme button color
     }
   }
 
@@ -279,7 +279,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return Colors.black; // Default to light theme icon color
     }
   }
 
@@ -290,7 +290,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return Colors.black; // Default to light theme indicator color
     }
   }
 
@@ -301,7 +301,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return Colors.black; // Default to light theme border color
     }
   }
 
@@ -312,7 +312,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme
     } else {
-      return AppColors.primary; // Purple for purple theme
+      return Colors.black; // Default to light theme selection color
     }
   }
 
@@ -516,11 +516,9 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
                                         color:
-                                            ThemeState().isPurpleTheme
+                                            ThemeState().isLightTheme
                                                 ? Colors.black.withOpacity(0.7)
-                                                : (ThemeState().isLightTheme
-                                                    ? Colors.black
-                                                    : Colors.white),
+                                                : Colors.white,
                                       ),
                                     ),
                                   ),
@@ -570,13 +568,11 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                           color:
-                                              ThemeState().isPurpleTheme
+                                              ThemeState().isLightTheme
                                                   ? Colors.black
-                                                  : (ThemeState().isLightTheme
-                                                      ? Colors.black
-                                                      : Theme.of(context)
-                                                          .colorScheme
-                                                          .onSurfaceVariant),
+                                                  : Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -654,16 +650,13 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                                     fontWeight: FontWeight.w600,
                                                     color:
                                                         ThemeState()
-                                                                .isPurpleTheme
+                                                                .isLightTheme
                                                             ? Colors.black
-                                                            : (ThemeState()
-                                                                    .isLightTheme
-                                                                ? Colors.black
-                                                                : Theme.of(
-                                                                      context,
-                                                                    )
-                                                                    .colorScheme
-                                                                    .onSurfaceVariant),
+                                                            : Theme.of(
+                                                                  context,
+                                                                )
+                                                                .colorScheme
+                                                                .onSurfaceVariant,
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                   ),
@@ -711,7 +704,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color:
-                                    ThemeState().isPurpleTheme
+                                    ThemeState().isLightTheme
                                         ? Colors.black.withOpacity(0.7)
                                         : Theme.of(context)
                                             .colorScheme
@@ -865,11 +858,9 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                   ),
                   style: TextStyle(
                     color:
-                        ThemeState().isPurpleTheme
+                        ThemeState().isLightTheme
                             ? Colors.black
-                            : (Theme.of(context).brightness == Brightness.dark
-                                ? Theme.of(context).colorScheme.onSurfaceVariant
-                                : Colors.black),
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   maxLength: 50,
                   buildCounter: (
@@ -979,11 +970,9 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                   ),
                   style: TextStyle(
                     color:
-                        ThemeState().isPurpleTheme
+                        ThemeState().isLightTheme
                             ? Colors.black
-                            : (Theme.of(context).brightness == Brightness.dark
-                                ? Theme.of(context).colorScheme.onSurfaceVariant
-                                : Colors.black),
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   maxLines: 5,
                   maxLength: 1000,
@@ -1171,14 +1160,11 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                               ),
                               style: TextStyle(
                                 color:
-                                    ThemeState().isPurpleTheme
+                                    ThemeState().isLightTheme
                                         ? Colors.black
-                                        : (Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant
-                                            : Colors.black),
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                               ),
                               readOnly:
                                   true, // Make it read-only so users must use the date picker
@@ -1239,14 +1225,11 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
                                 color:
-                                    ThemeState().isPurpleTheme
+                                    ThemeState().isLightTheme
                                         ? Colors.black
-                                        : (Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant
-                                            : Colors.black),
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],

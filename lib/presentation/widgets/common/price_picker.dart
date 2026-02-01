@@ -79,13 +79,11 @@ class PricePicker extends StatelessWidget {
     // Use the same styling as listing type picker
     final backgroundColor = theme.colorScheme.surfaceVariant;
     final borderColor = theme.colorScheme.outline;
-    // For purple theme, always use black font; for other themes, use theme-aware color
+    // Use black font for light theme, theme-aware color otherwise
     final textColor =
-        ThemeState().isPurpleTheme
+        ThemeState().isLightTheme
             ? Colors.black
-            : (ThemeState().isLightTheme
-                ? Colors.black
-                : theme.colorScheme.onSurfaceVariant);
+            : theme.colorScheme.onSurfaceVariant;
 
     // Calculate initial index based on selected price (range: 10-500)
     final initialIndex = ((selectedPrice ~/ 10) - 1).clamp(0, 49);

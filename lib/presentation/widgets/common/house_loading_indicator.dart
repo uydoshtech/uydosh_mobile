@@ -87,7 +87,7 @@ class _HouseLoadingIndicatorState extends State<HouseLoadingIndicator>
       } else if (themeState.currentTheme == "light") {
         selectedColor = AppColors.textDark; // Black for light theme
       } else {
-        selectedColor = AppColors.textLight; // White for purple theme
+        selectedColor = AppColors.textLight; // White for non-light theme
       }
 
       return selectedColor;
@@ -162,7 +162,7 @@ class CenteredHouseLoadingIndicator extends StatelessWidget {
     // Create a key that changes with the theme to force rebuilds
     final themeState = ThemeState();
     final themeKey = ValueKey(
-      "${themeState.currentTheme}_${themeState.isBlueTheme}_${themeState.isLightTheme}_${themeState.isPurpleTheme}",
+      "${themeState.currentTheme}_${themeState.isBlueTheme}_${themeState.isLightTheme}",
     );
 
     return Center(

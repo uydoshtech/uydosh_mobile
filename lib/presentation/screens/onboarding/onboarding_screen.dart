@@ -142,7 +142,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     // Get onboarding-specific colors based on current theme
     final onboardingColors = _getOnboardingColors(theme);
 
-    // For purple theme, use the exact original gradient colors
+    // Use the exact original gradient colors for the default theme
     final gradientColors = _getGradientColors(theme);
 
     return Scaffold(
@@ -386,7 +386,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   child: Icon(
                     Icons.home,
                     color:
-                        AppColors.primary, // Purple house icon for purple theme
+                        AppColors.primary, // Primary house icon for default theme
                     size: 60,
                   ),
                 ),
@@ -589,7 +589,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         textSecondary: BlueThemeColors.onboardingTextSecondary,
       );
     } else {
-      // Purple theme (default)
+      // Default theme
       return OnboardingColors(
         primary: AppColors.onboardingPrimary,
         secondary: AppColors.onboardingSecondary,
@@ -603,7 +603,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   /// Get the gradient colors for the background
-  /// For purple theme, uses the exact original colors: primaryLight and primaryDark
+  /// For the default theme, uses the exact original colors: primaryLight and primaryDark
   List<Color> _getGradientColors(ThemeData theme) {
     final themeState = ThemeState();
 
@@ -616,7 +616,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         BlueThemeColors.onboardingSurface,
       ];
     } else {
-      // Purple theme (default) - use the exact original gradient colors
+      // Default theme - use the exact original gradient colors
       return [
         AppColors.primaryLight, // #9B6DFF (Light Purple)
         AppColors.primaryDark, // #4A148C (Dark Purple)

@@ -21,10 +21,8 @@ class _FaqScreenState extends State<FaqScreen> {
       case AppTheme.blueTheme:
         return Colors.white;
       case AppTheme.lightTheme:
-        return Colors.black87;
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.textDark87;
+        return Colors.black87;
     }
   }
 
@@ -34,10 +32,8 @@ class _FaqScreenState extends State<FaqScreen> {
       case AppTheme.blueTheme:
         return Colors.white.withValues(alpha: 0.8);
       case AppTheme.lightTheme:
-        return Colors.grey[600]!;
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.textDark54;
+        return Colors.grey[600]!;
     }
   }
 
@@ -47,10 +43,8 @@ class _FaqScreenState extends State<FaqScreen> {
       case AppTheme.blueTheme:
         return BlueThemeColors.primary; // Match app header color
       case AppTheme.lightTheme:
-        return Colors.grey[50]!;
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.background;
+        return Colors.grey[50]!;
     }
   }
 
@@ -60,10 +54,8 @@ class _FaqScreenState extends State<FaqScreen> {
       case AppTheme.blueTheme:
         return Colors.white.withValues(alpha: 0.05);
       case AppTheme.lightTheme:
-        return Colors.white;
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.surface;
+        return Colors.white;
     }
   }
 
@@ -73,10 +65,8 @@ class _FaqScreenState extends State<FaqScreen> {
       case AppTheme.blueTheme:
         return Colors.white.withValues(alpha: 0.3);
       case AppTheme.lightTheme:
-        return Colors.grey[200]!;
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.divider;
+        return Colors.grey[200]!;
     }
   }
 
@@ -86,10 +76,8 @@ class _FaqScreenState extends State<FaqScreen> {
       case AppTheme.blueTheme:
         return Colors.white;
       case AppTheme.lightTheme:
-        return Colors.grey[700]!;
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.primary;
+        return Colors.grey[700]!;
     }
   }
 

@@ -125,7 +125,7 @@ class ThemeToggle extends StatelessWidget {
     switch (themeName) {
       case AppTheme.blueTheme:
         return _ThemeToggleColors(
-          activeColor: AppColors.secondary, // Use blue instead of purple
+          activeColor: AppColors.secondary, // Use blue for active color
           inactiveThumbColor: Colors.grey[400]!,
           activeTrackColor: AppColors.secondary.withValues(
             alpha: 0.5,
@@ -133,19 +133,12 @@ class ThemeToggle extends StatelessWidget {
           inactiveTrackColor: Colors.grey[300]!,
         );
       case AppTheme.lightTheme:
+      default:
         return _ThemeToggleColors(
           activeColor: Colors.white,
           inactiveThumbColor: Colors.grey[400]!,
           activeTrackColor: Colors.black,
           inactiveTrackColor: Colors.grey[600]!,
-        );
-      case AppTheme.purpleTheme:
-      default:
-        return _ThemeToggleColors(
-          activeColor: AppColors.primary,
-          inactiveThumbColor: Colors.grey[400]!,
-          activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
-          inactiveTrackColor: Colors.grey[300]!,
         );
     }
   }

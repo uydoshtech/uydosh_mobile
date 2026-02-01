@@ -25,11 +25,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     switch (currentTheme) {
       case AppTheme.blueTheme:
         return AppColors.textLight;
-      case AppTheme.lightTheme:
-        return Colors.black; // Black text for light theme
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.primary; // Purple text for purple theme
+        return Colors.black; // Black text for light theme
     }
   }
 
@@ -38,13 +35,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     switch (currentTheme) {
       case AppTheme.blueTheme:
         return AppColors.textLight70;
-      case AppTheme.lightTheme:
-        return Colors.grey[600]!; // Dark grey for secondary text in light theme
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.primary.withValues(
-          alpha: 0.7,
-        ); // Purple with opacity for secondary text
+        return Colors.grey[600]!; // Dark grey for secondary text in light theme
     }
   }
 
@@ -53,11 +45,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     switch (currentTheme) {
       case AppTheme.blueTheme:
         return AppColors.textLight;
-      case AppTheme.lightTheme:
-        return Colors.black;
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.primary; // Purple icons for purple theme
+        return Colors.black;
     }
   }
 
@@ -66,28 +55,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     switch (currentTheme) {
       case AppTheme.blueTheme:
         return AppColors.textLight70;
-      case AppTheme.lightTheme:
+      default:
         return Colors
             .grey[600]!; // Dark grey for secondary icons in light theme
-      case AppTheme.purpleTheme:
-      default:
-        return AppColors.primary.withValues(
-          alpha: 0.7,
-        ); // Purple with opacity for secondary icons
     }
   }
 
-  // Get background color for purple theme to match burger menu
+  // Get background color for light and blue themes
   Color _getBackgroundColor() {
     final currentTheme = ThemeState().currentTheme;
     switch (currentTheme) {
       case AppTheme.blueTheme:
         return AppColors.backgroundDark;
-      case AppTheme.lightTheme:
-        return AppColors.backgroundLight;
-      case AppTheme.purpleTheme:
       default:
-        return const Color(0xFFF5F5F5); // Light grey to match burger menu
+        return AppColors.backgroundLight;
     }
   }
 
@@ -99,9 +80,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return Colors.white; // White background for light theme
       case AppTheme.blueTheme:
         return BlueThemeColors.primary; // Blue background for blue theme
-      case AppTheme.purpleTheme:
       default:
-        return AppColors.primary; // Purple background for purple theme
+        return BlueThemeColors.primary; // Default to blue theme background
     }
   }
 
@@ -113,16 +93,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     switch (currentTheme) {
       case AppTheme.blueTheme:
         dividerColor = AppColors.textLight;
-      case AppTheme.lightTheme:
+      default:
         // Use a darker color for better visibility in light theme
         dividerColor = const Color(
           0xFFD1D5DB,
         ); // Medium gray for better contrast
-      case AppTheme.purpleTheme:
-      default:
-        dividerColor = AppColors.primary.withValues(
-          alpha: 0.3,
-        ); // Purple with opacity for divider
     }
 
     return Divider(color: dividerColor, thickness: 1.0, height: 1.0);
@@ -133,19 +108,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     switch (themeCode) {
       case AppTheme.blueTheme:
         return LanguageAwareStringHelper.getCurrent(context, "blue_theme");
-      case AppTheme.lightTheme:
-        return LanguageAwareStringHelper.getCurrent(context, "light_theme");
-      case AppTheme.purpleTheme:
       default:
-        return LanguageAwareStringHelper.getCurrent(context, "purple_theme");
+        return LanguageAwareStringHelper.getCurrent(context, "light_theme");
     }
   }
 
   // Theme-dependent color method for About modal text
   Color _getAboutModalTextColor() {
-    if (ThemeState().isPurpleTheme) {
-      return Colors.white; // White text for purple theme
-    } else if (ThemeState().isBlueTheme) {
+    if (ThemeState().isBlueTheme) {
       return Colors.white; // White text for blue theme
     } else {
       return Colors.black; // Black text for light theme
@@ -162,10 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color:
-                ThemeState().currentTheme == AppTheme.purpleTheme
-                    ? Colors
-                        .white // White text for purple theme
-                    : _getTextColor(),
+                _getTextColor(),
           ),
         ),
         centerTitle: false, // Move title to the left, closer to back button
@@ -367,8 +334,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color:
                     ThemeState().currentTheme == AppTheme.lightTheme
                         ? Colors.black
-                        : ThemeState().currentTheme == AppTheme.purpleTheme
-                        ? Colors.white
                         : Colors.white,
               ),
             ),
@@ -399,8 +364,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color:
                     ThemeState().currentTheme == AppTheme.lightTheme
                         ? Colors.black
-                        : ThemeState().currentTheme == AppTheme.purpleTheme
-                        ? Colors.white
                         : Colors.white,
               ),
             ),
@@ -409,11 +372,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 _buildThemeOption(context, "light_theme", AppTheme.lightTheme),
                 _buildThemeOption(context, "blue_theme", AppTheme.blueTheme),
-                _buildThemeOption(
-                  context,
-                  "purple_theme",
-                  AppTheme.purpleTheme,
-                ),
               ],
             ),
           ),
@@ -432,7 +390,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     themeColor = switch (themeCode) {
       AppTheme.lightTheme => Colors.white,
       AppTheme.blueTheme => Colors.blue,
-      AppTheme.purpleTheme => Colors.purple,
       _ => AppColors.primary,
     };
 
@@ -448,9 +405,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 isCurrentTheme
                     ? (themeCode == AppTheme.lightTheme
                         ? Colors.black
-                        : (themeCode == AppTheme.blueTheme
-                            ? Colors.white
-                            : AppColors.primary))
+                        : Colors.white)
                     : Colors.grey.shade300,
             width: isCurrentTheme ? 2 : 1,
           ),
@@ -468,8 +423,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color:
               ThemeState().currentTheme == AppTheme.lightTheme
                   ? Colors.black
-                  : ThemeState().currentTheme == AppTheme.purpleTheme
-                  ? Colors.white
                   : Colors.white,
         ),
       ),
@@ -480,8 +433,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color:
                     ThemeState().currentTheme == AppTheme.lightTheme
                         ? Colors.black
-                        : ThemeState().currentTheme == AppTheme.purpleTheme
-                        ? Colors.white
                         : Colors.white,
               )
               : null,
@@ -526,8 +477,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color:
               ThemeState().currentTheme == AppTheme.lightTheme
                   ? Colors.black
-                  : ThemeState().currentTheme == AppTheme.purpleTheme
-                  ? Colors.white
                   : Colors.white,
         ),
       ),

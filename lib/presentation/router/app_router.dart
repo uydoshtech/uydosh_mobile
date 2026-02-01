@@ -306,10 +306,9 @@ class _MainNavigationState extends State<MainNavigation>
                       final themeState = ThemeState();
                       Color borderColor;
 
-                      if (themeState.isPurpleTheme || themeState.isBlueTheme) {
+                      if (themeState.isBlueTheme) {
                         borderColor =
-                            Colors
-                                .white; // White border for blue and purple themes
+                            Colors.white; // White border for blue theme
                       } else {
                         borderColor =
                             Colors.black; // Black border for light theme
@@ -370,9 +369,9 @@ class _MainNavigationState extends State<MainNavigation>
                     final themeState = ThemeState();
                     Color iconColor;
 
-                    if (themeState.isPurpleTheme || themeState.isBlueTheme) {
+                    if (themeState.isBlueTheme) {
                       iconColor =
-                          Colors.white; // White icon for blue and purple themes
+                          Colors.white; // White icon for blue theme
                     } else {
                       iconColor = Colors.black; // Black icon for light theme
                     }

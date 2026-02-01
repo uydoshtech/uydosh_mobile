@@ -3,7 +3,6 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 
 /// Theme manager for switching between different app themes
 class AppTheme {
-  static const String purpleTheme = "purple";
   static const String blueTheme = "blue";
   static const String lightTheme = "light";
   static const String messagingTheme = "messaging";
@@ -13,8 +12,6 @@ class AppTheme {
     switch (themeName) {
       case blueTheme:
         return _getBlueTheme();
-      case purpleTheme:
-        return _getPurpleTheme();
       case messagingTheme:
         return _getMessagingTheme();
       case lightTheme:
@@ -28,190 +25,12 @@ class AppTheme {
     switch (themeName) {
       case blueTheme:
         return "Blue Theme";
-      case purpleTheme:
-        return "Purple Theme";
       case messagingTheme:
         return "Messaging Theme";
       case lightTheme:
       default:
         return "Light Theme";
     }
-  }
-
-  /// Purple theme (original)
-  static ThemeData _getPurpleTheme() {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        primary: AppColors.primary,
-        onPrimary: Colors.white,
-        secondary: AppColors.secondary,
-        onSecondary: Colors.white,
-        tertiary: AppColors.success,
-        onTertiary: Colors.white,
-        surface: AppColors.primary,
-        onSurface: Colors.white,
-        surfaceVariant: AppColors.cardBackground,
-        onSurfaceVariant: AppColors.textSecondary,
-        background: AppColors.primary,
-        onBackground: Colors.white,
-        error: AppColors.error,
-        onError: Colors.white,
-        outline: AppColors.cardBorder,
-        outlineVariant: AppColors.divider,
-        shadow: AppColors.cardShadow,
-        scrim: AppColors.overlayBackground,
-        brightness: Brightness.dark,
-        inverseSurface: AppColors.cardBackground,
-        onInverseSurface: AppColors.textPrimary,
-      ),
-      useMaterial3: true,
-
-      // Cursor and text selection theme for better visibility
-      textSelectionTheme: TextSelectionThemeData(
-        cursorColor: Colors.white, // White cursor for better visibility on dark background
-        selectionColor: Colors.white.withValues(
-          alpha: 0.3,
-        ), // Semi-transparent white for selection
-        selectionHandleColor: Colors.white, // White selection handles
-      ),
-
-      // AppBar theme
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.primary, // Purple background (original)
-        foregroundColor: Colors.white, // White text on purple
-        elevation: 0,
-        centerTitle: true,
-        surfaceTintColor:
-            Colors.transparent, // Disable surface tint to prevent color changes
-        scrolledUnderElevation: 0, // Prevent elevation changes on scroll
-      ),
-
-      // Card theme
-      cardTheme: CardThemeData(
-        color: AppColors.cardBackground, // White card background (original)
-        elevation: 4,
-        margin: const EdgeInsets.all(8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-
-      // Button themes
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.buttonPrimary, // Purple primary button
-          foregroundColor: Colors.white, // White text on purple
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
-
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.buttonPrimary, // Purple text
-        ),
-      ),
-
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.buttonPrimary, // Purple text
-          side: BorderSide(color: AppColors.buttonPrimary), // Purple border
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
-
-      // Input decoration theme
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: AppColors.inputBackground, // White input background
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: AppColors.inputBorder,
-          ), // Light gray border
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: AppColors.inputFocused,
-            width: 2,
-          ), // Purple when focused
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.inputError), // Red for errors
-        ),
-      ),
-
-      // Bottom navigation bar theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor:
-            AppColors.navigationBackground, // Dark navigation background
-        selectedItemColor:
-            AppColors.navigationSelected, // Purple for selected nav item
-        unselectedItemColor:
-            AppColors.navigationUnselected, // Gray for unselected nav item
-        type: BottomNavigationBarType.fixed,
-      ),
-
-      // Floating action button theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.buttonPrimary, // Purple primary button
-        foregroundColor: Colors.white, // White text on purple
-      ),
-
-      // Divider theme
-      dividerTheme: DividerThemeData(
-        color: AppColors.divider, // Dark gray divider
-        thickness: 1,
-      ),
-
-      // Icon theme
-      iconTheme: IconThemeData(
-        color: AppColors.iconPrimary, // Purple for primary icons
-        size: 24,
-      ),
-
-      // Popup menu theme - White background with purple text and icons
-      popupMenuTheme: PopupMenuThemeData(
-        color: Colors.white, // White background
-        textStyle: TextStyle(
-          color: AppColors.primary, // Purple text
-          fontSize: 16,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 8,
-      ),
-
-      // Drawer theme
-      drawerTheme: DrawerThemeData(
-        backgroundColor: const Color(
-          0xFFF5F5F5,
-        ), // Light grey like listing tile background
-        surfaceTintColor: AppColors.primary,
-      ),
-
-      // Text theme
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
-          color: Colors.black87,
-        ), // Dark text on light backgrounds
-        displayMedium: TextStyle(color: Colors.black87),
-        displaySmall: TextStyle(color: Colors.black87),
-        headlineLarge: TextStyle(color: Colors.black87),
-        headlineMedium: TextStyle(color: Colors.black87),
-        headlineSmall: TextStyle(color: Colors.black87),
-        titleLarge: TextStyle(color: Colors.black87),
-        titleMedium: TextStyle(color: Colors.black87),
-        titleSmall: TextStyle(color: Colors.black87),
-        bodyLarge: TextStyle(color: Colors.black87),
-        bodyMedium: TextStyle(color: Colors.black87),
-        bodySmall: TextStyle(
-          color: AppColors.textSecondary,
-        ), // Secondary text color
-        labelLarge: TextStyle(color: Colors.black87),
-        labelMedium: TextStyle(color: AppColors.textSecondary),
-        labelSmall: TextStyle(color: AppColors.textHint), // Hint text color
-      ),
-    );
   }
 
   /// Blue theme (new)

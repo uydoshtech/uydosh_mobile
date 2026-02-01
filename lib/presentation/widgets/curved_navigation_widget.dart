@@ -246,7 +246,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
       // Light theme - use gray-ish color for curved part
       return Colors.grey[600]!; // Using a medium gray instead of black
     } else {
-      // Purple theme (default) - use existing light purple
+      // Default theme - use existing light primary
       return AppColors.primaryLight; // This is Color(0xFF9B6DFF)
     }
   }
@@ -260,7 +260,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
       // Light theme - use black for selected button
       return Colors.black;
     } else {
-      // Purple theme (default) - use existing dark purple
+      // Default theme - use existing dark primary
       return AppColors.primaryDark; // This is Color(0xFF4A148C)
     }
   }
@@ -274,7 +274,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
       // Light theme - use white for background
       return Colors.white;
     } else {
-      // Purple theme (default) - use existing primary purple
+      // Default theme - use existing primary color
       return AppColors.primary; // This is Color(0xFF673AB7)
     }
   }
