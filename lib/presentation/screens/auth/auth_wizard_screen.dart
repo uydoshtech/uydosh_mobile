@@ -41,6 +41,7 @@ class AuthWizardScreen extends StatefulWidget {
 
 class _AuthWizardScreenState extends State<AuthWizardScreen> {
   final PageController _pageController = PageController(initialPage: 0);
+  final ScrollController _profileScrollController = ScrollController();
   int _currentPage = 0; // Start with language selection page
 
   // Form controllers
@@ -115,6 +116,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _profileScrollController.dispose();
     _nameController.dispose();
     super.dispose();
   }
@@ -1413,6 +1415,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   Widget _buildProfileSetupPage() {
     return SingleChildScrollView(
+      controller: _profileScrollController,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
         child: Column(
@@ -1979,6 +1982,20 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             _selectedUniversity = null;
           }
         });
+
+        if (isStudent) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted || !_profileScrollController.hasClients) {
+              return;
+            }
+
+            _profileScrollController.animateTo(
+              _profileScrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          });
+        }
 
         logger.d("After setState:");
         logger.d("_isStudent: $_isStudent");
