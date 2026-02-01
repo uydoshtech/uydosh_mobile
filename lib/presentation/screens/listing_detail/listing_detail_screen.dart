@@ -2113,20 +2113,20 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                           child: TextButton.icon(
                             onPressed: () =>
                                 _confirmOpenInYandexMaps(listingDetail),
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.link,
                               size: 18,
-                              color: AppColors.textDark,
+                              color: _getYandexButtonColor(),
                             ),
                             label: Text(
                               LanguageAwareStringHelper.getCurrent(
                                 context,
                                 "open_in_yandex_maps",
                               ),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
-                                color: AppColors.textDark,
+                                color: _getYandexButtonColor(),
                               ),
                             ),
                             style: TextButton.styleFrom(
@@ -2136,8 +2136,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: const BorderSide(
-                                  color: AppColors.textDark,
+                                side: BorderSide(
+                                  color: _getYandexButtonColor(),
                                   width: 1,
                                 ),
                               ),
@@ -2590,6 +2590,15 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       return AppColors.buttonPrimary; // Blue for blue theme
     } else {
       return AppColors.primary; // Primary for non-blue theme
+    }
+  }
+
+  // Theme-dependent color method for Yandex Maps button
+  Color _getYandexButtonColor() {
+    if (ThemeState().isBlueTheme) {
+      return Colors.white;
+    } else {
+      return AppColors.textDark;
     }
   }
 
