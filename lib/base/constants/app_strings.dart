@@ -384,7 +384,7 @@ class AppStrings {
       "menu_about": "About",
       "menu_faq": "FAQ",
       "menu_settings": "Settings",
-      "menu_registration": "Registration",
+      "menu_registration": "Sign in",
       "menu_logout": "Logout",
 
       // ===== FAQ CONTENT =====
@@ -875,8 +875,8 @@ class AppStrings {
       "full_name": "Полное имя",
 
       "are_you_student": "Вы студент?",
-      "yes_student": "Да, я студент",
-      "no_student": "Нет, я не студент",
+      "yes_student": "Студент",
+      "no_student": "Не студент",
 
       "selected": "Выбрано",
 
@@ -902,7 +902,7 @@ class AppStrings {
       "menu_about": "О приложении",
       "menu_faq": "Часто задаваемые вопросы",
       "menu_settings": "Настройки",
-      "menu_registration": "Регистрация",
+      "menu_registration": "Вход",
       "menu_logout": "Выйти",
 
       // ===== FAQ CONTENT =====
@@ -1424,7 +1424,7 @@ class AppStrings {
       "menu_about": "Ilova haqida",
       "menu_faq": "Tez-tez so'raladigan savollar",
       "menu_settings": "Sozlamalar",
-      "menu_registration": "Ro'yxatdan o'tish",
+      "menu_registration": "Kirish",
       "menu_logout": "Chiqish",
 
       // ===== FAQ CONTENT =====
