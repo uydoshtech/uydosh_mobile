@@ -30,6 +30,7 @@ import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.d
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:intl/intl.dart";
 
 class EditListingScreen extends StatefulWidget {
   final ListingDetail listingDetail;
@@ -46,6 +47,7 @@ class _EditListingScreenState extends State<EditListingScreen>
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _moveInDateController = TextEditingController();
+  String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
   int _selectedListingTypeId = 2; // 2 = roommate needed, 1 = room needed
   int _selectedGender = 1; // Default to male (1 = male, 2 = female)
@@ -97,7 +99,14 @@ class _EditListingScreenState extends State<EditListingScreen>
       moveInDate =
           moveInDate.split("T")[0]; // Take only the date part before "T"
     }
-    _moveInDateController.text = moveInDate;
+    _moveInDateValue = moveInDate;
+    if (_moveInDateValue.isNotEmpty) {
+      final parsedDate = DateTime.tryParse(_moveInDateValue);
+      _moveInDateController.text =
+          parsedDate != null
+              ? _formatMoveInDateDisplay(parsedDate)
+              : _moveInDateValue;
+    }
 
     _isPrivateRoom = widget.listingDetail.privateRoom ?? false;
 
@@ -153,6 +162,15 @@ class _EditListingScreenState extends State<EditListingScreen>
     context.read<SubwayStationsBloc>().add(
       SubwayStationsEvent.fetchSubwayStationsByLine(line: line),
     );
+  }
+
+  String _formatMoveInDateDisplay(DateTime date) {
+    final locale = LanguageState().currentLanguage;
+    try {
+      return DateFormat("d MMMM yyyy", locale).format(date);
+    } catch (_) {
+      return DateFormat("d MMMM yyyy").format(date);
+    }
   }
 
   void _loadLocations() {
@@ -1049,8 +1067,12 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                 ),
                                           );
                                           if (picked != null) {
-                                            _moveInDateController.text =
+                                            _moveInDateValue =
                                                 "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                            _moveInDateController.text =
+                                                _formatMoveInDateDisplay(
+                                                  picked,
+                                                );
                                           }
                                         },
                                         child: TextFormField(
@@ -1066,16 +1088,14 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                     )
                                                     : hintText,
                                             hintStyle: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
                                               color:
-                                                  Theme.of(
-                                                            context,
-                                                          ).brightness ==
-                                                          Brightness.dark
-                                                      ? theme
+                                                  ThemeState().isLightTheme
+                                                      ? Colors.black
+                                                      : theme
                                                           .colorScheme
-                                                          .onSurfaceVariant
-                                                          .withOpacity(0.7)
-                                                      : Colors.grey[400],
+                                                          .onSurfaceVariant,
                                             ),
                                             border: OutlineInputBorder(
                                               borderRadius:
@@ -1128,7 +1148,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                   horizontal: 12,
                                                   vertical: 19,
                                                 ),
-                                            suffixIcon: Icon(
+                                            prefixIcon: Icon(
                                               CupertinoIcons.calendar,
                                               color:
                                                   Theme.of(
@@ -1142,6 +1162,8 @@ class _EditListingScreenState extends State<EditListingScreen>
                                             ),
                                           ),
                                           style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
                                             color:
                                                 ThemeState().isLightTheme
                                                     ? Colors.black
@@ -1208,7 +1230,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                           LanguageAwareStringHelper.getCurrent(
                                             context,
                                             "private_room",
-                                          ),
+                                          ).replaceFirst(" ", "\n"),
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500,
@@ -1474,10 +1496,9 @@ class _EditListingScreenState extends State<EditListingScreen>
             _selectedSubwayLine > 0
                 ? _selectedSubwayLine
                 : null, // Add subway line ID
-        moveInDate:
-            _moveInDateController.text.trim().isNotEmpty
-                ? _moveInDateController.text.trim()
-                : null, // Add move-in date
+        moveInDate: _moveInDateValue.isNotEmpty
+            ? _moveInDateValue
+            : null, // Add move-in date
         privateRoom: _isPrivateRoom, // Add private room preference
         photoPaths: null, // Don"t upload photos during listing update
       );

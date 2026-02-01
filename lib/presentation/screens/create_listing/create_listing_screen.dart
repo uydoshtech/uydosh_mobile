@@ -31,6 +31,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:intl/intl.dart";
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({super.key});
@@ -45,6 +46,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _moveInDateController = TextEditingController();
+  String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
 
   // State variables
@@ -106,6 +108,15 @@ class _CreateListingScreenState extends State<CreateListingScreen>
 
     // Trigger the BLoC to fetch locations
     context.read<LocationsBloc>().add(const LocationsEvent.fetchLocations());
+  }
+
+  String _formatMoveInDateDisplay(DateTime date) {
+    final locale = LanguageState().currentLanguage;
+    try {
+      return DateFormat("d MMMM yyyy", locale).format(date);
+    } catch (_) {
+      return DateFormat("d MMMM yyyy").format(date);
+    }
   }
 
   void _onStationsLoaded(List<SubwayStation> stations) {
@@ -1078,8 +1089,10 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                         ),
                                   );
                               if (picked != null) {
-                                _moveInDateController.text =
+                                _moveInDateValue =
                                     "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                _moveInDateController.text =
+                                    _formatMoveInDateDisplay(picked);
                               }
                             },
                             child: TextFormField(
@@ -1095,14 +1108,14 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                         )
                                         : hintText,
                                 hintStyle: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
                                   color:
-                                      Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Theme.of(context)
+                                      ThemeState().isLightTheme
+                                          ? Colors.black
+                                          : Theme.of(context)
                                               .colorScheme
-                                              .onSurfaceVariant
-                                              .withOpacity(0.7)
-                                          : Colors.grey[400],
+                                              .onSurfaceVariant,
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
@@ -1147,7 +1160,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                   horizontal: 12,
                                   vertical: 24,
                                 ),
-                                suffixIcon: Icon(
+                                prefixIcon: Icon(
                                   CupertinoIcons.calendar,
                                   color:
                                       Theme.of(context).brightness ==
@@ -1159,6 +1172,8 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                 ),
                               ),
                               style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                                 color:
                                     ThemeState().isLightTheme
                                         ? Colors.black
@@ -1218,9 +1233,11 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            LanguageAwareStringHelper.getText(
-                              "private_room",
-                              context,
+                            Text(
+                              LanguageAwareStringHelper.getCurrent(
+                                context,
+                                "private_room",
+                              ).replaceFirst(" ", "\n"),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -1522,10 +1539,9 @@ class _CreateListingScreenState extends State<CreateListingScreen>
             _selectedSubwayLine > 0
                 ? _selectedSubwayLine
                 : null, // Add subway line ID
-        moveInDate:
-            _moveInDateController.text.trim().isNotEmpty
-                ? _moveInDateController.text.trim()
-                : null, // Only send date if selected
+        moveInDate: _moveInDateValue.isNotEmpty
+            ? _moveInDateValue
+            : null, // Only send date if selected
         privateRoom: _isPrivateRoom, // Add private room preference
         photoPaths:
             orderedPhotos.isNotEmpty
