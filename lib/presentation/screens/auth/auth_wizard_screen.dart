@@ -1200,35 +1200,37 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   Widget _buildLanguageSelectionPage() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LanguageAwareStringHelper.getText(
-            "select_language",
-            context,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: _getOnboardingTextColor(),
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            LanguageAwareStringHelper.getText(
+              "select_language",
+              context,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: _getOnboardingTextColor(),
+              ),
             ),
-          ),
-          const SizedBox(height: 40),
+            const SizedBox(height: 40),
 
-          // Language options with flags
-          Column(
-            children: [
-              _buildLanguageOption("uz", "🇺🇿", "O'zbekcha", "Uzbek"),
-              const SizedBox(height: 20),
-              _buildLanguageOption("ru", "🇷🇺", "Русский", "Russian"),
-              const SizedBox(height: 20),
-              _buildLanguageOption("en", "🇺🇸", "English", "English"),
-            ],
-          ),
+            // Language options with flags
+            Column(
+              children: [
+                _buildLanguageOption("uz", "🇺🇿", "O'zbekcha", "Uzbek"),
+                const SizedBox(height: 20),
+                _buildLanguageOption("ru", "🇷🇺", "Русский", "Russian"),
+                const SizedBox(height: 20),
+                _buildLanguageOption("en", "🇺🇸", "English", "English"),
+              ],
+            ),
 
-          const SizedBox(height: 100),
-        ],
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
