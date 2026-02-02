@@ -1400,12 +1400,12 @@ class AppStrings {
       "sleep_time": "Uxlash vaqti",
 
       // Preference options
-      "non_smoker": "Chekmaydi",
-      "occasional_smoker": "Ba'zan chekadi",
-      "regular_smoker": "Muntazam chekadi",
-      "non_drinker": "Ichmaydi",
-      "occasional_drinker": "Ba'zan ichadi",
-      "regular_drinker": "Muntazam ichadi",
+      "non_smoker": "Chekmayman",
+      "occasional_smoker": "Ba'zan chekaman",
+      "regular_smoker": "Muntazam chekaman",
+      "non_drinker": "Ichmayman",
+      "occasional_drinker": "Ba'zan ichaman",
+      "regular_drinker": "Muntazam ichaman",
       "morning": "Ertalab",
       "evening": "Kechqurun",
       "night": "Tun",
