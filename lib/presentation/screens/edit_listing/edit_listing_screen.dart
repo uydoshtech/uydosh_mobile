@@ -167,10 +167,25 @@ class _EditListingScreenState extends State<EditListingScreen>
   String _formatMoveInDateDisplay(DateTime date) {
     final locale = LanguageState().currentLanguage;
     try {
-      return DateFormat("d MMMM yyyy", locale).format(date);
+      return _capitalizeMonth(
+        DateFormat("d MMMM yyyy", locale).format(date),
+      );
     } catch (_) {
-      return DateFormat("d MMMM yyyy").format(date);
+      return _capitalizeMonth(DateFormat("d MMMM yyyy").format(date));
     }
+  }
+
+  String _capitalizeMonth(String dateText) {
+    final parts = dateText.split(" ");
+    if (parts.length < 2) {
+      return dateText;
+    }
+    final month = parts[1];
+    if (month.isEmpty) {
+      return dateText;
+    }
+    parts[1] = "${month.substring(0, 1).toUpperCase()}${month.substring(1)}";
+    return parts.join(" ");
   }
 
   void _loadLocations() {
@@ -1040,6 +1055,34 @@ class _EditListingScreenState extends State<EditListingScreen>
                                   >(
                                     valueListenable: _moveInDateController,
                                     builder: (context, value, child) {
+                                      final isEmpty = value.text.isEmpty;
+                                      final displayText =
+                                          isEmpty
+                                              ? LanguageAwareStringHelper.getCurrent(
+                                                context,
+                                                "any_date",
+                                              )
+                                              : value.text;
+                                      final displayStyle = TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color:
+                                            ThemeState().isLightTheme
+                                                ? Colors.black
+                                                : theme
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
+                                      );
+                                      final hintStyle = TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color:
+                                            ThemeState().isLightTheme
+                                                ? Colors.black
+                                                : theme
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
+                                      );
                                       return GestureDetector(
                                         onTap: () async {
                                           final DateTime?
@@ -1075,32 +1118,10 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                 );
                                           }
                                         },
-                                        child: TextFormField(
-                                          controller: _moveInDateController,
-                                          minLines: 2,
-                                          maxLines: 2,
-                                          textAlignVertical:
-                                              TextAlignVertical.center,
-                                          enabled:
-                                              false, // Disable text input to prevent keyboard
+                                        child: InputDecorator(
                                           decoration: InputDecoration(
-                                            hintText:
-                                                value.text.isEmpty
-                                                    ? LanguageAwareStringHelper.getCurrent(
-                                                      context,
-                                                      "any_date",
-                                                    )
-                                                    : hintText,
-                                            hintStyle: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500,
-                                              color:
-                                                  ThemeState().isLightTheme
-                                                      ? Colors.black
-                                                      : theme
-                                                          .colorScheme
-                                                          .onSurfaceVariant,
-                                            ),
+                                            hintText: hintText,
+                                            hintStyle: hintStyle,
                                             hintMaxLines: 2,
                                             border: OutlineInputBorder(
                                               borderRadius:
@@ -1167,18 +1188,18 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                       : Colors.grey[600],
                                             ),
                                           ),
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                            color:
-                                                ThemeState().isLightTheme
-                                                    ? Colors.black
-                                                    : theme
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
+                                          child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              displayText,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style:
+                                                  isEmpty
+                                                      ? hintStyle
+                                                      : displayStyle,
+                                            ),
                                           ),
-                                          readOnly:
-                                              true, // Make it read-only so users must use the date picker
                                         ),
                                       );
                                     },
