@@ -30,7 +30,7 @@ class AmenityIconHelper {
       case "stove":
         return Icons.local_fire_department; // 🔥 Alternative stove icon
       case "oven":
-        return Icons.local_dining; // 🍽️ Oven icon
+        return CupertinoIcons.flame; // 🍽️ Oven icon
       case "furniture":
         return Icons.chair;
       case "internet":

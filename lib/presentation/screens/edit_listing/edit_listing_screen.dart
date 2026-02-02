@@ -1071,7 +1071,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                       final displayText =
                                           "$moveInDateLabel\n$displayValue";
                                       final displayStyle = TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                         color:
                                             ThemeState().isLightTheme
