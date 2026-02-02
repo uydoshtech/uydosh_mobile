@@ -224,6 +224,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
       onTap: () {
+        HapticFeedback.lightImpact();
         _showLanguageDialog(context);
       },
       trailing: Icon(
@@ -247,6 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(color: _getSecondaryTextColor()),
       ),
       onTap: () {
+        HapticFeedback.lightImpact();
         _showThemeDialog(context);
       },
       trailing: Icon(
@@ -437,6 +439,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               )
               : null,
       onTap: () async {
+        HapticFeedback.lightImpact();
         Navigator.pop(context);
         // Handle theme change
         await ThemeState().changeTheme(themeCode);
@@ -481,6 +484,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       onTap: () {
+        HapticFeedback.lightImpact();
         Navigator.pop(context);
         // Handle language change
         LanguageState().setLanguage(code);
