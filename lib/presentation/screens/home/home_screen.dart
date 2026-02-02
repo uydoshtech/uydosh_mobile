@@ -597,10 +597,26 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Build search app bar for search mode
   PreferredSizeWidget _buildSearchAppBar() {
     return AppBar(
-      title: LanguageAwareStringHelper.getText(
-        "search_results",
-        context,
-        style: Theme.of(context).appBarTheme.titleTextStyle,
+      title: BlocSelector<ListingsBloc, ListingsState, int?>(
+        selector:
+            (state) => state.map(
+              initial: (_) => null,
+              loading: (_) => null,
+              loaded: (loadedState) => loadedState.listings.length,
+              error: (_) => null,
+            ),
+        builder: (context, count) {
+          final baseTitle = LanguageAwareStringHelper.getCurrent(
+            context,
+            "search_results",
+          );
+          final titleText =
+              count == null ? baseTitle : "$baseTitle ($count)";
+          return Text(
+            titleText,
+            style: Theme.of(context).appBarTheme.titleTextStyle,
+          );
+        },
       ),
       backgroundColor:
           Theme.of(context).appBarTheme.backgroundColor ??

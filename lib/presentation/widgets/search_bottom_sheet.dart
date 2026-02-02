@@ -763,7 +763,22 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               );
                             },
                           ),
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 8),
+                          Center(
+                            child: Text(
+                              LanguageAwareStringHelper.getCurrent(
+                                context,
+                                "search_location_or_metro_hint",
+                              ),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
 
                           // Metro Line and Station Selection - Side by Side Wheel Pickers
                           Row(

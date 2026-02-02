@@ -173,6 +173,8 @@ class AppStrings {
       "select_metro_line": "Subway line",
       "select_metro_line_title": "Select\nsubway line",
       "select_location": "Any district",
+      "search_location_or_metro_hint":
+          "Choose one option: district or metro station",
 
       "all_stations_count": "All {count} stations",
       "all_stations_explanation":
@@ -704,6 +706,8 @@ class AppStrings {
       "select_metro_line": "Линия метро",
       "select_metro_line_title": "Выберите\nлинию метро",
       "select_location": "Любой район",
+      "search_location_or_metro_hint":
+          "Выберите один вариант: район или станцию метро",
 
       "all_stations_count": "Все {count} станций",
       "all_stations_explanation":
@@ -1240,6 +1244,8 @@ class AppStrings {
       "select_metro_line": "Liniyani tanlang",
       "select_metro_line_title": "Metro\nliniyasini tanlang",
       "select_location": "Har qanday tuman",
+      "search_location_or_metro_hint":
+          "Bitta variantni tanlang: tuman yoki metro bekati",
 
       "all_stations_count": "Barcha {count} bekatlar",
       "all_stations_explanation":
