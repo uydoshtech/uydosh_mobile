@@ -895,18 +895,24 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                     required isFocused,
                     maxLength,
                   }) {
+                    final max = maxLength ?? 0;
+                    final isNearLimit =
+                        max > 0 && (currentLength / max) >= 0.9;
                     return Container(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Text(
                         "$currentLength/$maxLength",
                         style: TextStyle(
                           color:
-                              Theme.of(context).brightness == Brightness.dark
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant
-                                      .withOpacity(0.7)
-                                  : Colors.black,
+                              isNearLimit
+                                  ? Colors.red
+                                  : Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant
+                                          .withOpacity(0.7)
+                                      : Colors.black,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1008,18 +1014,24 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                     required isFocused,
                     maxLength,
                   }) {
+                    final max = maxLength ?? 0;
+                    final isNearLimit =
+                        max > 0 && (currentLength / max) >= 0.9;
                     return Container(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Text(
                         "$currentLength/$maxLength",
                         style: TextStyle(
                           color:
-                              Theme.of(context).brightness == Brightness.dark
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant
-                                      .withOpacity(0.7)
-                                  : Colors.black,
+                              isNearLimit
+                                  ? Colors.red
+                                  : Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant
+                                          .withOpacity(0.7)
+                                      : Colors.black,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1682,7 +1694,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
             },
             borderRadius: BorderRadius.circular(10),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color:
