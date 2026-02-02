@@ -1227,7 +1227,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                 ),
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight:
+                                      _searchFiltersState.privateRoom
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
                                   color:
                                       ThemeState().isBlueTheme
                                           ? Colors.white
