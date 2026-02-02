@@ -1077,6 +1077,10 @@ class _EditListingScreenState extends State<EditListingScreen>
                                         },
                                         child: TextFormField(
                                           controller: _moveInDateController,
+                                          minLines: 2,
+                                          maxLines: 2,
+                                          textAlignVertical:
+                                              TextAlignVertical.center,
                                           enabled:
                                               false, // Disable text input to prevent keyboard
                                           decoration: InputDecoration(
@@ -1097,6 +1101,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                           .colorScheme
                                                           .onSurfaceVariant,
                                             ),
+                                            hintMaxLines: 2,
                                             border: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(10),
@@ -1146,10 +1151,11 @@ class _EditListingScreenState extends State<EditListingScreen>
                                             contentPadding:
                                                 const EdgeInsets.symmetric(
                                                   horizontal: 12,
-                                                  vertical: 19,
+                                                  vertical: 16,
                                                 ),
                                             prefixIcon: Icon(
                                               CupertinoIcons.calendar,
+                                              size: 22,
                                               color:
                                                   Theme.of(
                                                             context,
@@ -1218,7 +1224,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                     .onSurfaceVariant
                                                     .withOpacity(0.7)
                                                 : Colors.grey[600]),
-                                    size: 20,
+                                      size: 22,
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(

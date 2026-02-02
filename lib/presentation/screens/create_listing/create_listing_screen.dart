@@ -1097,6 +1097,9 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                             },
                             child: TextFormField(
                               controller: _moveInDateController,
+                              minLines: 2,
+                              maxLines: 2,
+                              textAlignVertical: TextAlignVertical.center,
                               enabled:
                                   false, // Disable text input to prevent keyboard
                               decoration: InputDecoration(
@@ -1117,6 +1120,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                               .colorScheme
                                               .onSurfaceVariant,
                                 ),
+                                hintMaxLines: 2,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                   borderSide: BorderSide(
@@ -1158,10 +1162,11 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                         : Colors.white,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
-                                  vertical: 24,
+                                  vertical: 16,
                                 ),
                                 prefixIcon: Icon(
                                   CupertinoIcons.calendar,
+                                  size: 22,
                                   color:
                                       Theme.of(context).brightness ==
                                               Brightness.dark
@@ -1226,7 +1231,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                         .onSurfaceVariant
                                         .withOpacity(0.7)
                                     : Colors.grey[600]),
-                        size: 20,
+                        size: 22,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
