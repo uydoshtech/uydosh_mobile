@@ -7,6 +7,7 @@ import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -84,8 +85,8 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
         child: BlocBuilder<ComplaintBloc, ComplaintState>(
           builder: (context, state) {
             return state.map(
-              initial: (_) => const Center(child: CircularProgressIndicator()),
-              loading: (_) => const Center(child: CircularProgressIndicator()),
+              initial: (_) => const CenteredHouseLoadingIndicator(),
+              loading: (_) => const CenteredHouseLoadingIndicator(),
               categoriesLoaded: (_) => const SizedBox.shrink(),
               complaintCreated: (_) => const SizedBox.shrink(),
               complaintsLoaded:
