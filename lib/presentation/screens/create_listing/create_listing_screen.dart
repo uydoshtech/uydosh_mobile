@@ -1078,13 +1078,17 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                         valueListenable: _moveInDateController,
                         builder: (context, value, child) {
                           final isEmpty = value.text.isEmpty;
-                          final displayText =
-                              isEmpty
-                                  ? LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "any_date",
-                                  )
-                                  : value.text;
+                          final moveInDateLabel =
+                              LanguageAwareStringHelper.getCurrent(
+                                context,
+                                "move_in_date_label",
+                              );
+                          final anyDateText = LanguageAwareStringHelper.getCurrent(
+                            context,
+                            "any_date",
+                          ).replaceAll('\n', ' ');
+                          final displayValue = isEmpty ? anyDateText : value.text;
+                          final displayText = "$moveInDateLabel\n$displayValue";
                           final displayStyle = TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,

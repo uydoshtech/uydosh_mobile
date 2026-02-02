@@ -1056,13 +1056,20 @@ class _EditListingScreenState extends State<EditListingScreen>
                                     valueListenable: _moveInDateController,
                                     builder: (context, value, child) {
                                       final isEmpty = value.text.isEmpty;
+                                      final moveInDateLabel =
+                                          LanguageAwareStringHelper.getCurrent(
+                                            context,
+                                            "move_in_date_label",
+                                          );
+                                      final anyDateText =
+                                          LanguageAwareStringHelper.getCurrent(
+                                            context,
+                                            "any_date",
+                                          ).replaceAll('\n', ' ');
+                                      final displayValue =
+                                          isEmpty ? anyDateText : value.text;
                                       final displayText =
-                                          isEmpty
-                                              ? LanguageAwareStringHelper.getCurrent(
-                                                context,
-                                                "any_date",
-                                              )
-                                              : value.text;
+                                          "$moveInDateLabel\n$displayValue";
                                       final displayStyle = TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,

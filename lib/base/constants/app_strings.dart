@@ -113,7 +113,7 @@ class AppStrings {
       "quick_question_room_available": "Is room available?",
       "quick_question_move_in_date": "When is move in date?",
       "urgent": "Urgent",
-      "any_date": "Any\nmove-in date",
+      "any_date": "Any date",
       "quick_question_people_living":
           "How many people already live in apartment?",
       "private_room": "Private Room",
@@ -644,7 +644,7 @@ class AppStrings {
       "quick_question_room_available": "Комната свободна?",
       "quick_question_move_in_date": "Когда можно въехать?",
       "urgent": "Срочно",
-      "any_date": "Любая\nдата въезда",
+      "any_date": "Любая дата",
       "quick_question_people_living": "Сколько людей уже живет в квартире?",
       "private_room": "Отдельная комната",
       "private_room_description":
@@ -1180,7 +1180,7 @@ class AppStrings {
       "quick_question_room_available": "Xona bo'shmi?",
       "quick_question_move_in_date": "Ko'chib kelish sanasi qachon?",
       "urgent": "Shoshilinch",
-      "any_date": "Har qanday\nko'chish sanasi",
+      "any_date": "Har qanday sanasi",
       "quick_question_people_living": "Kvartiraga necha kishi yashaydi?",
       "private_room": "Shaxsiy xona",
       "private_room_description": "Bu shaxsiy xona e'lonligini ko'rsatadi",
