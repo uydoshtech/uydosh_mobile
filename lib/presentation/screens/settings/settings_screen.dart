@@ -464,6 +464,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String nameKey,
     String code,
   ) {
+    final isCurrentLanguage = LanguageState().currentLanguage == code;
     final flag = switch (code) {
       "en" => "🇺🇸",
       "ru" => "🇷🇺",
@@ -477,12 +478,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         nameKey,
         context,
         style: TextStyle(
+          fontWeight: isCurrentLanguage ? FontWeight.bold : FontWeight.normal,
           color:
               ThemeState().currentTheme == AppTheme.lightTheme
                   ? Colors.black
                   : Colors.white,
         ),
       ),
+      trailing:
+          isCurrentLanguage
+              ? Icon(
+                Icons.check,
+                color:
+                    ThemeState().currentTheme == AppTheme.lightTheme
+                        ? Colors.black
+                        : Colors.white,
+              )
+              : null,
       onTap: () {
         HapticFeedback.lightImpact();
         Navigator.pop(context);
@@ -547,6 +559,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   HapticFeedback.lightImpact();
                   Navigator.of(context).pop();
                 },
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                ),
                 child: LanguageAwareStringHelper.getText("close", context),
               ),
             ],

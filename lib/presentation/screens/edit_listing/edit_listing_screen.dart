@@ -1266,7 +1266,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                             "private_room",
                                           ).replaceFirst(" ", "\n"),
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 13,
                                             fontWeight: FontWeight.w500,
                                             color:
                                                 ThemeState().isLightTheme

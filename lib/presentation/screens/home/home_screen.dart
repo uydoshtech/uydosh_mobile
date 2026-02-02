@@ -8,6 +8,7 @@ import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
+import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
@@ -459,15 +460,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadingState() {
-    return CommonStateBuilder(
-      isLoading: true,
-      hasError: false,
-      isEmpty: false,
-      loadingText: LanguageAwareStringHelper.getCurrent(
-        context,
-        "loading_listings",
-      ),
-      child: Container(), // This won"t be shown when loading
+    return CommonListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      itemSpacing: 12.0,
+      children: List.generate(6, (index) => const ListingTileSkeleton()),
     );
   }
 
