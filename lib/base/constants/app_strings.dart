@@ -171,8 +171,8 @@ class AppStrings {
       "repeat_search": "Repeat search",
 
       // ===== SELECTION & PROMPTS =====
-      "select_metro_line": "Metro line",
-      "select_metro_line_title": "Select Metro Line",
+      "select_metro_line": "Subway line",
+      "select_metro_line_title": "Select\nsubway line",
       "select_location": "Any district",
 
       "all_stations_count": "All {count} stations",
@@ -705,7 +705,7 @@ class AppStrings {
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Линия метро",
-      "select_metro_line_title": "Выберите линию метро",
+      "select_metro_line_title": "Выберите\nлинию метро",
       "select_location": "Любой район",
 
       "all_stations_count": "Все {count} станций",
@@ -1242,7 +1242,7 @@ class AppStrings {
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Liniyani tanlang",
-      "select_metro_line_title": "Metro liniyasini tanlang",
+      "select_metro_line_title": "Metro\nliniyasini tanlang",
       "select_location": "Har qanday tuman",
 
       "all_stations_count": "Barcha {count} bekatlar",

@@ -1153,6 +1153,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                                         ? Colors.white
                                                         : Colors.black,
                                               ),
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                         ),
