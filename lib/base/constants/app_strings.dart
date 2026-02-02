@@ -117,7 +117,6 @@ class AppStrings {
       "quick_question_people_living":
           "How many people already live in apartment?",
       "private_room": "Private Room",
-      "private_room_description": "Indicates if this is a private room listing",
       "private_room_only": "Private Room",
       "conversation_count": "conversation",
       "conversations_count": "conversations",
@@ -647,8 +646,6 @@ class AppStrings {
       "any_date": "Любая дата",
       "quick_question_people_living": "Сколько людей уже живет в квартире?",
       "private_room": "Отдельная комната",
-      "private_room_description":
-          "Указывает, является ли это объявлением о приватной комнате",
       "private_room_only": "Отдельная комната",
       "conversation_count": "разговор",
       "conversations_count": "разговора",
@@ -1183,7 +1180,6 @@ class AppStrings {
       "any_date": "Har qanday sanasi",
       "quick_question_people_living": "Kvartiraga necha kishi yashaydi?",
       "private_room": "Shaxsiy xona",
-      "private_room_description": "Bu shaxsiy xona e'lonligini ko'rsatadi",
       "private_room_only": "Shaxsiy xona",
       "conversation_count": "suhbat",
       "conversations_count": "suhbat",

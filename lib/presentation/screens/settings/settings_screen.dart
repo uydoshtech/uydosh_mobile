@@ -62,11 +62,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // Get background color for light and blue themes
-  Color _getBackgroundColor() {
+  Color _getBackgroundColor(BuildContext context) {
+    final appBarColor = Theme.of(context).appBarTheme.backgroundColor;
+    if (appBarColor != null) {
+      return appBarColor;
+    }
+
     final currentTheme = ThemeState().currentTheme;
     switch (currentTheme) {
       case AppTheme.blueTheme:
-        return AppColors.backgroundDark;
+        return BlueThemeColors.primary;
       default:
         return AppColors.backgroundLight;
     }
@@ -143,7 +148,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: Container(
         color:
-            _getBackgroundColor(), // Set background color to match burger menu
+            _getBackgroundColor(
+              context,
+            ), // Set background color to match app bar
         child: ListView(
           padding: const EdgeInsets.only(top: 8),
           children: [
