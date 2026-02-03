@@ -18,6 +18,7 @@ import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
+import "package:uy_dosh/domain/services/admin_user_service.dart";
 
 final getIt = GetIt.instance;
 
@@ -84,5 +85,9 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IComplaintService>(
     () => ComplaintService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IAdminUserService>(
+    () => AdminUserService(getIt<IOAuthApiClient>()),
   );
 }

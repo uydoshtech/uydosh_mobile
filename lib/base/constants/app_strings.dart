@@ -379,6 +379,24 @@ class AppStrings {
       "menu_settings": "Settings",
       "menu_registration": "Sign in",
       "menu_logout": "Logout",
+      "menu_admin_panel": "Admin Panel",
+
+      "admin_panel_title": "Admin Panel",
+      "admin_panel_description":
+          "Manage users, listings, and reports from one place.",
+      "admin_panel_section_users": "Users",
+      "admin_panel_section_listings": "Listings",
+      "admin_panel_section_complaints": "Complaints",
+      "admin_panel_section_reports": "Reports",
+      "admin_panel_section_settings": "Admin Settings",
+
+      "admin_users_title": "Users",
+      "admin_users_loading": "Loading users...",
+      "admin_users_empty": "No users found",
+      "admin_users_error": "Failed to load users",
+      "admin_users_id": "ID",
+      "admin_users_role": "Role",
+      "admin_users_created_at": "Created",
 
       // ===== FAQ CONTENT =====
       "faq_question": "How to negotiate with roommates and avoid conflicts?",
@@ -882,6 +900,24 @@ class AppStrings {
       "menu_settings": "Настройки",
       "menu_registration": "Вход",
       "menu_logout": "Выйти",
+      "menu_admin_panel": "Админ-панель",
+
+      "admin_panel_title": "Админ-панель",
+      "admin_panel_description":
+          "Управляйте пользователями, объявлениями и жалобами в одном месте.",
+      "admin_panel_section_users": "Пользователи",
+      "admin_panel_section_listings": "Объявления",
+      "admin_panel_section_complaints": "Жалобы",
+      "admin_panel_section_reports": "Отчеты",
+      "admin_panel_section_settings": "Настройки админа",
+
+      "admin_users_title": "Пользователи",
+      "admin_users_loading": "Загрузка пользователей...",
+      "admin_users_empty": "Пользователи не найдены",
+      "admin_users_error": "Не удалось загрузить пользователей",
+      "admin_users_id": "ID",
+      "admin_users_role": "Роль",
+      "admin_users_created_at": "Создан",
 
       // ===== FAQ CONTENT =====
       "faq_question": "Как договариваться с соседями и избегать конфликтов?",
@@ -1390,6 +1426,24 @@ class AppStrings {
       "menu_settings": "Sozlamalar",
       "menu_registration": "Kirish",
       "menu_logout": "Chiqish",
+      "menu_admin_panel": "Admin paneli",
+
+      "admin_panel_title": "Admin paneli",
+      "admin_panel_description":
+          "Foydalanuvchilar, e'lonlar va shikoyatlarni bir joyda boshqaring.",
+      "admin_panel_section_users": "Foydalanuvchilar",
+      "admin_panel_section_listings": "E'lonlar",
+      "admin_panel_section_complaints": "Shikoyatlar",
+      "admin_panel_section_reports": "Hisobotlar",
+      "admin_panel_section_settings": "Admin sozlamalari",
+
+      "admin_users_title": "Foydalanuvchilar",
+      "admin_users_loading": "Foydalanuvchilar yuklanmoqda...",
+      "admin_users_empty": "Foydalanuvchilar topilmadi",
+      "admin_users_error": "Foydalanuvchilarni yuklashda xatolik",
+      "admin_users_id": "ID",
+      "admin_users_role": "Rol",
+      "admin_users_created_at": "Yaratilgan",
 
       // ===== FAQ CONTENT =====
       "faq_question": "Xonadoshlar bilan qanday kelishish va nizolardan qanday qochish kerak?",

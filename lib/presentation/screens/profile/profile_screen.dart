@@ -17,6 +17,7 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -929,6 +930,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
 
+              if (_userRole == "admin") ...[
+                const SizedBox(height: 16),
+                _buildAdminPanelButton(context),
+              ],
+
               // Logout Button Section
               const SizedBox(height: 20),
               _buildLogoutButton(context),
@@ -1269,6 +1275,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildAdminPanelButton(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const AdminPanelScreen()),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(
+                Icons.admin_panel_settings,
+                color: Theme.of(context).colorScheme.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  LanguageAwareStringHelper.getCurrent(
+                    context,
+                    "menu_admin_panel",
+                  ),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // Show logout confirmation dialog
   void _showLogoutDialog(BuildContext context) {
     CommonConfirmationDialogs.showLogoutConfirmation(
@@ -1592,6 +1645,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         },
       ),
+      if (_userRole == "admin")
+        ActionMenuItem(
+          value: "admin_panel",
+          icon: Icons.admin_panel_settings,
+          textKey: "menu_admin_panel",
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const AdminPanelScreen(),
+              ),
+            );
+          },
+        ),
     ];
   }
 }
