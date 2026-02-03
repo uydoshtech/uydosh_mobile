@@ -1,7 +1,8 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_listings_with_complaints_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 
 class AdminPanelScreen extends StatelessWidget {
   const AdminPanelScreen({super.key});
@@ -47,6 +48,20 @@ class AdminPanelScreen extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const AdminComplaintsScreen(),
+                ),
+              );
+            },
+          ),
+          _buildAdminSection(
+            context,
+            icon: Icons.home_work_outlined,
+            titleKey: "admin_panel_section_listing_complaints",
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder:
+                      (context) =>
+                          const AdminListingsWithComplaintsScreen(),
                 ),
               );
             },

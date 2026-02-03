@@ -50,4 +50,28 @@ class AppDateUtils {
     return "${dateTime.day.toString().padLeft(2, '0')} $localizedMonth ${dateTime.year} • ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
   }
 
+  /// Format date in the format: "DD MONTH YYYY"
+  static String formatDateWithMonthDay(BuildContext context, DateTime dateTime) {
+    final monthKeys = [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+    ];
+    final localizedMonth = LanguageAwareStringHelper.getCurrent(
+      context,
+      monthKeys[dateTime.month - 1],
+    );
+
+    return "${dateTime.day.toString().padLeft(2, '0')} $localizedMonth ${dateTime.year}";
+  }
+
 }

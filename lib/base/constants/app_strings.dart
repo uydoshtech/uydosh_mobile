@@ -386,6 +386,7 @@ class AppStrings {
           "Manage users, listings, and reports from one place.",
       "admin_panel_section_users": "Users",
       "admin_panel_section_complaints": "Complaints",
+      "admin_panel_section_listing_complaints": "Listings with complaints",
 
       "admin_users_title": "Users",
       "admin_users_loading": "Loading users...",
@@ -432,6 +433,12 @@ class AppStrings {
       "admin_complaints_created_at": "Created",
       "admin_complaints_update_status": "Update status",
       "admin_complaints_status_updated": "Status updated",
+      "admin_listing_complaints_title": "Listings with complaints",
+      "admin_listing_complaints_empty": "No listings with complaints",
+      "admin_listing_complaints_error": "Failed to load listings with complaints",
+      "admin_listing_complaints_last_reported": "Last complaint",
+      "admin_listing_complaints_categories": "Complaints",
+      "admin_listing_complaints_categories_empty": "No complaint categories",
 
       // ===== FAQ CONTENT =====
       "faq_question": "How to negotiate with roommates and avoid conflicts?",
@@ -942,6 +949,7 @@ class AppStrings {
           "Управляйте пользователями, объявлениями и жалобами в одном месте.",
       "admin_panel_section_users": "Пользователи",
       "admin_panel_section_complaints": "Жалобы",
+      "admin_panel_section_listing_complaints": "Объявления с жалобами",
 
       "admin_users_title": "Пользователи",
       "admin_users_loading": "Загрузка пользователей...",
@@ -988,6 +996,13 @@ class AppStrings {
       "admin_complaints_created_at": "Создан",
       "admin_complaints_update_status": "Обновить статус",
       "admin_complaints_status_updated": "Статус обновлен",
+      "admin_listing_complaints_title": "Объявления с жалобами",
+      "admin_listing_complaints_empty": "Объявлений с жалобами нет",
+      "admin_listing_complaints_error":
+          "Не удалось загрузить объявления с жалобами",
+      "admin_listing_complaints_last_reported": "Последняя жалоба",
+      "admin_listing_complaints_categories": "Жалобы",
+      "admin_listing_complaints_categories_empty": "Нет категорий жалоб",
 
       // ===== FAQ CONTENT =====
       "faq_question": "Как договариваться с соседями и избегать конфликтов?",
@@ -1503,6 +1518,7 @@ class AppStrings {
           "Foydalanuvchilar, e'lonlar va shikoyatlarni bir joyda boshqaring.",
       "admin_panel_section_users": "Foydalanuvchilar",
       "admin_panel_section_complaints": "Shikoyatlar",
+      "admin_panel_section_listing_complaints": "Shikoyatli e'lonlar",
 
       "admin_users_title": "Foydalanuvchilar",
       "admin_users_loading": "Foydalanuvchilar yuklanmoqda...",
@@ -1549,6 +1565,14 @@ class AppStrings {
       "admin_complaints_created_at": "Yaratilgan",
       "admin_complaints_update_status": "Holatni yangilash",
       "admin_complaints_status_updated": "Holat yangilandi",
+      "admin_listing_complaints_title": "Shikoyatli e'lonlar",
+      "admin_listing_complaints_empty": "Shikoyatli e'lonlar yo'q",
+      "admin_listing_complaints_error":
+          "Shikoyatli e'lonlarni yuklashda xatolik",
+      "admin_listing_complaints_last_reported": "So'nggi shikoyat",
+      "admin_listing_complaints_categories": "Shikoyatlar",
+      "admin_listing_complaints_categories_empty":
+          "Shikoyat kategoriyalari yo'q",
 
       // ===== FAQ CONTENT =====
       "faq_question": "Xonadoshlar bilan qanday kelishish va nizolardan qanday qochish kerak?",
