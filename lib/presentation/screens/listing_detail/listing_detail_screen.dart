@@ -2002,7 +2002,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                             },
                           ),
                           if (listingDetail.subwayStation != null)
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 8)
+                          else
+                            const SizedBox(height: 20),
                         ],
                         if (listingDetail.subwayStation != null) ...[
                           ListenableBuilder(
