@@ -21,6 +21,7 @@ class User with _$User {
   const factory User({
     required int id,
     required String email,
+    String? role,
     @JsonKey(name: 'created_at') required String createdAt,
   }) = _User;
 

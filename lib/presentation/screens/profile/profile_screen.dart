@@ -5,7 +5,10 @@ import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -19,7 +22,6 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -67,6 +69,62 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _redirectedToProfileSetup = false;
+  String? _userRole;
+  bool _userRoleLoaded = false;
+  bool _refreshingRole = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserRole();
+  }
+
+  Future<void> _loadUserRole() async {
+    final role = await SessionManager.getUserRole();
+    if (!mounted) return;
+    setState(() {
+      _userRole = role;
+      _userRoleLoaded = true;
+    });
+    if (role == null) {
+      await _refreshUserRoleFromServer();
+    }
+  }
+
+  Future<void> _refreshUserRoleFromServer() async {
+    if (_refreshingRole) return;
+    _refreshingRole = true;
+    try {
+      final response = await getIt<IOAuthApiClient>()
+          .post<Map<String, dynamic>, _EmptyRequest>(
+            "/users/verify-session",
+            (json) => json as Map<String, dynamic>,
+            data: _EmptyRequest(),
+          );
+      final user = response["user"];
+      final role = user is Map<String, dynamic> ? user["role"] as String? : null;
+      if (role != null) {
+        await SessionManager.storeUserRole(role);
+        if (!mounted) return;
+        setState(() {
+          _userRole = role;
+          _userRoleLoaded = true;
+        });
+      } else if (mounted) {
+        setState(() {
+          _userRoleLoaded = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _userRoleLoaded = true;
+        });
+      }
+    } finally {
+      _refreshingRole = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +301,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                       ],
                     ),
+                    if (_userRoleLoaded) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _getRoleLabel(_userRole, context),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color:
+                              Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -1019,64 +1090,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTappableDetailCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required VoidCallback onTap,
-    required BuildContext context,
-  }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: Theme.of(context).colorScheme.onSurface,
-                size: 24,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      value,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                size: 16,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   String _getGenderText(int gender, BuildContext context) {
     switch (gender) {
       case 1:
@@ -1096,6 +1109,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return Icons.female;
       default:
         return Icons.person_outline;
+    }
+  }
+
+  String _getRoleLabel(String? role, BuildContext context) {
+    switch (role) {
+      case "tenant":
+        return LanguageAwareStringHelper.getCurrent(context, "role_tenant");
+      case "landlord":
+        return LanguageAwareStringHelper.getCurrent(context, "role_landlord");
+      case "manager":
+        return LanguageAwareStringHelper.getCurrent(context, "role_manager");
+      case "admin":
+        return LanguageAwareStringHelper.getCurrent(context, "role_admin");
+      default:
+        return LanguageAwareStringHelper.getCurrent(context, "not_specified");
     }
   }
 
@@ -1566,4 +1594,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     ];
   }
+}
+
+class _EmptyRequest implements IJsonEncodable {
+  @override
+  Map<String, dynamic> toJson() => {};
 }

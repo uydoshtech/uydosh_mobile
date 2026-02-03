@@ -346,6 +346,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       final userId = user["id"];
       await SessionManager.storeBackendUserId(userId);
     }
+    if (user != null) {
+      await SessionManager.storeUserRole(user["role"]);
+    }
   }
 
   void _nextPage() {

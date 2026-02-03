@@ -31,6 +31,7 @@ class AuthService implements IAuthService {
         token: response.sessionToken,
         userId: response.user.id,
         email: response.user.email,
+        role: response.user.role,
       );
 
       return response;
@@ -54,6 +55,7 @@ class AuthService implements IAuthService {
         token: response.sessionToken,
         userId: response.user.id,
         email: response.user.email,
+        role: response.user.role,
       );
 
       return response;

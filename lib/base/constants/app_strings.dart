@@ -23,6 +23,10 @@ class AppStrings {
       "location": "Location",
       "create_listing": "Create",
       "profile": "Profile",
+      "role_tenant": "Tenant",
+      "role_landlord": "Landlord",
+      "role_manager": "Manager",
+      "role_admin": "Admin",
       "profile_completion": "Profile completion",
       "profile_completion_hint":
           "A completed profile means more accurate matches and comfortable co-living.",
@@ -521,6 +525,10 @@ class AppStrings {
       "location": "Район",
       "create_listing": "Создать",
       "profile": "Профиль",
+      "role_tenant": "Арендатор",
+      "role_landlord": "Арендодатель",
+      "role_manager": "Менеджер",
+      "role_admin": "Администратор",
       "profile_completion": "Заполнение профиля",
       "profile_completion_hint":
           "Заполненный профиль = более точные совпадения и комфортное соседство.",
@@ -1020,6 +1028,10 @@ class AppStrings {
       "location": "Tuman",
       "create_listing": "Yaratish",
       "profile": "Profil",
+      "role_tenant": "Ijarachi",
+      "role_landlord": "Ijaraga beruvchi",
+      "role_manager": "Menejer",
+      "role_admin": "Administrator",
       "profile_completion": "Profil to'ldirilishi",
       "profile_completion_hint":
           "Profil to'liq bo'lsa, mosliklar aniqroq va qo'shnichilik qulayroq bo'ladi.",

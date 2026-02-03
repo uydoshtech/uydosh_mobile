@@ -10,6 +10,7 @@ class SessionManager {
   static const String _userIdKey = 'user_id';
   static const String _emailKey = 'user_email';
   static const String _lastLoginKey = 'last_login';
+  static const String _userRoleKey = 'user_role';
 
   // Check if user is currently authenticated
   static Future<bool> isAuthenticated() async {
@@ -59,11 +60,17 @@ class SessionManager {
     required String token,
     required int userId,
     required String email,
+    String? role,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, token);
     await prefs.setInt(_userIdKey, userId);
     await prefs.setString(_emailKey, email);
+    if (role != null) {
+      await prefs.setString(_userRoleKey, role);
+    } else {
+      await prefs.remove(_userRoleKey);
+    }
     await prefs.setString(_lastLoginKey, DateTime.now().toIso8601String());
     // Session starts as unverified (OTP pending)
     await prefs.setBool('session_verified', false);
@@ -87,12 +94,19 @@ class SessionManager {
     return prefs.getString(_emailKey);
   }
 
+  // Get current user role
+  static Future<String?> getUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_userRoleKey);
+  }
+
   // Clear session (logout)
   static Future<void> clearSession() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userIdKey);
     await prefs.remove(_emailKey);
+    await prefs.remove(_userRoleKey);
     await prefs.remove(_lastLoginKey);
     await clearVerificationStatus();
   }
@@ -148,6 +162,16 @@ class SessionManager {
   static Future<void> storeBackendUserId(int userId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_userIdKey, userId);
+  }
+
+  // Store backend user role
+  static Future<void> storeUserRole(String? role) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (role == null) {
+      await prefs.remove(_userRoleKey);
+      return;
+    }
+    await prefs.setString(_userRoleKey, role);
   }
 
   // Get backend user ID for profile creation
