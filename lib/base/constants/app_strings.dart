@@ -385,10 +385,7 @@ class AppStrings {
       "admin_panel_description":
           "Manage users, listings, and reports from one place.",
       "admin_panel_section_users": "Users",
-      "admin_panel_section_listings": "Listings",
       "admin_panel_section_complaints": "Complaints",
-      "admin_panel_section_reports": "Reports",
-      "admin_panel_section_settings": "Admin Settings",
 
       "admin_users_title": "Users",
       "admin_users_loading": "Loading users...",
@@ -933,10 +930,7 @@ class AppStrings {
       "admin_panel_description":
           "Управляйте пользователями, объявлениями и жалобами в одном месте.",
       "admin_panel_section_users": "Пользователи",
-      "admin_panel_section_listings": "Объявления",
       "admin_panel_section_complaints": "Жалобы",
-      "admin_panel_section_reports": "Отчеты",
-      "admin_panel_section_settings": "Настройки админа",
 
       "admin_users_title": "Пользователи",
       "admin_users_loading": "Загрузка пользователей...",
@@ -1486,10 +1480,7 @@ class AppStrings {
       "admin_panel_description":
           "Foydalanuvchilar, e'lonlar va shikoyatlarni bir joyda boshqaring.",
       "admin_panel_section_users": "Foydalanuvchilar",
-      "admin_panel_section_listings": "E'lonlar",
       "admin_panel_section_complaints": "Shikoyatlar",
-      "admin_panel_section_reports": "Hisobotlar",
-      "admin_panel_section_settings": "Admin sozlamalari",
 
       "admin_users_title": "Foydalanuvchilar",
       "admin_users_loading": "Foydalanuvchilar yuklanmoqda...",

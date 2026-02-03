@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
@@ -42,11 +41,6 @@ class AdminPanelScreen extends StatelessWidget {
           ),
           _buildAdminSection(
             context,
-            icon: Icons.list_alt,
-            titleKey: "admin_panel_section_listings",
-          ),
-          _buildAdminSection(
-            context,
             icon: Icons.report_problem,
             titleKey: "admin_panel_section_complaints",
             onTap: () {
@@ -56,16 +50,6 @@ class AdminPanelScreen extends StatelessWidget {
                 ),
               );
             },
-          ),
-          _buildAdminSection(
-            context,
-            icon: Icons.analytics_outlined,
-            titleKey: "admin_panel_section_reports",
-          ),
-          _buildAdminSection(
-            context,
-            icon: Icons.settings,
-            titleKey: "admin_panel_section_settings",
           ),
         ],
       ),
