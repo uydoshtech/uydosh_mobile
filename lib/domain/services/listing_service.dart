@@ -126,6 +126,14 @@ abstract class IListingService {
     String? language,
   });
 
+  // Get listings for a specific user by ID (admin)
+  Future<PageableResponse<Listing>> getListingsByUserId({
+    required int userId,
+    int page = 1,
+    int limit = 10,
+    String? language,
+  });
+
   // Toggle listing active status
   Future<bool> toggleListingActive(int listingId);
 
@@ -987,6 +995,64 @@ class ListingService implements IListingService {
       );
     } catch (e) {
       logger.d('Error fetching user listings: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<PageableResponse<Listing>> getListingsByUserId({
+    required int userId,
+    int page = 1,
+    int limit = 10,
+    String? language,
+  }) async {
+    final currentLanguage = language ?? LanguageState().currentLanguage;
+
+    try {
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'limit': limit,
+        'language': currentLanguage,
+      };
+
+      final response = await _oauthApiClient.get<dynamic>(
+        '/listings/user/$userId',
+        (json) => json,
+        basePath: EnvironmentUtil.basePath,
+        queryParameters: queryParams,
+      );
+
+      List<dynamic> listingsData;
+      if (response is List) {
+        listingsData = response;
+      } else if (response is Map<String, dynamic>) {
+        if (response['content'] != null) {
+          listingsData = response['content'] as List<dynamic>;
+        } else if (response['listings'] != null) {
+          listingsData = response['listings'] as List<dynamic>;
+        } else if (response['data'] != null) {
+          listingsData = response['data'] as List<dynamic>;
+        } else {
+          listingsData = <dynamic>[];
+        }
+      } else {
+        listingsData = <dynamic>[];
+      }
+
+      final listings =
+          listingsData
+              .map((item) => Listing.fromJson(item as Map<String, dynamic>))
+              .toList();
+
+      return PageableResponse<Listing>(
+        data: listings,
+        total: listings.length,
+        page: page,
+        limit: limit,
+        totalPages: 1,
+      );
+    } catch (e) {
+      logger.d('Error fetching listings for user $userId: $e');
       rethrow;
     }
   }

@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
 
 class AdminPanelScreen extends StatelessWidget {
   const AdminPanelScreen({super.key});
@@ -48,6 +49,13 @@ class AdminPanelScreen extends StatelessWidget {
             context,
             icon: Icons.report_problem,
             titleKey: "admin_panel_section_complaints",
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AdminComplaintsScreen(),
+                ),
+              );
+            },
           ),
           _buildAdminSection(
             context,

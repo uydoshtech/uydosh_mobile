@@ -1,0 +1,251 @@
+import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/widgets/listing_tile.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+
+class AdminUserListingsScreen extends StatefulWidget {
+  const AdminUserListingsScreen({
+    super.key,
+    required this.userId,
+    this.userEmail,
+  });
+
+  final int userId;
+  final String? userEmail;
+
+  @override
+  State<AdminUserListingsScreen> createState() =>
+      _AdminUserListingsScreenState();
+}
+
+class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
+  final List<Listing> _listings = [];
+  final Set<int> _listingIds = {};
+  final ScrollController _scrollController = ScrollController();
+
+  bool _isLoading = false;
+  bool _isLoadingMore = false;
+  bool _hasError = false;
+  String? _errorMessage;
+  int _pageNumber = 1;
+  final int _pageSize = 10;
+  bool _hasMore = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchListings();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients || _isLoadingMore || !_hasMore) {
+      return;
+    }
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      _fetchListings(loadMore: true);
+    }
+  }
+
+  Future<void> _fetchListings({bool loadMore = false}) async {
+    if (_isLoading || _isLoadingMore) return;
+
+    setState(() {
+      _hasError = false;
+      _errorMessage = null;
+      if (loadMore) {
+        _isLoadingMore = true;
+      } else {
+        _isLoading = true;
+      }
+    });
+
+    try {
+      final response = await getIt<IListingService>().getListingsByUserId(
+        userId: widget.userId,
+        page: _pageNumber,
+        limit: _pageSize,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        final newItems = response.data
+            .where((item) => _listingIds.add(item.id))
+            .toList();
+        _listings.addAll(newItems);
+        _hasMore = newItems.isNotEmpty && response.data.length >= _pageSize;
+        if (_hasMore) {
+          _pageNumber += 1;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _hasError = true;
+        _errorMessage = e.toString();
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  Future<void> _refresh() async {
+    _pageNumber = 1;
+    _hasMore = true;
+    _listings.clear();
+    _listingIds.clear();
+    await _fetchListings();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final headerCount = _listings.length;
+    final title = LanguageAwareStringHelper.getCurrent(
+      context,
+      "admin_user_listings_title",
+    );
+    final titleWithCount = "$title ($headerCount)";
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          titleWithCount,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: Column(
+        children: [
+          if (widget.userEmail != null && widget.userEmail!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: Row(
+                children: [
+                  Text(
+                    "${LanguageAwareStringHelper.getCurrent(context, "admin_user_listings_user")}: ",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      widget.userEmail!,
+                      style: const TextStyle(fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child:
+                _isLoading
+                    ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    )
+                    : _hasError
+                    ? _buildErrorState(context)
+                    : _buildListings(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            LanguageAwareStringHelper.getCurrent(
+              context,
+              "admin_user_listings_error",
+            ),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.error,
+            ),
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              _errorMessage!,
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _refresh,
+            child: Text(
+              LanguageAwareStringHelper.getCurrent(context, "retry"),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListings(BuildContext context) {
+    if (_listings.isEmpty) {
+      return Center(
+        child: Text(
+          LanguageAwareStringHelper.getCurrent(
+            context,
+            "admin_user_listings_empty",
+          ),
+          style: TextStyle(
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        itemCount: _listings.length + (_isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _listings.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final listing = _listings[index];
+          return ListingTile(listing: listing);
+        },
+      ),
+    );
+  }
+}
