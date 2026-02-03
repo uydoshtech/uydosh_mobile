@@ -34,7 +34,6 @@ class AppStrings {
       "user": "User",
       "welcome_title": "Welcome to UyDosh",
       "welcome_subtitle": "Find your perfect roommate or accommodation",
-      "splash_title": "UyDosh",
       "splash_subtitle": "LET'S LIVE TOGETHER!",
       "search_results": "Search Results",
       "close": "Close",
@@ -63,33 +62,18 @@ class AppStrings {
           "You have already complained about this listing.",
 
       // ===== MESSAGING =====
-      "start_conversation": "Start Conversation",
       "conversations": "Messages",
       "messages": "Messages",
       "chat": "Chat",
-      "chat_with": "Chat with",
       "view_listing": "View Listing",
       "menu_messages": 'Messages',
-      "send_message": "Send Message",
       "type_message": "Type a message...",
-      "message_sent": "Message sent",
-      "message_failed": "Failed to send message",
       "conversation_created": "Conversation started",
       "conversation_failed": "Failed to start conversation",
       "no_conversations": "No conversations yet",
       "no_messages": "No messages yet",
       "no_messages_description":
           "You haven't received any messages about your listings yet",
-      "loading_conversations": "Loading conversations...",
-      "loading_messages": "Loading messages...",
-      "mark_as_read": "Mark as read",
-      "unread_messages": "Unread messages",
-      "last_message": "Last message",
-      "reply": "Reply",
-      "edit_message": "Edit message",
-      "delete_message": "Delete message",
-      "message_edited": "Message edited",
-      "message_deleted": "Message deleted",
       "error_not_authenticated": "Please log in to start a conversation",
       "error_cannot_message_self": "You cannot message yourself",
       "start_conversation_from_listing":
@@ -112,7 +96,6 @@ class AppStrings {
       // ===== QUICK QUESTIONS =====
       "quick_question_room_available": "Is room available?",
       "quick_question_move_in_date": "When is move in date?",
-      "urgent": "Urgent",
       "any_date": "Any date",
       "quick_question_people_living":
           "How many people already live in apartment?",
@@ -164,10 +147,8 @@ class AppStrings {
       "no_universities_available": "No universities available",
       "no_search_results": "No search results found",
       "try_refreshing": "Try refreshing or check back later",
-      "try_different_criteria": "Try different search criteria",
       "try_refining_search": "Try refining your search criteria",
       "refine_search": "Refine Search",
-      "repeat_search": "Repeat search",
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Subway line",
@@ -464,7 +445,6 @@ class AppStrings {
 
       // ===== PRICING & FINANCIAL =====
       "month": "month",
-      "currency_symbol": r"$",
 
       // ===== SEARCH & FILTERS =====
       "search_listings": "Search Listings",
@@ -507,18 +487,11 @@ class AppStrings {
       "contact_user": "Contact User",
 
       // ===== STATUS & STATE =====
-      "toggling_listing": "Toggling...",
-
       "delete_listing": "Delete Listing",
       "delete_listing_confirmation":
           "Are you sure you want to delete this listing? This action cannot be undone.",
       "delete_listing_success": "Listing deleted successfully",
       "delete_listing_error": "Error deleting listing",
-      "feature_listing": "Feature Listing",
-      "feature_listing_success": "Listing featured successfully",
-      "unfeature_listing_success": "Listing unfeatured successfully",
-      "feature_listing_error": "Error featuring listing",
-      "deleting_listing": "Deleting listing...",
       "unknown": "Unknown",
 
       // ===== COMPLAINTS =====
@@ -526,19 +499,11 @@ class AppStrings {
       "select_complaint_category": "Select Complaint Category",
       "submit_complaint": "Submit Complaint",
       "complaint_created_success": "Complaint submitted successfully",
-      "complaint_button": "Report Listing",
       "listing_complaints": "Listing Complaints",
       "listing_complaints_header": "Complaints for the listing: {count}",
       "view_listing_complaints": "View listing complaints",
-      "listing_complaints_count": "There are {count} complaints to this listing",
-      "complaints_count": "Complaints: {count}",
       "complaints_count_short": "{count} complaints",
       "no_listing_complaints": "No complaints for this listing yet",
-      "complaint_id": "Complaint ID",
-      "complaint_created_at": "Created",
-      "complaint_status_pending": "Pending",
-      "complaint_status_resolved": "Resolved",
-      "complaint_status_dismissed": "Dismissed",
     },
     "ru": {
       // ===== NAVIGATION =====
@@ -567,7 +532,6 @@ class AppStrings {
       "user": "Пользователь",
       "welcome_title": "Добро пожаловать в UyDosh",
       "welcome_subtitle": "Найди идеального соседа или жильё",
-      "splash_title": "UyDosh",
       "splash_subtitle": "ДАВАЙТЕ ЖИТЬ ВМЕСТЕ!",
       "search_results": "Результаты поиска",
       "close": "Закрыть",
@@ -595,33 +559,18 @@ class AppStrings {
       "error_resource_conflict": "Вы уже пожаловались на это объявление.",
 
       // ===== MESSAGING =====
-      "start_conversation": "Начать разговор",
       "conversations": "Сообщения",
       "messages": "Сообщения",
       "chat": "Чат",
-      "chat_with": "Чат с",
       "view_listing": "Посмотреть объявление",
       "menu_messages": "Сообщения",
-      "send_message": "Отправить сообщение",
       "type_message": "Введите сообщение...",
-      "message_sent": "Сообщение отправлено",
-      "message_failed": "Не удалось отправить сообщение",
       "conversation_created": "Разговор начат",
       "conversation_failed": "Не удалось начать разговор",
       "no_conversations": "Пока нет разговоров",
       "no_messages": "Пока нет сообщений",
       "no_messages_description":
           "Вы еще не получили сообщений о ваших объявлениях",
-      "loading_conversations": "Загрузка разговоров...",
-      "loading_messages": "Загрузка сообщений...",
-      "mark_as_read": "Отметить как прочитанное",
-      "unread_messages": "Непрочитанные сообщения",
-      "last_message": "Последнее сообщение",
-      "reply": "Ответить",
-      "edit_message": "Редактировать сообщение",
-      "delete_message": "Удалить сообщение",
-      "message_edited": "Сообщение отредактировано",
-      "message_deleted": "Сообщение удалено",
       "error_not_authenticated": "Войдите в систему, чтобы начать разговор",
       "error_cannot_message_self": "Вы не можете писать сообщения себе",
       "start_conversation_from_listing":
@@ -644,7 +593,6 @@ class AppStrings {
       // ===== QUICK QUESTIONS =====
       "quick_question_room_available": "Комната свободна?",
       "quick_question_move_in_date": "Когда можно въехать?",
-      "urgent": "Срочно",
       "any_date": "Любая дата",
       "quick_question_people_living": "Сколько людей уже живет в квартире?",
       "private_room": "Отдельная комната",
@@ -697,10 +645,8 @@ class AppStrings {
       "no_universities_available": "Университеты недоступны",
       "no_search_results": "Результаты поиска не найдены",
       "try_refreshing": "Попробуйте обновить или проверьте позже",
-      "try_different_criteria": "Попробуйте другие критерии поиска",
       "try_refining_search": "Попробуйте уточнить критерии поиска",
       "refine_search": "Уточнить поиск",
-      "repeat_search": "Повторить поиск",
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Линия метро",
@@ -999,7 +945,6 @@ class AppStrings {
 
       // ===== PRICING & FINANCIAL =====
       "month": "месяц",
-      "currency_symbol": r"$",
 
       // ===== SEARCH & FILTERS =====
       "search_listings": "Поиск объявлений",
@@ -1042,37 +987,22 @@ class AppStrings {
       "contact_user": "Связаться с пользователем",
 
       // ===== STATUS & STATE =====
-      "toggling_listing": "Переключение...",
-
       "delete_listing": "Удалить объявление",
       "delete_listing_confirmation":
           "Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.",
       "delete_listing_success": "Объявление успешно удалено",
       "delete_listing_error": "Ошибка удаления объявления",
-      "feature_listing": "Выделить объявление",
-      "feature_listing_success": "Объявление успешно выделено",
-      "unfeature_listing_success": "Объявление успешно снято с выделения",
-      "feature_listing_error": "Ошибка выделения объявления",
-      "deleting_listing": "Удаление объявления...",
 
       // ===== COMPLAINTS =====
       "create_complaint": "Создать жалобу",
       "select_complaint_category": "Выберите категорию жалобы",
       "submit_complaint": "Отправить жалобу",
       "complaint_created_success": "Жалоба успешно отправлена",
-      "complaint_button": "Пожаловаться на объявление",
       "listing_complaints": "Жалобы по объявлению",
       "listing_complaints_header": "Жалобы по объявлению: {count}",
       "view_listing_complaints": "Показать жалобы",
-      "listing_complaints_count": "На это объявление {count} жалоб",
-      "complaints_count": "Жалоб: {count}",
       "complaints_count_short": "{count} жалоб",
       "no_listing_complaints": "Жалоб по этому объявлению пока нет",
-      "complaint_id": "Жалоба №",
-      "complaint_created_at": "Создано",
-      "complaint_status_pending": "В ожидании",
-      "complaint_status_resolved": "Решено",
-      "complaint_status_dismissed": "Отклонено",
     },
     "uz": {
       // ===== NAVIGATION =====
@@ -1101,7 +1031,6 @@ class AppStrings {
       "user": "Foydalanuvchi",
       "welcome_title": "UyDosh ga xush kelibsiz",
       "welcome_subtitle": "Mukammal xonadon yoki turar joy toping",
-      "splash_title": "UyDosh",
       "splash_subtitle": "KELING BIRGA YASHAYMIZ!",
       "search_results": "Qidiruv natijalari",
       "close": "Yopish",
@@ -1130,33 +1059,18 @@ class AppStrings {
           "Siz bu e'lon haqida allaqachon shikoyat qilgansiz.",
 
       // ===== MESSAGING =====
-      "start_conversation": "Suhbatni boshlash",
       "conversations": "Xabarlar",
       "messages": "Xabarlar",
       "chat": "Chat",
-      "chat_with": "Chat",
       "view_listing": "E'lonni ko'rish",
       "menu_messages": "Xabarlar",
-      "send_message": "Xabar yuborish",
       "type_message": "Xabar yozing...",
-      "message_sent": "Xabar yuborildi",
-      "message_failed": "Xabar yuborilmadi",
       "conversation_created": "Suhbat boshlandi",
       "conversation_failed": "Suhbat boshlanmadi",
       "no_conversations": "Hali suhbatlar yo'q",
       "no_messages": "Hali xabarlar yo'q",
       "no_messages_description":
           "Siz hali e'lonlaringiz haqida xabar olmadingiz",
-      "loading_conversations": "Suhbatlar yuklanmoqda...",
-      "loading_messages": "Xabarlar yuklanmoqda...",
-      "mark_as_read": "O'qilgan deb belgilash",
-      "unread_messages": "O'qilmagan xabarlar",
-      "last_message": "Oxirgi xabar",
-      "reply": "Javob berish",
-      "edit_message": "Xabarni tahrirlash",
-      "delete_message": "Xabarni o'chirish",
-      "message_edited": "Xabar tahrirlandi",
-      "message_deleted": "Xabar o'chirildi",
       "error_not_authenticated": "Suhbatni boshlash uchun tizimga kiring",
       "error_cannot_message_self": "O'zingizga xabar yubora olmaysiz",
       "start_conversation_from_listing":
@@ -1180,7 +1094,6 @@ class AppStrings {
       // ===== QUICK QUESTIONS =====
       "quick_question_room_available": "Xona bo'shmi?",
       "quick_question_move_in_date": "Ko'chib kelish sanasi qachon?",
-      "urgent": "Shoshilinch",
       "any_date": "Har qanday sanasi",
       "quick_question_people_living": "Kvartiraga necha kishi yashaydi?",
       "private_room": "Shaxsiy xona",
@@ -1235,10 +1148,8 @@ class AppStrings {
       "no_universities_available": "Universitetlar mavjud emas",
       "no_search_results": "Qidiruv natijalari topilmadi",
       "try_refreshing": "Yangilashni sinab ko'ring yoki keyinroq tekshiring",
-      "try_different_criteria": "Boshqa qidiruv mezonlarini sinab ko'ring",
       "try_refining_search": "Qidiruv mezonlarini aniqlashni sinab ko'ring",
       "refine_search": "Qidiruvni aniqlash",
-      "repeat_search": "Qidiruvni takrorlash",
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Liniyani tanlang",
@@ -1539,7 +1450,6 @@ class AppStrings {
 
       // ===== PRICING & FINANCIAL =====
       "month": "oy",
-      "currency_symbol": r"$",
 
       // ===== SEARCH & FILTERS =====
       "search_listings": "E'lonlarni qidirish",
@@ -1582,38 +1492,22 @@ class AppStrings {
       "contact_user": "Foydalanuvchi bilan bog'lanish",
 
       // ===== STATUS & STATE =====
-      "toggling_listing": "Almashtirilmoqda...",
-
       "delete_listing": "E'loni o'chirish",
       "delete_listing_confirmation":
           "Bu e'loni o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.",
       "delete_listing_success": "E'lon muvaffaqiyatli o'chirildi",
       "delete_listing_error": "E'loni o'chirishda xatolik",
-      "feature_listing": "E'loni ajratib ko'rsatish",
-      "feature_listing_success": "E'lon muvaffaqiyatli ajratildi",
-      "unfeature_listing_success":
-          "E'lon muvaffaqiyatli ajratishdan olib tashlandi",
-      "feature_listing_error": "E'loni ajratishda xatolik",
-      "deleting_listing": "E'lon o'chirilmoqda...",
 
       // ===== COMPLAINTS =====
       "create_complaint": "Shikoyat yaratish",
       "select_complaint_category": "Shikoyat kategoriyasini tanlang",
       "submit_complaint": "Shikoyatni yuborish",
       "complaint_created_success": "Shikoyat muvaffaqiyatli yuborildi",
-      "complaint_button": "E'londan shikoyat qilish",
       "listing_complaints": "E'lon bo'yicha shikoyatlar",
       "listing_complaints_header": "E'lon bo'yicha shikoyatlar: {count}",
       "view_listing_complaints": "Shikoyatlarni ko'rish",
-      "listing_complaints_count": "Bu e'lon bo'yicha {count} ta shikoyat bor",
-      "complaints_count": "Shikoyatlar: {count}",
       "complaints_count_short": "{count} ta shikoyat",
       "no_listing_complaints": "Bu e'lon bo'yicha hali shikoyatlar yo'q",
-      "complaint_id": "Shikoyat ID",
-      "complaint_created_at": "Yaratilgan",
-      "complaint_status_pending": "Kutilmoqda",
-      "complaint_status_resolved": "Hal qilindi",
-      "complaint_status_dismissed": "Rad etildi",
     },
   };
 
