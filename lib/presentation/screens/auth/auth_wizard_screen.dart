@@ -194,6 +194,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         _nameController.text = googleUser.displayName!;
       }
 
+      await SessionManager.storeGoogleProfile(
+        displayName: googleUser.displayName,
+        photoUrl: googleUser.photoUrl,
+      );
+
       // Now authenticate with your backend
       await _authenticateWithBackend();
 

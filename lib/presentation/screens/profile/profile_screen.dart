@@ -9,6 +9,7 @@ import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -73,11 +74,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _userRole;
   bool _userRoleLoaded = false;
   bool _refreshingRole = false;
+  late final CurrentUserProfileBloc _currentUserProfileBloc;
+  UserProfile? _cachedUserProfile;
+  String? _cachedGoogleDisplayName;
+  String? _cachedGooglePhotoUrl;
 
   @override
   void initState() {
     super.initState();
+    _currentUserProfileBloc = CurrentUserProfileBloc(
+      getIt<IUserProfileService>(),
+    );
     _loadUserRole();
+    _loadCachedProfileData();
+  }
+
+  @override
+  void dispose() {
+    _currentUserProfileBloc.close();
+    super.dispose();
+  }
+
+  Future<void> _loadCachedProfileData() async {
+    final results = await Future.wait([
+      SessionManager.getGoogleDisplayName(),
+      SessionManager.getGooglePhotoUrl(),
+      SessionManager.getCachedUserProfile(),
+    ]);
+
+    if (!mounted) return;
+
+    setState(() {
+      _cachedGoogleDisplayName = results[0] as String?;
+      _cachedGooglePhotoUrl = results[1] as String?;
+      _cachedUserProfile = results[2] as UserProfile?;
+    });
+
+    if (_cachedUserProfile == null &&
+        AuthenticationState().isAuthenticated) {
+      _currentUserProfileBloc.add(
+        const CurrentUserProfileEvent.fetchProfile(),
+      );
+    }
   }
 
   Future<void> _loadUserRole() async {
@@ -130,10 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create:
-          (context) =>
-              CurrentUserProfileBloc(getIt<IUserProfileService>())
-                ..add(const CurrentUserProfileEvent.fetchProfile()),
+      create: (context) => _currentUserProfileBloc,
       child: BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
         listener: (context, state) {
           state.maybeWhen(
@@ -199,6 +234,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                   ),
               builder: (context, data) {
+                final effectiveProfile =
+                    _cachedUserProfile ?? data.profile;
+
+                if (effectiveProfile == null &&
+                    (data.isLoading || data.hasError)) {
+                  return Scaffold(
+                    body: CenteredHouseLoadingIndicator(
+                      text: LanguageAwareStringHelper.getCurrent(
+                        context,
+                        "loading",
+                      ),
+                    ),
+                  );
+                }
+
                 if (data.hasError &&
                     data.errorMessage == profileNotFoundErrorCode) {
                   return Scaffold(
@@ -210,6 +260,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   );
                 }
+
+                final profile = effectiveProfile!;
                 return Scaffold(
                   appBar: AppBar(
                     title: Text(
@@ -232,16 +284,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   body:
-                      data.isLoading
-                          ? CenteredHouseLoadingIndicator(
-                            text: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "loading",
-                            ),
-                          )
-                          : data.hasError
+                      data.hasError
                           ? _buildErrorState(data.errorMessage, context)
-                          : _buildProfileContent(data.profile!),
+                          : _buildProfileContent(profile),
                 );
               },
             );
@@ -341,7 +386,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Profile Name
-                      if (profile.name != null && profile.name!.isNotEmpty) ...[
+                      if (((_cachedGoogleDisplayName ?? profile.name) ?? "")
+                          .isNotEmpty) ...[
                         Row(
                           children: [
                             Icon(
@@ -368,7 +414,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   ),
                                   Text(
-                                    profile.name!,
+                                    _cachedGoogleDisplayName ?? profile.name!,
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -1195,8 +1241,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Build profile picture - shows Google profile picture if available, fallback to icon
   Widget _buildProfilePicture() {
     final currentUser = FirebaseAuth.instance.currentUser;
+    final photoUrl = _cachedGooglePhotoUrl ?? currentUser?.photoURL;
 
-    if (currentUser?.photoURL != null) {
+    if (photoUrl != null) {
       // Show Google profile picture with theme border
       return DecoratedBox(
         decoration: BoxDecoration(
@@ -1205,7 +1252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: ClipOval(
           child: CachedNetworkImage(
-            imageUrl: currentUser!.photoURL!,
+            imageUrl: photoUrl,
             width: 100,
             height: 100,
             fit: BoxFit.cover,
@@ -1222,16 +1269,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       );
-    } else {
-      // Fallback to standard person icon with theme border
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(width: 1),
-        ),
-        child: const Icon(Icons.person, size: 50),
-      );
     }
+
+    // Fallback to standard person icon with theme border
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(width: 1),
+      ),
+      child: const Icon(Icons.person, size: 50),
+    );
   }
 
   // Build logout button

@@ -70,6 +70,9 @@ class BurgerMenuWidget extends StatefulWidget {
 }
 
 class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
+  String? _cachedGoogleDisplayName;
+  String? _cachedGooglePhotoUrl;
+  late final CurrentUserProfileBloc _currentUserProfileBloc;
   // Theme-aware color helper methods
   Color _getTextColor() {
     final currentTheme = ThemeState().currentTheme;
@@ -162,12 +165,45 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   @override
   void initState() {
     super.initState();
+    _currentUserProfileBloc = CurrentUserProfileBloc(
+      getIt<IUserProfileService>(),
+    );
+    _loadCachedGoogleProfile();
     // Listen to centralized authentication state changes
     AuthenticationState().addListener(() {
-      if (mounted) {
-        setState(() {});
-      }
+      if (!mounted) return;
+      _loadCachedGoogleProfile();
     });
+  }
+
+  @override
+  void dispose() {
+    _currentUserProfileBloc.close();
+    super.dispose();
+  }
+
+  Future<void> _loadCachedGoogleProfile() async {
+    final results = await Future.wait([
+      SessionManager.getGoogleDisplayName(),
+      SessionManager.getGooglePhotoUrl(),
+    ]);
+
+    if (!mounted) return;
+
+    setState(() {
+      _cachedGoogleDisplayName = results[0];
+      _cachedGooglePhotoUrl = results[1];
+    });
+
+    _maybeFetchProfile();
+  }
+
+  void _maybeFetchProfile() {
+    if (!AuthenticationState().isAuthenticated) return;
+    if ((_cachedGoogleDisplayName ?? "").trim().isNotEmpty) return;
+    _currentUserProfileBloc.add(
+      const CurrentUserProfileEvent.fetchProfile(),
+    );
   }
 
   @override
@@ -251,12 +287,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                             const SizedBox(height: 12),
                             // Profile Name below the logo
                             BlocProvider(
-                              create:
-                                  (context) => CurrentUserProfileBloc(
-                                    getIt<IUserProfileService>(),
-                                  )..add(
-                                    const CurrentUserProfileEvent.fetchProfile(),
-                                  ),
+                              create: (context) => _currentUserProfileBloc,
                               child: BlocSelector<
                                 CurrentUserProfileBloc,
                                 CurrentUserProfileState,
@@ -295,6 +326,19 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                                           ),
                                     ),
                                 builder: (context, data) {
+                                  final cachedName =
+                                      (_cachedGoogleDisplayName ?? "").trim();
+                                  if (cachedName.isNotEmpty) {
+                                    return Text(
+                                      cachedName,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: _getTextColor(),
+                                      ),
+                                    );
+                                  }
+
                                   if (data.isLoading) {
                                     return Text(
                                       LanguageAwareStringHelper.getCurrent(
@@ -323,8 +367,11 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                                     );
                                   }
 
+                                  final displayName =
+                                      _cachedGoogleDisplayName ??
+                                      data.profile!.name;
                                   return Text(
-                                    data.profile!.name ??
+                                    displayName ??
                                         LanguageAwareStringHelper.getCurrent(
                                           context,
                                           "user",
@@ -734,12 +781,13 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   // Build profile picture - shows Google profile picture if available, fallback to icon
   Widget _buildProfilePicture() {
     final currentUser = FirebaseAuth.instance.currentUser;
+    final photoUrl = _cachedGooglePhotoUrl ?? currentUser?.photoURL;
 
-    if (currentUser?.photoURL != null) {
+    if (photoUrl != null) {
       // Show Google profile picture
       return ClipOval(
         child: CachedNetworkImage(
-          imageUrl: currentUser!.photoURL!,
+          imageUrl: photoUrl,
           width: 80,
           height: 80,
           fit: BoxFit.cover,
@@ -759,9 +807,9 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                   Icon(Icons.person, color: _getBorderColor(), size: 40),
         ),
       );
-    } else {
-      // Fallback to standard person icon
-      return Icon(Icons.person, color: _getBorderColor(), size: 40);
     }
+
+    // Fallback to standard person icon
+    return Icon(Icons.person, color: _getBorderColor(), size: 40);
   }
 }

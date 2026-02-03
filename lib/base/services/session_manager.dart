@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uy_dosh/domain/models/user_profile.dart';
 
 // 🚀 PRODUCTION CONFIGURATION:
 // - Token expires after 1 year (365 days)
@@ -11,6 +14,9 @@ class SessionManager {
   static const String _emailKey = 'user_email';
   static const String _lastLoginKey = 'last_login';
   static const String _userRoleKey = 'user_role';
+  static const String _googleDisplayNameKey = 'google_display_name';
+  static const String _googlePhotoUrlKey = 'google_photo_url';
+  static const String _userProfileCacheKey = 'user_profile_cache';
 
   // Check if user is currently authenticated
   static Future<bool> isAuthenticated() async {
@@ -108,6 +114,9 @@ class SessionManager {
     await prefs.remove(_emailKey);
     await prefs.remove(_userRoleKey);
     await prefs.remove(_lastLoginKey);
+    await prefs.remove(_googleDisplayNameKey);
+    await prefs.remove(_googlePhotoUrlKey);
+    await prefs.remove(_userProfileCacheKey);
     await clearVerificationStatus();
   }
 
@@ -178,5 +187,57 @@ class SessionManager {
   static Future<int?> getBackendUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt(_userIdKey);
+  }
+
+  // Store Google profile data for fast access in UI
+  static Future<void> storeGoogleProfile({
+    String? displayName,
+    String? photoUrl,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (displayName != null && displayName.trim().isNotEmpty) {
+      await prefs.setString(_googleDisplayNameKey, displayName.trim());
+    } else {
+      await prefs.remove(_googleDisplayNameKey);
+    }
+    if (photoUrl != null && photoUrl.trim().isNotEmpty) {
+      await prefs.setString(_googlePhotoUrlKey, photoUrl.trim());
+    } else {
+      await prefs.remove(_googlePhotoUrlKey);
+    }
+  }
+
+  static Future<String?> getGoogleDisplayName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_googleDisplayNameKey);
+  }
+
+  static Future<String?> getGooglePhotoUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_googlePhotoUrlKey);
+  }
+
+  // Store full user profile locally for fast UI rendering
+  static Future<void> storeUserProfile(UserProfile profile) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _userProfileCacheKey,
+      jsonEncode(profile.toJson()),
+    );
+  }
+
+  static Future<UserProfile?> getCachedUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_userProfileCacheKey);
+    if (raw == null || raw.isEmpty) return null;
+
+    try {
+      final Map<String, dynamic> json =
+          jsonDecode(raw) as Map<String, dynamic>;
+      return UserProfile.fromJson(json);
+    } catch (_) {
+      await prefs.remove(_userProfileCacheKey);
+      return null;
+    }
   }
 }
