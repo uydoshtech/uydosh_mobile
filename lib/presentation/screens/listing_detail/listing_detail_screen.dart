@@ -943,7 +943,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     }
   }
 
-  List<ActionMenuItem> _buildActionMenuItems(ListingDetail listingDetail) {
+  List<ActionMenuItem> _buildActionMenuItems(
+    ListingDetail listingDetail, {
+    required bool isAdmin,
+  }) {
     final userListingState = UserListingState();
     final isOwner = userListingState.isOwner(listingDetail.user.id);
     final authState = AuthenticationState();
@@ -1034,8 +1037,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       );
     }
 
-    // Delete option - only show for listing owner
-    if (isOwner) {
+    // Delete option - show for listing owner or admin
+    if (isOwner || isAdmin) {
       items.add(
         ActionMenuItem(
           value: "delete",
@@ -1560,8 +1563,27 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                   }
 
                   final listingDetail = data.listingDetail!;
-                  return ActionDropdownMenu(
-                    items: _buildActionMenuItems(listingDetail),
+                  final isAuthenticated =
+                      AuthenticationState().isAuthenticated;
+                  if (!isAuthenticated) {
+                    return ActionDropdownMenu(
+                      items: _buildActionMenuItems(
+                        listingDetail,
+                        isAdmin: false,
+                      ),
+                    );
+                  }
+                  return FutureBuilder<String?>(
+                    future: SessionManager.getUserRole(),
+                    builder: (context, snapshot) {
+                      final isAdmin = snapshot.data == "admin";
+                      return ActionDropdownMenu(
+                        items: _buildActionMenuItems(
+                          listingDetail,
+                          isAdmin: isAdmin,
+                        ),
+                      );
+                    },
                   );
                 },
               ),

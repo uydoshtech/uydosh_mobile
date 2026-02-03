@@ -25,6 +25,7 @@ abstract class IComplaintService {
   Future<List<Complaint>> getUserListingComplaints(int userId);
   Future<List<Complaint>> getListingComplaints(int listingId);
   Future<int> getListingComplaintsCount(int listingId);
+  Future<int> getComplaintsCount({String? status});
 }
 
 class ComplaintService implements IComplaintService {
@@ -298,6 +299,36 @@ class ComplaintService implements IComplaintService {
       }
 
       return 0;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<int> getComplaintsCount({String? status}) async {
+    try {
+      final queryParams = <String, String>{
+        'page': '1',
+        'limit': '1',
+      };
+      if (status != null) queryParams['status'] = status;
+
+      final queryString = queryParams.entries
+          .map((e) => '${e.key}=${e.value}')
+          .join('&');
+
+      final response = await _oauthApiClient.get<dynamic>(
+        '/complaints${queryString.isNotEmpty ? '?$queryString' : ''}',
+        (json) => json,
+      );
+
+      final total = _extractPaginationTotal(response);
+      if (total != null) {
+        return total;
+      }
+
+      final data = _extractComplaintsData(response);
+      return data?.length ?? 0;
     } catch (e) {
       rethrow;
     }

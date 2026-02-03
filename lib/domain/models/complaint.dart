@@ -13,6 +13,11 @@ class Complaint with _$Complaint {
     @JsonKey(name: 'listing_id') int? listingId,
     @JsonKey(name: 'category_id') int? categoryId,
     @JsonKey(name: 'category') ComplaintCategory? category,
+    @JsonKey(
+      name: 'status',
+      fromJson: _statusFromJson,
+      defaultValue: 'pending',
+    )
     required String status,
     @JsonKey(name: 'created_at') String? createdAt,
     @JsonKey(name: 'updated_at') String? updatedAt,
@@ -20,6 +25,9 @@ class Complaint with _$Complaint {
 
   factory Complaint.fromJson(Map<String, dynamic> json) =>
       _$ComplaintFromJson(json);
+
+  static String _statusFromJson(Object? value) =>
+      value is String && value.isNotEmpty ? value : 'pending';
 }
 
 @freezed

@@ -1,9 +1,14 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -26,13 +31,19 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
   int _pageNumber = 1;
   final int _pageSize = 20;
   bool _hasMore = true;
-  String? _statusFilter;
+  String? _statusFilter = "pending";
+  Map<String, int> _statusCounts = {
+    "pending": 0,
+    "resolved": 0,
+    "dismissed": 0,
+  };
   final Map<int, ComplaintCategory> _categoriesById = {};
 
   @override
   void initState() {
     super.initState();
     _fetchCategories();
+    _fetchStatusCounts();
     _fetchComplaints();
     _scrollController.addListener(_onScroll);
   }
@@ -113,6 +124,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
     _pageNumber = 1;
     _hasMore = true;
     _complaints.clear();
+    _fetchStatusCounts();
     await _fetchComplaints();
   }
 
@@ -133,9 +145,14 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
       setState(() {
         final index = _complaints.indexWhere((item) => item.id == updated.id);
         if (index != -1) {
-          _complaints[index] = updated;
+          if (_statusFilter != null && updated.status != _statusFilter) {
+            _complaints.removeAt(index);
+          } else {
+            _complaints[index] = updated;
+          }
         }
       });
+      _fetchStatusCounts();
       ToastTheme.showSuccess(
         context,
         message: LanguageAwareStringHelper.getCurrent(
@@ -181,22 +198,41 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
   Widget _buildFilterRow(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: Wrap(
-        spacing: 8,
-        children: [
-          _buildFilterChip(context, null, "admin_complaints_filter_all"),
-          _buildFilterChip(context, "pending", "admin_complaints_filter_pending"),
-          _buildFilterChip(
-            context,
-            "resolved",
-            "admin_complaints_filter_resolved",
-          ),
-          _buildFilterChip(
-            context,
-            "dismissed",
-            "admin_complaints_filter_dismissed",
-          ),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _buildFilterChip(
+              context,
+              "pending",
+              _buildStatusFilterLabel(
+                context,
+                "pending",
+                "admin_complaints_filter_pending",
+              ),
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              context,
+              "resolved",
+              _buildStatusFilterLabel(
+                context,
+                "resolved",
+                "admin_complaints_filter_resolved",
+              ),
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              context,
+              "dismissed",
+              _buildStatusFilterLabel(
+                context,
+                "dismissed",
+                "admin_complaints_filter_dismissed",
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -204,14 +240,74 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
   Widget _buildFilterChip(
     BuildContext context,
     String? status,
-    String labelKey,
+    String label,
   ) {
     final isSelected = _statusFilter == status;
-    return ChoiceChip(
-      selected: isSelected,
-      label: Text(LanguageAwareStringHelper.getCurrent(context, labelKey)),
-      onSelected: (_) => _onStatusFilterChanged(status),
+    final selectedColor = _getFilterSelectedColor();
+    return InkWell(
+      onTap: () => _onStatusFilterChanged(status),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: isSelected ? selectedColor : Colors.grey[200],
+          border: Border.all(
+            color: isSelected ? selectedColor : Colors.grey[400]!,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: isSelected ? Colors.white : Colors.grey[700],
+          ),
+        ),
+      ),
     );
+  }
+  String _buildStatusFilterLabel(
+    BuildContext context,
+    String status,
+    String labelKey,
+  ) {
+    final label = LanguageAwareStringHelper.getCurrent(context, labelKey);
+    final count = _statusCounts[status];
+    if (count == null) return label;
+    return "$label ($count)";
+  }
+
+  Future<void> _fetchStatusCounts() async {
+    try {
+      final service = getIt<IComplaintService>();
+      final counts = await Future.wait([
+        service.getComplaintsCount(status: "pending"),
+        service.getComplaintsCount(status: "resolved"),
+        service.getComplaintsCount(status: "dismissed"),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _statusCounts = {
+          "pending": counts[0],
+          "resolved": counts[1],
+          "dismissed": counts[2],
+        };
+      });
+    } catch (_) {}
+  }
+  Color _getFilterSelectedColor() {
+    if (ThemeState().isBlueTheme) {
+      return BlueThemeColors.buttonPrimary;
+    } else if (ThemeState().isLightTheme) {
+      return Colors.black;
+    } else {
+      return Colors.black;
+    }
   }
 
   Widget _buildErrorState(BuildContext context) {
@@ -399,7 +495,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
         return Colors.grey;
       case "pending":
       default:
-        return Theme.of(context).colorScheme.primary;
+        return Colors.red;
     }
   }
 
@@ -469,6 +565,17 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
+                leading: const Icon(Icons.open_in_new),
+                title: Text(
+                  LanguageAwareStringHelper.getCurrent(context, "view_listing"),
+                ),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _openListing(complaint.listingId);
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
                 title: Text(
                   LanguageAwareStringHelper.getCurrent(
                     context,
@@ -519,6 +626,26 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _openListing(int? listingId) {
+    if (listingId == null || listingId <= 0) {
+      ToastTheme.showError(
+        context,
+        message: LanguageAwareStringHelper.getCurrent(context, "error_generic"),
+      );
+      return;
+    }
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) => BlocProvider(
+              create: (context) => ListingDetailBloc(getIt<IListingService>()),
+              child: ListingDetailScreen(listingId: listingId),
+            ),
+      ),
     );
   }
 }

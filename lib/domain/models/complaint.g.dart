@@ -18,7 +18,7 @@ _$ComplaintImpl _$$ComplaintImplFromJson(Map<String, dynamic> json) =>
               : ComplaintCategory.fromJson(
                 json['category'] as Map<String, dynamic>,
               ),
-      status: json['status'] as String,
+      status: Complaint._statusFromJson(json['status']),
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
     );
