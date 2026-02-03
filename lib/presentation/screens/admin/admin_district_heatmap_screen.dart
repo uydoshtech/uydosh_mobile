@@ -315,7 +315,11 @@ class _AdminDistrictHeatmapScreenState
     final language = LanguageState().currentLanguage;
     final title = LocationCache.getLocationShortName(location.id, language);
     final resolvedCount = count;
-    final backgroundColor = _resolveTileColor(context, resolvedCount);
+    final backgroundColor = _resolveTileColor(
+      context,
+      location.id,
+      resolvedCount,
+    );
     final textColor = _resolveTextColor(context, backgroundColor);
     final valueText =
         resolvedCount == null
@@ -396,24 +400,40 @@ class _AdminDistrictHeatmapScreenState
     );
   }
 
-  Color _resolveTileColor(BuildContext context, int? count) {
+  Color _resolveTileColor(BuildContext context, int locationId, int? count) {
+    final baseColor = _getDistrictBaseColor(locationId);
+    const minAlpha = 0.35;
     if (count == null) {
-      return Theme.of(context).colorScheme.surfaceVariant;
+      return baseColor.withValues(alpha: minAlpha);
     }
     if (count < 0) {
       return Theme.of(context).colorScheme.errorContainer;
     }
     final max = _maxCount;
     if (max <= 0) {
-      return Theme.of(context).colorScheme.surfaceVariant;
+      return baseColor.withValues(alpha: minAlpha);
     }
-    final t = (count / max).clamp(0.0, 1.0);
+    final t = (count / max).clamp(minAlpha, 1.0);
     return Color.lerp(
-          Theme.of(context).colorScheme.surfaceVariant,
-          Theme.of(context).colorScheme.primary,
+          baseColor.withValues(alpha: minAlpha),
+          baseColor,
           t,
         ) ??
-        Theme.of(context).colorScheme.primary;
+        baseColor;
+  }
+
+  Color _getDistrictBaseColor(int locationId) {
+    final colors = [
+      Colors.red,
+      Colors.orange,
+      Colors.green,
+      Colors.blue,
+      Colors.purple,
+      Colors.teal,
+      Colors.indigo,
+      Colors.pink,
+    ];
+    return colors[locationId % colors.length];
   }
 
   Color _resolveTextColor(BuildContext context, Color backgroundColor) {
