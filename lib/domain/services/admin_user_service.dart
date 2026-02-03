@@ -1,9 +1,11 @@
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 
 abstract class IAdminUserService {
   Future<List<AdminUser>> getUsers({int pageNumber = 1, int pageSize = 20});
+  Future<AdminUser> updateUserRole({required int userId, required String role});
 }
 
 class AdminUserService implements IAdminUserService {
@@ -38,4 +40,32 @@ class AdminUserService implements IAdminUserService {
       rethrow;
     }
   }
+
+  @override
+  Future<AdminUser> updateUserRole({
+    required int userId,
+    required String role,
+  }) async {
+    try {
+      final response = await _oauthApiClient.put<Map<String, dynamic>, _RoleUpdateRequest>(
+        "/users/$userId",
+        (json) => json as Map<String, dynamic>,
+        data: _RoleUpdateRequest(role: role),
+      );
+
+      return AdminUser.fromJson(response);
+    } catch (e) {
+      logger.d("Error updating user role: $e");
+      rethrow;
+    }
+  }
+}
+
+class _RoleUpdateRequest implements IJsonEncodable {
+  _RoleUpdateRequest({required this.role});
+
+  final String role;
+
+  @override
+  Map<String, dynamic> toJson() => {"role": role};
 }

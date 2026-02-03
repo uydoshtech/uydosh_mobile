@@ -6,7 +6,7 @@ import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_user_detail_screen.dart";
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -238,15 +238,31 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder:
-                        (context) => AdminUserListingsScreen(
-                          userId: user.id,
-                          userEmail: user.email,
-                        ),
-                  ),
-                );
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (context) => AdminUserDetailScreen(user: user),
+                      ),
+                    )
+                    .then((result) {
+                      if (result is Map) {
+                        final resultUserId = result["userId"];
+                        final resultRole = result["role"];
+                        if (resultUserId == user.id && resultRole is String) {
+                          setState(() {
+                            _users[index] =
+                                AdminUser(
+                                  id: user.id,
+                                  email: user.email,
+                                  role: resultRole,
+                                  firebaseUid: user.firebaseUid,
+                                  telegramId: user.telegramId,
+                                  createdAt: user.createdAt,
+                                );
+                          });
+                        }
+                      }
+                    });
               },
               child: Padding(
                 padding: const EdgeInsets.all(16),
