@@ -576,7 +576,7 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         )
         .replaceAll(
           '<g id="route4_stname">',
-          '<g id="route4_stname" style="fill:#FFED00">',
+          '<g id="route4_stname" style="fill:#F59E0B">',
         )
         .replaceAll('class="mebg"', 'style="fill:none;stroke:#fff;stroke-width:7"')
         .replaceAll(
@@ -593,20 +593,20 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         )
         .replaceAll(
           'class="me p4"',
-          'style="fill:none;stroke:#FFED00;stroke-width:5"',
+          'style="fill:none;stroke:#F59E0B;stroke-width:5"',
         )
         .replaceAll('class="p1"', 'style="stroke:#D60000"')
         .replaceAll('class="p2"', 'style="stroke:#0300EE"')
         .replaceAll('class="p3"', 'style="stroke:#009900"')
-        .replaceAll('class="p4"', 'style="stroke:#FFED00"')
+        .replaceAll('class="p4"', 'style="stroke:#F59E0B"')
         .replaceAll('class="f1"', 'style="fill:#D60000"')
         .replaceAll('class="f2"', 'style="fill:#0300EE"')
         .replaceAll('class="f3"', 'style="fill:#009900"')
-        .replaceAll('class="f4"', 'style="fill:#FFED00"')
+        .replaceAll('class="f4"', 'style="fill:#F59E0B"')
         .replaceAll('class="r1"', 'style="fill:#D60000"')
         .replaceAll('class="r2"', 'style="fill:#0300EE"')
         .replaceAll('class="r3"', 'style="fill:#009900"')
-        .replaceAll('class="r4"', 'style="fill:#FFED00"')
+        .replaceAll('class="r4"', 'style="fill:#F59E0B"')
         .replaceAll(
           'class="intb"',
           'style="fill:none;stroke:#000;stroke-width:9;stroke-linecap:round;stroke-linejoin:round"',
@@ -632,20 +632,7 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "admin_subway_map_description",
-                  ),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -666,11 +653,16 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
                         final contentHeight = _svgHeight * scale;
                         final offsetX = (mapWidth - contentWidth) / 2;
                         final offsetY = (mapHeight - contentHeight) / 2;
+                        final transformationController =
+                            TransformationController(
+                              Matrix4.identity()..scale(1.3),
+                            );
                         return InteractiveViewer(
                           constrained: false,
                           minScale: 0.6,
                           maxScale: 3.0,
                           boundaryMargin: const EdgeInsets.all(40),
+                          transformationController: transformationController,
                           child: SizedBox(
                             width: mapWidth,
                             height: mapHeight,
