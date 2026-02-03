@@ -425,17 +425,33 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
     );
     final withExampleLabel = flattenedSwitches.replaceAll(
       "</svg>",
-          '<text x="302" y="83" style="font-family:Arial,sans-serif;font-size:12px;fill:#111827;text-anchor:start">Turkiston</text>'
-          '<text x="302" y="133" style="font-family:Arial,sans-serif;font-size:12px;fill:#111827;text-anchor:start">Yunusobod</text>'
-          '<text x="302" y="183" style="font-family:Arial,sans-serif;font-size:12px;fill:#111827;text-anchor:start">Shahristan</text>'
-          '<text x="302" y="233" style="font-family:Arial,sans-serif;font-size:12px;fill:#111827;text-anchor:start">Bodomzor</text>'
-          '<text x="302" y="283" style="font-family:Arial,sans-serif;font-size:12px;fill:#111827;text-anchor:start">Minor</text>'
-          '<text x="200" y="333" style="font-family:Arial,sans-serif;font-size:12px;fill:#111827;text-anchor:start">Abdulla Kadiri</text>'
-          '<text x="305" y="405" style="font-family:Arial,sans-serif;font-size:12px;fill:#111827;text-anchor:start">Yunus Rajabiy</text>'
-          '<text x="305" y="455" style="font-family:Arial,sans-serif;font-size:12px;fill:#111827;text-anchor:start">Mingurik</text>'
+          '<text x="302" y="83" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Turkiston</text>'
+          '<text x="302" y="133" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Yunusobod</text>'
+          '<text x="302" y="183" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Shahristan</text>'
+          '<text x="302" y="233" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Bodomzor</text>'
+          '<text x="302" y="283" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Minor</text>'
+          '<text x="200" y="333" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Abdulla Kadiri</text>'
+          '<text x="305" y="405" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Yunus Rajabiy</text>'
+          '<text x="305" y="455" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Mingurik</text>'
           '</svg>',
     );
     return withExampleLabel
+        .replaceAll(
+          '<g id="route1_stname">',
+          '<g id="route1_stname" style="fill:#D60000">',
+        )
+        .replaceAll(
+          '<g id="route2_stname">',
+          '<g id="route2_stname" style="fill:#0300EE">',
+        )
+        .replaceAll(
+          '<g id="route3_stname">',
+          '<g id="route3_stname" style="fill:#009900">',
+        )
+        .replaceAll(
+          '<g id="route4_stname">',
+          '<g id="route4_stname" style="fill:#FFED00">',
+        )
         .replaceAll('class="mebg"', 'style="fill:none;stroke:#fff;stroke-width:7"')
         .replaceAll(
           'class="me p1"',
