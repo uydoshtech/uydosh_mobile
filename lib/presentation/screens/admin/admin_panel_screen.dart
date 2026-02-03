@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listings_with_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 
@@ -62,6 +63,18 @@ class AdminPanelScreen extends StatelessWidget {
                   builder:
                       (context) =>
                           const AdminListingsWithComplaintsScreen(),
+                ),
+              );
+            },
+          ),
+          _buildAdminSection(
+            context,
+            icon: Icons.map_outlined,
+            titleKey: "admin_panel_section_district_heatmap",
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AdminDistrictHeatmapScreen(),
                 ),
               );
             },
