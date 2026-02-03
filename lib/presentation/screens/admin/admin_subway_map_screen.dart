@@ -1,8 +1,12 @@
 import "dart:math" as math;
 
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -482,8 +486,14 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
   void _openStationListings(BuildContext context, int stationId) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            HomeScreen(subwayStationId: stationId, isSearchMode: true),
+        builder:
+            (_) => BlocProvider(
+              create: (context) => ListingsBloc(getIt<IListingService>()),
+              child: HomeScreen(
+                subwayStationId: stationId,
+                isSearchMode: true,
+              ),
+            ),
       ),
     );
   }
