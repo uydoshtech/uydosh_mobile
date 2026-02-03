@@ -390,7 +390,40 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
       RegExp(r"<style[\s\S]*?</style>"),
       "",
     );
-    return withoutStyle
+    final withoutTitleGroup = withoutStyle
+        .replaceAll(
+          '<g id="title_group"',
+          '<g id="title_group" style="display:none"',
+        )
+        .replaceAll(
+          '<g id="linebox_group"',
+          '<g id="linebox_group" style="display:none"',
+        )
+        .replaceAll(
+          '<g id="stname_group"',
+          '<g id="stname_group" style="display:none"',
+        )
+        .replaceAll(
+          '<g id="route_terminus_num_group"',
+          '<g id="route_terminus_num_group" style="display:none"',
+        )
+        .replaceAll(
+          '<g id="ic_num_group"',
+          '<g id="ic_num_group" style="display:none"',
+        )
+        .replaceAll(
+          '<rect id="background_color_rectangle"',
+          '<rect id="background_color_rectangle" style="display:none"',
+        );
+    final flattenedSwitches = withoutTitleGroup.replaceAllMapped(
+      RegExp(r"<switch[^>]*>([\s\S]*?)</switch>"),
+      (match) {
+        final content = match.group(1) ?? "";
+        final firstText = RegExp(r"<text[\s\S]*?</text>").firstMatch(content);
+        return firstText?.group(0) ?? "";
+      },
+    );
+    return flattenedSwitches
         .replaceAll('class="mebg"', 'style="fill:none;stroke:#fff;stroke-width:7"')
         .replaceAll(
           'class="me p1"',
