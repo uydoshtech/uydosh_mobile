@@ -1,9 +1,37 @@
+import "dart:math" as math;
+
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
+import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/domain/models/subway_station.dart";
+import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+
+class _StationLabel {
+  const _StationLabel({
+    required this.stationId,
+    required this.label,
+    required this.x,
+    required this.y,
+  });
+
+  final int stationId;
+  final String label;
+  final double x;
+  final double y;
+}
 
 class AdminSubwayMapScreen extends StatelessWidget {
   const AdminSubwayMapScreen({super.key});
+
+  static const double _svgWidth = 520;
+  static const double _svgHeight = 1200;
+  static const Offset _mapOffset = Offset(40, 80);
+  static const double _tapTargetWidth = 140;
+  static const double _tapTargetHeight = 26;
+
+  static final List<_StationLabel> _stationLabels =
+      _extractStationLabels(_rawMapSvg);
 
   static const String _rawMapSvg = '''
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="520" height="1200" viewBox="0 0 520 1200" xml:space="default">
@@ -385,6 +413,105 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
 
   static final String _mapSvg = _processSvg(_rawMapSvg);
 
+  static List<_StationLabel> _extractStationLabels(String svg) {
+    final labels = <_StationLabel>[];
+    final usedStationIds = <int>{};
+    final switchRegExp = RegExp(
+      r'<switch[^>]*transform="translate\(([-\d.]+),([-\d.]+)\)"[^>]*>([\s\S]*?)</switch>',
+    );
+    final tspanRegExp = RegExp(r"<tspan[^>]*>([^<]+)</tspan>");
+
+    for (final match in switchRegExp.allMatches(svg)) {
+      final x = double.tryParse(match.group(1) ?? "");
+      final y = double.tryParse(match.group(2) ?? "");
+      final content = match.group(3) ?? "";
+      if (x == null || y == null) continue;
+
+      final tspanMatch = tspanRegExp.firstMatch(content);
+      final label = tspanMatch?.group(1)?.trim();
+      if (label == null || label.isEmpty) continue;
+
+      final station = _findStationByLabel(label);
+      if (station == null) continue;
+      if (!usedStationIds.add(station.id)) continue;
+
+      labels.add(
+        _StationLabel(
+          stationId: station.id,
+          label: label,
+          x: x,
+          y: y,
+        ),
+      );
+    }
+
+    return labels;
+  }
+
+  static SubwayStation? _findStationByLabel(String label) {
+    final matches = MetroCache.getStationsByName(label);
+    if (matches.isEmpty) return null;
+    if (matches.length == 1) return matches.first;
+
+    final normalizedLabel = _normalizeStationLabel(label);
+    for (final station in matches) {
+      for (final name in _stationNames(station)) {
+        if (_normalizeStationLabel(name) == normalizedLabel) {
+          return station;
+        }
+      }
+    }
+
+    return matches.first;
+  }
+
+  static Iterable<String> _stationNames(SubwayStation station) sync* {
+    if (station.nameUz != null) yield station.nameUz!;
+    if (station.nameRu != null) yield station.nameRu!;
+    if (station.nameEn != null) yield station.nameEn!;
+  }
+
+  static String _normalizeStationLabel(String value) {
+    return value
+        .toLowerCase()
+        .replaceAll(RegExp(r"[’ʻ'`.]"), "")
+        .replaceAll(RegExp(r"\s+"), " ")
+        .trim();
+  }
+
+  void _openStationListings(BuildContext context, int stationId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            HomeScreen(subwayStationId: stationId, isSearchMode: true),
+      ),
+    );
+  }
+
+  List<Widget> _buildStationTapTargets(
+    BuildContext context,
+    double scale,
+    double offsetX,
+    double offsetY,
+  ) {
+    return _stationLabels.map((label) {
+      final posX = offsetX + (_mapOffset.dx + label.x) * scale;
+      final posY = offsetY + (_mapOffset.dy + label.y) * scale;
+      return Positioned(
+        left: posX - _tapTargetWidth / 2,
+        top: posY - _tapTargetHeight / 2,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _openStationListings(context, label.stationId),
+          child: const SizedBox(
+            width: _tapTargetWidth,
+            height: _tapTargetHeight,
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   static String _processSvg(String svg) {
     final withoutStyle = svg.replaceAll(
       RegExp(r"<style[\s\S]*?</style>"),
@@ -400,10 +527,6 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           '<g id="linebox_group" style="display:none"',
         )
         .replaceAll(
-          '<g id="stname_group"',
-          '<g id="stname_group" style="display:none"',
-        )
-        .replaceAll(
           '<g id="route_terminus_num_group"',
           '<g id="route_terminus_num_group" style="display:none"',
         )
@@ -416,26 +539,29 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           '<rect id="background_color_rectangle" style="display:none"',
         );
     final flattenedSwitches = withoutTitleGroup.replaceAllMapped(
-      RegExp(r"<switch[^>]*>([\s\S]*?)</switch>"),
+      RegExp(r"<switch([^>]*)>([\s\S]*?)</switch>"),
       (match) {
-        final content = match.group(1) ?? "";
+        final attributes = match.group(1) ?? "";
+        final content = match.group(2) ?? "";
         final firstText = RegExp(r"<text[\s\S]*?</text>").firstMatch(content);
-        return firstText?.group(0) ?? "";
+        final textValue = firstText?.group(0);
+        if (textValue == null) return "";
+
+        final transformMatch =
+            RegExp(r'transform="[^"]+"').firstMatch(attributes);
+        if (transformMatch == null) return textValue;
+
+        return '<g ${transformMatch.group(0)}>$textValue</g>';
       },
     );
-    final withExampleLabel = flattenedSwitches.replaceAll(
-      "</svg>",
-          '<text x="302" y="83" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Turkiston</text>'
-          '<text x="302" y="133" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Yunusobod</text>'
-          '<text x="302" y="183" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Shahristan</text>'
-          '<text x="302" y="233" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Bodomzor</text>'
-          '<text x="302" y="283" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Minor</text>'
-          '<text x="200" y="333" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Abdulla Kadiri</text>'
-          '<text x="305" y="405" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Yunus Rajabiy</text>'
-          '<text x="305" y="455" style="font-family:Arial,sans-serif;font-size:12px;fill:#009900;text-anchor:start">Mingurik</text>'
-          '</svg>',
-    );
-    return withExampleLabel
+    return flattenedSwitches
+        .replaceAll(
+          'class="st"',
+          'style="font-family:Arial,sans-serif;font-size:17px"',
+        )
+        .replaceAll('class="mid"', 'style="text-anchor:middle"')
+        .replaceAll('class="end"', 'style="text-anchor:end"')
+        .replaceAll('class="ic"', 'style="font-weight:bold"')
         .replaceAll(
           '<g id="route1_stname">',
           '<g id="route1_stname" style="fill:#D60000">',
@@ -532,6 +658,14 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
                       builder: (context, constraints) {
                         final mapWidth = constraints.maxWidth;
                         final mapHeight = constraints.maxHeight;
+                        final scale = math.min(
+                          mapWidth / _svgWidth,
+                          mapHeight / _svgHeight,
+                        );
+                        final contentWidth = _svgWidth * scale;
+                        final contentHeight = _svgHeight * scale;
+                        final offsetX = (mapWidth - contentWidth) / 2;
+                        final offsetY = (mapHeight - contentHeight) / 2;
                         return InteractiveViewer(
                           constrained: false,
                           minScale: 0.6,
@@ -540,12 +674,22 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
                           child: SizedBox(
                             width: mapWidth,
                             height: mapHeight,
-                            child: SvgPicture.string(
-                              _mapSvg,
-                              width: mapWidth,
-                              height: mapHeight,
-                              fit: BoxFit.contain,
-                              semanticsLabel: "Tashkent subway map",
+                            child: Stack(
+                              children: [
+                                SvgPicture.string(
+                                  _mapSvg,
+                                  width: mapWidth,
+                                  height: mapHeight,
+                                  fit: BoxFit.contain,
+                                  semanticsLabel: "Tashkent subway map",
+                                ),
+                                ..._buildStationTapTargets(
+                                  context,
+                                  scale,
+                                  offsetX,
+                                  offsetY,
+                                ),
+                              ],
                             ),
                           ),
                         );
