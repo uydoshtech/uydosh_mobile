@@ -9,9 +9,9 @@ part of 'complaint.dart';
 _$ComplaintImpl _$$ComplaintImplFromJson(Map<String, dynamic> json) =>
     _$ComplaintImpl(
       id: (json['id'] as num?)?.toInt(),
-      complainantId: (json['complainant_id'] as num).toInt(),
-      listingId: (json['listing_id'] as num).toInt(),
-      categoryId: (json['category_id'] as num).toInt(),
+      complainantId: (json['complainant_id'] as num?)?.toInt(),
+      listingId: (json['listing_id'] as num?)?.toInt(),
+      categoryId: (json['category_id'] as num?)?.toInt(),
       category:
           json['category'] == null
               ? null

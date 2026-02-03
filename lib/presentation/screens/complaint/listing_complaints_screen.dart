@@ -161,7 +161,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
   ) {
     final grouped = <int, List<Complaint>>{};
     for (final complaint in complaints) {
-      final categoryId = complaint.categoryId;
+      final categoryId = complaint.categoryId ?? -1;
       final bucket = grouped[categoryId] ?? <Complaint>[];
       bucket.add(complaint);
       grouped[categoryId] = bucket;

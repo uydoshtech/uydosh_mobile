@@ -7,6 +7,7 @@ import "package:uy_dosh/base/constants/app_version.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/version_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -17,6 +18,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
@@ -339,6 +341,45 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                           ],
                         ),
                       ),
+                    );
+                  },
+                ),
+
+                ListenableBuilder(
+                  listenable: AuthenticationState(),
+                  builder: (context, child) {
+                    final isAuthenticated =
+                        AuthenticationState().isAuthenticated;
+                    if (!isAuthenticated) {
+                      return const SizedBox.shrink();
+                    }
+                    return FutureBuilder<String?>(
+                      future: SessionManager.getUserRole(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox.shrink();
+                        }
+                        if (snapshot.data != "admin") {
+                          return const SizedBox.shrink();
+                        }
+                        return _buildMenuItem(
+                          icon: Icons.admin_panel_settings,
+                          titleKey: "menu_admin_panel",
+                          onTap: () {
+                            Navigator.pop(context);
+                            if (context.mounted) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) =>
+                                          const AdminPanelScreen(),
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      },
                     );
                   },
                 ),

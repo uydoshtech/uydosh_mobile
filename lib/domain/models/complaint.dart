@@ -9,9 +9,9 @@ part 'complaint.g.dart';
 class Complaint with _$Complaint {
   const factory Complaint({
     int? id,
-    @JsonKey(name: 'complainant_id') required int complainantId,
-    @JsonKey(name: 'listing_id') required int listingId,
-    @JsonKey(name: 'category_id') required int categoryId,
+    @JsonKey(name: 'complainant_id') int? complainantId,
+    @JsonKey(name: 'listing_id') int? listingId,
+    @JsonKey(name: 'category_id') int? categoryId,
     @JsonKey(name: 'category') ComplaintCategory? category,
     required String status,
     @JsonKey(name: 'created_at') String? createdAt,

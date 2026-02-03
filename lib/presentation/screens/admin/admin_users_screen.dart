@@ -1,12 +1,14 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
+import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_detail_screen.dart";
+import "package:intl/intl.dart";
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -17,8 +19,12 @@ class AdminUsersScreen extends StatefulWidget {
 
 class _AdminUsersScreenState extends State<AdminUsersScreen> {
   final List<AdminUser> _users = [];
+  final Map<int, String?> _userNames = {};
   final Map<int, int> _listingCounts = {};
+  final Map<int, int> _complaintCounts = {};
   final Set<int> _listingCountsLoading = {};
+  final Set<int> _complaintCountsLoading = {};
+  final Set<int> _userNamesLoading = {};
   final ScrollController _scrollController = ScrollController();
 
   bool _isLoading = false;
@@ -97,7 +103,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
   void _loadCountsForUsers(List<AdminUser> users) {
     for (final user in users) {
+      _loadUserName(user);
       _loadListingCount(user);
+      _loadComplaintCount(user);
     }
   }
 
@@ -127,12 +135,63 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     }
   }
 
+  Future<void> _loadUserName(AdminUser user) async {
+    if (user.id <= 0) return;
+    if (_userNames.containsKey(user.id)) return;
+    if (_userNamesLoading.contains(user.id)) return;
+
+    _userNamesLoading.add(user.id);
+    try {
+      final profile =
+          await getIt<IUserProfileService>().getUserProfile(user.id);
+      if (!mounted) return;
+      setState(() {
+        _userNames[user.id] = profile.name;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _userNames[user.id] = null;
+      });
+    } finally {
+      _userNamesLoading.remove(user.id);
+    }
+  }
+
+  Future<void> _loadComplaintCount(AdminUser user) async {
+    if (user.id <= 0) return;
+    if (_complaintCounts.containsKey(user.id)) return;
+    if (_complaintCountsLoading.contains(user.id)) return;
+
+    _complaintCountsLoading.add(user.id);
+    try {
+      final response = await getIt<IComplaintService>().getUserListingComplaints(
+        user.id,
+      );
+      if (!mounted) return;
+      setState(() {
+        _complaintCounts[user.id] = response.length;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _complaintCounts[user.id] = -1;
+      });
+    } finally {
+      _complaintCountsLoading.remove(user.id);
+    }
+  }
+
   Future<void> _refresh() async {
     _pageNumber = 1;
     _hasMore = true;
     _users.clear();
+    _userNames.clear();
     _listingCounts.clear();
     _listingCountsLoading.clear();
+    _complaintCounts.clear();
+    _complaintCountsLoading.clear();
+    _userNamesLoading.clear();
     await _fetchUsers();
   }
 
@@ -229,7 +288,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           }
 
           final user = _users[index];
+          final userName = _userNames[user.id];
           final listingCount = _listingCounts[user.id];
+          final complaintCount = _complaintCounts[user.id];
           return Card(
             elevation: 3,
             shape: RoundedRectangleBorder(
@@ -272,16 +333,42 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            user.email ??
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
-                                  "not_specified",
+                          child: Row(
+                            children: [
+                              Text(
+                                "ID: ${user.id}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                "•",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  user.email ??
+                                      LanguageAwareStringHelper.getCurrent(
+                                        context,
+                                        "not_specified",
+                                      ),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Icon(
@@ -293,11 +380,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    _buildMetaRow(
-                      context,
-                      labelKey: "admin_users_id",
-                      value: user.id.toString(),
-                    ),
+                    if (userName != null && userName.trim().isNotEmpty)
+                      _buildMetaRow(
+                        context,
+                        labelKey: "name",
+                        value: userName,
+                      ),
                     _buildMetaRow(
                       context,
                       labelKey: "admin_users_role",
@@ -324,6 +412,30 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                 "admin_users_listings_count_error",
                               ),
                     ),
+                    _buildMetaRow(
+                      context,
+                      labelKey: "admin_user_complaints_group_count",
+                      value:
+                          complaintCount == null
+                              ? LanguageAwareStringHelper.getCurrent(
+                                context,
+                                "admin_users_listings_count_loading",
+                              )
+                              : complaintCount >= 0
+                              ? complaintCount.toString()
+                              : LanguageAwareStringHelper.getCurrent(
+                                context,
+                                "admin_users_listings_count_error",
+                              ),
+                      labelColor:
+                          complaintCount != null && complaintCount > 0
+                              ? Theme.of(context).colorScheme.error
+                              : null,
+                      valueColor:
+                          complaintCount != null && complaintCount > 0
+                              ? Theme.of(context).colorScheme.error
+                              : null,
+                    ),
                   ],
                 ),
               ),
@@ -338,6 +450,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     BuildContext context, {
     required String labelKey,
     required String value,
+    Color? labelColor,
+    Color? valueColor,
   }) {
     return Padding(
       padding: const EdgeInsets.only(top: 4),
@@ -347,13 +461,15 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             "${LanguageAwareStringHelper.getCurrent(context, labelKey)}: ",
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color:
+                  labelColor ??
+                  Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 12),
+              style: TextStyle(fontSize: 12, color: valueColor),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -382,9 +498,24 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       return LanguageAwareStringHelper.getCurrent(context, "not_specified");
     }
     final local = value.toLocal();
-    final year = local.year.toString();
-    final month = local.month.toString().padLeft(2, "0");
-    final day = local.day.toString().padLeft(2, "0");
-    return "$year-$month-$day";
+    final locale = LanguageState().currentLanguage;
+    try {
+      return _capitalizeMonth(DateFormat("dd MMMM yyyy", locale).format(local));
+    } catch (_) {
+      return _capitalizeMonth(DateFormat("dd MMMM yyyy").format(local));
+    }
+  }
+
+  String _capitalizeMonth(String dateText) {
+    final parts = dateText.split(" ");
+    if (parts.length < 2) {
+      return dateText;
+    }
+    final month = parts[1];
+    if (month.isEmpty) {
+      return dateText;
+    }
+    parts[1] = "${month.substring(0, 1).toUpperCase()}${month.substring(1)}";
+    return parts.join(" ");
   }
 }

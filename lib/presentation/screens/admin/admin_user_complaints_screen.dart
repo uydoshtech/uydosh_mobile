@@ -236,6 +236,9 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
         itemCount: grouped.length,
         itemBuilder: (context, index) {
           final group = grouped[index];
+          final listingLabel = group.listingId <= 0
+              ? LanguageAwareStringHelper.getCurrent(context, "not_specified")
+              : group.listingId.toString();
           return Card(
             elevation: 3,
             shape: RoundedRectangleBorder(
@@ -243,7 +246,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
             ),
             child: ExpansionTile(
               title: Text(
-                "${LanguageAwareStringHelper.getCurrent(context, "admin_complaints_listing_id")}: ${group.listingId}",
+                "${LanguageAwareStringHelper.getCurrent(context, "admin_complaints_listing_id")}: $listingLabel",
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
@@ -268,7 +271,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
   List<_ComplaintGroup> _groupComplaintsByListing(List<Complaint> complaints) {
     final map = <int, List<Complaint>>{};
     for (final complaint in complaints) {
-      final listingId = complaint.listingId;
+      final listingId = complaint.listingId ?? -1;
       map.putIfAbsent(listingId, () => <Complaint>[]).add(complaint);
     }
 
@@ -311,6 +314,11 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
             ],
           ),
           const SizedBox(height: 8),
+          _buildMetaRow(
+            context,
+            labelKey: "admin_complaints_listing_id",
+            value: _getListingLabel(context, complaint.listingId),
+          ),
           _buildMetaRow(
             context,
             labelKey: "admin_complaints_status_label",
@@ -438,6 +446,13 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     return "$year-$month-$day";
   }
 
+  String _getListingLabel(BuildContext context, int? listingId) {
+    if (listingId == null || listingId <= 0) {
+      return LanguageAwareStringHelper.getCurrent(context, "not_specified");
+    }
+    return listingId.toString();
+  }
+
   void _showStatusMenu(Complaint complaint) {
     showModalBottomSheet<void>(
       context: context,
@@ -512,7 +527,14 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     );
   }
 
-  void _openListing(int listingId) {
+  void _openListing(int? listingId) {
+    if (listingId == null || listingId <= 0) {
+      ToastTheme.showError(
+        context,
+        message: LanguageAwareStringHelper.getCurrent(context, "error_generic"),
+      );
+      return;
+    }
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
