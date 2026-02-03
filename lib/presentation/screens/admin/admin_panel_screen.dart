@@ -5,6 +5,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen
 import "package:uy_dosh/presentation/screens/admin/admin_listings_with_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart";
 
 class AdminPanelScreen extends StatelessWidget {
   const AdminPanelScreen({super.key});
@@ -88,6 +89,18 @@ class AdminPanelScreen extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const AdminSubwayLineHeatmapScreen(),
+                ),
+              );
+            },
+          ),
+          _buildAdminSection(
+            context,
+            icon: Icons.subway,
+            titleKey: "admin_panel_section_subway_map",
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AdminSubwayMapScreen(),
                 ),
               );
             },

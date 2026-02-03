@@ -181,10 +181,10 @@ class _AdminSubwayLineHeatmapScreenState
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: sortedLines.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
+                    crossAxisCount: 2,
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
-                    childAspectRatio: 1.05,
+                    childAspectRatio: 1.2,
                   ),
                   itemBuilder: (context, index) {
                     final lineId = sortedLines[index];
@@ -363,7 +363,7 @@ class _AdminSubwayLineHeatmapScreenState
                 children: [
                   Icon(
                     Icons.train,
-                    size: 16,
+                    size: 20,
                     color: Colors.black,
                   ),
                   const SizedBox(width: 6),
@@ -371,7 +371,7 @@ class _AdminSubwayLineHeatmapScreenState
                     child: Text(
                       title,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: textColor,
                       ),

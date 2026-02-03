@@ -389,6 +389,7 @@ class AppStrings {
       "admin_panel_section_listing_complaints": "Listings with complaints",
       "admin_panel_section_district_heatmap": "District heat map",
       "admin_panel_section_subway_heatmap": "Subway line heat map",
+      "admin_panel_section_subway_map": "Subway map",
 
       "admin_district_heatmap_title": "District heat map",
       "admin_district_heatmap_description":
@@ -413,6 +414,11 @@ class AppStrings {
       "admin_subway_heatmap_count_label": "Listings",
       "admin_subway_heatmap_unavailable": "Unavailable",
       "admin_subway_heatmap_no_data": "No subway line data available",
+
+      "admin_subway_map_title": "Subway map",
+      "admin_subway_map_description":
+          "Simplified map with lines and stations only.",
+      "error_loading_map": "Failed to load map",
 
       "admin_users_title": "Users",
       "admin_users_loading": "Loading users...",
@@ -978,6 +984,7 @@ class AppStrings {
       "admin_panel_section_listing_complaints": "Объявления с жалобами",
       "admin_panel_section_district_heatmap": "Тепловая карта районов",
       "admin_panel_section_subway_heatmap": "Тепловая карта линий метро",
+      "admin_panel_section_subway_map": "Схема метро",
 
       "admin_district_heatmap_title": "Тепловая карта районов",
       "admin_district_heatmap_description":
@@ -1005,6 +1012,11 @@ class AppStrings {
       "admin_subway_heatmap_count_label": "Объявления",
       "admin_subway_heatmap_unavailable": "Недоступно",
       "admin_subway_heatmap_no_data": "Нет данных по линиям метро",
+
+      "admin_subway_map_title": "Схема метро",
+      "admin_subway_map_description":
+          "Упрощенная схема с линиями и станциями.",
+      "error_loading_map": "Не удалось загрузить карту",
 
       "admin_users_title": "Пользователи",
       "admin_users_loading": "Загрузка пользователей...",
@@ -1577,6 +1589,7 @@ class AppStrings {
       "admin_panel_section_district_heatmap": "Tumanlar issiqlik xaritasi",
       "admin_panel_section_subway_heatmap":
           "Metro liniyalari issiqlik xaritasi",
+      "admin_panel_section_subway_map": "Metro sxemasi",
 
       "admin_district_heatmap_title": "Tumanlar issiqlik xaritasi",
       "admin_district_heatmap_description":
@@ -1604,6 +1617,11 @@ class AppStrings {
       "admin_subway_heatmap_unavailable": "Mavjud emas",
       "admin_subway_heatmap_no_data":
           "Metro liniyalari bo'yicha ma'lumot yo'q",
+
+      "admin_subway_map_title": "Metro sxemasi",
+      "admin_subway_map_description":
+          "Faqat yo'nalishlar va bekatlardan iborat soddalashtirilgan sxema.",
+      "error_loading_map": "Xaritani yuklab bo'lmadi",
 
       "admin_users_title": "Foydalanuvchilar",
       "admin_users_loading": "Foydalanuvchilar yuklanmoqda...",
