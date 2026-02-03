@@ -1065,7 +1065,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                   spacing: 12,
                   runSpacing: 12,
                   children:
-                      AmenitiesCache.getAllAmenities()
+                      _getOrderedAmenities()
                           .map((amenity) => _buildAmenityToggle(amenity))
                           .toList(),
                 ),
@@ -1736,6 +1736,10 @@ class _CreateListingScreenState extends State<CreateListingScreen>
         );
       },
     );
+  }
+
+  List<Amenity> _getOrderedAmenities() {
+    return AmenitiesCache.getDefaultOrderedAmenities();
   }
 
   IconData _getAmenityIcon(Amenity amenity) {

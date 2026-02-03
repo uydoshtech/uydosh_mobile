@@ -3,6 +3,17 @@ import "package:uy_dosh/domain/models/amenity.dart";
 /// Static cache for amenities to reduce API calls
 /// This data is fetched from the API and stored locally for better performance
 class AmenitiesCache {
+  static const List<String> defaultOrderedCodes = [
+    "wifi",
+    "tv",
+    "oven",
+    "bed",
+    "air_conditioning",
+    "refrigerator",
+    "washing_machine",
+    "microwave",
+    "pets",
+  ];
   /// All amenities with their details
   static const List<Amenity> amenities = [
     Amenity(
@@ -91,6 +102,33 @@ class AmenitiesCache {
   /// Get all amenities
   static List<Amenity> getAllAmenities() {
     return amenities;
+  }
+
+  /// Get amenities ordered by code preference.
+  /// Codes not in the list keep their original cache order.
+  static List<Amenity> getOrderedAmenities(List<String> orderedCodes) {
+    final indexedAmenities = amenities.asMap().entries.toList();
+
+    indexedAmenities.sort((a, b) {
+      final aCode = a.value.code ?? "";
+      final bCode = b.value.code ?? "";
+      final aPriority = orderedCodes.indexOf(aCode);
+      final bPriority = orderedCodes.indexOf(bCode);
+      final aRank = aPriority == -1 ? orderedCodes.length : aPriority;
+      final bRank = bPriority == -1 ? orderedCodes.length : bPriority;
+
+      if (aRank != bRank) {
+        return aRank.compareTo(bRank);
+      }
+      return a.key.compareTo(b.key);
+    });
+
+    return indexedAmenities.map((entry) => entry.value).toList();
+  }
+
+  /// Get amenities ordered by the default code preference.
+  static List<Amenity> getDefaultOrderedAmenities() {
+    return getOrderedAmenities(defaultOrderedCodes);
   }
 
   /// Get a specific amenity by ID

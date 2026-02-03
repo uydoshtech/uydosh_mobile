@@ -1372,7 +1372,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                               spacing: 12,
                               runSpacing: 12,
                               children:
-                                  AmenitiesCache.getAllAmenities()
+                                  _getOrderedAmenities()
                                       .map(
                                         (amenity) =>
                                             _buildAmenityToggle(amenity),
@@ -1727,6 +1727,10 @@ class _EditListingScreenState extends State<EditListingScreen>
         );
       },
     );
+  }
+
+  List<Amenity> _getOrderedAmenities() {
+    return AmenitiesCache.getDefaultOrderedAmenities();
   }
 
   IconData _getAmenityIcon(Amenity amenity) {
