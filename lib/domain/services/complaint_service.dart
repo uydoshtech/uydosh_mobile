@@ -22,6 +22,7 @@ abstract class IComplaintService {
   Future<Complaint> updateComplaintStatus(int id, String status);
   Future<void> deleteComplaint(int id);
   Future<List<Complaint>> getUserComplaints(int userId);
+  Future<List<Complaint>> getUserListingComplaints(int userId);
   Future<List<Complaint>> getListingComplaints(int listingId);
   Future<int> getListingComplaintsCount(int listingId);
 }
@@ -227,6 +228,23 @@ class ComplaintService implements IComplaintService {
     try {
       final response = await _oauthApiClient.get<dynamic>(
         '/users/$userId/complaints',
+        (json) => json,
+      );
+
+      final complaintsData = _extractComplaintsData(response);
+      return (complaintsData ?? <dynamic>[])
+          .map((item) => Complaint.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Complaint>> getUserListingComplaints(int userId) async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        '/users/$userId/listing-complaints',
         (json) => json,
       );
 

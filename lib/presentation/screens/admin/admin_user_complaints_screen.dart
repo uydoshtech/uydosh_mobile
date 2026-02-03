@@ -1,9 +1,12 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -60,7 +63,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     });
 
     try {
-      final response = await getIt<IComplaintService>().getUserComplaints(
+      final response = await getIt<IComplaintService>().getUserListingComplaints(
         widget.userId,
       );
       if (!mounted) return;
@@ -225,62 +228,101 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
       );
     }
 
+    final grouped = _groupComplaintsByListing(_complaints);
     return RefreshIndicator(
       onRefresh: _refresh,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _complaints.length,
+        itemCount: grouped.length,
         itemBuilder: (context, index) {
-          final complaint = _complaints[index];
+          final group = grouped[index];
           return Card(
             elevation: 3,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _getCategoryLabel(complaint),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      _buildStatusChip(context, complaint.status),
-                      IconButton(
-                        icon: const Icon(Icons.more_vert),
-                        onPressed: () => _showStatusMenu(complaint),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  _buildMetaRow(
-                    context,
-                    labelKey: "admin_complaints_listing_id",
-                    value: complaint.listingId.toString(),
-                  ),
-                  _buildMetaRow(
-                    context,
-                    labelKey: "admin_complaints_status_label",
-                    value: _getStatusLabel(context, complaint.status),
-                  ),
-                  _buildMetaRow(
-                    context,
-                    labelKey: "admin_complaints_created_at",
-                    value: _formatDate(complaint.createdAt, context),
-                  ),
-                ],
+            child: ExpansionTile(
+              title: Text(
+                "${LanguageAwareStringHelper.getCurrent(context, "admin_complaints_listing_id")}: ${group.listingId}",
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
+              subtitle: Text(
+                "${LanguageAwareStringHelper.getCurrent(context, "admin_user_complaints_group_count")}: ${group.complaints.length}",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              children: List.generate(group.complaints.length, (itemIndex) {
+                final complaint = group.complaints[itemIndex];
+                final isLast = itemIndex == group.complaints.length - 1;
+                return _buildComplaintItem(complaint, showDivider: !isLast);
+              }),
             ),
           );
         },
+      ),
+    );
+  }
+
+  List<_ComplaintGroup> _groupComplaintsByListing(List<Complaint> complaints) {
+    final map = <int, List<Complaint>>{};
+    for (final complaint in complaints) {
+      final listingId = complaint.listingId;
+      map.putIfAbsent(listingId, () => <Complaint>[]).add(complaint);
+    }
+
+    final groups =
+        map.entries
+            .map(
+              (entry) => _ComplaintGroup(
+                listingId: entry.key,
+                complaints: entry.value,
+              ),
+            )
+            .toList();
+
+    groups.sort((a, b) => a.listingId.compareTo(b.listingId));
+    return groups;
+  }
+
+  Widget _buildComplaintItem(Complaint complaint, {required bool showDivider}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _getCategoryLabel(complaint),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              _buildStatusChip(context, complaint.status),
+              IconButton(
+                icon: const Icon(Icons.more_vert),
+                onPressed: () => _showStatusMenu(complaint),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildMetaRow(
+            context,
+            labelKey: "admin_complaints_status_label",
+            value: _getStatusLabel(context, complaint.status),
+          ),
+          _buildMetaRow(
+            context,
+            labelKey: "admin_complaints_created_at",
+            value: _formatDate(complaint.createdAt, context),
+          ),
+          if (showDivider) const Divider(height: 16),
+        ],
       ),
     );
   }
@@ -406,6 +448,17 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
+                leading: const Icon(Icons.open_in_new),
+                title: Text(
+                  LanguageAwareStringHelper.getCurrent(context, "view_listing"),
+                ),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _openListing(complaint.listingId);
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
                 title: Text(
                   LanguageAwareStringHelper.getCurrent(
                     context,
@@ -458,4 +511,24 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
       },
     );
   }
+
+  void _openListing(int listingId) {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) => BlocProvider(
+              create: (context) => ListingDetailBloc(getIt<IListingService>()),
+              child: ListingDetailScreen(listingId: listingId),
+            ),
+      ),
+    );
+  }
+}
+
+class _ComplaintGroup {
+  _ComplaintGroup({required this.listingId, required this.complaints});
+
+  final int listingId;
+  final List<Complaint> complaints;
 }

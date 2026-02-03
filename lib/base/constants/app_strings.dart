@@ -407,6 +407,7 @@ class AppStrings {
       "admin_user_complaints_title": "User complaints",
       "admin_user_complaints_user": "User",
       "admin_user_complaints_empty": "No complaints found",
+      "admin_user_complaints_group_count": "Complaints",
 
       "admin_user_listings_title": "User listings",
       "admin_user_listings_user": "User",
@@ -962,6 +963,7 @@ class AppStrings {
       "admin_user_complaints_title": "Жалобы пользователя",
       "admin_user_complaints_user": "Пользователь",
       "admin_user_complaints_empty": "Жалобы не найдены",
+      "admin_user_complaints_group_count": "Жалобы",
 
       "admin_user_listings_title": "Объявления пользователя",
       "admin_user_listings_user": "Пользователь",
@@ -1522,6 +1524,7 @@ class AppStrings {
       "admin_user_complaints_title": "Foydalanuvchi shikoyatlari",
       "admin_user_complaints_user": "Foydalanuvchi",
       "admin_user_complaints_empty": "Shikoyatlar topilmadi",
+      "admin_user_complaints_group_count": "Shikoyatlar",
 
       "admin_user_listings_title": "Foydalanuvchi e'lonlari",
       "admin_user_listings_user": "Foydalanuvchi",
