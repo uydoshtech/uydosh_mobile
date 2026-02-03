@@ -154,8 +154,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (widget.locationId != null) {
       _searchFiltersState.setLocationIndex(widget.locationId!);
     }
+    if (widget.subwayLineId != null && widget.locationId == null) {
+      _searchFiltersState.setLocationIndex(0);
+    }
     if (widget.subwayLineId != null) {
       _searchFiltersState.setSubwayLine(widget.subwayLineId!);
+    }
+    if (widget.subwayLineId != null && widget.subwayStationId == null) {
+      _searchFiltersState.setStationIndex(0);
+      _searchFiltersState.setStationId(0);
     }
     if (widget.subwayStationId != null) {
       _searchFiltersState.setStationId(widget.subwayStationId!);

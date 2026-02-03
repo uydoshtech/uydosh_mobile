@@ -388,6 +388,7 @@ class AppStrings {
       "admin_panel_section_complaints": "Complaints",
       "admin_panel_section_listing_complaints": "Listings with complaints",
       "admin_panel_section_district_heatmap": "District heat map",
+      "admin_panel_section_subway_heatmap": "Subway line heat map",
 
       "admin_district_heatmap_title": "District heat map",
       "admin_district_heatmap_description":
@@ -400,6 +401,18 @@ class AppStrings {
       "admin_district_heatmap_count_label": "Listings",
       "admin_district_heatmap_unavailable": "Unavailable",
       "admin_district_heatmap_no_data": "No district data available",
+
+      "admin_subway_heatmap_title": "Subway line heat map",
+      "admin_subway_heatmap_description":
+          "Listings by subway line with heat intensity based on volume.",
+      "admin_subway_heatmap_loading": "Loading subway line stats...",
+      "admin_subway_heatmap_error": "Failed to load subway line stats",
+      "admin_subway_heatmap_retry": "Retry",
+      "admin_subway_heatmap_total": "Total listings",
+      "admin_subway_heatmap_max": "Max on line",
+      "admin_subway_heatmap_count_label": "Listings",
+      "admin_subway_heatmap_unavailable": "Unavailable",
+      "admin_subway_heatmap_no_data": "No subway line data available",
 
       "admin_users_title": "Users",
       "admin_users_loading": "Loading users...",
@@ -964,6 +977,7 @@ class AppStrings {
       "admin_panel_section_complaints": "Жалобы",
       "admin_panel_section_listing_complaints": "Объявления с жалобами",
       "admin_panel_section_district_heatmap": "Тепловая карта районов",
+      "admin_panel_section_subway_heatmap": "Тепловая карта линий метро",
 
       "admin_district_heatmap_title": "Тепловая карта районов",
       "admin_district_heatmap_description":
@@ -977,6 +991,20 @@ class AppStrings {
       "admin_district_heatmap_count_label": "Объявления",
       "admin_district_heatmap_unavailable": "Недоступно",
       "admin_district_heatmap_no_data": "Нет данных по районам",
+
+      "admin_subway_heatmap_title": "Тепловая карта линий метро",
+      "admin_subway_heatmap_description":
+          "Объявления по линиям метро с цветовой интенсивностью.",
+      "admin_subway_heatmap_loading":
+          "Загрузка статистики по линиям метро...",
+      "admin_subway_heatmap_error":
+          "Не удалось загрузить статистику по линиям метро",
+      "admin_subway_heatmap_retry": "Повторить",
+      "admin_subway_heatmap_total": "Всего объявлений",
+      "admin_subway_heatmap_max": "Максимум на линии",
+      "admin_subway_heatmap_count_label": "Объявления",
+      "admin_subway_heatmap_unavailable": "Недоступно",
+      "admin_subway_heatmap_no_data": "Нет данных по линиям метро",
 
       "admin_users_title": "Пользователи",
       "admin_users_loading": "Загрузка пользователей...",
@@ -1547,6 +1575,8 @@ class AppStrings {
       "admin_panel_section_complaints": "Shikoyatlar",
       "admin_panel_section_listing_complaints": "Shikoyatli e'lonlar",
       "admin_panel_section_district_heatmap": "Tumanlar issiqlik xaritasi",
+      "admin_panel_section_subway_heatmap":
+          "Metro liniyalari issiqlik xaritasi",
 
       "admin_district_heatmap_title": "Tumanlar issiqlik xaritasi",
       "admin_district_heatmap_description":
@@ -1560,6 +1590,20 @@ class AppStrings {
       "admin_district_heatmap_count_label": "E'lonlar",
       "admin_district_heatmap_unavailable": "Mavjud emas",
       "admin_district_heatmap_no_data": "Tumanlar bo'yicha ma'lumot yo'q",
+
+      "admin_subway_heatmap_title": "Metro liniyalari issiqlik xaritasi",
+      "admin_subway_heatmap_description":
+          "E'lonlar metro liniyalari bo'yicha rang zichligi bilan ko'rsatiladi.",
+      "admin_subway_heatmap_loading":
+          "Metro liniyalari statistikasi yuklanmoqda...",
+      "admin_subway_heatmap_error": "Metro liniyalari statistikasi yuklanmadi",
+      "admin_subway_heatmap_retry": "Qayta urinish",
+      "admin_subway_heatmap_total": "Jami e'lonlar",
+      "admin_subway_heatmap_max": "Liniyadagi maksimum",
+      "admin_subway_heatmap_count_label": "E'lonlar",
+      "admin_subway_heatmap_unavailable": "Mavjud emas",
+      "admin_subway_heatmap_no_data":
+          "Metro liniyalari bo'yicha ma'lumot yo'q",
 
       "admin_users_title": "Foydalanuvchilar",
       "admin_users_loading": "Foydalanuvchilar yuklanmoqda...",
