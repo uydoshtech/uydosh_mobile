@@ -1,8 +1,10 @@
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -386,8 +388,10 @@ class _AdminDistrictHeatmapScreenState
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (context) =>
-                HomeScreen(locationId: locationId, isSearchMode: true),
+            (context) => BlocProvider(
+              create: (context) => ListingsBloc(getIt<IListingService>()),
+              child: HomeScreen(locationId: locationId, isSearchMode: true),
+            ),
       ),
     );
   }

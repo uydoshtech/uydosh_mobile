@@ -94,7 +94,13 @@ class AdminPanelScreen extends StatelessWidget {
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        leading: Icon(
+          icon,
+          color:
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+        ),
         title: Text(LanguageAwareStringHelper.getCurrent(context, titleKey)),
         trailing:
             onTap == null
