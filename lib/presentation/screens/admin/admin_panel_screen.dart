@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
@@ -136,7 +137,13 @@ class AdminPanelScreen extends StatelessWidget {
                   size: 16,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-        onTap: onTap,
+        onTap:
+            onTap == null
+                ? null
+                : () {
+                  HapticFeedback.selectionClick();
+                  onTap();
+                },
       ),
     );
   }
