@@ -34,7 +34,9 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:intl/intl.dart";
 
 class CreateListingScreen extends StatefulWidget {
-  const CreateListingScreen({super.key});
+  const CreateListingScreen({super.key, this.showAppBar = false});
+
+  final bool showAppBar;
 
   @override
   State<CreateListingScreen> createState() => _CreateListingScreenState();
@@ -385,6 +387,19 @@ class _CreateListingScreenState extends State<CreateListingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar:
+          widget.showAppBar
+              ? AppBar(
+                title: LanguageAwareStringHelper.getText(
+                  "create_listing_title",
+                  context,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+              : null,
       body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
         listener: (context, state) {
           state.map(
@@ -1628,15 +1643,30 @@ class _CreateListingScreenState extends State<CreateListingScreen>
       HomeRefreshState().forceRefreshNow();
 
       // Navigate back to home screen after successful listing creation
-      // Use the global navigation key to switch to home tab
-      if (mainNavigationKey.currentState != null) {
-        mainNavigationKey.currentState!.navigateToIndex(0);
+      if (widget.showAppBar) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (mainNavigationKey.currentState != null) {
+            mainNavigationKey.currentState!.navigateToIndex(0);
+          } else {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
+              (route) => false,
+            );
+          }
+        });
       } else {
-        // Fallback: use pushAndRemoveUntil if navigation key is not available
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
-          (route) => false,
-        );
+        // Use the global navigation key to switch to home tab
+        if (mainNavigationKey.currentState != null) {
+          mainNavigationKey.currentState!.navigateToIndex(0);
+        } else {
+          // Fallback: use pushAndRemoveUntil if navigation key is not available
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
+            (route) => false,
+          );
+        }
       }
     } catch (e) {
       logger.d("Error creating listing: $e");

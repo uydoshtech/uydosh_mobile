@@ -279,7 +279,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
                           create:
                               (context) =>
                                   LocationsBloc(getIt<ILocationService>()),
-                          child: const CreateListingScreen(),
+                          child: const CreateListingScreen(showAppBar: true),
                         ),
                       ),
                 ),
