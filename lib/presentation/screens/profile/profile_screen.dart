@@ -1692,6 +1692,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         },
       ),
+      // Logout item
+      ActionMenuItem(
+        value: "logout",
+        icon: Icons.logout,
+        textKey: "menu_logout",
+        onPressed: () => _showLogoutDialog(context),
+      ),
       if (_userRole == "admin")
         ActionMenuItem(
           value: "admin_panel",

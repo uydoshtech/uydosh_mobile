@@ -1,15 +1,22 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/domain/services/location_service.dart";
+import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
+import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
+import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/presentation/screens/create_listing/create_listing_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
@@ -184,7 +191,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           builder: (context, data) {
             if (data.isLoading) {
               return const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: HouseLoadingIndicator(),
               );
             }
 
@@ -224,9 +231,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
                     const Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                        ),
+                        child: HouseLoadingIndicator(),
                       ),
                     ),
                 ],
@@ -261,9 +266,24 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           const SizedBox(height: 24),
           GhostButtonFactory.iconText(
             onPressed: () {
-              // Navigate to create listing screen
-              Navigator.pop(context);
-              // You can add navigation logic here if needed
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder:
+                      (context) => BlocProvider(
+                        create:
+                            (context) =>
+                                SubwayStationsBloc(
+                                  getIt<ISubwayStationService>(),
+                                ),
+                        child: BlocProvider(
+                          create:
+                              (context) =>
+                                  LocationsBloc(getIt<ILocationService>()),
+                          child: const CreateListingScreen(),
+                        ),
+                      ),
+                ),
+              );
             },
             icon: Icons.add,
             text: LanguageAwareStringHelper.getCurrent(

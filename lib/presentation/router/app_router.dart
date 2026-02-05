@@ -261,7 +261,9 @@ class _MainNavigationState extends State<MainNavigation>
                         sheetContext,
                       ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(sheetContext).colorScheme.primary,
+                    ThemeState().isBlueTheme
+                        ? Colors.white
+                        : Theme.of(sheetContext).colorScheme.primary,
                   ),
                 ),
               ),
