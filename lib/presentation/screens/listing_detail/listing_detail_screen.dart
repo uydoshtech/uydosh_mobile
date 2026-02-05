@@ -2174,19 +2174,25 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                 ),
               ],
               const SizedBox(height: 16),
-              if (_complaintsCount == null || _complaintsCount! > 0)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _viewListingComplaints(listingDetail.id),
-                    icon: const Icon(Icons.report_outlined),
-                    label: Text(
-                      _buildComplaintsButtonLabel(),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      backgroundColor: AppColors.error,
-                      foregroundColor: AppColors.textLight,
+              if (_complaintsCount != null && _complaintsCount! > 0)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed:
+                            () => _viewListingComplaints(listingDetail.id),
+                        icon: const Icon(Icons.report_outlined),
+                        label: Text(
+                          _buildComplaintsButtonLabel(),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: AppColors.error,
+                          foregroundColor: AppColors.textLight,
+                        ),
+                      ),
                     ),
                   ),
                 ),
