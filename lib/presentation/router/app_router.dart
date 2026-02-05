@@ -12,6 +12,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
@@ -22,10 +23,13 @@ import "package:uy_dosh/presentation/screens/create_listing/create_listing_scree
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 
 import "package:firebase_auth/firebase_auth.dart";
 
@@ -59,6 +63,8 @@ class _MainNavigationState extends State<MainNavigation>
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
   bool _isAuthenticated = false;
+  bool _profileCompletionPromptShown = false;
+  bool _checkingProfileCompletion = false;
 
   @override
   void initState() {
@@ -127,6 +133,7 @@ class _MainNavigationState extends State<MainNavigation>
           setState(() {
             // Force UI rebuild to update navigation bar
           });
+          _maybeShowProfileCompletionPrompt();
         }
       }
 
@@ -157,6 +164,195 @@ class _MainNavigationState extends State<MainNavigation>
       debugPrint("❌ Auth check error: $e");
       _isAuthenticated = false;
     }
+  }
+
+  Future<void> _maybeShowProfileCompletionPrompt() async {
+    if (_profileCompletionPromptShown || _checkingProfileCompletion) {
+      return;
+    }
+    if (!_isAuthenticated) return;
+
+    _checkingProfileCompletion = true;
+    try {
+      var profile = await SessionManager.getCachedUserProfile();
+      profile ??= await getIt<IUserProfileService>().getCurrentUserProfile();
+      await SessionManager.storeUserProfile(profile);
+
+      final completionPercent = _calculateProfileCompletionPercent(profile);
+      if (completionPercent >= 100) return;
+
+      _profileCompletionPromptShown = true;
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _showProfileCompletionPrompt(context, completionPercent);
+      });
+    } catch (_) {
+      // Ignore failures to avoid blocking navigation.
+    } finally {
+      _checkingProfileCompletion = false;
+    }
+  }
+
+  void _showProfileCompletionPrompt(
+    BuildContext context,
+    int completionPercent,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  ListenableBuilder(
+                    listenable: ThemeState(),
+                    builder: (context, child) {
+                      final themeState = ThemeState();
+                      final iconColor =
+                          themeState.isBlueTheme ? Colors.white : Colors.black;
+                      return Icon(
+                        Icons.person,
+                        color: iconColor,
+                        size: 22,
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      LanguageAwareStringHelper.getCurrent(
+                        sheetContext,
+                        "complete_profile_prompt_title",
+                      ),
+                      style: Theme.of(sheetContext)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                LanguageAwareStringHelper.getCurrent(
+                  sheetContext,
+                  "complete_profile_prompt_body",
+                ),
+                style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: completionPercent / 100,
+                  minHeight: 8,
+                  backgroundColor:
+                      Theme.of(
+                        sheetContext,
+                      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(sheetContext).colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "$completionPercent%",
+                style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(sheetContext).pop();
+                      },
+                      child: Text(
+                        LanguageAwareStringHelper.getCurrent(
+                          sheetContext,
+                          "complete_profile_prompt_later",
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(sheetContext).pop();
+                        if (!mounted) return;
+                        final profile =
+                            await SessionManager.getCachedUserProfile();
+                        if (profile == null || !mounted) return;
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (_) => EditProfileScreen(profile: profile),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        LanguageAwareStringHelper.getCurrent(
+                          sheetContext,
+                          "complete_profile_prompt_cta",
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  int _calculateProfileCompletionPercent(UserProfile profile) {
+    const totalFields = 17;
+    final completedFields = _countCompletedProfileFields(profile);
+    return ((completedFields / totalFields) * 100).round();
+  }
+
+  int _countCompletedProfileFields(UserProfile profile) {
+    var completedFields = 0;
+
+    if (_hasText(profile.name)) completedFields++;
+    if (profile.gender != null) completedFields++;
+    if (profile.region != null) completedFields++;
+    if (profile.university != null) completedFields++;
+    if (_hasText(profile.aboutMe)) completedFields++;
+    if (_hasText(profile.telegram)) completedFields++;
+    if (profile.employed != null) completedFields++;
+    if (profile.cleanliness != null) completedFields++;
+    if (profile.noiseLevel != null) completedFields++;
+    if (profile.sociability != null) completedFields++;
+    if (profile.guestsAllowed != null) completedFields++;
+    if (_hasText(profile.smokingPreference)) completedFields++;
+    if (_hasText(profile.alcoholPreference)) completedFields++;
+    if (profile.cookingHabits != null) completedFields++;
+    if (profile.petsPreference != null) completedFields++;
+    if (_hasText(profile.wakeupTime)) completedFields++;
+    if (_hasText(profile.sleepTime)) completedFields++;
+
+    return completedFields;
+  }
+
+  bool _hasText(String? value) {
+    return value != null && value.trim().isNotEmpty;
   }
 
   // Redirect to auth wizard

@@ -30,6 +30,11 @@ class AppStrings {
       "profile_completion": "Profile completion",
       "profile_completion_hint":
           "A completed profile means more accurate matches and comfortable co-living.",
+      "complete_profile_prompt_title": "Complete your profile",
+      "complete_profile_prompt_body":
+          "Add your lifestyle preferences to get better matches.",
+      "complete_profile_prompt_cta": "Complete now",
+      "complete_profile_prompt_later": "Later",
       "name": "Name",
       "im_from": "I'm from:",
 
@@ -624,6 +629,11 @@ class AppStrings {
       "profile_completion": "Заполнение профиля",
       "profile_completion_hint":
           "Заполненный профиль = более точные совпадения и комфортное соседство.",
+      "complete_profile_prompt_title": "Заполните профиль",
+      "complete_profile_prompt_body":
+          "Укажите предпочтения по образу жизни, чтобы получить лучшие совпадения.",
+      "complete_profile_prompt_cta": "Заполнить сейчас",
+      "complete_profile_prompt_later": "Позже",
       "name": "Имя",
       "im_from": "Я из:",
 
@@ -1223,6 +1233,11 @@ class AppStrings {
       "profile_completion": "Profil to'ldirilishi",
       "profile_completion_hint":
           "Profil to'liq bo'lsa, mosliklar aniqroq va qo'shnichilik qulayroq bo'ladi.",
+      "complete_profile_prompt_title": "Profilni to'ldiring",
+      "complete_profile_prompt_body":
+          "Turmush tarzi bo'yicha xohishlarni qo'shing, mosliklar yaxshilanadi.",
+      "complete_profile_prompt_cta": "Hozir to'ldirish",
+      "complete_profile_prompt_later": "Keyinroq",
       "name": "Ism",
       "im_from": "Men:",
 
