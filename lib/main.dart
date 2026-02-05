@@ -213,6 +213,18 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
     );
 
+    _titleController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        HapticFeedback.lightImpact();
+      }
+    });
+
+    _subtitleController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        HapticFeedback.lightImpact();
+      }
+    });
+
     // Title slides in from left with fast easing
     _titleSlideAnimation = Tween<double>(
       begin: -2.5, // Start from far outside left screen border

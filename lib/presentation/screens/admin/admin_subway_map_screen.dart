@@ -33,7 +33,8 @@ class AdminSubwayMapScreen extends StatelessWidget {
   static const Offset _mapOffset = Offset(40, 80);
   static const double _tapTargetWidth = 140;
   static const double _tapTargetHeight = 26;
-  static const double _initialMapShiftY = -30;
+  static const double _initialMapShiftX = -20;
+  static const double _initialMapShiftY = -50;
 
   static final List<_StationLabel> _stationLabels =
       _extractStationLabels(_rawMapSvg);
@@ -667,13 +668,13 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
                         final transformationController =
                             TransformationController(
                               Matrix4.identity()
-                                ..translate(0.0, _initialMapShiftY)
+                                ..translate(_initialMapShiftX, _initialMapShiftY)
                                 ..scale(1.3),
                             );
                         return InteractiveViewer(
                           constrained: false,
                           minScale: 0.6,
-                          maxScale: 3.0,
+                          maxScale: 8.0,
                           boundaryMargin: const EdgeInsets.all(40),
                           transformationController: transformationController,
                           child: SizedBox(
