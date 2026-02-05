@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uy_dosh/presentation/blocs/messaging_bloc.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
 import 'package:uy_dosh/domain/models/message.dart';
-import 'package:uy_dosh/domain/models/conversation.dart';
 import 'package:uy_dosh/base/constants/string_helper.dart';
 import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
 import 'package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart';
@@ -816,6 +815,7 @@ class _MessageBubbleState extends State<MessageBubble>
         final otherMessageTextColor = _getThemeAwareOtherMessageTextColor(
           themeState,
         );
+        final bubbleShadowColor = _getThemeAwareBubbleShadowColor(themeState);
 
         return AnimatedBuilder(
           animation: Listenable.merge([_scaleAnimation, _fadeAnimation]),
@@ -876,6 +876,13 @@ class _MessageBubbleState extends State<MessageBubble>
                                       width: 1,
                                     )
                                     : null,
+                            boxShadow: [
+                              BoxShadow(
+                                color: bubbleShadowColor,
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -981,6 +988,16 @@ class _MessageBubbleState extends State<MessageBubble>
           .grey[300]!; // Light grey border for own messages in blue theme
     }
     return Colors.grey[300]!; // Default to light grey
+  }
+
+  /// Get theme-aware message bubble shadow color
+  Color _getThemeAwareBubbleShadowColor(ThemeState themeState) {
+    if (themeState.isLightTheme) {
+      return Colors.black.withValues(alpha: 0.12);
+    } else if (themeState.isBlueTheme) {
+      return Colors.black.withValues(alpha: 0.18);
+    }
+    return Colors.black.withValues(alpha: 0.12);
   }
 
   /// Get theme-aware other message background color
