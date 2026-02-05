@@ -171,6 +171,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       create: (context) => _currentUserProfileBloc,
       child: BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
         listener: (context, state) {
+          state.whenOrNull(
+            loaded: (profile) {
+              if (!mounted) return;
+              setState(() {
+                _cachedUserProfile = profile;
+              });
+            },
+          );
           state.maybeWhen(
             error: (message) {
               if (message != profileNotFoundErrorCode ||
@@ -235,7 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
               builder: (context, data) {
                 final effectiveProfile =
-                    _cachedUserProfile ?? data.profile;
+                    data.profile ?? _cachedUserProfile;
 
                 if (effectiveProfile == null &&
                     (data.isLoading || data.hasError)) {
@@ -364,14 +372,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
 
               // Profile completion indicator
               if (!isComplete) ...[
                 _buildProfileCompletionCard(profile, context),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
               ] else ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
               ],
 
               // Merged Profile Information Card
@@ -1599,60 +1607,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
           try {
             // Get the current profile from the bloc
             final currentState = context.read<CurrentUserProfileBloc>().state;
+            final cachedProfile = _cachedUserProfile;
             currentState.map(
               initial:
-                  (_) => ToastTheme.showInfo(
-                    context,
-                    message: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "profile_not_loaded_yet",
-                    ),
-                  ),
+                  (_) =>
+                      cachedProfile != null
+                          ? _openEditProfileScreen(
+                            context,
+                            cachedProfile,
+                          )
+                          : ToastTheme.showInfo(
+                            context,
+                            message: LanguageAwareStringHelper.getCurrent(
+                              context,
+                              "profile_not_loaded_yet",
+                            ),
+                          ),
               loading:
-                  (_) => ToastTheme.showInfo(
-                    context,
-                    message: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "profile_still_loading",
-                    ),
-                  ),
+                  (_) =>
+                      cachedProfile != null
+                          ? _openEditProfileScreen(
+                            context,
+                            cachedProfile,
+                          )
+                          : ToastTheme.showInfo(
+                            context,
+                            message: LanguageAwareStringHelper.getCurrent(
+                              context,
+                              "profile_still_loading",
+                            ),
+                          ),
               loaded: (loadedState) async {
-                final profile = loadedState.profile;
-
-                // Navigate to edit profile screen
-                final result = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => EditProfileScreen(profile: profile),
-                  ),
-                );
-
-                // Refresh profile if edit was successful
-                if (result == true) {
-                  logger.d("=== PROFILE EDIT SUCCESS ===");
-                  logger.d(
-                    "Edit profile returned true, refreshing profile data...",
-                  );
-
-                  // Refresh the profile data
-                  context.read<CurrentUserProfileBloc>().add(
-                    const CurrentUserProfileEvent.fetchProfile(),
-                  );
-
-                  logger.d("✅ Profile refresh event dispatched");
-                } else {
-                  logger.d("=== PROFILE EDIT CANCELLED ===");
-                  logger.d("Edit profile returned: $result");
-                  logger.d("Profile will not be refreshed");
-                }
+                await _openEditProfileScreen(context, loadedState.profile);
               },
               error:
-                  (errorState) => ToastTheme.showError(
-                    context,
-                    message: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "error_with_message",
-                    ).replaceAll("{message}", errorState.message),
-                  ),
+                  (errorState) =>
+                      cachedProfile != null
+                          ? _openEditProfileScreen(
+                            context,
+                            cachedProfile,
+                          )
+                          : ToastTheme.showError(
+                            context,
+                            message: LanguageAwareStringHelper.getCurrent(
+                              context,
+                              "error_with_message",
+                            ).replaceAll("{message}", errorState.message),
+                          ),
             );
           } catch (e) {
             ToastTheme.showError(
@@ -1718,6 +1719,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onPressed: () => _showLogoutDialog(context),
       ),
     ];
+  }
+
+  Future<void> _openEditProfileScreen(
+    BuildContext context,
+    UserProfile profile,
+  ) async {
+    // Navigate to edit profile screen
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditProfileScreen(profile: profile),
+      ),
+    );
+
+    // Refresh profile if edit was successful
+    if (result == true) {
+      logger.d("=== PROFILE EDIT SUCCESS ===");
+      logger.d("Edit profile returned true, refreshing profile data...");
+
+      // Refresh the profile data
+      context.read<CurrentUserProfileBloc>().add(
+        const CurrentUserProfileEvent.fetchProfile(),
+      );
+
+      logger.d("✅ Profile refresh event dispatched");
+    } else {
+      logger.d("=== PROFILE EDIT CANCELLED ===");
+      logger.d("Edit profile returned: $result");
+      logger.d("Profile will not be refreshed");
+    }
   }
 }
 
