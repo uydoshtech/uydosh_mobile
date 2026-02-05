@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
 import 'package:uy_dosh/base/constants/app_strings.dart';
 import 'package:uy_dosh/base/state/theme_state.dart';
 import 'package:uy_dosh/base/constants/app_colors.dart';
@@ -78,7 +78,7 @@ class QuickQuestionsWidget extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         // Add light haptic feedback when tapping on quick question
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
         onQuestionTap(text);
       },
       child: Container(

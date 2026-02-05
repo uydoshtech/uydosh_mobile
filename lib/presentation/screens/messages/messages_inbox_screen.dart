@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -231,7 +231,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           // Back button
           IconButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticFeedbackUtils.impact();
               Navigator.of(context).pop();
             },
             icon: Icon(

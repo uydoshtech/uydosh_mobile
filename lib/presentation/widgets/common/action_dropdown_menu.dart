@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 
@@ -25,10 +25,10 @@ class ActionDropdownMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
       onOpened: () {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
       },
       onSelected: (String value) {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
         final item = items.firstWhere((item) => item.value == value);
         if (!item.enabled) {
           return;

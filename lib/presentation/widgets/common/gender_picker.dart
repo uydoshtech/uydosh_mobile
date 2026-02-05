@@ -1,6 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -60,7 +60,7 @@ class GenderPicker extends StatelessWidget {
                 // Dismiss keyboard if it's open
                 FocusScope.of(context).unfocus();
                 // Provide haptic feedback
-                HapticFeedback.lightImpact();
+                HapticFeedbackUtils.impact();
                 // Update the selected gender (convert 0,1 to 1,2)
                 onGenderChanged(index + 1);
               },

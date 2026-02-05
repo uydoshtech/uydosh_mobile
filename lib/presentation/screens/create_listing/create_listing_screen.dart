@@ -1,6 +1,6 @@
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:flutter/cupertino.dart";
@@ -512,7 +512,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                           ),
                           onSelectedItemChanged: (index) {
                             _dismissKeyboard();
-                            HapticFeedback.lightImpact();
+                            HapticFeedbackUtils.impact();
                             setState(() {
                               _selectedSubwayLine =
                                   index; // 0 = unselected, 1-4 = line numbers
@@ -638,7 +638,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                                   ),
                                   onSelectedItemChanged: (index) {
                                     _dismissKeyboard();
-                                    HapticFeedback.lightImpact();
+                                    HapticFeedbackUtils.impact();
                                     setState(() {
                                       _selectedStationIndex = index;
                                       // Sync location picker with selected station's location_id
@@ -1295,7 +1295,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                       Switch(
                         value: _isPrivateRoom,
                         onChanged: (value) {
-                          HapticFeedback.lightImpact();
+                          HapticFeedbackUtils.impact();
                           setState(() {
                             _isPrivateRoom = value;
                           });
@@ -1413,7 +1413,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
   }
 
   void _submitForm() async {
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
 
     // Prevent multiple submissions
     if (_isSubmitting) return;
@@ -1679,7 +1679,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
               _dismissKeyboard();
 
               // Add haptic feedback
-              HapticFeedback.lightImpact();
+              HapticFeedbackUtils.impact();
 
               // Trigger animation
               _animateAmenityTap(amenity.id);

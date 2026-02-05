@@ -1,6 +1,6 @@
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:flutter/cupertino.dart";
@@ -401,7 +401,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                 theme.colorScheme.onPrimary,
           ),
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticFeedbackUtils.impact();
             Navigator.of(context).pop();
           },
         ),
@@ -509,7 +509,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                           ),
                                       onSelectedItemChanged: (index) {
                                         _dismissKeyboard();
-                                        HapticFeedback.lightImpact();
+                                        HapticFeedbackUtils.impact();
                                         setState(() {
                                           _selectedSubwayLine = index;
                                         });
@@ -657,7 +657,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                   ),
                                               onSelectedItemChanged: (index) {
                                                 _dismissKeyboard();
-                                                HapticFeedback.lightImpact();
+                                                HapticFeedbackUtils.impact();
                                                 setState(() {
                                                   _selectedStationIndex = index;
                                                   // Sync location picker with selected station's location_id
@@ -1294,7 +1294,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                   Switch(
                                     value: _isPrivateRoom,
                                     onChanged: (value) {
-                                      HapticFeedback.lightImpact();
+                                      HapticFeedbackUtils.impact();
                                       setState(() {
                                         _isPrivateRoom = value;
                                       });
@@ -1417,7 +1417,7 @@ class _EditListingScreenState extends State<EditListingScreen>
   }
 
   void _submitForm() async {
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
 
     // Prevent multiple submissions
     if (_isSubmitting) return;
@@ -1667,7 +1667,7 @@ class _EditListingScreenState extends State<EditListingScreen>
               _dismissKeyboard();
 
               // Add haptic feedback
-              HapticFeedback.lightImpact();
+              HapticFeedbackUtils.impact();
 
               // Trigger animation
               _animateAmenityTap(amenity.id);

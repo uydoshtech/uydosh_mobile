@@ -1,6 +1,6 @@
 import "dart:io";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:image_picker/image_picker.dart";
 
 import "package:uy_dosh/domain/models/photo.dart";
@@ -358,7 +358,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                         scale: _scaleAnimation.value,
                         child: IconButton(
                           onPressed: () {
-                            HapticFeedback.lightImpact();
+                            HapticFeedbackUtils.impact();
                             _triggerScaleAnimation();
                             _showImageSourceDialog();
                           },
@@ -488,7 +488,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                       ? null
                       : () {
                         // Add haptic feedback
-                        HapticFeedback.lightImpact();
+                        HapticFeedbackUtils.impact();
                         widget.onMakePhotoPrimary(index);
                       },
               child: CachedNetworkImage(
@@ -632,7 +632,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
             // Photo image - tappable to make primary
             GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticFeedbackUtils.impact();
                 _makeNewPhotoPrimary(index);
               },
               child: Image.file(

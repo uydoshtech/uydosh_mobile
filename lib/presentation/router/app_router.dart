@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
 
@@ -324,7 +324,7 @@ class _MainNavigationState extends State<MainNavigation>
                         ),
                         child: IconButton(
                           onPressed: () {
-                            HapticFeedback.lightImpact();
+                            HapticFeedbackUtils.impact();
                             Navigator.of(context)
                                 .pushReplacement(
                                   MaterialPageRoute(
@@ -378,7 +378,7 @@ class _MainNavigationState extends State<MainNavigation>
 
                     return IconButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticFeedbackUtils.impact();
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => const ProfileScreen(),
@@ -400,7 +400,7 @@ class _MainNavigationState extends State<MainNavigation>
       ),
       drawer: const BurgerMenuWidget(),
       onDrawerChanged: (isOpened) {
-        if (isOpened) HapticFeedback.lightImpact();
+        if (isOpened) HapticFeedbackUtils.impact();
       },
       body: IndexedStack(index: _currentIndex, children: _getScreens()),
       bottomNavigationBar: ListenableBuilder(
@@ -412,7 +412,7 @@ class _MainNavigationState extends State<MainNavigation>
             isAuthenticated: _isAuthenticated,
             hasUnreadMessages: UnreadMessagesState().hasUnreadMessages,
             onTap: (index) {
-              HapticFeedback.lightImpact();
+              HapticFeedbackUtils.impact();
 
               // Handle authentication requirements
               if ((index == 1 || index == 2) && !_isAuthenticated) {

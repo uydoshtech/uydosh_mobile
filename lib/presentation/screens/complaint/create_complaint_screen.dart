@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uy_dosh/presentation/blocs/complaint_bloc.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
@@ -43,7 +43,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
         leading: IconButton(
           icon: const ThemeIcon(icon: Icons.arrow_back),
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticFeedbackUtils.impact();
             Navigator.of(context).pop();
           },
         ),

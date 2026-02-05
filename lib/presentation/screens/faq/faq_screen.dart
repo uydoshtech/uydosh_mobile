@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -235,7 +235,7 @@ class _FaqScreenState extends State<FaqScreen> {
           // Header (always visible)
           InkWell(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticFeedbackUtils.impact();
               setState(() {
                 if (isExpanded) {
                   _expandedIndex = null; // Collapse if already expanded

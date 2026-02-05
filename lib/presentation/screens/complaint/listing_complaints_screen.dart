@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
@@ -62,7 +62,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
         leading: IconButton(
           icon: const ThemeIcon(icon: Icons.arrow_back),
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticFeedbackUtils.impact();
             Navigator.of(context).pop();
           },
         ),

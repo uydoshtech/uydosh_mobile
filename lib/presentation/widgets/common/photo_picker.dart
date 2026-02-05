@@ -1,6 +1,6 @@
 import "dart:io";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:image/image.dart" as img;
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -245,7 +245,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
     if (index == 0) return; // Already primary
 
     // Add haptic feedback
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
 
     final newPhotos = List<String>.from(widget.selectedPhotos);
     final photoToMakePrimary = newPhotos.removeAt(index);

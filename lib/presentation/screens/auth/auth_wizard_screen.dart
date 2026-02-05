@@ -1,7 +1,7 @@
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:flutter/material.dart";
 import "package:flutter/cupertino.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "dart:async";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -486,7 +486,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   void _previousPage() {
     if (_currentPage > 0) {
-      HapticFeedback.lightImpact();
+      HapticFeedbackUtils.impact();
       setState(() {
         _currentPage--;
       });

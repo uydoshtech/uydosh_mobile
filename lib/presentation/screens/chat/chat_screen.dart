@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uy_dosh/presentation/blocs/messaging_bloc.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
@@ -189,7 +189,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 _messageController.clear();
                                 _scrollToBottom();
                                 // Trigger light haptic feedback
-                                HapticFeedback.lightImpact();
+                                HapticFeedbackUtils.impact();
                               },
                               messagesMarkedAsRead:
                                   (conversationId, markedCount) {},
@@ -526,7 +526,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         _isSendingMessage = false;
                       });
                       // Trigger light haptic feedback
-                      HapticFeedback.lightImpact();
+                      HapticFeedbackUtils.impact();
                     },
                     messagesMarkedAsRead: (conversationId, markedCount) {},
                     error: (message) {

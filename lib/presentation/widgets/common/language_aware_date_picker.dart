@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -132,33 +132,33 @@ class _LanguageAwareDatePickerDialogState
   }
 
   void _previousMonth() {
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
     setState(() {
       currentMonth = DateTime(currentMonth.year, currentMonth.month - 1);
     });
   }
 
   void _nextMonth() {
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
     setState(() {
       currentMonth = DateTime(currentMonth.year, currentMonth.month + 1);
     });
   }
 
   void _selectDate(DateTime date) {
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
     setState(() {
       selectedDate = date;
     });
   }
 
   void _confirm() {
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
     Navigator.of(context).pop(selectedDate);
   }
 
   void _cancel() {
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
     Navigator.of(context).pop();
   }
 

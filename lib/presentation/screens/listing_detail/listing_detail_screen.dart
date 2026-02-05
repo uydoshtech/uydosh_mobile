@@ -1,7 +1,7 @@
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:flutter/material.dart";
 import "package:flutter/cupertino.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -875,7 +875,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
 
   void _toggleFavorite() async {
     // Add haptic feedback
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
 
     final favoritesState = FavoritesState();
     final isFavorite = favoritesState.isFavorite(widget.listingId);
@@ -1506,7 +1506,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticFeedbackUtils.impact();
               Navigator.of(context).pop();
             },
           ),

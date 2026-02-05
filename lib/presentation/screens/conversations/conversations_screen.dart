@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uy_dosh/presentation/blocs/messaging_bloc.dart';
 import 'package:uy_dosh/domain/models/conversation.dart';
@@ -95,7 +96,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           // Back button
           IconButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticFeedbackUtils.impact();
               Navigator.of(context).pop();
             },
             icon: Icon(

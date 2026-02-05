@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
@@ -231,7 +231,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
         _showLanguageDialog(context);
       },
       trailing: Icon(
@@ -255,7 +255,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(color: _getSecondaryTextColor()),
       ),
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
         _showThemeDialog(context);
       },
       trailing: Icon(
@@ -446,7 +446,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               )
               : null,
       onTap: () async {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
         Navigator.pop(context);
         // Handle theme change
         await ThemeState().changeTheme(themeCode);
@@ -503,7 +503,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               )
               : null,
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
         Navigator.pop(context);
         // Handle language change
         LanguageState().setLanguage(code);
@@ -563,7 +563,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
+                  HapticFeedbackUtils.impact();
                   Navigator.of(context).pop();
                 },
                 style: TextButton.styleFrom(

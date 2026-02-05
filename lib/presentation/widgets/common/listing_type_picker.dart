@@ -1,6 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -63,7 +63,7 @@ class ListingTypePicker extends StatelessWidget {
                 // Dismiss keyboard if it"s open
                 FocusScope.of(context).unfocus();
                 // Provide haptic feedback
-                HapticFeedback.lightImpact();
+                HapticFeedbackUtils.impact();
                 // Update the selected listing type ID (2 = roommate needed, 1 = room needed)
                 onListingTypeChanged(index == 0 ? 2 : 1);
               },

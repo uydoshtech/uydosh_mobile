@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -190,7 +190,7 @@ class _ListingTileState extends State<ListingTile>
                                           ? null
                                           : () async {
                                             // Add haptic feedback
-                                            HapticFeedback.lightImpact();
+                                            HapticFeedbackUtils.impact();
 
                                             // For favorites screen, we know the item is currently favorited
                                             // For other screens, check the actual state

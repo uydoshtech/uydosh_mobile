@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
@@ -636,7 +636,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: () {
-          HapticFeedback.lightImpact();
+          HapticFeedbackUtils.impact();
           if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           }

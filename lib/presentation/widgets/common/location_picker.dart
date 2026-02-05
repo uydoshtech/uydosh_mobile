@@ -1,6 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -101,7 +101,7 @@ class LocationPicker extends StatelessWidget {
                 // Dismiss keyboard if it is open
                 FocusScope.of(context).unfocus();
                 // Provide haptic feedback
-                HapticFeedback.lightImpact();
+                HapticFeedbackUtils.impact();
 
                 // Update the selected location index (convert back to -1 for unselected)
                 onLocationChanged(index - 1);

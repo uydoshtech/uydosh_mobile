@@ -1,7 +1,7 @@
 import "dart:async";
 import "package:flutter/material.dart";
 import "package:flutter/cupertino.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
@@ -809,7 +809,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                                         .selectedSubwayLine,
                                               ),
                                           onSelectedItemChanged: (index) {
-                                            HapticFeedback.lightImpact();
+                                            HapticFeedbackUtils.impact();
                                             setState(() {
                                               _searchFiltersState.setSubwayLine(
                                                 index,
@@ -967,7 +967,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                                   onSelectedItemChanged: (
                                                     index,
                                                   ) {
-                                                    HapticFeedback.lightImpact();
+                                                    HapticFeedbackUtils.impact();
                                                     setState(() {
                                                       if (index == 0) {
                                                         // "Select station" option
@@ -1254,7 +1254,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               ),
                               value: _searchFiltersState.privateRoom,
                               onChanged: (bool value) {
-                                HapticFeedback.lightImpact();
+                                HapticFeedbackUtils.impact();
                                 _searchFiltersState.setPrivateRoom(value);
                                 setState(() {});
                               },
@@ -1386,7 +1386,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                 initialItem: _getInitialLocationItem(),
               ),
               onSelectedItemChanged: (index) {
-                HapticFeedback.lightImpact();
+                HapticFeedbackUtils.impact();
                 setState(() {
                   if (index == 0) {
                     // "Select location" option
@@ -1657,7 +1657,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     final isSelected = _searchFiltersState.selectedListingTypeId == value;
     return InkWell(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
         setState(() {
           _searchFiltersState.setListingTypeId(value);
         });
@@ -1696,7 +1696,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     final isSelected = _searchFiltersState.selectedGender == gender;
     return InkWell(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
         setState(() {
           _searchFiltersState.setGender(gender);
         });
@@ -1798,7 +1798,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                 initialItem: _getInitialLocationItem(),
               ),
               onSelectedItemChanged: (index) {
-                HapticFeedback.lightImpact();
+                HapticFeedbackUtils.impact();
                 setState(() {
                   if (index == 0) {
                     // "Select location" option
@@ -1896,7 +1896,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   }
 
   void _performSearch() {
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
 
     // Get all current filter values
     final listingTypeId = _searchFiltersState.selectedListingTypeId;

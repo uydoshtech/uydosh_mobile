@@ -1,6 +1,6 @@
 import "dart:async";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
@@ -215,7 +215,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         if (_currentPage > 0)
                           TextButtonThemedFactory.text(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              HapticFeedbackUtils.impact();
                               _pageController.previousPage(
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeInOut,

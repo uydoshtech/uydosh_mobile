@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 
@@ -173,7 +173,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                     // Haptic feedback for every 10-unit step change
                     if ((newMin ~/ 10) != (oldMin ~/ 10) ||
                         (newMax ~/ 10) != (oldMax ~/ 10)) {
-                      HapticFeedback.selectionClick();
+                      HapticFeedbackUtils.selection();
                     }
 
                     setState(() {

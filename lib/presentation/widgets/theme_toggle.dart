@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter/gestures.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
@@ -96,7 +96,7 @@ class ThemeToggle extends StatelessWidget {
           onChanged: (newValue) {
             // Add haptic feedback when toggle changes (if enabled)
             if (AppConfig.enableHapticFeedback) {
-              HapticFeedback.lightImpact();
+              HapticFeedbackUtils.impact();
             }
             onChanged(newValue);
           },

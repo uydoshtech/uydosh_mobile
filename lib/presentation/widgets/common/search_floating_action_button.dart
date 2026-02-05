@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
@@ -47,7 +47,7 @@ class SearchFloatingActionButton extends StatelessWidget {
 
   void _handleSearchPressed(BuildContext context) {
     // Add haptic feedback
-    HapticFeedback.lightImpact();
+    HapticFeedbackUtils.impact();
 
     // Show search bottom sheet
     SearchBottomSheetWidget.show(

@@ -1,6 +1,6 @@
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_version.dart";
@@ -249,7 +249,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                HapticFeedback.lightImpact();
+                                HapticFeedbackUtils.impact();
                                 Navigator.pop(context);
                                 // Navigate to profile
                                 if (context.mounted) {
@@ -747,7 +747,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
               )
               : null,
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.impact();
         onTap();
       },
       trailing: Icon(

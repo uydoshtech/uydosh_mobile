@@ -1,4 +1,6 @@
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_svg/flutter_svg.dart";
 
 class AnimatedULetter extends StatelessWidget {
@@ -73,6 +75,17 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
   late Animation<double> _uLetterColorAnimation;
   late Animation<double> _roofFallAnimation;
   late Animation<double> _chimneyFallAnimation;
+  bool _hasLoggedSquareStop = false;
+  bool _hasLoggedULetterDone = false;
+  bool _hasLoggedRoofDone = false;
+  int _lastHalfRotationIndex = 0;
+
+  void _logStage(String message) {
+    if (kDebugMode) {
+      debugPrint(message);
+    }
+    HapticFeedbackUtils.selection();
+  }
 
   @override
   void initState() {
@@ -162,6 +175,31 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
         ), // 90-95% of total duration with bounce effect
       ),
     );
+
+    _controller.addListener(() {
+      final currentHalfRotationIndex =
+          _squareRotationAnimation.value.floor().clamp(0, 6);
+      if (currentHalfRotationIndex > _lastHalfRotationIndex) {
+        for (var i = _lastHalfRotationIndex + 1;
+            i <= currentHalfRotationIndex;
+            i++) {
+          HapticFeedbackUtils.selection();
+        }
+        _lastHalfRotationIndex = currentHalfRotationIndex;
+      }
+      if (!_hasLoggedSquareStop && _controller.value >= 0.4) {
+        _hasLoggedSquareStop = true;
+        _logStage("Logo animation: square rotation completed");
+      }
+      if (!_hasLoggedULetterDone && _controller.value >= 0.7) {
+        _hasLoggedULetterDone = true;
+        _logStage("Logo animation: U letter drawing completed");
+      }
+      if (!_hasLoggedRoofDone && _controller.value >= 0.9) {
+        _hasLoggedRoofDone = true;
+        _logStage("Logo animation: roof animation completed");
+      }
+    });
 
     _controller.forward();
   }
