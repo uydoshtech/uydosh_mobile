@@ -40,11 +40,14 @@ class ActionDropdownMenu extends StatelessWidget {
         return items.map((item) {
           final baseTextStyle = Theme.of(context).popupMenuTheme.textStyle;
           final disabledColor = Theme.of(context).disabledColor;
-          final effectiveTextStyle =
+          final effectiveTextColor =
               item.enabled
-                  ? baseTextStyle
-                  : baseTextStyle?.copyWith(color: disabledColor) ??
-                      TextStyle(color: disabledColor);
+                  ? (item.textColor ?? baseTextStyle?.color)
+                  : disabledColor;
+          final effectiveTextStyle =
+              (baseTextStyle ?? const TextStyle()).copyWith(
+                color: effectiveTextColor,
+              );
 
           return PopupMenuItem<String>(
             value: item.value,
@@ -96,6 +99,7 @@ class ActionMenuItem {
     required this.textKey,
     required this.onPressed,
     this.iconColor,
+    this.textColor,
     this.enabled = true,
   });
 
@@ -104,5 +108,6 @@ class ActionMenuItem {
   final String textKey;
   final VoidCallback onPressed;
   final Color? iconColor;
+  final Color? textColor;
   final bool enabled;
 }

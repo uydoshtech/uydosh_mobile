@@ -11,7 +11,7 @@ class ListingTileSkeleton extends StatelessWidget {
     final cardColor = _getCardColor(context);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12.0),
+      margin: EdgeInsets.zero,
       color: cardColor,
       child: Stack(
         children: [

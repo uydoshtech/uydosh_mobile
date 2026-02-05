@@ -1340,7 +1340,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Icon(
                 Icons.admin_panel_settings,
-                color: Theme.of(context).colorScheme.primary,
+                color:
+                    ThemeState().isBlueTheme
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.primary,
                 size: 24,
               ),
               const SizedBox(width: 16),
@@ -1692,13 +1695,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         },
       ),
-      // Logout item
-      ActionMenuItem(
-        value: "logout",
-        icon: Icons.logout,
-        textKey: "menu_logout",
-        onPressed: () => _showLogoutDialog(context),
-      ),
       if (_userRole == "admin")
         ActionMenuItem(
           value: "admin_panel",
@@ -1712,6 +1708,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           },
         ),
+      // Logout item
+      ActionMenuItem(
+        value: "logout",
+        icon: Icons.logout,
+        textKey: "menu_logout",
+        iconColor: AppColors.error,
+        textColor: AppColors.error,
+        onPressed: () => _showLogoutDialog(context),
+      ),
     ];
   }
 }

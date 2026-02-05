@@ -662,10 +662,15 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                     final isAuthenticated =
                         AuthenticationState().isAuthenticated;
 
+                    final logoutColor =
+                        isAuthenticated ? AppColors.error : null;
                     return _buildMenuItem(
                       icon: isAuthenticated ? Icons.logout : Icons.person_add,
                       titleKey:
                           isAuthenticated ? "menu_logout" : "menu_registration",
+                      iconColor: logoutColor,
+                      textColor: logoutColor,
+                      trailingColor: logoutColor,
                       onTap: () {
                         if (isAuthenticated) {
                           // Logout user - show dialog first, then close drawer
@@ -730,20 +735,28 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
     required String titleKey,
     required VoidCallback onTap,
     String? subtitleKey,
+    Color? iconColor,
+    Color? textColor,
+    Color? trailingColor,
   }) {
     return ListTile(
-      leading: Icon(icon, color: _getIconColor()),
+      leading: Icon(icon, color: iconColor ?? _getIconColor()),
       title: LanguageAwareStringHelper.getText(
         titleKey,
         context,
-        style: TextStyle(fontWeight: FontWeight.w500, color: _getTextColor()),
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          color: textColor ?? _getTextColor(),
+        ),
       ),
       subtitle:
           subtitleKey != null
               ? LanguageAwareStringHelper.getText(
                 subtitleKey,
                 context,
-                style: TextStyle(color: _getSecondaryTextColor()),
+                style: TextStyle(
+                  color: textColor ?? _getSecondaryTextColor(),
+                ),
               )
               : null,
       onTap: () {
@@ -753,7 +766,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       trailing: Icon(
         Icons.arrow_forward_ios,
         size: 16,
-        color: _getSecondaryIconColor(),
+        color: trailingColor ?? _getSecondaryIconColor(),
       ),
     );
   }

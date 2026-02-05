@@ -358,7 +358,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             curve: Curves.easeInOut,
             height: _itemsBeingRemoved.contains(listing.id) ? 0 : null,
             margin: EdgeInsets.only(
-              bottom: _itemsBeingRemoved.contains(listing.id) ? 0 : 12.0,
+              bottom: _itemsBeingRemoved.contains(listing.id) ? 0 : 16.0,
             ),
             child:
                 _itemsBeingRemoved.contains(listing.id)

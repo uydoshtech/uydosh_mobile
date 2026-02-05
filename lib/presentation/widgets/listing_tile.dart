@@ -110,7 +110,7 @@ class _ListingTileState extends State<ListingTile>
   @override
   Widget build(BuildContext context) {
     final cardWidget = Card(
-      margin: const EdgeInsets.only(bottom: 12.0),
+      margin: EdgeInsets.zero,
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(

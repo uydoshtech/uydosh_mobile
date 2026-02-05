@@ -230,10 +230,11 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
 
     return RefreshIndicator(
       onRefresh: _refresh,
-      child: ListView.builder(
+      child: ListView.separated(
         controller: _scrollController,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         itemCount: _listings.length + (_isLoadingMore ? 1 : 0),
+        separatorBuilder: (context, index) => const SizedBox(height: 16),
         itemBuilder: (context, index) {
           if (index >= _listings.length) {
             return const Padding(
