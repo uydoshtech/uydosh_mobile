@@ -346,6 +346,8 @@ class AppStrings {
       "morning": "Morning",
       "evening": "Evening",
       "night": "Night",
+      "pets_okay": "Okay",
+      "pets_not_okay": "Not great",
 
       // Slider labels
       "lifestyle_preferences": "Lifestyle Preferences",
@@ -365,6 +367,8 @@ class AppStrings {
       "very_extroverted": "Very Extroverted",
       "yes": "Yes",
       "no": "No",
+      "cook": "Cook",
+      "dont_cook": "Don't cook",
 
       "not_specified": "Not Specified",
 
@@ -965,6 +969,8 @@ class AppStrings {
       "morning": "Утро",
       "evening": "Вечер",
       "night": "Ночь",
+      "pets_okay": "Нормальное",
+      "pets_not_okay": "Не очень",
 
       // Slider labels
       "lifestyle_preferences": "Предпочтения образа жизни",
@@ -984,6 +990,8 @@ class AppStrings {
       "very_extroverted": "Очень общительный",
       "yes": "Да",
       "no": "Нет",
+      "cook": "Готовлю",
+      "dont_cook": "Не готовлю",
 
       "not_specified": "Не указано",
 
@@ -1596,6 +1604,8 @@ class AppStrings {
       "morning": "Ertalab",
       "evening": "Kechqurun",
       "night": "Tun",
+      "pets_okay": "Yaxshi",
+      "pets_not_okay": "Unchalik emas",
 
       // Slider labels
       "lifestyle_preferences": "Turmush tarzi afzalliklari",
@@ -1615,6 +1625,8 @@ class AppStrings {
       "very_extroverted": "Juda tashqariga qarab",
       "yes": "Ha",
       "no": "Yo'q",
+      "cook": "Pishiraman",
+      "dont_cook": "Pishirmayman",
 
       "not_specified": "Ko'rsatilmagan",
 

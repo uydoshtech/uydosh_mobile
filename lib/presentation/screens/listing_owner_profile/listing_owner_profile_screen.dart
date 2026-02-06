@@ -671,11 +671,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                 profile.cookingHabits!
                                     ? LanguageAwareStringHelper.getCurrent(
                                       context,
-                                      "yes",
+                                      "cook",
                                     )
                                     : LanguageAwareStringHelper.getCurrent(
                                       context,
-                                      "no",
+                                      "dont_cook",
                                     ),
                             context: context,
                           ),
@@ -694,11 +694,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                 profile.petsPreference!
                                     ? LanguageAwareStringHelper.getCurrent(
                                       context,
-                                      "yes",
+                                      "pets_okay",
                                     )
                                     : LanguageAwareStringHelper.getCurrent(
                                       context,
-                                      "no",
+                                      "pets_not_okay",
                                     ),
                             context: context,
                           ),
@@ -1197,6 +1197,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
         return value;
     }
   }
+
 
   String _getTimePreferenceText(String value, BuildContext context) {
     switch (value) {

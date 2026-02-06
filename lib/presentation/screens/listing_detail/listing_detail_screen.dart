@@ -134,7 +134,7 @@ class _ListingDetailBodyData {
 
 class _CompatibilityResult {
   final int? percent;
-  final List<String> matches;
+  final List<_CompatibilityMatch> matches;
   final List<_CompatibilityDifference> differences;
 
   const _CompatibilityResult({
@@ -144,12 +144,26 @@ class _CompatibilityResult {
   });
 }
 
+class _CompatibilityMatch {
+  final String labelKey;
+  final String label;
+  final String value;
+
+  const _CompatibilityMatch({
+    required this.labelKey,
+    required this.label,
+    required this.value,
+  });
+}
+
 class _CompatibilityDifference {
+  final String labelKey;
   final String label;
   final String currentText;
   final String ownerText;
 
   const _CompatibilityDifference({
+    required this.labelKey,
     required this.label,
     required this.currentText,
     required this.ownerText,
@@ -190,7 +204,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   bool _isLoadingCompatibility = false;
   int? _compatibilityListingUserId;
   int? _compatibilityPercent;
-  List<String> _compatibilityMatches = [];
+  List<_CompatibilityMatch> _compatibilityMatches = [];
   List<_CompatibilityDifference> _compatibilityDifferences = [];
   String? _compatibilityError;
 
@@ -552,7 +566,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   ) {
     int total = 0;
     int matched = 0;
-    final matches = <String>[];
+    final matches = <_CompatibilityMatch>[];
     final differences = <_CompatibilityDifference>[];
 
     void compare<T>({
@@ -573,10 +587,17 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
       if (isMatch(currentValue, ownerValue)) {
         matched += 1;
-        matches.add("$label: $currentText");
+        matches.add(
+          _CompatibilityMatch(
+            labelKey: labelKey,
+            label: label,
+            value: currentText,
+          ),
+        );
       } else {
         differences.add(
           _CompatibilityDifference(
+            labelKey: labelKey,
             label: label,
             currentText: currentText,
             ownerText: ownerText,
@@ -638,7 +659,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       currentValue: currentProfile.cookingHabits,
       ownerValue: ownerProfile.cookingHabits,
       isMatch: (a, b) => a == b,
-      formatValue: _formatBooleanPreference,
+      formatValue: _formatCookingHabits,
     );
 
     compare<bool>(
@@ -646,7 +667,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       currentValue: currentProfile.petsPreference,
       ownerValue: ownerProfile.petsPreference,
       isMatch: (a, b) => a == b,
-      formatValue: _formatBooleanPreference,
+      formatValue: _formatPetsPreference,
     );
 
     compare<String>(
@@ -687,6 +708,21 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       value ? "yes" : "no",
     );
   }
+
+  String _formatCookingHabits(bool value) {
+    return LanguageAwareStringHelper.getCurrent(
+      context,
+      value ? "cook" : "dont_cook",
+    );
+  }
+
+  String _formatPetsPreference(bool value) {
+    return LanguageAwareStringHelper.getCurrent(
+      context,
+      value ? "pets_okay" : "pets_not_okay",
+    );
+  }
+
 
   String _formatDayPreference(String value) {
     switch (value) {
@@ -933,14 +969,14 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(
-                              CupertinoIcons.checkmark_alt,
-                            size: 18,
-                            color: AppColors.success,
+                            _getLifestyleIcon(item.labelKey),
+                            size: 20,
+                            color: _getDescriptionTextColor(),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              item,
+                              "${item.label}: ${item.value}",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: _getDescriptionTextColor(),
@@ -973,9 +1009,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(
-                            Icons.warning_amber_rounded,
-                            size: 17,
-                            color: AppColors.warning,
+                            _getLifestyleIcon(item.labelKey),
+                            size: 20,
+                            color: _getDescriptionTextColor(),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -3122,6 +3158,35 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       return AppColors.textLight;
     } else {
       return AppColors.textGrey; // Default grey for light theme
+    }
+  }
+
+  IconData _getLifestyleIcon(String labelKey) {
+    switch (labelKey) {
+      case "wakeup_time":
+        return Icons.wb_sunny;
+      case "sleep_time":
+        return Icons.bedtime;
+      case "employed":
+        return Icons.work;
+      case "cleanliness":
+        return Icons.cleaning_services;
+      case "noise_level":
+        return Icons.volume_up;
+      case "sociability":
+        return Icons.people;
+      case "guests_allowed":
+        return Icons.group_add;
+      case "smoking_preference":
+        return Icons.smoking_rooms;
+      case "alcohol_preference":
+        return Icons.local_bar;
+      case "cooking_habits":
+        return Icons.restaurant;
+      case "pets_preference":
+        return Icons.pets;
+      default:
+        return Icons.info_outline;
     }
   }
 
