@@ -135,12 +135,24 @@ class _ListingDetailBodyData {
 class _CompatibilityResult {
   final int? percent;
   final List<String> matches;
-  final List<String> differences;
+  final List<_CompatibilityDifference> differences;
 
   const _CompatibilityResult({
     required this.percent,
     required this.matches,
     required this.differences,
+  });
+}
+
+class _CompatibilityDifference {
+  final String label;
+  final String currentText;
+  final String ownerText;
+
+  const _CompatibilityDifference({
+    required this.label,
+    required this.currentText,
+    required this.ownerText,
   });
 }
 
@@ -154,10 +166,14 @@ class ListingDetailScreen extends StatefulWidget {
 }
 
 class _ListingDetailScreenState extends State<ListingDetailScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _heartAnimationController;
   late Animation<double> _heartScaleAnimation;
+  late AnimationController _warningBlinkController;
+  late Animation<double> _warningBlinkAnimation;
   late PageController _pageController;
+  late ScrollController _scrollController;
+  final GlobalKey _compatibilitySectionKey = GlobalKey();
 
   // Loading state for toggle button
   bool _isToggling = false;
@@ -175,7 +191,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   int? _compatibilityListingUserId;
   int? _compatibilityPercent;
   List<String> _compatibilityMatches = [];
-  List<String> _compatibilityDifferences = [];
+  List<_CompatibilityDifference> _compatibilityDifferences = [];
   String? _compatibilityError;
 
 
@@ -203,8 +219,21 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       end: 1.3,
     );
 
+    _warningBlinkController = AnimationUtils.createAnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _warningBlinkAnimation = AnimationUtils.createFadeAnimation(
+      controller: _warningBlinkController,
+      begin: 0.25,
+      end: 1.0,
+      curve: Curves.easeInOut,
+    );
+    _warningBlinkController.repeat(reverse: true);
+
     // Initialize page controller for photo carousel
     _pageController = PageController();
+    _scrollController = ScrollController();
 
     // Fetch listing details
     context.read<ListingDetailBloc>().add(
@@ -221,7 +250,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   @override
   void dispose() {
     AnimationUtils.disposeAnimationController(_heartAnimationController);
+    AnimationUtils.disposeAnimationController(_warningBlinkController);
     _pageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -522,7 +553,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     int total = 0;
     int matched = 0;
     final matches = <String>[];
-    final differences = <String>[];
+    final differences = <_CompatibilityDifference>[];
 
     void compare<T>({
       required String labelKey,
@@ -545,7 +576,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         matches.add("$label: $currentText");
       } else {
         differences.add(
-          "$label: $currentText ${LanguageAwareStringHelper.getCurrent(context, "vs")} $ownerText",
+          _CompatibilityDifference(
+            label: label,
+            currentText: currentText,
+            ownerText: ownerText,
+          ),
         );
       }
     }
@@ -760,9 +795,23 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             : "${_compatibilityPercent}%";
 
     return Card(
+      key: _compatibilitySectionKey,
       child: ExpansionTile(
-        onExpansionChanged: (_) {
+        onExpansionChanged: (isExpanded) {
           HapticFeedbackUtils.impact();
+          if (!isExpanded) {
+            return;
+          }
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!_scrollController.hasClients) {
+              return;
+            }
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          });
         },
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -780,7 +829,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
               ThemeState().isBlueTheme
                   ? CupertinoIcons.group_solid
                   : CupertinoIcons.group,
-              size: 22,
+              size: 24,
               color:
                   ThemeState().isBlueTheme
                       ? Colors.white
@@ -796,7 +845,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
                   "compatibility_title",
                 ),
                 style: TextStyle(
-                fontSize: 16,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: _getDescriptionTextColor(),
                 ),
@@ -806,7 +855,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             Text(
               headerPercentText,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: _getCompatibilityPercentColor(),
               ),
@@ -925,16 +974,32 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
                         children: [
                           Icon(
                             Icons.warning_amber_rounded,
-                            size: 16,
+                            size: 17,
                             color: AppColors.warning,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(
-                              item,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: _getDescriptionTextColor(),
+                            child: RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: _getDescriptionTextColor(),
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text:
+                                        "${item.label}: ${item.currentText} ",
+                                  ),
+                                  WidgetSpan(
+                                    alignment: PlaceholderAlignment.middle,
+                                    child: Icon(
+                                      Icons.compare_arrows,
+                                      size: 16,
+                                      color: _getDescriptionTextColor(),
+                                    ),
+                                  ),
+                                  TextSpan(text: " ${item.ownerText}"),
+                                ],
                               ),
                             ),
                           ),
@@ -2198,6 +2263,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         final currentLanguage = LanguageState().currentLanguage;
 
         return SingleChildScrollView(
+          controller: _scrollController,
           padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 36.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2398,7 +2464,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                             ),
                             const SizedBox(width: 12),
                           ],
-                          // Gender Icon
+                          // Gender Badge
                           if (listingDetail.gender != null) ...[
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -2418,10 +2484,29 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                                   width: 1.0,
                                 ),
                               ),
-                              child: ThemeIconFactory.detail(
-                                icon: _getGenderIcon(listingDetail.gender!),
-                                color: _getGenderColor(listingDetail.gender!),
-                                size: 18,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ThemeIconFactory.detail(
+                                    icon: _getGenderIcon(listingDetail.gender!),
+                                    color: _getGenderColor(listingDetail.gender!),
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    _getGenderText(
+                                      listingDetail.gender!,
+                                      context,
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: _getGenderColor(
+                                        listingDetail.gender!,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -2572,10 +2657,16 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                           listingDetail.moveInDate!.isNotEmpty) ...[
                         Row(
                           children: [
-                            ThemeIconFactory.detail(
-                              icon: CupertinoIcons.square_arrow_right,
-                              color: _getDateIconColor(),
-                              size: 22,
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Center(
+                                child: ThemeIconFactory.detail(
+                                  icon: CupertinoIcons.square_arrow_right,
+                                  color: _getDateIconColor(),
+                                  size: 20,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -2594,10 +2685,16 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                       // Publishing Date
                       Row(
                         children: [
-                          ThemeIconFactory.detail(
-                            icon: Icons.schedule,
-                            color: _getDateIconColor(),
-                            size: 20,
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Center(
+                              child: ThemeIconFactory.detail(
+                                icon: Icons.schedule,
+                                color: _getDateIconColor(),
+                                size: 20,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -2631,7 +2728,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                         Row(
                           children: [
                             ThemeIconFactory.detail(
-                              icon: Icons.map,
+                              icon: CupertinoIcons.placemark_fill,
                               color: _getIconColor(),
                               size: 20,
                             ),
@@ -2711,9 +2808,15 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                       child: ElevatedButton.icon(
                         onPressed:
                             () => _viewListingComplaints(listingDetail.id),
-                        icon: const Icon(Icons.report_outlined),
-                        label: Text(
-                          _buildComplaintsButtonLabel(),
+                        icon: FadeTransition(
+                          opacity: _warningBlinkAnimation,
+                          child: const Icon(Icons.report_outlined),
+                        ),
+                        label: FadeTransition(
+                          opacity: _warningBlinkAnimation,
+                          child: Text(
+                            _buildComplaintsButtonLabel(),
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -2879,6 +2982,17 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         return AppColors.genderFemale;
       default:
         return AppColors.textGrey;
+    }
+  }
+
+  String _getGenderText(int gender, BuildContext context) {
+    switch (gender) {
+      case 1:
+        return LanguageAwareStringHelper.getCurrent(context, "male");
+      case 2:
+        return LanguageAwareStringHelper.getCurrent(context, "female");
+      default:
+        return LanguageAwareStringHelper.getCurrent(context, "other");
     }
   }
 

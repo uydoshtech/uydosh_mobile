@@ -109,462 +109,492 @@ class _ListingTileState extends State<ListingTile>
 
   @override
   Widget build(BuildContext context) {
-    final cardWidget = Card(
-      margin: EdgeInsets.zero,
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder:
-                  (context) => BlocProvider(
-                    create:
-                        (context) =>
-                            ListingDetailBloc(getIt<IListingService>()),
-                    child: ListingDetailScreen(listingId: widget.listing.id),
-                  ),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top row with listing type, price, and date
-                  Row(
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) {
+        final cardWidget = Card(
+          margin: EdgeInsets.zero,
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder:
+                      (context) => BlocProvider(
+                        create:
+                            (context) =>
+                                ListingDetailBloc(getIt<IListingService>()),
+                        child: ListingDetailScreen(
+                          listingId: widget.listing.id,
+                        ),
+                      ),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Listing Type and Price
-                      Expanded(
-                        child: Row(
-                          children: [
-                            // Listing Type
-                            if (widget.listing.listingType != null) ...[
-                              ListingTypeIconBadge(
-                                listingTypeCode:
-                                    widget.listing.listingType!.code,
-                                size: 18,
-                                padding: const EdgeInsets.all(6),
-                              ),
-                              const SizedBox(width: 10),
-                            ],
-                            // Gender Badge
-                            if (widget.listing.gender != null) ...[
-                              GenderBadge(gender: widget.listing.gender!),
-                              const SizedBox(width: 10),
-                            ],
-                            // Photo indicator icon
-                            if (widget.listing.photos != null &&
-                                widget.listing.photos!.isNotEmpty) ...[
-                              PhotoIcon(),
-                            ],
-                          ],
-                        ),
-                      ),
-                      // Heart icon in top-right corner - only show when showHeartIcon is true and user is authenticated
-                      if (widget.showHeartIcon)
-                        ListenableBuilder(
-                          listenable: AuthenticationState(),
-                          builder: (context, child) {
-                            final isAuthenticated =
-                                AuthenticationState().isAuthenticated;
-                            if (!isAuthenticated) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return ListenableBuilder(
-                              listenable: FavoritesState(),
-                              builder: (context, child) {
-                                final favoritesState = FavoritesState();
-                                // Use forceFavorite parameter if provided, otherwise check FavoritesState
-                                final isFavorite =
-                                    widget.forceFavorite ??
-                                    favoritesState.isFavorite(
-                                      widget.listing.id,
-                                    );
-                                return GestureDetector(
-                                  onTap:
-                                      _isTogglingFavorite
-                                          ? null
-                                          : () async {
-                                            // Add haptic feedback
-                                            HapticFeedbackUtils.impact();
-
-                                            // For favorites screen, we know the item is currently favorited
-                                            // For other screens, check the actual state
-                                            final wasFavorite =
-                                                widget.forceFavorite ??
-                                                favoritesState.isFavorite(
-                                                  widget.listing.id,
-                                                );
-
-                                            // Set loading state
-                                            setState(() {
-                                              _isTogglingFavorite = true;
-                                            });
-
-                                            // Call API to toggle favorite
-                                            try {
-                                              final favoriteService =
-                                                  getIt<IFavoriteService>();
-
-                                              final success =
-                                                  await favoriteService
-                                                      .toggleFavorite(
-                                                        widget.listing.id,
-                                                      );
-
-                                              if (success) {
-                                                // Update local state only if API call succeeds
-                                                favoritesState.toggleFavorite(
-                                                  widget.listing.id,
-                                                );
-
-                                                // Only trigger animation when adding to favorites (not when removing)
-                                                if (!wasFavorite) {
-                                                  _pulsateHeart();
-                                                }
-
-                                                // If this was a removal and we have a callback, call it
-                                                if (wasFavorite &&
-                                                    widget.onFavoriteRemoved !=
-                                                        null) {
-                                                  widget.onFavoriteRemoved!();
-                                                }
-
-                                                // Show success message to user
-                                                if (context.mounted) {
-                                                  ToastTheme.showSuccess(
-                                                    context,
-                                                    message: StringHelper.getCurrent(
-                                                      wasFavorite
-                                                          ? "favorite_removed_success"
-                                                          : "favorite_added_success",
-                                                      context,
-                                                    ),
-                                                  );
-                                                }
-                                              } else {
-                                                // Show error message to user
-                                                if (context.mounted) {
-                                                  ToastTheme.showError(
-                                                    context,
-                                                    message:
-                                                        StringHelper.getCurrent(
-                                                          "favorite_toggle_error",
-                                                          context,
-                                                        ),
-                                                  );
-                                                }
-                                              }
-                                            } catch (e) {
-                                              // Show error message to user
-                                              if (context.mounted) {
-                                                ToastTheme.showError(
-                                                  context,
-                                                  message: StringHelper.getCurrent(
-                                                    "favorite_toggle_network_error",
-                                                    context,
-                                                  ),
-                                                );
-                                              }
-                                            } finally {
-                                              // Clear loading state
-                                              if (mounted) {
-                                                setState(() {
-                                                  _isTogglingFavorite = false;
-                                                });
-                                              }
-                                            }
-                                          },
-                                  child: Opacity(
-                                    opacity: _isTogglingFavorite ? 0.6 : 1.0,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: AnimatedBuilder(
-                                        animation: _heartScaleAnimation,
-                                        builder: (context, child) {
-                                          return Transform.scale(
-                                            scale: _heartScaleAnimation.value,
-                                            child:
-                                                _isTogglingFavorite
-                                                    ? SizedBox(
-                                                      width: 27,
-                                                      height: 27,
-                                                      child: CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                        valueColor: AlwaysStoppedAnimation<
-                                                          Color
-                                                        >(
-                                                          isFavorite
-                                                              ? AppColors
-                                                                  .favoriteActive
-                                                              : AppColors
-                                                                  .favoriteInactive,
-                                                        ),
-                                                      ),
-                                                    )
-                                                    : Icon(
-                                                      isFavorite
-                                                          ? Icons.favorite
-                                                          : Icons
-                                                              .favorite_border,
-                                                      color:
-                                                          isFavorite
-                                                              ? AppColors
-                                                                  .favoriteActive
-                                                              : AppColors
-                                                                  .favoriteInactive,
-                                                      size: 27,
-                                                    ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        )
-                      else
-                        const SizedBox(
-                          width: 51, // 27 (icon size) + 24 (padding: 12 * 2)
-                          height: 51, // 27 (icon size) + 24 (padding: 12 * 2)
-                        ),
-                    ],
-                  ),
-                  // Title
-                  if (widget.listing.listingType != null) ...[
-                    const SizedBox(height: 6),
-                  ],
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.only(
-                      right: 40,
-                    ), // Add right padding to avoid arrow overlap
-                    child: Text(
-                      widget.listing.title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _getTitleTextColor(),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // Description
-                  if (widget.listing.description != null &&
-                      widget.listing.description!.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.only(
-                        right: 40,
-                      ), // Add right padding to avoid arrow overlap
-                      child: Text(
-                        widget.listing.description!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: _getDescriptionTextColor(),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 12),
-                  // Location and Subway Station Information
-                  if (widget.listing.location != null ||
-                      widget.listing.subwayStation != null) ...[
-                    ListenableBuilder(
-                      listenable: LanguageState(),
-                      builder: (context, child) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Location and Metro info
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                      // Top row with listing type, price, and date
+                      Row(
+                        children: [
+                          // Listing Type and Price
+                          Expanded(
+                            child: Row(
                               children: [
-                                // Location (District)
-                                if (widget.listing.location != null) ...[
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.location_on,
-                                        color: AppColors.error,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(
-                                          _getLocalizedName(
-                                            nameUz:
-                                                widget.listing.location!.nameUz,
-                                            nameRu:
-                                                widget.listing.location!.nameRu,
-                                            nameEn:
-                                                widget.listing.location!.nameEn,
-                                          ),
-                                          style: TextStyle(
-                                            fontSize:
-                                                14, // 12 * 1.2 = 14.4, rounded to 14
-                                            color: _getLocationTextColor(),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                // Listing Type
+                                if (widget.listing.listingType != null) ...[
+                                  ListingTypeIconBadge(
+                                    listingTypeCode:
+                                        widget.listing.listingType!.code,
+                                    size: 18,
+                                    padding: const EdgeInsets.all(6),
                                   ),
+                                  const SizedBox(width: 10),
                                 ],
-                                // Subway Station (below district)
-                                if (widget.listing.subwayStation != null) ...[
-                                  const SizedBox(height: 4),
-                                  _buildSubwayStationDisplay(
-                                    widget.listing.subwayStation!,
-                                  ),
+                                // Gender Badge
+                                if (widget.listing.gender != null) ...[
+                                  GenderBadge(gender: widget.listing.gender!),
+                                  const SizedBox(width: 10),
+                                ],
+                                // Photo indicator icon
+                                if (widget.listing.photos != null &&
+                                    widget.listing.photos!.isNotEmpty) ...[
+                                  PhotoIcon(),
                                 ],
                               ],
                             ),
-                            // Amenities icons below location and metro
-                            if (widget.listing.amenities != null &&
-                                widget.listing.amenities!.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Row(
-                                children:
-                                    _getSortedAmenities(
-                                          widget.listing.amenities!,
-                                        )
-                                        .map(
-                                          (amenity) => Padding(
-                                            padding: const EdgeInsets.only(
-                                              right: 8,
-                                            ),
-                                            child: Icon(
-                                              _getAmenityIcon(amenity),
-                                              size: 20,
-                                              color: _getAmenityIconColor(),
+                          ),
+                          // Heart icon in top-right corner - only show when showHeartIcon is true and user is authenticated
+                          if (widget.showHeartIcon)
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+                                if (!isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return ListenableBuilder(
+                                  listenable: FavoritesState(),
+                                  builder: (context, child) {
+                                    final favoritesState = FavoritesState();
+                                    // Use forceFavorite parameter if provided, otherwise check FavoritesState
+                                    final isFavorite =
+                                        widget.forceFavorite ??
+                                        favoritesState.isFavorite(
+                                          widget.listing.id,
+                                        );
+                                    return GestureDetector(
+                                      onTap:
+                                          _isTogglingFavorite
+                                              ? null
+                                              : () async {
+                                                // Add haptic feedback
+                                                HapticFeedbackUtils.impact();
+
+                                                // For favorites screen, we know the item is currently favorited
+                                                // For other screens, check the actual state
+                                                final wasFavorite =
+                                                    widget.forceFavorite ??
+                                                    favoritesState.isFavorite(
+                                                      widget.listing.id,
+                                                    );
+
+                                                // Set loading state
+                                                setState(() {
+                                                  _isTogglingFavorite = true;
+                                                });
+
+                                                // Call API to toggle favorite
+                                                try {
+                                                  final favoriteService =
+                                                      getIt<IFavoriteService>();
+
+                                                  final success =
+                                                      await favoriteService
+                                                          .toggleFavorite(
+                                                            widget.listing.id,
+                                                          );
+
+                                                  if (success) {
+                                                    // Update local state only if API call succeeds
+                                                    favoritesState
+                                                        .toggleFavorite(
+                                                          widget.listing.id,
+                                                        );
+
+                                                    // Only trigger animation when adding to favorites (not when removing)
+                                                    if (!wasFavorite) {
+                                                      _pulsateHeart();
+                                                    }
+
+                                                    // If this was a removal and we have a callback, call it
+                                                    if (wasFavorite &&
+                                                        widget
+                                                                .onFavoriteRemoved !=
+                                                            null) {
+                                                      widget
+                                                          .onFavoriteRemoved!();
+                                                    }
+
+                                                    // Show success message to user
+                                                    if (context.mounted) {
+                                                      ToastTheme.showSuccess(
+                                                        context,
+                                                        message:
+                                                            StringHelper.getCurrent(
+                                                              wasFavorite
+                                                                  ? "favorite_removed_success"
+                                                                  : "favorite_added_success",
+                                                              context,
+                                                            ),
+                                                      );
+                                                    }
+                                                  } else {
+                                                    // Show error message to user
+                                                    if (context.mounted) {
+                                                      ToastTheme.showError(
+                                                        context,
+                                                        message:
+                                                            StringHelper.getCurrent(
+                                                              "favorite_toggle_error",
+                                                              context,
+                                                            ),
+                                                      );
+                                                    }
+                                                  }
+                                                } catch (e) {
+                                                  // Show error message to user
+                                                  if (context.mounted) {
+                                                    ToastTheme.showError(
+                                                      context,
+                                                      message:
+                                                          StringHelper.getCurrent(
+                                                            "favorite_toggle_network_error",
+                                                            context,
+                                                          ),
+                                                  );
+                                                  }
+                                                } finally {
+                                                  // Clear loading state
+                                                  if (mounted) {
+                                                    setState(() {
+                                                      _isTogglingFavorite =
+                                                          false;
+                                                    });
+                                                  }
+                                                }
+                                              },
+                                      child: Opacity(
+                                        opacity:
+                                            _isTogglingFavorite ? 0.6 : 1.0,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12.0),
+                                          child: AnimatedBuilder(
+                                            animation: _heartScaleAnimation,
+                                            builder: (context, child) {
+                                              return Transform.scale(
+                                                scale:
+                                                    _heartScaleAnimation.value,
+                                                child:
+                                                    _isTogglingFavorite
+                                                        ? SizedBox(
+                                                          width: 27,
+                                                          height: 27,
+                                                          child: CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            valueColor: AlwaysStoppedAnimation<
+                                                              Color
+                                                            >(
+                                                              isFavorite
+                                                                  ? AppColors
+                                                                      .favoriteActive
+                                                                  : AppColors
+                                                                      .favoriteInactive,
+                                                            ),
+                                                          ),
+                                                        )
+                                                        : Icon(
+                                                          isFavorite
+                                                              ? Icons.favorite
+                                                              : Icons
+                                                                  .favorite_border,
+                                                          color:
+                                                              isFavorite
+                                                                  ? AppColors
+                                                                      .favoriteActive
+                                                                  : AppColors
+                                                                      .favoriteInactive,
+                                                          size: 27,
+                                                        ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            )
+                          else
+                            const SizedBox(
+                              width: 51, // 27 (icon size) + 24 (padding: 12 * 2)
+                              height:
+                                  51, // 27 (icon size) + 24 (padding: 12 * 2)
+                            ),
+                        ],
+                      ),
+                      // Title
+                      if (widget.listing.listingType != null) ...[
+                        const SizedBox(height: 6),
+                      ],
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.only(
+                          right: 40,
+                        ), // Add right padding to avoid arrow overlap
+                        child: Text(
+                          widget.listing.title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: _getTitleTextColor(),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Description
+                      if (widget.listing.description != null &&
+                          widget.listing.description!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.only(
+                            right: 40,
+                          ), // Add right padding to avoid arrow overlap
+                          child: Text(
+                            widget.listing.description!,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: _getDescriptionTextColor(),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      // Location and Subway Station Information
+                      if (widget.listing.location != null ||
+                          widget.listing.subwayStation != null) ...[
+                        ListenableBuilder(
+                          listenable: LanguageState(),
+                          builder: (context, child) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Location and Metro info
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Location (District)
+                                    if (widget.listing.location != null) ...[
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_on,
+                                            color: AppColors.error,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              _getLocalizedName(
+                                                nameUz:
+                                                    widget
+                                                        .listing
+                                                        .location!
+                                                        .nameUz,
+                                                nameRu:
+                                                    widget
+                                                        .listing
+                                                        .location!
+                                                        .nameRu,
+                                                nameEn:
+                                                    widget
+                                                        .listing
+                                                        .location!
+                                                        .nameEn,
+                                              ),
+                                              style: TextStyle(
+                                                fontSize:
+                                                    14, // 12 * 1.2 = 14.4, rounded to 14
+                                                color:
+                                                    _getLocationTextColor(),
+                                              ),
                                             ),
                                           ),
-                                        )
-                                        .toList(),
-                              ),
-                            ],
-                            // Price range display
-                            if (widget.listing.minPrice != null ||
-                                widget.listing.maxPrice != null) ...[
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(
-                                    CupertinoIcons.money_dollar_circle,
-                                    size: 22,
-                                    color: Colors.green,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _formatPriceRange(),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                        ],
+                                      ),
+                                    ],
+                                    // Subway Station (below district)
+                                    if (widget.listing.subwayStation !=
+                                        null) ...[
+                                      const SizedBox(height: 4),
+                                      _buildSubwayStationDisplay(
+                                        widget.listing.subwayStation!,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                // Amenities icons below location and metro
+                                if (widget.listing.amenities != null &&
+                                    widget.listing.amenities!.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children:
+                                        _getSortedAmenities(
+                                              widget.listing.amenities!,
+                                            )
+                                            .map(
+                                              (amenity) => Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 8,
+                                                ),
+                                                child: Icon(
+                                                  _getAmenityIcon(amenity),
+                                                  size: 20,
+                                                  color:
+                                                      _getAmenityIconColor(),
+                                                ),
+                                              ),
+                                            )
+                                            .toList(),
                                   ),
                                 ],
-                              ),
-                            ],
-                            // Private Room indicator below price
-                            if (widget.listing.privateRoom == true) ...[
-                              const SizedBox(height: 8),
-                              ListenableBuilder(
-                                listenable: LanguageState(),
-                                builder: (context, child) {
-                                  return Row(
+                                // Price range display
+                                if (widget.listing.minPrice != null ||
+                                    widget.listing.maxPrice != null) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
                                     children: [
                                       Icon(
-                                        CupertinoIcons.lock_fill,
-                                        size: 20,
-                                        color: _getPrivateRoomIconColor(),
+                                        CupertinoIcons.money_dollar_circle,
+                                        size: 22,
+                                        color: Colors.green,
                                       ),
-                                      const SizedBox(width: 6),
+                                      const SizedBox(width: 4),
                                       Text(
-                                        StringHelper.get(
-                                          "private_room",
-                                          LanguageState().currentLanguage,
-                                        ),
+                                        _formatPriceRange(),
                                         style: TextStyle(
                                           fontSize: 14,
-                                          color: _getPrivateRoomTextColor(),
+                                          color: Colors.green,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ],
-                                  );
-                                },
-                              ),
-                            ],
-                            // Move-in Date
-                            if (widget.listing.moveInDate != null &&
-                                widget.listing.moveInDate!.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(
-                                    CupertinoIcons.square_arrow_right,
-                                    size: 22,
-                                    color: _getDateTextColor(),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    "${StringHelper.get("move_in_date_label", LanguageState().currentLanguage)} ${_formatMoveInDate()}",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: _getDateTextColor(),
-                                      fontWeight: FontWeight.w500,
-                                    ),
                                   ),
                                 ],
-                              ),
-                            ],
-                          ],
-                        );
-                      },
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            // Arrow positioned in the middle of tile height
-            Positioned(
-              right: 16,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 24, // 16 * 1.5 = 24
-                  color: _getArrowIconColor(),
+                                // Private Room indicator below price
+                                if (widget.listing.privateRoom == true) ...[
+                                  const SizedBox(height: 8),
+                                  ListenableBuilder(
+                                    listenable: LanguageState(),
+                                    builder: (context, child) {
+                                      return Row(
+                                        children: [
+                                          Icon(
+                                            CupertinoIcons.lock_fill,
+                                            size: 20,
+                                            color: _getPrivateRoomIconColor(),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            StringHelper.get(
+                                              "private_room",
+                                              LanguageState()
+                                                  .currentLanguage,
+                                            ),
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  _getPrivateRoomTextColor(),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ],
+                                // Move-in Date
+                                if (widget.listing.moveInDate != null &&
+                                    widget.listing.moveInDate!.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        CupertinoIcons.square_arrow_right,
+                                        size: 22,
+                                        color: _getDateTextColor(),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        "${StringHelper.get("move_in_date_label", LanguageState().currentLanguage)} ${_formatMoveInDate()}",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: _getDateTextColor(),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
+                // Arrow positioned in the middle of tile height
+                Positioned(
+                  right: 16,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 24, // 16 * 1.5 = 24
+                      color: _getArrowIconColor(),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+
+        // Wrap with RGB rotating border if featured
+        if (ListingUtils.isCurrentlyFeatured(widget.listing)) {
+          return AnimatedFeaturedBorder(
+            borderWidth: 3.0,
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            child: cardWidget,
+          );
+        }
+
+        return cardWidget;
+      },
     );
-
-    // Wrap with RGB rotating border if featured
-    if (ListingUtils.isCurrentlyFeatured(widget.listing)) {
-      return AnimatedFeaturedBorder(
-        borderWidth: 3.0,
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        child: cardWidget,
-      );
-    }
-
-    return cardWidget;
   }
 
   Color _getLineColor(int line) {

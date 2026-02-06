@@ -70,6 +70,7 @@ class AdminPanelScreen extends StatelessWidget {
               );
             },
           ),
+          _buildSectionDivider(context),
           _buildAdminSection(
             context,
             icon: Icons.map_outlined,
@@ -94,6 +95,7 @@ class AdminPanelScreen extends StatelessWidget {
               );
             },
           ),
+          _buildSectionDivider(context),
           _buildAdminSection(
             context,
             icon: Icons.subway,
@@ -107,6 +109,18 @@ class AdminPanelScreen extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionDivider(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Divider(
+        height: 1,
+        color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
+          alpha: 0.3,
+        ),
       ),
     );
   }

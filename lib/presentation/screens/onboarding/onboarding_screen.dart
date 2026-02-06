@@ -354,6 +354,17 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     ColorScheme colorScheme,
     OnboardingColors onboardingColors,
   ) {
+    final themeState = ThemeState();
+    final houseIconColor =
+        themeState.isLightTheme
+            ? Colors.black
+            : themeState.isBlueTheme
+            ? Colors.white
+            : AppColors.primary;
+    final iconContainerBackground =
+        themeState.isBlueTheme
+            ? BlueThemeColors.onboardingSecondary
+            : onboardingColors.surface;
     return AnimatedBuilder(
       animation: _rotateAnimation,
       builder: (context, child) {
@@ -385,8 +396,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   left: 20,
                   child: Icon(
                     Icons.home,
-                    color:
-                        AppColors.primary, // Primary house icon for default theme
+                    color: houseIconColor,
                     size: 60,
                   ),
                 ),
@@ -398,9 +408,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color:
-                          onboardingColors
-                              .surface, // Use surface color (white for light theme)
+                      color: iconContainerBackground,
                       borderRadius: BorderRadius.circular(25),
                       boxShadow: [
                         BoxShadow(
@@ -421,45 +429,55 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
                 // Location pin - Updated for light theme
                 Positioned(
-                  bottom: 60,
-                  right: 40,
+                  bottom: 35,
+                  right: 55,
                   child: Container(
-                    width: 40,
-                    height: 40,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
-                      color:
-                          onboardingColors
-                              .surface, // Use surface color (white for light theme)
-                      borderRadius: BorderRadius.circular(20),
+                      color: iconContainerBackground,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: onboardingColors.text.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: ThemeIconFactory.display(
                       icon: Icons.location_on,
                       color:
                           onboardingColors
                               .text, // Use theme text color (black for light theme)
-                      size: 20,
+                      size: 22,
                     ),
                   ),
                 ),
                 // Heart icon - Updated for light theme
                 Positioned(
-                  top: 80,
+                  top: 60,
                   left: 40,
                   child: Container(
-                    width: 35,
-                    height: 35,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
-                      color:
-                          onboardingColors
-                              .surface, // Use surface color (white for light theme)
-                      borderRadius: BorderRadius.circular(17.5),
+                      color: iconContainerBackground,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: onboardingColors.text.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Icon(
                       Icons.favorite,
                       color:
                           AppColors
                               .favoriteActive, // Keep red heart icon for consistency
-                      size: 18,
+                      size: 20,
                     ),
                   ),
                 ),

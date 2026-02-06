@@ -312,8 +312,8 @@ class AppStrings {
 
       // ===== PROFILE & USER INFO =====
       "gender": "Gender",
-      "male": "Male",
-      "female": "Female",
+      "male": "Guy",
+      "female": "Girl",
       "other": "Other",
 
       "university": "University",
@@ -931,8 +931,8 @@ class AppStrings {
 
       // ===== PROFILE & USER INFO =====
       "gender": "Пол",
-      "male": "Мужской",
-      "female": "Женский",
+      "male": "Парень",
+      "female": "Девушка",
       "other": "Другой",
 
       "university": "Университет",
@@ -1562,8 +1562,8 @@ class AppStrings {
 
       // ===== PROFILE & USER INFO =====
       "gender": "Jinsi",
-      "male": "Erkak",
-      "female": "Ayol",
+      "male": "Yigit",
+      "female": "Qiz",
       "other": "Boshqa",
 
       "university": "Universitet",
