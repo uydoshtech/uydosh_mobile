@@ -145,14 +145,6 @@ class _AdminSubwayLineHeatmapScreenState
       body: ListenableBuilder(
         listenable: LanguageState(),
         builder: (context, child) {
-          if (_isLoading) {
-            return CenteredHouseLoadingIndicator(
-              text: LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_subway_heatmap_loading",
-              ),
-            );
-          }
           if (_hasError) {
             return _buildErrorState(context);
           }
@@ -165,17 +157,6 @@ class _AdminSubwayLineHeatmapScreenState
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "admin_subway_heatmap_description",
-                  ),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -209,26 +190,37 @@ class _AdminSubwayLineHeatmapScreenState
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryRow(context),
-                const SizedBox(height: 16),
-                _buildLegend(context),
-                const SizedBox(height: 16),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: sortedLines.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.2,
+                if (_isLoading)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: CenteredHouseLoadingIndicator(
+                      text: LanguageAwareStringHelper.getCurrent(
+                        context,
+                        "admin_subway_heatmap_loading",
+                      ),
+                    ),
+                  )
+                else ...[
+                  _buildSummaryRow(context),
+                  const SizedBox(height: 16),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: sortedLines.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 1.2,
+                        ),
+                    itemBuilder: (context, index) {
+                      final lineId = sortedLines[index];
+                      final count = _lineCounts[lineId];
+                      return _buildLineTile(context, lineId, count);
+                    },
                   ),
-                  itemBuilder: (context, index) {
-                    final lineId = sortedLines[index];
-                    final count = _lineCounts[lineId];
-                    return _buildLineTile(context, lineId, count);
-                  },
-                ),
+                ],
               ],
             ),
           );
@@ -307,56 +299,6 @@ class _AdminSubwayLineHeatmapScreenState
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildLegend(BuildContext context) {
-    final surface = Theme.of(context).colorScheme.surfaceVariant;
-    final high = Theme.of(context).colorScheme.primary;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_subway_heatmap_count_label",
-          ),
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          height: 10,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999),
-            gradient: LinearGradient(
-              colors: [surface, high],
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "0",
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            Text(
-              _maxCount.toString(),
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
