@@ -13,6 +13,7 @@ class ListingTypePicker extends StatelessWidget {
     this.itemExtent = 40,
     this.showArrows = true,
     this.useThemeColors = false,
+    this.includeUnselected = false,
     super.key,
   });
 
@@ -22,6 +23,7 @@ class ListingTypePicker extends StatelessWidget {
   final double height;
   final double itemExtent;
   final bool showArrows;
+  final bool includeUnselected;
 
   Color _getListingTypeColor(int listingTypeId) {
     // Use metro line colors for listing types
@@ -31,13 +33,15 @@ class ListingTypePicker extends StatelessWidget {
       case 1: // Room needed
         return AppColors.metroLine2; // Blue
       default:
-        return AppColors.metroLine1; // Red as default
+        return listingTypeId == 0 ? Colors.grey : AppColors.metroLine1;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final listingTypeOptions = includeUnselected ? [2, 1, 0] : [2, 1];
+    final initialIndex = listingTypeOptions.indexOf(selectedListingTypeId);
 
     // Use the same styling as metro line picker
     final backgroundColor = theme.colorScheme.surfaceVariant;
@@ -57,15 +61,15 @@ class ListingTypePicker extends StatelessWidget {
             child: CupertinoPicker(
               itemExtent: itemExtent,
               scrollController: FixedExtentScrollController(
-                initialItem: selectedListingTypeId == 2 ? 0 : 1,
+                initialItem: initialIndex >= 0 ? initialIndex : 0,
               ),
               onSelectedItemChanged: (index) {
                 // Dismiss keyboard if it"s open
                 FocusScope.of(context).unfocus();
                 // Provide haptic feedback
                 HapticFeedbackUtils.impact();
-                // Update the selected listing type ID (2 = roommate needed, 1 = room needed)
-                onListingTypeChanged(index == 0 ? 2 : 1);
+                // Update the selected listing type ID
+                onListingTypeChanged(listingTypeOptions[index]);
               },
               children: [
                 // Roommate needed option
@@ -118,6 +122,31 @@ class ListingTypePicker extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (includeUnselected)
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.remove_circle_outline,
+                          color: _getListingTypeColor(0),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: LanguageAwareStringHelper.getText(
+                            "not_selected",
+                            context,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

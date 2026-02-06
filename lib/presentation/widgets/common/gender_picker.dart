@@ -13,6 +13,7 @@ class GenderPicker extends StatelessWidget {
     this.itemExtent = 40,
     this.showArrows = true,
     this.useThemeColors = false,
+    this.includeUnselected = false,
   });
 
   final int selectedGender;
@@ -21,6 +22,7 @@ class GenderPicker extends StatelessWidget {
   final double height;
   final double itemExtent;
   final bool showArrows;
+  final bool includeUnselected;
 
   Color _getGenderColor(int gender) {
     switch (gender) {
@@ -28,13 +30,15 @@ class GenderPicker extends StatelessWidget {
         return Colors.blue;
       case 2: // Female
       default:
-        return Colors.red;
+        return gender == 0 ? Colors.grey : Colors.red;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final genderOptions = includeUnselected ? [1, 2, 0] : [1, 2];
+    final initialIndex = genderOptions.indexOf(selectedGender);
 
     // Use the same styling as metro line picker
     final backgroundColor = theme.colorScheme.surfaceVariant;
@@ -54,15 +58,15 @@ class GenderPicker extends StatelessWidget {
             child: CupertinoPicker(
               itemExtent: itemExtent,
               scrollController: FixedExtentScrollController(
-                initialItem: selectedGender - 1, // Convert 1,2 to 0,1
+                initialItem: initialIndex >= 0 ? initialIndex : 0,
               ),
               onSelectedItemChanged: (index) {
                 // Dismiss keyboard if it's open
                 FocusScope.of(context).unfocus();
                 // Provide haptic feedback
                 HapticFeedbackUtils.impact();
-                // Update the selected gender (convert 0,1 to 1,2)
-                onGenderChanged(index + 1);
+                // Update the selected gender
+                onGenderChanged(genderOptions[index]);
               },
               children: [
                 // Male option
@@ -107,6 +111,31 @@ class GenderPicker extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (includeUnselected)
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.remove_circle_outline,
+                          color: _getGenderColor(0),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: LanguageAwareStringHelper.getText(
+                            "not_selected",
+                            context,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

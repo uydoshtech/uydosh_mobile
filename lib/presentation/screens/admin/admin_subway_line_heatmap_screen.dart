@@ -7,6 +7,8 @@ import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -56,6 +58,8 @@ class _AdminSubwayLineHeatmapScreenState
       final minPrice = _searchFiltersState.minPrice;
       final maxPrice = _searchFiltersState.maxPrice;
       final privateRoom = _searchFiltersState.privateRoom;
+      final listingTypeIdParam = listingTypeId > 0 ? listingTypeId : null;
+      final genderParam = gender > 0 ? gender : null;
 
       final results = await Future.wait(
         _lines.map((lineId) async {
@@ -64,8 +68,8 @@ class _AdminSubwayLineHeatmapScreenState
               subwayLineId: lineId,
               page: 1,
               limit: _perLineLimit,
-              listingTypeId: listingTypeId,
-              gender: gender,
+              listingTypeId: listingTypeIdParam,
+              gender: genderParam,
               minPrice: minPrice,
               maxPrice: maxPrice,
               privateRoom: privateRoom,
@@ -170,6 +174,39 @@ class _AdminSubwayLineHeatmapScreenState
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ListingTypePicker(
+                        selectedListingTypeId:
+                            _searchFiltersState.selectedListingTypeId,
+                        onListingTypeChanged: (int listingTypeId) {
+                          _searchFiltersState.setListingTypeId(listingTypeId);
+                          setState(() {});
+                          _loadCounts();
+                        },
+                        useThemeColors: true,
+                        showArrows: false,
+                        includeUnselected: true,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GenderPicker(
+                        selectedGender: _searchFiltersState.selectedGender,
+                        onGenderChanged: (int gender) {
+                          _searchFiltersState.setGender(gender);
+                          setState(() {});
+                          _loadCounts();
+                        },
+                        useThemeColors: true,
+                        showArrows: false,
+                        includeUnselected: true,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 _buildSummaryRow(context),
@@ -409,12 +446,22 @@ class _AdminSubwayLineHeatmapScreenState
   }
 
   void _openLineListings(BuildContext context, int lineId) {
+    final listingTypeId = _searchFiltersState.selectedListingTypeId;
+    final gender = _searchFiltersState.selectedGender;
+    final listingTypeIdParam = listingTypeId > 0 ? listingTypeId : null;
+    final genderParam = gender > 0 ? gender : null;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
             (context) => BlocProvider(
               create: (context) => ListingsBloc(getIt<IListingService>()),
-              child: HomeScreen(subwayLineId: lineId, isSearchMode: true),
+              child: HomeScreen(
+                subwayLineId: lineId,
+                listingTypeId: listingTypeIdParam,
+                gender: genderParam,
+                isSearchMode: true,
+                useExplicitFiltersOnly: true,
+              ),
             ),
       ),
     );
