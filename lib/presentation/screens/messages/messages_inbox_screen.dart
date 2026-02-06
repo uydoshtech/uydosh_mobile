@@ -749,6 +749,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       conversations: conversations,
       currentUserId: _currentUserId,
       onConversationTap: (conversation) async {
+        HapticFeedbackUtils.impact();
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder:
@@ -807,6 +808,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           conversation: conversation,
           currentUserId: _currentUserId,
           onTap: () async {
+            HapticFeedbackUtils.impact();
             await Navigator.of(context).push(
               MaterialPageRoute(
                 builder:

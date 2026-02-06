@@ -1138,6 +1138,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                           );
                           return GestureDetector(
                             onTap: () async {
+                              HapticFeedbackUtils.impact();
                               final DateTime? picked =
                                   await LanguageAwareDatePicker.showDatePicker(
                                     context: context,

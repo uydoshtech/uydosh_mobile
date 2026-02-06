@@ -958,7 +958,7 @@ class AppStrings {
       "very_quiet": "Очень тихий",
       "quiet": "Тихий",
       "loud": "Громкий",
-      "very_loud": "Очень громкий",
+      "very_loud": "Очень шумный",
       "very_introverted": "Необщительный",
       "introverted": "Интроверт",
       "balanced": "Средне",

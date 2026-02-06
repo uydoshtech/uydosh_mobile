@@ -761,6 +761,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     return Card(
       child: ExpansionTile(
+        onExpansionChanged: (_) {
+          HapticFeedbackUtils.impact();
+        },
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: const BorderSide(color: Colors.transparent),
@@ -2657,8 +2660,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                         // Open in Yandex Maps Button
                         Center(
                           child: TextButton.icon(
-                            onPressed: () =>
-                                _confirmOpenInYandexMaps(listingDetail),
+                            onPressed: () {
+                              HapticFeedbackUtils.impact();
+                              _confirmOpenInYandexMaps(listingDetail);
+                            },
                             icon: Icon(
                               Icons.link,
                               size: 18,
