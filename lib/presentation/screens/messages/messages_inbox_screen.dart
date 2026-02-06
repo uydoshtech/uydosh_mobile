@@ -1336,6 +1336,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
               // Group header
               ListTile(
                 onTap: () {
+                  HapticFeedbackUtils.impact();
                   setState(() {
                     _expandedGroups[listingId] = !isExpanded;
                   });
