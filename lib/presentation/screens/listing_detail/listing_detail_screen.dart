@@ -761,6 +761,14 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     return Card(
       child: ExpansionTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Colors.transparent),
+        ),
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Colors.transparent),
+        ),
         tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
         childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         title: Row(
