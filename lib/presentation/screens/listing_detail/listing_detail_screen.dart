@@ -65,6 +65,7 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
@@ -131,6 +132,18 @@ class _ListingDetailBodyData {
   }
 }
 
+class _CompatibilityResult {
+  final int? percent;
+  final List<String> matches;
+  final List<String> differences;
+
+  const _CompatibilityResult({
+    required this.percent,
+    required this.matches,
+    required this.differences,
+  });
+}
+
 class ListingDetailScreen extends StatefulWidget {
   final int listingId;
 
@@ -156,6 +169,14 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   bool _isLoadingComplaintsCount = false;
   int? _complaintsCount;
   int? _complaintsCountListingId;
+
+  // Compatibility state
+  bool _isLoadingCompatibility = false;
+  int? _compatibilityListingUserId;
+  int? _compatibilityPercent;
+  List<String> _compatibilityMatches = [];
+  List<String> _compatibilityDifferences = [];
+  String? _compatibilityError;
 
 
   @override
@@ -441,6 +462,493 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         _isLoadingComplaintsCount = false;
       });
     }
+  }
+
+  Future<void> _loadCompatibility(int listingUserId) async {
+    final authState = AuthenticationState();
+    if (!authState.isAuthenticated) {
+      return;
+    }
+
+    if (_isLoadingCompatibility &&
+        _compatibilityListingUserId == listingUserId) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingCompatibility = true;
+      _compatibilityListingUserId = listingUserId;
+      _compatibilityError = null;
+      _compatibilityPercent = null;
+      _compatibilityMatches = [];
+      _compatibilityDifferences = [];
+    });
+
+    try {
+      final userProfileService = getIt<IUserProfileService>();
+      final profiles = await Future.wait([
+        userProfileService.getCurrentUserProfile(),
+        userProfileService.getUserProfile(listingUserId),
+      ]);
+
+      final currentProfile = profiles[0];
+      final ownerProfile = profiles[1];
+      final result = _calculateCompatibility(currentProfile, ownerProfile);
+
+      if (!mounted) return;
+      setState(() {
+        _compatibilityPercent = result.percent;
+        _compatibilityMatches = result.matches;
+        _compatibilityDifferences = result.differences;
+        _isLoadingCompatibility = false;
+      });
+    } catch (e) {
+      logger.d("Error loading compatibility: $e");
+      if (!mounted) return;
+      setState(() {
+        _isLoadingCompatibility = false;
+        _compatibilityPercent = null;
+        _compatibilityMatches = [];
+        _compatibilityDifferences = [];
+        _compatibilityError = e.toString();
+      });
+    }
+  }
+
+  _CompatibilityResult _calculateCompatibility(
+    UserProfile currentProfile,
+    UserProfile ownerProfile,
+  ) {
+    int total = 0;
+    int matched = 0;
+    final matches = <String>[];
+    final differences = <String>[];
+
+    void compare<T>({
+      required String labelKey,
+      required T? currentValue,
+      required T? ownerValue,
+      required bool Function(T a, T b) isMatch,
+      required String Function(T value) formatValue,
+    }) {
+      if (currentValue == null || ownerValue == null) {
+        return;
+      }
+
+      total += 1;
+      final label = LanguageAwareStringHelper.getCurrent(context, labelKey);
+      final currentText = formatValue(currentValue);
+      final ownerText = formatValue(ownerValue);
+
+      if (isMatch(currentValue, ownerValue)) {
+        matched += 1;
+        matches.add("$label: $currentText");
+      } else {
+        differences.add(
+          "$label: $currentText ${LanguageAwareStringHelper.getCurrent(context, "vs")} $ownerText",
+        );
+      }
+    }
+
+    compare<int>(
+      labelKey: "cleanliness",
+      currentValue: currentProfile.cleanliness,
+      ownerValue: ownerProfile.cleanliness,
+      isMatch: (a, b) => (a - b).abs() <= 1,
+      formatValue: _formatCleanlinessLevel,
+    );
+
+    compare<int>(
+      labelKey: "noise_level",
+      currentValue: currentProfile.noiseLevel,
+      ownerValue: ownerProfile.noiseLevel,
+      isMatch: (a, b) => (a - b).abs() <= 1,
+      formatValue: _formatNoiseLevel,
+    );
+
+    compare<int>(
+      labelKey: "sociability",
+      currentValue: currentProfile.sociability,
+      ownerValue: ownerProfile.sociability,
+      isMatch: (a, b) => (a - b).abs() <= 1,
+      formatValue: _formatSociabilityLevel,
+    );
+
+    compare<bool>(
+      labelKey: "guests_allowed",
+      currentValue: currentProfile.guestsAllowed,
+      ownerValue: ownerProfile.guestsAllowed,
+      isMatch: (a, b) => a == b,
+      formatValue: _formatBooleanPreference,
+    );
+
+    compare<String>(
+      labelKey: "smoking_preference",
+      currentValue: currentProfile.smokingPreference,
+      ownerValue: ownerProfile.smokingPreference,
+      isMatch: (a, b) => a == b,
+      formatValue: _formatSmokingPreference,
+    );
+
+    compare<String>(
+      labelKey: "alcohol_preference",
+      currentValue: currentProfile.alcoholPreference,
+      ownerValue: ownerProfile.alcoholPreference,
+      isMatch: (a, b) => a == b,
+      formatValue: _formatAlcoholPreference,
+    );
+
+    compare<bool>(
+      labelKey: "cooking_habits",
+      currentValue: currentProfile.cookingHabits,
+      ownerValue: ownerProfile.cookingHabits,
+      isMatch: (a, b) => a == b,
+      formatValue: _formatBooleanPreference,
+    );
+
+    compare<bool>(
+      labelKey: "pets_preference",
+      currentValue: currentProfile.petsPreference,
+      ownerValue: ownerProfile.petsPreference,
+      isMatch: (a, b) => a == b,
+      formatValue: _formatBooleanPreference,
+    );
+
+    compare<String>(
+      labelKey: "wakeup_time",
+      currentValue: currentProfile.wakeupTime,
+      ownerValue: ownerProfile.wakeupTime,
+      isMatch: (a, b) => a == b,
+      formatValue: _formatDayPreference,
+    );
+
+    compare<String>(
+      labelKey: "sleep_time",
+      currentValue: currentProfile.sleepTime,
+      ownerValue: ownerProfile.sleepTime,
+      isMatch: (a, b) => a == b,
+      formatValue: _formatDayPreference,
+    );
+
+    compare<bool>(
+      labelKey: "employed",
+      currentValue: currentProfile.employed,
+      ownerValue: ownerProfile.employed,
+      isMatch: (a, b) => a == b,
+      formatValue: _formatBooleanPreference,
+    );
+
+    final percent = total > 0 ? ((matched / total) * 100).round() : null;
+    return _CompatibilityResult(
+      percent: percent,
+      matches: matches,
+      differences: differences,
+    );
+  }
+
+  String _formatBooleanPreference(bool value) {
+    return LanguageAwareStringHelper.getCurrent(
+      context,
+      value ? "yes" : "no",
+    );
+  }
+
+  String _formatDayPreference(String value) {
+    switch (value) {
+      case "morning":
+      case "evening":
+      case "night":
+        return LanguageAwareStringHelper.getCurrent(context, value);
+      default:
+        return value;
+    }
+  }
+
+  String _formatSmokingPreference(String value) {
+    const map = {
+      "non-smoker": "non_smoker",
+      "occasional": "occasional_smoker",
+      "regular": "regular_smoker",
+    };
+    final key = map[value];
+    return key == null
+        ? value
+        : LanguageAwareStringHelper.getCurrent(context, key);
+  }
+
+  String _formatAlcoholPreference(String value) {
+    const map = {
+      "non-drinker": "non_drinker",
+      "occasional": "occasional_drinker",
+      "regular": "regular_drinker",
+    };
+    final key = map[value];
+    return key == null
+        ? value
+        : LanguageAwareStringHelper.getCurrent(context, key);
+  }
+
+  String _formatCleanlinessLevel(int value) {
+    const keys = [
+      "very_messy",
+      "messy",
+      "average",
+      "clean",
+      "very_clean",
+    ];
+    final index = (value - 1).clamp(0, keys.length - 1);
+    return LanguageAwareStringHelper.getCurrent(context, keys[index]);
+  }
+
+  String _formatNoiseLevel(int value) {
+    const keys = [
+      "very_quiet",
+      "quiet",
+      "average",
+      "loud",
+      "very_loud",
+    ];
+    final index = (value - 1).clamp(0, keys.length - 1);
+    return LanguageAwareStringHelper.getCurrent(context, keys[index]);
+  }
+
+  String _formatSociabilityLevel(int value) {
+    const keys = [
+      "very_introverted",
+      "introverted",
+      "balanced",
+      "extroverted",
+      "very_extroverted",
+    ];
+    final index = (value - 1).clamp(0, keys.length - 1);
+    return LanguageAwareStringHelper.getCurrent(context, keys[index]);
+  }
+
+  Color _getCompatibilityPercentColor() {
+    final percent = _compatibilityPercent;
+    if (percent == null) {
+      return _getDescriptionTextColor();
+    }
+    if (percent >= 80) {
+      return AppColors.success;
+    }
+    if (percent >= 60) {
+      return AppColors.warning;
+    }
+    return AppColors.error;
+  }
+
+  Widget _buildCompatibilitySection(ListingDetail listingDetail) {
+    final isAuthenticated = AuthenticationState().isAuthenticated;
+    final isOwner = UserListingState().isOwner(listingDetail.user.id);
+
+    if (isOwner) {
+      return const SizedBox.shrink();
+    }
+
+    final percentText =
+        _compatibilityPercent == null
+            ? null
+            : AppStrings.getWithParams(
+              "compatibility_match_percentage",
+              LanguageState().currentLanguage,
+              params: {"percent": _compatibilityPercent!.toString()},
+            );
+    final headerPercentText =
+        _compatibilityPercent == null
+            ? "—"
+            : "${_compatibilityPercent}%";
+
+    return Card(
+      child: ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+        childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        title: Row(
+          children: [
+            Icon(
+              ThemeState().isBlueTheme
+                  ? CupertinoIcons.group_solid
+                  : CupertinoIcons.group,
+              size: 22,
+              color:
+                  ThemeState().isBlueTheme
+                      ? Colors.white
+                      : ThemeState().isLightTheme
+                      ? Colors.black
+                      : _getIconColor(),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                LanguageAwareStringHelper.getCurrent(
+                  context,
+                  "compatibility_title",
+                ),
+                style: TextStyle(
+                fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: _getDescriptionTextColor(),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              headerPercentText,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _getCompatibilityPercentColor(),
+              ),
+            ),
+          ],
+        ),
+        children: [
+          if (!isAuthenticated)
+            Text(
+              LanguageAwareStringHelper.getCurrent(
+                context,
+                "compatibility_sign_in",
+              ),
+              style: TextStyle(
+                fontSize: 14,
+                color: _getDescriptionTextColor(),
+              ),
+            )
+          else if (_isLoadingCompatibility)
+            Row(
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: _getIconColor(),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  LanguageAwareStringHelper.getCurrent(
+                    context,
+                    "compatibility_calculating",
+                  ),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _getDescriptionTextColor(),
+                  ),
+                ),
+              ],
+            )
+          else if (_compatibilityError != null || percentText == null)
+            Text(
+              LanguageAwareStringHelper.getCurrent(
+                context,
+                "compatibility_unavailable",
+              ),
+              style: TextStyle(
+                fontSize: 14,
+                color: _getDescriptionTextColor(),
+              ),
+            )
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_compatibilityMatches.isNotEmpty) ...[
+                  Text(
+                    LanguageAwareStringHelper.getCurrent(
+                      context,
+                      "compatibility_matches",
+                    ),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: _getLocationTextColor(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ..._compatibilityMatches.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                              CupertinoIcons.checkmark_alt,
+                            size: 18,
+                            color: AppColors.success,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              item,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _getDescriptionTextColor(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                if (_compatibilityDifferences.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    LanguageAwareStringHelper.getCurrent(
+                      context,
+                      "compatibility_differences",
+                    ),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: _getLocationTextColor(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ..._compatibilityDifferences.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 16,
+                            color: AppColors.warning,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              item,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _getDescriptionTextColor(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                if (_compatibilityMatches.isEmpty &&
+                    _compatibilityDifferences.isEmpty)
+                  Text(
+                    LanguageAwareStringHelper.getCurrent(
+                      context,
+                      "compatibility_unavailable",
+                    ),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: _getDescriptionTextColor(),
+                    ),
+                  ),
+              ],
+            ),
+        ],
+      ),
+    );
   }
 
   String _buildComplaintsButtonLabel() {
@@ -1493,6 +2001,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
             // Check favorite status after listing data is loaded
             _checkFavoriteStatusFromServer();
             _loadComplaintCount(loadedState.listingDetail.id);
+            final isOwner = UserListingState().isOwner(
+              loadedState.listingDetail.user.id,
+            );
+            if (!isOwner) {
+              _loadCompatibility(loadedState.listingDetail.user.id);
+            }
           },
           error: (_) {},
         );
@@ -2173,7 +2687,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                   ),
                 ),
               ],
-              const SizedBox(height: 16),
+              if (!UserListingState().isOwner(listingDetail.user.id)) ...[
+                const SizedBox(height: 8),
+                _buildCompatibilitySection(listingDetail),
+                const SizedBox(height: 8),
+              ],
               if (_complaintsCount != null && _complaintsCount! > 0)
                 Card(
                   child: Padding(
