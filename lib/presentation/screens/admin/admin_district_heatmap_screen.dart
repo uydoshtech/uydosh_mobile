@@ -394,7 +394,11 @@ class _AdminDistrictHeatmapScreenState
         builder:
             (context) => BlocProvider(
               create: (context) => ListingsBloc(getIt<IListingService>()),
-              child: HomeScreen(locationId: locationId, isSearchMode: true),
+              child: HomeScreen(
+                locationId: locationId,
+                isSearchMode: true,
+                useExplicitFiltersOnly: true,
+              ),
             ),
       ),
     );

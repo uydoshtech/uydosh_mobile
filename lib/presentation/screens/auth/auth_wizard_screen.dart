@@ -146,11 +146,29 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     if (user != null) {
       // User is already signed in with Firebase, skip to main app
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
-        );
+        _navigateToMainNavigation();
       }
     }
+  }
+
+  void _navigateToMainNavigation({int? tabIndex}) {
+    if (mainNavigationKey.currentState != null) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      if (tabIndex != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) {
+            return;
+          }
+          mainNavigationKey.currentState?.navigateToIndex(tabIndex);
+        });
+      }
+      return;
+    }
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
+      (route) => false,
+    );
   }
 
   // Google Sign-In method
@@ -275,9 +293,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
         // Skip profile creation and go directly to main app
         if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
-          );
+          _navigateToMainNavigation();
         }
       } else {
         logger.d("🆕 New user - proceeding to profile creation");
@@ -419,9 +435,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
         // Go directly to main app
         if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
-          );
+          _navigateToMainNavigation();
         }
       } else {
         logger.d("🆕 New user - proceeding to profile creation");
@@ -902,11 +916,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   );
 
                   // Navigate to main app directly
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => AppRouter.initialRoute,
-                    ),
-                  );
+                  _navigateToMainNavigation();
                 }
                 return; // Exit early, don"t try to create profile
               } catch (fetchError) {
@@ -941,9 +951,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
 
         // Navigate to main app
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
-        );
+        _navigateToMainNavigation();
       }
     } catch (e) {
       if (mounted) {
@@ -999,11 +1007,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             return;
                           }
 
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) => AppRouter.initialRoute,
-                            ),
-                          );
+                          _navigateToMainNavigation();
                         },
                       ),
                       const SizedBox(width: 8),

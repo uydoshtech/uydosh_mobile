@@ -73,6 +73,7 @@ class HomeScreen extends StatefulWidget {
   final double? maxPrice;
   final bool? privateRoom;
   final bool isSearchMode;
+  final bool useExplicitFiltersOnly;
 
   const HomeScreen({
     super.key,
@@ -85,6 +86,7 @@ class HomeScreen extends StatefulWidget {
     this.maxPrice,
     this.privateRoom,
     this.isSearchMode = false,
+    this.useExplicitFiltersOnly = false,
   });
 
   @override
@@ -124,7 +126,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     // Initialize search filters with current parameters if in search mode
     if (widget.isSearchMode) {
-      _initializeSearchFilters();
+      if (!widget.useExplicitFiltersOnly) {
+        _initializeSearchFilters();
+      }
       // Trigger search when screen loads in search mode
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _performSearch();
@@ -246,19 +250,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
       if (widget.isSearchMode) {
         // Use search filters for search mode
-        bloc.add(
-          ListingsEvent.searchListings(
-            listingTypeId: _searchFiltersState.selectedListingTypeId,
-            locationId: _searchFiltersState.selectedLocationIndex,
-            subwayStationId: _searchFiltersState.selectedStationId,
-            subwayLineId: _searchFiltersState.selectedSubwayLine,
-            gender: _searchFiltersState.selectedGender,
-            minPrice: _searchFiltersState.minPrice,
-            maxPrice: _searchFiltersState.maxPrice,
-            privateRoom: _searchFiltersState.privateRoom,
-            isRefresh: true,
-          ),
-        );
+        _dispatchSearch(isRefresh: true);
       } else {
         // Use default search for home mode
         bloc.add(const ListingsEvent.searchListings(isRefresh: true));
@@ -498,24 +490,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       backgroundColor: _getRefreshIndicatorBackgroundColor(),
       onRefresh: () async {
         // Refresh listings
-        final bloc = context.read<ListingsBloc>();
-
         if (widget.isSearchMode) {
           // Use search filters for search mode
-          bloc.add(
-            ListingsEvent.searchListings(
-              listingTypeId: _searchFiltersState.selectedListingTypeId,
-              locationId: _searchFiltersState.selectedLocationIndex,
-              subwayStationId: _searchFiltersState.selectedStationId,
-              subwayLineId: _searchFiltersState.selectedSubwayLine,
-              gender: _searchFiltersState.selectedGender,
-              minPrice: _searchFiltersState.minPrice,
-              maxPrice: _searchFiltersState.maxPrice,
-              isRefresh: true,
-            ),
-          );
+          _dispatchSearch(isRefresh: true);
         } else {
           // Use default search for home mode
+          final bloc = context.read<ListingsBloc>();
           bloc.add(const ListingsEvent.searchListings(isRefresh: true));
         }
       },
@@ -648,27 +628,63 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   /// Perform search using current filters
   void _performSearch() {
+    _dispatchSearch(isRefresh: true);
+  }
+
+  void _dispatchSearch({required bool isRefresh}) {
     final listingsBloc = context.read<ListingsBloc>();
+    final listingTypeId =
+        widget.useExplicitFiltersOnly
+            ? widget.listingTypeId
+            : _searchFiltersState.selectedListingTypeId;
+    final locationId =
+        widget.useExplicitFiltersOnly
+            ? widget.locationId
+            : _searchFiltersState.selectedLocationIndex;
+    final subwayStationId =
+        widget.useExplicitFiltersOnly
+            ? widget.subwayStationId
+            : _searchFiltersState.selectedStationId;
+    final subwayLineId =
+        widget.useExplicitFiltersOnly
+            ? widget.subwayLineId
+            : _searchFiltersState.selectedSubwayLine;
+    final gender =
+        widget.useExplicitFiltersOnly
+            ? widget.gender
+            : _searchFiltersState.selectedGender;
+    final minPrice =
+        widget.useExplicitFiltersOnly
+            ? widget.minPrice
+            : _searchFiltersState.minPrice;
+    final maxPrice =
+        widget.useExplicitFiltersOnly
+            ? widget.maxPrice
+            : _searchFiltersState.maxPrice;
+    final privateRoom =
+        widget.useExplicitFiltersOnly
+            ? widget.privateRoom
+            : _searchFiltersState.privateRoom;
 
     // Debug logging to see what values are being passed
     logger.d(
-      "HomeScreen._performSearch - subwayStationId: ${_searchFiltersState.selectedStationId}, subwayLineId: ${_searchFiltersState.selectedSubwayLine}",
+      "HomeScreen._dispatchSearch - subwayStationId: $subwayStationId, subwayLineId: $subwayLineId",
     );
     logger.d(
-      "HomeScreen._performSearch - minPrice: ${_searchFiltersState.minPrice}, maxPrice: ${_searchFiltersState.maxPrice}",
+      "HomeScreen._dispatchSearch - minPrice: $minPrice, maxPrice: $maxPrice",
     );
 
     listingsBloc.add(
       ListingsEvent.searchListings(
-        listingTypeId: _searchFiltersState.selectedListingTypeId,
-        locationId: _searchFiltersState.selectedLocationIndex,
-        subwayStationId: _searchFiltersState.selectedStationId,
-        subwayLineId: _searchFiltersState.selectedSubwayLine,
-        gender: _searchFiltersState.selectedGender,
-        minPrice: _searchFiltersState.minPrice,
-        maxPrice: _searchFiltersState.maxPrice,
-        privateRoom: _searchFiltersState.privateRoom,
-        isRefresh: true, // Ensure this is a fresh search
+        listingTypeId: listingTypeId,
+        locationId: locationId,
+        subwayStationId: subwayStationId,
+        subwayLineId: subwayLineId,
+        gender: gender,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        privateRoom: privateRoom,
+        isRefresh: isRefresh,
       ),
     );
   }

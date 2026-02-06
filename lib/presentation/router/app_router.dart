@@ -34,14 +34,18 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:firebase_auth/firebase_auth.dart";
 
 class AppRouter {
-  static Widget get initialRoute => BlocProvider(
+  static Widget buildMainNavigation({bool attachKey = false}) => BlocProvider(
     create: (context) {
       final bloc = ListingsBloc(getIt<IListingService>());
       bloc.add(const ListingsEvent.searchListings(isRefresh: true));
       return bloc;
     },
-    child: MainNavigation(key: mainNavigationKey),
+    child: MainNavigation(key: attachKey ? mainNavigationKey : null),
   );
+
+  static Widget get initialRoute => buildMainNavigation(attachKey: true);
+
+  static Widget get mainNavigationRoute => buildMainNavigation();
 }
 
 class MainNavigation extends StatefulWidget {
