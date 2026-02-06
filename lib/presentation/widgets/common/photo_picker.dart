@@ -313,6 +313,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                     ),
                   ),
                   onTap: () {
+                    HapticFeedbackUtils.impact();
                     Navigator.of(context).pop();
                     _pickImage(ImageSource.camera);
                   },
@@ -330,6 +331,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                     ),
                   ),
                   onTap: () {
+                    HapticFeedbackUtils.impact();
                     Navigator.of(context).pop();
                     _pickImage(ImageSource.gallery);
                   },

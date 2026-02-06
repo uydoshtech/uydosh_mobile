@@ -272,25 +272,33 @@ class _FaqScreenState extends State<FaqScreen> {
             ),
           ),
           // Expandable content
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            height: isExpanded ? null : 0,
-            child: isExpanded
-                ? Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
-                    child: RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: _getSecondaryTextColor(),
-                          height: 1.5,
+          ClipRect(
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child:
+                  isExpanded
+                      ? Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          16.0,
+                          0.0,
+                          16.0,
+                          16.0,
                         ),
-                        children: _parseAnswerText(answer),
-                      ),
-                    ),
-                  )
-                : const SizedBox.shrink(),
+                        child: RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: _getSecondaryTextColor(),
+                              height: 1.5,
+                            ),
+                            children: _parseAnswerText(answer),
+                          ),
+                        ),
+                      )
+                      : const SizedBox(height: 0),
+            ),
           ),
         ],
       ),

@@ -203,6 +203,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     ),
                   ),
                   onTap: () {
+                    HapticFeedbackUtils.impact();
                     Navigator.of(context).pop();
                     _pickImage(ImageSource.camera);
                   },
@@ -227,6 +228,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     ),
                   ),
                   onTap: () {
+                    HapticFeedbackUtils.impact();
                     Navigator.of(context).pop();
                     _pickImage(ImageSource.gallery);
                   },

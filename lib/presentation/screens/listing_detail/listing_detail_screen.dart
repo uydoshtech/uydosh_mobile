@@ -839,14 +839,16 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             return;
           }
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!_scrollController.hasClients) {
-              return;
-            }
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
+            Future.delayed(const Duration(milliseconds: 250), () {
+              if (!_scrollController.hasClients) {
+                return;
+              }
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            });
           });
         },
         shape: RoundedRectangleBorder(
