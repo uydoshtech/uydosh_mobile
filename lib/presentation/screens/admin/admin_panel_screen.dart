@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
@@ -141,7 +141,7 @@ class AdminPanelScreen extends StatelessWidget {
             onTap == null
                 ? null
                 : () {
-                  HapticFeedback.selectionClick();
+                  HapticFeedbackUtils.selectionClick();
                   onTap();
                 },
       ),

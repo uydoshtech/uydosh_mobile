@@ -2700,11 +2700,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                   ),
                 ),
               ],
-              if (!UserListingState().isOwner(listingDetail.user.id)) ...[
-                const SizedBox(height: 8),
+              if (!UserListingState().isOwner(listingDetail.user.id))
                 _buildCompatibilitySection(listingDetail),
-                const SizedBox(height: 8),
-              ],
               if (_complaintsCount != null && _complaintsCount! > 0)
                 Card(
                   child: Padding(

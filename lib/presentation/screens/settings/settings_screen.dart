@@ -4,6 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
@@ -197,6 +198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildLanguageMenuItem(context),
             _buildThemeMenuItem(context),
             _buildOnboardingToggleMenuItem(context),
+            _buildHapticFeedbackToggleMenuItem(context),
 
             _buildThemeAwareDivider(),
 
@@ -205,6 +207,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
               titleKey: "menu_about",
               onTap: () {
                 _showAboutDialog(context);
+              },
+            ),
+            _buildMenuItem(
+              icon: Icons.privacy_tip,
+              titleKey: "menu_privacy_policy",
+              onTap: () {
+                _showLegalDialog(
+                  context,
+                  titleKey: "privacy_policy_title",
+                  bodyKey: "privacy_policy_body",
+                );
+              },
+            ),
+            _buildMenuItem(
+              icon: Icons.description,
+              titleKey: "menu_user_license_agreement",
+              onTap: () {
+                _showLegalDialog(
+                  context,
+                  titleKey: "user_license_agreement_title",
+                  bodyKey: "user_license_agreement_body",
+                );
               },
             ),
           ],
@@ -291,6 +315,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Onboarding toggle changed
               await OnboardingState().setShowOnboarding(value);
               // Onboarding state updated
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHapticFeedbackToggleMenuItem(BuildContext context) {
+    return ListenableBuilder(
+      listenable: HapticFeedbackState(),
+      builder: (context, child) {
+        return ListTile(
+          leading: Icon(Icons.vibration, color: _getIconColor()),
+          title: LanguageAwareStringHelper.getText(
+            "haptic_feedback",
+            context,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: _getTextColor(),
+            ),
+          ),
+          subtitle: LanguageAwareStringHelper.getText(
+            "haptic_feedback_description",
+            context,
+            style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
+          ),
+          trailing: ThemeToggle(
+            value: HapticFeedbackState().isEnabled,
+            onChanged: (value) async {
+              await HapticFeedbackState().setEnabled(value);
             },
           ),
         );
@@ -576,6 +630,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _showLegalDialog(
+    BuildContext context, {
+    required String titleKey,
+    required String bodyKey,
+  }) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: _getLanguageDialogBackgroundColor(),
+            title: Center(
+              child: LanguageAwareStringHelper.getText(
+                titleKey,
+                context,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: _getAboutModalTextColor(),
+                ),
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Text(
+                LanguageAwareStringHelper.getCurrent(context, bodyKey),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: _getAboutModalTextColor(),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  HapticFeedbackUtils.impact();
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                ),
+                child: LanguageAwareStringHelper.getText("close", context),
+              ),
+            ],
+          ),
+    );
+  }
+
   Widget _buildFeatureItem(BuildContext context, String key) {
     // Get appropriate icon for each feature
     IconData icon;
@@ -593,8 +693,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(left: 16, top: 4),
+      padding: const EdgeInsets.only(top: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 20, color: _getAboutModalTextColor()),
           const SizedBox(width: 12),

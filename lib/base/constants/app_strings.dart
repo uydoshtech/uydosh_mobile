@@ -58,6 +58,12 @@ class AppStrings {
       "close": "Close",
       "cancel": "Cancel",
       "about_uy_dosh": "About UyDosh",
+      "privacy_policy_title": "Privacy Policy",
+      "privacy_policy_body":
+          "ОБНОВЛЁННЫЙ PRIVACY POLICY (без рекламы и подписок)\n\nLast updated: [DATE]\n\nUyDosh respects your privacy. This Privacy Policy explains how we collect and use data.\n\n⸻\n\n1. Data We Collect\n\na. Information You Provide\n\t•\tPhone number\n\t•\tName and profile info\n\t•\tListings and photos\n\t•\tMessages\n\nb. Automatically Collected Data\n\t•\tDevice type and OS\n\t•\tApp usage data\n\t•\tCrash diagnostics\n\nc. Location Data\n\t•\tApproximate location (only if enabled)\n\n⸻\n\n2. How We Use Data\n\nWe use data to:\n\t•\toperate the App\n\t•\tdisplay listings and maps\n\t•\tmaintain safety and moderation\n\t•\timprove functionality\n\n⸻\n\n3. Data Sharing\n\nWe do not sell personal data.\n\nWe may share data:\n\t•\twith service providers (hosting, analytics)\n\t•\tif required by law\n\t•\twith other users (only public profile/listing info)\n\n⸻\n\n4. Data Retention\n\nWe store data only as long as necessary.\nYou may request account and data deletion.\n\n⸻\n\n5. Security\n\nWe apply reasonable measures to protect data, but no system is fully secure.\n\n⸻\n\n6. User Rights\n\nYou may request:\n\t•\taccess to your data\n\t•\tcorrection\n\t•\tdeletion\n\nContact: support@uydosh.app\n\n⸻\n\n7. Children\n\nUyDosh is not intended for users under 18.\n\n⸻\n\n8. Third-Party Services\n\nThe App may use third-party services (e.g., maps). Their policies apply independently.\n\n⸻\n\n9. Updates\n\nWe may update this Policy. Changes take effect when published.\n\n⸻\n\n10. Contact\n\nsupport@uydosh.app",
+      "user_license_agreement_title": "User License Agreement",
+      "user_license_agreement_body":
+          "ОБНОВЛЁННЫЙ EULA (MVP-версия)\n\nLast updated: [DATE]\n\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and UyDosh (\"we\", \"us\", \"our\") governing your use of the UyDosh mobile application (\"App\").\n\nBy accessing or using the App, you agree to this Agreement.\n\n⸻\n\n1. License\n\nWe grant you a limited, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes.\n\n⸻\n\n2. Eligibility\n\nYou must be at least 18 years old to use the App.\n\n⸻\n\n3. Accounts\n\nSome features require account creation.\nYou agree to provide accurate information and keep it up to date.\n\nWe may suspend or terminate accounts that violate this Agreement or pose safety risks.\n\n⸻\n\n4. User Content\n\nThe App allows users to post listings, descriptions, photos, and messages (\"User Content\").\n\nYou retain ownership of your content.\nBy posting content, you grant us a non-exclusive, worldwide license to host, display, and distribute it solely for operating the App.\n\nYou are fully responsible for your User Content.\n\n⸻\n\n5. Prohibited Use\n\nYou agree not to:\n\t•\tPost false, misleading, or illegal listings\n\t•\tHarass, threaten, or discriminate against others\n\t•\tImpersonate another person\n\t•\tUse the App for unlawful purposes\n\t•\tAttempt to access data or accounts without authorization\n\n⸻\n\n6. No Transactions or Guarantees\n\nUyDosh does not participate in rental agreements, payments, or negotiations between users.\n\nWe do not guarantee:\n\t•\taccuracy of listings\n\t•\tavailability of housing\n\t•\tbehavior or reliability of other users\n\nAll interactions occur at your own risk.\n\n⸻\n\n7. Moderation\n\nWe reserve the right to:\n\t•\tremove content\n\t•\trestrict visibility\n\t•\tsuspend or ban users\n\nbased on complaints, violations, or safety concerns.\n\n⸻\n\n8. Location Features\n\nThe App may use approximate location data to display nearby listings and map features.\nYou can disable location access in your device settings.\n\n⸻\n\n9. Disclaimer\n\nThe App is provided \"AS IS\" and \"AS AVAILABLE\".\nWe make no warranties regarding reliability, safety, or suitability.\n\n⸻\n\n10. Limitation of Liability\n\nUyDosh shall not be liable for indirect or consequential damages arising from App usage.\n\n⸻\n\n11. Termination\n\nWe may terminate your access at any time for violation of this Agreement.\n\n⸻\n\n12. Governing Law\n\nThis Agreement is governed by the laws of the jurisdiction where UyDosh operates.\n\n⸻\n\n13. Contact\n\nsupport@uydosh.app\n\n⸻",
 
       // ===== LOADING STATES =====
       "loading": "Loading",
@@ -293,6 +299,8 @@ class AppStrings {
       "onboarding_back": "Back",
       "onboarding_toggle": "Onboarding",
       "onboarding_toggle_description": "Show welcome screens",
+      "haptic_feedback": "Haptic feedback",
+      "haptic_feedback_description": "Vibration for taps and gestures",
 
       // ===== LANGUAGE & LOCALIZATION =====
       "current_language": "English",
@@ -390,6 +398,8 @@ class AppStrings {
       "menu_my_listings": "My Listings",
 
       "menu_about": "About",
+      "menu_privacy_policy": "Privacy Policy",
+      "menu_user_license_agreement": "User License Agreement",
       "menu_faq": "FAQ",
       "menu_settings": "Settings",
       "menu_registration": "Sign in",
@@ -667,6 +677,12 @@ class AppStrings {
       "close": "Закрыть",
       "cancel": "Отмена",
       "about_uy_dosh": "Об UyDosh",
+      "privacy_policy_title": "Политика конфиденциальности",
+      "privacy_policy_body":
+          "ОБНОВЛЁННЫЙ PRIVACY POLICY (без рекламы и подписок)\n\nLast updated: [DATE]\n\nUyDosh respects your privacy. This Privacy Policy explains how we collect and use data.\n\n⸻\n\n1. Data We Collect\n\na. Information You Provide\n\t•\tPhone number\n\t•\tName and profile info\n\t•\tListings and photos\n\t•\tMessages\n\nb. Automatically Collected Data\n\t•\tDevice type and OS\n\t•\tApp usage data\n\t•\tCrash diagnostics\n\nc. Location Data\n\t•\tApproximate location (only if enabled)\n\n⸻\n\n2. How We Use Data\n\nWe use data to:\n\t•\toperate the App\n\t•\tdisplay listings and maps\n\t•\tmaintain safety and moderation\n\t•\timprove functionality\n\n⸻\n\n3. Data Sharing\n\nWe do not sell personal data.\n\nWe may share data:\n\t•\twith service providers (hosting, analytics)\n\t•\tif required by law\n\t•\twith other users (only public profile/listing info)\n\n⸻\n\n4. Data Retention\n\nWe store data only as long as necessary.\nYou may request account and data deletion.\n\n⸻\n\n5. Security\n\nWe apply reasonable measures to protect data, but no system is fully secure.\n\n⸻\n\n6. User Rights\n\nYou may request:\n\t•\taccess to your data\n\t•\tcorrection\n\t•\tdeletion\n\nContact: support@uydosh.app\n\n⸻\n\n7. Children\n\nUyDosh is not intended for users under 18.\n\n⸻\n\n8. Third-Party Services\n\nThe App may use third-party services (e.g., maps). Their policies apply independently.\n\n⸻\n\n9. Updates\n\nWe may update this Policy. Changes take effect when published.\n\n⸻\n\n10. Contact\n\nsupport@uydosh.app",
+      "user_license_agreement_title": "Лицензионное соглашение пользователя",
+      "user_license_agreement_body":
+          "ОБНОВЛЁННЫЙ EULA (MVP-версия)\n\nLast updated: [DATE]\n\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and UyDosh (\"we\", \"us\", \"our\") governing your use of the UyDosh mobile application (\"App\").\n\nBy accessing or using the App, you agree to this Agreement.\n\n⸻\n\n1. License\n\nWe grant you a limited, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes.\n\n⸻\n\n2. Eligibility\n\nYou must be at least 18 years old to use the App.\n\n⸻\n\n3. Accounts\n\nSome features require account creation.\nYou agree to provide accurate information and keep it up to date.\n\nWe may suspend or terminate accounts that violate this Agreement or pose safety risks.\n\n⸻\n\n4. User Content\n\nThe App allows users to post listings, descriptions, photos, and messages (\"User Content\").\n\nYou retain ownership of your content.\nBy posting content, you grant us a non-exclusive, worldwide license to host, display, and distribute it solely for operating the App.\n\nYou are fully responsible for your User Content.\n\n⸻\n\n5. Prohibited Use\n\nYou agree not to:\n\t•\tPost false, misleading, or illegal listings\n\t•\tHarass, threaten, or discriminate against others\n\t•\tImpersonate another person\n\t•\tUse the App for unlawful purposes\n\t•\tAttempt to access data or accounts without authorization\n\n⸻\n\n6. No Transactions or Guarantees\n\nUyDosh does not participate in rental agreements, payments, or negotiations between users.\n\nWe do not guarantee:\n\t•\taccuracy of listings\n\t•\tavailability of housing\n\t•\tbehavior or reliability of other users\n\nAll interactions occur at your own risk.\n\n⸻\n\n7. Moderation\n\nWe reserve the right to:\n\t•\tremove content\n\t•\trestrict visibility\n\t•\tsuspend or ban users\n\nbased on complaints, violations, or safety concerns.\n\n⸻\n\n8. Location Features\n\nThe App may use approximate location data to display nearby listings and map features.\nYou can disable location access in your device settings.\n\n⸻\n\n9. Disclaimer\n\nThe App is provided \"AS IS\" and \"AS AVAILABLE\".\nWe make no warranties regarding reliability, safety, or suitability.\n\n⸻\n\n10. Limitation of Liability\n\nUyDosh shall not be liable for indirect or consequential damages arising from App usage.\n\n⸻\n\n11. Termination\n\nWe may terminate your access at any time for violation of this Agreement.\n\n⸻\n\n12. Governing Law\n\nThis Agreement is governed by the laws of the jurisdiction where UyDosh operates.\n\n⸻\n\n13. Contact\n\nsupport@uydosh.app\n\n⸻",
 
       // ===== LOADING STATES =====
       "loading": "Загрузка",
@@ -902,6 +918,8 @@ class AppStrings {
       "onboarding_back": "Назад",
       "onboarding_toggle": "Обучение",
       "onboarding_toggle_description": "Показать приветствие",
+      "haptic_feedback": "Виброотклик",
+      "haptic_feedback_description": "Вибрация при нажатиях и жестах",
 
       // ===== LANGUAGE & LOCALIZATION =====
       "current_language": "Русский",
@@ -1000,7 +1018,9 @@ class AppStrings {
       "menu_my_listings": "Мои объявления",
 
       "menu_about": "О приложении",
-      "menu_faq": "Часто задаваемые вопросы",
+      "menu_privacy_policy": "Политика конфиденциальности",
+      "menu_user_license_agreement": "Лицензионное соглашение пользователя",
+      "menu_faq": "Вопросы и ответы",
       "menu_settings": "Настройки",
       "menu_registration": "Вход",
       "menu_logout": "Выйти",
@@ -1281,6 +1301,12 @@ class AppStrings {
       "close": "Yopish",
       "cancel": "Bekor qilish",
       "about_uy_dosh": "UyDosh haqida",
+      "privacy_policy_title": "Maxfiylik siyosati",
+      "privacy_policy_body":
+          "ОБНОВЛЁННЫЙ PRIVACY POLICY (без рекламы и подписок)\n\nLast updated: [DATE]\n\nUyDosh respects your privacy. This Privacy Policy explains how we collect and use data.\n\n⸻\n\n1. Data We Collect\n\na. Information You Provide\n\t•\tPhone number\n\t•\tName and profile info\n\t•\tListings and photos\n\t•\tMessages\n\nb. Automatically Collected Data\n\t•\tDevice type and OS\n\t•\tApp usage data\n\t•\tCrash diagnostics\n\nc. Location Data\n\t•\tApproximate location (only if enabled)\n\n⸻\n\n2. How We Use Data\n\nWe use data to:\n\t•\toperate the App\n\t•\tdisplay listings and maps\n\t•\tmaintain safety and moderation\n\t•\timprove functionality\n\n⸻\n\n3. Data Sharing\n\nWe do not sell personal data.\n\nWe may share data:\n\t•\twith service providers (hosting, analytics)\n\t•\tif required by law\n\t•\twith other users (only public profile/listing info)\n\n⸻\n\n4. Data Retention\n\nWe store data only as long as necessary.\nYou may request account and data deletion.\n\n⸻\n\n5. Security\n\nWe apply reasonable measures to protect data, but no system is fully secure.\n\n⸻\n\n6. User Rights\n\nYou may request:\n\t•\taccess to your data\n\t•\tcorrection\n\t•\tdeletion\n\nContact: support@uydosh.app\n\n⸻\n\n7. Children\n\nUyDosh is not intended for users under 18.\n\n⸻\n\n8. Third-Party Services\n\nThe App may use third-party services (e.g., maps). Their policies apply independently.\n\n⸻\n\n9. Updates\n\nWe may update this Policy. Changes take effect when published.\n\n⸻\n\n10. Contact\n\nsupport@uydosh.app",
+      "user_license_agreement_title": "Foydalanuvchi litsenziya shartnomasi",
+      "user_license_agreement_body":
+          "ОБНОВЛЁННЫЙ EULA (MVP-версия)\n\nLast updated: [DATE]\n\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and UyDosh (\"we\", \"us\", \"our\") governing your use of the UyDosh mobile application (\"App\").\n\nBy accessing or using the App, you agree to this Agreement.\n\n⸻\n\n1. License\n\nWe grant you a limited, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes.\n\n⸻\n\n2. Eligibility\n\nYou must be at least 18 years old to use the App.\n\n⸻\n\n3. Accounts\n\nSome features require account creation.\nYou agree to provide accurate information and keep it up to date.\n\nWe may suspend or terminate accounts that violate this Agreement or pose safety risks.\n\n⸻\n\n4. User Content\n\nThe App allows users to post listings, descriptions, photos, and messages (\"User Content\").\n\nYou retain ownership of your content.\nBy posting content, you grant us a non-exclusive, worldwide license to host, display, and distribute it solely for operating the App.\n\nYou are fully responsible for your User Content.\n\n⸻\n\n5. Prohibited Use\n\nYou agree not to:\n\t•\tPost false, misleading, or illegal listings\n\t•\tHarass, threaten, or discriminate against others\n\t•\tImpersonate another person\n\t•\tUse the App for unlawful purposes\n\t•\tAttempt to access data or accounts without authorization\n\n⸻\n\n6. No Transactions or Guarantees\n\nUyDosh does not participate in rental agreements, payments, or negotiations between users.\n\nWe do not guarantee:\n\t•\taccuracy of listings\n\t•\tavailability of housing\n\t•\tbehavior or reliability of other users\n\nAll interactions occur at your own risk.\n\n⸻\n\n7. Moderation\n\nWe reserve the right to:\n\t•\tremove content\n\t•\trestrict visibility\n\t•\tsuspend or ban users\n\nbased on complaints, violations, or safety concerns.\n\n⸻\n\n8. Location Features\n\nThe App may use approximate location data to display nearby listings and map features.\nYou can disable location access in your device settings.\n\n⸻\n\n9. Disclaimer\n\nThe App is provided \"AS IS\" and \"AS AVAILABLE\".\nWe make no warranties regarding reliability, safety, or suitability.\n\n⸻\n\n10. Limitation of Liability\n\nUyDosh shall not be liable for indirect or consequential damages arising from App usage.\n\n⸻\n\n11. Termination\n\nWe may terminate your access at any time for violation of this Agreement.\n\n⸻\n\n12. Governing Law\n\nThis Agreement is governed by the laws of the jurisdiction where UyDosh operates.\n\n⸻\n\n13. Contact\n\nsupport@uydosh.app\n\n⸻",
 
       // ===== LOADING STATES =====
       "loading": "Yuklanmoqda",
@@ -1522,6 +1548,9 @@ class AppStrings {
       "onboarding_back": "Orqaga",
       "onboarding_toggle": "Boshlash",
       "onboarding_toggle_description": "Xush kelish ekrani",
+      "haptic_feedback": "Haptik javob",
+      "haptic_feedback_description":
+          "Bosish va jestlar uchun tebranish",
 
       // ===== LANGUAGE & LOCALIZATION =====
       "current_language": "O'zbekcha",
@@ -1619,7 +1648,9 @@ class AppStrings {
       "menu_my_listings": "Mening e'lonlarim",
 
       "menu_about": "Ilova haqida",
-      "menu_faq": "Tez-tez so'raladigan savollar",
+      "menu_privacy_policy": "Maxfiylik siyosati",
+      "menu_user_license_agreement": "Foydalanuvchi litsenziya shartnomasi",
+      "menu_faq": "Savol-javob",
       "menu_settings": "Sozlamalar",
       "menu_registration": "Kirish",
       "menu_logout": "Chiqish",

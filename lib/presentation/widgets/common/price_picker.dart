@@ -1,6 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -65,7 +66,7 @@ class PricePicker extends StatelessWidget {
   void _onPriceChanged(int index) {
     final newPrice = (index + 1) * 10;
 
-    if (enableHapticFeedback) {
+    if (enableHapticFeedback && HapticFeedbackState().isEnabled) {
       HapticFeedbackUtils.impact();
     }
 

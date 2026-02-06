@@ -18,7 +18,9 @@ import "package:uy_dosh/presentation/widgets/animated_svg_logo.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 // Firebase imports
 import 'package:firebase_core/firebase_core.dart';
@@ -77,6 +79,9 @@ void main() async {
     // Initialize onboarding state to load saved preferences
     await OnboardingState().initialize();
 
+    // Initialize haptic feedback state to load saved preferences
+    await HapticFeedbackState().initialize();
+
     // Initialize search filters state to load saved preferences
     await SearchFiltersState().initialize();
 
@@ -96,6 +101,9 @@ void main() async {
     );
     logger.d(
       '🎓 Onboarding: ${OnboardingState().showOnboarding ? "ENABLED" : "DISABLED"}',
+    );
+    logger.d(
+      '📳 Haptics: ${HapticFeedbackState().isEnabled ? "ENABLED" : "DISABLED"}',
     );
     logger.d(
       '🔍 Search Filters: listingType=${SearchFiltersState().selectedListingTypeId}, location=${SearchFiltersState().selectedLocationIndex}, line=${SearchFiltersState().selectedSubwayLine}, station=${SearchFiltersState().selectedStationIndex}',
@@ -215,13 +223,13 @@ class _SplashScreenState extends State<SplashScreen>
 
     _titleController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.lightImpact();
       }
     });
 
     _subtitleController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        HapticFeedback.lightImpact();
+        HapticFeedbackUtils.lightImpact();
       }
     });
 

@@ -1,13 +1,15 @@
 import "package:flutter/services.dart";
-import "package:uy_dosh/base/constants/app_config.dart";
+import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 
 class HapticFeedbackUtils {
   static const Duration _burstWindow = Duration(milliseconds: 600);
   static DateTime? _lastTriggerAt;
   static int _burstCount = 0;
 
+  static bool get _enabled => HapticFeedbackState().isEnabled;
+
   static void impact() {
-    if (!AppConfig.enableHapticFeedback) {
+    if (!_enabled) {
       return;
     }
     _updateBurstCount();
@@ -19,7 +21,7 @@ class HapticFeedbackUtils {
   }
 
   static void selection() {
-    if (!AppConfig.enableHapticFeedback) {
+    if (!_enabled) {
       return;
     }
     _updateBurstCount();
@@ -32,6 +34,20 @@ class HapticFeedbackUtils {
       return;
     }
     HapticFeedback.heavyImpact();
+  }
+
+  static void lightImpact() {
+    if (!_enabled) {
+      return;
+    }
+    HapticFeedback.lightImpact();
+  }
+
+  static void selectionClick() {
+    if (!_enabled) {
+      return;
+    }
+    HapticFeedback.selectionClick();
   }
 
   static void _updateBurstCount() {
