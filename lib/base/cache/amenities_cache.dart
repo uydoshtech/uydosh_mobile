@@ -28,9 +28,9 @@ class AmenitiesCache {
     Amenity(
       id: 4,
       code: "air_conditioning",
-      nameEn: "Air Conditioning",
-      nameRu: "Кондиционер",
-      nameUz: "Konditsioner",
+      nameEn: "AC",
+      nameRu: "AC",
+      nameUz: "AC",
       createdAt: "2025-08-08T18:49:52.335522Z",
       updatedAt: "2025-08-08T18:49:52.335522Z",
     ),
