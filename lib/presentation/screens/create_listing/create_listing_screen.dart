@@ -784,7 +784,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
           showError: _showLocationError,
           showArrows: false,
         ),
-        const SizedBox(height: 20), // Space between location and price range
+        const SizedBox(height: 10), // Space between location and price range
         // Price Range Field - Full Row
         PriceRangePicker(
           minPrice: 10.0,
@@ -799,144 +799,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
             });
           },
         ),
-        const SizedBox(height: 10), // Space between price range and title
-        // Title Field
-        LanguageAwareStringHelper.getInputField(
-          "listing_title_hint",
-          context,
-          builder:
-              (hintText) => Container(
-                child: TextFormField(
-                  controller: _titleController,
-                  onChanged: (value) {
-                    setState(() {
-                      if (_showTitleError && value.trim().isNotEmpty) {
-                        _showTitleError = false;
-                      }
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: hintText,
-                    hintStyle: TextStyle(
-                      color:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant.withOpacity(0.7)
-                              : Colors.grey[400],
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color:
-                            _showTitleError
-                                ? Colors.red
-                                : (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Theme.of(context).colorScheme.outline
-                                    : Colors.grey[600]!),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color:
-                            _showTitleError
-                                ? Colors.red
-                                : (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Theme.of(context).colorScheme.outline
-                                    : Colors.grey[600]!),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: _showTitleError ? Colors.red : _getBorderColor(),
-                        width: 2,
-                      ),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.red, width: 2),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.red, width: 2),
-                    ),
-                    filled: true,
-                    fillColor:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Theme.of(context).colorScheme.surfaceVariant
-                            : Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    suffixIcon:
-                        _titleController.text.isNotEmpty
-                            ? IconButton(
-                              icon: Icon(
-                                Icons.clear,
-                                color:
-                                    Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant
-                                            .withOpacity(0.7)
-                                        : Colors.grey[600],
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _titleController.clear();
-                                  _showTitleError = false;
-                                });
-                              },
-                            )
-                            : null,
-                  ),
-                  style: TextStyle(
-                    color:
-                        ThemeState().isLightTheme
-                            ? Colors.black
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  maxLength: 50,
-                  buildCounter: (
-                    context, {
-                    required currentLength,
-                    required isFocused,
-                    maxLength,
-                  }) {
-                    final max = maxLength ?? 0;
-                    final isNearLimit =
-                        max > 0 && (currentLength / max) >= 0.9;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Text(
-                        "$currentLength/$maxLength",
-                        style: TextStyle(
-                          color:
-                              isNearLimit
-                                  ? Colors.red
-                                  : Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant
-                                          .withOpacity(0.7)
-                                      : Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-        ),
+        const SizedBox(height: 10), // Space between price range and description
 
         // Description Field
         LanguageAwareStringHelper.getInputField(
