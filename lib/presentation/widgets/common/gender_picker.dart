@@ -14,6 +14,7 @@ class GenderPicker extends StatelessWidget {
     this.showArrows = true,
     this.useThemeColors = false,
     this.includeUnselected = false,
+    this.scrollController,
   });
 
   final int selectedGender;
@@ -23,6 +24,7 @@ class GenderPicker extends StatelessWidget {
   final double itemExtent;
   final bool showArrows;
   final bool includeUnselected;
+  final FixedExtentScrollController? scrollController;
 
   Color _getGenderColor(int gender) {
     switch (gender) {
@@ -57,9 +59,11 @@ class GenderPicker extends StatelessWidget {
           Expanded(
             child: CupertinoPicker(
               itemExtent: itemExtent,
-              scrollController: FixedExtentScrollController(
-                initialItem: initialIndex >= 0 ? initialIndex : 0,
-              ),
+              scrollController:
+                  scrollController ??
+                  FixedExtentScrollController(
+                    initialItem: initialIndex >= 0 ? initialIndex : 0,
+                  ),
               onSelectedItemChanged: (index) {
                 // Dismiss keyboard if it's open
                 FocusScope.of(context).unfocus();

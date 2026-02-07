@@ -8,8 +8,10 @@ class CreateListingRequest implements IJsonEncodable {
   final String description;
   final int gender;
   final int? subwayStationId; // Made optional
+  final List<int>? subwayStationIds; // Optional list of stations
   final int? subwayLineId; // Add subway line ID
-  final int locationId;
+  final int? locationId;
+  final List<int>? locationIds; // Optional list of locations
   final List<int> amenityIds;
   final String? moveInDate; // Add move-in date field
   final bool? privateRoom; // Add private room field
@@ -24,8 +26,10 @@ class CreateListingRequest implements IJsonEncodable {
     required this.description,
     required this.gender,
     this.subwayStationId, // Made optional
+    this.subwayStationIds, // Optional list of stations
     this.subwayLineId, // Add subway line ID parameter
-    required this.locationId,
+    this.locationId,
+    this.locationIds, // Optional list of locations
     required this.amenityIds,
     this.moveInDate, // Add move-in date parameter
     this.privateRoom, // Add private room parameter
@@ -41,15 +45,30 @@ class CreateListingRequest implements IJsonEncodable {
       'maxPrice': maxPrice,
       'description': description,
       'gender': gender,
-      'locationId': locationId,
       'amenityIds': amenityIds,
-      'subwayStationId':
-          subwayStationId, // Always include, sends null when no metro station
       'subwayLineId':
           subwayLineId, // Always include, sends null when no metro line
       'privateRoom':
           privateRoom, // Always include, sends null when no private room preference
     };
+
+    final normalizedLocationIds =
+        locationIds != null && locationIds!.isNotEmpty
+            ? locationIds!
+            : (locationId != null ? [locationId!] : null);
+    if (normalizedLocationIds != null) {
+      json['locationIds'] = normalizedLocationIds;
+      json['locationId'] = normalizedLocationIds.first;
+    }
+
+    final normalizedStationIds =
+        subwayStationIds != null && subwayStationIds!.isNotEmpty
+            ? subwayStationIds!
+            : (subwayStationId != null ? [subwayStationId!] : null);
+    if (normalizedStationIds != null) {
+      json['subwayStationIds'] = normalizedStationIds;
+      json['subwayStationId'] = normalizedStationIds.first;
+    }
 
     // Only include moveInDate if it's not null
     if (moveInDate != null) {

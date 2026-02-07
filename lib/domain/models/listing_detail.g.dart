@@ -16,8 +16,16 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
       maxPrice: (json['max_price'] as num).toInt(),
       description: json['description'] as String?,
       subwayStationId: (json['subway_station_id'] as num?)?.toInt(),
+      subwayStationIds:
+          (json['subway_station_ids'] as List<dynamic>?)
+              ?.map((e) => (e as num).toInt())
+              .toList(),
       subwayLineId: (json['subway_line_id'] as num?)?.toInt(),
       locationId: (json['location_id'] as num?)?.toInt(),
+      locationIds:
+          (json['location_ids'] as List<dynamic>?)
+              ?.map((e) => (e as num).toInt())
+              .toList(),
       gender: (json['gender'] as num?)?.toInt(),
       isActive: json['is_active'] as bool,
       featuredAt: json['featured_at'] as String?,
@@ -61,8 +69,10 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'max_price': instance.maxPrice,
       'description': instance.description,
       'subway_station_id': instance.subwayStationId,
+      'subway_station_ids': instance.subwayStationIds,
       'subway_line_id': instance.subwayLineId,
       'location_id': instance.locationId,
+      'location_ids': instance.locationIds,
       'gender': instance.gender,
       'is_active': instance.isActive,
       'featured_at': instance.featuredAt,
