@@ -34,14 +34,10 @@ mixin _$ListingDetail {
   String? get description => throw _privateConstructorUsedError;
   @JsonKey(name: 'subway_station_id')
   int? get subwayStationId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'subway_station_ids')
-  List<int>? get subwayStationIds => throw _privateConstructorUsedError;
   @JsonKey(name: 'subway_line_id')
   int? get subwayLineId => throw _privateConstructorUsedError;
   @JsonKey(name: 'location_id')
   int? get locationId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'location_ids')
-  List<int>? get locationIds => throw _privateConstructorUsedError;
   int? get gender => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_active')
   bool get isActive => throw _privateConstructorUsedError;
@@ -90,10 +86,8 @@ abstract class $ListingDetailCopyWith<$Res> {
     @JsonKey(name: 'max_price') int maxPrice,
     String? description,
     @JsonKey(name: 'subway_station_id') int? subwayStationId,
-    @JsonKey(name: 'subway_station_ids') List<int>? subwayStationIds,
     @JsonKey(name: 'subway_line_id') int? subwayLineId,
     @JsonKey(name: 'location_id') int? locationId,
-    @JsonKey(name: 'location_ids') List<int>? locationIds,
     int? gender,
     @JsonKey(name: 'is_active') bool isActive,
     @JsonKey(name: 'featured_at') String? featuredAt,
@@ -138,10 +132,8 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? maxPrice = null,
     Object? description = freezed,
     Object? subwayStationId = freezed,
-    Object? subwayStationIds = freezed,
     Object? subwayLineId = freezed,
     Object? locationId = freezed,
-    Object? locationIds = freezed,
     Object? gender = freezed,
     Object? isActive = null,
     Object? featuredAt = freezed,
@@ -198,11 +190,6 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
                     ? _value.subwayStationId
                     : subwayStationId // ignore: cast_nullable_to_non_nullable
                         as int?,
-            subwayStationIds:
-                freezed == subwayStationIds
-                    ? _value.subwayStationIds
-                    : subwayStationIds // ignore: cast_nullable_to_non_nullable
-                        as List<int>?,
             subwayLineId:
                 freezed == subwayLineId
                     ? _value.subwayLineId
@@ -213,11 +200,6 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
                     ? _value.locationId
                     : locationId // ignore: cast_nullable_to_non_nullable
                         as int?,
-            locationIds:
-                freezed == locationIds
-                    ? _value.locationIds
-                    : locationIds // ignore: cast_nullable_to_non_nullable
-                        as List<int>?,
             gender:
                 freezed == gender
                     ? _value.gender
@@ -355,10 +337,8 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
     @JsonKey(name: 'max_price') int maxPrice,
     String? description,
     @JsonKey(name: 'subway_station_id') int? subwayStationId,
-    @JsonKey(name: 'subway_station_ids') List<int>? subwayStationIds,
     @JsonKey(name: 'subway_line_id') int? subwayLineId,
     @JsonKey(name: 'location_id') int? locationId,
-    @JsonKey(name: 'location_ids') List<int>? locationIds,
     int? gender,
     @JsonKey(name: 'is_active') bool isActive,
     @JsonKey(name: 'featured_at') String? featuredAt,
@@ -406,10 +386,8 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? maxPrice = null,
     Object? description = freezed,
     Object? subwayStationId = freezed,
-    Object? subwayStationIds = freezed,
     Object? subwayLineId = freezed,
     Object? locationId = freezed,
-    Object? locationIds = freezed,
     Object? gender = freezed,
     Object? isActive = null,
     Object? featuredAt = freezed,
@@ -466,11 +444,6 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
                 ? _value.subwayStationId
                 : subwayStationId // ignore: cast_nullable_to_non_nullable
                     as int?,
-            subwayStationIds:
-                freezed == subwayStationIds
-                    ? _value.subwayStationIds
-                    : subwayStationIds // ignore: cast_nullable_to_non_nullable
-                        as List<int>?,
         subwayLineId:
             freezed == subwayLineId
                 ? _value.subwayLineId
@@ -481,11 +454,6 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
                 ? _value.locationId
                 : locationId // ignore: cast_nullable_to_non_nullable
                     as int?,
-            locationIds:
-                freezed == locationIds
-                    ? _value.locationIds
-                    : locationIds // ignore: cast_nullable_to_non_nullable
-                        as List<int>?,
         gender:
             freezed == gender
                 ? _value.gender
@@ -568,10 +536,8 @@ class _$ListingDetailImpl implements _ListingDetail {
     @JsonKey(name: 'max_price') required this.maxPrice,
     this.description,
     @JsonKey(name: 'subway_station_id') this.subwayStationId,
-    @JsonKey(name: 'subway_station_ids') this.subwayStationIds,
     @JsonKey(name: 'subway_line_id') this.subwayLineId,
     @JsonKey(name: 'location_id') this.locationId,
-    @JsonKey(name: 'location_ids') this.locationIds,
     this.gender,
     @JsonKey(name: 'is_active') required this.isActive,
     @JsonKey(name: 'featured_at') this.featuredAt,
@@ -613,17 +579,11 @@ class _$ListingDetailImpl implements _ListingDetail {
   @JsonKey(name: 'subway_station_id')
   final int? subwayStationId;
   @override
-  @JsonKey(name: 'subway_station_ids')
-  final List<int>? subwayStationIds;
-  @override
   @JsonKey(name: 'subway_line_id')
   final int? subwayLineId;
   @override
   @JsonKey(name: 'location_id')
   final int? locationId;
-  @override
-  @JsonKey(name: 'location_ids')
-  final List<int>? locationIds;
   @override
   final int? gender;
   @override
@@ -676,7 +636,7 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, minPrice: $minPrice, maxPrice: $maxPrice, description: $description, subwayStationId: $subwayStationId, subwayStationIds: $subwayStationIds, subwayLineId: $subwayLineId, locationId: $locationId, locationIds: $locationIds, gender: $gender, isActive: $isActive, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, minPrice: $minPrice, maxPrice: $maxPrice, description: $description, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, isActive: $isActive, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos)';
   }
 
   @override
@@ -697,18 +657,10 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.description == description) &&
             (identical(other.subwayStationId, subwayStationId) ||
                 other.subwayStationId == subwayStationId) &&
-            const DeepCollectionEquality().equals(
-              other.subwayStationIds,
-              subwayStationIds,
-            ) &&
             (identical(other.subwayLineId, subwayLineId) ||
                 other.subwayLineId == subwayLineId) &&
             (identical(other.locationId, locationId) ||
                 other.locationId == locationId) &&
-            const DeepCollectionEquality().equals(
-              other.locationIds,
-              locationIds,
-            ) &&
             (identical(other.gender, gender) || other.gender == gender) &&
             (identical(other.isActive, isActive) ||
                 other.isActive == isActive) &&
@@ -748,10 +700,8 @@ class _$ListingDetailImpl implements _ListingDetail {
     maxPrice,
     description,
     subwayStationId,
-    const DeepCollectionEquality().hash(subwayStationIds),
     subwayLineId,
     locationId,
-    const DeepCollectionEquality().hash(locationIds),
     gender,
     isActive,
     featuredAt,
@@ -791,10 +741,8 @@ abstract class _ListingDetail implements ListingDetail {
     @JsonKey(name: 'max_price') required final int maxPrice,
     final String? description,
     @JsonKey(name: 'subway_station_id') final int? subwayStationId,
-    @JsonKey(name: 'subway_station_ids') final List<int>? subwayStationIds,
     @JsonKey(name: 'subway_line_id') final int? subwayLineId,
     @JsonKey(name: 'location_id') final int? locationId,
-    @JsonKey(name: 'location_ids') final List<int>? locationIds,
     final int? gender,
     @JsonKey(name: 'is_active') required final bool isActive,
     @JsonKey(name: 'featured_at') final String? featuredAt,

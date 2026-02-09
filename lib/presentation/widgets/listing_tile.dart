@@ -2,7 +2,6 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
-import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/string_helper.dart";
@@ -13,7 +12,6 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing.dart";
-import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
@@ -24,7 +22,9 @@ import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/photo_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
+import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:flutter/cupertino.dart";
 
 class ListingTile extends StatefulWidget {
@@ -134,7 +134,7 @@ class _ListingTileState extends State<ListingTile>
             child: Stack(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -392,121 +392,176 @@ class _ListingTileState extends State<ListingTile>
                       ],
                       const SizedBox(height: 12),
                       // Location and Subway Station Information
-                      ListenableBuilder(
-                        listenable: LanguageState(),
-                        builder: (context, child) {
-                          final locationRows = _buildLocationRows();
-                          final stationRows = _buildStationRows();
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (locationRows.isNotEmpty) ...locationRows,
-                              if (locationRows.isNotEmpty &&
-                                  stationRows.isNotEmpty)
-                                const SizedBox(height: 6),
-                              if (stationRows.isNotEmpty) ...stationRows,
-                              // Amenities icons below location and metro
-                              if (widget.listing.amenities != null &&
-                                  widget.listing.amenities!.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Row(
-                                  children:
-                                      _getSortedAmenities(
-                                            widget.listing.amenities!,
-                                          )
-                                          .map(
-                                            (amenity) => Padding(
-                                              padding: const EdgeInsets.only(
-                                                right: 8,
+                      if (widget.listing.location != null ||
+                          widget.listing.subwayStation != null) ...[
+                        ListenableBuilder(
+                          listenable: LanguageState(),
+                          builder: (context, child) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Location and Metro info
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Location (District)
+                                    if (widget.listing.location != null) ...[
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_on,
+                                            color: AppColors.error,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              _getLocalizedName(
+                                                nameUz:
+                                                    widget
+                                                        .listing
+                                                        .location!
+                                                        .nameUz,
+                                                nameRu:
+                                                    widget
+                                                        .listing
+                                                        .location!
+                                                        .nameRu,
+                                                nameEn:
+                                                    widget
+                                                        .listing
+                                                        .location!
+                                                        .nameEn,
                                               ),
-                                              child: Icon(
-                                                _getAmenityIcon(amenity),
-                                                size: 20,
-                                                color: _getAmenityIconColor(),
+                                              style: TextStyle(
+                                                fontSize:
+                                                    14, // 12 * 1.2 = 14.4, rounded to 14
+                                                color:
+                                                    _getLocationTextColor(),
                                               ),
                                             ),
-                                          )
-                                          .toList(),
-                                ),
-                              ],
-                              // Price range display
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(
-                                    CupertinoIcons.money_dollar_circle,
-                                    size: 22,
-                                    color: Colors.green,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _formatPriceRange(),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              // Private Room indicator below price
-                              if (widget.listing.privateRoom == true) ...[
-                                const SizedBox(height: 8),
-                                ListenableBuilder(
-                                  listenable: LanguageState(),
-                                  builder: (context, child) {
-                                    return Row(
-                                      children: [
-                                        Icon(
-                                          CupertinoIcons.lock_fill,
-                                          size: 20,
-                                          color: _getPrivateRoomIconColor(),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          StringHelper.get(
-                                            "private_room",
-                                            LanguageState().currentLanguage,
                                           ),
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: _getPrivateRoomTextColor(),
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ],
-                              // Move-in Date
-                              if (widget.listing.moveInDate != null &&
-                                  widget.listing.moveInDate!.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      CupertinoIcons.square_arrow_right,
-                                      size: 22,
-                                      color: _getDateTextColor(),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      "${StringHelper.get("move_in_date_label", LanguageState().currentLanguage)} ${_formatMoveInDate()}",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: _getDateTextColor(),
-                                        fontWeight: FontWeight.w500,
+                                        ],
                                       ),
-                                    ),
+                                    ],
+                                    // Subway Station (below district)
+                                    if (widget.listing.subwayStation !=
+                                        null) ...[
+                                      const SizedBox(height: 4),
+                                      _buildSubwayStationDisplay(
+                                        widget.listing.subwayStation!,
+                                      ),
+                                    ],
                                   ],
                                 ),
+                                // Amenities icons below location and metro
+                                if (widget.listing.amenities != null &&
+                                    widget.listing.amenities!.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children:
+                                        _getSortedAmenities(
+                                              widget.listing.amenities!,
+                                            )
+                                            .map(
+                                              (amenity) => Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 8,
+                                                ),
+                                                child: Icon(
+                                                  _getAmenityIcon(amenity),
+                                                  size: 20,
+                                                  color:
+                                                      _getAmenityIconColor(),
+                                                ),
+                                              ),
+                                            )
+                                            .toList(),
+                                  ),
+                                ],
+                                // Price range display
+                                if (widget.listing.minPrice != null ||
+                                    widget.listing.maxPrice != null) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        CupertinoIcons.money_dollar_circle,
+                                        size: 22,
+                                        color: Colors.green,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _formatPriceRange(),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                // Private Room indicator below price
+                                if (widget.listing.privateRoom == true) ...[
+                                  const SizedBox(height: 8),
+                                  ListenableBuilder(
+                                    listenable: LanguageState(),
+                                    builder: (context, child) {
+                                      return Row(
+                                        children: [
+                                          Icon(
+                                            CupertinoIcons.lock_fill,
+                                            size: 20,
+                                            color: _getPrivateRoomIconColor(),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            StringHelper.get(
+                                              "private_room",
+                                              LanguageState()
+                                                  .currentLanguage,
+                                            ),
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  _getPrivateRoomTextColor(),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ],
+                                // Move-in Date
+                                if (widget.listing.moveInDate != null &&
+                                    widget.listing.moveInDate!.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        CupertinoIcons.square_arrow_right,
+                                        size: 22,
+                                        color: _getDateTextColor(),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        "${StringHelper.get("move_in_date_label", LanguageState().currentLanguage)} ${_formatMoveInDate()}",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: _getDateTextColor(),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ],
-                            ],
-                          );
-                        },
-                      ),
+                            );
+                          },
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -561,10 +616,19 @@ class _ListingTileState extends State<ListingTile>
     final minPrice = widget.listing.minPrice;
     final maxPrice = widget.listing.maxPrice;
 
-    if (minPrice == maxPrice) {
-      return minPrice.toString();
+    if (minPrice != null && maxPrice != null) {
+      if (minPrice == maxPrice) {
+        return minPrice.toString();
+      } else {
+        return "$minPrice - $maxPrice";
+      }
+    } else if (minPrice != null) {
+      return "от $minPrice";
+    } else if (maxPrice != null) {
+      return "до $maxPrice";
+    } else {
+      return "";
     }
-    return "$minPrice - $maxPrice";
   }
 
   String _formatMoveInDate() {
@@ -613,6 +677,60 @@ class _ListingTileState extends State<ListingTile>
     } catch (e) {
       // If parsing fails, return empty string instead of the raw invalid value
       return "";
+    }
+  }
+
+  /// Gets localized day name using LanguageState
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case 1:
+        return StringHelper.get("monday", LanguageState().currentLanguage);
+      case 2:
+        return StringHelper.get("tuesday", LanguageState().currentLanguage);
+      case 3:
+        return StringHelper.get("wednesday", LanguageState().currentLanguage);
+      case 4:
+        return StringHelper.get("thursday", LanguageState().currentLanguage);
+      case 5:
+        return StringHelper.get("friday", LanguageState().currentLanguage);
+      case 6:
+        return StringHelper.get("saturday", LanguageState().currentLanguage);
+      case 7:
+        return StringHelper.get("sunday", LanguageState().currentLanguage);
+      default:
+        return "";
+    }
+  }
+
+  /// Gets localized month name using LanguageState
+  String _getMonthName(int month) {
+    switch (month) {
+      case 1:
+        return StringHelper.get("january", LanguageState().currentLanguage);
+      case 2:
+        return StringHelper.get("february", LanguageState().currentLanguage);
+      case 3:
+        return StringHelper.get("march", LanguageState().currentLanguage);
+      case 4:
+        return StringHelper.get("april", LanguageState().currentLanguage);
+      case 5:
+        return StringHelper.get("may", LanguageState().currentLanguage);
+      case 6:
+        return StringHelper.get("june", LanguageState().currentLanguage);
+      case 7:
+        return StringHelper.get("july", LanguageState().currentLanguage);
+      case 8:
+        return StringHelper.get("august", LanguageState().currentLanguage);
+      case 9:
+        return StringHelper.get("september", LanguageState().currentLanguage);
+      case 10:
+        return StringHelper.get("october", LanguageState().currentLanguage);
+      case 11:
+        return StringHelper.get("november", LanguageState().currentLanguage);
+      case 12:
+        return StringHelper.get("december", LanguageState().currentLanguage);
+      default:
+        return "";
     }
   }
 
@@ -731,348 +849,6 @@ class _ListingTileState extends State<ListingTile>
     }
   }
 
-  List<Widget> _buildLocationRows() {
-    final currentLanguage = LanguageState().currentLanguage;
-    final locationIds =
-        widget.listing.locationIds ??
-        (widget.listing.locationId != null
-            ? [widget.listing.locationId!]
-            : <int>[]);
-    final names = <String>[];
-
-    for (final locationId in locationIds) {
-      final name = LocationCache.getLocationName(locationId, currentLanguage);
-      if (name.isNotEmpty && name != "Unknown Location") {
-        names.add(name);
-      }
-    }
-
-    if (names.isEmpty && widget.listing.location != null) {
-      names.add(
-        _getLocalizedName(
-          nameUz: widget.listing.location!.nameUz,
-          nameRu: widget.listing.location!.nameRu,
-          nameEn: widget.listing.location!.nameEn,
-        ),
-      );
-    }
-
-    if (names.isEmpty) {
-      return [];
-    }
-
-    if (names.length >= 12) {
-      final countLabel = StringHelper.get(
-        "select_location",
-        LanguageState().currentLanguage,
-      );
-      return [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 2),
-          child: Row(
-            children: [
-              const Icon(Icons.location_on, color: AppColors.error, size: 20),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  countLabel,
-                  style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ];
-    }
-
-    return names
-        .map(
-          (name) => Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: Row(
-              children: [
-                const Icon(Icons.location_on, color: AppColors.error, size: 20),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    name,
-                    style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        )
-        .toList();
-  }
-
-  List<Widget> _buildStationRows() {
-    final stationIds =
-        widget.listing.subwayStationIds ??
-        (widget.listing.subwayStationId != null
-            ? [widget.listing.subwayStationId!]
-            : <int>[]);
-    final stations = <int, SubwayStation>{};
-    for (final stationId in stationIds) {
-      final station = MetroCache.getStationById(stationId);
-      if (station != null) {
-        stations[stationId] = station;
-      }
-    }
-
-    if (stations.isEmpty && widget.listing.subwayStation != null) {
-      final station = widget.listing.subwayStation!;
-      return [
-        _buildStationRow(
-          label: _buildStationLabel(
-            stationId: station.id,
-            nameUz: station.nameUz,
-            nameRu: station.nameRu,
-            nameEn: station.nameEn,
-          ),
-          lineColor: _getLineColor(station.line),
-          boldParenthetical: false,
-          boldCount: false,
-        ),
-      ];
-    }
-
-    if (stations.isEmpty) {
-      return [];
-    }
-
-    final rows = <Widget>[];
-    final selectedLines =
-        stations.values.map((station) => station.line).toSet().toList()..sort();
-    final fullLineSelections =
-        selectedLines.where((line) => _hasFullLineSelected(stations, line));
-    final fullLineStationIds = <int>{};
-    for (final line in fullLineSelections) {
-      fullLineStationIds.addAll(
-        MetroCache.getStationsForLine(line).map((station) => station.id),
-      );
-      final label = LanguageAwareStringHelper.getCurrent(
-        context,
-        "line_all_stations",
-      ).replaceAll("{line}", _getLineName(line));
-      rows.add(
-        _buildLineRow(
-          label: label,
-          lineColor: _getLineColor(line),
-          boldParenthetical: true,
-          boldCount: false,
-        ),
-      );
-    }
-
-    final stationsByLine = <int, List<SubwayStation>>{};
-    for (final station in stations.values) {
-      if (fullLineStationIds.contains(station.id)) {
-        continue;
-      }
-      stationsByLine.putIfAbsent(station.line, () => []).add(station);
-    }
-
-    for (final line in stationsByLine.keys.toList()..sort()) {
-      final lineStations = stationsByLine[line] ?? [];
-      if (lineStations.length > 1) {
-        final label = LanguageAwareStringHelper.getCurrent(
-          context,
-          "line_stations_count",
-        )
-            .replaceAll("{line}", _getLineName(line))
-            .replaceAll("{count}", lineStations.length.toString());
-        rows.add(
-          _buildLineRow(
-            label: label,
-            lineColor: _getLineColor(line),
-            boldParenthetical: false,
-            boldCount: true,
-          ),
-        );
-      } else if (lineStations.isNotEmpty) {
-        final station = lineStations.first;
-        rows.add(
-          _buildStationRow(
-            label: _buildStationLabel(
-              stationId: station.id,
-              nameUz: station.nameUz,
-              nameRu: station.nameRu,
-              nameEn: station.nameEn,
-            ),
-            lineColor: _getLineColor(station.line),
-            boldParenthetical: false,
-            boldCount: false,
-          ),
-        );
-      }
-    }
-
-    return rows;
-  }
-
-  Widget _buildLineRow({
-    required String label,
-    required Color lineColor,
-    required bool boldParenthetical,
-    required bool boldCount,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
-      child: Row(
-        children: [
-          Icon(Icons.train, color: lineColor, size: 20),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text.rich(
-              TextSpan(
-                children: _buildLabelSpans(
-                  label,
-                  boldParenthetical: boldParenthetical,
-                  boldCount: boldCount,
-                ),
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStationRow({
-    required String label,
-    required Color lineColor,
-    required bool boldParenthetical,
-    required bool boldCount,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
-      child: Row(
-        children: [
-          Icon(Icons.train, color: lineColor, size: 20),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text.rich(
-              TextSpan(
-                children: _buildLabelSpans(
-                  label,
-                  boldParenthetical: boldParenthetical,
-                  boldCount: boldCount,
-                ),
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<TextSpan> _buildLabelSpans(
-    String label, {
-    required bool boldParenthetical,
-    required bool boldCount,
-  }) {
-    final baseStyle = TextStyle(fontSize: 14, color: _getLocationTextColor());
-    final boldRanges = <List<int>>[];
-
-    if (boldParenthetical) {
-      final start = label.indexOf("(");
-      final end = label.lastIndexOf(")");
-      if (start != -1 && end != -1 && end > start) {
-        boldRanges.add([start, end + 1]);
-      }
-    }
-
-    if (boldCount) {
-      final index = label.indexOf("·");
-      if (index != -1) {
-        boldRanges.add([index, label.length]);
-      }
-    }
-
-    if (boldRanges.isEmpty) {
-      return [TextSpan(text: label, style: baseStyle)];
-    }
-
-    boldRanges.sort((a, b) => a[0].compareTo(b[0]));
-    final merged = <List<int>>[];
-    for (final range in boldRanges) {
-      if (merged.isEmpty || range[0] > merged.last[1]) {
-        merged.add([range[0], range[1]]);
-      } else {
-        final nextEnd = range[1] > merged.last[1] ? range[1] : merged.last[1];
-        merged.last[1] = nextEnd > label.length ? label.length : nextEnd;
-      }
-    }
-
-    final spans = <TextSpan>[];
-    var cursor = 0;
-    for (final range in merged) {
-      final start = range[0].clamp(0, label.length);
-      final end = range[1].clamp(0, label.length);
-      if (start > cursor) {
-        spans.add(
-          TextSpan(text: label.substring(cursor, start), style: baseStyle),
-        );
-      }
-      spans.add(
-        TextSpan(
-          text: label.substring(start, end),
-          style: baseStyle.copyWith(fontWeight: FontWeight.w600),
-        ),
-      );
-      cursor = end;
-    }
-    if (cursor < label.length) {
-      spans.add(TextSpan(text: label.substring(cursor), style: baseStyle));
-    }
-
-    return spans;
-  }
-
-  String _buildStationLabel({
-    required int stationId,
-    String? nameUz,
-    String? nameRu,
-    String? nameEn,
-  }) {
-    final stationName = _getLocalizedName(
-      nameUz: nameUz,
-      nameRu: nameRu,
-      nameEn: nameEn,
-    );
-    final transferInfo = MetroCache.getTransferStationInfo(stationId);
-    if (transferInfo == null) {
-      return stationName;
-    }
-    final connectedName = _getLocalizedName(
-      nameUz: transferInfo["connectedStationName"],
-      nameRu: transferInfo["connectedStationNameRu"],
-      nameEn: transferInfo["connectedStationNameEn"],
-    );
-    return "$stationName ↔ $connectedName";
-  }
-
-  bool _hasFullLineSelected(Map<int, SubwayStation> stations, int line) {
-    final stationIdsForLine =
-        MetroCache.getStationsForLine(line).map((station) => station.id).toSet();
-    return stationIdsForLine.isNotEmpty &&
-        stations.keys.toSet().containsAll(stationIdsForLine);
-  }
-
-  String _getLineName(int line) {
-    final language = LanguageState().currentLanguage;
-    final lineName = MetroCache.metroLineNames[line]?[language];
-    if (lineName != null && lineName.isNotEmpty) {
-      return lineName;
-    }
-    return line.toString();
-  }
-
   // Theme-dependent color method for date text
   Color _getDateTextColor() {
     if (ThemeState().isBlueTheme) {
@@ -1106,6 +882,79 @@ class _ListingTileState extends State<ListingTile>
       return AppColors.textLight;
     } else {
       return Colors.black;
+    }
+  }
+
+  // Build subway station display with transfer station support
+  Widget _buildSubwayStationDisplay(SubwayStationDetail station) {
+    final transferInfo = MetroCache.getTransferStationInfo(station.id);
+
+    if (transferInfo != null) {
+      // This is a transfer station - show both stations with <-> icon
+      // Determine which station should be on the left based on search context
+      final connectedStation = SubwayStationDetail(
+        id: transferInfo["connectedStationId"],
+        nameUz: transferInfo["connectedStationName"],
+        nameRu: transferInfo["connectedStationNameRu"],
+        nameEn: transferInfo["connectedStationNameEn"],
+        line: transferInfo["connectedStationLine"],
+      );
+
+      // If we have a searchLineId, prioritize that line on the left
+      // Otherwise, keep the original station on the left
+      final leftStation =
+          (widget.searchLineId != null &&
+                  connectedStation.line == widget.searchLineId)
+              ? connectedStation
+              : station;
+      final rightStation =
+          (leftStation.id == station.id) ? connectedStation : station;
+
+      return Row(
+        children: [
+          Icon(Icons.train, color: _getLineColor(leftStation.line), size: 20),
+          const SizedBox(width: 4),
+          Text(
+            _getLocalizedName(
+              nameUz: leftStation.nameUz,
+              nameRu: leftStation.nameRu,
+              nameEn: leftStation.nameEn,
+            ),
+            style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
+          ),
+          const SizedBox(width: 4),
+          Icon(Icons.swap_horiz, color: _getLocationTextColor(), size: 16),
+          const SizedBox(width: 4),
+          Icon(Icons.train, color: _getLineColor(rightStation.line), size: 20),
+          const SizedBox(width: 4),
+          Text(
+            _getLocalizedName(
+              nameUz: rightStation.nameUz,
+              nameRu: rightStation.nameRu,
+              nameEn: rightStation.nameEn,
+            ),
+            style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
+          ),
+        ],
+      );
+    } else {
+      // Regular station - show normally
+      return Row(
+        children: [
+          Icon(Icons.train, color: _getLineColor(station.line), size: 20),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              _getLocalizedName(
+                nameUz: station.nameUz,
+                nameRu: station.nameRu,
+                nameEn: station.nameEn,
+              ),
+              style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
+            ),
+          ),
+        ],
+      );
     }
   }
 }

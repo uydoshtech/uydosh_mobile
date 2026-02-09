@@ -57,8 +57,6 @@ class _EditListingScreenState extends State<EditListingScreen>
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
   int _selectedLocationIndex = -1;
-  Set<int> _selectedStationIds = {};
-  Set<int> _selectedLocationIds = {};
   List<SubwayStation> _currentStations = [];
   List<Location> _currentLocations = [];
   bool _isLoadingStations = false;
@@ -139,20 +137,6 @@ class _EditListingScreenState extends State<EditListingScreen>
       _loadStationsForLine(_selectedSubwayLine);
     }
 
-    if (widget.listingDetail.subwayStationIds != null &&
-        widget.listingDetail.subwayStationIds!.isNotEmpty) {
-      _selectedStationIds.addAll(widget.listingDetail.subwayStationIds!);
-    } else if (widget.listingDetail.subwayStationId != null) {
-      _selectedStationIds.add(widget.listingDetail.subwayStationId!);
-    }
-
-    if (widget.listingDetail.locationIds != null &&
-        widget.listingDetail.locationIds!.isNotEmpty) {
-      _selectedLocationIds.addAll(widget.listingDetail.locationIds!);
-    } else if (widget.listingDetail.locationId != null) {
-      _selectedLocationIds.add(widget.listingDetail.locationId!);
-    }
-
     // Set selected amenities
     if (widget.listingDetail.amenities != null) {
       _selectedAmenityIds.addAll(
@@ -230,16 +214,11 @@ class _EditListingScreenState extends State<EditListingScreen>
       _isLoadingStations = false;
     });
     // Sync location with the selected station when stations are loaded
-    if (!_isRoomNeeded) {
-      _syncLocationWithStation();
-    }
+    _syncLocationWithStation();
   }
 
   /// Sync location picker with the selected subway station's location_id
   void _syncLocationWithStation() {
-    if (_isRoomNeeded) {
-      return;
-    }
     if (_currentStations.isNotEmpty &&
         _selectedStationIndex >= 0 &&
         _selectedStationIndex < _currentStations.length) {
@@ -284,19 +263,15 @@ class _EditListingScreenState extends State<EditListingScreen>
         return aName.compareTo(bName);
       });
 
-      if (_isRoomNeeded) {
-        _selectedLocationIndex = -1;
+      // Find and set the current location index
+      if (widget.listingDetail.location != null) {
+        final currentLocationId = widget.listingDetail.location!.id;
+        final locationIndex = locations.indexWhere(
+          (location) => location.id == currentLocationId,
+        );
+        _selectedLocationIndex = locationIndex >= 0 ? locationIndex : -1;
       } else {
-        // Find and set the current location index
-        if (widget.listingDetail.location != null) {
-          final currentLocationId = widget.listingDetail.location!.id;
-          final locationIndex = locations.indexWhere(
-            (location) => location.id == currentLocationId,
-          );
-          _selectedLocationIndex = locationIndex >= 0 ? locationIndex : -1;
-        } else {
-          _selectedLocationIndex = -1;
-        }
+        _selectedLocationIndex = -1;
       }
 
       _isLoadingLocations = false;
@@ -392,419 +367,6 @@ class _EditListingScreenState extends State<EditListingScreen>
     FocusScope.of(context).unfocus();
   }
 
-  bool get _isRoomNeeded => _selectedListingTypeId == 1;
-
-  SubwayStation? _getCurrentSelectedStation() {
-    if (_selectedSubwayLine <= 0 || _currentStations.isEmpty) {
-      return null;
-    }
-    if (_selectedStationIndex < 0 ||
-        _selectedStationIndex >= _currentStations.length) {
-      return null;
-    }
-    return _currentStations[_selectedStationIndex];
-  }
-
-  void _addSelectedStation() {
-    final station = _getCurrentSelectedStation();
-    if (station == null) {
-      return;
-    }
-    setState(() {
-      _selectedStationIds.add(station.id);
-      _showLocationError = false;
-    });
-  }
-
-  void _addSelectedLineStations() {
-    if (_selectedSubwayLine <= 0) {
-      return;
-    }
-    final stations = MetroCache.getStationsForLine(_selectedSubwayLine);
-    if (stations.isEmpty) {
-      return;
-    }
-    setState(() {
-      _selectedStationIds.addAll(stations.map((station) => station.id));
-      _showLocationError = false;
-    });
-  }
-
-  List<SubwayStation> _getSelectedStations() {
-    final stations = _selectedStationIds
-        .map(MetroCache.getStationById)
-        .whereType<SubwayStation>()
-        .toList();
-    stations.sort((a, b) {
-      if (a.line != b.line) {
-        return a.line.compareTo(b.line);
-      }
-      return a.ordinal.compareTo(b.ordinal);
-    });
-    return stations;
-  }
-
-  bool _hasFullLineSelected(int line) {
-    if (line <= 0) {
-      return false;
-    }
-    final lineStations = MetroCache.getStationsForLine(line);
-    if (lineStations.isEmpty) {
-      return false;
-    }
-    final lineStationIds = lineStations.map((station) => station.id).toSet();
-    return lineStationIds.difference(_selectedStationIds).isEmpty;
-  }
-
-  String _getLineName(int line) {
-    return MetroCache.getLineName(
-      line,
-      LanguageAwareStringHelper.getCurrentLanguage(context),
-    );
-  }
-
-  void _removeLineStations(int line) {
-    final lineStations = MetroCache.getStationsForLine(line);
-    if (lineStations.isEmpty) {
-      return;
-    }
-    setState(() {
-      _selectedStationIds.removeAll(lineStations.map((station) => station.id));
-    });
-  }
-
-  String _getLocationNameById(int locationId) {
-    for (final location in _currentLocations) {
-      if (location.id == locationId) {
-        return _getLocalizedName(
-          nameUz: location.shortNameUz,
-          nameRu: location.shortNameRu,
-          nameEn: location.shortNameEn,
-        );
-      }
-    }
-    return "Unknown";
-  }
-
-  void _showLocationMultiSelectSheet() {
-    final selectedIds = Set<int>.from(_selectedLocationIds);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final locations = List<Location>.from(_currentLocations);
-            return SafeArea(
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.75,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "select_districts",
-                              ),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              setModalState(() {
-                                selectedIds
-                                  ..clear()
-                                  ..addAll(locations.map((location) => location.id));
-                              });
-                            },
-                            child: Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "select_all",
-                              ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              setModalState(() {
-                                selectedIds.clear();
-                              });
-                            },
-                            child: Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "clear",
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    Expanded(
-                      child: GridView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        itemCount: locations.length,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 4,
-                          crossAxisSpacing: 8,
-                          childAspectRatio: 4,
-                        ),
-                        itemBuilder: (context, index) {
-                          final location = locations[index];
-                          final isSelected = selectedIds.contains(location.id);
-                          return CheckboxListTile(
-                            value: isSelected,
-                            onChanged: (value) {
-                              setModalState(() {
-                                if (value == true) {
-                                  selectedIds.add(location.id);
-                                } else {
-                                  selectedIds.remove(location.id);
-                                }
-                              });
-                            },
-                            title: Text(
-                              _getLocalizedName(
-                                nameUz: location.shortNameUz,
-                                nameRu: location.shortNameRu,
-                                nameEn: location.shortNameEn,
-                              ),
-                            ),
-                            dense: true,
-                            visualDensity: VisualDensity.compact,
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 4),
-                            controlAffinity: ListTileControlAffinity.leading,
-                          );
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text(
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
-                                  "cancel",
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _selectedLocationIds = selectedIds;
-                                  _showLocationError = false;
-                                });
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
-                                  "ok",
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildSelectedStationsChips() {
-    if (_selectedStationIds.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    final stations = _getSelectedStations();
-    final selectedLines = stations.map((station) => station.line).toSet();
-    final fullLineSelections =
-        selectedLines.where(_hasFullLineSelected).toList()..sort();
-    final fullLineStationIds = <int>{};
-    for (final line in fullLineSelections) {
-      fullLineStationIds.addAll(
-        MetroCache.getStationsForLine(line).map((station) => station.id),
-      );
-    }
-    final displayStations = stations
-        .where((station) => !fullLineStationIds.contains(station.id))
-        .toList();
-    if (displayStations.isEmpty && fullLineSelections.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Wrap(
-      spacing: 8,
-      runSpacing: 6,
-      children: [
-        ...fullLineSelections.map((line) {
-          return Chip(
-            avatar: MLetterIcon(color: _getLineColor(line), size: 18),
-            label: Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "line_all_stations",
-              ).replaceAll("{line}", _getLineName(line)),
-            ),
-            onDeleted: () => _removeLineStations(line),
-          );
-        }),
-        ...displayStations.map((station) {
-          final stationName = _getLocalizedName(
-            nameUz: station.nameUz,
-            nameRu: station.nameRu,
-            nameEn: station.nameEn,
-          );
-          return Chip(
-            avatar: Icon(
-              Icons.train,
-              size: 18,
-              color: _getLineColor(station.line),
-            ),
-            label: Text(stationName),
-            onDeleted: () {
-              setState(() {
-                _selectedStationIds.remove(station.id);
-              });
-            },
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildSelectedLocationsChips() {
-    if (_selectedLocationIds.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    final locations = _selectedLocationIds.toList()
-      ..sort((a, b) => _getLocationNameById(a).compareTo(_getLocationNameById(b)));
-    return Wrap(
-      spacing: 8,
-      runSpacing: 6,
-      children:
-          locations.map((locationId) {
-            return Chip(
-              avatar: const Icon(
-                Icons.location_on,
-                size: 18,
-                color: AppColors.error,
-              ),
-              label: Text(_getLocationNameById(locationId)),
-              shape: StadiumBorder(
-                side: BorderSide(color: _getBorderColor(), width: 1),
-              ),
-              onDeleted: () {
-                setState(() {
-                  _selectedLocationIds.remove(locationId);
-                });
-              },
-            );
-          }).toList(),
-    );
-  }
-
-  Widget _buildMultiLocationSelector() {
-    final hasSelections = _selectedLocationIds.isNotEmpty;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        InkWell(
-          onTap: _showLocationMultiSelectSheet,
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            height: 64,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color:
-                    _showLocationError && !hasSelections
-                        ? Colors.red
-                        : Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.location_on, color: AppColors.error),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "selected_districts_count",
-                    ).replaceAll("{count}", _selectedLocationIds.length.toString()),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color:
-                          ThemeState().isLightTheme
-                              ? Colors.black.withOpacity(0.7)
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                const Icon(Icons.expand_more),
-              ],
-            ),
-          ),
-        ),
-        if (_selectedLocationIds.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          _buildSelectedLocationsChips(),
-        ],
-        if (_showLocationError &&
-            _selectedLocationIds.isEmpty &&
-            _selectedStationIds.isEmpty) ...[
-          const SizedBox(height: 8),
-          Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "location_or_station_required",
-            ),
-            style: const TextStyle(color: Colors.red, fontSize: 12),
-          ),
-        ],
-      ],
-    );
-  }
-
   // Theme-dependent color method for borders
   Color _getBorderColor() {
     if (ThemeState().isBlueTheme) {
@@ -896,7 +458,6 @@ class _EditListingScreenState extends State<EditListingScreen>
                               onListingTypeChanged: (int listingTypeId) {
                                 setState(() {
                                   _selectedListingTypeId = listingTypeId;
-                                  _showLocationError = false;
                                 });
                               },
                               useThemeColors: true,
@@ -1206,75 +767,25 @@ class _EditListingScreenState extends State<EditListingScreen>
                       height: 10,
                     ), // Space between metro fields and location
                     // Location Field - Full Row
-                    if (_isRoomNeeded) ...[
-                      const SizedBox(height: 8),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton.icon(
-                                onPressed:
-                                    _selectedSubwayLine > 0
-                                        ? _addSelectedLineStations
-                                        : null,
-                                icon: const Icon(Icons.playlist_add),
-                                label: Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "add_metro_line",
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton.icon(
-                                onPressed:
-                                    _getCurrentSelectedStation() != null
-                                        ? _addSelectedStation
-                                        : null,
-                                icon: const Icon(Icons.add),
-                                label: Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "add_metro_station",
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      _buildSelectedStationsChips(),
-                    ],
-                    if (_isRoomNeeded)
-                      _buildMultiLocationSelector()
-                    else
-                      LocationPicker(
-                        locations: _currentLocations,
-                        selectedLocationIndex: _selectedLocationIndex,
-                        scrollController: _locationScrollController,
-                        onLocationChanged: (int locationIndex) {
-                          setState(() {
-                            _selectedLocationIndex = locationIndex;
-                            // Clear location error when user selects a location
-                            if (_showLocationError && locationIndex >= 0) {
-                              _showLocationError = false;
-                            }
-                          });
-                        },
-                        isLoading: _isLoadingLocations,
-                        useThemeColors: true,
-                        useColoredIcons: true,
-                        showError: _showLocationError,
-                        showArrows: false,
-                      ),
+                    LocationPicker(
+                      locations: _currentLocations,
+                      selectedLocationIndex: _selectedLocationIndex,
+                      scrollController: _locationScrollController,
+                      onLocationChanged: (int locationIndex) {
+                        setState(() {
+                          _selectedLocationIndex = locationIndex;
+                          // Clear location error when user selects a location
+                          if (_showLocationError && locationIndex >= 0) {
+                            _showLocationError = false;
+                          }
+                        });
+                      },
+                      isLoading: _isLoadingLocations,
+                      useThemeColors: true,
+                      useColoredIcons: true,
+                      showError: _showLocationError,
+                      showArrows: false,
+                    ),
                     const SizedBox(
                       height: 10,
                     ), // Space between location and price range
@@ -1855,44 +1366,23 @@ class _EditListingScreenState extends State<EditListingScreen>
       return;
     }
 
-    // Validate location
-    if (_isRoomNeeded) {
-      final hasLocations = _selectedLocationIds.isNotEmpty;
-      final hasStations = _selectedStationIds.isNotEmpty;
-      if (!hasLocations && !hasStations) {
-        ToastTheme.showError(
+    // Validate location (mandatory)
+    if (_selectedLocationIndex < 0) {
+      ToastTheme.showError(
+        context,
+        message: LanguageAwareStringHelper.getCurrent(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "location_or_station_required",
-          ),
-        );
-        setState(() {
-          _showLocationError = true;
-        });
-        return;
-      }
+          "location_required",
+        ),
+      );
+      setState(() {
+        _showLocationError = true;
+      });
+      return;
+    } else {
       setState(() {
         _showLocationError = false;
       });
-    } else {
-      if (_selectedLocationIndex < 0) {
-        ToastTheme.showError(
-          context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "location_required",
-          ),
-        );
-        setState(() {
-          _showLocationError = true;
-        });
-        return;
-      } else {
-        setState(() {
-          _showLocationError = false;
-        });
-      }
     }
 
     // Metro line and station are now optional - no validation required
@@ -1904,32 +1394,11 @@ class _EditListingScreenState extends State<EditListingScreen>
 
     try {
       // Get the selected location and station (if available)
-      final selectedLocation =
-          (!_isRoomNeeded && _selectedLocationIndex >= 0)
-              ? _currentLocations[_selectedLocationIndex]
-              : null;
+      final selectedLocation = _currentLocations[_selectedLocationIndex];
       final selectedStation =
-          !_isRoomNeeded &&
-                  _selectedSubwayLine > 0 &&
-                  _currentStations.isNotEmpty
+          _selectedSubwayLine > 0 && _currentStations.isNotEmpty
               ? _currentStations[_selectedStationIndex]
               : null;
-      final selectedStationIds =
-          _isRoomNeeded ? (_selectedStationIds.toList()..sort()) : <int>[];
-      final selectedLocationIds =
-          _isRoomNeeded ? (_selectedLocationIds.toList()..sort()) : <int>[];
-      final primaryLocationId =
-          _isRoomNeeded
-              ? (selectedLocationIds.isNotEmpty
-                  ? selectedLocationIds.first
-                  : null)
-              : selectedLocation?.id;
-      final primaryStationId =
-          _isRoomNeeded
-              ? (selectedStationIds.isNotEmpty
-                  ? selectedStationIds.first
-                  : null)
-              : selectedStation?.id;
 
       // Determine listing type ID based on selection
       final listingTypeId = _selectedListingTypeId;
@@ -1938,23 +1407,6 @@ class _EditListingScreenState extends State<EditListingScreen>
       final listingService = getIt<IListingService>();
 
       // First, update the listing details (without photos)
-      logger.d("=== UPDATE LISTING CLIENT PAYLOAD ===");
-      logger.d("  listingId: ${widget.listingDetail.id}");
-      logger.d("  listingTypeId: $listingTypeId");
-      logger.d("  subwayStationId: ${primaryStationId ?? "null"}");
-      logger.d("  subwayStationIds: $selectedStationIds");
-      logger.d("  subwayLineId: ${_isRoomNeeded ? "null (multi-select)" : (_selectedSubwayLine > 0 ? _selectedSubwayLine : "null")}");
-      logger.d("  locationId: ${primaryLocationId ?? "null"}");
-      logger.d("  locationIds: $selectedLocationIds");
-      logger.d("=====================================");
-      final effectiveLocationIds =
-          selectedLocationIds.isNotEmpty
-              ? selectedLocationIds
-              : (primaryLocationId != null ? [primaryLocationId] : <int>[]);
-      final effectiveStationIds =
-          selectedStationIds.isNotEmpty
-              ? selectedStationIds
-              : (primaryStationId != null ? [primaryStationId] : <int>[]);
       await listingService.updateListing(
         listingId: widget.listingDetail.id,
         title: _titleController.text.trim(),
@@ -1963,16 +1415,13 @@ class _EditListingScreenState extends State<EditListingScreen>
         maxPrice: _maxPrice.round(),
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
-        locationId: primaryLocationId,
+        locationId: selectedLocation.id,
         amenityIds: _selectedAmenityIds.toList(),
-        subwayStationId: primaryStationId, // Made optional, moved to end
+        subwayStationId: selectedStation?.id, // Made optional, moved to end
         subwayLineId:
-            _isRoomNeeded
-                ? null
-                : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null), // Add subway line ID
-        subwayStationIds:
-            effectiveStationIds.isNotEmpty ? effectiveStationIds : null,
-        locationIds: effectiveLocationIds.isNotEmpty ? effectiveLocationIds : null,
+            _selectedSubwayLine > 0
+                ? _selectedSubwayLine
+                : null, // Add subway line ID
         moveInDate: _moveInDateValue.isNotEmpty
             ? _moveInDateValue
             : null, // Add move-in date

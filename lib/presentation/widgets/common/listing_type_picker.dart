@@ -14,7 +14,6 @@ class ListingTypePicker extends StatelessWidget {
     this.showArrows = true,
     this.useThemeColors = false,
     this.includeUnselected = false,
-    this.scrollController,
     super.key,
   });
 
@@ -25,7 +24,6 @@ class ListingTypePicker extends StatelessWidget {
   final double itemExtent;
   final bool showArrows;
   final bool includeUnselected;
-  final FixedExtentScrollController? scrollController;
 
   Color _getListingTypeColor(int listingTypeId) {
     // Use metro line colors for listing types
@@ -62,11 +60,9 @@ class ListingTypePicker extends StatelessWidget {
           Expanded(
             child: CupertinoPicker(
               itemExtent: itemExtent,
-              scrollController:
-                  scrollController ??
-                  FixedExtentScrollController(
-                    initialItem: initialIndex >= 0 ? initialIndex : 0,
-                  ),
+              scrollController: FixedExtentScrollController(
+                initialItem: initialIndex >= 0 ? initialIndex : 0,
+              ),
               onSelectedItemChanged: (index) {
                 // Dismiss keyboard if it"s open
                 FocusScope.of(context).unfocus();

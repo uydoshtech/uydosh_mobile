@@ -6,7 +6,6 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
-import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
@@ -168,30 +167,6 @@ class _CompatibilityDifference {
     required this.label,
     required this.currentText,
     required this.ownerText,
-  });
-}
-
-class _DetailTag {
-  final String label;
-  final String? primaryLabel;
-  final String? secondaryLabel;
-  final bool isEmphasized;
-  final VoidCallback? onTap;
-  final Color? iconColor;
-  final Color? secondaryIconColor;
-  final bool boldParenthetical;
-  final bool boldCount;
-
-  const _DetailTag({
-    required this.label,
-    this.primaryLabel,
-    this.secondaryLabel,
-    this.isEmphasized = false,
-    this.onTap,
-    this.iconColor,
-    this.secondaryIconColor,
-    this.boldParenthetical = false,
-    this.boldCount = false,
   });
 }
 
@@ -2562,8 +2537,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                                       context,
                                     ),
                                     style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
                                       color: _getGenderColor(
                                         listingDetail.gender!,
                                       ),
@@ -2642,49 +2617,55 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                       const SizedBox(height: 10),
 
                       // Location Information
-                      ...() {
-                        final locationTags = _getLocationTags(
-                          listingDetail,
-                          currentLanguage,
-                        );
-                        final stationTags = _getStationTags(
-                          listingDetail,
-                          currentLanguage,
-                        );
-
-                        if (locationTags.isEmpty && stationTags.isEmpty) {
-                          return <Widget>[];
-                        }
-
-                        return [
-                          if (locationTags.isNotEmpty)
-                            _buildDetailColumnRow(
-                              icon: Icons.location_on,
-                              iconColor: Colors.red,
-                              tags: locationTags,
-                              sheetTitleKey: "selected_districts",
-                              showIcon: false,
-                              showIconPerItem: true,
-                              maxVisibleTags: locationTags.length,
-                              showRemaining: false,
-                            ),
-                          if (locationTags.isNotEmpty &&
-                              stationTags.isNotEmpty)
-                            const SizedBox(height: 8),
-                          if (stationTags.isNotEmpty)
-                            _buildDetailColumnRow(
-                              icon: Icons.train,
-                              iconColor: _getLocationTextColor(),
-                              tags: stationTags,
-                              sheetTitleKey: "selected_stations",
-                              showIcon: false,
-                              showIconPerItem: true,
-                              maxVisibleTags: stationTags.length,
-                              showRemaining: false,
-                            ),
+                      if (listingDetail.location != null ||
+                          listingDetail.subwayStation != null) ...[
+                        if (listingDetail.location != null) ...[
+                          ListenableBuilder(
+                            listenable: LanguageState(),
+                            builder: (context, child) {
+                              return Row(
+                                children: [
+                                  ThemeIconFactory.detail(
+                                    icon: Icons.location_on,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _getLocalizedName(
+                                        nameUz: listingDetail.location!.nameUz,
+                                        nameRu: listingDetail.location!.nameRu,
+                                        nameEn: listingDetail.location!.nameEn,
+                                        language: currentLanguage,
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: _getLocationTextColor(),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          if (listingDetail.subwayStation != null)
+                            const SizedBox(height: 8)
+                          else
+                            const SizedBox(height: 20),
+                        ],
+                        if (listingDetail.subwayStation != null) ...[
+                          ListenableBuilder(
+                            listenable: LanguageState(),
+                            builder: (context, child) {
+                              return _buildSubwayStationDisplay(
+                                listingDetail.subwayStation!,
+                              );
+                            },
+                          ),
                           const SizedBox(height: 20),
-                        ];
-                      }(),
+                        ],
+                      ],
 
                       // Amenities Section
                       if (listingDetail.amenities != null &&
@@ -2774,8 +2755,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
               ),
 
               // Map Section - moved to bottom
-              if (listingDetail.location != null &&
-                  listingDetail.listingType?.code == "roommate_needed") ...[
+              if (listingDetail.location != null) ...[
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
@@ -3032,606 +3012,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     }
   }
 
-  List<_DetailTag> _getLocationTags(
-    ListingDetail listingDetail,
-    String language,
-  ) {
-    final locationIds =
-        listingDetail.locationIds ??
-        (listingDetail.locationId != null ? [listingDetail.locationId!] : []);
-    final tags = <_DetailTag>[];
-
-    for (final locationId in locationIds) {
-      final name = LocationCache.getLocationName(locationId, language);
-      if (name.isNotEmpty && name != "Unknown Location") {
-        tags.add(_DetailTag(label: name));
-      }
-    }
-
-    if (tags.length >= 12) {
-      return [
-        _DetailTag(
-          label: LanguageAwareStringHelper.getCurrent(context, "select_location"),
-        ),
-      ];
-    }
-
-    if (tags.isEmpty && listingDetail.location != null) {
-      tags.add(
-        _DetailTag(
-          label: _getLocalizedName(
-            nameUz: listingDetail.location!.nameUz,
-            nameRu: listingDetail.location!.nameRu,
-            nameEn: listingDetail.location!.nameEn,
-            language: language,
-          ),
-        ),
-      );
-    }
-
-    return tags;
-  }
-
-  List<_DetailTag> _getStationTags(
-    ListingDetail listingDetail,
-    String language,
-  ) {
-    final stationIds =
-        listingDetail.subwayStationIds ??
-        (listingDetail.subwayStationId != null
-            ? [listingDetail.subwayStationId!]
-            : []);
-    final tags = <_DetailTag>[];
-
-    final stations = <int, SubwayStation>{};
-    for (final stationId in stationIds) {
-      final station = MetroCache.getStationById(stationId);
-      if (station != null) {
-        stations[stationId] = station;
-      }
-    }
-
-    if (stations.isNotEmpty) {
-      final selectedLines =
-          stations.values.map((station) => station.line).toSet().toList()
-            ..sort();
-      final fullLineSelections =
-          selectedLines.where((line) => _hasFullLineSelected(stations, line));
-      final fullLineStationIds = <int>{};
-      for (final line in fullLineSelections) {
-        fullLineStationIds.addAll(
-          MetroCache.getStationsForLine(line).map((station) => station.id),
-        );
-        final lineLabel = LanguageAwareStringHelper.getCurrent(
-          context,
-          "line_all_stations",
-        ).replaceAll("{line}", _getLineName(line, language));
-        tags.add(
-          _DetailTag(
-            label: lineLabel,
-            isEmphasized: true,
-            iconColor: _getLineColor(line),
-            boldParenthetical: true,
-          ),
-        );
-      }
-
-      final stationsByLine = <int, List<SubwayStation>>{};
-      for (final station in stations.values) {
-        if (fullLineStationIds.contains(station.id)) {
-          continue;
-        }
-        stationsByLine.putIfAbsent(station.line, () => []).add(station);
-      }
-
-      for (final line in stationsByLine.keys.toList()..sort()) {
-        final lineStations = stationsByLine[line] ?? [];
-        if (lineStations.length > 1) {
-          lineStations.sort((a, b) => a.ordinal.compareTo(b.ordinal));
-          final stationNames =
-              lineStations
-                  .map(
-                    (station) => _getLocalizedName(
-                      nameUz: station.nameUz,
-                      nameRu: station.nameRu,
-                      nameEn: station.nameEn,
-                      language: language,
-                    ),
-                  )
-                  .where((name) => name.isNotEmpty)
-                  .toList();
-          final lineLabel = LanguageAwareStringHelper.getCurrent(
-            context,
-            "line_stations_count",
-          )
-              .replaceAll("{line}", _getLineName(line, language))
-              .replaceAll("{count}", lineStations.length.toString());
-          tags.add(
-            _DetailTag(
-              label: lineLabel,
-              isEmphasized: true,
-              iconColor: _getLineColor(line),
-              onTap:
-                  () => _showStringListSheet(
-                    title: _getLineName(line, language),
-                    items: stationNames,
-                    iconColor: _getLineColor(line),
-                  ),
-              boldCount: true,
-            ),
-          );
-        } else if (lineStations.isNotEmpty) {
-          final station = lineStations.first;
-          final stationName = _getLocalizedName(
-            nameUz: station.nameUz,
-            nameRu: station.nameRu,
-            nameEn: station.nameEn,
-            language: language,
-          );
-          final transferInfo = MetroCache.getTransferStationInfo(station.id);
-          final label =
-              transferInfo == null
-                  ? stationName
-                  : "$stationName ↔ ${_getLocalizedName(
-                    nameUz: transferInfo["connectedStationName"],
-                    nameRu: transferInfo["connectedStationNameRu"],
-                    nameEn: transferInfo["connectedStationNameEn"],
-                    language: language,
-                  )}";
-          tags.add(
-            _DetailTag(
-              label: label,
-              primaryLabel: stationName,
-              secondaryLabel:
-                  transferInfo == null
-                      ? null
-                      : _getLocalizedName(
-                        nameUz: transferInfo["connectedStationName"],
-                        nameRu: transferInfo["connectedStationNameRu"],
-                        nameEn: transferInfo["connectedStationNameEn"],
-                        language: language,
-                      ),
-              iconColor: _getLineColor(station.line),
-              secondaryIconColor:
-                  transferInfo == null
-                      ? null
-                      : _getLineColor(
-                        transferInfo["connectedStationLine"],
-                      ),
-            ),
-          );
-        }
-      }
-    }
-
-    if (tags.isEmpty && listingDetail.subwayStation != null) {
-      final station = listingDetail.subwayStation!;
-      tags.add(
-        _DetailTag(
-          label: _getLocalizedName(
-            nameUz: station.nameUz,
-            nameRu: station.nameRu,
-            nameEn: station.nameEn,
-            language: language,
-          ),
-        ),
-      );
-    }
-
-    return tags;
-  }
-
-  bool _hasFullLineSelected(Map<int, SubwayStation> stations, int line) {
-    final stationIdsForLine =
-        MetroCache.getStationsForLine(line).map((station) => station.id).toSet();
-    return stationIdsForLine.isNotEmpty &&
-        stations.keys.toSet().containsAll(stationIdsForLine);
-  }
-
-  String _getLineName(int line, String language) {
-    final lineName = MetroCache.metroLineNames[line]?[language];
-    if (lineName != null && lineName.isNotEmpty) {
-      return lineName;
-    }
-    return line.toString();
-  }
-
-  Widget _buildDetailTagRow({
-    required IconData icon,
-    required Color iconColor,
-    required List<_DetailTag> tags,
-    required String sheetTitleKey,
-  }) {
-    if (tags.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    const maxVisibleTags = 2;
-    final visibleTags = tags.take(maxVisibleTags).toList();
-    final remainingCount = tags.length - visibleTags.length;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ThemeIconFactory.detail(icon: icon, color: iconColor, size: 20),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: [
-              ..._buildCommaSeparatedTags(visibleTags),
-              if (remainingCount > 0)
-                GestureDetector(
-                  onTap:
-                      () => _showDetailTagsSheet(
-                        title: LanguageAwareStringHelper.getCurrent(
-                          context,
-                          sheetTitleKey,
-                        ),
-                        tags: tags,
-                      ),
-                  child: Text(
-                    "+$remainingCount",
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _getLocationTextColor(),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDetailColumnRow({
-    required IconData icon,
-    required Color iconColor,
-    required List<_DetailTag> tags,
-    required String sheetTitleKey,
-    bool showIcon = true,
-    bool showIconPerItem = false,
-    int maxVisibleTags = 3,
-    bool showRemaining = true,
-  }) {
-    if (tags.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final visibleTags = tags.take(maxVisibleTags).toList();
-    final remainingCount = tags.length - visibleTags.length;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (showIcon) ...[
-          ThemeIconFactory.detail(icon: icon, color: iconColor, size: 20),
-          const SizedBox(width: 8),
-        ],
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ...visibleTags.map(
-                (tag) => Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: _buildDetailTagText(
-                    tag: tag,
-                    showIconPerItem: showIconPerItem,
-                    icon: icon,
-                    iconColor: iconColor,
-                  ),
-                ),
-              ),
-              if (showRemaining && remainingCount > 0)
-                GestureDetector(
-                  onTap:
-                      () => _showDetailTagsSheet(
-                        title: LanguageAwareStringHelper.getCurrent(
-                          context,
-                          sheetTitleKey,
-                        ),
-                        tags: tags,
-                      ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      "+$remainingCount",
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: _getLocationTextColor(),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDetailTagText({
-    required _DetailTag tag,
-    required bool showIconPerItem,
-    required IconData icon,
-    required Color iconColor,
-  }) {
-    final textStyle = TextStyle(
-      fontSize: 15,
-      color: _getLocationTextColor(),
-      fontWeight: FontWeight.w400,
-    );
-
-    final labelWidget = Text.rich(
-      TextSpan(children: _buildLabelSpans(tag, textStyle)),
-      maxLines: 3,
-      overflow: TextOverflow.ellipsis,
-    );
-    final hasTransferIcon =
-        tag.secondaryIconColor != null && tag.secondaryLabel != null;
-    final content =
-        showIconPerItem
-            ? Row(
-              children: [
-                ThemeIconFactory.detail(
-                  icon: icon,
-                  color: tag.iconColor ?? iconColor,
-                  size: 18,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child:
-                      hasTransferIcon
-                          ? Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  tag.primaryLabel ?? tag.label,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textStyle,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.swap_horiz,
-                                color: _getLocationTextColor(),
-                                size: 14,
-                              ),
-                              const SizedBox(width: 4),
-                              ThemeIconFactory.detail(
-                                icon: icon,
-                                color: tag.secondaryIconColor!,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  tag.secondaryLabel!,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textStyle,
-                                ),
-                              ),
-                            ],
-                          )
-                          : labelWidget,
-                ),
-              ],
-            )
-            : labelWidget;
-
-    if (tag.onTap == null) {
-      return content;
-    }
-
-    return GestureDetector(onTap: tag.onTap, child: content);
-  }
-
-  List<TextSpan> _buildLabelSpans(_DetailTag tag, TextStyle baseStyle) {
-    final boldRanges = <List<int>>[];
-
-    if (tag.boldParenthetical) {
-      final start = tag.label.indexOf("(");
-      final end = tag.label.lastIndexOf(")");
-      if (start != -1 && end != -1 && end > start) {
-        boldRanges.add([start, end + 1]);
-      }
-    }
-
-    if (tag.boldCount) {
-      final index = tag.label.indexOf("·");
-      if (index != -1) {
-        boldRanges.add([index, tag.label.length]);
-      }
-    }
-
-    if (boldRanges.isEmpty) {
-      return [TextSpan(text: tag.label, style: baseStyle)];
-    }
-
-    boldRanges.sort((a, b) => a[0].compareTo(b[0]));
-    final merged = <List<int>>[];
-    for (final range in boldRanges) {
-      if (merged.isEmpty || range[0] > merged.last[1]) {
-        merged.add([range[0], range[1]]);
-      } else {
-        final nextEnd = range[1] > merged.last[1] ? range[1] : merged.last[1];
-        merged.last[1] = nextEnd > tag.label.length ? tag.label.length : nextEnd;
-      }
-    }
-
-    final spans = <TextSpan>[];
-    var cursor = 0;
-    for (final range in merged) {
-      final start = range[0].clamp(0, tag.label.length);
-      final end = range[1].clamp(0, tag.label.length);
-      if (start > cursor) {
-        spans.add(
-          TextSpan(
-            text: tag.label.substring(cursor, start),
-            style: baseStyle,
-          ),
-        );
-      }
-      spans.add(
-        TextSpan(
-          text: tag.label.substring(start, end),
-          style: baseStyle.copyWith(fontWeight: FontWeight.w600),
-        ),
-      );
-      cursor = end;
-    }
-    if (cursor < tag.label.length) {
-      spans.add(
-        TextSpan(
-          text: tag.label.substring(cursor),
-          style: baseStyle,
-        ),
-      );
-    }
-
-    return spans;
-  }
-
-  List<Widget> _buildCommaSeparatedTags(List<_DetailTag> tags) {
-    final widgets = <Widget>[];
-    for (var index = 0; index < tags.length; index += 1) {
-      widgets.add(
-        Text(
-          tags[index].label,
-          style: TextStyle(fontSize: 15, color: _getLocationTextColor()),
-        ),
-      );
-      if (index != tags.length - 1) {
-        widgets.add(
-          Text(
-            ", ",
-            style: TextStyle(fontSize: 15, color: _getLocationTextColor()),
-          ),
-        );
-      }
-    }
-    return widgets;
-  }
-
-  void _showDetailTagsSheet({
-    required String title,
-    required List<_DetailTag> tags,
-  }) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Flexible(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: tags.length,
-                    separatorBuilder:
-                        (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final tag = tags[index];
-                      return Text(
-                        tag.label,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: _getLocationTextColor(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showStringListSheet({
-    required String title,
-    required List<String> items,
-    Color? iconColor,
-  }) {
-    if (items.isEmpty) {
-      return;
-    }
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Flexible(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      return Row(
-                        children: [
-                          Icon(
-                            Icons.train,
-                            size: 18,
-                            color: iconColor ?? _getLocationTextColor(),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              items[index],
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: _getLocationTextColor(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Color _getGenderColor(int gender) {
     switch (gender) {
       case 1: // Male
@@ -3838,7 +3218,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       return AppColors.textGrey600; // Default grey for light theme
     }
   }
-
 
   // Move-in date helper method
   String _formatMoveInDate(BuildContext context, String moveInDate) {

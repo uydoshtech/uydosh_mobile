@@ -75,12 +75,10 @@ abstract class IListingService {
     required int maxPrice,
     required String description,
     required int gender,
-    int? locationId,
+    required int locationId,
     required List<int> amenityIds,
     int? subwayStationId, // Made optional, moved to end
-    List<int>? subwayStationIds, // Optional list of stations
     int? subwayLineId, // Add subway line ID parameter
-    List<int>? locationIds, // Optional list of locations
     String? moveInDate, // Add move-in date parameter
     bool? privateRoom, // Add private room parameter
     List<String>? photoPaths, // Optional photo paths to upload
@@ -94,12 +92,10 @@ abstract class IListingService {
     required int maxPrice,
     required String description,
     required int gender,
-    int? locationId,
+    required int locationId,
     required List<int> amenityIds,
     int? subwayStationId, // Made optional, moved to end
-    List<int>? subwayStationIds, // Optional list of stations
     int? subwayLineId, // Add subway line ID parameter
-    List<int>? locationIds, // Optional list of locations
     String? moveInDate, // Add move-in date parameter
     bool? privateRoom, // Add private room parameter
     List<String>? photoPaths, // Optional photo paths to upload
@@ -439,12 +435,10 @@ class ListingService implements IListingService {
     required int maxPrice,
     required String description,
     required int gender,
-    int? locationId,
+    required int locationId,
     required List<int> amenityIds,
     int? subwayStationId, // Made optional, moved to end
-    List<int>? subwayStationIds, // Optional list of stations
     int? subwayLineId, // Add subway line ID parameter
-    List<int>? locationIds, // Optional list of locations
     String? moveInDate, // Add move-in date parameter
     bool? privateRoom, // Add private room parameter
     List<String>? photoPaths, // Optional photo paths to upload
@@ -464,10 +458,8 @@ class ListingService implements IListingService {
         description: description,
         gender: gender,
         subwayStationId: subwayStationId,
-        subwayStationIds: subwayStationIds,
         subwayLineId: subwayLineId, // Add subway line ID
         locationId: locationId,
-        locationIds: locationIds,
         amenityIds: amenityIds,
         moveInDate: moveInDate, // Add move-in date
         privateRoom: privateRoom, // Add private room
@@ -498,9 +490,7 @@ class ListingService implements IListingService {
       logger.d('Description: "$description" (length: ${description.length})');
       logger.d('Gender: $gender');
       logger.d('Location ID: $locationId');
-      logger.d('Location IDs: $locationIds');
       logger.d('Subway Station ID: $subwayStationId');
-      logger.d('Subway Station IDs: $subwayStationIds');
       logger.d('Subway Line ID: $subwayLineId');
       logger.d('Amenity IDs: $amenityIds (count: ${amenityIds.length})');
       logger.d('====================================');
@@ -623,12 +613,10 @@ class ListingService implements IListingService {
     required int maxPrice,
     required String description,
     required int gender,
-    int? locationId,
+    required int locationId,
     required List<int> amenityIds,
     int? subwayStationId, // Made optional, moved to end
-    List<int>? subwayStationIds, // Optional list of stations
     int? subwayLineId, // Add subway line ID parameter
-    List<int>? locationIds, // Optional list of locations
     String? moveInDate, // Add move-in date parameter
     bool? privateRoom, // Add private room parameter
     List<String>? photoPaths, // Optional photo paths to upload
@@ -648,10 +636,8 @@ class ListingService implements IListingService {
         description: description,
         gender: gender,
         subwayStationId: subwayStationId,
-        subwayStationIds: subwayStationIds,
         subwayLineId: subwayLineId, // Add subway line ID
         locationId: locationId,
-        locationIds: locationIds,
         amenityIds: amenityIds,
         moveInDate: moveInDate, // Add move-in date
         privateRoom: privateRoom, // Add private room
@@ -676,12 +662,10 @@ class ListingService implements IListingService {
       logger.d(
         '  subwayStationId: $subwayStationId (type: ${subwayStationId.runtimeType})',
       );
-      logger.d('  subwayStationIds: $subwayStationIds');
       logger.d(
         '  subwayLineId: $subwayLineId (type: ${subwayLineId.runtimeType})',
       );
       logger.d('  locationId: $locationId (type: ${locationId.runtimeType})');
-      logger.d('  locationIds: $locationIds');
       logger.d(
         '  amenityIds: $amenityIds (type: ${amenityIds.runtimeType}, count: ${amenityIds.length})',
       );

@@ -547,19 +547,6 @@ class AppStrings {
       "description_required": "Description is required",
       "description_too_long": "Description must be 500 characters or less",
       "location_required": "Please select a location",
-      "location_or_station_required":
-          "Please select at least one district or metro station",
-      "select_districts": "Select districts",
-      "selected_districts": "Selected districts",
-      "selected_districts_count": "Selected districts: {count}",
-      "districts_count": "{count} districts",
-      "selected_stations": "Selected stations",
-      "add_metro_station": "Add station",
-      "add_metro_line": "Add whole line",
-      "line_all_stations": "{line} line (all stations)",
-      "line_stations_count": "{line} line · {count} stations",
-      "clear": "Clear",
-      "select_all": "Select All",
 
       "authentication_required":
           "Authentication required. Please log in to create listings.",
@@ -1190,19 +1177,6 @@ class AppStrings {
       "description_required": "Описание обязательно",
       "description_too_long": "Описание должно быть не более 500 символов",
       "location_required": "Пожалуйста, выберите район",
-      "location_or_station_required":
-          "Выберите хотя бы один район или станцию метро",
-      "select_districts": "Выберите районы",
-      "selected_districts": "Выбранные районы",
-      "selected_districts_count": "Выбранные районы: {count}",
-      "districts_count": "{count} районов",
-      "selected_stations": "Выбранные станции",
-      "add_metro_station": "Добавить станцию",
-      "add_metro_line": "Добавить всю линию",
-      "line_all_stations": "Линия {line} (все станции)",
-      "line_stations_count": "Линия {line} · {count} станций",
-      "clear": "Очистить",
-      "select_all": "Выбрать все",
 
       "authentication_required":
           "Требуется аутентификация. Пожалуйста, войдите в систему для создания объявлений.",
@@ -1840,19 +1814,6 @@ class AppStrings {
       "description_required": "Tavsif talab qilinadi",
       "description_too_long": "Tavsif 500 belgidan ko'p bo'p bo'lmasligi kerak",
       "location_required": "Iltimos, tuman tanlang",
-      "location_or_station_required":
-          "Iltimos, kamida bitta tuman yoki metro stansiyasini tanlang",
-      "select_districts": "Tumanlarni tanlang",
-      "selected_districts": "Tanlangan tumanlar",
-      "selected_districts_count": "Tanlangan tumanlar: {count}",
-      "districts_count": "{count} tuman",
-      "selected_stations": "Tanlangan bekatlar",
-      "add_metro_station": "Stansiyani qo'shish",
-      "add_metro_line": "Butun liniyani qo'shish",
-      "line_all_stations": "{line} liniyasi (barcha stansiyalar)",
-      "line_stations_count": "{line} liniyasi · {count} bekat",
-      "clear": "Tozalash",
-      "select_all": "Barchasini tanlash",
 
       "authentication_required":
           "Autentifikatsiya talab qilinadi. Iltimos, e'lon yaratish uchun tizimga kiring.",
