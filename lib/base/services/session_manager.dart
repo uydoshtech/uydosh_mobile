@@ -14,6 +14,7 @@ class SessionManager {
   static const String _emailKey = 'user_email';
   static const String _lastLoginKey = 'last_login';
   static const String _userRoleKey = 'user_role';
+  static const String _userBlockedKey = 'user_blocked';
   static const String _googleDisplayNameKey = 'google_display_name';
   static const String _googlePhotoUrlKey = 'google_photo_url';
   static const String _userProfileCacheKey = 'user_profile_cache';
@@ -113,6 +114,7 @@ class SessionManager {
     await prefs.remove(_userIdKey);
     await prefs.remove(_emailKey);
     await prefs.remove(_userRoleKey);
+    await prefs.remove(_userBlockedKey);
     await prefs.remove(_lastLoginKey);
     await prefs.remove(_googleDisplayNameKey);
     await prefs.remove(_googlePhotoUrlKey);
@@ -171,6 +173,18 @@ class SessionManager {
   static Future<void> storeBackendUserId(int userId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_userIdKey, userId);
+  }
+
+  // Store user blocked status (violation)
+  static Future<void> storeUserBlockedStatus(bool isBlocked) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_userBlockedKey, isBlocked);
+  }
+
+  // Get user blocked status
+  static Future<bool> getIsUserBlocked() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_userBlockedKey) ?? false;
   }
 
   // Store backend user role

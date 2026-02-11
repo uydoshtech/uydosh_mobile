@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:uy_dosh/base/api/client/oauth_api_client.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
 import 'package:uy_dosh/base/api/client/json_encodable.dart';
@@ -440,6 +441,16 @@ class MessagingService implements IMessagingService {
       final message = Message.fromJson(messageData);
 
       return message;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        if (data is Map &&
+            ((data['code'] == 'USER_BLOCKED') ||
+                (data['error'] as String? ?? '').contains('restricted'))) {
+          throw Exception('USER_BLOCKED');
+        }
+      }
+      throw Exception('Failed to send message: $e');
     } catch (e) {
       throw Exception('Failed to send message: $e');
     }
@@ -459,6 +470,16 @@ class MessagingService implements IMessagingService {
         data: request,
       );
       return response;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        if (data is Map &&
+            ((data['code'] == 'USER_BLOCKED') ||
+                (data['error'] as String? ?? '').contains('restricted'))) {
+          throw Exception('USER_BLOCKED');
+        }
+      }
+      throw Exception('Failed to edit message: $e');
     } catch (e) {
       throw Exception('Failed to edit message: $e');
     }
@@ -472,6 +493,16 @@ class MessagingService implements IMessagingService {
         (json) => json as Map<String, dynamic>,
         data: _EmptyRequest(),
       );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        if (data is Map &&
+            ((data['code'] == 'USER_BLOCKED') ||
+                (data['error'] as String? ?? '').contains('restricted'))) {
+          throw Exception('USER_BLOCKED');
+        }
+      }
+      throw Exception('Failed to delete message: $e');
     } catch (e) {
       throw Exception('Failed to delete message: $e');
     }

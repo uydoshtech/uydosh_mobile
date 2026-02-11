@@ -330,6 +330,20 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildErrorState(String message) {
+    final displayMessage = message.contains("USER_BLOCKED")
+        ? LanguageAwareStringHelper.getCurrent(
+              context,
+              "user_blocked_violation_message",
+            )
+            : (message.contains("DioException") ||
+                message.contains("bad response") ||
+                message.contains("status code"))
+            ? LanguageAwareStringHelper.getCurrent(
+                  context,
+                  "error_generic",
+                )
+            : message;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -340,10 +354,13 @@ class _ChatScreenState extends State<ChatScreen> {
             color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(height: 16),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyLarge,
-            textAlign: TextAlign.center,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              displayMessage,
+              style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -533,6 +550,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       setState(() {
                         _isSendingMessage = false;
                       });
+
+                      // Don't show SnackBar for USER_BLOCKED - the main error state already displays it
+                      if (message.contains("USER_BLOCKED")) return;
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

@@ -5,6 +5,10 @@ class AdminUser {
   final String? firebaseUid;
   final String? telegramId;
   final DateTime? createdAt;
+  final bool isBlocked;
+  final DateTime? blockedAt;
+  final DateTime? blockedUntil;
+  final String? blockedReason;
 
   AdminUser({
     required this.id,
@@ -13,7 +17,19 @@ class AdminUser {
     this.firebaseUid,
     this.telegramId,
     this.createdAt,
+    this.isBlocked = false,
+    this.blockedAt,
+    this.blockedUntil,
+    this.blockedReason,
   });
+
+  bool get isCurrentlyBlocked {
+    if (!isBlocked) return false;
+    if (blockedUntil != null && blockedUntil!.isBefore(DateTime.now())) {
+      return false;
+    }
+    return true;
+  }
 
   factory AdminUser.fromJson(Map<String, dynamic> json) {
     return AdminUser(
@@ -23,6 +39,10 @@ class AdminUser {
       firebaseUid: json["firebase_uid"] as String?,
       telegramId: json["telegram_id"] as String?,
       createdAt: _parseDate(json["created_at"]),
+      isBlocked: json["is_blocked"] as bool? ?? false,
+      blockedAt: _parseDate(json["blocked_at"]),
+      blockedUntil: _parseDate(json["blocked_until"]),
+      blockedReason: json["blocked_reason"] as String?,
     );
   }
 

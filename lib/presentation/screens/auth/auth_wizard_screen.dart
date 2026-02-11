@@ -282,6 +282,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       // Store the session token and backend user ID
       await _storeBackendSession(response);
 
+      // Show violation message if user is blocked
+      final isBlocked = response["user"]?["is_blocked"] == true;
+      if (mounted && isBlocked) {
+        await _showViolationDialog();
+      }
+
       // Check if user already has a profile
       final hasProfile = response["profileExists"] ?? false;
       logger.d("👤 User has profile: $hasProfile");
@@ -369,7 +375,40 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
     if (user != null) {
       await SessionManager.storeUserRole(user["role"]);
+      await SessionManager.storeUserBlockedStatus(
+        user["is_blocked"] as bool? ?? false,
+      );
     }
+  }
+
+  Future<void> _showViolationDialog() async {
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          LanguageAwareStringHelper.getCurrent(
+            context,
+            "user_blocked_violation_title",
+          ),
+        ),
+        content: Text(
+          LanguageAwareStringHelper.getCurrent(
+            context,
+            "user_blocked_violation_message",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              LanguageAwareStringHelper.getCurrent(context, "close"),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _nextPage() {
@@ -424,6 +463,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         email: currentUser.email ?? "",
         firebaseUid: currentUser.uid,
       );
+
+      // Store session (includes blocked status)
+      await _storeBackendSession(response);
+
+      // Show violation message if user is blocked
+      final isBlocked = response["user"]?["is_blocked"] == true;
+      if (mounted && isBlocked) {
+        await _showViolationDialog();
+      }
 
       final hasProfile = response["profileExists"] ?? false;
       logger.d("👤 User has profile: $hasProfile");

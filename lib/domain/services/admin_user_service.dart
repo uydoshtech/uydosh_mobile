@@ -6,6 +6,12 @@ import "package:uy_dosh/domain/models/admin_user.dart";
 abstract class IAdminUserService {
   Future<List<AdminUser>> getUsers({int pageNumber = 1, int pageSize = 20});
   Future<AdminUser> updateUserRole({required int userId, required String role});
+  Future<AdminUser> blockUser({
+    required int userId,
+    String? reason,
+    DateTime? blockedUntil,
+  });
+  Future<AdminUser> unblockUser({required int userId});
 }
 
 class AdminUserService implements IAdminUserService {
@@ -59,6 +65,42 @@ class AdminUserService implements IAdminUserService {
       rethrow;
     }
   }
+
+  @override
+  Future<AdminUser> blockUser({
+    required int userId,
+    String? reason,
+    DateTime? blockedUntil,
+  }) async {
+    try {
+      final response = await _oauthApiClient.patch<Map<String, dynamic>, _BlockRequest>(
+        "/users/$userId/block",
+        (json) => json as Map<String, dynamic>,
+        data: _BlockRequest(reason: reason, blockedUntil: blockedUntil),
+      );
+
+      return AdminUser.fromJson(response);
+    } catch (e) {
+      logger.d("Error blocking user: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<AdminUser> unblockUser({required int userId}) async {
+    try {
+      final response = await _oauthApiClient.patch<Map<String, dynamic>, _EmptyRequest>(
+        "/users/$userId/unblock",
+        (json) => json as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
+
+      return AdminUser.fromJson(response);
+    } catch (e) {
+      logger.d("Error unblocking user: $e");
+      rethrow;
+    }
+  }
 }
 
 class _RoleUpdateRequest implements IJsonEncodable {
@@ -68,4 +110,24 @@ class _RoleUpdateRequest implements IJsonEncodable {
 
   @override
   Map<String, dynamic> toJson() => {"role": role};
+}
+
+class _BlockRequest implements IJsonEncodable {
+  _BlockRequest({this.reason, this.blockedUntil});
+
+  final String? reason;
+  final DateTime? blockedUntil;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        if (reason != null && reason!.isNotEmpty) "reason": reason,
+        if (blockedUntil != null) "blocked_until": blockedUntil!.toIso8601String(),
+      };
+}
+
+class _EmptyRequest implements IJsonEncodable {
+  _EmptyRequest();
+
+  @override
+  Map<String, dynamic> toJson() => {};
 }
