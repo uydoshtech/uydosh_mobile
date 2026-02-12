@@ -28,7 +28,7 @@ class _StationLabel {
 class AdminSubwayMapScreen extends StatelessWidget {
   const AdminSubwayMapScreen({super.key});
 
-  static const double _svgWidth = 600;
+  static const double _svgWidth = 640;
   static const double _svgHeight = 1200;
   static const double _viewBoxMinX = -80;
   static const Offset _mapOffset = Offset(40, 80);
@@ -41,7 +41,7 @@ class AdminSubwayMapScreen extends StatelessWidget {
       _extractStationLabels(_rawMapSvg);
 
   static const String _rawMapSvg = '''
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="520" height="1200" viewBox="-80 0 600 1200" xml:space="default">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="520" height="1200" viewBox="-80 0 640 1200" xml:space="default">
   <title>Tashkent metropoliten map</title>
   <defs>
     <style type="text/css">
@@ -170,8 +170,8 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         <use xlink:href="#st2" transform="translate(200,400)rotate(90)" id="Kosmonavtlar"/>
         <use xlink:href="#intst2" transform="translate(250,400)rotate(90)" id="Oybek"/>
         <use xlink:href="#st2" transform="translate(330,400)rotate(-90)" id="Toshkent"/>
-        <use xlink:href="#st2" transform="translate(350,450)rotate(180)" id="Mashinasozlar"/>
-        <use xlink:href="#intst2" transform="translate(350,500)rotate(180)" id="Dustlik"/>
+        <use xlink:href="#st2" transform="translate(350,450)" id="Mashinasozlar"/>
+        <use xlink:href="#intst2" transform="translate(350,500)" id="Dustlik"/>
       </g>
       <g id="station_nodes_route3">
         <use xlink:href="#term3" transform="translate(250,0)rotate(180)" id="Turkiston"/>
@@ -305,11 +305,9 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           <g class="mid">
             <switch transform="translate(330,385)"><text id="trsvg1177-ru" systemLanguage="ru"><tspan id="trsvg1116-ru">Тошкент</tspan></text><text id="trsvg1177-en" systemLanguage="en"><tspan id="trsvg1116-en">Tashkent</tspan></text><text id="trsvg1177-uz" systemLanguage="uz"><tspan id="trsvg1116-uz">Toshkent</tspan></text><text id="trsvg1177"><tspan id="trsvg1116">Toshkent</tspan></text></switch>
           </g>
-          <g class="end">
-            <switch transform="translate(340,450)"><text id="trsvg1178-ru" systemLanguage="ru"><tspan id="trsvg1117-ru">Машинасозлар</tspan></text><text id="trsvg1178-en" systemLanguage="en"><tspan id="trsvg1117-en">Mashinasozlar</tspan></text><text id="trsvg1178-uz" systemLanguage="uz"><tspan id="trsvg1117-uz">Mashinasozlar</tspan></text><text id="trsvg1178"><tspan id="trsvg1117">Mashinasozlar</tspan></text></switch>
-            <g class="ic r2">
-              <switch transform="translate(338,500)"><text id="trsvg1179-ru" systemLanguage="ru"><tspan id="trsvg1118-ru">Дустлик</tspan></text><text id="trsvg1179-en" systemLanguage="en"><tspan id="trsvg1118-en">Dustlik</tspan></text><text id="trsvg1179-uz" systemLanguage="uz"><tspan id="trsvg1118-uz">Doʻstlik</tspan></text><text id="trsvg1179"><tspan id="trsvg1118">Doʻstlik</tspan></text></switch>
-            </g>
+          <switch transform="translate(362,450)"><text id="trsvg1178-ru" systemLanguage="ru"><tspan id="trsvg1117-ru">Машинасозлар</tspan></text><text id="trsvg1178-en" systemLanguage="en"><tspan id="trsvg1117-en">Mashinasozlar</tspan></text><text id="trsvg1178-uz" systemLanguage="uz"><tspan id="trsvg1117-uz">Mashinasozlar</tspan></text><text id="trsvg1178"><tspan id="trsvg1117">Mashinasozlar</tspan></text></switch>
+          <g class="ic r2">
+            <switch transform="translate(362,500)"><text id="trsvg1179-ru" systemLanguage="ru"><tspan id="trsvg1118-ru">Дустлик</tspan></text><text id="trsvg1179-en" systemLanguage="en"><tspan id="trsvg1118-en">Dustlik</tspan></text><text id="trsvg1179-uz" systemLanguage="uz"><tspan id="trsvg1118-uz">Doʻstlik</tspan></text><text id="trsvg1179"><tspan id="trsvg1118">Doʻstlik</tspan></text></switch>
           </g>
         </g>
         <g id="route3_stname">
