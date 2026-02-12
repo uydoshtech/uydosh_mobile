@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
+import "package:uy_dosh/presentation/widgets/header_theme_toggle.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -492,6 +493,7 @@ class _MainNavigationState extends State<MainNavigation>
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: _getAppBarTitle(),
         actions: [
+          const HeaderThemeToggle(),
           // Profile button on the right side with proper margin
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
