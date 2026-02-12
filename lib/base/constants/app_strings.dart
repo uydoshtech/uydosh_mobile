@@ -293,6 +293,9 @@ class AppStrings {
           "Search either by stations - or by the entire metro line",
       "onboarding_title_3": "Search by District",
       "onboarding_subtitle_3": "Convenient search by districts of Tashkent",
+      "onboarding_title_4": "Trustworthy Platform",
+      "onboarding_subtitle_4":
+          "Verified users connecting for apartments and roommates",
 
       "onboarding_get_started": "Get Started",
       "onboarding_skip": "Skip",
@@ -930,6 +933,9 @@ class AppStrings {
           "Ищите либо по станциям - либо по всей линии метро",
       "onboarding_title_3": "Поиск по району",
       "onboarding_subtitle_3": "Удобный поиск по районам Ташкента",
+      "onboarding_title_4": "Надёжная платформа",
+      "onboarding_subtitle_4":
+          "Проверенные пользователи ищут квартиры и соседей",
 
       "onboarding_get_started": "Начать",
       "onboarding_skip": "Пропустить",
@@ -1578,6 +1584,9 @@ class AppStrings {
           "Yoki stansiyalar bo'yicha - yoki butun metro liniyasi bo'yicha qidiring",
       "onboarding_title_3": "Tuman bo'yicha qidiruv",
       "onboarding_subtitle_3": "Toshkent tumanlari bo'yicha qulay qidiruv",
+      "onboarding_title_4": "Ishonchli platforma",
+      "onboarding_subtitle_4":
+          "Tekshirilgan foydalanuvchilar kvartiralar va xonadoshlar uchun",
 
       "onboarding_get_started": "Boshlash",
       "onboarding_skip": "O'tkazib yuborish",

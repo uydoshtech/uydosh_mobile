@@ -31,6 +31,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   late Animation<double> _trainBounceAnimation;
   late AnimationController _locationController;
   late Animation<double> _locationBounceAnimation;
+  late AnimationController _shieldController;
+  late Animation<double> _shieldRotateAnimation;
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _setupRotateAnimation();
     _setupTrainAnimation();
     _setupLocationAnimation();
+    _setupShieldAnimation();
     _startAutoSwitchTimer();
   }
 
@@ -90,14 +93,30 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _locationController.repeat(reverse: true);
   }
 
+  void _setupShieldAnimation() {
+    _shieldController = AnimationUtils.createAnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+
+    _shieldRotateAnimation = Tween<double>(
+      begin: -0.3,
+      end: 0.3,
+    ).animate(
+      CurvedAnimation(parent: _shieldController, curve: Curves.easeInOut),
+    );
+
+    _shieldController.repeat(reverse: true);
+  }
+
   void _startAutoSwitchTimer() {
     _autoSwitchTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (mounted && _currentPage < 2) {
+      if (mounted && _currentPage < 3) {
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
-      } else if (mounted && _currentPage == 2) {
+      } else if (mounted && _currentPage == 3) {
         // If on last page, navigate to main app
         _navigateToMainApp();
       }
@@ -112,6 +131,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       _rotateController,
       _trainController,
       _locationController,
+      _shieldController,
     ]);
     super.dispose();
   }
@@ -178,7 +198,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 child: PageView.builder(
                   controller: _pageController,
                   onPageChanged: _onPageChanged,
-                  itemCount: 3,
+                  itemCount: 4,
                   itemBuilder: (context, index) {
                     return _buildPage(index, colorScheme, onboardingColors);
                   },
@@ -193,7 +213,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     // Page indicator
                     SmoothPageIndicator(
                       controller: _pageController,
-                      count: 3,
+                      count: 4,
                       effect: WormEffect(
                         dotHeight: 8,
                         dotWidth: 8,
@@ -232,7 +252,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         // Next/Get Started button
                         TextButtonThemedFactory.text(
                           onPressed: () {
-                            if (_currentPage < 2) {
+                            if (_currentPage < 3) {
                               _pageController.nextPage(
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeInOut,
@@ -247,7 +267,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           ),
                           text: LanguageAwareStringHelper.getCurrent(
                             context,
-                            _currentPage < 2
+                            _currentPage < 3
                                 ? "onboarding_next"
                                 : "onboarding_get_started",
                           ),
@@ -289,6 +309,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         descriptionKey: "onboarding_subtitle_3",
         icon: Icons.security,
         color: colorScheme.error,
+        isFirstPage: false,
+      ),
+      _OnboardingPage(
+        titleKey: "onboarding_title_4",
+        descriptionKey: "onboarding_subtitle_4",
+        icon: Icons.verified_user,
+        color: AppColors.secondary,
         isFirstPage: false,
       ),
     ];
@@ -532,6 +559,31 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   ],
                 ),
               ),
+            ),
+          );
+        },
+      );
+    }
+
+    // Special animation for shield icon (fourth page) - rotate back and forth, 1.5x size
+    if (page.icon == Icons.verified_user) {
+      return AnimatedBuilder(
+        animation: _shieldController,
+        builder: (context, child) {
+          return Transform.rotate(
+            angle: _shieldRotateAnimation.value,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                color: page.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(90),
+                border: Border.all(
+                  color: page.color.withValues(alpha: 0.2),
+                  width: 2,
+                ),
+              ),
+              child: Icon(page.icon, size: 90, color: page.color),
             ),
           );
         },

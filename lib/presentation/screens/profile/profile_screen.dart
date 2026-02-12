@@ -74,6 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _userRole;
   bool _userRoleLoaded = false;
   bool _refreshingRole = false;
+  bool _userBlocked = false;
   late final CurrentUserProfileBloc _currentUserProfileBloc;
   UserProfile? _cachedUserProfile;
   String? _cachedGoogleDisplayName;
@@ -100,6 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       SessionManager.getGoogleDisplayName(),
       SessionManager.getGooglePhotoUrl(),
       SessionManager.getCachedUserProfile(),
+      SessionManager.getIsUserBlocked(),
     ]);
 
     if (!mounted) return;
@@ -108,6 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _cachedGoogleDisplayName = results[0] as String?;
       _cachedGooglePhotoUrl = results[1] as String?;
       _cachedUserProfile = results[2] as UserProfile?;
+      _userBlocked = results[3] as bool;
     });
 
     if (_cachedUserProfile == null &&
@@ -119,13 +122,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserRole() async {
-    final role = await SessionManager.getUserRole();
+    final results = await Future.wait([
+      SessionManager.getUserRole(),
+      SessionManager.getIsUserBlocked(),
+    ]);
     if (!mounted) return;
     setState(() {
-      _userRole = role;
+      _userRole = results[0] as String?;
+      _userBlocked = results[1] as bool;
       _userRoleLoaded = true;
     });
-    if (role == null) {
+    if (_userRole == null) {
       await _refreshUserRoleFromServer();
     }
   }
@@ -142,18 +149,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
       final user = response["user"];
       final role = user is Map<String, dynamic> ? user["role"] as String? : null;
+      final isBlocked = user is Map<String, dynamic>
+          ? (user["is_blocked"] as bool? ?? false)
+          : false;
       if (role != null) {
         await SessionManager.storeUserRole(role);
-        if (!mounted) return;
-        setState(() {
-          _userRole = role;
-          _userRoleLoaded = true;
-        });
-      } else if (mounted) {
-        setState(() {
-          _userRoleLoaded = true;
-        });
       }
+      await SessionManager.storeUserBlockedStatus(isBlocked);
+      if (!mounted) return;
+      setState(() {
+        _userRole = role;
+        _userBlocked = isBlocked;
+        _userRoleLoaded = true;
+      });
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -365,6 +373,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Theme.of(
                                 context,
                               ).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                    if (_userBlocked) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        LanguageAwareStringHelper.getCurrent(
+                          context,
+                          "admin_user_detail_blocked",
+                        ),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.error,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
