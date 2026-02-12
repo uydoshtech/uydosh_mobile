@@ -544,6 +544,11 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
   static const double _monumentWidth = 20;
   static const double _monumentHeight = 20;
 
+  static const double _airportMapX = 300;
+  static const double _airportMapY = 625;
+  static const double _airportWidth = 50;
+  static const double _airportHeight = 27;
+
   List<Widget> _buildMapOverlays(
     double scale,
     double offsetX,
@@ -562,6 +567,10 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         offsetX + (_mapOffset.dx + _monumentMapX - _viewBoxMinX) * scale;
     final monumentY =
         offsetY + (_mapOffset.dy + _monumentMapY) * scale;
+    final airportX =
+        offsetX + (_mapOffset.dx + _airportMapX - _viewBoxMinX) * scale;
+    final airportY =
+        offsetY + (_mapOffset.dy + _airportMapY) * scale;
     return [
       Positioned(
         left: bazaarX - _bazaarChorsuWidth / 2,
@@ -597,6 +606,22 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           width: _monumentWidth * 2,
           height: _monumentHeight * 2,
           fit: BoxFit.contain,
+        ),
+      ),
+      Positioned(
+        left: airportX - _airportWidth / 2,
+        top: airportY - _airportHeight / 2,
+        child: SvgPicture.asset(
+          "assets/map_elements/airport.svg",
+          width: _airportWidth,
+          height: _airportHeight,
+          fit: BoxFit.contain,
+          colorFilter: isBlueTheme
+              ? const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                )
+              : null,
         ),
       ),
     ];
