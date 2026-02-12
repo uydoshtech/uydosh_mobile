@@ -5,6 +5,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
@@ -133,7 +134,7 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         </g>
       </g>
     </g>
-    <g id="tv_tower" transform="translate(220,170) translate(-15,-105)" style="fill:#2E0B57">
+    <g id="tv_tower" transform="translate(220,170) translate(-15,-105)" style="fill:__TV_TOWER_FILL__">
       <rect x="14.5" y="0" width="1" height="35"/>
       <rect x="11.25" y="33.75" width="7.5" height="3.5" rx="0.75"/>
       <rect x="13.5" y="37.5" width="3" height="30"/>
@@ -659,6 +660,11 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         );
   }
 
+  static String _getMapSvgForTheme(bool isBlueTheme) {
+    final tvTowerFill = isBlueTheme ? '#FFFFFF' : '#000000';
+    return _mapSvg.replaceAll('__TV_TOWER_FILL__', tvTowerFill);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -669,8 +675,9 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         ),
       ),
       body: ListenableBuilder(
-        listenable: LanguageState(),
+        listenable: Listenable.merge([LanguageState(), ThemeState()]),
         builder: (context, child) {
+          final mapSvg = _getMapSvgForTheme(ThemeState().isBlueTheme);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -713,7 +720,7 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
                             child: Stack(
                               children: [
                                 SvgPicture.string(
-                                  _mapSvg,
+                                  mapSvg,
                                   width: mapWidth,
                                   height: mapHeight,
                                   fit: BoxFit.contain,

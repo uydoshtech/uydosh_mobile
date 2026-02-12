@@ -31,18 +31,17 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     _currentRole = widget.user.role;
   }
 
+  void _popWithResult() {
+    Navigator.of(context).pop({
+      "userId": _currentUser.id,
+      "role": _currentRole,
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final canSave = _selectedRole != null && _selectedRole != _currentRole;
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.of(context).pop({
-          "userId": _currentUser.id,
-          "role": _currentRole,
-        });
-        return false;
-      },
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text(
             LanguageAwareStringHelper.getCurrent(
@@ -53,12 +52,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop({
-                "userId": _currentUser.id,
-                "role": _currentRole,
-              });
-            },
+            onPressed: _popWithResult,
           ),
         ),
         body: ListView(
@@ -73,7 +67,6 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             _buildActionsCard(context),
           ],
         ),
-      ),
     );
   }
 
