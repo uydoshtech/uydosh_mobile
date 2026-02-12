@@ -531,6 +531,34 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
     );
   }
 
+  static const double _bazaarChorsuMapX = 0;
+  static const double _bazaarChorsuMapY = 210;
+  static const double _bazaarChorsuWidth = 22;
+  static const double _bazaarChorsuHeight = 12;
+
+  List<Widget> _buildMapOverlays(
+    double scale,
+    double offsetX,
+    double offsetY,
+  ) {
+    final bazaarX =
+        offsetX + (_mapOffset.dx + _bazaarChorsuMapX - _viewBoxMinX) * scale;
+    final bazaarY =
+        offsetY + (_mapOffset.dy + _bazaarChorsuMapY) * scale;
+    return [
+      Positioned(
+        left: bazaarX - _bazaarChorsuWidth / 2,
+        top: bazaarY - _bazaarChorsuHeight / 2,
+        child: SvgPicture.asset(
+          "assets/map_elements/bazaar_chorsu.svg",
+          width: _bazaarChorsuWidth * 2,
+          height: _bazaarChorsuHeight * 2,
+          fit: BoxFit.contain,
+        ),
+      ),
+    ];
+  }
+
   List<Widget> _buildStationTapTargets(
     BuildContext context,
     double scale,
@@ -726,6 +754,7 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
                                   fit: BoxFit.contain,
                                   semanticsLabel: "Tashkent subway map",
                                 ),
+                                ..._buildMapOverlays(scale, offsetX, offsetY),
                                 ..._buildStationTapTargets(
                                   context,
                                   scale,
