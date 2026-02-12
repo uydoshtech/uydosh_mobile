@@ -600,7 +600,7 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
     return flattenedSwitches
         .replaceAll(
           'class="st"',
-          'style="font-family:Arial,sans-serif;font-size:17px"',
+          'style="font-family:Arial,sans-serif;font-size:13px"',
         )
         .replaceAll('class="mid"', 'style="text-anchor:middle"')
         .replaceAll('class="end"', 'style="text-anchor:end"')
