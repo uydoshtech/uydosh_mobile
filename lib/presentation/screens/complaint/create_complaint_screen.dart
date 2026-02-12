@@ -193,19 +193,6 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _descriptionController,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText: LanguageAwareStringHelper.getCurrent(
-                context,
-                "complaint_description_hint",
-              ),
-              border: const OutlineInputBorder(),
-              alignLabelWithHint: true,
-            ),
-          ),
-          const SizedBox(height: 24),
           Expanded(
             child: ListView.builder(
               itemCount: categories.length,
@@ -235,6 +222,19 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
                   ),
                 );
               },
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _descriptionController,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: LanguageAwareStringHelper.getCurrent(
+                context,
+                "complaint_description_hint",
+              ),
+              border: const OutlineInputBorder(),
+              alignLabelWithHint: true,
             ),
           ),
           const SizedBox(height: 16),

@@ -430,6 +430,8 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
                     labelKey: "admin_complaints_status_label",
                     value: _getStatusLabel(context, complaint.status),
                   ),
+                  if (complaint.text != null && complaint.text!.isNotEmpty)
+                    _buildTextSection(context, complaint.text!),
                   _buildMetaRow(
                     context,
                     labelKey: "admin_complaints_created_at",
@@ -440,6 +442,31 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildTextSection(BuildContext context, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "${LanguageAwareStringHelper.getCurrent(context, "admin_complaints_text")}: ",
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            text,
+            style: const TextStyle(fontSize: 13),
+            maxLines: 5,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
