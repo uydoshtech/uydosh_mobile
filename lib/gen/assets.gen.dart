@@ -33,8 +33,14 @@ class $AssetsImagesGen {
   /// File path: assets/images/ios_neutral_rd_ctn.svg
   String get iosNeutralRdCtn => 'assets/images/ios_neutral_rd_ctn.svg';
 
+  /// File path: assets/images/tashkent_subway_map_simple.svg
+  String get tashkentSubwayMapSimple => 'assets/images/tashkent_subway_map_simple.svg';
+
+  /// File path: assets/images/vector_orig.svg
+  String get vectorOrig => 'assets/images/vector_orig.svg';
+
   /// List of all assets
-  List<String> get values => [iosDarkRdCtn, iosNeutralRdCtn];
+  List<String> get values => [iosDarkRdCtn, iosNeutralRdCtn, tashkentSubwayMapSimple, vectorOrig];
 }
 
 class $AssetsIconComponentsGen {

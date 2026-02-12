@@ -23,7 +23,14 @@ class CreateComplaintScreen extends StatefulWidget {
 
 class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
   ComplaintCategory? _selectedCategory;
+  final TextEditingController _descriptionController = TextEditingController();
   bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -217,6 +224,19 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
               },
             ),
           ),
+          const SizedBox(height: 24),
+          TextField(
+            controller: _descriptionController,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: LanguageAwareStringHelper.getCurrent(
+                context,
+                "complaint_description_hint",
+              ),
+              border: const OutlineInputBorder(),
+              alignLabelWithHint: true,
+            ),
+          ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
@@ -249,9 +269,11 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
   void _submitComplaint() {
     if (_selectedCategory == null) return;
 
+    final descriptionText = _descriptionController.text.trim();
     final request = CreateComplaintRequest(
       listingId: widget.listingId,
       categoryId: _selectedCategory!.id!,
+      text: descriptionText.isNotEmpty ? descriptionText : null,
     );
 
     context.read<ComplaintBloc>().add(ComplaintEvent.createComplaint(request));

@@ -639,6 +639,7 @@ class AppStrings {
       // ===== COMPLAINTS =====
       "create_complaint": "Create Complaint",
       "select_complaint_category": "Select Complaint Category",
+      "complaint_description_hint": "Add details (optional)",
       "submit_complaint": "Submit Complaint",
       "complaint_created_success": "Complaint submitted successfully",
       "listing_complaints": "Listing Complaints",
@@ -1284,6 +1285,7 @@ class AppStrings {
       // ===== COMPLAINTS =====
       "create_complaint": "Создать жалобу",
       "select_complaint_category": "Выберите категорию жалобы",
+      "complaint_description_hint": "Добавьте подробности (необязательно)",
       "submit_complaint": "Отправить жалобу",
       "complaint_created_success": "Жалоба успешно отправлена",
       "listing_complaints": "Жалобы по объявлению",
@@ -1938,6 +1940,7 @@ class AppStrings {
       // ===== COMPLAINTS =====
       "create_complaint": "Shikoyat yaratish",
       "select_complaint_category": "Shikoyat kategoriyasini tanlang",
+      "complaint_description_hint": "Tafsilotlar qo'shing (ixtiyoriy)",
       "submit_complaint": "Shikoyatni yuborish",
       "complaint_created_success": "Shikoyat muvaffaqiyatli yuborildi",
       "listing_complaints": "E'lon bo'yicha shikoyatlar",

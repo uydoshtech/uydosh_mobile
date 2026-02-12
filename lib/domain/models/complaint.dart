@@ -5,6 +5,9 @@ import 'package:uy_dosh/domain/models/complaint_category.dart';
 part 'complaint.freezed.dart';
 part 'complaint.g.dart';
 
+String _complaintStatusFromJson(Object? value) =>
+    value is String && value.isNotEmpty ? value : 'pending';
+
 @freezed
 class Complaint with _$Complaint {
   const factory Complaint({
@@ -13,9 +16,10 @@ class Complaint with _$Complaint {
     @JsonKey(name: 'listing_id') int? listingId,
     @JsonKey(name: 'category_id') int? categoryId,
     @JsonKey(name: 'category') ComplaintCategory? category,
+    String? text,
     @JsonKey(
       name: 'status',
-      fromJson: _statusFromJson,
+      fromJson: _complaintStatusFromJson,
       defaultValue: 'pending',
     )
     required String status,
@@ -25,9 +29,6 @@ class Complaint with _$Complaint {
 
   factory Complaint.fromJson(Map<String, dynamic> json) =>
       _$ComplaintFromJson(json);
-
-  static String _statusFromJson(Object? value) =>
-      value is String && value.isNotEmpty ? value : 'pending';
 }
 
 @freezed
@@ -37,6 +38,7 @@ class CreateComplaintRequest
   const factory CreateComplaintRequest({
     @JsonKey(name: 'listing_id') required int listingId,
     @JsonKey(name: 'category_id') required int categoryId,
+    String? text,
   }) = _CreateComplaintRequest;
 
   factory CreateComplaintRequest.fromJson(Map<String, dynamic> json) =>

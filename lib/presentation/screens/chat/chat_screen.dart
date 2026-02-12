@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,6 +24,10 @@ import 'package:uy_dosh/domain/services/user_profile_service.dart';
 import 'package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart';
 import 'package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart';
 import 'package:uy_dosh/domain/models/user_profile.dart';
+import 'package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart';
+import 'package:uy_dosh/presentation/blocs/complaint_bloc.dart';
+import 'package:uy_dosh/domain/services/complaint_service.dart';
+import 'package:uy_dosh/presentation/widgets/common/toast_theme.dart';
 
 class ChatScreen extends StatefulWidget {
   final int conversationId;
@@ -117,6 +122,18 @@ class _ChatScreenState extends State<ChatScreen> {
             backgroundColor: appBarBackgroundColor,
             foregroundColor: textColor,
             actions: [
+              IconButton(
+                icon: Icon(Icons.refresh, color: textColor),
+                tooltip: LanguageAwareStringHelper.getCurrent(
+                  context,
+                  "refresh",
+                ),
+                onPressed: () {
+                  _messagingBloc.add(
+                    RefreshMessages(conversationId: widget.conversationId),
+                  );
+                },
+              ),
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
                 child: ActionDropdownMenu(
@@ -671,6 +688,30 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _createComplaint() async {
+    if (widget.listingId == null) return;
+
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) => BlocProvider<ComplaintBloc>(
+              create: (context) => ComplaintBloc(getIt<IComplaintService>()),
+              child: CreateComplaintScreen(listingId: widget.listingId!),
+            ),
+      ),
+    );
+
+    if (result == true && context.mounted) {
+      ToastTheme.showSuccess(
+        context,
+        message: LanguageAwareStringHelper.getCurrent(
+          context,
+          "complaint_created_success",
+        ),
+      );
+    }
+  }
+
   int? _getOtherUserIdFromMessages() {
     if (_currentUserId == null || _messages.isEmpty) return null;
 
@@ -711,19 +752,17 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
-    // Refresh option - always show
-    items.add(
-      ActionMenuItem(
-        value: "refresh",
-        icon: Icons.refresh,
-        textKey: "refresh",
-        onPressed: () {
-          _messagingBloc.add(
-            RefreshMessages(conversationId: widget.conversationId),
-          );
-        },
-      ),
-    );
+    // Complain option - only show when listingId is available
+    if (widget.listingId != null) {
+      items.add(
+        ActionMenuItem(
+          value: "complain",
+          icon: CupertinoIcons.exclamationmark_circle_fill,
+          textKey: "complain",
+          onPressed: _createComplaint,
+        ),
+      );
+    }
 
     return items;
   }

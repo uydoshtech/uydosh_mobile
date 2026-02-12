@@ -18,7 +18,11 @@ _$ComplaintImpl _$$ComplaintImplFromJson(Map<String, dynamic> json) =>
               : ComplaintCategory.fromJson(
                 json['category'] as Map<String, dynamic>,
               ),
-      status: Complaint._statusFromJson(json['status']),
+      text: json['text'] as String?,
+      status:
+          json['status'] == null
+              ? 'pending'
+              : _complaintStatusFromJson(json['status']),
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
     );
@@ -30,6 +34,7 @@ Map<String, dynamic> _$$ComplaintImplToJson(_$ComplaintImpl instance) =>
       'listing_id': instance.listingId,
       'category_id': instance.categoryId,
       'category': instance.category,
+      'text': instance.text,
       'status': instance.status,
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,
@@ -40,6 +45,7 @@ _$CreateComplaintRequestImpl _$$CreateComplaintRequestImplFromJson(
 ) => _$CreateComplaintRequestImpl(
   listingId: (json['listing_id'] as num).toInt(),
   categoryId: (json['category_id'] as num).toInt(),
+  text: json['text'] as String?,
 );
 
 Map<String, dynamic> _$$CreateComplaintRequestImplToJson(
@@ -47,4 +53,5 @@ Map<String, dynamic> _$$CreateComplaintRequestImplToJson(
 ) => <String, dynamic>{
   'listing_id': instance.listingId,
   'category_id': instance.categoryId,
+  'text': instance.text,
 };

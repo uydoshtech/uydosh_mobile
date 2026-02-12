@@ -30,6 +30,12 @@ mixin _$Complaint {
   int? get categoryId => throw _privateConstructorUsedError;
   @JsonKey(name: 'category')
   ComplaintCategory? get category => throw _privateConstructorUsedError;
+  String? get text => throw _privateConstructorUsedError;
+  @JsonKey(
+    name: 'status',
+    fromJson: _complaintStatusFromJson,
+    defaultValue: 'pending',
+  )
   String get status => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   String? get createdAt => throw _privateConstructorUsedError;
@@ -57,10 +63,18 @@ abstract class $ComplaintCopyWith<$Res> {
     @JsonKey(name: 'listing_id') int? listingId,
     @JsonKey(name: 'category_id') int? categoryId,
     @JsonKey(name: 'category') ComplaintCategory? category,
+    String? text,
+    @JsonKey(
+      name: 'status',
+      fromJson: _complaintStatusFromJson,
+      defaultValue: 'pending',
+    )
     String status,
     @JsonKey(name: 'created_at') String? createdAt,
     @JsonKey(name: 'updated_at') String? updatedAt,
   });
+
+  $ComplaintCategoryCopyWith<$Res>? get category;
 }
 
 /// @nodoc
@@ -83,6 +97,7 @@ class _$ComplaintCopyWithImpl<$Res, $Val extends Complaint>
     Object? listingId = freezed,
     Object? categoryId = freezed,
     Object? category = freezed,
+    Object? text = freezed,
     Object? status = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
@@ -114,6 +129,11 @@ class _$ComplaintCopyWithImpl<$Res, $Val extends Complaint>
                     ? _value.category
                     : category // ignore: cast_nullable_to_non_nullable
                         as ComplaintCategory?,
+            text:
+                freezed == text
+                    ? _value.text
+                    : text // ignore: cast_nullable_to_non_nullable
+                        as String?,
             status:
                 null == status
                     ? _value.status
@@ -133,6 +153,20 @@ class _$ComplaintCopyWithImpl<$Res, $Val extends Complaint>
           as $Val,
     );
   }
+
+  /// Create a copy of Complaint
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ComplaintCategoryCopyWith<$Res>? get category {
+    if (_value.category == null) {
+      return null;
+    }
+
+    return $ComplaintCategoryCopyWith<$Res>(_value.category!, (value) {
+      return _then(_value.copyWith(category: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -150,10 +184,19 @@ abstract class _$$ComplaintImplCopyWith<$Res>
     @JsonKey(name: 'listing_id') int? listingId,
     @JsonKey(name: 'category_id') int? categoryId,
     @JsonKey(name: 'category') ComplaintCategory? category,
+    String? text,
+    @JsonKey(
+      name: 'status',
+      fromJson: _complaintStatusFromJson,
+      defaultValue: 'pending',
+    )
     String status,
     @JsonKey(name: 'created_at') String? createdAt,
     @JsonKey(name: 'updated_at') String? updatedAt,
   });
+
+  @override
+  $ComplaintCategoryCopyWith<$Res>? get category;
 }
 
 /// @nodoc
@@ -175,6 +218,7 @@ class __$$ComplaintImplCopyWithImpl<$Res>
     Object? listingId = freezed,
     Object? categoryId = freezed,
     Object? category = freezed,
+    Object? text = freezed,
     Object? status = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
@@ -206,6 +250,11 @@ class __$$ComplaintImplCopyWithImpl<$Res>
                 ? _value.category
                 : category // ignore: cast_nullable_to_non_nullable
                     as ComplaintCategory?,
+        text:
+            freezed == text
+                ? _value.text
+                : text // ignore: cast_nullable_to_non_nullable
+                    as String?,
         status:
             null == status
                 ? _value.status
@@ -235,6 +284,12 @@ class _$ComplaintImpl implements _Complaint {
     @JsonKey(name: 'listing_id') this.listingId,
     @JsonKey(name: 'category_id') this.categoryId,
     @JsonKey(name: 'category') this.category,
+    this.text,
+    @JsonKey(
+      name: 'status',
+      fromJson: _complaintStatusFromJson,
+      defaultValue: 'pending',
+    )
     required this.status,
     @JsonKey(name: 'created_at') this.createdAt,
     @JsonKey(name: 'updated_at') this.updatedAt,
@@ -258,6 +313,13 @@ class _$ComplaintImpl implements _Complaint {
   @JsonKey(name: 'category')
   final ComplaintCategory? category;
   @override
+  final String? text;
+  @override
+  @JsonKey(
+    name: 'status',
+    fromJson: _complaintStatusFromJson,
+    defaultValue: 'pending',
+  )
   final String status;
   @override
   @JsonKey(name: 'created_at')
@@ -268,7 +330,7 @@ class _$ComplaintImpl implements _Complaint {
 
   @override
   String toString() {
-    return 'Complaint(id: $id, complainantId: $complainantId, listingId: $listingId, categoryId: $categoryId, category: $category, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Complaint(id: $id, complainantId: $complainantId, listingId: $listingId, categoryId: $categoryId, category: $category, text: $text, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -285,6 +347,7 @@ class _$ComplaintImpl implements _Complaint {
                 other.categoryId == categoryId) &&
             (identical(other.category, category) ||
                 other.category == category) &&
+            (identical(other.text, text) || other.text == text) &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
@@ -301,6 +364,7 @@ class _$ComplaintImpl implements _Complaint {
     listingId,
     categoryId,
     category,
+    text,
     status,
     createdAt,
     updatedAt,
@@ -323,10 +387,16 @@ class _$ComplaintImpl implements _Complaint {
 abstract class _Complaint implements Complaint {
   const factory _Complaint({
     final int? id,
-  @JsonKey(name: 'complainant_id') final int? complainantId,
-  @JsonKey(name: 'listing_id') final int? listingId,
-  @JsonKey(name: 'category_id') final int? categoryId,
+    @JsonKey(name: 'complainant_id') final int? complainantId,
+    @JsonKey(name: 'listing_id') final int? listingId,
+    @JsonKey(name: 'category_id') final int? categoryId,
     @JsonKey(name: 'category') final ComplaintCategory? category,
+    final String? text,
+    @JsonKey(
+      name: 'status',
+      fromJson: _complaintStatusFromJson,
+      defaultValue: 'pending',
+    )
     required final String status,
     @JsonKey(name: 'created_at') final String? createdAt,
     @JsonKey(name: 'updated_at') final String? updatedAt,
@@ -350,6 +420,13 @@ abstract class _Complaint implements Complaint {
   @JsonKey(name: 'category')
   ComplaintCategory? get category;
   @override
+  String? get text;
+  @override
+  @JsonKey(
+    name: 'status',
+    fromJson: _complaintStatusFromJson,
+    defaultValue: 'pending',
+  )
   String get status;
   @override
   @JsonKey(name: 'created_at')
@@ -378,6 +455,7 @@ mixin _$CreateComplaintRequest {
   int get listingId => throw _privateConstructorUsedError;
   @JsonKey(name: 'category_id')
   int get categoryId => throw _privateConstructorUsedError;
+  String? get text => throw _privateConstructorUsedError;
 
   /// Serializes this CreateComplaintRequest to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -399,6 +477,7 @@ abstract class $CreateComplaintRequestCopyWith<$Res> {
   $Res call({
     @JsonKey(name: 'listing_id') int listingId,
     @JsonKey(name: 'category_id') int categoryId,
+    String? text,
   });
 }
 
@@ -419,7 +498,11 @@ class _$CreateComplaintRequestCopyWithImpl<
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? listingId = null, Object? categoryId = null}) {
+  $Res call({
+    Object? listingId = null,
+    Object? categoryId = null,
+    Object? text = freezed,
+  }) {
     return _then(
       _value.copyWith(
             listingId:
@@ -432,6 +515,11 @@ class _$CreateComplaintRequestCopyWithImpl<
                     ? _value.categoryId
                     : categoryId // ignore: cast_nullable_to_non_nullable
                         as int,
+            text:
+                freezed == text
+                    ? _value.text
+                    : text // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -450,6 +538,7 @@ abstract class _$$CreateComplaintRequestImplCopyWith<$Res>
   $Res call({
     @JsonKey(name: 'listing_id') int listingId,
     @JsonKey(name: 'category_id') int categoryId,
+    String? text,
   });
 }
 
@@ -467,7 +556,11 @@ class __$$CreateComplaintRequestImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? listingId = null, Object? categoryId = null}) {
+  $Res call({
+    Object? listingId = null,
+    Object? categoryId = null,
+    Object? text = freezed,
+  }) {
     return _then(
       _$CreateComplaintRequestImpl(
         listingId:
@@ -480,6 +573,11 @@ class __$$CreateComplaintRequestImplCopyWithImpl<$Res>
                 ? _value.categoryId
                 : categoryId // ignore: cast_nullable_to_non_nullable
                     as int,
+        text:
+            freezed == text
+                ? _value.text
+                : text // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -491,6 +589,7 @@ class _$CreateComplaintRequestImpl implements _CreateComplaintRequest {
   const _$CreateComplaintRequestImpl({
     @JsonKey(name: 'listing_id') required this.listingId,
     @JsonKey(name: 'category_id') required this.categoryId,
+    this.text,
   });
 
   factory _$CreateComplaintRequestImpl.fromJson(Map<String, dynamic> json) =>
@@ -502,10 +601,12 @@ class _$CreateComplaintRequestImpl implements _CreateComplaintRequest {
   @override
   @JsonKey(name: 'category_id')
   final int categoryId;
+  @override
+  final String? text;
 
   @override
   String toString() {
-    return 'CreateComplaintRequest(listingId: $listingId, categoryId: $categoryId)';
+    return 'CreateComplaintRequest(listingId: $listingId, categoryId: $categoryId, text: $text)';
   }
 
   @override
@@ -516,12 +617,13 @@ class _$CreateComplaintRequestImpl implements _CreateComplaintRequest {
             (identical(other.listingId, listingId) ||
                 other.listingId == listingId) &&
             (identical(other.categoryId, categoryId) ||
-                other.categoryId == categoryId));
+                other.categoryId == categoryId) &&
+            (identical(other.text, text) || other.text == text));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, listingId, categoryId);
+  int get hashCode => Object.hash(runtimeType, listingId, categoryId, text);
 
   /// Create a copy of CreateComplaintRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -545,6 +647,7 @@ abstract class _CreateComplaintRequest implements CreateComplaintRequest {
   const factory _CreateComplaintRequest({
     @JsonKey(name: 'listing_id') required final int listingId,
     @JsonKey(name: 'category_id') required final int categoryId,
+    final String? text,
   }) = _$CreateComplaintRequestImpl;
 
   factory _CreateComplaintRequest.fromJson(Map<String, dynamic> json) =
@@ -556,6 +659,8 @@ abstract class _CreateComplaintRequest implements CreateComplaintRequest {
   @override
   @JsonKey(name: 'category_id')
   int get categoryId;
+  @override
+  String? get text;
 
   /// Create a copy of CreateComplaintRequest
   /// with the given fields replaced by the non-null parameter values.
