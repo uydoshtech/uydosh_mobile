@@ -134,15 +134,6 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         </g>
       </g>
     </g>
-    <g id="tv_tower" transform="translate(220,170) translate(-15,-105)" style="fill:__TV_TOWER_FILL__">
-      <rect x="14.5" y="0" width="1" height="35"/>
-      <rect x="11.25" y="33.75" width="7.5" height="3.5" rx="0.75"/>
-      <rect x="13.5" y="37.5" width="3" height="30"/>
-      <rect x="10.75" y="66.25" width="8.5" height="4" rx="0.75"/>
-      <rect x="14" y="70" width="2" height="22.5"/>
-      <path d="M15 75 L5 102.5 L7.5 102.5 L15 82.5 Z"/>
-      <path d="M15 75 L25 102.5 L22.5 102.5 L15 82.5 Z"/>
-    </g>
     <g id="interchange_group" style="opacity:1">
       <use xlink:href="#int2" transform="translate(122,272)rotate(90)" id="Alisher-Navoi-Pakhtakor"/>
       <use xlink:href="#int2s" transform="translate(230,300)" id="Amir-Temur-khiyoboni-Yunus-Radzhabi"/>
@@ -536,15 +527,34 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
   static const double _bazaarChorsuWidth = 22;
   static const double _bazaarChorsuHeight = 12;
 
+  static const double _tvTowerMapX = 205;
+  static const double _tvTowerMapY = 65;
+  static const double _tvTowerWidth = 24;
+  static const double _tvTowerHeight = 30;
+
+  static const double _monumentMapX = 200;
+  static const double _monumentMapY = 350;
+  static const double _monumentWidth = 24;
+  static const double _monumentHeight = 24;
+
   List<Widget> _buildMapOverlays(
     double scale,
     double offsetX,
-    double offsetY,
-  ) {
+    double offsetY, {
+    required bool isBlueTheme,
+  }) {
     final bazaarX =
         offsetX + (_mapOffset.dx + _bazaarChorsuMapX - _viewBoxMinX) * scale;
     final bazaarY =
         offsetY + (_mapOffset.dy + _bazaarChorsuMapY) * scale;
+    final tvTowerX =
+        offsetX + (_mapOffset.dx + _tvTowerMapX - _viewBoxMinX) * scale;
+    final tvTowerY =
+        offsetY + (_mapOffset.dy + _tvTowerMapY) * scale;
+    final monumentX =
+        offsetX + (_mapOffset.dx + _monumentMapX - _viewBoxMinX) * scale;
+    final monumentY =
+        offsetY + (_mapOffset.dy + _monumentMapY) * scale;
     return [
       Positioned(
         left: bazaarX - _bazaarChorsuWidth / 2,
@@ -553,6 +563,32 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           "assets/map_elements/bazaar_chorsu.svg",
           width: _bazaarChorsuWidth * 2,
           height: _bazaarChorsuHeight * 2,
+          fit: BoxFit.contain,
+        ),
+      ),
+      Positioned(
+        left: tvTowerX - _tvTowerWidth / 2,
+        top: tvTowerY - _tvTowerHeight / 2,
+        child: SvgPicture.asset(
+          "assets/map_elements/tv_tower.svg",
+          width: _tvTowerWidth * 2,
+          height: _tvTowerHeight * 2,
+          fit: BoxFit.contain,
+          colorFilter: isBlueTheme
+              ? const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                )
+              : null,
+        ),
+      ),
+      Positioned(
+        left: monumentX - _monumentWidth / 2,
+        top: monumentY - _monumentHeight / 2,
+        child: SvgPicture.asset(
+          "assets/map_elements/monument.svg",
+          width: _monumentWidth * 2,
+          height: _monumentHeight * 2,
           fit: BoxFit.contain,
         ),
       ),
@@ -689,8 +725,7 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
   }
 
   static String _getMapSvgForTheme(bool isBlueTheme) {
-    final tvTowerFill = isBlueTheme ? '#FFFFFF' : '#000000';
-    return _mapSvg.replaceAll('__TV_TOWER_FILL__', tvTowerFill);
+    return _mapSvg;
   }
 
   @override
@@ -754,7 +789,12 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
                                   fit: BoxFit.contain,
                                   semanticsLabel: "Tashkent subway map",
                                 ),
-                                ..._buildMapOverlays(scale, offsetX, offsetY),
+                                ..._buildMapOverlays(
+                                  scale,
+                                  offsetX,
+                                  offsetY,
+                                  isBlueTheme: ThemeState().isBlueTheme,
+                                ),
                                 ..._buildStationTapTargets(
                                   context,
                                   scale,
