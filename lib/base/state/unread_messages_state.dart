@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
 
 /// Global state to track unread messages count
-/// This is used to show the blinking red dot indicator in the navigation bar
+/// This is used to show the blinking green dot indicator in the navigation bar
 class UnreadMessagesState extends ChangeNotifier {
   static final UnreadMessagesState _instance = UnreadMessagesState._internal();
   factory UnreadMessagesState() => _instance;

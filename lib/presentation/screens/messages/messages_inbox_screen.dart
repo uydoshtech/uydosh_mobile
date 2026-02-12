@@ -664,7 +664,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.keyboard_arrow_up,
+                          Icons.mail,
                           size: 18,
                           color:
                               _selectedTabIndex == 1

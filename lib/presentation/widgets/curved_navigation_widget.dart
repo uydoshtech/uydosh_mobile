@@ -140,13 +140,13 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
               size: 28,
               color: iconColor,
             ),
-            // Blinking red dot indicator for unread messages
+            // Blinking green dot indicator for unread messages
             if (widget.hasUnreadMessages)
               const Positioned(
                 right: 0,
                 top: 0,
                 child: BlinkingDotWidget(
-                  color: Colors.red,
+                  color: AppColors.success,
                   size: 13,
                   duration: Duration(milliseconds: 750),
                   borderColor: Colors.white,
