@@ -493,7 +493,7 @@ class _MainNavigationState extends State<MainNavigation>
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: _getAppBarTitle(),
         actions: [
-          const HeaderThemeToggle(),
+          if (_currentIndex == 0) const HeaderThemeToggle(),
           // Profile button on the right side with proper margin
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -549,7 +549,7 @@ class _MainNavigationState extends State<MainNavigation>
                           icon: Icon(
                             Icons.person,
                             color: borderColor, // Same color as border
-                            size: 20,
+                            size: 24,
                           ),
                           tooltip: LanguageAwareStringHelper.getCurrent(
                             context,
@@ -589,7 +589,7 @@ class _MainNavigationState extends State<MainNavigation>
                           ),
                         );
                       },
-                      icon: Icon(Icons.person, color: iconColor, size: 24),
+                      icon: Icon(Icons.person, color: iconColor, size: 28),
                       tooltip: LanguageAwareStringHelper.getCurrent(
                         context,
                         "profile",
