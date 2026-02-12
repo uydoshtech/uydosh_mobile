@@ -28,8 +28,9 @@ class _StationLabel {
 class AdminSubwayMapScreen extends StatelessWidget {
   const AdminSubwayMapScreen({super.key});
 
-  static const double _svgWidth = 520;
+  static const double _svgWidth = 600;
   static const double _svgHeight = 1200;
+  static const double _viewBoxMinX = -80;
   static const Offset _mapOffset = Offset(40, 80);
   static const double _tapTargetWidth = 140;
   static const double _tapTargetHeight = 26;
@@ -40,7 +41,7 @@ class AdminSubwayMapScreen extends StatelessWidget {
       _extractStationLabels(_rawMapSvg);
 
   static const String _rawMapSvg = '''
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="520" height="1200" viewBox="0 0 520 1200" xml:space="default">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="520" height="1200" viewBox="-80 0 600 1200" xml:space="default">
   <title>Tashkent metropoliten map</title>
   <defs>
     <style type="text/css">
@@ -147,16 +148,16 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         <use xlink:href="#intst1" transform="translate(230,300)" id="Amir-Temur-khiyoboni"/>
         <use xlink:href="#st1" transform="translate(195,300)rotate(-90)" id="Ploshchad-Mustakillik"/>
         <use xlink:href="#intst1" transform="translate(122,300)rotate(-150)" id="Pakhtakor"/>
-        <use xlink:href="#st1" transform="translate(0,330)" id="Khalklar-dustligi"/>
-        <use xlink:href="#st1" transform="translate(0,380)" id="Milliy-Bog"/>
-        <use xlink:href="#st1" transform="translate(0,430)" id="Novza"/>
-        <use xlink:href="#st1" transform="translate(0,480)" id="Mirzo-Ulugbek"/>
-        <use xlink:href="#st1" transform="translate(0,530)" id="Chilonzor"/>
-        <use xlink:href="#st1" transform="translate(0,580)" id="Olmazor"/>
-        <use xlink:href="#st1" transform="translate(0,630)" id="Choshtepa"/>
-        <use xlink:href="#st1" transform="translate(0,680)" id="Uzgarish"/>
-        <use xlink:href="#st1" transform="translate(0,730)" id="Sergeli"/>
-        <use xlink:href="#st1" transform="translate(0,780)" id="Yangikhayot"/>
+        <use xlink:href="#st1" transform="translate(0,330) scale(-1,1)" id="Khalklar-dustligi"/>
+        <use xlink:href="#st1" transform="translate(0,380) scale(-1,1)" id="Milliy-Bog"/>
+        <use xlink:href="#st1" transform="translate(0,430) scale(-1,1)" id="Novza"/>
+        <use xlink:href="#st1" transform="translate(0,480) scale(-1,1)" id="Mirzo-Ulugbek"/>
+        <use xlink:href="#st1" transform="translate(0,530) scale(-1,1)" id="Chilonzor"/>
+        <use xlink:href="#st1" transform="translate(0,580) scale(-1,1)" id="Olmazor"/>
+        <use xlink:href="#st1" transform="translate(0,630) scale(-1,1)" id="Choshtepa"/>
+        <use xlink:href="#st1" transform="translate(0,680) scale(-1,1)" id="Uzgarish"/>
+        <use xlink:href="#st1" transform="translate(0,730) scale(-1,1)" id="Sergeli"/>
+        <use xlink:href="#st1" transform="translate(0,780) scale(-1,1)" id="Yangikhayot"/>
         <use xlink:href="#intst1" transform="translate(0,830)" id="Chinor"/>
       </g>
       <g id="station_nodes_route2">
@@ -250,18 +251,40 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
               <switch transform="translate(112,288)"><text id="trsvg1157-ru" systemLanguage="ru"><tspan id="trsvg1096-ru">Пахтакор</tspan></text><text id="trsvg1157-en" systemLanguage="en"><tspan id="trsvg1096-en">Parhtakor</tspan></text><text id="trsvg1157-uz" systemLanguage="uz"><tspan id="trsvg1096-uz">Paxtakor</tspan></text><text id="trsvg1157"><tspan id="trsvg1096">Paxtakor</tspan></text></switch>
             </g>
           </g>
-          <switch transform="translate(12,330)"><text id="trsvg1158-ru" systemLanguage="ru"><tspan id="trsvg1097-ru">X. Дустлиги</tspan></text><text id="trsvg1158-en" systemLanguage="en"><tspan id="trsvg1097-en">Halklar dustligi</tspan></text><text id="trsvg1158-uz" systemLanguage="uz"><tspan id="trsvg1097-uz">Xalqlar doʻstligi</tspan></text><text id="trsvg1158"><tspan id="trsvg1097">Xalqlar doʻstligi</tspan></text></switch>
-          <switch transform="translate(12,380)"><text id="trsvg1159-ru" systemLanguage="ru"><tspan id="trsvg1098-ru">Миллий Бог</tspan></text><text id="trsvg1159-en" systemLanguage="en"><tspan id="trsvg1098-en">Milliy bogh</tspan></text><text id="trsvg1159-uz" systemLanguage="uz"><tspan id="trsvg1098-uz">Milliy bogʻ</tspan></text><text id="trsvg1159"><tspan id="trsvg1098">Milliy bogʻ</tspan></text></switch>
-          <switch transform="translate(12,430)"><text id="trsvg1160-ru" systemLanguage="ru"><tspan id="trsvg1099-ru">Новза</tspan></text><text id="trsvg1160-en" systemLanguage="en"><tspan id="trsvg1099-en">Nowza</tspan></text><text id="trsvg1160-uz" systemLanguage="uz"><tspan id="trsvg1099-uz">Novza</tspan></text><text id="trsvg1160"><tspan id="trsvg1099">Novza</tspan></text></switch>
-          <switch transform="translate(12,480)"><text id="trsvg1161-ru" systemLanguage="ru"><tspan id="trsvg1100-ru">М. Улугбек</tspan></text><text id="trsvg1161-en" systemLanguage="en"><tspan id="trsvg1100-en">Mirzo Ulugbek</tspan></text><text id="trsvg1161-uz" systemLanguage="uz"><tspan id="trsvg1100-uz">Mirzo Ulugʻbek</tspan></text><text id="trsvg1161"><tspan id="trsvg1100">Mirzo Ulugʻbek</tspan></text></switch>
-          <switch transform="translate(12,530)"><text id="trsvg1162-ru" systemLanguage="ru"><tspan id="trsvg1101-ru">Чилонзор</tspan></text><text id="trsvg1162-en" systemLanguage="en"><tspan id="trsvg1101-en">Chilonzor</tspan></text><text id="trsvg1162-uz" systemLanguage="uz"><tspan id="trsvg1101-uz">Chilonzor</tspan></text><text id="trsvg1162"><tspan id="trsvg1101">Chilonzor</tspan></text></switch>
-          <switch transform="translate(12,580)"><text id="trsvg1163-ru" systemLanguage="ru"><tspan id="trsvg1102-ru">Олмазор</tspan></text><text id="trsvg1163-en" systemLanguage="en"><tspan id="trsvg1102-en">Olmazor</tspan></text><text id="trsvg1163-uz" systemLanguage="uz"><tspan id="trsvg1102-uz">Olmazor</tspan></text><text id="trsvg1163"><tspan id="trsvg1102">Olmazor</tspan></text></switch>
-          <switch transform="translate(12,630)"><text id="trsvg1164-ru" systemLanguage="ru"><tspan id="trsvg1103-ru">Чоштепа</tspan></text><text id="trsvg1164-en" systemLanguage="en"><tspan id="trsvg1103-en">Choshtepa</tspan></text><text id="trsvg1164-uz" systemLanguage="uz"><tspan id="trsvg1103-uz">Choshtepa</tspan></text><text id="trsvg1164"><tspan id="trsvg1103">Choshtepa</tspan></text></switch>
-          <switch transform="translate(12,680)"><text id="trsvg1165-ru" systemLanguage="ru"><tspan id="trsvg1104-ru">Узгариш</tspan></text><text id="trsvg1165-en" systemLanguage="en"><tspan id="trsvg1104-en">Uzgarish</tspan></text><text id="trsvg1165-uz" systemLanguage="uz"><tspan id="trsvg1104-uz">Oʻzgarish</tspan></text><text id="trsvg1165"><tspan id="trsvg1104">Oʻzgarish</tspan></text></switch>
-          <switch transform="translate(12,730)"><text id="trsvg1166-ru" systemLanguage="ru"><tspan id="trsvg1105-ru">Сергели</tspan></text><text id="trsvg1166-en" systemLanguage="en"><tspan id="trsvg1105-en">Sergeli</tspan></text><text id="trsvg1166-uz" systemLanguage="uz"><tspan id="trsvg1105-uz">Sergeli</tspan></text><text id="trsvg1166"><tspan id="trsvg1105">Sergeli</tspan></text></switch>
-          <switch transform="translate(12,780)"><text id="trsvg1167-ru" systemLanguage="ru"><tspan id="trsvg1106-ru">Янгихаёт</tspan></text><text id="trsvg1167-en" systemLanguage="en"><tspan id="trsvg1106-en">Yangihaet</tspan></text><text id="trsvg1167-uz" systemLanguage="uz"><tspan id="trsvg1106-uz">Yangihayot</tspan></text><text id="trsvg1167"><tspan id="trsvg1106">Yangihayot</tspan></text></switch>
+          <g class="end">
+            <switch transform="translate(-12,330)"><text id="trsvg1158-ru" systemLanguage="ru"><tspan id="trsvg1097-ru">X. Дустлиги</tspan></text><text id="trsvg1158-en" systemLanguage="en"><tspan id="trsvg1097-en">Halklar dustligi</tspan></text><text id="trsvg1158-uz" systemLanguage="uz"><tspan id="trsvg1097-uz">Xalqlar doʻstligi</tspan></text><text id="trsvg1158"><tspan id="trsvg1097">Xalqlar doʻstligi</tspan></text></switch>
+          </g>
+          <g class="end">
+            <switch transform="translate(-12,380)"><text id="trsvg1159-ru" systemLanguage="ru"><tspan id="trsvg1098-ru">Миллий Бог</tspan></text><text id="trsvg1159-en" systemLanguage="en"><tspan id="trsvg1098-en">Milliy bogh</tspan></text><text id="trsvg1159-uz" systemLanguage="uz"><tspan id="trsvg1098-uz">Milliy bogʻ</tspan></text><text id="trsvg1159"><tspan id="trsvg1098">Milliy bogʻ</tspan></text></switch>
+          </g>
+          <g class="end">
+            <switch transform="translate(-12,430)"><text id="trsvg1160-ru" systemLanguage="ru"><tspan id="trsvg1099-ru">Новза</tspan></text><text id="trsvg1160-en" systemLanguage="en"><tspan id="trsvg1099-en">Nowza</tspan></text><text id="trsvg1160-uz" systemLanguage="uz"><tspan id="trsvg1099-uz">Novza</tspan></text><text id="trsvg1160"><tspan id="trsvg1099">Novza</tspan></text></switch>
+          </g>
+          <g class="end">
+            <switch transform="translate(-12,480)"><text id="trsvg1161-ru" systemLanguage="ru"><tspan id="trsvg1100-ru">М. Улугбек</tspan></text><text id="trsvg1161-en" systemLanguage="en"><tspan id="trsvg1100-en">Mirzo Ulugbek</tspan></text><text id="trsvg1161-uz" systemLanguage="uz"><tspan id="trsvg1100-uz">Mirzo Ulugʻbek</tspan></text><text id="trsvg1161"><tspan id="trsvg1100">Mirzo Ulugʻbek</tspan></text></switch>
+          </g>
+          <g class="end">
+            <switch transform="translate(-12,530)"><text id="trsvg1162-ru" systemLanguage="ru"><tspan id="trsvg1101-ru">Чилонзор</tspan></text><text id="trsvg1162-en" systemLanguage="en"><tspan id="trsvg1101-en">Chilonzor</tspan></text><text id="trsvg1162-uz" systemLanguage="uz"><tspan id="trsvg1101-uz">Chilonzor</tspan></text><text id="trsvg1162"><tspan id="trsvg1101">Chilonzor</tspan></text></switch>
+          </g>
+          <g class="end">
+            <switch transform="translate(-12,580)"><text id="trsvg1163-ru" systemLanguage="ru"><tspan id="trsvg1102-ru">Олмазор</tspan></text><text id="trsvg1163-en" systemLanguage="en"><tspan id="trsvg1102-en">Olmazor</tspan></text><text id="trsvg1163-uz" systemLanguage="uz"><tspan id="trsvg1102-uz">Olmazor</tspan></text><text id="trsvg1163"><tspan id="trsvg1102">Olmazor</tspan></text></switch>
+          </g>
+          <g class="end">
+            <switch transform="translate(-12,630)"><text id="trsvg1164-ru" systemLanguage="ru"><tspan id="trsvg1103-ru">Чоштепа</tspan></text><text id="trsvg1164-en" systemLanguage="en"><tspan id="trsvg1103-en">Choshtepa</tspan></text><text id="trsvg1164-uz" systemLanguage="uz"><tspan id="trsvg1103-uz">Choshtepa</tspan></text><text id="trsvg1164"><tspan id="trsvg1103">Choshtepa</tspan></text></switch>
+          </g>
+          <g class="end">
+            <switch transform="translate(-12,680)"><text id="trsvg1165-ru" systemLanguage="ru"><tspan id="trsvg1104-ru">Узгариш</tspan></text><text id="trsvg1165-en" systemLanguage="en"><tspan id="trsvg1104-en">Uzgarish</tspan></text><text id="trsvg1165-uz" systemLanguage="uz"><tspan id="trsvg1104-uz">Oʻzgarish</tspan></text><text id="trsvg1165"><tspan id="trsvg1104">Oʻzgarish</tspan></text></switch>
+          </g>
+          <g class="end">
+            <switch transform="translate(-12,730)"><text id="trsvg1166-ru" systemLanguage="ru"><tspan id="trsvg1105-ru">Сергели</tspan></text><text id="trsvg1166-en" systemLanguage="en"><tspan id="trsvg1105-en">Sergeli</tspan></text><text id="trsvg1166-uz" systemLanguage="uz"><tspan id="trsvg1105-uz">Sergeli</tspan></text><text id="trsvg1166"><tspan id="trsvg1105">Sergeli</tspan></text></switch>
+          </g>
+          <g class="end">
+            <switch transform="translate(-12,780)"><text id="trsvg1167-ru" systemLanguage="ru"><tspan id="trsvg1106-ru">Янгихаёт</tspan></text><text id="trsvg1167-en" systemLanguage="en"><tspan id="trsvg1106-en">Yangihaet</tspan></text><text id="trsvg1167-uz" systemLanguage="uz"><tspan id="trsvg1106-uz">Yangihayot</tspan></text><text id="trsvg1167"><tspan id="trsvg1106">Yangihayot</tspan></text></switch>
+          </g>
           <g class="ic r1">
-            <switch transform="translate(12,828)"><text id="trsvg1168-ru" systemLanguage="ru"><tspan id="trsvg1107-ru">Чинор</tspan></text><text id="trsvg1168-en" systemLanguage="en"><tspan id="trsvg1107-en">Chinor</tspan></text><text id="trsvg1168-uz" systemLanguage="uz"><tspan id="trsvg1107-uz">Chinor</tspan></text><text id="trsvg1168"><tspan id="trsvg1107">Chinor</tspan></text></switch>
+            <g class="end">
+              <switch transform="translate(-12,828)"><text id="trsvg1168-ru" systemLanguage="ru"><tspan id="trsvg1107-ru">Чинор</tspan></text><text id="trsvg1168-en" systemLanguage="en"><tspan id="trsvg1107-en">Chinor</tspan></text><text id="trsvg1168-uz" systemLanguage="uz"><tspan id="trsvg1107-uz">Chinor</tspan></text><text id="trsvg1168"><tspan id="trsvg1107">Chinor</tspan></text></switch>
+            </g>
           </g>
         </g>
         <g id="route2_stname">
@@ -507,7 +530,7 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
     double offsetY,
   ) {
     return _stationLabels.map((label) {
-      final posX = offsetX + (_mapOffset.dx + label.x) * scale;
+      final posX = offsetX + (_mapOffset.dx + label.x - _viewBoxMinX) * scale;
       final posY = offsetY + (_mapOffset.dy + label.y) * scale;
       return Positioned(
         left: posX - _tapTargetWidth / 2,
