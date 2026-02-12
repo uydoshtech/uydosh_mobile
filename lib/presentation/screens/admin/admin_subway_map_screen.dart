@@ -133,14 +133,14 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         </g>
       </g>
     </g>
-    <g id="tv_tower" transform="translate(200,170) scale(0.25) translate(-60,-420)" style="fill:#2E0B57">
-      <rect x="58" y="0" width="4" height="140"/>
-      <rect x="45" y="135" width="30" height="14" rx="3"/>
-      <rect x="54" y="150" width="12" height="120"/>
-      <rect x="43" y="265" width="34" height="16" rx="3"/>
-      <rect x="56" y="280" width="8" height="90"/>
-      <path d="M60 300 L20 410 L30 410 L60 330 Z"/>
-      <path d="M60 300 L100 410 L90 410 L60 330 Z"/>
+    <g id="tv_tower" transform="translate(220,170) translate(-15,-105)" style="fill:#2E0B57">
+      <rect x="14.5" y="0" width="1" height="35"/>
+      <rect x="11.25" y="33.75" width="7.5" height="3.5" rx="0.75"/>
+      <rect x="13.5" y="37.5" width="3" height="30"/>
+      <rect x="10.75" y="66.25" width="8.5" height="4" rx="0.75"/>
+      <rect x="14" y="70" width="2" height="22.5"/>
+      <path d="M15 75 L5 102.5 L7.5 102.5 L15 82.5 Z"/>
+      <path d="M15 75 L25 102.5 L22.5 102.5 L15 82.5 Z"/>
     </g>
     <g id="interchange_group" style="opacity:1">
       <use xlink:href="#int2" transform="translate(122,272)rotate(90)" id="Alisher-Navoi-Pakhtakor"/>
