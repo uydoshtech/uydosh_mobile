@@ -531,8 +531,8 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
 
   static const double _bazaarChorsuMapX = 0;
   static const double _bazaarChorsuMapY = 210;
-  static const double _bazaarChorsuWidth = 22;
-  static const double _bazaarChorsuHeight = 12;
+  static const double _bazaarChorsuWidth = 60;
+  static const double _bazaarChorsuHeight = 18;
 
   static const double _tvTowerMapX = 240;
   static const double _tvTowerMapY = 120;
