@@ -402,6 +402,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text(
               LanguageAwareStringHelper.getCurrent(context, "close"),
             ),
