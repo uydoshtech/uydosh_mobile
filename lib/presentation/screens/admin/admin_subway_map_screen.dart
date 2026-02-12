@@ -26,8 +26,15 @@ class _StationLabel {
   final double y;
 }
 
-class AdminSubwayMapScreen extends StatelessWidget {
+class AdminSubwayMapScreen extends StatefulWidget {
   const AdminSubwayMapScreen({super.key});
+
+  @override
+  State<AdminSubwayMapScreen> createState() => _AdminSubwayMapScreenState();
+}
+
+class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
+  Key _mapKey = UniqueKey();
 
   static const double _svgWidth = 640;
   static const double _svgHeight = 1200;
@@ -527,15 +534,15 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
   static const double _bazaarChorsuWidth = 22;
   static const double _bazaarChorsuHeight = 12;
 
-  static const double _tvTowerMapX = 205;
-  static const double _tvTowerMapY = 65;
-  static const double _tvTowerWidth = 24;
-  static const double _tvTowerHeight = 30;
+  static const double _tvTowerMapX = 240;
+  static const double _tvTowerMapY = 120;
+  static const double _tvTowerWidth = 56;
+  static const double _tvTowerHeight = 60;
 
-  static const double _monumentMapX = 200;
-  static const double _monumentMapY = 350;
-  static const double _monumentWidth = 24;
-  static const double _monumentHeight = 24;
+  static const double _monumentMapX = 170;
+  static const double _monumentMapY = 330;
+  static const double _monumentWidth = 20;
+  static const double _monumentHeight = 20;
 
   List<Widget> _buildMapOverlays(
     double scale,
@@ -571,8 +578,8 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         top: tvTowerY - _tvTowerHeight / 2,
         child: SvgPicture.asset(
           "assets/map_elements/tv_tower.svg",
-          width: _tvTowerWidth * 2,
-          height: _tvTowerHeight * 2,
+          width: _tvTowerWidth,
+          height: _tvTowerHeight,
           fit: BoxFit.contain,
           colorFilter: isBlueTheme
               ? const ColorFilter.mode(
@@ -736,6 +743,17 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           LanguageAwareStringHelper.getCurrent(context, "admin_subway_map_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              setState(() {
+                _mapKey = UniqueKey();
+              });
+            },
+            tooltip: "Refresh map icons",
+          ),
+        ],
       ),
       body: ListenableBuilder(
         listenable: Listenable.merge([LanguageState(), ThemeState()]),
@@ -778,6 +796,7 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
                           boundaryMargin: const EdgeInsets.all(40),
                           transformationController: transformationController,
                           child: SizedBox(
+                            key: _mapKey,
                             width: mapWidth,
                             height: mapHeight,
                             child: Stack(
