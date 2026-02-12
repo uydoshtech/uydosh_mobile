@@ -80,6 +80,11 @@ class AppTheme {
         surfaceTintColor:
             Colors.transparent, // Disable surface tint to prevent color changes
         scrolledUnderElevation: 0, // Prevent elevation changes on scroll
+        titleTextStyle: TextStyle(
+          color: BlueThemeColors.textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
 
       // Card theme
@@ -259,7 +264,7 @@ class AppTheme {
               LightThemeColors
                   .textPrimary, // Explicitly set title text to black
           fontSize: 20,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.bold,
         ),
       ),
 
