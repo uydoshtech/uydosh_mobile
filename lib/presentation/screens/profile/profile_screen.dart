@@ -1014,6 +1014,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Logout Button Section
               const SizedBox(height: 20),
               _buildLogoutButton(context),
+
+              // Delete Account Button Section
+              const SizedBox(height: 12),
+              _buildDeleteAccountButton(context),
             ],
           ),
         );
@@ -1416,6 +1420,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         // Then perform logout
         await LogoutService().performLogout(context);
+      },
+    );
+  }
+
+  Widget _buildDeleteAccountButton(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () => _showDeleteAccountDialog(context),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(
+                Icons.delete_forever,
+                color: Theme.of(context).colorScheme.error,
+                size: 24,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  LanguageAwareStringHelper.getCurrent(
+                    context,
+                    "delete_account",
+                  ),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.error,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    CommonConfirmationDialogs.showDeleteAccountConfirmation(
+      context: context,
+      onConfirm: () async {
+        try {
+          await LogoutService().performDeleteAccount(context);
+        } catch (e) {
+          if (!context.mounted) return;
+          ToastTheme.showError(
+            context,
+            message: LanguageAwareStringHelper.getCurrent(
+              context,
+              "delete_account_error",
+            ),
+          );
+        }
       },
     );
   }

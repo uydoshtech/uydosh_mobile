@@ -26,8 +26,10 @@ import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _BurgerMenuProfileData {
@@ -209,7 +211,10 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Column(
+      child: ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, _) {
+          return Column(
         children: [
           // Menu Items
           Expanded(
@@ -388,45 +393,6 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                           ],
                         ),
                       ),
-                    );
-                  },
-                ),
-
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-                    if (!isAuthenticated) {
-                      return const SizedBox.shrink();
-                    }
-                    return FutureBuilder<String?>(
-                      future: SessionManager.getUserRole(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const SizedBox.shrink();
-                        }
-                        if (snapshot.data != "admin") {
-                          return const SizedBox.shrink();
-                        }
-                        return _buildMenuItem(
-                          icon: Icons.admin_panel_settings,
-                          titleKey: "menu_admin_panel",
-                          onTap: () {
-                            Navigator.pop(context);
-                            if (context.mounted) {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) =>
-                                          const AdminPanelScreen(),
-                                ),
-                              );
-                            }
-                          },
-                        );
-                      },
                     );
                   },
                 ),
@@ -621,6 +587,9 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
 
                 _buildThemeAwareDivider(),
 
+                // Theme toggle at root level
+                _buildThemeToggleMenuItem(),
+
                 // Settings menu item
                 _buildMenuItem(
                   icon: Icons.settings,
@@ -652,6 +621,46 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                         ),
                       );
                     }
+                  },
+                ),
+
+                // Admin panel - Only show when user is admin
+                ListenableBuilder(
+                  listenable: AuthenticationState(),
+                  builder: (context, child) {
+                    final isAuthenticated =
+                        AuthenticationState().isAuthenticated;
+                    if (!isAuthenticated) {
+                      return const SizedBox.shrink();
+                    }
+                    return FutureBuilder<String?>(
+                      future: SessionManager.getUserRole(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox.shrink();
+                        }
+                        if (snapshot.data != "admin") {
+                          return const SizedBox.shrink();
+                        }
+                        return _buildMenuItem(
+                          icon: Icons.admin_panel_settings,
+                          titleKey: "menu_admin_panel",
+                          onTap: () {
+                            Navigator.pop(context);
+                            if (context.mounted) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) =>
+                                          const AdminPanelScreen(),
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      },
+                    );
                   },
                 ),
 
@@ -726,7 +735,52 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
             ),
           ),
         ],
+      );
+        },
       ),
+    );
+  }
+
+  Widget _buildThemeToggleMenuItem() {
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) {
+        return ListTile(
+          leading: Icon(Icons.palette, color: _getIconColor()),
+          title: LanguageAwareStringHelper.getText(
+            "theme",
+            context,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: _getTextColor(),
+            ),
+          ),
+          trailing: ThemeToggle(
+            value: ThemeState().isBlueTheme,
+            onChanged: (value) async {
+              await ThemeState().toggleTheme();
+              if (context.mounted) {
+                final nameKey = ThemeState().isBlueTheme
+                    ? "blue_theme"
+                    : "light_theme";
+                ToastTheme.showSuccess(
+                  context,
+                  message: AppStrings.getWithParams(
+                    "theme_changed_to",
+                    LanguageState().currentLanguage,
+                    params: {
+                      "theme": LanguageAwareStringHelper.getCurrent(
+                        context,
+                        nameKey,
+                      ),
+                    },
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
 

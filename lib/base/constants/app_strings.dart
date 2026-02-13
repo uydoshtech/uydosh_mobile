@@ -542,6 +542,13 @@ class AppStrings {
       "logout": "Logout",
       "logout_success": "Successfully logged out",
 
+      // ===== DELETE ACCOUNT =====
+      "delete_account": "Delete account",
+      "delete_account_confirmation":
+          "Are you sure you want to delete your account? This action cannot be undone. All your data, listings, and messages will be permanently removed.",
+      "delete_account_success": "Account deleted successfully",
+      "delete_account_error": "Error deleting account",
+
       // ===== FAVORITES =====
       "favorites_title": "Favorites",
       "favorites_empty_title": "No favorites yet",
@@ -1188,6 +1195,13 @@ class AppStrings {
           "Вы уверены, что хотите выйти? Вам нужно будет снова войти, чтобы получить доступ к профилю.",
       "logout": "Выйти",
       "logout_success": "Вы успешно вышли из системы",
+
+      // ===== DELETE ACCOUNT =====
+      "delete_account": "Удалить аккаунт",
+      "delete_account_confirmation":
+          "Вы уверены, что хотите удалить свой аккаунт? Это действие нельзя отменить. Все ваши данные, объявления и сообщения будут безвозвратно удалены.",
+      "delete_account_success": "Аккаунт успешно удалён",
+      "delete_account_error": "Ошибка удаления аккаунта",
 
       // ===== FAVORITES =====
       "favorites_title": "Избранное",
@@ -1843,6 +1857,13 @@ class AppStrings {
           "Chiqishni xohlaysizmi? Profilingizga kirish uchun qaytadan tizimga kirishingiz kerak bo'ladi.",
       "logout": "Chiqish",
       "logout_success": "Muvaffaqiyatli chiqildi",
+
+      // ===== DELETE ACCOUNT =====
+      "delete_account": "Hisobni o'chirish",
+      "delete_account_confirmation":
+          "Hisobingizni o'chirishni xohlaysizmi? Bu amalni bekor qilish mumkin emas. Barcha ma'lumotlaringiz, e'lonlaringiz va xabarlaringiz butunlay o'chiriladi.",
+      "delete_account_success": "Hisob muvaffaqiyatli o'chirildi",
+      "delete_account_error": "Hisobni o'chirishda xatolik",
 
       // ===== FAVORITES =====
       "favorites_title": "Sevimlilar",

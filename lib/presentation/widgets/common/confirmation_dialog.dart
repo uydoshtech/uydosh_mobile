@@ -177,4 +177,22 @@ class CommonConfirmationDialogs {
       isDestructive: isDestructive,
     );
   }
+
+  /// Show delete account confirmation dialog
+  static Future<bool?> showDeleteAccountConfirmation({
+    required BuildContext context,
+    VoidCallback? onConfirm,
+    VoidCallback? onCancel,
+  }) {
+    return ConfirmationDialog.show(
+      context: context,
+      titleKey: "delete_account",
+      messageKey: "delete_account_confirmation",
+      confirmButtonKey: "delete",
+      cancelButtonKey: "cancel",
+      onConfirm: onConfirm,
+      onCancel: onCancel,
+      isDestructive: true,
+    );
+  }
 }

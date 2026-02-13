@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uy_dosh/base/injection/injection.dart';
+import 'package:uy_dosh/base/api/client/oauth_api_client.dart';
+import 'package:uy_dosh/base/api/client/json_encodable.dart';
 import 'package:uy_dosh/base/services/session_manager.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
 import 'package:uy_dosh/base/state/authentication_state.dart';
+import 'package:uy_dosh/presentation/widgets/common/toast_theme.dart';
+import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:uy_dosh/base/util/environment_util.dart';
+
+class _EmptyDeleteRequest implements IJsonEncodable {
+  @override
+  Map<String, dynamic> toJson() => {};
+}
 
 class LogoutService {
   static final LogoutService _instance = LogoutService._internal();
@@ -72,6 +82,33 @@ class LogoutService {
 
     if (response.statusCode != 200) {
       throw Exception('Backend logout failed: ${response.statusCode}');
+    }
+  }
+
+  /// Delete user account and then perform logout.
+  /// Shows success toast before logout to avoid context issues after navigation.
+  Future<void> performDeleteAccount(BuildContext context) async {
+    logger.d('🗑️ Starting account deletion...');
+
+    await getIt<IOAuthApiClient>().delete<Map<String, dynamic>, _EmptyDeleteRequest>(
+      '/users/delete-account',
+      (json) => json as Map<String, dynamic>,
+    );
+    logger.d('✅ Account deleted on backend');
+
+    // Show success toast before logout (avoids context issues after navigation)
+    final message = _getDeleteAccountSuccessMessage(context);
+    ToastTheme.showSuccess(context, message: message);
+
+    await performLogout(context);
+    logger.d('✅ Delete account flow completed');
+  }
+
+  static String _getDeleteAccountSuccessMessage(BuildContext context) {
+    try {
+      return LanguageAwareStringHelper.getCurrent(context, 'delete_account_success');
+    } catch (_) {
+      return 'Account deleted successfully';
     }
   }
 }
