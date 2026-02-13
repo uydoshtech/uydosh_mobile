@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uy_dosh/base/services/session_manager.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
+import 'package:uy_dosh/base/state/theme_state.dart';
 
 // Global authentication state with ChangeNotifier for reactivity
 class AuthenticationState extends ChangeNotifier {
@@ -68,6 +69,11 @@ class AuthenticationState extends ChangeNotifier {
         logger.d('🔐 AuthenticationState: Local session is valid');
       } else {
         logger.d('🔐 AuthenticationState: Local session is NOT valid');
+      }
+
+      // Apply system theme on first login when user has no saved preference
+      if (!wasAuthenticated && _isAuthenticated) {
+        ThemeState().applySystemThemeIfFirstTime();
       }
 
       // Always notify listeners to ensure UI updates

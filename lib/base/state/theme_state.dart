@@ -95,6 +95,35 @@ class ThemeState extends ChangeNotifier {
   /// Check if current theme is light
   bool get isLightTheme => _currentTheme == AppTheme.lightTheme;
 
+  /// Apply system theme (dark/light) when user has no saved preference.
+  /// Called on first login. Returns true if theme was applied.
+  Future<bool> applySystemThemeIfFirstTime() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedTheme = prefs.getString(StorageKeys.selectedTheme);
+      if (savedTheme != null && savedTheme.isNotEmpty) {
+        return false; // User already has a saved theme
+      }
+
+      final brightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      final themeName = brightness == Brightness.dark
+          ? AppTheme.blueTheme
+          : AppTheme.lightTheme;
+
+      _currentTheme = themeName;
+      await prefs.setString(StorageKeys.selectedTheme, themeName);
+      logger.d(
+        'Applied system theme on first login: $themeName (brightness: $brightness)',
+      );
+      notifyListeners();
+      return true;
+    } catch (e) {
+      logger.d('Error applying system theme: $e');
+      return false;
+    }
+  }
+
   /// Clear saved theme and reset to default
   Future<void> clearSavedTheme() async {
     try {
