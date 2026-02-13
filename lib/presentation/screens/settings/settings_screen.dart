@@ -267,26 +267,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildThemeMenuItem(BuildContext context) {
-    return ListTile(
-      leading: Icon(Icons.palette, color: _getIconColor()),
-      title: LanguageAwareStringHelper.getText(
-        "theme",
-        context,
-        style: TextStyle(fontWeight: FontWeight.w500, color: _getTextColor()),
-      ),
-      subtitle: Text(
-        _getLocalizedThemeName(ThemeState().currentTheme),
-        style: TextStyle(color: _getSecondaryTextColor()),
-      ),
-      onTap: () {
-        HapticFeedbackUtils.impact();
-        _showThemeDialog(context);
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) {
+        return ListTile(
+          leading: Icon(Icons.palette, color: _getIconColor()),
+          title: LanguageAwareStringHelper.getText(
+            "theme",
+            context,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: _getTextColor(),
+            ),
+          ),
+          subtitle: Text(
+            _getLocalizedThemeName(ThemeState().currentTheme),
+            style: TextStyle(color: _getSecondaryTextColor()),
+          ),
+          trailing: ThemeToggle(
+            value: ThemeState().isBlueTheme,
+            onChanged: (value) async {
+              await ThemeState().changeTheme(
+                value ? AppTheme.blueTheme : AppTheme.lightTheme,
+              );
+              if (context.mounted) {
+                ToastTheme.showSuccess(
+                  context,
+                  message: AppStrings.getWithParams(
+                    "theme_changed_to",
+                    LanguageState().currentLanguage,
+                    params: {
+                      "theme": LanguageAwareStringHelper.getCurrent(
+                        context,
+                        value ? "blue_theme" : "light_theme",
+                      ),
+                    },
+                  ),
+                );
+              }
+            },
+          ),
+        );
       },
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: _getSecondaryIconColor(),
-      ),
     );
   }
 
@@ -409,114 +431,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-    );
-  }
-
-  void _showThemeDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: _getLanguageDialogBackgroundColor(),
-            title: Text(
-              LanguageAwareStringHelper.getCurrent(context, "select_theme"),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color:
-                    ThemeState().currentTheme == AppTheme.lightTheme
-                        ? Colors.black
-                        : Colors.white,
-              ),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildThemeOption(context, "light_theme", AppTheme.lightTheme),
-                _buildThemeOption(context, "blue_theme", AppTheme.blueTheme),
-              ],
-            ),
-          ),
-    );
-  }
-
-  Widget _buildThemeOption(
-    BuildContext context,
-    String nameKey,
-    String themeCode,
-  ) {
-    final isCurrentTheme = ThemeState().currentTheme == themeCode;
-
-    // Get theme color for indicator
-    Color themeColor;
-    themeColor = switch (themeCode) {
-      AppTheme.lightTheme => Colors.white,
-      AppTheme.blueTheme => Colors.blue,
-      _ => AppColors.primary,
-    };
-
-    return ListTile(
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: themeColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color:
-                isCurrentTheme
-                    ? (themeCode == AppTheme.lightTheme
-                        ? Colors.black
-                        : Colors.white)
-                    : Colors.grey.shade300,
-            width: isCurrentTheme ? 2 : 1,
-          ),
-        ),
-        child: Icon(
-          Icons.palette,
-          color: themeCode == AppTheme.lightTheme ? Colors.black : Colors.white,
-          size: 18,
-        ),
-      ),
-      title: Text(
-        LanguageAwareStringHelper.getCurrent(context, nameKey),
-        style: TextStyle(
-          fontWeight: isCurrentTheme ? FontWeight.bold : FontWeight.normal,
-          color:
-              ThemeState().currentTheme == AppTheme.lightTheme
-                  ? Colors.black
-                  : Colors.white,
-        ),
-      ),
-      trailing:
-          isCurrentTheme
-              ? Icon(
-                Icons.check,
-                color:
-                    ThemeState().currentTheme == AppTheme.lightTheme
-                        ? Colors.black
-                        : Colors.white,
-              )
-              : null,
-      onTap: () async {
-        HapticFeedbackUtils.impact();
-        Navigator.pop(context);
-        // Handle theme change
-        await ThemeState().changeTheme(themeCode);
-        if (context.mounted) {
-          ToastTheme.showSuccess(
-            context,
-            message: AppStrings.getWithParams(
-              "theme_changed_to",
-              LanguageState().currentLanguage,
-              params: {
-                "theme": LanguageAwareStringHelper.getCurrent(context, nameKey),
-              },
-            ),
-          );
-        }
-      },
     );
   }
 

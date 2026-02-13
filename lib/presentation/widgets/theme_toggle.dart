@@ -106,22 +106,6 @@ class ThemeToggle extends StatelessWidget {
           activeTrackColor: activeTrackColor ?? themeColors.activeTrackColor,
           inactiveTrackColor:
               inactiveTrackColor ?? themeColors.inactiveTrackColor,
-          thumbIcon: WidgetStateProperty.resolveWith<Icon?>(
-            (states) {
-              if (states.contains(WidgetState.selected)) {
-                return Icon(
-                  Icons.dark_mode,
-                  size: 16,
-                  color: themeColors.activeIconColor,
-                );
-              }
-              return Icon(
-                Icons.light_mode,
-                size: 16,
-                color: themeColors.inactiveIconColor,
-              );
-            },
-          ),
           materialTapTargetSize: materialTapTargetSize,
           dragStartBehavior: dragStartBehavior,
           mouseCursor: mouseCursor,
@@ -147,8 +131,6 @@ class ThemeToggle extends StatelessWidget {
             alpha: 0.5,
           ), // Use blue track
           inactiveTrackColor: Colors.grey[300]!,
-          activeIconColor: Colors.white,
-          inactiveIconColor: Colors.grey[800]!,
         );
       case AppTheme.lightTheme:
       default:
@@ -157,8 +139,6 @@ class ThemeToggle extends StatelessWidget {
           inactiveThumbColor: Colors.grey[400]!,
           activeTrackColor: Colors.black,
           inactiveTrackColor: Colors.grey[600]!,
-          activeIconColor: Colors.black,
-          inactiveIconColor: Colors.grey[800]!,
         );
     }
   }
@@ -171,14 +151,10 @@ class _ThemeToggleColors {
     required this.inactiveThumbColor,
     required this.activeTrackColor,
     required this.inactiveTrackColor,
-    required this.activeIconColor,
-    required this.inactiveIconColor,
   });
 
   final Color activeColor;
   final Color inactiveThumbColor;
   final Color activeTrackColor;
   final Color inactiveTrackColor;
-  final Color activeIconColor;
-  final Color inactiveIconColor;
 }
