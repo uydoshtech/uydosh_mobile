@@ -35,6 +35,35 @@ class AdminSubwayMapScreen extends StatefulWidget {
 
 class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   Key _mapKey = UniqueKey();
+  late final TransformationController _transformationController;
+  double _zoomLevel = 1.3;
+
+  @override
+  void initState() {
+    super.initState();
+    _transformationController = TransformationController(
+      Matrix4.identity()
+        ..translate(_initialMapShiftX, _initialMapShiftY)
+        ..scale(1.3),
+    );
+    _transformationController.addListener(_onTransformationChanged);
+  }
+
+  void _onTransformationChanged() {
+    final scale = _transformationController.value.getMaxScaleOnAxis();
+    if (_zoomLevel != scale) {
+      setState(() {
+        _zoomLevel = scale;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _transformationController.removeListener(_onTransformationChanged);
+    _transformationController.dispose();
+    super.dispose();
+  }
 
   static const double _svgWidth = 640;
   static const double _svgHeight = 1200;
@@ -826,11 +855,28 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                "${(_zoomLevel * 100).round()}%",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(
+                    alpha: 0.7,
+                  ),
+                ),
+              ),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
               setState(() {
                 _mapKey = UniqueKey();
+                _transformationController.value = Matrix4.identity()
+                  ..translate(_initialMapShiftX, _initialMapShiftY)
+                  ..scale(1.3);
               });
             },
             tooltip: "Refresh map icons",
@@ -865,18 +911,12 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
                         final contentHeight = _svgHeight * scale;
                         final offsetX = (mapWidth - contentWidth) / 2;
                         final offsetY = (mapHeight - contentHeight) / 2;
-                        final transformationController =
-                            TransformationController(
-                              Matrix4.identity()
-                                ..translate(_initialMapShiftX, _initialMapShiftY)
-                                ..scale(1.3),
-                            );
                         return InteractiveViewer(
                           constrained: false,
                           minScale: 0.6,
                           maxScale: 8.0,
                           boundaryMargin: const EdgeInsets.all(40),
-                          transformationController: transformationController,
+                          transformationController: _transformationController,
                           child: SizedBox(
                             key: _mapKey,
                             width: mapWidth,
