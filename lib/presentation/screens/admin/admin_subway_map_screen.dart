@@ -571,9 +571,9 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
     );
   }
 
-  static const double _bazaarChorsuMapX = 0;
-  static const double _bazaarChorsuMapY = 210;
-  static const double _bazaarChorsuWidth = 60;
+  static const double _bazaarChorsuMapX = 110;
+  static const double _bazaarChorsuMapY = 205;
+  static const double _bazaarChorsuWidth = 50;
   static const double _bazaarChorsuHeight = 18;
 
   static const double _tvTowerMapX = 240;
@@ -600,6 +600,11 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
   static const double _busHubMapY = 580;
   static const double _busHubWidth = 22;
   static const double _busHubHeight = 22;
+
+  static const double _circusMapX = 10;
+  static const double _circusMapY = 240;
+  static const double _circusWidth = 30;
+  static const double _circusHeight = 30;
 
   List<Widget> _buildMapOverlays(
     double scale,
@@ -631,6 +636,10 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         offsetX + (_mapOffset.dx + _busHubMapX - _viewBoxMinX) * scale;
     final busHubY =
         offsetY + (_mapOffset.dy + _busHubMapY) * scale;
+    final circusX =
+        offsetX + (_mapOffset.dx + _circusMapX - _viewBoxMinX) * scale;
+    final circusY =
+        offsetY + (_mapOffset.dy + _circusMapY) * scale;
     return [
       Positioned(
         left: bazaarX - _bazaarChorsuWidth / 2,
@@ -708,6 +717,22 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           width: _busHubWidth,
           height: _busHubHeight,
           fit: BoxFit.contain,
+        ),
+      ),
+      Positioned(
+        left: circusX - _circusWidth / 2,
+        top: circusY - _circusHeight / 2,
+        child: SvgPicture.asset(
+          "assets/map_elements/circus.svg",
+          width: _circusWidth,
+          height: _circusHeight,
+          fit: BoxFit.contain,
+          colorFilter: isBlueTheme
+              ? const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                )
+              : null,
         ),
       ),
     ];
