@@ -554,6 +554,11 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
   static const double _airportWidth = 50;
   static const double _airportHeight = 27;
 
+  static const double _cityParkMapX = 10;
+  static const double _cityParkMapY = 335;
+  static const double _cityParkWidth = 25;
+  static const double _cityParkHeight = 40;
+
   List<Widget> _buildMapOverlays(
     double scale,
     double offsetX,
@@ -576,6 +581,10 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
         offsetX + (_mapOffset.dx + _airportMapX - _viewBoxMinX) * scale;
     final airportY =
         offsetY + (_mapOffset.dy + _airportMapY) * scale;
+    final cityParkX =
+        offsetX + (_mapOffset.dx + _cityParkMapX - _viewBoxMinX) * scale;
+    final cityParkY =
+        offsetY + (_mapOffset.dy + _cityParkMapY) * scale;
     return [
       Positioned(
         left: bazaarX - _bazaarChorsuWidth / 2,
@@ -620,6 +629,22 @@ text {font-family:Arimo,Liberation Sans,Arial,sans-serif}
           "assets/map_elements/airport.svg",
           width: _airportWidth,
           height: _airportHeight,
+          fit: BoxFit.contain,
+          colorFilter: isBlueTheme
+              ? const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                )
+              : null,
+        ),
+      ),
+      Positioned(
+        left: cityParkX - _cityParkWidth / 2,
+        top: cityParkY - _cityParkHeight / 2,
+        child: SvgPicture.asset(
+          "assets/map_elements/city_park.svg",
+          width: _cityParkWidth,
+          height: _cityParkHeight,
           fit: BoxFit.contain,
           colorFilter: isBlueTheme
               ? const ColorFilter.mode(
