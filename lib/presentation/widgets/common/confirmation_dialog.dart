@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uy_dosh/base/state/theme_state.dart';
 import '../language_switcher.dart';
 
 /// A reusable confirmation dialog that follows the app's theme guidelines
@@ -57,17 +56,9 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeState = ThemeState();
-    final isBlueTheme = themeState.isBlueTheme;
-    final baseCancelTextColor = isBlueTheme ? Colors.white : Colors.black;
-    final baseConfirmTextColor = isBlueTheme
-        ? Colors.red
-        : confirmButtonColor ??
-            (isDestructive
-                ? Theme.of(context).colorScheme.error
-                : Theme.of(context).colorScheme.primary);
-    final cancelTextColor = baseCancelTextColor;
-    final confirmTextColor = baseConfirmTextColor;
+    final cancelTextColor = Theme.of(context).colorScheme.error;
+    final confirmTextColor = confirmButtonColor ??
+        Theme.of(context).colorScheme.onSurface;
 
     return AlertDialog(
       backgroundColor: Theme.of(context).dialogTheme.backgroundColor,

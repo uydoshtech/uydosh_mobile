@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -495,8 +496,8 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: const Icon(Icons.open_in_new),
+              UydoshActionSheetItem(
+                icon: Icons.open_in_new,
                 title: Text(
                   LanguageAwareStringHelper.getCurrent(context, "view_listing"),
                 ),
@@ -506,7 +507,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
                 },
               ),
               const Divider(height: 1),
-              ListTile(
+              UydoshActionSheetItem(
                 title: Text(
                   LanguageAwareStringHelper.getCurrent(
                     context,
@@ -514,8 +515,8 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
                   ),
                 ),
               ),
-              ListTile(
-                leading: const Icon(Icons.pending_actions),
+              UydoshActionSheetItem(
+                icon: Icons.pending_actions,
                 title: Text(
                   LanguageAwareStringHelper.getCurrent(
                     context,
@@ -527,8 +528,8 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
                   _updateStatus(complaint, "pending");
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.check_circle_outline),
+              UydoshActionSheetItem(
+                icon: Icons.check_circle_outline,
                 title: Text(
                   LanguageAwareStringHelper.getCurrent(
                     context,
@@ -540,8 +541,8 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
                   _updateStatus(complaint, "resolved");
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.block_outlined),
+              UydoshActionSheetItem(
+                icon: Icons.block_outlined,
                 title: Text(
                   LanguageAwareStringHelper.getCurrent(
                     context,

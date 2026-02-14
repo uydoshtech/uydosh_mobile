@@ -10,6 +10,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 
 class SettingsScreen extends StatefulWidget {
@@ -375,8 +376,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
     String? subtitleKey,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: _getIconColor()),
+    return UydoshMenuItem(
+      icon: icon,
       title: LanguageAwareStringHelper.getText(
         titleKey,
         context,
@@ -391,11 +392,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               )
               : null,
       onTap: onTap,
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: _getSecondaryIconColor(),
-      ),
+      iconColor: _getIconColor(),
+      textColor: _getTextColor(),
+      trailingColor: _getSecondaryIconColor(),
     );
   }
 

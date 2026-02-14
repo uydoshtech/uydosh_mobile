@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_card_tile.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
@@ -131,34 +131,10 @@ class AdminPanelScreen extends StatelessWidget {
     required String titleKey,
     VoidCallback? onTap,
   }) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color:
-              Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-        ),
-        title: Text(LanguageAwareStringHelper.getCurrent(context, titleKey)),
-        trailing:
-            onTap == null
-                ? null
-                : Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-        onTap:
-            onTap == null
-                ? null
-                : () {
-                  HapticFeedbackUtils.selectionClick();
-                  onTap();
-                },
-      ),
+    return UydoshCardTile(
+      icon: icon,
+      title: Text(LanguageAwareStringHelper.getCurrent(context, titleKey)),
+      onTap: onTap,
     );
   }
 }

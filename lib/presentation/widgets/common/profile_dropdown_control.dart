@@ -1,7 +1,12 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart";
 
+export "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart"
+    show DropdownOption;
+
+/// Profile-section styled wrapper around [UydoshDropdown].
 class ProfileDropdownControl extends StatelessWidget {
   const ProfileDropdownControl({
     required this.label,
@@ -21,14 +26,11 @@ class ProfileDropdownControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isLightTheme = ThemeState().isLightTheme;
     final isBlueTheme = ThemeState().isBlueTheme;
-
     final sectionBackground =
         isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceVariant;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: sectionBackground,
         borderRadius: BorderRadius.circular(12),
@@ -37,89 +39,14 @@ class ProfileDropdownControl extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            Icon(
-              icon,
-              color:
-                  isBlueTheme
-                      ? Colors.white
-                      : (isLightTheme ? Colors.grey[600] : Colors.grey[400]),
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-          ],
-          Expanded(
-            child: Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-                color:
-                    isBlueTheme
-                        ? Colors.white
-                        : (isLightTheme ? Colors.grey[800] : Colors.grey[200]),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String?>(
-                value: value,
-                isExpanded: true,
-                icon: Icon(
-                  Icons.arrow_drop_down,
-                  color:
-                      isBlueTheme
-                          ? Colors.white
-                          : (isLightTheme
-                              ? Colors.grey[600]
-                              : Colors.grey[400]),
-                ),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color:
-                      isBlueTheme
-                          ? Colors.white
-                          : (isLightTheme
-                              ? Colors.grey[800]
-                              : Colors.grey[200]),
-                ),
-                dropdownColor:
-                    isBlueTheme
-                        ? Colors.blue[600]
-                        : (isLightTheme ? Colors.white : Colors.grey[800]),
-                items:
-                    options.map((option) {
-                      return DropdownMenuItem<String?>(
-                        value: option.value,
-                        child: Text(
-                          option.label,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color:
-                                isBlueTheme
-                                    ? Colors.white
-                                    : (isLightTheme
-                                        ? Colors.grey[800]
-                                        : Colors.grey[200]),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                onChanged: onChanged,
-              ),
-            ),
-          ),
-        ],
+      child: UydoshDropdown(
+        label: label,
+        value: value,
+        options: options,
+        onChanged: onChanged,
+        icon: icon,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }
-}
-
-class DropdownOption {
-  const DropdownOption({required this.value, required this.label});
-
-  final String? value;
-  final String label;
 }

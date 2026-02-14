@@ -8,6 +8,7 @@ import 'package:uy_dosh/domain/models/complaint_category.dart';
 import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
 import 'package:uy_dosh/presentation/widgets/common/theme_icon.dart';
 import 'package:uy_dosh/presentation/widgets/common/ghost_button.dart';
+import 'package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart';
 import 'package:uy_dosh/base/constants/app_colors.dart';
 import 'package:uy_dosh/presentation/widgets/common/toast_theme.dart';
 import 'package:uy_dosh/base/util/error_message_helper.dart';
@@ -198,28 +199,16 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
               itemCount: categories.length,
               itemBuilder: (context, index) {
                 final category = categories[index];
-                final isSelected = _selectedCategory?.id == category.id;
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(_getLocalizedCategoryName(context, category)),
-                    leading: Radio<ComplaintCategory>(
-                      value: category,
-                      groupValue: _selectedCategory,
-                      onChanged: (ComplaintCategory? value) {
-                        setState(() {
-                          _selectedCategory = value;
-                        });
-                      },
-                    ),
-                    onTap: () {
-                      setState(() {
-                        _selectedCategory = category;
-                      });
-                    },
-                    selected: isSelected,
-                  ),
+                return UydoshRadioTile<ComplaintCategory>(
+                  value: category,
+                  groupValue: _selectedCategory,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                  },
+                  title: Text(_getLocalizedCategoryName(context, category)),
                 );
               },
             ),

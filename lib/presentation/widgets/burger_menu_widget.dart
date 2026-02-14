@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -745,8 +746,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
     Color? textColor,
     Color? trailingColor,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: iconColor ?? _getIconColor()),
+    return UydoshMenuItem(
+      icon: icon,
       title: LanguageAwareStringHelper.getText(
         titleKey,
         context,
@@ -765,15 +766,10 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                 ),
               )
               : null,
-      onTap: () {
-        HapticFeedbackUtils.impact();
-        onTap();
-      },
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: trailingColor ?? _getSecondaryIconColor(),
-      ),
+      onTap: onTap,
+      iconColor: iconColor ?? _getIconColor(),
+      textColor: textColor ?? _getTextColor(),
+      trailingColor: trailingColor ?? _getSecondaryIconColor(),
     );
   }
 
