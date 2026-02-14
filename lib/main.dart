@@ -60,12 +60,16 @@ void main() async {
     // Configure logging based on environment
     LogConfig.instance.printConfig();
 
-    // Initialize language state to load saved language
-    await LanguageState().initialize();
+    // Initialize app states in parallel (independent SharedPreferences/Storage reads)
+    await Future.wait([
+      LanguageState().initialize(),
+      AuthenticationState().initialize(),
+      OnboardingState().initialize(),
+      HapticFeedbackState().initialize(),
+      SearchFiltersState().initialize(),
+      ThemeState().initialize(),
+    ]);
 
-    // Initialize authentication state to start listening to auth changes
-    logger.d('🔐 Main: Initializing AuthenticationState...');
-    await AuthenticationState().initialize();
     logger.d(
       '🔐 Main: AuthenticationState initialized. Current status: ${AuthenticationState().isAuthenticated}',
     );
@@ -75,18 +79,6 @@ void main() async {
       logger.d('🔐 Main: Force refreshing authentication status...');
       AuthenticationState().refreshAuthenticationStatus();
     });
-
-    // Initialize onboarding state to load saved preferences
-    await OnboardingState().initialize();
-
-    // Initialize haptic feedback state to load saved preferences
-    await HapticFeedbackState().initialize();
-
-    // Initialize search filters state to load saved preferences
-    await SearchFiltersState().initialize();
-
-    // Initialize theme state to load saved theme
-    await ThemeState().initialize();
 
     // Display saved preferences in console
     logger.d('=== APP STARTUP - SAVED PREFERENCES ===');
