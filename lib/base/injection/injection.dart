@@ -19,6 +19,7 @@ import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
+import "package:uy_dosh/domain/services/search_analytics_service.dart";
 
 final getIt = GetIt.instance;
 
@@ -89,5 +90,9 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IAdminUserService>(
     () => AdminUserService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<ISearchAnalyticsService>(
+    () => SearchAnalyticsService(getIt<IOAuthApiClient>()),
   );
 }
