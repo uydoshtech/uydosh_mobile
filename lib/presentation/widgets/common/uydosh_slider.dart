@@ -121,7 +121,7 @@ class UydoshSlider extends StatelessWidget {
           if (labels != null) ...[
             const SizedBox(height: 8),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.only(left: 20, right: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children:
@@ -135,7 +135,7 @@ class UydoshSlider extends StatelessWidget {
                               : (isLightTheme
                                   ? Colors.grey[600]
                                   : Colors.grey[400]),
-                      fontSize: 10,
+                      fontSize: 13,
                     ),
                   );
                 }).toList(),
