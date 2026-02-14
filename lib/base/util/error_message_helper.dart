@@ -1,6 +1,5 @@
 import "package:dio/dio.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ErrorMessageHelper {
   /// Sanitizes error messages to remove technical details and provide user-friendly text

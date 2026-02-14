@@ -56,7 +56,7 @@ class UniversityCache {
       // Handle different possible response structures
       List<dynamic> universitiesData;
       if (response is Map) {
-        final responseMap = response as Map;
+        final responseMap = response;
         if (responseMap['content'] != null) {
           logger.d('Found universities in "content" key');
           universitiesData = responseMap['content'] as List<dynamic>;
@@ -72,7 +72,7 @@ class UniversityCache {
         }
       } else if (response is List) {
         logger.d('Response is a direct list');
-        universitiesData = response as List<dynamic>;
+        universitiesData = response;
       } else {
         logger.d(
           'Response is neither Map nor List, type: ${response.runtimeType}, using fallback',

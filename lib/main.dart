@@ -4,9 +4,9 @@ import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
 
-import "package:uy_dosh/base/common/application_settings.dart";
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/localization/generated/l10n.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/generated/l10n.dart" as gen;
 
 import "package:uy_dosh/base/logger/log_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -151,7 +151,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: ThemeState(),
+      listenable: Listenable.merge([ThemeState(), LanguageState()]),
       builder: (context, child) {
         return MaterialApp(
           title: 'UyDosh',
@@ -159,13 +159,13 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           navigatorObservers: [routeObserver],
           localizationsDelegates: const [
-            S.delegate,
+            gen.S.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: S.delegate.supportedLocales,
-          locale: Locale(IApplicationSettings.currentLang, ''),
+          supportedLocales: supportedLocales,
+          locale: Locale(LanguageState().currentLanguage, ''),
           home: kSkipSplashScreen ? _getInitialScreen() : const SplashScreen(),
         );
       },
@@ -427,10 +427,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 horizontal: 32.0,
                               ),
                               child: Text(
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
-                                  'splash_subtitle',
-                                ),
+                                L10n.get("splash_subtitle"),
                                 style: TextStyle(
                                   fontSize:
                                       MediaQuery.of(context).size.width < 400

@@ -5,8 +5,6 @@ import 'package:uy_dosh/base/logger/logger.dart';
 
 class WatermarkService {
   static const String _watermarkText = 'UyDosh';
-  static const double _watermarkOpacity = 0.9;
-  static const int _watermarkFontSize = 48;
   static const int _watermarkPadding = 50;
 
   /// Adds a watermark to the given image file
@@ -69,17 +67,12 @@ class WatermarkService {
       img.BitmapFont? selectedFont;
 
       for (final font in availableFonts) {
-        if (font != null) {
-          selectedFont = font;
-          logger.d('✅ Using font: ${font.runtimeType}');
-          break;
-        }
+        selectedFont = font;
+        logger.d('✅ Using font: ${font.runtimeType}');
+        break;
       }
 
-      if (selectedFont == null) {
-        logger.d('⚠️ No fonts available, using arial24 as fallback');
-        selectedFont = img.arial24; // This should be available
-      }
+      selectedFont ??= img.arial24;
 
       // Draw a solid black background rectangle behind the text for better visibility
       final int bgWidth = watermarkTextWidth + 100; // 5x larger: 20 * 5 = 100

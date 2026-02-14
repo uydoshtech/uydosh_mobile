@@ -926,14 +926,6 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
     }
   }
 
-  Color _getErrorColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.error;
-    } else {
-      return AppColors.error;
-    }
-  }
-
   Color _getTextPrimaryColor() {
     if (ThemeState().isBlueTheme) {
       return BlueThemeColors.textPrimary;

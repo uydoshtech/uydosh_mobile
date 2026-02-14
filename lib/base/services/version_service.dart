@@ -2,7 +2,6 @@ import 'package:flutter/services.dart';
 import 'package:uy_dosh/base/constants/app_version.dart';
 
 class VersionService {
-  static const String _versionKey = 'version';
   static String? _cachedVersion;
 
   /// Get the current app version from pubspec.yaml

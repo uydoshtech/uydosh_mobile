@@ -1,5 +1,5 @@
 import "package:dio/dio.dart";
-import "package:uy_dosh/base/localization/generated/l10n.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/dio/error/api_exception.dart";
 
 class ErrorInterceptor extends Interceptor {
@@ -8,7 +8,7 @@ class ErrorInterceptor extends Interceptor {
     if (err.type == DioExceptionType.connectionError) {
       final newError = DioException(
         requestOptions: err.requestOptions,
-        message: S.current.errorNoInternet,
+        message: L10n.get("error_internet_connection"),
       );
       handler.next(newError);
       return;

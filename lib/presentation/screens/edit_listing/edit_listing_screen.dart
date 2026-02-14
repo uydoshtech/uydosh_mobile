@@ -63,7 +63,6 @@ class _EditListingScreenState extends State<EditListingScreen> {
   bool _isSubmitting = false;
 
   // Validation state variables
-  bool _showTitleError = false;
   bool _showDescriptionError = false;
   bool _showLocationError = false;
 
@@ -108,7 +107,6 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _isPrivateRoom = widget.listingDetail.privateRoom ?? false;
 
     // Initialize validation states
-    _showTitleError = false;
     _showDescriptionError = false;
     _showLocationError = false;
 
@@ -1306,14 +1304,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
           "title_required",
         ),
       );
-      setState(() {
-        _showTitleError = true;
-      });
       return;
-    } else {
-      setState(() {
-        _showTitleError = false;
-      });
     }
 
     if (title.length > 25) {
@@ -1473,7 +1464,6 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
       // Clear all error states on success
       setState(() {
-        _showTitleError = false;
         _showDescriptionError = false;
         _showLocationError = false;
       });

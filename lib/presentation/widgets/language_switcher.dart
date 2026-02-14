@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 // Utility class for language display names
 class LanguageDisplayHelper {
@@ -158,24 +159,19 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
   }
 }
 
-// Extended StringHelper for the language switcher
+/// Localization helper. Prefer [L10n] for new code.
+@Deprecated("Use L10n instead")
 class LanguageAwareStringHelper {
   static String getCurrentLanguage(BuildContext context) {
-    return LanguageState().currentLanguage;
+    return L10n.currentLanguage;
   }
 
   static String getCurrent(BuildContext context, String key) {
-    final language = getCurrentLanguage(context);
-    return AppStrings.get(key, language);
+    return L10n.get(key);
   }
 
   static Widget getText(String key, BuildContext context, {TextStyle? style}) {
-    return ListenableBuilder(
-      listenable: LanguageState(),
-      builder: (context, child) {
-        return Text(getCurrent(context, key), style: style);
-      },
-    );
+    return L10n.text(key, style: style);
   }
 
   static Widget getInputField(
@@ -183,12 +179,6 @@ class LanguageAwareStringHelper {
     BuildContext context, {
     required Widget Function(String hintText) builder,
   }) {
-    return ListenableBuilder(
-      listenable: LanguageState(),
-      builder: (context, child) {
-        final hintText = getCurrent(context, key);
-        return builder(hintText);
-      },
-    );
+    return L10n.inputField(key, builder: builder);
   }
 }

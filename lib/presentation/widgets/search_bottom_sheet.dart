@@ -1486,34 +1486,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     );
   }
 
-  Widget _buildLocationError(String message) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: theme.colorScheme.error),
-        borderRadius: BorderRadius.circular(10),
-        color: theme.colorScheme.errorContainer,
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error, color: theme.colorScheme.error, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                color: theme.colorScheme.onErrorContainer,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildMetroLinePicker() {
     final theme = Theme.of(context);
     return Container(

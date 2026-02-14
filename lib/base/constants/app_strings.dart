@@ -201,10 +201,8 @@ class AppStrings {
       "no_regions_available": "No regions available",
 
       // ===== ACTION BUTTONS =====
-      "retry": "Retry",
       "refresh": "Refresh",
       "actions": "Actions",
-      "load_more": "Load More",
 
       "view_profile": "View Profile",
       "deactivate_listing": "Deactivate Listing",
@@ -619,8 +617,6 @@ class AppStrings {
       "select_date": "Move in date",
       "move_in_date_label": "Move-in date:",
       "publication_date": "Publication date:",
-      "cancel": "Cancel",
-      "ok": "OK",
 
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Sign In with Google",
@@ -853,10 +849,8 @@ class AppStrings {
       "no_regions_available": "Районов недоступно",
 
       // ===== ACTION BUTTONS =====
-      "retry": "Повторить",
       "refresh": "Обновить",
       "actions": "Действия",
-      "load_more": "Загрузить ещё",
 
       "view_profile": "Просмотреть профиль",
       "deactivate_listing": "Деактивировать объявление",
@@ -1276,8 +1270,6 @@ class AppStrings {
       "select_date": "Дата вселения",
       "move_in_date_label": "Дата вселения:",
       "publication_date": "Дата публикации:",
-      "cancel": "Отмена",
-      "ok": "ОК",
 
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Войти через Google",
@@ -1513,10 +1505,8 @@ class AppStrings {
       "no_regions_available": "Tumanlar mavjud emas",
 
       // ===== ACTION BUTTONS =====
-      "retry": "Qayta urinish",
       "refresh": "Yangilash",
       "actions": "Harakatlar",
-      "load_more": "Yana yuklash",
 
       "view_profile": "Profilni ko'rish",
       "deactivate_listing": "E'lonni deaktivlashtirish",
@@ -1941,8 +1931,6 @@ class AppStrings {
       "select_date": "Ko'chib kelish sanasi",
       "move_in_date_label": "Ko'chib kelish sanasi:",
       "publication_date": "Nashr sanasi:",
-      "cancel": "Bekor qilish",
-      "ok": "OK",
 
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Google orqali kirish",

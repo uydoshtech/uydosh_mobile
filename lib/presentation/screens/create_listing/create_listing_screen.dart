@@ -63,7 +63,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool _isLoadingStations = false;
 
   // Validation state variables
-  bool _showTitleError = false;
   bool _showDescriptionError = false;
   bool _showLocationError = false;
 
@@ -1283,14 +1282,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           "title_required",
         ),
       );
-      setState(() {
-        _showTitleError = true;
-      });
       return;
-    } else {
-      setState(() {
-        _showTitleError = false;
-      });
     }
 
     if (title.length > 50) {
@@ -1468,7 +1460,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _isSubmitting = false; // Reset loading state
 
         // Reset validation errors
-        _showTitleError = false;
         _showDescriptionError = false;
         _showLocationError = false;
       });
