@@ -71,7 +71,12 @@ class UydoshSlider extends StatelessWidget {
                 ),
               ),
               Text(
-                value.toString(),
+                labels != null &&
+                        value >= min &&
+                        value <= max &&
+                        (value - min) < labels!.length
+                    ? labels![value - min]
+                    : value.toString(),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: isBlueTheme ? Colors.white : theme.colorScheme.primary,
