@@ -21,6 +21,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
+import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 
 class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({super.key, this.showCustomHeader = true});
@@ -991,26 +992,26 @@ class ConversationTile extends StatelessWidget {
                       memCacheHeight: 80,
                       placeholder:
                           (context, url) => Center(
-                            child: _buildAvatarContent(
-                              conversation,
-                              avatarIconColor,
+                            child: ConversationAvatarContent(
+                              conversation: conversation,
+                              iconColor: avatarIconColor,
                             ),
                           ),
                       errorWidget:
                           (context, url, error) => CircleAvatar(
                             backgroundColor: avatarColor,
-                            child: _buildAvatarContent(
-                              conversation,
-                              avatarIconColor,
+                            child: ConversationAvatarContent(
+                              conversation: conversation,
+                              iconColor: avatarIconColor,
                             ),
                           ),
                     ),
                   )
                 : CircleAvatar(
                     backgroundColor: avatarColor,
-                    child: _buildAvatarContent(
-                      conversation,
-                      avatarIconColor,
+                    child: ConversationAvatarContent(
+                      conversation: conversation,
+                      iconColor: avatarIconColor,
                     ),
                   ),
             title:
@@ -1188,29 +1189,6 @@ class ConversationTile extends StatelessWidget {
     }
   }
 
-  /// Build avatar content - first letter(s) of name or person icon
-  Widget _buildAvatarContent(
-    ConversationSummary conversation,
-    Color iconColor,
-  ) {
-    final userName = conversation.otherUserName;
-    final initials = StringHelper.extractInitials(userName);
-
-    // If we have initials, show them
-    if (initials.isNotEmpty) {
-      return Text(
-        initials,
-        style: TextStyle(
-          color: iconColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
-      );
-    }
-
-    // Fallback to person icon
-    return Icon(Icons.person, color: iconColor);
-  }
 }
 
 class GroupedConversationsList extends StatefulWidget {
@@ -1410,9 +1388,10 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                     // Location and Metro Station Information
                     if (hasLocation || hasSubwayStation) ...[
                       const SizedBox(height: 8),
-                      _buildLocationAndMetroInfoForGroup(
-                        firstConversation,
-                        secondaryTextColor,
+                      ConversationLocationInfo(
+                        conversation: firstConversation,
+                        textColor: secondaryTextColor,
+                        showPrice: false,
                       ),
                     ],
                   ],
@@ -1537,218 +1516,6 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     return Colors.grey[600]!; // Default to grey
   }
 
-  /// Build location and metro station information display
-  Widget _buildLocationAndMetroInfo(
-    ConversationSummary conversation,
-    Color textColor,
-  ) {
-    return ListenableBuilder(
-      listenable: LanguageState(),
-      builder: (context, child) {
-        final hasLocation =
-            conversation.locationNameUz != null ||
-            conversation.locationNameRu != null ||
-            conversation.locationNameEn != null;
-        final hasSubwayStation =
-            conversation.subwayStationNameUz != null ||
-            conversation.subwayStationNameRu != null ||
-            conversation.subwayStationNameEn != null;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Location (District)
-            if (hasLocation) ...[
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: AppColors.error,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      _getLocalizedName(
-                        nameUz: conversation.locationNameUz,
-                        nameRu: conversation.locationNameRu,
-                        nameEn: conversation.locationNameEn,
-                      ),
-                      style: TextStyle(fontSize: 12, color: textColor),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            // Subway Station (below district)
-            if (hasSubwayStation) ...[
-              const SizedBox(height: 4),
-              _buildSubwayStationDisplay(conversation, textColor),
-            ],
-            // Price range display
-            if (conversation.listingMinPrice != null ||
-                conversation.listingMaxPrice != null) ...[
-              const SizedBox(height: 4),
-              _buildPriceDisplay(conversation, textColor),
-            ],
-          ],
-        );
-      },
-    );
-  }
-
-  /// Build subway station display with transfer station support
-  Widget _buildSubwayStationDisplay(
-    ConversationSummary conversation,
-    Color textColor,
-  ) {
-    return Row(
-      children: [
-        Icon(
-          Icons.train,
-          color: _getLineColor(conversation.subwayStationLine ?? 1),
-          size: 16,
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            _getLocalizedName(
-              nameUz: conversation.subwayStationNameUz,
-              nameRu: conversation.subwayStationNameRu,
-              nameEn: conversation.subwayStationNameEn,
-            ),
-            style: TextStyle(fontSize: 12, color: textColor),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Get the appropriate name based on current language
-  String _getLocalizedName({String? nameUz, String? nameRu, String? nameEn}) {
-    final currentLanguage = LanguageState().currentLanguage;
-
-    switch (currentLanguage) {
-      case "uz":
-        return nameUz ?? nameRu ?? nameEn ?? "Unknown";
-      case "ru":
-        return nameRu ?? nameUz ?? nameEn ?? "Unknown";
-      case "en":
-        return nameEn ?? nameRu ?? nameUz ?? "Unknown";
-      default:
-        return nameRu ?? nameUz ?? nameEn ?? "Unknown";
-    }
-  }
-
-  /// Build price display
-  Widget _buildPriceDisplay(ConversationSummary conversation, Color textColor) {
-    return Row(
-      children: [
-        Icon(Icons.attach_money, color: Colors.green, size: 16),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            _formatPriceRange(conversation),
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Format price range for display
-  String _formatPriceRange(ConversationSummary conversation) {
-    final minPrice = conversation.listingMinPrice;
-    final maxPrice = conversation.listingMaxPrice;
-
-    if (minPrice != null && maxPrice != null) {
-      if (minPrice == maxPrice) {
-        return minPrice.toString();
-      } else {
-        return "$minPrice - $maxPrice";
-      }
-    } else if (minPrice != null) {
-      return "от $minPrice";
-    } else if (maxPrice != null) {
-      return "до $maxPrice";
-    } else {
-      return "";
-    }
-  }
-
-  /// Get metro line color
-  Color _getLineColor(int line) {
-    switch (line) {
-      case 1:
-        return AppColors.metroLine1;
-      case 2:
-        return AppColors.metroLine2;
-      case 3:
-        return AppColors.metroLine3;
-      case 4:
-        return AppColors.metroLine4;
-      default:
-        return AppColors.metroLine1;
-    }
-  }
-
-  /// Build location and metro station information display for grouped conversations (without price)
-  Widget _buildLocationAndMetroInfoForGroup(
-    ConversationSummary conversation,
-    Color textColor,
-  ) {
-    return ListenableBuilder(
-      listenable: LanguageState(),
-      builder: (context, child) {
-        final hasLocation =
-            conversation.locationNameUz != null ||
-            conversation.locationNameRu != null ||
-            conversation.locationNameEn != null;
-        final hasSubwayStation =
-            conversation.subwayStationNameUz != null ||
-            conversation.subwayStationNameRu != null ||
-            conversation.subwayStationNameEn != null;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Location (District)
-            if (hasLocation) ...[
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: AppColors.error,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      _getLocalizedName(
-                        nameUz: conversation.locationNameUz,
-                        nameRu: conversation.locationNameRu,
-                        nameEn: conversation.locationNameEn,
-                      ),
-                      style: TextStyle(fontSize: 12, color: textColor),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            // Subway Station (below district)
-            if (hasSubwayStation) ...[
-              const SizedBox(height: 4),
-              _buildSubwayStationDisplay(conversation, textColor),
-            ],
-          ],
-        );
-      },
-    );
-  }
 }
 
 class OutgoingConversationTile extends StatelessWidget {
@@ -1762,30 +1529,6 @@ class OutgoingConversationTile extends StatelessWidget {
     required this.onTap,
     this.currentUserId,
   });
-
-  /// Build avatar content - first letter(s) of name or person icon
-  Widget _buildAvatarContent(
-    ConversationSummary conversation,
-    Color iconColor,
-  ) {
-    final userName = conversation.otherUserName;
-    final initials = StringHelper.extractInitials(userName);
-
-    // If we have initials, show them
-    if (initials.isNotEmpty) {
-      return Text(
-        initials,
-        style: TextStyle(
-          color: iconColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
-      );
-    }
-
-    // Fallback to person icon
-    return Icon(Icons.person, color: iconColor);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1833,26 +1576,26 @@ class OutgoingConversationTile extends StatelessWidget {
                       memCacheHeight: 80,
                       placeholder:
                           (context, url) => Center(
-                            child: _buildAvatarContent(
-                              conversation,
-                              avatarIconColor,
+                            child: ConversationAvatarContent(
+                              conversation: conversation,
+                              iconColor: avatarIconColor,
                             ),
                           ),
                       errorWidget:
                           (context, url, error) => CircleAvatar(
                             backgroundColor: avatarColor,
-                            child: _buildAvatarContent(
-                              conversation,
-                              avatarIconColor,
+                            child: ConversationAvatarContent(
+                              conversation: conversation,
+                              iconColor: avatarIconColor,
                             ),
                           ),
                     ),
                   )
                 : CircleAvatar(
                     backgroundColor: avatarColor,
-                    child: _buildAvatarContent(
-                      conversation,
-                      avatarIconColor,
+                    child: ConversationAvatarContent(
+                      conversation: conversation,
+                      iconColor: avatarIconColor,
                     ),
                   ),
             title: Text(
@@ -1866,7 +1609,11 @@ class OutgoingConversationTile extends StatelessWidget {
               children: [
                 // Location and Metro Station Information
                 if (hasLocation || hasSubwayStation) ...[
-                  _buildLocationAndMetroInfo(conversation, secondaryTextColor),
+                  ConversationLocationInfo(
+                    conversation: conversation,
+                    textColor: secondaryTextColor,
+                    showPrice: true,
+                  ),
                   const SizedBox(height: 8),
                 ],
                 // Last message content
@@ -1944,165 +1691,6 @@ class OutgoingConversationTile extends StatelessWidget {
         );
       },
     );
-  }
-
-  /// Build location and metro station information display
-  Widget _buildLocationAndMetroInfo(
-    ConversationSummary conversation,
-    Color textColor,
-  ) {
-    return ListenableBuilder(
-      listenable: LanguageState(),
-      builder: (context, child) {
-        final hasLocation =
-            conversation.locationNameUz != null ||
-            conversation.locationNameRu != null ||
-            conversation.locationNameEn != null;
-        final hasSubwayStation =
-            conversation.subwayStationNameUz != null ||
-            conversation.subwayStationNameRu != null ||
-            conversation.subwayStationNameEn != null;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Location (District)
-            if (hasLocation) ...[
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: AppColors.error,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      _getLocalizedName(
-                        nameUz: conversation.locationNameUz,
-                        nameRu: conversation.locationNameRu,
-                        nameEn: conversation.locationNameEn,
-                      ),
-                      style: TextStyle(fontSize: 12, color: textColor),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            // Subway Station (below district)
-            if (hasSubwayStation) ...[
-              const SizedBox(height: 4),
-              _buildSubwayStationDisplay(conversation, textColor),
-            ],
-            // Price range display
-            if (conversation.listingMinPrice != null ||
-                conversation.listingMaxPrice != null) ...[
-              const SizedBox(height: 4),
-              _buildPriceDisplay(conversation, textColor),
-            ],
-          ],
-        );
-      },
-    );
-  }
-
-  /// Build subway station display with transfer station support
-  Widget _buildSubwayStationDisplay(
-    ConversationSummary conversation,
-    Color textColor,
-  ) {
-    return Row(
-      children: [
-        Icon(
-          Icons.train,
-          color: _getLineColor(conversation.subwayStationLine ?? 1),
-          size: 16,
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            _getLocalizedName(
-              nameUz: conversation.subwayStationNameUz,
-              nameRu: conversation.subwayStationNameRu,
-              nameEn: conversation.subwayStationNameEn,
-            ),
-            style: TextStyle(fontSize: 12, color: textColor),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Get the appropriate name based on current language
-  String _getLocalizedName({String? nameUz, String? nameRu, String? nameEn}) {
-    final currentLanguage = LanguageState().currentLanguage;
-
-    switch (currentLanguage) {
-      case "uz":
-        return nameUz ?? nameRu ?? nameEn ?? "Unknown";
-      case "ru":
-        return nameRu ?? nameUz ?? nameEn ?? "Unknown";
-      case "en":
-        return nameEn ?? nameRu ?? nameUz ?? "Unknown";
-      default:
-        return nameRu ?? nameUz ?? nameEn ?? "Unknown";
-    }
-  }
-
-  /// Build price display
-  Widget _buildPriceDisplay(ConversationSummary conversation, Color textColor) {
-    return Row(
-      children: [
-        Icon(Icons.attach_money, color: Colors.green, size: 16),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            _formatPriceRange(conversation),
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Format price range for display
-  String _formatPriceRange(ConversationSummary conversation) {
-    final minPrice = conversation.listingMinPrice;
-    final maxPrice = conversation.listingMaxPrice;
-
-    if (minPrice != null && maxPrice != null) {
-      if (minPrice == maxPrice) {
-        return minPrice.toString();
-      } else {
-        return "$minPrice - $maxPrice";
-      }
-    } else if (minPrice != null) {
-      return "от $minPrice";
-    } else if (maxPrice != null) {
-      return "до $maxPrice";
-    } else {
-      return "";
-    }
-  }
-
-  /// Get metro line color
-  Color _getLineColor(int line) {
-    switch (line) {
-      case 1:
-        return AppColors.metroLine1;
-      case 2:
-        return AppColors.metroLine2;
-      case 3:
-        return AppColors.metroLine3;
-      case 4:
-        return AppColors.metroLine4;
-      default:
-        return AppColors.metroLine1;
-    }
   }
 
   /// Get theme-aware card background color

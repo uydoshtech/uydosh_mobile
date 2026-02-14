@@ -66,6 +66,7 @@ import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
@@ -793,276 +794,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     ];
     final index = (value - 1).clamp(0, keys.length - 1);
     return LanguageAwareStringHelper.getCurrent(context, keys[index]);
-  }
-
-  Color _getCompatibilityPercentColor() {
-    final percent = _compatibilityPercent;
-    if (percent == null) {
-      return _getDescriptionTextColor();
-    }
-    if (percent >= 80) {
-      return AppColors.success;
-    }
-    if (percent >= 60) {
-      return AppColors.warning;
-    }
-    return AppColors.error;
-  }
-
-  Widget _buildCompatibilitySection(ListingDetail listingDetail) {
-    final isAuthenticated = AuthenticationState().isAuthenticated;
-    final isOwner = UserListingState().isOwner(listingDetail.user.id);
-
-    if (isOwner) {
-      return const SizedBox.shrink();
-    }
-
-    final percentText =
-        _compatibilityPercent == null
-            ? null
-            : AppStrings.getWithParams(
-              "compatibility_match_percentage",
-              LanguageState().currentLanguage,
-              params: {"percent": _compatibilityPercent!.toString()},
-            );
-    final headerPercentText =
-        _compatibilityPercent == null
-            ? "—"
-            : "${_compatibilityPercent}%";
-
-    return Card(
-      key: _compatibilitySectionKey,
-      child: ExpansionTile(
-        onExpansionChanged: (isExpanded) {
-          HapticFeedbackUtils.impact();
-          if (!isExpanded) {
-            return;
-          }
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Future.delayed(const Duration(milliseconds: 250), () {
-              if (!_scrollController.hasClients) {
-                return;
-              }
-              _scrollController.animateTo(
-                _scrollController.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            });
-          });
-        },
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Colors.transparent),
-        ),
-        collapsedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Colors.transparent),
-        ),
-        tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-        childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        title: Row(
-          children: [
-            Icon(
-              ThemeState().isBlueTheme
-                  ? CupertinoIcons.group_solid
-                  : CupertinoIcons.group,
-              size: 24,
-              color:
-                  ThemeState().isBlueTheme
-                      ? Colors.white
-                      : ThemeState().isLightTheme
-                      ? Colors.black
-                      : _getIconColor(),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "compatibility_title",
-                ),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: _getDescriptionTextColor(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              headerPercentText,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: _getCompatibilityPercentColor(),
-              ),
-            ),
-          ],
-        ),
-        children: [
-          if (!isAuthenticated)
-            Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "compatibility_sign_in",
-              ),
-              style: TextStyle(
-                fontSize: 14,
-                color: _getDescriptionTextColor(),
-              ),
-            )
-          else if (_isLoadingCompatibility)
-            Row(
-              children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: _getIconColor(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "compatibility_calculating",
-                  ),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: _getDescriptionTextColor(),
-                  ),
-                ),
-              ],
-            )
-          else if (_compatibilityError != null || percentText == null)
-            Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "compatibility_unavailable",
-              ),
-              style: TextStyle(
-                fontSize: 14,
-                color: _getDescriptionTextColor(),
-              ),
-            )
-          else
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (_compatibilityMatches.isNotEmpty) ...[
-                  Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "compatibility_matches",
-                    ),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: _getLocationTextColor(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ..._compatibilityMatches.map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            _getLifestyleIcon(item.labelKey),
-                            size: 20,
-                            color: _getDescriptionTextColor(),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "${item.label}: ${item.value}",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: _getDescriptionTextColor(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-                if (_compatibilityDifferences.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "compatibility_differences",
-                    ),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: _getLocationTextColor(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ..._compatibilityDifferences.map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            _getLifestyleIcon(item.labelKey),
-                            size: 20,
-                            color: _getDescriptionTextColor(),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: RichText(
-                              text: TextSpan(
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: _getDescriptionTextColor(),
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text:
-                                        "${item.label}: ${item.currentText} ",
-                                  ),
-                                  WidgetSpan(
-                                    alignment: PlaceholderAlignment.middle,
-                                    child: Icon(
-                                      Icons.compare_arrows,
-                                      size: 16,
-                                      color: _getDescriptionTextColor(),
-                                    ),
-                                  ),
-                                  TextSpan(text: " ${item.ownerText}"),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-                if (_compatibilityMatches.isEmpty &&
-                    _compatibilityDifferences.isEmpty)
-                  Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "compatibility_unavailable",
-                    ),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: _getDescriptionTextColor(),
-                    ),
-                  ),
-              ],
-            ),
-        ],
-      ),
-    );
   }
 
   String _buildComplaintsButtonLabel() {
@@ -2846,7 +2577,33 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                 ),
               ],
               if (!UserListingState().isOwner(listingDetail.user.id))
-                _buildCompatibilitySection(listingDetail),
+                ListingDetailCompatibilitySection(
+                  listingDetail: listingDetail,
+                  scrollController: _scrollController,
+                  sectionKey: _compatibilitySectionKey,
+                  compatibilityPercent: _compatibilityPercent,
+                  isLoadingCompatibility: _isLoadingCompatibility,
+                  compatibilityError: _compatibilityError,
+                  matches: _compatibilityMatches
+                      .map(
+                        (m) => CompatibilityMatch(
+                          labelKey: m.labelKey,
+                          label: m.label,
+                          value: m.value,
+                        ),
+                      )
+                      .toList(),
+                  differences: _compatibilityDifferences
+                      .map(
+                        (d) => CompatibilityDifference(
+                          labelKey: d.labelKey,
+                          label: d.label,
+                          currentText: d.currentText,
+                          ownerText: d.ownerText,
+                        ),
+                      )
+                      .toList(),
+                ),
               if (_complaintsCount != null && _complaintsCount! > 0)
                 Card(
                   child: Padding(
@@ -3170,35 +2927,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       return AppColors.textLight;
     } else {
       return AppColors.textGrey; // Default grey for light theme
-    }
-  }
-
-  IconData _getLifestyleIcon(String labelKey) {
-    switch (labelKey) {
-      case "wakeup_time":
-        return Icons.wb_sunny;
-      case "sleep_time":
-        return Icons.bedtime;
-      case "employed":
-        return Icons.work;
-      case "cleanliness":
-        return Icons.cleaning_services;
-      case "noise_level":
-        return Icons.volume_up;
-      case "sociability":
-        return Icons.people;
-      case "guests_allowed":
-        return Icons.group_add;
-      case "smoking_preference":
-        return Icons.smoking_rooms;
-      case "alcohol_preference":
-        return Icons.local_bar;
-      case "cooking_habits":
-        return Icons.restaurant;
-      case "pets_preference":
-        return Icons.pets;
-      default:
-        return Icons.info_outline;
     }
   }
 
