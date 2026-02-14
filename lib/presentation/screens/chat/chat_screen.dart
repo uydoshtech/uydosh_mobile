@@ -752,6 +752,8 @@ class _ChatScreenState extends State<ChatScreen> {
           width: 24,
           height: 24,
           fit: BoxFit.cover,
+          memCacheWidth: 48,
+          memCacheHeight: 48,
           placeholder: (context, url) => Icon(Icons.person, size: 20),
           errorWidget: (context, url, error) => Icon(Icons.person, size: 20),
         ),

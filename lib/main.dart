@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
@@ -37,6 +37,10 @@ void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
     await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+    // Limit image cache to reduce memory use (default: 1000 images, 100MB)
+    imageCache.maximumSize = 200;
+    imageCache.maximumSizeBytes = 50 << 20; // 50 MB
 
     // Initialize Firebase
     try {
