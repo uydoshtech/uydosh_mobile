@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -112,6 +111,14 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                   const SizedBox(height: 24),
                   _buildSectionTitle(
                     context,
+                    "admin_search_analytics_top_lines",
+                    Icons.subway,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildLinesList(context),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle(
+                    context,
                     "admin_search_analytics_top_stations",
                     Icons.train,
                   ),
@@ -125,14 +132,6 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                   ),
                   const SizedBox(height: 12),
                   _buildLocationsList(context),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle(
-                    context,
-                    "admin_search_analytics_top_lines",
-                    Icons.subway,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildLinesList(context),
                   const SizedBox(height: 32),
                 ] else
                   const SizedBox.shrink(),
@@ -146,6 +145,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
 
   Widget _buildTimeRangeSelector(BuildContext context) {
     final options = [7, 30, 90, 0]; // 0 = all time
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -164,10 +164,14 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
               ),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: options.map((days) {
+            ChipTheme(
+              data: ChipTheme.of(context).copyWith(
+                checkmarkColor: Colors.white,
+              ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: options.map((days) {
                 final label = days == 0
                     ? LanguageAwareStringHelper.getCurrent(
                         context,
@@ -177,10 +181,17 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                         context,
                         "admin_search_analytics_days",
                       )
-                        .replaceAll('{days}', '$days');
+                        .replaceAll("{days}", "$days");
                 final isSelected = _selectedDays == days;
                 return ChoiceChip(
-                  label: Text(label),
+                  label: Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : (isDark ? Colors.white70 : Colors.black87),
+                    ),
+                  ),
                   selected: isSelected,
                   onSelected: (selected) {
                     if (selected) {
@@ -190,8 +201,16 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                       });
                     }
                   },
+                  selectedColor: isDark ? Colors.grey[800]! : Colors.grey[800],
+                  backgroundColor: isDark ? Colors.grey[900]! : Colors.grey[200],
+                  side: BorderSide(
+                    color: isSelected
+                        ? (isDark ? Colors.grey[700]! : Colors.grey[600]!)
+                        : (isDark ? Colors.grey[700]! : Colors.grey[400]!),
+                  ),
                 );
               }).toList(),
+              ),
             ),
           ],
         ),
@@ -212,7 +231,6 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
             ),
             value: s.totalSearches.toString(),
             icon: Icons.search,
-            accentColor: AppColors.primary,
           ),
         ),
         const SizedBox(width: 12),
@@ -225,7 +243,6 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
             ),
             value: s.searchesToday.toString(),
             icon: Icons.today,
-            accentColor: AppColors.secondary,
           ),
         ),
         const SizedBox(width: 12),
@@ -238,7 +255,6 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
             ),
             value: s.searchesThisWeek.toString(),
             icon: Icons.date_range,
-            accentColor: AppColors.success,
           ),
         ),
       ],
@@ -250,15 +266,16 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     required String title,
     required String value,
     required IconData icon,
-    required Color accentColor,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: isDark ? Colors.grey[900] : Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: accentColor.withValues(alpha: 0.3),
+          color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
         ),
       ),
       child: Column(
@@ -266,14 +283,14 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: accentColor),
+              Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -287,7 +304,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
         ],
@@ -302,7 +319,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
   ) {
     return Row(
       children: [
-        Icon(icon, size: 22, color: Theme.of(context).colorScheme.primary),
+        Icon(icon, size: 22, color: Theme.of(context).colorScheme.onSurface),
         const SizedBox(width: 8),
         Text(
           LanguageAwareStringHelper.getCurrent(context, titleKey),
@@ -336,17 +353,17 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final item = stations[index];
-          final station = MetroCache.getStationById(item.stationId);
-          final lineColor = station != null
-              ? AppColors.getMetroLineColor(station.line)
-              : Theme.of(context).colorScheme.outline;
           final intensity = maxCount > 0 ? (item.count / maxCount).clamp(0.0, 1.0) : 0.0;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final barColor = (isDark ? Colors.grey[600]! : Colors.grey[400]!).withValues(
+            alpha: 0.5 + intensity * 0.5,
+          );
           return ListTile(
             leading: Container(
               width: 6,
               height: 36,
               decoration: BoxDecoration(
-                color: lineColor.withValues(alpha: 0.3 + intensity * 0.5),
+                color: barColor,
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -357,7 +374,9 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: lineColor.withValues(alpha: 0.2),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[800]
+                    : Colors.grey[300],
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -395,10 +414,13 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         itemBuilder: (context, index) {
           final item = locations[index];
           final intensity = maxCount > 0 ? (item.count / maxCount).clamp(0.0, 1.0) : 0.0;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
           return ListTile(
             leading: Icon(
               Icons.location_on,
-              color: AppColors.secondary.withValues(alpha: 0.5 + intensity * 0.5),
+              color: (isDark ? Colors.grey[500]! : Colors.grey[600]!).withValues(
+                alpha: 0.5 + intensity * 0.5,
+              ),
             ),
             title: Text(
               _getLocationName(item.locationId),
@@ -407,7 +429,9 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.secondary.withValues(alpha: 0.2),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[800]
+                    : Colors.grey[300],
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -435,7 +459,6 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         ),
       );
     }
-    final maxCount = lines.map((l) => l.count).reduce((a, b) => a > b ? a : b);
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -448,10 +471,10 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
       itemCount: lines.length,
       itemBuilder: (context, index) {
         final item = lines[index];
-        final lineColor = AppColors.getMetroLineColor(item.lineId);
-        final intensity = maxCount > 0 ? (item.count / maxCount).clamp(0.0, 1.0) : 0.0;
+        final colorScheme = Theme.of(context).colorScheme;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Card(
-          color: lineColor.withValues(alpha: 0.15 + intensity * 0.25),
+          color: isDark ? Colors.grey[800] : Colors.grey[200],
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -460,7 +483,11 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
               children: [
                 Row(
                   children: [
-                    Icon(Icons.train, color: lineColor, size: 22),
+                    Icon(
+                      Icons.train,
+                      color: colorScheme.onSurfaceVariant,
+                      size: 22,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
