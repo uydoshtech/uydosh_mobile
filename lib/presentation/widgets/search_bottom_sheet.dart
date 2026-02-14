@@ -26,6 +26,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 
@@ -1242,7 +1243,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               borderRadius: BorderRadius.circular(10),
                               color: theme.colorScheme.surfaceVariant,
                             ),
-                            child: SwitchListTile(
+                            child: UydoshToggle(
+                              icon: Icons.lock_outline,
                               title: Text(
                                 LanguageAwareStringHelper.getCurrent(
                                   context,
@@ -1266,15 +1268,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                 _searchFiltersState.setPrivateRoom(value);
                                 setState(() {});
                               },
-                              activeColor: ThemeState().isBlueTheme
-                                  ? BlueThemeColors.buttonPrimary
-                                  : theme.colorScheme.primary,
-                              inactiveThumbColor:
-                                  theme.colorScheme.onSurfaceVariant,
-                              inactiveTrackColor: theme
-                                  .colorScheme
-                                  .onSurfaceVariant
-                                  .withValues(alpha: 0.4),
                             ),
                           ),
                           const SizedBox(height: 20),

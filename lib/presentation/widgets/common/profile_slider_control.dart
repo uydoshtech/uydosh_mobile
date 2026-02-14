@@ -110,9 +110,10 @@ class ProfileSliderControl extends StatelessWidget {
               divisions: divisions ?? (max - min),
               label:
                   labels != null &&
-                          currentValue >= 0 &&
-                          currentValue < labels!.length
-                      ? labels![currentValue]
+                          currentValue >= min &&
+                          currentValue <= max &&
+                          (currentValue - min) < labels!.length
+                      ? labels![currentValue - min]
                       : currentValue.toString(),
               onChanged: (double newValue) {
                 onChanged(newValue.round());
@@ -121,23 +122,28 @@ class ProfileSliderControl extends StatelessWidget {
           ),
           if (labels != null) ...[
             const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children:
-                  labels!.map((label) {
-                    return Text(
-                      label,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color:
-                            isBlueTheme
-                                ? Colors.white70
-                                : (isLightTheme
-                                    ? Colors.grey[600]
-                                    : Colors.grey[400]),
-                        fontSize: 10,
-                      ),
-                    );
-                  }).toList(),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children:
+                    List.generate(max - min + 1, (i) => min + i).map((num) {
+                      return Text(
+                        num.toString(),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color:
+                              isBlueTheme
+                                  ? Colors.white70
+                                  : (isLightTheme
+                                      ? Colors.grey[600]
+                                      : Colors.grey[400]),
+                          fontSize: 10,
+                        ),
+                      );
+                    }).toList(),
+              ),
             ),
           ],
         ],

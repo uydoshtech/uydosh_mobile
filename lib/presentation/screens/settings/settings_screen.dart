@@ -10,7 +10,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -270,8 +270,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
-        return ListTile(
-          leading: Icon(Icons.palette, color: _getIconColor()),
+        return UydoshToggle(
+          icon: Icons.palette,
+          iconColor: _getIconColor(),
           title: LanguageAwareStringHelper.getText(
             "theme",
             context,
@@ -284,29 +285,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _getLocalizedThemeName(ThemeState().currentTheme),
             style: TextStyle(color: _getSecondaryTextColor()),
           ),
-          trailing: ThemeToggle(
-            value: ThemeState().isBlueTheme,
-            onChanged: (value) async {
-              await ThemeState().changeTheme(
-                value ? AppTheme.blueTheme : AppTheme.lightTheme,
+          value: ThemeState().isBlueTheme,
+          onChanged: (value) async {
+            await ThemeState().changeTheme(
+              value ? AppTheme.blueTheme : AppTheme.lightTheme,
+            );
+            if (context.mounted) {
+              ToastTheme.showSuccess(
+                context,
+                message: AppStrings.getWithParams(
+                  "theme_changed_to",
+                  LanguageState().currentLanguage,
+                  params: {
+                    "theme": LanguageAwareStringHelper.getCurrent(
+                      context,
+                      value ? "blue_theme" : "light_theme",
+                    ),
+                  },
+                ),
               );
-              if (context.mounted) {
-                ToastTheme.showSuccess(
-                  context,
-                  message: AppStrings.getWithParams(
-                    "theme_changed_to",
-                    LanguageState().currentLanguage,
-                    params: {
-                      "theme": LanguageAwareStringHelper.getCurrent(
-                        context,
-                        value ? "blue_theme" : "light_theme",
-                      ),
-                    },
-                  ),
-                );
-              }
-            },
-          ),
+            }
+          },
         );
       },
     );
@@ -316,8 +315,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListenableBuilder(
       listenable: OnboardingState(),
       builder: (context, child) {
-        return ListTile(
-          leading: Icon(Icons.school, color: _getIconColor()),
+        return UydoshToggle(
+          icon: Icons.school,
+          iconColor: _getIconColor(),
           title: LanguageAwareStringHelper.getText(
             "onboarding_toggle",
             context,
@@ -331,14 +331,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             context,
             style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
           ),
-          trailing: ThemeToggle(
-            value: OnboardingState().showOnboarding,
-            onChanged: (value) async {
-              // Onboarding toggle changed
-              await OnboardingState().setShowOnboarding(value);
-              // Onboarding state updated
-            },
-          ),
+          value: OnboardingState().showOnboarding,
+          onChanged: (value) async {
+            await OnboardingState().setShowOnboarding(value);
+          },
         );
       },
     );
@@ -348,8 +344,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListenableBuilder(
       listenable: HapticFeedbackState(),
       builder: (context, child) {
-        return ListTile(
-          leading: Icon(Icons.vibration, color: _getIconColor()),
+        return UydoshToggle(
+          icon: Icons.vibration,
+          iconColor: _getIconColor(),
           title: LanguageAwareStringHelper.getText(
             "haptic_feedback",
             context,
@@ -363,12 +360,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             context,
             style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
           ),
-          trailing: ThemeToggle(
-            value: HapticFeedbackState().isEnabled,
-            onChanged: (value) async {
-              await HapticFeedbackState().setEnabled(value);
-            },
-          ),
+          value: HapticFeedbackState().isEnabled,
+          onChanged: (value) async {
+            await HapticFeedbackState().setEnabled(value);
+          },
         );
       },
     );
