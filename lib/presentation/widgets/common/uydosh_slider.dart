@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/padded_slider_value_indicator_shape.dart";
 
 /// A reusable settings row with an icon, label, value display, and a slider.
 /// Theme-aware. Can be wrapped in a container (e.g. ProfileSliderControl) for
@@ -95,9 +96,12 @@ class UydoshSlider extends StatelessWidget {
                   isBlueTheme ? Colors.blue[600] : theme.colorScheme.primary,
               overlayColor: theme.colorScheme.primary.withValues(alpha: 0.2),
               valueIndicatorColor: theme.colorScheme.primary,
+              valueIndicatorShape: const PaddedSliderValueIndicatorShape(
+                labelPadding: 24.0,
+              ),
               valueIndicatorTextStyle: const TextStyle(
                 color: Colors.white,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
