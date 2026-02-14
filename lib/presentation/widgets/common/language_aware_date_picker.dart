@@ -437,21 +437,17 @@ class _LanguageAwareDatePickerDialogState
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: TextButton(
                     onPressed: _confirm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          themeState.isBlueTheme
-                              ? BlueThemeColors.primary
-                              : null,
-                      foregroundColor:
-                          themeState.isBlueTheme
-                              ? BlueThemeColors.textPrimary
-                              : null,
-                    ),
                     child: Text(
                       widget.confirmText ??
                           LanguageAwareStringHelper.getCurrent(context, "ok"),
+                      style: TextStyle(
+                        color:
+                            themeState.isBlueTheme
+                                ? BlueThemeColors.textPrimary
+                                : theme.colorScheme.primary,
+                      ),
                     ),
                   ),
                 ),
