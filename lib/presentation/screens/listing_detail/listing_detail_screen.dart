@@ -1821,6 +1821,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
               otherUserInitials: StringHelper.extractInitials(
                 listingDetail.user.email,
               ),
+              otherUserName: listingDetail.user.email,
+              otherUserId: listingDetail.user.id,
             );
             logger.d("🧭 [Frontend] ChatScreen created successfully");
             Navigator.of(
@@ -1941,6 +1943,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                           otherUserInitials: StringHelper.extractInitials(
                             existingConversation.otherUserName,
                           ),
+                          otherUserName: existingConversation.otherUserName,
+                          otherUserId:
+                              existingConversation.initiatorId == currentUserId
+                                  ? existingConversation.participantId
+                                  : existingConversation.initiatorId,
+                          otherUserAvatar: existingConversation.otherUserAvatar,
                         ),
                   ),
                 );

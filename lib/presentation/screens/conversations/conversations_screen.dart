@@ -5,10 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uy_dosh/presentation/blocs/messaging_bloc.dart';
 import 'package:uy_dosh/domain/models/conversation.dart';
 import 'package:uy_dosh/base/constants/app_strings.dart';
+import 'package:uy_dosh/base/constants/string_helper.dart';
 import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
 import 'package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart';
 import 'package:uy_dosh/base/injection/injection.dart';
 import 'package:uy_dosh/domain/services/messaging_service.dart';
+import 'package:uy_dosh/base/services/session_manager.dart';
 import 'package:uy_dosh/presentation/screens/chat/chat_screen.dart';
 
 class ConversationsScreen extends StatefulWidget {
@@ -20,12 +22,16 @@ class ConversationsScreen extends StatefulWidget {
 
 class _ConversationsScreenState extends State<ConversationsScreen> {
   late MessagingBloc _messagingBloc;
+  int? _currentUserId;
 
   @override
   void initState() {
     super.initState();
     _messagingBloc = MessagingBloc(getIt<IMessagingService>());
     _messagingBloc.add(FetchConversations());
+    SessionManager.getUserId().then((id) {
+      if (mounted) setState(() => _currentUserId = id);
+    });
   }
 
   @override
@@ -58,6 +64,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                                 hasMore,
                                 currentPage,
                               ),
+                      conversationsCleared: () => _buildEmptyState(),
                       messagesLoaded:
                           (messages, hasMore, currentPage, conversationId) =>
                               _buildLoadingState(), // This shouldn't happen in conversations screen
@@ -266,25 +273,36 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
   void _navigateToChat(int conversationId) {
     // Find the conversation to get the listing ID
-    final conversation = _messagingBloc.state.maybeWhen(
-      conversationsLoaded:
-          (conversations, hasMore, currentPage) => conversations.firstWhere(
-            (c) => c.id == conversationId,
-            orElse: () => null,
-          ),
-      orElse: () => null,
+    ConversationSummary? conversation;
+    _messagingBloc.state.maybeWhen(
+      conversationsLoaded: (conversations, hasMore, currentPage) {
+        final match = conversations.where((c) => c.id == conversationId);
+        conversation = match.isEmpty ? null : match.first;
+      },
+      orElse: () {},
     );
+
+    final conv = conversation;
+    final otherUserId =
+        conv != null && _currentUserId != null
+            ? (conv.initiatorId == _currentUserId
+                ? conv.participantId
+                : conv.initiatorId)
+            : null;
 
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
             (context) => ChatScreen(
               conversationId: conversationId,
-              listingId: conversation?.listingId,
+              listingId: conv?.listingId,
               otherUserInitials:
-                  conversation != null
-                      ? StringHelper.extractInitials(conversation.otherUserName)
+                  conv != null
+                      ? StringHelper.extractInitials(conv.otherUserName)
                       : null,
+              otherUserName: conv?.otherUserName,
+              otherUserId: otherUserId,
+              otherUserAvatar: conv?.otherUserAvatar,
             ),
       ),
     );
@@ -305,6 +323,11 @@ class ConversationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      elevation: 6,
+      shadowColor: Colors.black.withValues(alpha: 0.15),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: ListTile(
         onTap: onTap,
         leading: conversation.otherUserAvatar != null
@@ -383,7 +406,7 @@ class ConversationCard extends StatelessWidget {
           children: [
             if (conversation.lastMessageAt != null)
               Text(
-                _formatTime(conversation.lastMessageAt!),
+                _formatTime(context, conversation.lastMessageAt!),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(
                     context,
@@ -415,7 +438,7 @@ class ConversationCard extends StatelessWidget {
     );
   }
 
-  String _formatTime(String dateTimeString) {
+  String _formatTime(BuildContext context, String dateTimeString) {
     try {
       final dateTime = DateTime.parse(dateTimeString);
       final now = DateTime.now();

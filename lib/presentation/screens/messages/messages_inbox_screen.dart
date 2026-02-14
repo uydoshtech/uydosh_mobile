@@ -760,6 +760,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   otherUserInitials: StringHelper.extractInitials(
                     conversation.otherUserName,
                   ),
+                  otherUserName: conversation.otherUserName,
+                  otherUserId:
+                      conversation.initiatorId == _currentUserId
+                          ? conversation.participantId
+                          : conversation.initiatorId,
+                  otherUserAvatar: conversation.otherUserAvatar,
                 ),
           ),
         );
@@ -819,6 +825,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                       otherUserInitials: StringHelper.extractInitials(
                         conversation.otherUserName,
                       ),
+                      otherUserName: conversation.otherUserName,
+                      otherUserId:
+                          conversation.initiatorId == _currentUserId
+                              ? conversation.participantId
+                              : conversation.initiatorId,
+                      otherUserAvatar: conversation.otherUserAvatar,
                     ),
               ),
             );
@@ -961,7 +973,11 @@ class ConversationTile extends StatelessWidget {
           margin:
               isGrouped ? EdgeInsets.zero : const EdgeInsets.only(bottom: 16),
           color: cardColor,
-          elevation: isGrouped ? 0 : null,
+          elevation: isGrouped ? 0 : 6,
+          shadowColor: Colors.black.withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(isGrouped ? 0 : 20),
+          ),
           child: ListTile(
             onTap: onTap,
             leading: conversation.otherUserAvatar != null
@@ -1359,6 +1375,11 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           color: cardColor,
+          elevation: 6,
+          shadowColor: Colors.black.withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Column(
             children: [
               // Group header
@@ -1794,6 +1815,11 @@ class OutgoingConversationTile extends StatelessWidget {
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           color: cardColor,
+          elevation: 6,
+          shadowColor: Colors.black.withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: ListTile(
             onTap: onTap,
             leading: conversation.otherUserAvatar != null

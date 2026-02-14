@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uy_dosh/presentation/blocs/messaging_bloc.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
 import 'package:uy_dosh/domain/models/message.dart';
+import 'package:uy_dosh/base/constants/app_strings.dart';
 import 'package:uy_dosh/base/constants/string_helper.dart';
 import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
 import 'package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart';
@@ -34,12 +36,18 @@ class ChatScreen extends StatefulWidget {
   final int conversationId;
   final int? listingId;
   final String? otherUserInitials;
+  final String? otherUserName;
+  final int? otherUserId;
+  final String? otherUserAvatar;
 
   const ChatScreen({
     super.key,
     required this.conversationId,
     this.listingId,
     this.otherUserInitials,
+    this.otherUserName,
+    this.otherUserId,
+    this.otherUserAvatar,
   }) : assert(conversationId > 0, 'Conversation ID must be positive');
 
   @override
@@ -94,6 +102,19 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  String _getHeaderTitle(BuildContext context) {
+    final name = widget.otherUserName?.trim();
+    if (name != null && name.isNotEmpty) {
+      return AppStrings.getWithParams(
+        "chat_with",
+        LanguageAwareStringHelper.getCurrentLanguage(context),
+        params: {"name": name},
+        fallback: "Chat with $name",
+      );
+    }
+    return LanguageAwareStringHelper.getCurrent(context, "chat");
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -114,7 +135,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 // Title on the left
                 Expanded(
                   child: Text(
-                    LanguageAwareStringHelper.getCurrent(context, "chat"),
+                    _getHeaderTitle(context),
                     style: TextStyle(color: textColor),
                   ),
                 ),
@@ -679,8 +700,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _navigateToUserProfile() {
-    // Get other user ID from messages
-    final otherUserId = _getOtherUserIdFromMessages();
+    // Prefer widget.otherUserId, fall back to deriving from messages
+    final otherUserId =
+        widget.otherUserId ?? _getOtherUserIdFromMessages();
     if (otherUserId != null) {
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -720,6 +742,23 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Widget _buildProfileMenuIcon() {
+    if (widget.otherUserAvatar != null &&
+        widget.otherUserAvatar!.trim().isNotEmpty) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: widget.otherUserAvatar!,
+          width: 24,
+          height: 24,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Icon(Icons.person, size: 20),
+          errorWidget: (context, url, error) => Icon(Icons.person, size: 20),
+        ),
+      );
+    }
+    return Icon(Icons.person, size: 20);
+  }
+
   int? _getOtherUserIdFromMessages() {
     if (_currentUserId == null || _messages.isEmpty) return null;
 
@@ -735,6 +774,21 @@ class _ChatScreenState extends State<ChatScreen> {
 
   List<ActionMenuItem> _buildActionMenuItems() {
     final List<ActionMenuItem> items = [];
+    final otherUserId =
+        widget.otherUserId ?? _getOtherUserIdFromMessages();
+
+    // Profile option - show when other user ID is available
+    if (otherUserId != null) {
+      items.add(
+        ActionMenuItem(
+          value: "profile",
+          icon: Icons.person,
+          textKey: "profile_interlocutor",
+          onPressed: _navigateToUserProfile,
+          iconWidget: _buildProfileMenuIcon(),
+        ),
+      );
+    }
 
     // View listing option - only show when listingId is available
     if (widget.listingId != null) {
@@ -744,18 +798,6 @@ class _ChatScreenState extends State<ChatScreen> {
           icon: Icons.article,
           textKey: "view_listing",
           onPressed: _navigateToListingDetail,
-        ),
-      );
-    }
-
-    // View profile option - only show when other user ID is available from messages
-    if (_getOtherUserIdFromMessages() != null) {
-      items.add(
-        ActionMenuItem(
-          value: "view_profile",
-          icon: Icons.person,
-          textKey: "view_profile",
-          onPressed: _navigateToUserProfile,
         ),
       );
     }

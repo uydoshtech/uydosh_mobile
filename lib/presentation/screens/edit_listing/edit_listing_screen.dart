@@ -16,13 +16,13 @@ import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/amenity_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
@@ -41,8 +41,7 @@ class EditListingScreen extends StatefulWidget {
   State<EditListingScreen> createState() => _EditListingScreenState();
 }
 
-class _EditListingScreenState extends State<EditListingScreen>
-    with TickerProviderStateMixin {
+class _EditListingScreenState extends State<EditListingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -70,8 +69,6 @@ class _EditListingScreenState extends State<EditListingScreen>
 
   // Amenities state
   final Set<int> _selectedAmenityIds = {};
-  final Map<int, AnimationController> _amenityAnimationControllers = {};
-  final Map<int, Animation<double>> _amenityScaleAnimations = {};
 
   // Photos state
   List<String> _selectedPhotos = [];
@@ -305,38 +302,11 @@ class _EditListingScreenState extends State<EditListingScreen>
     return AppColors.getMetroLineColor(line);
   }
 
-  AnimationController _getAmenityAnimationController(int amenityId) {
-    if (!_amenityAnimationControllers.containsKey(amenityId)) {
-      final controller = AnimationController(
-        duration: const Duration(milliseconds: 150),
-        vsync: this,
-      );
-      _amenityAnimationControllers[amenityId] = controller;
-      _amenityScaleAnimations[amenityId] = Tween<double>(
-        begin: 1.0,
-        end: 1.2,
-      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeInOut));
-    }
-    return _amenityAnimationControllers[amenityId]!;
-  }
-
-  void _animateAmenityTap(int amenityId) {
-    final controller = _getAmenityAnimationController(amenityId);
-    // Scale up and then back down
-    controller.forward().then((_) {
-      controller.reverse();
-    });
-  }
-
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     _locationScrollController?.dispose();
-    // Dispose all amenity animation controllers
-    for (final controller in _amenityAnimationControllers.values) {
-      controller.dispose();
-    }
     // Clean up any ongoing operations
     _makingPhotoPrimaryIds.clear();
     _deletingPhotoIds.clear();
@@ -1254,8 +1224,29 @@ class _EditListingScreenState extends State<EditListingScreen>
                               children:
                                   _getOrderedAmenities()
                                       .map(
-                                        (amenity) =>
-                                            _buildAmenityToggle(amenity),
+                                        (amenity) => AmenityToggle(
+                                          amenity: amenity,
+                                          isSelected:
+                                              _selectedAmenityIds.contains(
+                                                amenity.id,
+                                              ),
+                                          onTap: () {
+                                            _dismissKeyboard();
+                                            setState(() {
+                                              if (_selectedAmenityIds.contains(
+                                                amenity.id,
+                                              )) {
+                                                _selectedAmenityIds.remove(
+                                                  amenity.id,
+                                                );
+                                              } else {
+                                                _selectedAmenityIds.add(
+                                                  amenity.id,
+                                                );
+                                              }
+                                            });
+                                          },
+                                        ),
                                       )
                                       .toList(),
                             ),
@@ -1530,110 +1521,8 @@ class _EditListingScreenState extends State<EditListingScreen>
     ];
   }
 
-  Widget _buildAmenityToggle(Amenity amenity) {
-    final isSelected = _selectedAmenityIds.contains(amenity.id);
-    // Initialize animation controller for this amenity
-    _getAmenityAnimationController(amenity.id);
-    final scaleAnimation = _amenityScaleAnimations[amenity.id]!;
-
-    return AnimatedBuilder(
-      animation: scaleAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: scaleAnimation.value,
-          child: InkWell(
-            onTap: () {
-              // Dismiss keyboard
-              _dismissKeyboard();
-
-              // Add haptic feedback
-              HapticFeedbackUtils.impact();
-
-              // Trigger animation
-              _animateAmenityTap(amenity.id);
-
-              setState(() {
-                if (isSelected) {
-                  _selectedAmenityIds.remove(amenity.id);
-                } else {
-                  _selectedAmenityIds.add(amenity.id);
-                }
-              });
-            },
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color:
-                    isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.surfaceVariant,
-                border: Border.all(
-                  color:
-                      isSelected
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.outline,
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _getAmenityIcon(amenity),
-                    size: 18,
-                    color:
-                        isSelected
-                            ? Theme.of(context).colorScheme.onPrimary
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    _getAmenityLocalizedName(amenity),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color:
-                          isSelected
-                              ? Theme.of(context).colorScheme.onPrimary
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   List<Amenity> _getOrderedAmenities() {
     return AmenitiesCache.getDefaultOrderedAmenities();
-  }
-
-  IconData _getAmenityIcon(Amenity amenity) {
-    if (amenity.code != null && amenity.code!.isNotEmpty) {
-      return AmenityIconHelper.getIcon(amenity.code!);
-    }
-    return Icons.home; // Default icon
-  }
-
-  String _getAmenityLocalizedName(Amenity amenity) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
-
-    switch (currentLanguage) {
-      case "ru":
-        return amenity.nameRu;
-      case "uz":
-        return amenity.nameUz;
-      case "en":
-      default:
-        return amenity.nameEn;
-    }
   }
 
   void _deleteExistingPhoto(int index) async {

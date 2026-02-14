@@ -54,13 +54,18 @@ class ActionDropdownMenu extends StatelessWidget {
             enabled: item.enabled,
             child: Row(
               children: [
-                Icon(
-                  item.icon,
-                  size: 20,
-                  color:
-                      item.enabled
-                          ? (item.iconColor ?? baseTextStyle?.color)
-                          : disabledColor,
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: item.iconWidget ??
+                      Icon(
+                        item.icon,
+                        size: 20,
+                        color:
+                            item.enabled
+                                ? (item.iconColor ?? baseTextStyle?.color)
+                                : disabledColor,
+                      ),
                 ),
                 const SizedBox(width: 12),
                 LanguageAwareStringHelper.getText(
@@ -101,6 +106,7 @@ class ActionMenuItem {
     this.iconColor,
     this.textColor,
     this.enabled = true,
+    this.iconWidget,
   });
 
   final String value;
@@ -110,4 +116,6 @@ class ActionMenuItem {
   final Color? iconColor;
   final Color? textColor;
   final bool enabled;
+  /// When provided, used instead of Icon(icon) for the menu item leading widget.
+  final Widget? iconWidget;
 }

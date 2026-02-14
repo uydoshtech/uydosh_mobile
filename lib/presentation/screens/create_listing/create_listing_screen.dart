@@ -15,7 +15,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
-import "package:uy_dosh/base/util/amenity_icon_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/amenity_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
@@ -26,7 +26,6 @@ import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
@@ -42,8 +41,7 @@ class CreateListingScreen extends StatefulWidget {
   State<CreateListingScreen> createState() => _CreateListingScreenState();
 }
 
-class _CreateListingScreenState extends State<CreateListingScreen>
-    with TickerProviderStateMixin {
+class _CreateListingScreenState extends State<CreateListingScreen> {
   // Controllers
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -75,10 +73,6 @@ class _CreateListingScreenState extends State<CreateListingScreen>
   Set<int> _selectedAmenityIds = {};
   List<String> _selectedPhotos = [];
   int? _primaryPhotoIndex; // Track which photo is primary
-
-  // Animation controllers for amenities
-  final Map<int, AnimationController> _amenityAnimationControllers = {};
-  final Map<int, Animation<double>> _amenityScaleAnimations = {};
 
   @override
   void initState() {
@@ -334,40 +328,6 @@ class _CreateListingScreenState extends State<CreateListingScreen>
   }
 
   // Theme-dependent color method for amenity selections
-  Color _getAmenitySelectedColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.buttonPrimary; // Blue for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black for light theme
-    } else {
-      return Colors.black; // Default to light theme selection color
-    }
-  }
-
-  AnimationController _getAmenityAnimationController(int amenityId) {
-    if (!_amenityAnimationControllers.containsKey(amenityId)) {
-      final controller = AnimationUtils.createAnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 150),
-      );
-      _amenityAnimationControllers[amenityId] = controller;
-      _amenityScaleAnimations[amenityId] = AnimationUtils.createScaleAnimation(
-        controller: controller,
-        begin: 1.0,
-        end: 1.2,
-      );
-    }
-    return _amenityAnimationControllers[amenityId]!;
-  }
-
-  void _animateAmenityTap(int amenityId) {
-    final controller = _getAmenityAnimationController(amenityId);
-    // Scale up and then back down
-    controller.forward().then((_) {
-      controller.reverse();
-    });
-  }
-
   void _makeNewPhotoPrimary(int index) {
     setState(() {
       _primaryPhotoIndex = index;
@@ -379,8 +339,6 @@ class _CreateListingScreenState extends State<CreateListingScreen>
     _titleController.dispose();
     _descriptionController.dispose();
     _locationScrollController?.dispose();
-    // Dispose all amenity animation controllers safely
-    AnimationUtils.disposeAnimationControllerMap(_amenityAnimationControllers);
     super.dispose();
   }
 
@@ -944,7 +902,22 @@ class _CreateListingScreenState extends State<CreateListingScreen>
                   runSpacing: 12,
                   children:
                       _getOrderedAmenities()
-                          .map((amenity) => _buildAmenityToggle(amenity))
+                          .map(
+                            (amenity) => AmenityToggle(
+                              amenity: amenity,
+                              isSelected: _selectedAmenityIds.contains(amenity.id),
+                              onTap: () {
+                                _dismissKeyboard();
+                                setState(() {
+                                  if (_selectedAmenityIds.contains(amenity.id)) {
+                                    _selectedAmenityIds.remove(amenity.id);
+                                  } else {
+                                    _selectedAmenityIds.add(amenity.id);
+                                  }
+                                });
+                              },
+                            ),
+                          )
                           .toList(),
                 ),
               ],
@@ -1556,106 +1529,7 @@ class _CreateListingScreenState extends State<CreateListingScreen>
     }
   }
 
-  Widget _buildAmenityToggle(Amenity amenity) {
-    final isSelected = _selectedAmenityIds.contains(amenity.id);
-    // Initialize animation controller for this amenity
-    _getAmenityAnimationController(amenity.id);
-    final scaleAnimation = _amenityScaleAnimations[amenity.id]!;
-
-    return AnimatedBuilder(
-      animation: scaleAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: scaleAnimation.value,
-          child: InkWell(
-            onTap: () {
-              // Dismiss keyboard
-              _dismissKeyboard();
-
-              // Add haptic feedback
-              HapticFeedbackUtils.impact();
-
-              // Trigger animation
-              _animateAmenityTap(amenity.id);
-
-              setState(() {
-                if (isSelected) {
-                  _selectedAmenityIds.remove(amenity.id);
-                } else {
-                  _selectedAmenityIds.add(amenity.id);
-                }
-              });
-            },
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color:
-                    isSelected ? _getAmenitySelectedColor() : Colors.grey[200],
-                border: Border.all(
-                  color:
-                      isSelected
-                          ? _getAmenitySelectedColor()
-                          : Colors.grey[400]!,
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _getAmenityIcon(amenity),
-                    size: 18,
-                    color: isSelected ? Colors.white : Colors.grey[600],
-                  ),
-                  const SizedBox(width: 6),
-                  ListenableBuilder(
-                    listenable: LanguageState(),
-                    builder: (context, child) {
-                      return Text(
-                        _getAmenityLocalizedName(amenity),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: isSelected ? Colors.white : Colors.grey[600],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   List<Amenity> _getOrderedAmenities() {
     return AmenitiesCache.getDefaultOrderedAmenities();
-  }
-
-  IconData _getAmenityIcon(Amenity amenity) {
-    if (amenity.code != null && amenity.code!.isNotEmpty) {
-      return AmenityIconHelper.getIcon(amenity.code!);
-    }
-    return Icons.home; // Default icon
-  }
-
-  String _getAmenityLocalizedName(Amenity amenity) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
-
-    switch (currentLanguage) {
-      case "ru":
-        return amenity.nameRu;
-      case "uz":
-        return amenity.nameUz;
-      case "en":
-      default:
-        return amenity.nameEn;
-    }
   }
 }
