@@ -10,6 +10,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_scree
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminUserComplaintsScreen extends StatefulWidget {
@@ -236,13 +237,11 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     }
 
     final grouped = _groupComplaintsByListing(_complaints);
-    return RefreshIndicator(
-      onRefresh: _refresh,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: grouped.length,
-        itemBuilder: (context, index) {
-          final group = grouped[index];
+    return CommonListView(
+      padding: const EdgeInsets.all(16),
+      itemCount: grouped.length,
+      itemBuilder: (context, index) {
+        final group = grouped[index];
           final listingLabel = group.listingId <= 0
               ? LanguageAwareStringHelper.getCurrent(context, "not_specified")
               : group.listingId.toString();
@@ -271,7 +270,8 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
             ),
           );
         },
-      ),
+      showRefreshIndicator: true,
+      onRefresh: _refresh,
     );
   }
 

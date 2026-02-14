@@ -31,6 +31,7 @@ import 'package:uy_dosh/presentation/screens/complaint/create_complaint_screen.d
 import 'package:uy_dosh/presentation/blocs/complaint_bloc.dart';
 import 'package:uy_dosh/domain/services/complaint_service.dart';
 import 'package:uy_dosh/presentation/widgets/common/toast_theme.dart';
+import 'package:uy_dosh/presentation/widgets/common/common_list_view.dart';
 
 class ChatScreen extends StatefulWidget {
   final int conversationId;
@@ -434,18 +435,13 @@ class _ChatScreenState extends State<ChatScreen> {
       _newMessageIds,
     );
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        _messagingBloc.add(
-          RefreshMessages(conversationId: widget.conversationId),
-        );
-      },
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        reverse: true, // Show newest messages at bottom
-        itemCount: groupedItems.length,
-        itemBuilder: (context, index) {
+    return CommonListView(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      reverse: true, // Show newest messages at bottom
+      itemSpacing: 0, // Message grouping handles spacing
+      itemCount: groupedItems.length,
+      itemBuilder: (context, index) {
           // Since we're using reverse: true, we need to reverse the index
           final itemIndex = groupedItems.length - 1 - index;
           final item = groupedItems[itemIndex];
@@ -476,7 +472,12 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
           };
         },
-      ),
+      showRefreshIndicator: true,
+      onRefresh: () async {
+        _messagingBloc.add(
+          RefreshMessages(conversationId: widget.conversationId),
+        );
+      },
     );
   }
 

@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_scree
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminComplaintsScreen extends StatefulWidget {
@@ -380,22 +381,13 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _refresh,
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        itemCount: _complaints.length + (_isLoadingMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index >= _complaints.length) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          final complaint = _complaints[index];
-          return Card(
+    return CommonListView(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      itemCount: _complaints.length,
+      itemBuilder: (context, index) {
+        final complaint = _complaints[index];
+        return Card(
             elevation: 3,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -451,6 +443,13 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
             ),
           );
         },
+      showRefreshIndicator: true,
+      onRefresh: _refresh,
+      showLoadMoreIndicator: _isLoadingMore,
+      hasMore: _isLoadingMore,
+      loadMoreIndicator: const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: CircularProgressIndicator()),
       ),
     );
   }

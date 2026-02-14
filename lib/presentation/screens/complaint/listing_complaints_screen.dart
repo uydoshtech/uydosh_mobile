@@ -10,6 +10,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ListingComplaintsScreen extends StatefulWidget {
@@ -126,10 +127,10 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: ListView.separated(
+          child: CommonListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             itemCount: complaintGroups.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemSpacing: 12,
             itemBuilder: (context, index) {
               final group = complaintGroups[index];
               return Card(

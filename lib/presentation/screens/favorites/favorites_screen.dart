@@ -17,6 +17,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -308,51 +309,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       return _buildEmptyState();
     }
 
-    return RefreshIndicator(
-      onRefresh: () => _loadFavoriteListings(isRefresh: true),
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        itemCount: _favoriteListings.length + (_hasMoreData ? 1 : 0),
-        addAutomaticKeepAlives:
-            false, // Prevents keeping off-screen items alive
-        addRepaintBoundaries: true, // Isolate repaints for better scroll performance
-        itemBuilder: (context, index) {
-          // Show "load more" indicator at the end
-          if (index == _favoriteListings.length) {
-            if (_isLoadingMore) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      _getLoadingIndicatorColor(),
-                    ),
-                  ),
-                ),
-              );
-            } else {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(
-                  child: GhostButtonFactory.text(
-                    onPressed: _loadMoreFavorites,
-                    text: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "load_more",
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                  ),
-                ),
-              );
-            }
-          }
+    return CommonListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      itemCount: _favoriteListings.length,
+      itemSpacing: 16.0,
+      itemBuilder: (context, index) {
+        final listing = _favoriteListings[index];
 
-          final listing = _favoriteListings[index];
-
-          return AnimatedContainer(
+        return AnimatedContainer(
             key: ValueKey(listing.id),
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
@@ -386,7 +350,37 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     ),
           );
         },
-      ),
+      showRefreshIndicator: true,
+      onRefresh: () => _loadFavoriteListings(isRefresh: true),
+      showLoadMoreIndicator: _hasMoreData,
+      hasMore: _hasMoreData,
+      loadMoreIndicator: _isLoadingMore
+          ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    _getLoadingIndicatorColor(),
+                  ),
+                ),
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Center(
+                child: GhostButtonFactory.text(
+                  onPressed: _loadMoreFavorites,
+                  text: LanguageAwareStringHelper.getCurrent(
+                    context,
+                    "load_more",
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ),
     );
   }
 

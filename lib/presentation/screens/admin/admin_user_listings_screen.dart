@@ -5,6 +5,7 @@ import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 
 class AdminUserListingsScreen extends StatefulWidget {
   const AdminUserListingsScreen({
@@ -228,24 +229,22 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
       );
     }
 
-    return RefreshIndicator(
+    return CommonListView(
+      controller: _scrollController,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      itemCount: _listings.length,
+      itemSpacing: 16,
+      itemBuilder: (context, index) {
+        final listing = _listings[index];
+        return ListingTile(listing: listing);
+      },
+      showRefreshIndicator: true,
       onRefresh: _refresh,
-      child: ListView.separated(
-        controller: _scrollController,
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        itemCount: _listings.length + (_isLoadingMore ? 1 : 0),
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          if (index >= _listings.length) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          final listing = _listings[index];
-          return ListingTile(listing: listing);
-        },
+      showLoadMoreIndicator: _isLoadingMore,
+      hasMore: _isLoadingMore,
+      loadMoreIndicator: const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: CircularProgressIndicator()),
       ),
     );
   }

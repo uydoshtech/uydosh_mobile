@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminListingsWithComplaintsScreen extends StatefulWidget {
@@ -380,21 +381,12 @@ class _AdminListingsWithComplaintsScreenState
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _refresh,
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        itemCount: _groups.length + (_isLoadingMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index >= _groups.length) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          final group = _groups[index];
+    return CommonListView(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      itemCount: _groups.length,
+      itemBuilder: (context, index) {
+        final group = _groups[index];
           return Card(
             elevation: 3,
             shape: RoundedRectangleBorder(
@@ -434,6 +426,13 @@ class _AdminListingsWithComplaintsScreenState
             ),
           );
         },
+      showRefreshIndicator: true,
+      onRefresh: _refresh,
+      showLoadMoreIndicator: _isLoadingMore,
+      hasMore: _isLoadingMore,
+      loadMoreIndicator: const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: CircularProgressIndicator()),
       ),
     );
   }

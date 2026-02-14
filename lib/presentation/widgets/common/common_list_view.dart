@@ -26,6 +26,7 @@ class CommonListView extends StatelessWidget {
     this.primary,
     this.shrinkWrap = false,
     this.cacheExtent = 200.0,
+    this.reverse = false,
   }) : assert(
          (children != null) != (itemBuilder != null && itemCount != null),
          "Provide either children or both itemCount and itemBuilder",
@@ -51,6 +52,7 @@ class CommonListView extends StatelessWidget {
   final bool? primary;
   final bool shrinkWrap;
   final double cacheExtent;
+  final bool reverse;
 
   bool get _useLazyBuilder => itemBuilder != null && itemCount != null;
 
@@ -80,6 +82,7 @@ class CommonListView extends StatelessWidget {
       physics: physics,
       primary: primary,
       shrinkWrap: shrinkWrap,
+      reverse: reverse,
       itemBuilder: (context, index) {
         // Early return for load more indicator to avoid unnecessary processing
         if (index == contentCount && showLoadMoreIndicator && hasMore) {
@@ -138,10 +141,12 @@ class CommonListView extends StatelessWidget {
     double itemSpacing,
     EdgeInsets itemPadding,
   ) {
+    final spacing = index < contentCount - 1 ? itemSpacing : 0.0;
+    final edgePadding = reverse
+        ? EdgeInsets.only(top: spacing)
+        : EdgeInsets.only(bottom: spacing);
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: index < contentCount - 1 ? itemSpacing : 0,
-      ).add(itemPadding),
+      padding: edgePadding.add(itemPadding),
       child: child,
     );
   }

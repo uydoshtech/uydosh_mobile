@@ -12,6 +12,7 @@ import 'package:uy_dosh/base/injection/injection.dart';
 import 'package:uy_dosh/domain/services/messaging_service.dart';
 import 'package:uy_dosh/base/services/session_manager.dart';
 import 'package:uy_dosh/presentation/screens/chat/chat_screen.dart';
+import 'package:uy_dosh/presentation/widgets/common/index.dart';
 
 class ConversationsScreen extends StatefulWidget {
   const ConversationsScreen({super.key});
@@ -190,26 +191,23 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       return _buildEmptyState();
     }
 
-    return RefreshIndicator(
+    return CommonListView(
+      padding: const EdgeInsets.all(16),
+      itemCount: conversations.length,
+      itemBuilder: (context, index) {
+        final conversation = conversations[index];
+        return ConversationCard(
+          conversation: conversation,
+          onTap: () => _navigateToChat(conversation.id),
+        );
+      },
+      showRefreshIndicator: true,
       onRefresh: () async {
         _messagingBloc.add(RefreshConversations());
       },
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: conversations.length + (hasMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index == conversations.length) {
-            // Load more button
-            return _buildLoadMoreButton();
-          }
-
-          final conversation = conversations[index];
-          return ConversationCard(
-            conversation: conversation,
-            onTap: () => _navigateToChat(conversation.id),
-          );
-        },
-      ),
+      showLoadMoreIndicator: hasMore,
+      hasMore: hasMore,
+      loadMoreIndicator: _buildLoadMoreButton(),
     );
   }
 

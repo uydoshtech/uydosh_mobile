@@ -6,6 +6,7 @@ import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_detail_screen.dart";
 import "package:intl/intl.dart";
@@ -273,21 +274,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _refresh,
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        itemCount: _users.length + (_isLoadingMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index >= _users.length) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          final user = _users[index];
+    return CommonListView(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      itemCount: _users.length,
+      itemBuilder: (context, index) {
+        final user = _users[index];
           final userName = _userNames[user.id];
           final listingCount = _listingCounts[user.id];
           final complaintCount = _complaintCounts[user.id];
@@ -442,6 +434,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             ),
           );
         },
+      showRefreshIndicator: true,
+      onRefresh: _refresh,
+      showLoadMoreIndicator: _isLoadingMore,
+      hasMore: _isLoadingMore,
+      loadMoreIndicator: const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: CircularProgressIndicator()),
       ),
     );
   }

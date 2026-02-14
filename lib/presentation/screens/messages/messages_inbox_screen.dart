@@ -22,6 +22,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 
 class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({super.key, this.showCustomHeader = true});
@@ -807,7 +808,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return bTime.compareTo(aTime);
     });
 
-    return ListView.builder(
+    return CommonListView(
       padding: const EdgeInsets.all(16),
       itemCount: sortedConversations.length,
       itemBuilder: (context, index) {
@@ -1301,7 +1302,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
       }
     }
 
-    return ListView.builder(
+    return CommonListView(
       padding: const EdgeInsets.all(16),
       itemCount: sortedListingIds.length,
       itemBuilder: (context, index) {

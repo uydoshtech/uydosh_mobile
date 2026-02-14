@@ -9,6 +9,7 @@ import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
 import 'package:uy_dosh/presentation/widgets/common/theme_icon.dart';
 import 'package:uy_dosh/presentation/widgets/common/ghost_button.dart';
 import 'package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart';
+import 'package:uy_dosh/presentation/widgets/common/common_list_view.dart';
 import 'package:uy_dosh/base/constants/app_colors.dart';
 import 'package:uy_dosh/presentation/widgets/common/toast_theme.dart';
 import 'package:uy_dosh/base/util/error_message_helper.dart';
@@ -195,7 +196,9 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.builder(
+            child: CommonListView(
+              padding: EdgeInsets.zero,
+              itemSpacing: 0,
               itemCount: categories.length,
               itemBuilder: (context, index) {
                 final category = categories[index];
