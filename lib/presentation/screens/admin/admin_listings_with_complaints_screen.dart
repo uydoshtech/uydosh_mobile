@@ -132,9 +132,11 @@ class _AdminListingsWithComplaintsScreenState
     _hasMore = true;
     _complaints.clear();
     _groups.clear();
-    _fetchCategories();
-    _fetchStatusCounts();
-    await _fetchComplaints();
+    await Future.wait([
+      _fetchCategories(),
+      _fetchStatusCounts(),
+      _fetchComplaints(),
+    ]);
   }
 
   void _onStatusFilterChanged(String? status) {

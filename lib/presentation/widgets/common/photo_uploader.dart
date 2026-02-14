@@ -498,6 +498,8 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 width: double.infinity,
                 height: double.infinity,
                 fit: BoxFit.cover,
+                memCacheWidth: 400,
+                memCacheHeight: 400,
                 fadeInDuration: const Duration(milliseconds: 200),
                 fadeInCurve: Curves.easeOut,
                 placeholder:

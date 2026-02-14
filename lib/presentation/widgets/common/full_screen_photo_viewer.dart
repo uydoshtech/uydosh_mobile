@@ -152,6 +152,8 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                       widget.photoUrls[index],
                                     ),
                                     fit: BoxFit.contain,
+                                    memCacheWidth: 1080,
+                                    memCacheHeight: 1080,
                                     fadeInDuration: const Duration(
                                       milliseconds: 300,
                                     ),

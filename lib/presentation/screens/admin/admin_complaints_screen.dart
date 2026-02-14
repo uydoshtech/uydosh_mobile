@@ -130,8 +130,10 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
     _pageNumber = 1;
     _hasMore = true;
     _complaints.clear();
-    _fetchStatusCounts();
-    await _fetchComplaints();
+    await Future.wait([
+      _fetchStatusCounts(),
+      _fetchComplaints(),
+    ]);
   }
 
   void _onStatusFilterChanged(String? status) {

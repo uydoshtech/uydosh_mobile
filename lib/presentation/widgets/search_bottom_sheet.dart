@@ -82,13 +82,18 @@ class SearchBottomSheetWidget {
     double? currentMinPrice,
     double? currentMaxPrice,
   }) {
-    // Try to get existing ListingsBloc, create new one if not available
+    // Try to get existing blocs from context to avoid redundant fetches
     ListingsBloc? existingListingsBloc;
+    LocationsBloc? existingLocationsBloc;
     try {
       existingListingsBloc = context.read<ListingsBloc>();
-    } catch (e) {
-      // ListingsBloc not available in current context
+    } catch (_) {
       existingListingsBloc = null;
+    }
+    try {
+      existingLocationsBloc = context.read<LocationsBloc>();
+    } catch (_) {
+      existingLocationsBloc = null;
     }
 
     showModalBottomSheet(
@@ -107,15 +112,18 @@ class SearchBottomSheetWidget {
                   : BlocProvider(
                     create: (context) => ListingsBloc(getIt<IListingService>()),
                   ),
-              BlocProvider(
-                create: (context) {
-                  final locationsBloc = LocationsBloc(
-                    getIt<ILocationService>(),
-                  );
-                  locationsBloc.add(const LocationsEvent.fetchLocations());
-                  return locationsBloc;
-                },
-              ),
+              // Provide LocationsBloc - reuse if available to avoid refetch
+              existingLocationsBloc != null
+                  ? BlocProvider.value(value: existingLocationsBloc)
+                  : BlocProvider(
+                    create: (context) {
+                      final locationsBloc = LocationsBloc(
+                        getIt<ILocationService>(),
+                      );
+                      locationsBloc.add(const LocationsEvent.fetchLocations());
+                      return locationsBloc;
+                    },
+                  ),
               BlocProvider(
                 create:
                     (context) =>
