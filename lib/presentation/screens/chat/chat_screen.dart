@@ -778,6 +778,93 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
+/// Custom painter for the bubble with integrated tail pointing towards user avatar.
+class _BubbleWithTailPainter extends CustomPainter {
+  final Color color;
+  final Color borderColor;
+  final Color shadowColor;
+  final bool hasBorder;
+  final bool tailPointsRight;
+  final double radius;
+  static const double _tailWidth = 10;
+  static const double _tailHeight = 16;
+
+  _BubbleWithTailPainter({
+    required this.color,
+    required this.borderColor,
+    required this.shadowColor,
+    required this.tailPointsRight,
+    this.hasBorder = false,
+    this.radius = 18,
+  });
+
+  Path _createBubblePath(Size size) {
+    final w = size.width;
+    final h = size.height;
+    final r = radius;
+    final centerY = h / 2;
+
+    if (tailPointsRight) {
+      return Path()
+        ..moveTo(r, 0)
+        ..lineTo(w - r, 0)
+        ..arcToPoint(Offset(w, r), radius: Radius.circular(r))
+        ..lineTo(w, centerY - _tailHeight / 2)
+        ..lineTo(w + _tailWidth, centerY)
+        ..lineTo(w, centerY + _tailHeight / 2)
+        ..lineTo(w, h - r)
+        ..arcToPoint(Offset(w - r, h), radius: Radius.circular(r))
+        ..lineTo(r, h)
+        ..arcToPoint(Offset(0, h - r), radius: Radius.circular(r))
+        ..lineTo(0, r)
+        ..arcToPoint(Offset(r, 0), radius: Radius.circular(r))
+        ..close();
+    } else {
+      return Path()
+        ..moveTo(r, 0)
+        ..lineTo(w - r, 0)
+        ..arcToPoint(Offset(w, r), radius: Radius.circular(r))
+        ..lineTo(w, h - r)
+        ..arcToPoint(Offset(w - r, h), radius: Radius.circular(r))
+        ..lineTo(r, h)
+        ..arcToPoint(Offset(0, h - r), radius: Radius.circular(r))
+        ..lineTo(0, centerY + _tailHeight / 2)
+        ..lineTo(-_tailWidth, centerY)
+        ..lineTo(0, centerY - _tailHeight / 2)
+        ..lineTo(0, r)
+        ..arcToPoint(Offset(r, 0), radius: Radius.circular(r))
+        ..close();
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = _createBubblePath(size);
+    canvas.drawShadow(path, shadowColor, 6, true);
+    canvas.drawPath(
+      path,
+      Paint()..color = color..style = PaintingStyle.fill,
+    );
+    if (hasBorder) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = borderColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BubbleWithTailPainter oldDelegate) =>
+      color != oldDelegate.color ||
+      borderColor != oldDelegate.borderColor ||
+      shadowColor != oldDelegate.shadowColor ||
+      tailPointsRight != oldDelegate.tailPointsRight ||
+      hasBorder != oldDelegate.hasBorder;
+}
+
 class MessageBubble extends StatefulWidget {
   final Message message;
   final bool isCurrentUser;
@@ -918,84 +1005,75 @@ class _MessageBubbleState extends State<MessageBubble>
                         const SizedBox(width: 8),
                       ],
                       Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            left: widget.isCurrentUser ? 0 : 10,
+                            right: widget.isCurrentUser ? 10 : 0,
                           ),
-                          decoration: BoxDecoration(
-                            color:
-                                widget.isCurrentUser
-                                    ? ownMessageColor
-                                    : otherMessageColor,
-                            borderRadius: BorderRadius.circular(18).copyWith(
-                              bottomLeft:
-                                  widget.isCurrentUser
-                                      ? const Radius.circular(18)
-                                      : const Radius.circular(4),
-                              bottomRight:
-                                  widget.isCurrentUser
-                                      ? const Radius.circular(4)
-                                      : const Radius.circular(18),
+                          child: CustomPaint(
+                            painter: _BubbleWithTailPainter(
+                              color: widget.isCurrentUser
+                                  ? ownMessageColor
+                                  : otherMessageColor,
+                              borderColor: widget.isCurrentUser
+                                  ? ownMessageBorderColor
+                                  : Colors.transparent,
+                              shadowColor: bubbleShadowColor,
+                              tailPointsRight: widget.isCurrentUser,
+                              hasBorder: widget.isCurrentUser,
+                              radius: 18,
                             ),
-                            border:
-                                widget.isCurrentUser
-                                    ? Border.all(
-                                      color: ownMessageBorderColor,
-                                      width: 1,
-                                    )
-                                    : null,
-                            boxShadow: [
-                              BoxShadow(
-                                color: bubbleShadowColor,
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
+                            child: Container(
+                              padding: EdgeInsets.only(
+                                left: widget.isCurrentUser ? 16 : 20,
+                                right: widget.isCurrentUser ? 20 : 16,
+                                top: 12,
+                                bottom: 12,
                               ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.message.content,
-                                style: TextStyle(
-                                  color:
-                                      widget.isCurrentUser
-                                          ? ownMessageTextColor
-                                          : otherMessageTextColor,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Icons.access_time,
-                                    size: 10,
-                                    color: (widget.isCurrentUser
-                                            ? ownMessageTextColor
-                                            : otherMessageTextColor)
-                                        .withValues(alpha: 0.7),
-                                  ),
-                                  const SizedBox(width: 2),
                                   Text(
-                                    _formatTime(widget.message.createdAt),
+                                    widget.message.content,
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      color: (widget.isCurrentUser
-                                              ? ownMessageTextColor
-                                              : otherMessageTextColor)
-                                          .withValues(alpha: 0.7),
+                                      color: widget.isCurrentUser
+                                          ? ownMessageTextColor
+                                          : otherMessageTextColor,
                                     ),
                                   ),
-                                  // Show checkmarks only for current user's messages
-                                  if (widget.isCurrentUser) ...[
-                                    const SizedBox(width: 4),
-                                    _buildCheckmarks(),
-                                  ],
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.access_time,
+                                        size: 10,
+                                        color: (widget.isCurrentUser
+                                                ? ownMessageTextColor
+                                                : otherMessageTextColor)
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        _formatTime(widget.message.createdAt),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: (widget.isCurrentUser
+                                                  ? ownMessageTextColor
+                                                  : otherMessageTextColor)
+                                              .withValues(alpha: 0.7),
+                                        ),
+                                      ),
+                                      if (widget.isCurrentUser) ...[
+                                        const SizedBox(width: 4),
+                                        _buildCheckmarks(),
+                                      ],
+                                    ],
+                                  ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
