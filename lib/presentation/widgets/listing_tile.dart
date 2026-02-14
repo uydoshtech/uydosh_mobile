@@ -35,6 +35,8 @@ class ListingTile extends StatefulWidget {
     this.onFavoriteRemoved, // Optional callback
     this.showHeartIcon =
         false, // Default to false - only show on favorites screen
+    this.showActiveStatus =
+        false, // Default to false - only show on my listings screen
     this.searchLineId, // Optional parameter to indicate which line was used for search
   });
 
@@ -42,6 +44,7 @@ class ListingTile extends StatefulWidget {
   final bool? forceFavorite; // New parameter to force heart to be red
   final VoidCallback? onFavoriteRemoved; // Callback when favorite is removed
   final bool showHeartIcon; // New parameter to control heart icon visibility
+  final bool showActiveStatus; // Show active/inactive badge in top-right corner
   final int?
   searchLineId; // Line ID used for search (helps order transfer stations)
 
@@ -134,6 +137,45 @@ class _ListingTileState extends State<ListingTile>
             borderRadius: BorderRadius.circular(12),
             child: Stack(
               children: [
+                // Active/Inactive badge in top-right corner (for my listings)
+                if (widget.showActiveStatus)
+                  Positioned(
+                    top: 8,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: widget.listing.isActive
+                            ? AppColors.statusActive.withValues(alpha: 0.2)
+                            : AppColors.statusInactive.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: widget.listing.isActive
+                              ? AppColors.statusActive
+                              : AppColors.statusInactive,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        LanguageAwareStringHelper.getCurrent(
+                          context,
+                          widget.listing.isActive
+                              ? "listing_active"
+                              : "listing_inactive",
+                        ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: widget.listing.isActive
+                              ? AppColors.statusActive
+                              : AppColors.statusInactive,
+                        ),
+                      ),
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   child: Column(

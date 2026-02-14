@@ -192,7 +192,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
               context,
               "select_complaint_category",
             ),
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
           Expanded(

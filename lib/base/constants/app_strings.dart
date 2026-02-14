@@ -211,6 +211,8 @@ class AppStrings {
       "activate_listing": "Activate Listing",
       "activate_listing_confirmation": "Are you sure you want to activate this listing? It will become visible to other users.",
       "activate": "Activate",
+      "listing_active": "Active",
+      "listing_inactive": "Inactive",
 
       "create_listing_button": "Create Listing",
       "update_listing_button": "Update Listing",
@@ -859,6 +861,8 @@ class AppStrings {
       "activate_listing": "Активировать объявление",
       "activate_listing_confirmation": "Вы уверены, что хотите активировать это объявление? Оно станет видно другим пользователям.",
       "activate": "Активировать",
+      "listing_active": "Активно",
+      "listing_inactive": "Неактивно",
 
       "create_listing_button": "Создать объявление",
       "update_listing_button": "Обновить объявление",
@@ -1515,6 +1519,8 @@ class AppStrings {
       "activate_listing": "E'lonni aktivlashtirish",
       "activate_listing_confirmation": "Bu e'loni aktivlashtirishni xohlaysizmi? U boshqa foydalanuvchilarga ko'rinadi.",
       "activate": "Aktivlashtirish",
+      "listing_active": "Aktiv",
+      "listing_inactive": "Noaktiv",
 
       "create_listing_button": "E'lon yaratish",
       "update_listing_button": "E'loni yangilash",

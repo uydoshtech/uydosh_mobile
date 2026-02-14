@@ -225,6 +225,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
                         false, // User listings don"t force favorite state
                     showHeartIcon:
                         false, // Don"t show heart icon on user listings screen
+                    showActiveStatus: true, // Show active/inactive badge
                     onFavoriteRemoved:
                         null, // No callback needed for user listings
                   );

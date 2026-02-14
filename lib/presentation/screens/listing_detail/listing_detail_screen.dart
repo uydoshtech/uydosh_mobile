@@ -2449,11 +2449,25 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(
-                                "${LanguageAwareStringHelper.getCurrent(context, "move_in_date_label")} ${_formatMoveInDate(context, listingDetail.moveInDate!)}",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: _getDateTextColor(),
+                              child: Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "${LanguageAwareStringHelper.getCurrent(context, "move_in_date_label")} ",
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: _getDateTextColor(),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: _formatMoveInDate(context, listingDetail.moveInDate!),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: _getDateTextColor(),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
