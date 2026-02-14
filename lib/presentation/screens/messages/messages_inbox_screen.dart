@@ -1,3 +1,4 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -822,9 +823,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               ),
             );
             // Refresh conversations when returning from chat screen
-            // Add a small delay to ensure server has processed mark as read
-            await Future.delayed(const Duration(milliseconds: 500));
-            _loadConversations();
+            if (mounted) _loadConversations();
           },
         );
       },
@@ -965,10 +964,39 @@ class ConversationTile extends StatelessWidget {
           elevation: isGrouped ? 0 : null,
           child: ListTile(
             onTap: onTap,
-            leading: CircleAvatar(
-              backgroundColor: avatarColor,
-              child: _buildAvatarContent(conversation, avatarIconColor),
-            ),
+            leading: conversation.otherUserAvatar != null
+                ? ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: conversation.otherUserAvatar!,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 80,
+                      memCacheHeight: 80,
+                      placeholder:
+                          (context, url) => Center(
+                            child: _buildAvatarContent(
+                              conversation,
+                              avatarIconColor,
+                            ),
+                          ),
+                      errorWidget:
+                          (context, url, error) => CircleAvatar(
+                            backgroundColor: avatarColor,
+                            child: _buildAvatarContent(
+                              conversation,
+                              avatarIconColor,
+                            ),
+                          ),
+                    ),
+                  )
+                : CircleAvatar(
+                    backgroundColor: avatarColor,
+                    child: _buildAvatarContent(
+                      conversation,
+                      avatarIconColor,
+                    ),
+                  ),
             title:
                 isGrouped
                     ? null // Hide title entirely for grouped conversations to remove empty space
@@ -1768,10 +1796,39 @@ class OutgoingConversationTile extends StatelessWidget {
           color: cardColor,
           child: ListTile(
             onTap: onTap,
-            leading: CircleAvatar(
-              backgroundColor: avatarColor,
-              child: _buildAvatarContent(conversation, avatarIconColor),
-            ),
+            leading: conversation.otherUserAvatar != null
+                ? ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: conversation.otherUserAvatar!,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 80,
+                      memCacheHeight: 80,
+                      placeholder:
+                          (context, url) => Center(
+                            child: _buildAvatarContent(
+                              conversation,
+                              avatarIconColor,
+                            ),
+                          ),
+                      errorWidget:
+                          (context, url, error) => CircleAvatar(
+                            backgroundColor: avatarColor,
+                            child: _buildAvatarContent(
+                              conversation,
+                              avatarIconColor,
+                            ),
+                          ),
+                    ),
+                  )
+                : CircleAvatar(
+                    backgroundColor: avatarColor,
+                    child: _buildAvatarContent(
+                      conversation,
+                      avatarIconColor,
+                    ),
+                  ),
             title: Text(
               conversation.listingTitle ?? "Listing #${conversation.listingId}",
               style: TextStyle(fontWeight: FontWeight.bold, color: textColor),

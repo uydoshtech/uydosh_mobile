@@ -4,6 +4,21 @@ import 'package:uy_dosh/domain/models/message.dart';
 import 'package:uy_dosh/presentation/widgets/chat/date_header_widget.dart';
 import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
 
+/// Represents a single item in the grouped message list for lazy building
+sealed class MessageGroupListItem {}
+
+class DateHeaderListItem extends MessageGroupListItem {
+  final DateTime date;
+  DateHeaderListItem(this.date);
+}
+
+class MessageListItem extends MessageGroupListItem {
+  final Message message;
+  final bool isCurrentUser;
+  final bool isLatest;
+  MessageListItem(this.message, this.isCurrentUser, this.isLatest);
+}
+
 class MessageGroupingUtils {
   /// Groups messages by date and returns a list of widgets that can be displayed
   /// in a ListView. Each group contains a date header followed by the messages for that date.
@@ -58,7 +73,7 @@ class MessageGroupingUtils {
           DateTime.parse(messagesForDate.first.createdAt).toLocal();
       widgets.add(
         DateHeaderWidget(
-          dateString: _formatDateHeader(firstMessageDate, context),
+          dateString: formatDateHeader(firstMessageDate, context),
           date: firstMessageDate,
         ),
       );
@@ -83,6 +98,58 @@ class MessageGroupingUtils {
     return widgets;
   }
 
+  /// Groups messages by date and returns a list of items for lazy building.
+  /// Use with ListView.builder to build widgets on demand.
+  static List<MessageGroupListItem> groupMessagesAsItems(
+    List<Message> messages,
+    int? currentUserId,
+    Set<int> newMessageIds,
+  ) {
+    if (messages.isEmpty) return [];
+
+    final Map<String, List<Message>> groupedMessages = {};
+
+    for (final message in messages) {
+      final messageDate = DateTime.parse(message.createdAt).toLocal();
+      final dateKey = _getDateKey(messageDate);
+
+      if (!groupedMessages.containsKey(dateKey)) {
+        groupedMessages[dateKey] = [];
+      }
+      groupedMessages[dateKey]!.add(message);
+    }
+
+    final sortedDates =
+        groupedMessages.keys.toList()
+          ..sort((a, b) => a.compareTo(b));
+
+    final List<MessageGroupListItem> items = [];
+
+    for (final dateKey in sortedDates) {
+      final messagesForDate = groupedMessages[dateKey]!;
+
+      messagesForDate.sort(
+        (a, b) => DateTime.parse(a.createdAt)
+            .toLocal()
+            .compareTo(DateTime.parse(b.createdAt).toLocal()),
+      );
+
+      final firstMessageDate =
+          DateTime.parse(messagesForDate.first.createdAt).toLocal();
+      items.add(DateHeaderListItem(firstMessageDate));
+
+      for (final message in messagesForDate) {
+        final isCurrentUser =
+            currentUserId != null && currentUserId == message.senderId;
+        final isLatest = newMessageIds.contains(message.id);
+
+        items.add(MessageListItem(message, isCurrentUser, isLatest));
+      }
+    }
+
+    return items;
+  }
+
   /// Creates a date key for grouping messages (YYYY-MM-DD format)
   static String _getDateKey(DateTime date) {
     // Convert to local timezone for proper date grouping
@@ -90,8 +157,8 @@ class MessageGroupingUtils {
     return DateFormat('yyyy-MM-dd').format(localDate);
   }
 
-  /// Formats a date for display in the date header
-  static String _formatDateHeader(DateTime date, BuildContext context) {
+  /// Formats a date for display in the date header (public for lazy building)
+  static String formatDateHeader(DateTime date, BuildContext context) {
     // Convert server date to local timezone for proper comparison
     final localDate = date.toLocal();
     final now = DateTime.now();

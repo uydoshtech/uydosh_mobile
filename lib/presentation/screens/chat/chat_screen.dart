@@ -14,6 +14,7 @@ import 'package:uy_dosh/base/services/session_manager.dart';
 import 'package:uy_dosh/base/constants/app_colors.dart';
 import 'package:uy_dosh/base/state/theme_state.dart';
 import 'package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart';
+import 'package:uy_dosh/presentation/widgets/chat/date_header_widget.dart';
 import 'package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart';
 import 'package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart';
 import 'package:uy_dosh/presentation/blocs/listing_detail_bloc.dart';
@@ -405,30 +406,11 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
-    // Group messages by date and create widgets
-    final groupedWidgets = MessageGroupingUtils.groupMessagesByDate(
+    // Group messages by date for lazy building
+    final groupedItems = MessageGroupingUtils.groupMessagesAsItems(
       messages,
-      (message, isCurrentUser, isLatest, onAnimationComplete) {
-        return MessageBubble(
-          key: ValueKey('message_${message.id}_${message.createdAt}'),
-          message: message,
-          isCurrentUser: isCurrentUser,
-          isLatest: isLatest,
-          onAnimationComplete: onAnimationComplete,
-          currentUserProfile: _currentUserProfile,
-          otherUserInitials: widget.otherUserInitials,
-        );
-      },
       _currentUserId,
       _newMessageIds,
-      (messageId) {
-        // Remove this message from the new messages set after animation completes
-        setState(() {
-          _newMessageIds.remove(messageId);
-        });
-        return null;
-      },
-      context,
     );
 
     return RefreshIndicator(
@@ -441,11 +423,37 @@ class _ChatScreenState extends State<ChatScreen> {
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
         reverse: true, // Show newest messages at bottom
-        itemCount: groupedWidgets.length,
+        itemCount: groupedItems.length,
         itemBuilder: (context, index) {
           // Since we're using reverse: true, we need to reverse the index
-          final widgetIndex = groupedWidgets.length - 1 - index;
-          return groupedWidgets[widgetIndex];
+          final itemIndex = groupedItems.length - 1 - index;
+          final item = groupedItems[itemIndex];
+
+          return switch (item) {
+            DateHeaderListItem(:final date) => DateHeaderWidget(
+                dateString:
+                    MessageGroupingUtils.formatDateHeader(date, context),
+                date: date,
+              ),
+            MessageListItem(
+              :final message,
+              :final isCurrentUser,
+              :final isLatest,
+            ) =>
+              MessageBubble(
+                key: ValueKey('message_${message.id}_${message.createdAt}'),
+                message: message,
+                isCurrentUser: isCurrentUser,
+                isLatest: isLatest,
+                onAnimationComplete: () {
+                  setState(() {
+                    _newMessageIds.remove(message.id);
+                  });
+                },
+                currentUserProfile: _currentUserProfile,
+                otherUserInitials: widget.otherUserInitials,
+              ),
+          };
         },
       ),
     );

@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 
 // Firebase and Google Sign-In imports
+import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:google_sign_in/google_sign_in.dart";
 
@@ -1440,21 +1441,37 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundImage:
-                          _currentUser!.photoURL != null
-                              ? NetworkImage(_currentUser!.photoURL!)
-                              : null,
-                      child:
-                          _currentUser!.photoURL == null
-                              ? Icon(
-                                Icons.person,
-                                size: 30,
-                                color: _getOnboardingTextColor(),
-                              )
-                              : null,
-                    ),
+                    _currentUser!.photoURL != null
+                        ? ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: _currentUser!.photoURL!,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 120,
+                              memCacheHeight: 120,
+                              placeholder:
+                                  (context, url) => Icon(
+                                    Icons.person,
+                                    size: 30,
+                                    color: _getOnboardingTextColor(),
+                                  ),
+                              errorWidget:
+                                  (context, url, error) => Icon(
+                                    Icons.person,
+                                    size: 30,
+                                    color: _getOnboardingTextColor(),
+                                  ),
+                            ),
+                          )
+                        : CircleAvatar(
+                            radius: 30,
+                            child: Icon(
+                              Icons.person,
+                              size: 30,
+                              color: _getOnboardingTextColor(),
+                            ),
+                          ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(

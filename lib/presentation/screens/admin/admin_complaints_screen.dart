@@ -42,10 +42,16 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchCategories();
-    _fetchStatusCounts();
-    _fetchComplaints();
     _scrollController.addListener(_onScroll);
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await Future.wait([
+      _fetchCategories(),
+      _fetchStatusCounts(),
+      _fetchComplaints(),
+    ]);
   }
 
   @override

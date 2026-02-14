@@ -37,8 +37,14 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchCategories();
-    _fetchComplaints();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await Future.wait([
+      _fetchCategories(),
+      _fetchComplaints(),
+    ]);
   }
 
   Future<void> _fetchCategories() async {

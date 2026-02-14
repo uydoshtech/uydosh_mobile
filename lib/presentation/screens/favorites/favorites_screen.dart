@@ -315,7 +315,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         itemCount: _favoriteListings.length + (_hasMoreData ? 1 : 0),
         addAutomaticKeepAlives:
             false, // Prevents keeping off-screen items alive
-        addRepaintBoundaries: false, // Reduces repaint overhead
+        addRepaintBoundaries: true, // Isolate repaints for better scroll performance
         itemBuilder: (context, index) {
           // Show "load more" indicator at the end
           if (index == _favoriteListings.length) {
