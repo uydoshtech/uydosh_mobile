@@ -2,8 +2,12 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 
 class CommonListView extends StatelessWidget {
+  /// Use [children] for small pre-built lists (e.g. loading skeletons).
+  /// Use [itemCount] + [itemBuilder] for lazy loading of large lists.
   const CommonListView({
-    required this.children,
+    this.children,
+    this.itemCount,
+    this.itemBuilder,
     super.key,
     this.controller,
     this.padding,
@@ -22,9 +26,14 @@ class CommonListView extends StatelessWidget {
     this.primary,
     this.shrinkWrap = false,
     this.cacheExtent = 200.0,
-  });
+  }) : assert(
+         (children != null) != (itemBuilder != null && itemCount != null),
+         "Provide either children or both itemCount and itemBuilder",
+       );
 
-  final List<Widget> children;
+  final List<Widget>? children;
+  final int? itemCount;
+  final Widget Function(BuildContext context, int index)? itemBuilder;
   final ScrollController? controller;
   final EdgeInsets? padding;
   final bool showRefreshIndicator;
@@ -43,36 +52,46 @@ class CommonListView extends StatelessWidget {
   final bool shrinkWrap;
   final double cacheExtent;
 
+  bool get _useLazyBuilder => itemBuilder != null && itemCount != null;
+
+  int get _contentItemCount =>
+      _useLazyBuilder ? itemCount! : children!.length;
+
   @override
   Widget build(BuildContext context) {
     final effectivePadding = padding ?? const EdgeInsets.all(16.0);
     final effectiveItemSpacing = itemSpacing ?? 16.0;
     final effectiveItemPadding = itemPadding ?? EdgeInsets.zero;
     final effectiveCacheExtent = cacheExtent;
+    final contentCount = _contentItemCount;
+    final totalCount =
+        contentCount + (showLoadMoreIndicator && hasMore ? 1 : 0);
 
     final Widget listView = ListView.builder(
       controller: controller,
       padding: effectivePadding,
-      itemCount: children.length + (showLoadMoreIndicator && hasMore ? 1 : 0),
+      itemCount: totalCount,
       addAutomaticKeepAlives: false, // Prevents keeping off-screen items alive
-      addRepaintBoundaries: false, // Reduces repaint overhead
+      addRepaintBoundaries: true, // Isolate repaints for better scroll performance
       cacheExtent: effectiveCacheExtent, // Keep items in memory
       itemExtent: itemExtent, // Fixed height for better performance
-      semanticChildCount: semanticChildCount ?? children.length,
+      semanticChildCount: semanticChildCount ?? contentCount,
       keyboardDismissBehavior: keyboardDismissBehavior,
       physics: physics,
       primary: primary,
       shrinkWrap: shrinkWrap,
       itemBuilder: (context, index) {
         // Early return for load more indicator to avoid unnecessary processing
-        if (index == children.length && showLoadMoreIndicator && hasMore) {
+        if (index == contentCount && showLoadMoreIndicator && hasMore) {
           return _buildLoadMoreIndicator(
             effectiveItemSpacing,
             effectivePadding,
           );
         }
 
-        final child = children[index];
+        final child = _useLazyBuilder
+            ? itemBuilder!(context, index)
+            : children![index];
 
         // Early return if no padding or spacing needed
         if (effectiveItemPadding == EdgeInsets.zero &&
@@ -83,6 +102,7 @@ class CommonListView extends StatelessWidget {
         return _buildListItem(
           child,
           index,
+          contentCount,
           effectiveItemSpacing,
           effectiveItemPadding,
         );
@@ -114,12 +134,13 @@ class CommonListView extends StatelessWidget {
   Widget _buildListItem(
     Widget child,
     int index,
+    int contentCount,
     double itemSpacing,
     EdgeInsets itemPadding,
   ) {
     return Padding(
       padding: EdgeInsets.only(
-        bottom: index < children.length - 1 ? itemSpacing : 0,
+        bottom: index < contentCount - 1 ? itemSpacing : 0,
       ).add(itemPadding),
       child: child,
     );

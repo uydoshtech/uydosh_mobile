@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -306,19 +307,37 @@ class ConversationCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         onTap: onTap,
-        leading: CircleAvatar(
-          backgroundImage:
-              conversation.otherUserAvatar != null
-                  ? NetworkImage(conversation.otherUserAvatar!)
-                  : null,
-          child:
-              conversation.otherUserAvatar == null
-                  ? Icon(
-                    Icons.person,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  )
-                  : null,
-        ),
+        leading: conversation.otherUserAvatar != null
+            ? ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: conversation.otherUserAvatar!,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 80,
+                  memCacheHeight: 80,
+                  placeholder:
+                      (context, url) => Center(
+                        child: Icon(
+                          Icons.person,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                  errorWidget:
+                      (context, url, error) => Center(
+                        child: Icon(
+                          Icons.person,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                ),
+              )
+            : CircleAvatar(
+                child: Icon(
+                  Icons.person,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
         title: Text(
           conversation.otherUserName ?? 'Unknown User',
           style: TextStyle(

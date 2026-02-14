@@ -760,6 +760,8 @@ class _ChatScreenState extends State<ChatScreen> {
           icon: CupertinoIcons.exclamationmark_circle_fill,
           textKey: "complain",
           onPressed: _createComplaint,
+          iconColor: Colors.red,
+          textColor: Colors.red,
         ),
       );
     }

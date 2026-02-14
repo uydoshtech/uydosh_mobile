@@ -207,34 +207,29 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
               onRefresh: _onRefresh,
               child: CommonListView(
                 controller: _scrollController,
-                showRefreshIndicator: false, // We"re handling refresh manually
-                showLoadMoreIndicator:
-                    false, // We"re handling load more manually
-                children: [
-                  ...data.listings.map(
-                    (listing) => ListenableBuilder(
-                      listenable: FavoritesState(),
-                      builder: (context, child) {
-                        return ListingTile(
-                          listing: listing,
-                          forceFavorite:
-                              false, // User listings don"t force favorite state
-                          showHeartIcon:
-                              false, // Don"t show heart icon on user listings screen
-                          onFavoriteRemoved:
-                              null, // No callback needed for user listings
-                        );
-                      },
-                    ),
-                  ),
-                  if (data.hasMore)
-                    const Padding(
+                itemCount: data.listings.length + (data.hasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index >= data.listings.length) {
+                    return const Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Center(
                         child: HouseLoadingIndicator(),
                       ),
-                    ),
-                ],
+                    );
+                  }
+                  final listing = data.listings[index];
+                  return ListingTile(
+                    listing: listing,
+                    forceFavorite:
+                        false, // User listings don"t force favorite state
+                    showHeartIcon:
+                        false, // Don"t show heart icon on user listings screen
+                    onFavoriteRemoved:
+                        null, // No callback needed for user listings
+                  );
+                },
+                showRefreshIndicator: false, // We"re handling refresh manually
+                showLoadMoreIndicator: false, // We"re handling load more manually
               ),
             );
           },

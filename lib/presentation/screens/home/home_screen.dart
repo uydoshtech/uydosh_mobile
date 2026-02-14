@@ -503,21 +503,19 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         listenable: FavoritesState(),
         builder: (context, child) {
           return CommonListView(
-            children:
-                listings.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final listing = entry.value;
-
-                  return ListingTile(
-                    listing: listing,
-                    forceFavorite:
-                        false, // Home screen listings don"t force favorite state
-                    showHeartIcon:
-                        false, // Don"t show heart icon on home screen
-                    onFavoriteRemoved:
-                        null, // No callback needed for home screen
-                  );
-                }).toList(),
+            itemCount: listings.length,
+            itemBuilder: (context, index) {
+              final listing = listings[index];
+              return ListingTile(
+                listing: listing,
+                forceFavorite:
+                    false, // Home screen listings don"t force favorite state
+                showHeartIcon:
+                    false, // Don"t show heart icon on home screen
+                onFavoriteRemoved:
+                    null, // No callback needed for home screen
+              );
+            },
             controller: _scrollController,
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             showRefreshIndicator:
