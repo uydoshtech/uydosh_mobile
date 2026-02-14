@@ -1,3 +1,4 @@
+import "package:flutter/foundation.dart" show listEquals;
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -49,17 +50,22 @@ class _HomeScreenData {
         other.isLoading == isLoading &&
         other.hasError == hasError &&
         other.errorMessage == errorMessage &&
-        other.listings.length == listings.length &&
+        listEquals(
+          other.listings.map((l) => l.id).toList(),
+          listings.map((l) => l.id).toList(),
+        ) &&
         other.hasMore == hasMore;
   }
 
   @override
   int get hashCode {
-    return isLoading.hashCode ^
-        hasError.hashCode ^
-        errorMessage.hashCode ^
-        listings.length.hashCode ^
-        hasMore.hashCode;
+    return Object.hashAll([
+      isLoading,
+      hasError,
+      errorMessage,
+      Object.hashAll(listings.map((l) => l.id)),
+      hasMore,
+    ]);
   }
 }
 
