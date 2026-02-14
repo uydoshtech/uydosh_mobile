@@ -219,6 +219,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
                   }
                   final listing = data.listings[index];
                   return ListingTile(
+                    key: ValueKey(listing.id),
                     listing: listing,
                     forceFavorite:
                         false, // User listings don"t force favorite state
@@ -230,6 +231,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
                 },
                 showRefreshIndicator: false, // We"re handling refresh manually
                 showLoadMoreIndicator: false, // We"re handling load more manually
+                cacheExtent: 500, // Larger cache for smoother scrolling of large tiles
               ),
             );
           },

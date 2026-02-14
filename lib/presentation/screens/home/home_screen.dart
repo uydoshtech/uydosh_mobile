@@ -505,32 +505,29 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           bloc.add(const ListingsEvent.searchListings(isRefresh: true));
         }
       },
-      child: ListenableBuilder(
-        listenable: FavoritesState(),
-        builder: (context, child) {
-          return CommonListView(
-            itemCount: listings.length,
-            itemBuilder: (context, index) {
-              final listing = listings[index];
-              return ListingTile(
-                listing: listing,
-                forceFavorite:
-                    false, // Home screen listings don"t force favorite state
-                showHeartIcon:
-                    false, // Don"t show heart icon on home screen
-                onFavoriteRemoved:
-                    null, // No callback needed for home screen
-              );
-            },
-            controller: _scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            showRefreshIndicator:
-                false, // Already handled by RefreshIndicator wrapper
-            showLoadMoreIndicator: hasMore,
-            hasMore: hasMore,
-            loadMoreIndicator: _buildLoadMoreIndicator(),
+      child: CommonListView(
+        itemCount: listings.length,
+        itemBuilder: (context, index) {
+          final listing = listings[index];
+          return ListingTile(
+            key: ValueKey(listing.id),
+            listing: listing,
+            forceFavorite:
+                false, // Home screen listings don"t force favorite state
+            showHeartIcon:
+                false, // Don"t show heart icon on home screen
+            onFavoriteRemoved:
+                null, // No callback needed for home screen
           );
         },
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        showRefreshIndicator:
+            false, // Already handled by RefreshIndicator wrapper
+        showLoadMoreIndicator: hasMore,
+        hasMore: hasMore,
+        loadMoreIndicator: _buildLoadMoreIndicator(),
+        cacheExtent: 500, // Larger cache for smoother scrolling of large tiles
       ),
     );
   }

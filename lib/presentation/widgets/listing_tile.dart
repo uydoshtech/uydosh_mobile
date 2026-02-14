@@ -109,10 +109,11 @@ class _ListingTileState extends State<ListingTile>
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, child) {
-        final cardWidget = Card(
+    return RepaintBoundary(
+      child: ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, child) {
+          final cardWidget = Card(
           margin: EdgeInsets.zero,
           child: InkWell(
             onTap: () {
@@ -593,7 +594,8 @@ class _ListingTileState extends State<ListingTile>
         }
 
         return cardWidget;
-      },
+        },
+      ),
     );
   }
 
