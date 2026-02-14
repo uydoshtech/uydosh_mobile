@@ -1692,6 +1692,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           textKey: "complain",
           onPressed: () => _createComplaint(listingDetail),
           enabled: menuEnabled,
+          iconColor: Colors.red,
+          textColor: Colors.red,
         ),
       );
     }

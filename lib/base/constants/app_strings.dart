@@ -41,7 +41,7 @@ class AppStrings {
       "compatibility_calculating": "Calculating match...",
       "compatibility_sign_in": "Sign in to see your compatibility",
       "compatibility_unavailable":
-          "Compatibility unavailable. Complete both profiles to see matches.",
+          "Compatibility unavailable. Complete profile to see matches.",
       "compatibility_matches": "Matched preferences:",
       "compatibility_differences": "Potential differences:",
       "vs": "vs",
@@ -690,7 +690,7 @@ class AppStrings {
       "compatibility_calculating": "Считаем совпадение...",
       "compatibility_sign_in": "Войдите, чтобы увидеть совместимость",
       "compatibility_unavailable":
-          "Совместимость недоступна. Заполните оба профиля.",
+          "Совместимость недоступна. Заполните свой профиль.",
       "compatibility_matches": "Совпадающие предпочтения:",
       "compatibility_differences": "Возможные различия:",
       "vs": "vs",
