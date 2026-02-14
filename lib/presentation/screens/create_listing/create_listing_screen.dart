@@ -974,14 +974,27 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                           return GestureDetector(
                             onTap: () async {
                               HapticFeedbackUtils.impact();
+                              final firstDate = DateTime.now();
+                              final lastDate =
+                                  DateTime.now().add(
+                                    const Duration(days: 365),
+                                  );
+                              final existingDate =
+                                  _moveInDateValue.isNotEmpty
+                                      ? DateTime.tryParse(_moveInDateValue)
+                                      : null;
+                              final initialDate =
+                                  existingDate != null &&
+                                          !existingDate.isBefore(firstDate) &&
+                                          !existingDate.isAfter(lastDate)
+                                      ? existingDate
+                                      : firstDate;
                               final DateTime? picked =
                                   await LanguageAwareDatePicker.showDatePicker(
                                     context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime.now(),
-                                    lastDate: DateTime.now().add(
-                                      const Duration(days: 365),
-                                    ),
+                                    initialDate: initialDate,
+                                    firstDate: firstDate,
+                                    lastDate: lastDate,
                                     helpText:
                                         LanguageAwareStringHelper.getCurrent(
                                           context,
