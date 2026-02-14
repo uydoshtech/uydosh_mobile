@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -449,7 +450,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
   }
 
   Widget _buildLinesList(BuildContext context) {
-    final lines = _analytics!.topLines;
+    final lines = [..._analytics!.topLines]..sort((a, b) => b.count.compareTo(a.count));
     if (lines.isEmpty) {
       return _buildEmptySection(
         context,
@@ -469,9 +470,8 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         childAspectRatio: 1.4,
       ),
       itemCount: lines.length,
-      itemBuilder: (context, index) {
+        itemBuilder: (context, index) {
         final item = lines[index];
-        final colorScheme = Theme.of(context).colorScheme;
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return Card(
           color: isDark ? Colors.grey[800] : Colors.grey[200],
@@ -485,7 +485,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                   children: [
                     Icon(
                       Icons.train,
-                      color: colorScheme.onSurfaceVariant,
+                      color: AppColors.getMetroLineColor(item.lineId),
                       size: 22,
                     ),
                     const SizedBox(width: 8),
