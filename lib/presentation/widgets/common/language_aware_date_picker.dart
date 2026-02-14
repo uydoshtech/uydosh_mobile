@@ -227,18 +227,18 @@ class _LanguageAwareDatePickerDialogState
                 final velocity = details.primaryVelocity ?? 0;
                 const swipeThreshold = 100.0;
                 if (velocity > swipeThreshold) {
-                  // Swipe left -> next month
-                  if (currentMonth.isBefore(
-                    DateTime(widget.lastDate.year, widget.lastDate.month),
-                  )) {
-                    _nextMonth();
-                  }
-                } else if (velocity < -swipeThreshold) {
-                  // Swipe right -> previous month
+                  // Swipe left -> previous month
                   if (currentMonth.isAfter(
                     DateTime(widget.firstDate.year, widget.firstDate.month),
                   )) {
                     _previousMonth();
+                  }
+                } else if (velocity < -swipeThreshold) {
+                  // Swipe right -> next month
+                  if (currentMonth.isBefore(
+                    DateTime(widget.lastDate.year, widget.lastDate.month),
+                  )) {
+                    _nextMonth();
                   }
                 }
               },
