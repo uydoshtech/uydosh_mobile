@@ -17,6 +17,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 
@@ -1070,61 +1071,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         ),
                       ),
                       const Spacer(),
-                      // Theme switcher dropdown
-                      PopupMenuButton<String>(
-                        onSelected: (String themeName) async {
-                          await ThemeState().changeTheme(themeName);
-                          setState(() {}); // Force rebuild
-                        },
-                        itemBuilder:
-                            (BuildContext context) => [
-                              PopupMenuItem<String>(
-                                value: AppTheme.lightTheme,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.light_mode,
-                                      color: Colors.orange,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "light_theme",
-                                      ),
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              PopupMenuItem<String>(
-                                value: AppTheme.blueTheme,
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.water_drop, color: Colors.blue),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "blue_theme",
-                                      ),
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                        child: Icon(
-                          Icons.palette,
-                          color: _getOnboardingTextColor(),
-                        ),
-                        tooltip: LanguageAwareStringHelper.getCurrent(
+                      // Theme toggle (sun = light, moon = dark/blue)
+                      Tooltip(
+                        message: LanguageAwareStringHelper.getCurrent(
                           context,
                           "switch_theme",
+                        ),
+                        child: ThemeToggleSunMoon(
+                          iconColor: _getOnboardingTextColor(),
+                          size: 45,
                         ),
                       ),
                     ],
