@@ -21,6 +21,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
 
 // Firebase imports
 import 'package:firebase_core/firebase_core.dart';
@@ -109,7 +110,14 @@ void main() async {
     await configureDependencies();
     // Bloc.observer = AppBlocObserver.instance(); // Disabled to reduce logging
 
-    runApp(MyApp());
+    final navigatorKey = GlobalKey<NavigatorState>();
+    final deepLinkService = DeepLinkService(navigatorKey: navigatorKey);
+    getIt.registerSingleton<DeepLinkService>(deepLinkService);
+    if (!kIsWeb) {
+      await deepLinkService.initialize();
+    }
+
+    runApp(MyApp(navigatorKey: navigatorKey));
   } catch (e, stackTrace) {
     logger.d('Error during app initialization: $e');
     logger.d('Stack trace: $stackTrace');
@@ -136,7 +144,9 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.navigatorKey});
+
+  final GlobalKey<NavigatorState>? navigatorKey;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -161,6 +171,7 @@ class _MyAppState extends State<MyApp> {
           title: 'UyDosh',
           theme: ThemeState().currentThemeData,
           debugShowCheckedModeBanner: false,
+          navigatorKey: widget.navigatorKey,
           navigatorObservers: [routeObserver],
           localizationsDelegates: const [
             gen.S.delegate,

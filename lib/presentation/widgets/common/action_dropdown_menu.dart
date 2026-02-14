@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 
 class ActionDropdownMenu extends StatelessWidget {
@@ -68,10 +68,13 @@ class ActionDropdownMenu extends StatelessWidget {
                       ),
                 ),
                 const SizedBox(width: 12),
-                LanguageAwareStringHelper.getText(
-                  item.textKey,
-                  context,
-                  style: effectiveTextStyle,
+                Expanded(
+                  child: L10n.text(
+                    item.textKey,
+                    context: context,
+                    style: effectiveTextStyle,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

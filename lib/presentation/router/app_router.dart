@@ -30,6 +30,7 @@ import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
 
 import "package:firebase_auth/firebase_auth.dart";
 
@@ -74,6 +75,13 @@ class _MainNavigationState extends State<MainNavigation>
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+
+    // Handle deep link from cold start (app opened via uydosh://listing/123)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        getIt<DeepLinkService>().handlePendingLink();
+      }
+    });
 
     // Add observer for app lifecycle
     WidgetsBinding.instance.addObserver(this);

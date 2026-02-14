@@ -59,6 +59,16 @@
 				<string>com.googleusercontent.apps.626930983094-fmdr5eqq8ulo4k9dmqott0tgdd91ukkl</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>UyDosh Deep Link</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>uydosh</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
 	</array>
 	
 	<!-- Camera and Photo Library Usage Descriptions -->

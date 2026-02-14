@@ -205,7 +205,7 @@ class AppStrings {
       "actions": "Actions",
 
       "view_profile": "View Profile",
-      "deactivate_listing": "Deactivate Listing",
+      "deactivate_listing": "Deactivate",
       "deactivate_listing_confirmation": "Are you sure you want to deactivate this listing? It will no longer be visible to other users.",
       "deactivate": "Deactivate",
       "activate_listing": "Activate Listing",
@@ -855,7 +855,7 @@ class AppStrings {
       "actions": "Действия",
 
       "view_profile": "Просмотреть профиль",
-      "deactivate_listing": "Деактивировать объявление",
+      "deactivate_listing": "Деактивировать",
       "deactivate_listing_confirmation": "Вы уверены, что хотите деактивировать это объявление? Оно больше не будет видно другим пользователям.",
       "deactivate": "Деактивировать",
       "activate_listing": "Активировать объявление",
@@ -1513,7 +1513,7 @@ class AppStrings {
       "actions": "Harakatlar",
 
       "view_profile": "Profilni ko'rish",
-      "deactivate_listing": "E'lonni deaktivlashtirish",
+      "deactivate_listing": "Deaktivlashtirish",
       "deactivate_listing_confirmation": "Bu e'loni deaktivlashtirishni xohlaysizmi? U boshqa foydalanuvchilarga ko'rinmaydi.",
       "deactivate": "Deaktivlashtirish",
       "activate_listing": "E'lonni aktivlashtirish",

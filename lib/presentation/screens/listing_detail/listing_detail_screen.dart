@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/private_room_icon.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/string_helper.dart";
 import "package:share_plus/share_plus.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -934,11 +935,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       subwayInfo = "\n🚇 $stationName";
     }
 
+    final deepLink = DeepLinkService.buildListingDeepLink(listingDetail.id);
+
     return """$title$typeInfo$locationInfo$subwayInfo
 
 ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
 
-📱 ${LanguageAwareStringHelper.getCurrent(context, "check_out_listing_on_uydosh")}""";
+📱 ${LanguageAwareStringHelper.getCurrent(context, "check_out_listing_on_uydosh")}
+
+🔗 $deepLink""";
   }
 
   String _buildPhotoUrl(String photoUrl) {
