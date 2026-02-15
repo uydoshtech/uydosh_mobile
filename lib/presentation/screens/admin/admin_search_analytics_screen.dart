@@ -354,11 +354,9 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final item = stations[index];
-          final intensity = maxCount > 0 ? (item.count / maxCount).clamp(0.0, 1.0) : 0.0;
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          final barColor = (isDark ? Colors.grey[600]! : Colors.grey[400]!).withValues(
-            alpha: 0.5 + intensity * 0.5,
-          );
+          final station = MetroCache.getStationById(item.stationId);
+          final lineId = station?.line ?? 1;
+          final barColor = AppColors.getMetroLineColor(lineId);
           return ListTile(
             leading: Container(
               width: 6,

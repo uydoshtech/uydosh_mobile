@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
+import 'package:uy_dosh/base/utils/send_sound_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uy_dosh/presentation/blocs/messaging_bloc.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
@@ -590,6 +591,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       });
                       // Trigger light haptic feedback
                       HapticFeedbackUtils.impact();
+                      // Play send sound at full volume
+                      SendSoundUtils.playSendSound();
                     },
                     messagesMarkedAsRead: (conversationId, markedCount) {},
                     error: (message) {
