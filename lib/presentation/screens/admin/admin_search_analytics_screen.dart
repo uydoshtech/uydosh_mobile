@@ -5,6 +5,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminSearchAnalyticsScreen extends StatefulWidget {
@@ -145,77 +146,18 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
   }
 
   Widget _buildTimeRangeSelector(BuildContext context) {
-    final options = [7, 30, 90, 0]; // 0 = all time
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_search_analytics_time_range",
-              ),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ChipTheme(
-              data: ChipTheme.of(context).copyWith(
-                checkmarkColor: Colors.white,
-              ),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: options.map((days) {
-                final label = days == 0
-                    ? LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "admin_search_analytics_all_time",
-                      )
-                    : LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "admin_search_analytics_days",
-                      )
-                        .replaceAll("{days}", "$days");
-                final isSelected = _selectedDays == days;
-                return ChoiceChip(
-                  label: Text(
-                    label,
-                    style: TextStyle(
-                      color: isSelected
-                          ? Colors.white
-                          : (isDark ? Colors.white70 : Colors.black87),
-                    ),
-                  ),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() {
-                        _selectedDays = days;
-                        _loadAnalytics();
-                      });
-                    }
-                  },
-                  selectedColor: isDark ? Colors.grey[800]! : Colors.grey[800],
-                  backgroundColor: isDark ? Colors.grey[900]! : Colors.grey[200],
-                  side: BorderSide(
-                    color: isSelected
-                        ? (isDark ? Colors.grey[700]! : Colors.grey[600]!)
-                        : (isDark ? Colors.grey[700]! : Colors.grey[400]!),
-                  ),
-                );
-              }).toList(),
-              ),
-            ),
-          ],
-        ),
+    return PeriodPicker(
+      title: LanguageAwareStringHelper.getCurrent(
+        context,
+        "admin_search_analytics_time_range",
       ),
+      selectedDays: _selectedDays,
+      onChanged: (days) {
+        setState(() {
+          _selectedDays = days;
+          _loadAnalytics();
+        });
+      },
     );
   }
 
