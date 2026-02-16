@@ -123,6 +123,12 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     "Миллий Боғ": "Milliy bog",
     "Milliy bogh": "Milliy bog",
     "Milliy bogʻ": "Milliy bog",
+    "Буюк Ипак йули": "Buyuk Ipak Yoli",
+    "Buyuk ipak yuli": "Buyuk Ipak Yoli",
+    "Buyuk ipak yoʻli": "Buyuk Ipak Yoli",
+    "Мустакиллик": "Mustaqil. Maydoni",
+    "Mustaqilliq Square": "Indep. Square",
+    "Mustaqillik maydoni": "Mustaqil. Maydoni",
   };
 
   static List<_StationLabel> _extractStationLabels(String svg) {
@@ -139,8 +145,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       final content = match.group(3) ?? "";
       if (x == null || y == null) continue;
 
-      final preceding = match.start > 150
-          ? svg.substring(match.start - 150, match.start)
+      final preceding = match.start > 400
+          ? svg.substring(match.start - 400, match.start)
           : svg.substring(0, match.start);
       final anchorMatches = anchorRegExp.allMatches(preceding).toList();
       final anchorMatch = anchorMatches.isEmpty ? null : anchorMatches.last;
@@ -431,6 +437,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
               ? posX - tapWidth / 2
               : posX;
       final left = baseLeft - _tapTargetOffsetX;
+      final width = label.textAnchor == "end"
+          ? tapWidth + _tapTargetOffsetX
+          : tapWidth;
       return Positioned(
         left: left,
         top: posY - _tapTargetHeight / 2,
@@ -438,7 +447,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
           behavior: HitTestBehavior.opaque,
           onTap: () => _openStationListings(context, label.stationId),
           child: Container(
-            width: tapWidth,
+            width: width,
             height: _tapTargetHeight,
             decoration: BoxDecoration(
               color: Colors.purple.withOpacity(0.4),
