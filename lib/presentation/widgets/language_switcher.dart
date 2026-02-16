@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
+import "package:uy_dosh/base/cache/university_cache.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 
@@ -52,6 +53,9 @@ class LanguageState extends ChangeNotifier {
   Future<void> setLanguage(String language) async {
     if (_currentLanguage != language) {
       _currentLanguage = language;
+
+      // Invalidate university cache so next fetch uses new language
+      UniversityCache.clearCache();
 
       // Save to local storage
       try {

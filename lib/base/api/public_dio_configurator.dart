@@ -2,6 +2,7 @@ import "package:dio/dio.dart";
 import "package:uy_dosh/base/api/dio_configurator.dart";
 import "package:uy_dosh/base/logger/pretty_dio_logger.dart";
 import "package:uy_dosh/base/util/dio/error/error_interceptor.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 abstract interface class IPublicDioConfigurator implements IDioConfigurator {}
 
@@ -23,6 +24,16 @@ class PublicDioConfigurator implements IPublicDioConfigurator {
     Duration? connectTimeout,
     Duration? receiveTimeout,
   }) {
+    // Add x-language header so backend returns localized content (universities, etc.)
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final language = LanguageState().currentLanguage;
+          options.headers["x-language"] = language;
+          handler.next(options);
+        },
+      ),
+    );
     if (useLogger ?? this.useLogger) {
       dio.interceptors.add(prettyDioLogger);
     }

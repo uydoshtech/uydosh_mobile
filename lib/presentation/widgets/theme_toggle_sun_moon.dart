@@ -9,7 +9,8 @@ class ThemeToggleSunMoon extends StatelessWidget {
   const ThemeToggleSunMoon({
     super.key,
     this.iconColor,
-    this.size = 52,
+    this.size = 35,
+    this.onToggled,
   });
 
   /// Color for the icons. If null, uses dark grey for light theme and white for dark theme.
@@ -17,6 +18,9 @@ class ThemeToggleSunMoon extends StatelessWidget {
 
   /// Size of the toggle (controls height; width is proportional)
   final double size;
+
+  /// Optional callback invoked after the theme has been toggled.
+  final VoidCallback? onToggled;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +45,7 @@ class ThemeToggleSunMoon extends StatelessWidget {
               HapticFeedbackUtils.impact();
             }
             await themeState.toggleTheme();
+            onToggled?.call();
           },
           child: Container(
             width: size * 2.0,

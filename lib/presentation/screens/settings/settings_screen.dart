@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
+import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -271,9 +272,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
-        return UydoshToggle(
-          icon: Icons.palette,
-          iconColor: _getIconColor(),
+        return ListTile(
+          leading: Icon(Icons.palette, color: _getIconColor()),
           title: LanguageAwareStringHelper.getText(
             "theme",
             context,
@@ -286,27 +286,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _getLocalizedThemeName(ThemeState().currentTheme),
             style: TextStyle(color: _getSecondaryTextColor()),
           ),
-          value: ThemeState().isBlueTheme,
-          onChanged: (value) async {
-            await ThemeState().changeTheme(
-              value ? AppTheme.blueTheme : AppTheme.lightTheme,
-            );
-            if (context.mounted) {
-              ToastTheme.showSuccess(
-                context,
-                message: AppStrings.getWithParams(
-                  "theme_changed_to",
-                  LanguageState().currentLanguage,
-                  params: {
-                    "theme": LanguageAwareStringHelper.getCurrent(
-                      context,
-                      value ? "blue_theme" : "light_theme",
-                    ),
-                  },
-                ),
-              );
-            }
-          },
+          trailing: ThemeToggleSunMoon(
+            iconColor: _getIconColor(),
+            size: 35,
+            onToggled: () {
+              if (context.mounted) {
+                ToastTheme.showSuccess(
+                  context,
+                  message: AppStrings.getWithParams(
+                    "theme_changed_to",
+                    LanguageState().currentLanguage,
+                    params: {
+                      "theme": LanguageAwareStringHelper.getCurrent(
+                        context,
+                        ThemeState().isBlueTheme ? "blue_theme" : "light_theme",
+                      ),
+                    },
+                  ),
+                );
+              }
+            },
+          ),
         );
       },
     );
