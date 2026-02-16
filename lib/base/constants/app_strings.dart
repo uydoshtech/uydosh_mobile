@@ -250,6 +250,14 @@ class AppStrings {
       // ===== LISTING DETAILS =====
       "listing_details": "Details",
       "listing_views_by_others": "{count} views",
+      "listing_views_stats_title": "View statistics",
+      "listing_views_stats_empty": "No views yet",
+      "error_loading_view_stats": "Error loading view statistics",
+      "promote_listing": "Promote",
+      "remove_from_top": "Remove from top",
+      "feature_listing_success": "Listing moved to top",
+      "unfeature_listing_success": "Listing removed from top",
+      "feature_listing_error": "Failed to update listing",
 
       "listing_title_hint": "Enter listing title",
 
@@ -925,6 +933,14 @@ class AppStrings {
       // ===== LISTING DETAILS =====
       "listing_details": "Детали",
       "listing_views_by_others": "{count} просмотров",
+      "listing_views_stats_title": "Статистика просмотров",
+      "listing_views_stats_empty": "Пока нет просмотров",
+      "error_loading_view_stats": "Ошибка загрузки статистики просмотров",
+      "promote_listing": "Поднять",
+      "remove_from_top": "Убрать с верха",
+      "feature_listing_success": "Объявление поднято вверх",
+      "unfeature_listing_success": "Объявление убрано с верха",
+      "feature_listing_error": "Не удалось обновить объявление",
 
       "listing_title_hint": "Введите заголовок объявления",
 
@@ -1608,6 +1624,14 @@ class AppStrings {
       // ===== LISTING DETAILS =====
       "listing_details": "Tafsilotlar",
       "listing_views_by_others": "{count} ko'rilgan",
+      "listing_views_stats_title": "Ko'rish statistikasi",
+      "listing_views_stats_empty": "Hali ko'rishlar yo'q",
+      "error_loading_view_stats": "Ko'rish statistikasini yuklashda xatolik",
+      "promote_listing": "Yuqoriga chiqarish",
+      "remove_from_top": "Yuqoridan olib tashlash",
+      "feature_listing_success": "E'lon yuqoriga ko'tarildi",
+      "unfeature_listing_success": "E'lon yuqoridan olib tashlandi",
+      "feature_listing_error": "E'loni yangilash muvaffaqiyatsiz",
 
       "listing_title_hint": "E'lon sarlavhasini kiriting",
 

@@ -171,6 +171,12 @@ abstract class IListingService {
 
   // Get view count for owner (auth required)
   Future<int> getListingViewCount(int listingId);
+
+  // Get views per day for owner (auth required)
+  Future<List<Map<String, dynamic>>> getListingViewStatsByDay(
+    int listingId, {
+    int daysBack = 30,
+  });
 }
 
 @injectable
@@ -1493,6 +1499,30 @@ class ListingService implements IListingService {
       return (count is num) ? count.toInt() : 0;
     } catch (e) {
       logger.d('Error fetching listing view count: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getListingViewStatsByDay(
+    int listingId, {
+    int daysBack = 30,
+  }) async {
+    try {
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        '/listings/$listingId/view-stats?days=$daysBack',
+        (json) => json as Map<String, dynamic>,
+        basePath: EnvironmentUtil.basePath,
+      );
+      final stats = response['stats'];
+      if (stats is! List) return [];
+      return stats
+          .map((e) => e is Map<String, dynamic>
+              ? e
+              : Map<String, dynamic>.from(e as Map))
+          .toList();
+    } catch (e) {
+      logger.d('Error fetching listing view stats: $e');
       rethrow;
     }
   }

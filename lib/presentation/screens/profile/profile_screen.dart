@@ -419,19 +419,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // Profile completion indicator
               if (!isComplete) ...[
                 _buildProfileCompletionCard(profile, context),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
               ] else ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
               ],
 
               // My Listings section (above all others)
               _buildMyListingsSection(context),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
 
               // Merged Profile Information Card
               Card(
@@ -822,7 +822,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               // New Profile Fields Section
               if (_hasNewProfileFields(profile)) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -1078,21 +1078,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
 
               if (_userRole == "admin") ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 _buildAdminPanelButton(context),
               ],
 
               if (_userRole == "landlord") ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 _buildManagePropertyButton(context),
               ],
 
               // Logout Button Section
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
               _buildLogoutButton(context),
 
               // Delete Account Button Section
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _buildDeleteAccountButton(context),
             ],
           ),

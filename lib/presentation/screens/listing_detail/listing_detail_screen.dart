@@ -68,6 +68,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_screen.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
@@ -2105,57 +2106,121 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // View count for owner - at the top
+              // View count and promote button for owner - at the top
               if (UserListingState().isOwner(listingDetail.user.id)) ...[
-                if (_isLoadingViewCount && _viewCount == null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8, left: 12),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: _getIconColor(),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
+                  child: Row(
+                    children: [
+                      // Left: views count (or loading)
+                      if (_isLoadingViewCount && _viewCount == null)
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: _getIconColor(),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "...",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _getSecondaryTextColor(),
+                              ),
+                            ),
+                          ],
+                        )
+                      else if (_viewCount != null)
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedbackUtils.impact();
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => ListingViewsStatsScreen(
+                                  listingId: listingDetail.id,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Icon(
+                                CupertinoIcons.eye,
+                                size: 18,
+                                color: _getIconColor(),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                LanguageAwareStringHelper.getCurrent(
+                                  context,
+                                  "listing_views_by_others",
+                                ).replaceAll("{count}", _viewCount.toString()),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: _getSecondaryTextColor(),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          "...",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: _getSecondaryTextColor(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                else if (_viewCount != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8, left: 8),
-                    child: Row(
-                      children: [
-                        Icon(
-                          CupertinoIcons.eye,
-                          size: 18,
-                          color: _getIconColor(),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
+                        )
+                      else
+                        const SizedBox.shrink(),
+                      const Spacer(),
+                      // Right: promote button
+                      TextButton.icon(
+                        onPressed: _isToggling
+                            ? null
+                            : () => _toggleFeatureListing(),
+                        icon: _isToggling
+                            ? SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: _getIconColor(),
+                                ),
+                              )
+                            : Icon(
+                                ListingUtils.isCurrentlyFeaturedDetail(
+                                  listingDetail,
+                                )
+                                    ? CupertinoIcons.arrow_down
+                                    : CupertinoIcons.arrow_up,
+                                size: 16,
+                                color: _getIconColor(),
+                              ),
+                        label: Text(
                           LanguageAwareStringHelper.getCurrent(
                             context,
-                            "listing_views_by_others",
-                          ).replaceAll("{count}", _viewCount.toString()),
+                            ListingUtils.isCurrentlyFeaturedDetail(
+                              listingDetail,
+                            )
+                                ? "remove_from_top"
+                                : "promote_listing",
+                          ),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: _getSecondaryTextColor(),
+                            color: _getIconColor(),
                           ),
                         ),
-                      ],
-                    ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
                 const SizedBox(height: 4),
               ],
               // Photos Section - moved to very top
