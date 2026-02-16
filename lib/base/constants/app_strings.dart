@@ -249,6 +249,7 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Details",
+      "listing_views_by_others": "{count} views",
 
       "listing_title_hint": "Enter listing title",
 
@@ -923,6 +924,7 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Детали",
+      "listing_views_by_others": "{count} просмотров",
 
       "listing_title_hint": "Введите заголовок объявления",
 
@@ -1605,6 +1607,7 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Tafsilotlar",
+      "listing_views_by_others": "{count} ko'rilgan",
 
       "listing_title_hint": "E'lon sarlavhasini kiriting",
 

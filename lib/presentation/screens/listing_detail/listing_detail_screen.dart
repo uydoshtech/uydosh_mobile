@@ -210,6 +210,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   List<_CompatibilityDifference> _compatibilityDifferences = [];
   String? _compatibilityError;
 
+  // View count state (for owner)
+  bool _isLoadingViewCount = false;
+  int? _viewCount;
+  int? _viewCountListingId;
+
 
   @override
   void initState() {
@@ -508,6 +513,43 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       setState(() {
         _isLoadingComplaintsCount = false;
       });
+    }
+  }
+
+  Future<void> _loadViewCount(int listingId) async {
+    if (_isLoadingViewCount && _viewCountListingId == listingId) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingViewCount = true;
+      _viewCountListingId = listingId;
+    });
+
+    try {
+      final listingService = getIt<IListingService>();
+      final count = await listingService.getListingViewCount(listingId);
+
+      if (!mounted) return;
+      setState(() {
+        _viewCount = count;
+        _isLoadingViewCount = false;
+      });
+    } catch (e) {
+      logger.d("Error loading view count: $e");
+      if (!mounted) return;
+      setState(() {
+        _isLoadingViewCount = false;
+      });
+    }
+  }
+
+  Future<void> _recordView(int listingId) async {
+    try {
+      final listingService = getIt<IListingService>();
+      await listingService.recordListingView(listingId);
+    } catch (e) {
+      logger.d("Error recording listing view: $e");
     }
   }
 
@@ -1864,7 +1906,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
             final isOwner = UserListingState().isOwner(
               loadedState.listingDetail.user.id,
             );
-            if (!isOwner) {
+            if (isOwner) {
+              _loadViewCount(loadedState.listingDetail.id);
+            } else {
+              if (AuthenticationState().isAuthenticated) {
+                _recordView(loadedState.listingDetail.id);
+              }
               _loadCompatibility(loadedState.listingDetail.user.id);
             }
           },
@@ -2052,6 +2099,59 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // View count for owner - at the top
+              if (UserListingState().isOwner(listingDetail.user.id)) ...[
+                if (_isLoadingViewCount && _viewCount == null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _getIconColor(),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "...",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: _getSecondaryTextColor(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (_viewCount != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.visibility_outlined,
+                          size: 18,
+                          color: _getIconColor(),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          LanguageAwareStringHelper.getCurrent(
+                            context,
+                            "listing_views_by_others",
+                          ).replaceAll("{count}", _viewCount.toString()),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: _getSecondaryTextColor(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 4),
+              ],
               // Photos Section - moved to very top
               if (listingDetail.photos != null &&
                   listingDetail.photos!.isNotEmpty) ...[
@@ -3059,6 +3159,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
   }
 
   // Theme-dependent color method for icons
+  Color _getSecondaryTextColor() {
+    return Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7);
+  }
+
   Color _getIconColor() {
     if (ThemeState().isLightTheme) {
       return Colors.black; // Black for light theme

@@ -435,12 +435,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                child: ExpansionTile(
+                  initiallyExpanded: false,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  collapsedShape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  tilePadding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+                  childrenPadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                  title: Row(
                     children: [
-                      // Profile Name
+                      Icon(
+                        Icons.person,
+                        size: 24,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          LanguageAwareStringHelper.getCurrent(
+                            context,
+                            "profile",
+                          ),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  children: [
+                    // Profile Name
                       if (((_cachedGoogleDisplayName ?? profile.name) ?? "")
                           .isNotEmpty) ...[
                         Row(
@@ -786,7 +815,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                 ),
-              ),
 
               // New Profile Fields Section
               if (_hasNewProfileFields(profile)) ...[

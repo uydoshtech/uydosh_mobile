@@ -165,6 +165,12 @@ abstract class IListingService {
 
   // Toggle feature status of a listing
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
+
+  // Record a view when non-owner views a listing (auth required)
+  Future<void> recordListingView(int listingId);
+
+  // Get view count for owner (auth required)
+  Future<int> getListingViewCount(int listingId);
 }
 
 @injectable
@@ -1456,6 +1462,37 @@ class ListingService implements IListingService {
       return true;
     } catch (e) {
       logger.d('❌ Error toggling feature listing: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> recordListingView(int listingId) async {
+    try {
+      await _oauthApiClient.post<dynamic, _EmptyRequest>(
+        '/listings/$listingId/record-view',
+        (json) => json,
+        basePath: EnvironmentUtil.basePath,
+        data: _EmptyRequest(),
+      );
+    } catch (e) {
+      logger.d('Error recording listing view: $e');
+      // Fire-and-forget - don't rethrow
+    }
+  }
+
+  @override
+  Future<int> getListingViewCount(int listingId) async {
+    try {
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        '/listings/$listingId/view-count',
+        (json) => json as Map<String, dynamic>,
+        basePath: EnvironmentUtil.basePath,
+      );
+      final count = response['viewCount'];
+      return (count is num) ? count.toInt() : 0;
+    } catch (e) {
+      logger.d('Error fetching listing view count: $e');
       rethrow;
     }
   }
