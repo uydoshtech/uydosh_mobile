@@ -90,6 +90,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static const double _tapTargetHeight = 18.0;
   /// Shift tap targets left to better align with SVG text
   static const double _tapTargetOffsetX = 15.0;
+  /// Extra width for end-anchor text (Cyrillic often wider than estimate)
+  static const double _endAnchorWidthExtra = 12.0;
   static const double _initialMapShiftX = -20;
   static const double _initialMapShiftY = -50;
 
@@ -129,6 +131,13 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     "Мустакиллик": "Mustaqil. Maydoni",
     "Mustaqilliq Square": "Indep. Square",
     "Mustaqillik maydoni": "Mustaqil. Maydoni",
+    "Хонобод": "Xonabod",
+    "Honobod": "Xonabod",
+    "Xonobod": "Xonabod",
+    "Киёт": "Qiyot",
+    "Kiyot": "Qiyot",
+    "Толарык": "Tolarik",
+    "Tolariq": "Tolarik",
   };
 
   static List<_StationLabel> _extractStationLabels(String svg) {
@@ -137,7 +146,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       r'<switch[^>]*transform="translate\(([-\d.]+),([-\d.]+)\)"[^>]*>([\s\S]*?)</switch>',
     );
     final tspanRegExp = RegExp("<tspan[^>]*>([^<]+)</tspan>");
-    final anchorRegExp = RegExp(r'class="[^"]*\b(end|mid)\b');
+    final anchorRegExp = RegExp(r'<g[^>]*class="[^"]*\b(end|mid)\b');
 
     for (final match in switchRegExp.allMatches(svg)) {
       final x = double.tryParse(match.group(1) ?? "");
@@ -145,8 +154,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       final content = match.group(3) ?? "";
       if (x == null || y == null) continue;
 
-      final preceding = match.start > 400
-          ? svg.substring(match.start - 400, match.start)
+      final preceding = match.start > 600
+          ? svg.substring(match.start - 600, match.start)
           : svg.substring(0, match.start);
       final anchorMatches = anchorRegExp.allMatches(preceding).toList();
       final anchorMatch = anchorMatches.isEmpty ? null : anchorMatches.last;
@@ -431,14 +440,13 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       final posY = offsetY +
           (_mapOffset.dy + label.y + _stnameGroupOffsetY) * scale;
       final tapWidth = (label.label.length * _charWidth).clamp(40.0, 120.0);
-      final baseLeft = label.textAnchor == "end"
-          ? posX - tapWidth
+      final left = label.textAnchor == "end"
+          ? posX - tapWidth - _tapTargetOffsetX - _endAnchorWidthExtra
           : label.textAnchor == "middle"
               ? posX - tapWidth / 2
-              : posX;
-      final left = baseLeft - _tapTargetOffsetX;
+              : posX - _tapTargetOffsetX;
       final width = label.textAnchor == "end"
-          ? tapWidth + _tapTargetOffsetX
+          ? tapWidth + _tapTargetOffsetX + _endAnchorWidthExtra
           : tapWidth;
       return Positioned(
         left: left,
