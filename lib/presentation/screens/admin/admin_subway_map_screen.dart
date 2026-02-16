@@ -204,7 +204,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static const double _airportWidth = 50;
   static const double _airportHeight = 27;
 
-  static const double _cityParkMapX = 10;
+  static const double _cityParkMapX = 30;
   static const double _cityParkMapY = 335;
   static const double _cityParkWidth = 25;
   static const double _cityParkHeight = 40;
@@ -367,9 +367,13 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => _openStationListings(context, label.stationId),
-          child: const SizedBox(
+          child: Container(
             width: _tapTargetWidth,
             height: _tapTargetHeight,
+            decoration: BoxDecoration(
+              color: Colors.purple.withOpacity(0.4),
+              border: Border.all(color: Colors.purple, width: 1),
+            ),
           ),
         ),
       );
