@@ -1188,6 +1188,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
+            const SizedBox(height: 8),
+            Center(
+              child: OutlinedButton(
+                onPressed: () => _openEditProfileScreen(context, profile),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  side: BorderSide(
+                    color: ThemeState().isBlueTheme ? Colors.white : Colors.black,
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  LanguageAwareStringHelper.getCurrent(context, "complete_profile"),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: ThemeState().isBlueTheme ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
