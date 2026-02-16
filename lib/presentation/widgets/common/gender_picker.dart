@@ -47,10 +47,6 @@ class GenderPicker extends StatelessWidget {
     if (ThemeState().isBlueTheme) {
       return theme.colorScheme.onSurfaceVariant;
     }
-    // Light theme: black/gray only
-    if (ThemeState().isLightTheme) {
-      return gender == 0 ? Colors.grey : Colors.black;
-    }
     switch (gender) {
       case 1:
         return Colors.blue;

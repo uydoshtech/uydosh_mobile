@@ -52,7 +52,7 @@ class _ProfileScreenData {
         other.isLoading == isLoading &&
         other.hasError == hasError &&
         other.errorMessage == errorMessage &&
-        other.profile?.id == profile?.id;
+        other.profile == profile;
   }
 
   @override
@@ -60,7 +60,7 @@ class _ProfileScreenData {
     return isLoading.hashCode ^
         hasError.hashCode ^
         errorMessage.hashCode ^
-        (profile?.id ?? 0).hashCode;
+        (profile?.hashCode ?? 0);
   }
 }
 
@@ -1651,7 +1651,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildDeleteAccountButton(BuildContext context) {
     return Card(
       elevation: 4,
-      color: Theme.of(context).colorScheme.error,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () => _showDeleteAccountDialog(context),
@@ -1663,7 +1662,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Icon(
                 Icons.delete_forever,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.error,
                 size: 24,
               ),
               const SizedBox(width: 16),
@@ -1673,16 +1672,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     context,
                     "delete_account",
                   ),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.error,
                   ),
                 ),
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.error,
                 size: 16,
               ),
             ],

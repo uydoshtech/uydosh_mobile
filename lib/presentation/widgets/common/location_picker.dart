@@ -230,10 +230,7 @@ class LocationPicker extends StatelessWidget {
   }
 
   Color _getLocationIconColorForIndex(int index) {
-    // Light theme: black/gray only. Other themes: colored icons
-    if (ThemeState().isLightTheme) {
-      return index <= 0 ? Colors.grey : Colors.black;
-    }
+    // Alternate between different colors based on location index
     final colors = [
       Colors.red,
       Colors.orange,

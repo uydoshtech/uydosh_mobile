@@ -26,10 +26,7 @@ class ListingTypePicker extends StatelessWidget {
   final bool includeUnselected;
 
   Color _getListingTypeColor(int listingTypeId) {
-    // Light theme: black/gray only. Other themes: metro line colors
-    if (ThemeState().isLightTheme) {
-      return listingTypeId == 0 ? Colors.grey : Colors.black;
-    }
+    // Use metro line colors for listing types
     switch (listingTypeId) {
       case 2: // Roommate needed
         return AppColors.metroLine1; // Red

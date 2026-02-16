@@ -208,14 +208,12 @@ class AppTheme {
     );
   }
 
-  /// Light theme (new) - Black and white only with thin grey borders
+  /// Light theme (new)
   static ThemeData _getLightTheme() {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
         seedColor: LightThemeColors.primary,
-        primary:
-            LightThemeColors
-                .textPrimary, // Black for cursor color in light theme
+        primary: LightThemeColors.primary,
         onPrimary: Colors.white,
         secondary: LightThemeColors.secondary,
         onSecondary: Colors.white,
@@ -236,7 +234,8 @@ class AppTheme {
         brightness: Brightness.light,
         inverseSurface: LightThemeColors.cardBackground,
         onInverseSurface: LightThemeColors.textPrimary,
-        // Override surface containers to white/light gray (no pinkish tint)
+        // Override surface containers to neutral white/gray (Material 3 fromSeed
+        // auto-generates pinkish tints from purple seed - we want neutral instead)
         surfaceContainerHighest: LightThemeColors.card,
         surfaceContainerHigh: LightThemeColors.card,
         surfaceContainer: LightThemeColors.surface,
@@ -247,11 +246,9 @@ class AppTheme {
 
       // Cursor and text selection theme for better visibility in light theme
       textSelectionTheme: TextSelectionThemeData(
-        cursorColor: Colors.black, // Black cursor
-        selectionColor: Colors.black.withOpacity(
-          0.2,
-        ), // Semi-transparent black for selection
-        selectionHandleColor: Colors.black, // Black selection handles
+        cursorColor: LightThemeColors.primary,
+        selectionColor: LightThemeColors.primary.withValues(alpha: 0.2),
+        selectionHandleColor: LightThemeColors.primary,
       ),
 
       // AppBar theme
@@ -274,16 +271,16 @@ class AppTheme {
         ),
       ),
 
-      // Card theme - white with thin grey border
+      // Card theme
       cardTheme: CardThemeData(
         color: LightThemeColors.card,
-        elevation: 0,
+        elevation:
+            10, // Maximum elevation for the most prominent shadows in light theme
         margin: const EdgeInsets.all(8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: LightThemeColors.cardBorder, width: 1),
-        ),
-        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shadowColor:
+            LightThemeColors
+                .cardShadow, // Explicitly set shadow color for better control
       ),
 
       // Button themes
@@ -338,14 +335,10 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
       ),
 
-      // Floating action button theme - white bg, black icon, thin grey border
+      // Floating action button theme
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: LightThemeColors.background,
-        foregroundColor: LightThemeColors.textPrimary,
-        elevation: 0,
-        shape: CircleBorder(
-          side: BorderSide(color: LightThemeColors.cardBorder, width: 1),
-        ),
+        backgroundColor: LightThemeColors.buttonPrimary,
+        foregroundColor: Colors.white,
       ),
 
       // Divider theme

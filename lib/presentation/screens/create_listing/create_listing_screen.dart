@@ -275,10 +275,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   Color _getLineColor(int line) {
-    // Light theme: black/gray only
-    if (ThemeState().isLightTheme) {
-      return Colors.black;
-    }
     return AppColors.getMetroLineColor(line);
   }
 
@@ -286,10 +282,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (_selectedLocationIndex < 0) {
       return Colors.grey; // Grey when no location is selected
     }
-    // Light theme: black/gray only. Other themes: colored icons
-    if (ThemeState().isLightTheme) {
-      return Colors.black;
-    }
+    // Alternate between different colors based on location index
     final colors = [
       Colors.red,
       Colors.orange,

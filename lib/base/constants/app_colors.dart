@@ -630,14 +630,14 @@ class MessagingThemeColors {
   ); // Gray for unselected nav item
 }
 
-/// Light theme colors - white backgrounds with black text
+/// Light theme colors - white backgrounds with black accents
 class LightThemeColors {
-  // Primary Colors - Using black for light theme
+  // Primary Colors - Pure black for light theme
   static const Color primary = Color(0xFF000000); // Pure black
   static const Color primaryLight = Color(0xFF333333); // Dark gray
   static const Color primaryDark = Color(0xFF000000); // Pure black
 
-  // Secondary Colors - Using gray tones
+  // Secondary Colors - Gray tones
   static const Color secondary = Color(0xFF666666); // Medium gray
   static const Color secondaryLight = Color(0xFF999999); // Light gray
   static const Color secondaryDark = Color(0xFF333333); // Dark gray
@@ -687,7 +687,7 @@ class LightThemeColors {
   static const Color metroLine3 = Color(0xFF38A169); // Green
   static const Color metroLine4 = Color(0xFFFF9800); // Orange
 
-  // Icon Colors - Black primary icons for light theme consistency
+  // Icon Colors - Black primary icons for light theme
   static const Color iconPrimary = Color(0xFF000000); // Black for primary icons
   static const Color iconSecondary = Color(
     0xFF6C757D,
@@ -701,7 +701,7 @@ class LightThemeColors {
     0xFFCED4DA,
   ); // Very light gray for disabled icons
 
-  // Button Colors - Using black primary button for light theme consistency
+  // Button Colors - Pure black primary button for light theme
   static const Color buttonPrimary = Color(0xFF000000); // Black primary button
   static const Color buttonSecondary = Color(
     0xFF6C757D,
@@ -746,7 +746,7 @@ class LightThemeColors {
     0xFFADB5BD,
   ); // Light gray for unselected nav item
 
-  // Loading Colors - Black loading spinner for light theme consistency
+  // Loading Colors - Black loading spinner for light theme
   static const Color loadingBackground = Color(
     0x80000000,
   ); // Semi-transparent black
