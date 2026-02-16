@@ -85,18 +85,20 @@ class _AmenityToggleState extends State<AmenityToggle>
     final isSelected = widget.isSelected;
     final isBlueTheme = ThemeState().isBlueTheme;
 
-    // Blue theme: consistent dark blue background for both states
+    // Blue theme: brighter accent for selected chips with subtle glow
     final backgroundColor = isBlueTheme
-        ? (isSelected ? theme.colorScheme.primary : BlueThemeColors.surface)
+        ? (isSelected ? BlueThemeColors.buttonPrimary : BlueThemeColors.surface)
         : (isSelected ? theme.colorScheme.primary : Colors.grey[200]!);
     final borderColor = isBlueTheme
-        ? (isSelected ? theme.colorScheme.primary : theme.colorScheme.outline)
+        ? (isSelected
+            ? BlueThemeColors.textPrimary.withValues(alpha: 0.4)
+            : theme.colorScheme.outline)
         : (isSelected ? theme.colorScheme.primary : Colors.grey[400]!);
     final iconColor = isBlueTheme
-        ? (isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant)
+        ? (isSelected ? BlueThemeColors.textPrimary : theme.colorScheme.onSurfaceVariant)
         : (isSelected ? theme.colorScheme.onPrimary : Colors.grey[600]!);
     final textColor = isBlueTheme
-        ? (isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant)
+        ? (isSelected ? BlueThemeColors.textPrimary : theme.colorScheme.onSurfaceVariant)
         : (isSelected ? theme.colorScheme.onPrimary : Colors.grey[600]!);
 
     return AnimatedBuilder(
@@ -107,12 +109,23 @@ class _AmenityToggleState extends State<AmenityToggle>
           child: InkWell(
             onTap: _handleTap,
             borderRadius: BorderRadius.circular(10),
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: backgroundColor,
-                border: Border.all(color: borderColor, width: 1),
+                border: Border.all(color: borderColor, width: isBlueTheme && isSelected ? 1.5 : 1),
+                boxShadow: isBlueTheme && isSelected
+                    ? [
+                        BoxShadow(
+                          color: BlueThemeColors.buttonPrimary.withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

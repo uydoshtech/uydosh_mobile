@@ -2440,10 +2440,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Header with Listing Type and Price
-                      Row(
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           // Listing Type Tag
-                          ...[
                           ListingTypeBadge(
                             listingTypeCode: listingDetail.listingType.code,
                             fontSize: 14,
@@ -2452,10 +2454,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                               vertical: 4,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                        ],
                           // Gender Badge
-                          if (listingDetail.gender != null) ...[
+                          if (listingDetail.gender != null)
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -2499,8 +2499,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                          ],
                           // Price Range Tag
                           PriceRangeBadge(
                             minPrice: listingDetail.minPrice,
