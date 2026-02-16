@@ -1250,7 +1250,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               ),
                               borderRadius: BorderRadius.circular(10),
                               color: ThemeState().isBlueTheme
-                                  ? BlueThemeColors.surface
+                                  ? BlueThemeColors.primary
                                   : theme.colorScheme.surfaceContainerHighest,
                             ),
                             child: UydoshToggle(
