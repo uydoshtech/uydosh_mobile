@@ -5,8 +5,8 @@ import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
@@ -186,15 +186,15 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
 
   static const double _bazaarChorsuMapX = 110;
   static const double _bazaarChorsuMapY = 205;
-  static const double _bazaarChorsuWidth = 50;
-  static const double _bazaarChorsuHeight = 18;
+  static const double _bazaarChorsuWidth = 45;
+  static const double _bazaarChorsuHeight = 15;
 
   static const double _tvTowerMapX = 240;
   static const double _tvTowerMapY = 120;
   static const double _tvTowerWidth = 56;
   static const double _tvTowerHeight = 60;
 
-  static const double _monumentMapX = 170;
+  static const double _monumentMapX = 180;
   static const double _monumentMapY = 330;
   static const double _monumentWidth = 20;
   static const double _monumentHeight = 20;
@@ -209,7 +209,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static const double _cityParkWidth = 25;
   static const double _cityParkHeight = 40;
 
-  static const double _busHubMapX = 15;
+  static const double _busHubMapX = 25;
   static const double _busHubMapY = 580;
   static const double _busHubWidth = 22;
   static const double _busHubHeight = 22;
@@ -483,7 +483,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Theme(
+      data: AppTheme.getTheme(AppTheme.lightTheme),
+      child: Scaffold(
       appBar: AppBar(
         title: Text(
           LanguageAwareStringHelper.getCurrent(context, "admin_subway_map_title"),
@@ -526,7 +528,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
           }
           final mapData = snapshot.data!;
           return ListenableBuilder(
-            listenable: Listenable.merge([LanguageState(), ThemeState()]),
+            listenable: LanguageState(),
             builder: (context, child) {
               return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -575,7 +577,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                                   scale,
                                   offsetX,
                                   offsetY,
-                                  isBlueTheme: ThemeState().isBlueTheme,
+                                  isBlueTheme: false,
                                 ),
                                 ..._buildStationTapTargets(
                                   context,
@@ -599,6 +601,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       );
         },
       ),
+    ),
     );
   }
 }
