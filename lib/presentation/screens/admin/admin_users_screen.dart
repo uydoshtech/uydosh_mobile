@@ -299,20 +299,31 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     )
                     .then((result) {
                       if (result is Map) {
-                        final resultUserId = result["userId"];
-                        final resultRole = result["role"];
-                        if (resultUserId == user.id && resultRole is String) {
+                        final resultUser = result["user"] as AdminUser?;
+                        if (resultUser != null && resultUser.id == user.id) {
                           setState(() {
-                            _users[index] =
-                                AdminUser(
-                                  id: user.id,
-                                  email: user.email,
-                                  role: resultRole,
-                                  firebaseUid: user.firebaseUid,
-                                  telegramId: user.telegramId,
-                                  createdAt: user.createdAt,
-                                );
+                            _users[index] = resultUser;
                           });
+                        } else {
+                          final resultUserId = result["userId"];
+                          final resultRole = result["role"];
+                          if (resultUserId == user.id && resultRole is String) {
+                            setState(() {
+                              _users[index] =
+                                  AdminUser(
+                                    id: user.id,
+                                    email: user.email,
+                                    role: resultRole,
+                                    firebaseUid: user.firebaseUid,
+                                    telegramId: user.telegramId,
+                                    createdAt: user.createdAt,
+                                    isBlocked: user.isBlocked,
+                                    blockedAt: user.blockedAt,
+                                    blockedUntil: user.blockedUntil,
+                                    blockedReason: user.blockedReason,
+                                  );
+                            });
+                          }
                         }
                       }
                     });
@@ -428,6 +439,32 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               ? Theme.of(context).colorScheme.error
                               : null,
                     ),
+                    if (user.isCurrentlyBlocked)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            Text(
+                              "${LanguageAwareStringHelper.getCurrent(context, "admin_user_detail_block_title")}: ",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                            Tooltip(
+                              message: LanguageAwareStringHelper.getCurrent(
+                                context,
+                                "admin_user_detail_blocked",
+                              ),
+                              child: Icon(
+                                Icons.block,
+                                color: Theme.of(context).colorScheme.error,
+                                size: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),

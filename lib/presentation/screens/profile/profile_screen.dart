@@ -403,15 +403,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                     if (_userBlocked) ...[
                       const SizedBox(height: 4),
-                      Text(
-                        LanguageAwareStringHelper.getCurrent(
+                      Tooltip(
+                        message: LanguageAwareStringHelper.getCurrent(
                           context,
                           "admin_user_detail_blocked",
                         ),
-                        style: TextStyle(
-                          fontSize: 14,
+                        child: Icon(
+                          Icons.block,
                           color: Theme.of(context).colorScheme.error,
-                          fontWeight: FontWeight.w600,
+                          size: 20,
                         ),
                       ),
                     ],
