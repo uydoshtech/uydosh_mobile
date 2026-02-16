@@ -1221,7 +1221,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                 color: theme.colorScheme.outline,
                               ),
                               borderRadius: BorderRadius.circular(10),
-                              color: theme.colorScheme.surfaceContainerHighest,
+                              color: ThemeState().isBlueTheme
+                                  ? BlueThemeColors.surface
+                                  : theme.colorScheme.surfaceContainerHighest,
                             ),
                             child: PriceRangePicker(
                               initialMinPrice: _searchFiltersState.minPrice,
@@ -1245,7 +1247,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                 color: theme.colorScheme.outline,
                               ),
                               borderRadius: BorderRadius.circular(10),
-                              color: theme.colorScheme.surfaceContainerHighest,
+                              color: ThemeState().isBlueTheme
+                                  ? BlueThemeColors.surface
+                                  : theme.colorScheme.surfaceContainerHighest,
                             ),
                             child: UydoshToggle(
                               icon: Icons.lock_outline,
