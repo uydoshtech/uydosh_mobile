@@ -25,8 +25,22 @@ class ListingTypePicker extends StatelessWidget {
   final bool showArrows;
   final bool includeUnselected;
 
+  Color _getItemTextColor(BuildContext context, int listingTypeId) {
+    final theme = Theme.of(context);
+    final isSelected = selectedListingTypeId == listingTypeId;
+    // Selected item: white (matches gender spinner)
+    if (isSelected && ThemeState().isBlueTheme) {
+      return Colors.white;
+    }
+    // Unselected in blue theme: dimmer text
+    if (ThemeState().isBlueTheme) {
+      return theme.colorScheme.onSurfaceVariant;
+    }
+    return ThemeState().isBlueTheme ? Colors.white : Colors.black;
+  }
+
   Color _getListingTypeColor(int listingTypeId) {
-    // Use metro line colors for listing types
+    // Use metro line colors for listing types (unchanged)
     switch (listingTypeId) {
       case 2: // Roommate needed
         return AppColors.metroLine1; // Red
@@ -43,10 +57,11 @@ class ListingTypePicker extends StatelessWidget {
     final listingTypeOptions = includeUnselected ? [2, 1, 0] : [2, 1];
     final initialIndex = listingTypeOptions.indexOf(selectedListingTypeId);
 
-    // Use the same styling as metro line picker
-    final backgroundColor = theme.colorScheme.surfaceContainerHighest;
+    // Use the same styling as gender spinner
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final backgroundColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
     final borderColor = theme.colorScheme.outline;
-    final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
 
     return Container(
       decoration: BoxDecoration(
@@ -91,7 +106,7 @@ class ListingTypePicker extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: textColor,
+                            color: _getItemTextColor(context, 2),
                           ),
                         ),
                       ),
@@ -116,7 +131,7 @@ class ListingTypePicker extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: textColor,
+                            color: _getItemTextColor(context, 1),
                           ),
                         ),
                       ),
@@ -141,7 +156,7 @@ class ListingTypePicker extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: textColor,
+                              color: _getItemTextColor(context, 0),
                             ),
                           ),
                         ),

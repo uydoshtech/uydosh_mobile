@@ -37,16 +37,7 @@ class GenderPicker extends StatelessWidget {
     return ThemeState().isBlueTheme ? Colors.white : Colors.black;
   }
 
-  Color _getGenderIconColor(BuildContext context, int gender, bool isSelected) {
-    final theme = Theme.of(context);
-    // Selected item: bright green (matches region/university spinners)
-    if (isSelected && ThemeState().isBlueTheme) {
-      return BlueThemeColors.iconSuccess;
-    }
-    // Unselected in blue theme: dimmer colors
-    if (ThemeState().isBlueTheme) {
-      return theme.colorScheme.onSurfaceVariant;
-    }
+  Color _getGenderColor(int gender) {
     switch (gender) {
       case 1:
         return Colors.blue;
@@ -100,7 +91,7 @@ class GenderPicker extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.male,
-                        color: _getGenderIconColor(context, 1, selectedGender == 1),
+                        color: _getGenderColor(1),
                         size: 22,
                       ),
                       const SizedBox(width: 6),
@@ -125,7 +116,7 @@ class GenderPicker extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.female,
-                        color: _getGenderIconColor(context, 2, selectedGender == 2),
+                        color: _getGenderColor(2),
                         size: 22,
                       ),
                       const SizedBox(width: 6),
@@ -150,7 +141,7 @@ class GenderPicker extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.remove_circle_outline,
-                          color: _getGenderIconColor(context, 0, selectedGender == 0),
+                          color: _getGenderColor(0),
                           size: 20,
                         ),
                         const SizedBox(width: 6),

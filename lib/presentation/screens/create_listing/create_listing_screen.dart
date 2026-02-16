@@ -529,7 +529,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: ThemeState().isBlueTheme
+                        ? BlueThemeColors.surface
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: Theme.of(context).colorScheme.outline,
@@ -659,7 +661,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             border: Border.all(
                               color: Theme.of(context).colorScheme.outline,
                             ),
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            color: ThemeState().isBlueTheme
+                                ? BlueThemeColors.surface
+                                : Theme.of(context).colorScheme.surfaceContainerHighest,
                           ),
                           height: 80,
                           child: Row(

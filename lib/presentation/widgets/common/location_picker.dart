@@ -1,5 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
@@ -51,8 +52,10 @@ class LocationPicker extends StatelessWidget {
     // Use locations as-is (already sorted by ID in cache)
     final displayLocations = locations;
 
-    // Use the same styling as metro line picker
-    final backgroundColor = theme.colorScheme.surfaceContainerHighest;
+    // Use the same styling as listing type and gender spinners
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final backgroundColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
     final borderColor = theme.colorScheme.outline;
     final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
     final iconColor = theme.colorScheme.onSurfaceVariant;

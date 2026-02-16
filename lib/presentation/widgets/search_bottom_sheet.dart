@@ -799,7 +799,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                     "metro_line_picker_${_searchFiltersState.selectedLocationIndex}",
                                   ),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.surfaceContainerHighest,
+                                    color: ThemeState().isBlueTheme
+                                        ? BlueThemeColors.surface
+                                        : theme.colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                       color: theme.colorScheme.outline,
@@ -952,9 +954,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                         ? Container(
                                           decoration: BoxDecoration(
                                             color:
-                                                theme
-                                                    .colorScheme
-                                                    .surfaceContainerHighest,
+                                                ThemeState().isBlueTheme
+                                                    ? BlueThemeColors.surface
+                                                    : theme
+                                                        .colorScheme
+                                                        .surfaceContainerHighest,
                                             borderRadius: BorderRadius.circular(
                                               10,
                                             ),
@@ -1323,7 +1327,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       decoration: BoxDecoration(
         border: Border.all(color: theme.colorScheme.outline),
         borderRadius: BorderRadius.circular(10),
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: ThemeState().isBlueTheme
+            ? BlueThemeColors.surface
+            : theme.colorScheme.surfaceContainerHighest,
       ),
       child: Row(
         children: [
@@ -1373,7 +1379,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         "location_picker_${_searchFiltersState.selectedSubwayLine}",
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: ThemeState().isBlueTheme
+            ? BlueThemeColors.surface
+            : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
       ),
