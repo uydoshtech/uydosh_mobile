@@ -662,6 +662,7 @@ class AppStrings {
 
       "signing_in": "Signing in...",
       "google_sign_in_failed": "Google Sign-In failed: {error}",
+      "popup_closed": "Sign-in popup was closed",
 
       // ===== SHARING & CONTACT =====
       "check_out_listing_on_uydosh": "Check out this listing on UyDosh!",
@@ -1352,6 +1353,7 @@ class AppStrings {
 
       "signing_in": "Вход в систему...",
       "google_sign_in_failed": "Ошибка входа через Google: {error}",
+      "popup_closed": "Окно входа было закрыто",
 
       // ===== SHARING & CONTACT =====
       "check_out_listing_on_uydosh": "Посмотрите это объявление на UyDosh!",
@@ -2050,6 +2052,7 @@ class AppStrings {
 
       "signing_in": "Tizimga kirilmoqda...",
       "google_sign_in_failed": "Google orqali kirishda xatolik: {error}",
+      "popup_closed": "Kirish oynasi yopildi",
 
       // ===== SHARING & CONTACT =====
       "check_out_listing_on_uydosh": "Bu e'lonni UyDosh da ko'ring!",

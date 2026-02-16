@@ -3,12 +3,18 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
-class LocationPicker extends StatelessWidget {
+/// Location picker - uses persistent scroll controller (from parent or own)
+/// so the wheel scrolls smoothly with sound. Same pattern as GenderPicker.
+class LocationPicker extends StatefulWidget {
   const LocationPicker({
-    required this.locations, required this.selectedLocationIndex, required this.onLocationChanged, super.key,
+    required this.locations,
+    required this.selectedLocationIndex,
+    required this.onLocationChanged,
+    super.key,
     this.useThemeColors = false,
     this.height = 80,
     this.itemExtent = 40,
@@ -33,11 +39,7 @@ class LocationPicker extends StatelessWidget {
   final bool isLoading;
   final bool isRequired;
   final String? placeholderText;
-
-  /// Whether to show error styling (red border)
   final bool showError;
-
-  // Search-specific parameters
   final bool sortLocations;
   final String? containerKey;
   final VoidCallback? onMetroReset;
@@ -46,13 +48,51 @@ class LocationPicker extends StatelessWidget {
   final FixedExtentScrollController? scrollController;
 
   @override
+  State<LocationPicker> createState() => _LocationPickerState();
+}
+
+class _LocationPickerState extends State<LocationPicker> {
+  FixedExtentScrollController? _ownScrollController;
+
+  int get _pickerInitialItem => widget.selectedLocationIndex + 1;
+
+  FixedExtentScrollController get _effectiveController {
+    if (widget.scrollController != null) {
+      return widget.scrollController!;
+    }
+    _ownScrollController ??= FixedExtentScrollController(
+      initialItem: _pickerInitialItem.clamp(0, 999),
+    );
+    return _ownScrollController!;
+  }
+
+  @override
+  void didUpdateWidget(LocationPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.scrollController == null &&
+        oldWidget.selectedLocationIndex != widget.selectedLocationIndex &&
+        (_ownScrollController?.hasClients ?? false)) {
+      final target = _pickerInitialItem.clamp(0, 999);
+      if (target != _ownScrollController!.selectedItem) {
+        _ownScrollController!.animateToItem(
+          target,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _ownScrollController?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    // Use locations as-is (already sorted by ID in cache)
-    final displayLocations = locations;
-
-    // Use the same styling as listing type and gender spinners
+    final displayLocations = widget.locations;
     final isBlueTheme = ThemeState().isBlueTheme;
     final backgroundColor =
         isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
@@ -60,16 +100,16 @@ class LocationPicker extends StatelessWidget {
     final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
     final iconColor = theme.colorScheme.onSurfaceVariant;
 
-    if (isLoading) {
+    if (widget.isLoading) {
       return Container(
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: showError ? theme.colorScheme.error : borderColor,
+            color: widget.showError ? theme.colorScheme.error : borderColor,
           ),
         ),
-        height: height,
+        height: widget.height,
         child: Center(
           child: CircularProgressIndicator(color: theme.colorScheme.primary),
         ),
@@ -77,38 +117,28 @@ class LocationPicker extends StatelessWidget {
     }
 
     return Container(
-      key: containerKey != null ? ValueKey(containerKey) : null,
+      key: widget.containerKey != null ? ValueKey(widget.containerKey) : null,
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: showError ? theme.colorScheme.error : borderColor,
+          color: widget.showError ? theme.colorScheme.error : borderColor,
         ),
       ),
-      height: height,
+      height: widget.height,
       child: Row(
         children: [
           Expanded(
             child: CupertinoPicker(
-              itemExtent: itemExtent,
-              scrollController:
-                  scrollController ??
-                  FixedExtentScrollController(
-                    initialItem:
-                        selectedLocationIndex + 1, // +1 for unselected option
-                  ),
+              itemExtent: widget.itemExtent,
+              scrollController: _effectiveController,
               onSelectedItemChanged: (index) {
-                // Dismiss keyboard if it is open
                 FocusScope.of(context).unfocus();
-                // Provide haptic feedback
                 HapticFeedbackUtils.impact();
-
-                // Update the selected location index (convert back to -1 for unselected)
-                onLocationChanged(index - 1);
-
-                // Reset metro filters if requested (for search filters)
-                if (onMetroReset != null && index > 0) {
-                  onMetroReset!();
+                SendSoundUtils.playSelectionSound();
+                widget.onLocationChanged(index - 1);
+                if (widget.onMetroReset != null && index > 0) {
+                  widget.onMetroReset!();
                 }
               },
               children: [
@@ -121,8 +151,8 @@ class LocationPicker extends StatelessWidget {
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
-                          placeholderText ??
-                              (isRequired
+                          widget.placeholderText ??
+                              (widget.isRequired
                                   ? LanguageAwareStringHelper.getCurrent(
                                     context,
                                     "select_location_required",
@@ -173,7 +203,7 @@ class LocationPicker extends StatelessWidget {
                           Icon(
                             Icons.location_on,
                             color:
-                                useColoredIcons
+                                widget.useColoredIcons
                                     ? _getLocationIconColorForIndex(
                                       entry.key + 1,
                                     )
@@ -201,7 +231,7 @@ class LocationPicker extends StatelessWidget {
             ),
           ),
           // Right part with arrows - same as metro line picker
-          if (showArrows)
+          if (widget.showArrows)
             Container(
               width: 24,
               decoration: BoxDecoration(

@@ -19,6 +19,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/create_profile_request.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
@@ -241,12 +242,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       });
 
       if (mounted) {
+        final errorStr = e.toString();
+        final displayError = errorStr.contains("popup_closed")
+            ? LanguageAwareStringHelper.getCurrent(context, "popup_closed")
+            : errorStr;
         ToastTheme.showWarning(
           context,
           message: LanguageAwareStringHelper.getCurrent(
             context,
             "google_sign_in_failed",
-          ).replaceAll("{error}", e.toString()),
+          ).replaceAll("{error}", displayError),
         );
       }
     }
@@ -2008,6 +2013,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             child: CupertinoPicker(
               itemExtent: 50,
               onSelectedItemChanged: (index) {
+                HapticFeedbackUtils.impact();
+                SendSoundUtils.playSelectionSound();
                 // Update selection as user scrolls
                 logger.d(
                   "Region picker: User scrolled to index $index, region: ${_getRegionName(_regions[index])}",
@@ -2338,6 +2345,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             child: CupertinoPicker(
               itemExtent: 50,
               onSelectedItemChanged: (index) {
+                HapticFeedbackUtils.impact();
+                SendSoundUtils.playSelectionSound();
                 // Update selection as user scrolls
                 logger.d(
                   "University picker: User scrolled to index $index, university: ${_getUniversityName(_universities[index])}",

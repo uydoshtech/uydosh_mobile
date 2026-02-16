@@ -3,16 +3,22 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
-class GenderPicker extends StatelessWidget {
+/// Gender picker - same pattern as LocationPicker: uses persistent scroll
+/// controller (from parent or own) so the wheel scrolls smoothly with sound.
+class GenderPicker extends StatefulWidget {
   const GenderPicker({
-    required this.selectedGender, required this.onGenderChanged, super.key,
+    required this.selectedGender,
+    required this.onGenderChanged,
+    super.key,
     this.height = 80,
     this.itemExtent = 40,
     this.showArrows = true,
     this.useThemeColors = false,
     this.includeUnselected = false,
+    this.scrollController,
   });
 
   final int selectedGender;
@@ -22,15 +28,62 @@ class GenderPicker extends StatelessWidget {
   final double itemExtent;
   final bool showArrows;
   final bool includeUnselected;
+  final FixedExtentScrollController? scrollController;
+
+  @override
+  State<GenderPicker> createState() => _GenderPickerState();
+}
+
+class _GenderPickerState extends State<GenderPicker> {
+  FixedExtentScrollController? _ownScrollController;
+
+  List<int> get _genderOptions =>
+      widget.includeUnselected ? [1, 2, 0] : [1, 2];
+
+  FixedExtentScrollController get _effectiveController {
+    if (widget.scrollController != null) {
+      return widget.scrollController!;
+    }
+    _ownScrollController ??= FixedExtentScrollController(
+      initialItem: _indexOf(widget.selectedGender),
+    );
+    return _ownScrollController!;
+  }
+
+  int _indexOf(int gender) {
+    final i = _genderOptions.indexOf(gender);
+    return i >= 0 ? i : 0;
+  }
+
+  @override
+  void didUpdateWidget(GenderPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.scrollController == null &&
+        oldWidget.selectedGender != widget.selectedGender &&
+        (_ownScrollController?.hasClients ?? false)) {
+      final idx = _indexOf(widget.selectedGender);
+      if (idx != _ownScrollController!.selectedItem) {
+        _ownScrollController!.animateToItem(
+          idx,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _ownScrollController?.dispose();
+    super.dispose();
+  }
 
   Color _getItemTextColor(BuildContext context, int gender) {
     final theme = Theme.of(context);
-    final isSelected = selectedGender == gender;
-    // Selected item: white (matches region/university spinners)
+    final isSelected = widget.selectedGender == gender;
     if (isSelected && ThemeState().isBlueTheme) {
       return Colors.white;
     }
-    // Unselected in blue theme: dimmer text
     if (ThemeState().isBlueTheme) {
       return theme.colorScheme.onSurfaceVariant;
     }
@@ -50,10 +103,6 @@ class GenderPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final genderOptions = includeUnselected ? [1, 2, 0] : [1, 2];
-    final initialIndex = genderOptions.indexOf(selectedGender);
-
-    // Use the same styling as region and university spinners in edit profile
     final isBlueTheme = ThemeState().isBlueTheme;
     final backgroundColor =
         isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
@@ -65,35 +114,25 @@ class GenderPicker extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: borderColor),
       ),
-      height: height,
+      height: widget.height,
       child: Row(
         children: [
           Expanded(
             child: CupertinoPicker(
-              key: ValueKey(selectedGender),
-              itemExtent: itemExtent,
-              scrollController: FixedExtentScrollController(
-                initialItem: initialIndex >= 0 ? initialIndex : 0,
-              ),
+              itemExtent: widget.itemExtent,
+              scrollController: _effectiveController,
               onSelectedItemChanged: (index) {
-                // Dismiss keyboard if it's open
                 FocusScope.of(context).unfocus();
-                // Provide haptic feedback
                 HapticFeedbackUtils.impact();
-                // Update the selected gender
-                onGenderChanged(genderOptions[index]);
+                SendSoundUtils.playSelectionSound();
+                widget.onGenderChanged(_genderOptions[index]);
               },
               children: [
-                // Male option
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.male,
-                        color: _getGenderColor(1),
-                        size: 22,
-                      ),
+                      Icon(Icons.male, color: _getGenderColor(1), size: 22),
                       const SizedBox(width: 6),
                       Flexible(
                         child: LanguageAwareStringHelper.getText(
@@ -109,16 +148,11 @@ class GenderPicker extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Female option
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.female,
-                        color: _getGenderColor(2),
-                        size: 22,
-                      ),
+                      Icon(Icons.female, color: _getGenderColor(2), size: 22),
                       const SizedBox(width: 6),
                       Flexible(
                         child: LanguageAwareStringHelper.getText(
@@ -134,7 +168,7 @@ class GenderPicker extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (includeUnselected)
+                if (widget.includeUnselected)
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -162,8 +196,7 @@ class GenderPicker extends StatelessWidget {
               ],
             ),
           ),
-          // Right part with arrows - same as metro line picker
-          if (showArrows)
+          if (widget.showArrows)
             Container(
               width: 24,
               decoration: BoxDecoration(

@@ -10,6 +10,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -176,6 +177,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   List<Location> _currentLocations = [];
   bool _isLoadingStations = false;
   FixedExtentScrollController? _stationPickerController;
+  FixedExtentScrollController? _metroLineScrollController;
+  FixedExtentScrollController? _locationScrollController;
   Timer? _blinkTimer;
   bool _isBlinking = true;
 
@@ -193,6 +196,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     // Initialize the station picker controller only once
     // Don"t set initialItem here to avoid forcing position 0
     _stationPickerController = FixedExtentScrollController();
+    _metroLineScrollController = FixedExtentScrollController(
+      initialItem: _searchFiltersState.selectedSubwayLine,
+    );
+    _locationScrollController = FixedExtentScrollController(
+      initialItem: _getInitialLocationItem(),
+    );
 
     // Initialize blink timer
     _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
@@ -257,6 +266,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   @override
   void dispose() {
     _stationPickerController?.dispose();
+    _metroLineScrollController?.dispose();
+    _locationScrollController?.dispose();
     _blinkTimer?.cancel();
     super.dispose();
   }
@@ -750,6 +761,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                   _searchFiltersState.selectedLocationIndex,
                                   data.locations,
                                 ),
+                                scrollController: _locationScrollController,
                                 onLocationChanged: (locationIndex) {
                                   if (locationIndex == -1) {
                                     _searchFiltersState.setLocationIndex(0);
@@ -814,13 +826,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                         child: CupertinoPicker(
                                           itemExtent: 40,
                                           scrollController:
-                                              FixedExtentScrollController(
-                                                initialItem:
-                                                    _searchFiltersState
-                                                        .selectedSubwayLine,
-                                              ),
+                                              _metroLineScrollController,
                                           onSelectedItemChanged: (index) {
                                             HapticFeedbackUtils.impact();
+                                            SendSoundUtils.playSelectionSound();
                                             setState(() {
                                               _searchFiltersState.setSubwayLine(
                                                 index,
@@ -981,6 +990,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                                     index,
                                                   ) {
                                                     HapticFeedbackUtils.impact();
+                                                    SendSoundUtils.playSelectionSound();
                                                     setState(() {
                                                       if (index == 0) {
                                                         // "Select station" option
@@ -1397,11 +1407,14 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           Expanded(
             child: CupertinoPicker(
               itemExtent: 40,
-              scrollController: FixedExtentScrollController(
-                initialItem: _getInitialLocationItem(),
-              ),
+              scrollController:
+                  _locationScrollController ??
+                  FixedExtentScrollController(
+                    initialItem: _getInitialLocationItem(),
+                  ),
               onSelectedItemChanged: (index) {
                 HapticFeedbackUtils.impact();
+                SendSoundUtils.playSelectionSound();
                 setState(() {
                   if (index == 0) {
                     // "Select location" option
@@ -1515,12 +1528,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         children: [
           Expanded(
             child: CupertinoPicker(
-              key: ValueKey(_searchFiltersState.selectedSubwayLine),
               itemExtent: 40,
-              scrollController: FixedExtentScrollController(
-                initialItem: _searchFiltersState.selectedSubwayLine,
-              ),
+              scrollController: _metroLineScrollController,
               onSelectedItemChanged: (index) {
+                HapticFeedbackUtils.impact();
+                SendSoundUtils.playSelectionSound();
                 setState(() {
                   _searchFiltersState.setSubwayLine(index);
                   // Reset location when metro line is selected
@@ -1798,11 +1810,14 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           Expanded(
             child: CupertinoPicker(
               itemExtent: 40,
-              scrollController: FixedExtentScrollController(
-                initialItem: _getInitialLocationItem(),
-              ),
+              scrollController:
+                  _locationScrollController ??
+                  FixedExtentScrollController(
+                    initialItem: _getInitialLocationItem(),
+                  ),
               onSelectedItemChanged: (index) {
                 HapticFeedbackUtils.impact();
+                SendSoundUtils.playSelectionSound();
                 setState(() {
                   if (index == 0) {
                     // "Select location" option

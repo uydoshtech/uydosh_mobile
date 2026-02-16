@@ -14,6 +14,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
@@ -52,6 +53,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   final TextEditingController _moveInDateController = TextEditingController();
   String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
+  FixedExtentScrollController? _genderScrollController;
+  FixedExtentScrollController? _listingTypeScrollController;
+  FixedExtentScrollController? _metroLineScrollController;
+  FixedExtentScrollController? _metroStationScrollController;
 
   // State variables
   int _selectedListingTypeId = 2; // 2 = roommate needed, 1 = room needed
@@ -83,6 +88,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void initState() {
     super.initState();
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
+    _genderScrollController = FixedExtentScrollController(initialItem: 0);
+    _listingTypeScrollController = FixedExtentScrollController(initialItem: 0);
+    _metroLineScrollController = FixedExtentScrollController(
+      initialItem: _selectedSubwayLine,
+    );
+    _metroStationScrollController = FixedExtentScrollController(
+      initialItem: _selectedStationIndex,
+    );
     _loadLocations();
     _initProfileDefaults();
     // Initialize title with default generated title
@@ -108,6 +121,23 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       _selectedListingTypeId = defaultType;
       _defaultGenderFromProfile = defaultGender;
       _selectedGender = defaultGender;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final listingTypeOptions = [2, 1];
+      final genderOptions = [1, 2];
+      final listingTypeIndex = listingTypeOptions.indexOf(_selectedListingTypeId);
+      final genderIndex = genderOptions.indexOf(_selectedGender);
+      _listingTypeScrollController?.animateToItem(
+        listingTypeIndex >= 0 ? listingTypeIndex : 0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
+      _genderScrollController?.animateToItem(
+        genderIndex >= 0 ? genderIndex : 0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
     });
     _updateTitle();
   }
@@ -196,6 +226,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       _currentStations = stations;
       _selectedStationIndex = 0;
       _isLoadingStations = false;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _metroStationScrollController?.animateToItem(
+        0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
     });
     // Sync location with the first station when stations are loaded
     _syncLocationWithStation();
@@ -410,6 +447,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _locationScrollController?.dispose();
+    _genderScrollController?.dispose();
+    _listingTypeScrollController?.dispose();
+    _metroLineScrollController?.dispose();
+    _metroStationScrollController?.dispose();
     super.dispose();
   }
 
@@ -497,6 +538,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               Expanded(
                 child: ListingTypePicker(
                   selectedListingTypeId: _selectedListingTypeId,
+                  scrollController: _listingTypeScrollController,
                   onListingTypeChanged: (listingTypeId) {
                     setState(() {
                       _selectedListingTypeId = listingTypeId;
@@ -517,6 +559,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               Expanded(
                 child: GenderPicker(
                   selectedGender: _selectedGender,
+                  scrollController: _genderScrollController,
                   onGenderChanged: (gender) {
                     setState(() {
                       _selectedGender = gender;
@@ -553,12 +596,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       Expanded(
                         child: CupertinoPicker(
                           itemExtent: 40,
-                          scrollController: FixedExtentScrollController(
-                            initialItem: _selectedSubwayLine,
-                          ),
+                          scrollController: _metroLineScrollController,
                           onSelectedItemChanged: (index) {
                             _dismissKeyboard();
                             HapticFeedbackUtils.impact();
+                            SendSoundUtils.playSelectionSound();
                             setState(() {
                               _selectedSubwayLine =
                                   index; // 0 = unselected, 1-4 = line numbers
@@ -681,12 +723,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                               Expanded(
                                 child: CupertinoPicker(
                                   itemExtent: 40,
-                                  scrollController: FixedExtentScrollController(
-                                    initialItem: _selectedStationIndex,
-                                  ),
+                                  scrollController: _metroStationScrollController,
                                   onSelectedItemChanged: (index) {
                                     _dismissKeyboard();
                                     HapticFeedbackUtils.impact();
+                                    SendSoundUtils.playSelectionSound();
                                     setState(() {
                                       _selectedStationIndex = index;
                                       // Sync location picker with selected station's location_id

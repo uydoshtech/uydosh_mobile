@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 
 /// A segmented control with pill-shaped buttons, matching the Period selector style.
 /// Used for metro stations, districts, time ranges, and similar single-selection lists.
@@ -57,6 +58,7 @@ class RotationSpinner<T> extends StatelessWidget {
       return GestureDetector(
         onTap: () {
           HapticFeedbackUtils.impact();
+          SendSoundUtils.playSelectionSound();
           onChanged(opt.value);
         },
         child: AnimatedContainer(

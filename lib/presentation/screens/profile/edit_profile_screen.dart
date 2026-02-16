@@ -5,6 +5,8 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
@@ -897,6 +899,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               itemExtent: 40,
                               scrollController: _regionScrollController,
                               onSelectedItemChanged: (index) {
+                                HapticFeedbackUtils.impact();
+                                SendSoundUtils.playSelectionSound();
                                 setState(() {
                                   if (index == 0) {
                                     // "Select region" option
@@ -1093,6 +1097,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               itemExtent: 50,
                               scrollController: _universityScrollController,
                               onSelectedItemChanged: (index) {
+                                HapticFeedbackUtils.impact();
+                                SendSoundUtils.playSelectionSound();
                                 setState(() {
                                   if (index == 0) {
                                     // "Select university" option

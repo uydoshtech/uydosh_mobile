@@ -3,18 +3,22 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
-class ListingTypePicker extends StatelessWidget {
+/// Listing type picker - same pattern as LocationPicker: uses persistent scroll
+/// controller (from parent or own) so the wheel scrolls smoothly with sound.
+class ListingTypePicker extends StatefulWidget {
   const ListingTypePicker({
     required this.selectedListingTypeId,
     required this.onListingTypeChanged,
+    super.key,
     this.height = 80,
     this.itemExtent = 40,
     this.showArrows = true,
     this.useThemeColors = false,
     this.includeUnselected = false,
-    super.key,
+    this.scrollController,
   });
 
   final int selectedListingTypeId;
@@ -24,15 +28,62 @@ class ListingTypePicker extends StatelessWidget {
   final double itemExtent;
   final bool showArrows;
   final bool includeUnselected;
+  final FixedExtentScrollController? scrollController;
+
+  @override
+  State<ListingTypePicker> createState() => _ListingTypePickerState();
+}
+
+class _ListingTypePickerState extends State<ListingTypePicker> {
+  FixedExtentScrollController? _ownScrollController;
+
+  List<int> get _listingTypeOptions =>
+      widget.includeUnselected ? [2, 1, 0] : [2, 1];
+
+  FixedExtentScrollController get _effectiveController {
+    if (widget.scrollController != null) {
+      return widget.scrollController!;
+    }
+    _ownScrollController ??= FixedExtentScrollController(
+      initialItem: _indexOf(widget.selectedListingTypeId),
+    );
+    return _ownScrollController!;
+  }
+
+  int _indexOf(int id) {
+    final i = _listingTypeOptions.indexOf(id);
+    return i >= 0 ? i : 0;
+  }
+
+  @override
+  void didUpdateWidget(ListingTypePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.scrollController == null &&
+        oldWidget.selectedListingTypeId != widget.selectedListingTypeId &&
+        (_ownScrollController?.hasClients ?? false)) {
+      final idx = _indexOf(widget.selectedListingTypeId);
+      if (idx != _ownScrollController!.selectedItem) {
+        _ownScrollController!.animateToItem(
+          idx,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _ownScrollController?.dispose();
+    super.dispose();
+  }
 
   Color _getItemTextColor(BuildContext context, int listingTypeId) {
     final theme = Theme.of(context);
-    final isSelected = selectedListingTypeId == listingTypeId;
-    // Selected item: white (matches gender spinner)
+    final isSelected = widget.selectedListingTypeId == listingTypeId;
     if (isSelected && ThemeState().isBlueTheme) {
       return Colors.white;
     }
-    // Unselected in blue theme: dimmer text
     if (ThemeState().isBlueTheme) {
       return theme.colorScheme.onSurfaceVariant;
     }
@@ -40,12 +91,11 @@ class ListingTypePicker extends StatelessWidget {
   }
 
   Color _getListingTypeColor(int listingTypeId) {
-    // Use metro line colors for listing types (unchanged)
     switch (listingTypeId) {
-      case 2: // Roommate needed
-        return AppColors.metroLine1; // Red
-      case 1: // Room needed
-        return AppColors.metroLine2; // Blue
+      case 2:
+        return AppColors.metroLine1;
+      case 1:
+        return AppColors.metroLine2;
       default:
         return listingTypeId == 0 ? Colors.grey : AppColors.metroLine1;
     }
@@ -54,10 +104,6 @@ class ListingTypePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final listingTypeOptions = includeUnselected ? [2, 1, 0] : [2, 1];
-    final initialIndex = listingTypeOptions.indexOf(selectedListingTypeId);
-
-    // Use the same styling as gender spinner
     final isBlueTheme = ThemeState().isBlueTheme;
     final backgroundColor =
         isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
@@ -69,26 +115,20 @@ class ListingTypePicker extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: borderColor),
       ),
-      height: height,
+      height: widget.height,
       child: Row(
         children: [
           Expanded(
             child: CupertinoPicker(
-              key: ValueKey(selectedListingTypeId),
-              itemExtent: itemExtent,
-              scrollController: FixedExtentScrollController(
-                initialItem: initialIndex >= 0 ? initialIndex : 0,
-              ),
+              itemExtent: widget.itemExtent,
+              scrollController: _effectiveController,
               onSelectedItemChanged: (index) {
-                // Dismiss keyboard if it"s open
                 FocusScope.of(context).unfocus();
-                // Provide haptic feedback
                 HapticFeedbackUtils.impact();
-                // Update the selected listing type ID
-                onListingTypeChanged(listingTypeOptions[index]);
+                SendSoundUtils.playSelectionSound();
+                widget.onListingTypeChanged(_listingTypeOptions[index]);
               },
               children: [
-                // Roommate needed option
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -113,7 +153,6 @@ class ListingTypePicker extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Room needed option
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -138,7 +177,7 @@ class ListingTypePicker extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (includeUnselected)
+                if (widget.includeUnselected)
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -166,8 +205,7 @@ class ListingTypePicker extends StatelessWidget {
               ],
             ),
           ),
-          // Right part with arrows - same as metro line picker
-          if (showArrows)
+          if (widget.showArrows)
             Container(
               width: 24,
               decoration: BoxDecoration(

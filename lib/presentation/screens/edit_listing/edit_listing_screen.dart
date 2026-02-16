@@ -10,6 +10,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/location.dart";
@@ -48,6 +49,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
   final _moveInDateController = TextEditingController();
   String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
+  FixedExtentScrollController? _genderScrollController;
+  FixedExtentScrollController? _listingTypeScrollController;
+  FixedExtentScrollController? _metroLineScrollController;
+  FixedExtentScrollController? _metroStationScrollController;
   int _selectedListingTypeId = 2; // 2 = roommate needed, 1 = room needed
   int _selectedGender = 1; // Default to male (1 = male, 2 = female)
   double _minPrice = 50.0;
@@ -81,6 +86,18 @@ class _EditListingScreenState extends State<EditListingScreen> {
     super.initState();
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
     _initializeForm();
+    _genderScrollController = FixedExtentScrollController(
+      initialItem: [1, 2].indexOf(_selectedGender).clamp(0, 1),
+    );
+    _listingTypeScrollController = FixedExtentScrollController(
+      initialItem: [2, 1].indexOf(_selectedListingTypeId).clamp(0, 1),
+    );
+    _metroLineScrollController = FixedExtentScrollController(
+      initialItem: _selectedSubwayLine,
+    );
+    _metroStationScrollController = FixedExtentScrollController(
+      initialItem: _selectedStationIndex,
+    );
     _loadLocations();
   }
 
@@ -206,6 +223,13 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
       _isLoadingStations = false;
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _metroStationScrollController?.animateToItem(
+        _selectedStationIndex,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
+    });
     // Sync location with the selected station when stations are loaded
     _syncLocationWithStation();
   }
@@ -303,6 +327,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _locationScrollController?.dispose();
+    _genderScrollController?.dispose();
+    _listingTypeScrollController?.dispose();
+    _metroLineScrollController?.dispose();
+    _metroStationScrollController?.dispose();
     // Clean up any ongoing operations
     _makingPhotoPrimaryIds.clear();
     _deletingPhotoIds.clear();
@@ -430,6 +458,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Expanded(
                             child: ListingTypePicker(
                               selectedListingTypeId: _selectedListingTypeId,
+                              scrollController: _listingTypeScrollController,
                               onListingTypeChanged: (listingTypeId) {
                                 setState(() {
                                   _selectedListingTypeId = listingTypeId;
@@ -444,6 +473,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Expanded(
                             child: GenderPicker(
                               selectedGender: _selectedGender,
+                              scrollController: _genderScrollController,
                               onGenderChanged: (gender) {
                                 setState(() {
                                   _selectedGender = gender;
@@ -478,13 +508,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   Expanded(
                                     child: CupertinoPicker(
                                       itemExtent: 40,
-                                      scrollController:
-                                          FixedExtentScrollController(
-                                            initialItem: _selectedSubwayLine,
-                                          ),
+                                      scrollController: _metroLineScrollController,
                                       onSelectedItemChanged: (index) {
                                         _dismissKeyboard();
                                         HapticFeedbackUtils.impact();
+                                        SendSoundUtils.playSelectionSound();
                                         setState(() {
                                           _selectedSubwayLine = index;
                                         });
@@ -626,13 +654,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                             child: CupertinoPicker(
                                               itemExtent: 40,
                                               scrollController:
-                                                  FixedExtentScrollController(
-                                                    initialItem:
-                                                        _selectedStationIndex,
-                                                  ),
+                                                  _metroStationScrollController,
                                               onSelectedItemChanged: (index) {
                                                 _dismissKeyboard();
                                                 HapticFeedbackUtils.impact();
+                                                SendSoundUtils.playSelectionSound();
                                                 setState(() {
                                                   _selectedStationIndex = index;
                                                   // Sync location picker with selected station's location_id

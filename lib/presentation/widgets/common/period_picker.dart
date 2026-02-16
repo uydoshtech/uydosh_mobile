@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// A rotation spinner (CupertinoPicker wheel) for selecting a time period.
@@ -109,6 +110,7 @@ class _PeriodPickerState extends State<PeriodPicker> {
                   scrollController: _scrollController,
                   onSelectedItemChanged: (index) {
                     HapticFeedbackUtils.impact();
+                    SendSoundUtils.playSelectionSound();
                     widget.onChanged(_options[index]);
                   },
                   children: _options.map<Widget>((days) {
