@@ -1,39 +1,32 @@
 import "package:flutter/foundation.dart" show listEquals;
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/home_refresh_state.dart";
+import "package:uy_dosh/base/state/search_filters_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/scroll_utils.dart";
+import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
-import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
-import "package:uy_dosh/domain/models/listing.dart";
-import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/index.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/index.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
-import "package:uy_dosh/base/state/favorites_state.dart";
-import "package:uy_dosh/base/state/unread_messages_state.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/base/utils/scroll_utils.dart";
-import "package:uy_dosh/main.dart";
-import "package:uy_dosh/base/state/home_refresh_state.dart";
-import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
-import "package:uy_dosh/base/logger/logger.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _HomeScreenData {
-  final bool isLoading;
-  final bool hasError;
-  final String errorMessage;
-  final List<Listing> listings;
-  final bool hasMore;
 
   const _HomeScreenData({
     required this.isLoading,
@@ -42,6 +35,11 @@ class _HomeScreenData {
     required this.listings,
     required this.hasMore,
   });
+  final bool isLoading;
+  final bool hasError;
+  final String errorMessage;
+  final List<Listing> listings;
+  final bool hasMore;
 
   @override
   bool operator ==(Object other) {
@@ -70,16 +68,6 @@ class _HomeScreenData {
 }
 
 class HomeScreen extends StatefulWidget {
-  final int? listingTypeId;
-  final int? locationId;
-  final int? subwayStationId;
-  final int? subwayLineId;
-  final int? gender;
-  final double? minPrice;
-  final double? maxPrice;
-  final bool? privateRoom;
-  final bool isSearchMode;
-  final bool useExplicitFiltersOnly;
 
   const HomeScreen({
     super.key,
@@ -94,6 +82,16 @@ class HomeScreen extends StatefulWidget {
     this.isSearchMode = false,
     this.useExplicitFiltersOnly = false,
   });
+  final int? listingTypeId;
+  final int? locationId;
+  final int? subwayStationId;
+  final int? subwayLineId;
+  final int? gender;
+  final double? minPrice;
+  final double? maxPrice;
+  final bool? privateRoom;
+  final bool isSearchMode;
+  final bool useExplicitFiltersOnly;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -328,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               selector:
                   (state) => state.map(
                     initial:
-                        (_) => _HomeScreenData(
+                        (_) => const _HomeScreenData(
                           isLoading: false,
                           hasError: false,
                           errorMessage: "",
@@ -336,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           hasMore: false,
                         ),
                     loading:
-                        (_) => _HomeScreenData(
+                        (_) => const _HomeScreenData(
                           isLoading: true,
                           hasError: false,
                           errorMessage: "",
@@ -630,7 +628,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           }
         },
       ),
-      actions: [],
+      actions: const [],
     );
   }
 

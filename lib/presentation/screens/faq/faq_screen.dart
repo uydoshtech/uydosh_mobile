@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class FaqScreen extends StatefulWidget {
@@ -144,14 +144,14 @@ class _FaqScreenState extends State<FaqScreen> {
   }
 
   List<TextSpan> _parseAnswerText(String text) {
-    final List<TextSpan> spans = [];
-    final List<String> lines = text.split('\n');
+    final spans = <TextSpan>[];
+    final lines = text.split("\n");
     
     // Get current language to determine which keywords to use
     final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(context);
     
     // Define bold keywords for each language
-    final Map<String, List<String>> boldKeywordsByLanguage = {
+    final boldKeywordsByLanguage = <String, List<String>>{
       "en": [
         "Noise", "Guests", "Emotions", "Common activities", "Cleaning and household",
         "Communication", "Conflict resolution", "Food", "Order and quiet",
@@ -169,14 +169,14 @@ class _FaqScreenState extends State<FaqScreen> {
       ],
     };
     
-    final List<String> boldKeywords = boldKeywordsByLanguage[currentLanguage] ?? boldKeywordsByLanguage["en"]!;
+    final boldKeywords = boldKeywordsByLanguage[currentLanguage] ?? boldKeywordsByLanguage["en"]!;
     
-    for (int i = 0; i < lines.length; i++) {
-      final String line = lines[i];
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
       
       // Check if this line is a section header (starts with specific keywords)
-      bool isBold = false;
-      for (String keyword in boldKeywords) {
+      var isBold = false;
+      for (final keyword in boldKeywords) {
         if (line.startsWith(keyword)) {
           isBold = true;
           break;
@@ -206,7 +206,7 @@ class _FaqScreenState extends State<FaqScreen> {
       
       // Add newline if not the last line
       if (i < lines.length - 1) {
-        spans.add(const TextSpan(text: '\n'));
+        spans.add(const TextSpan(text: "\n"));
       }
     }
     
@@ -218,7 +218,7 @@ class _FaqScreenState extends State<FaqScreen> {
     required String question,
     required String answer,
   }) {
-    final bool isExpanded = _expandedIndex == index;
+    final isExpanded = _expandedIndex == index;
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),

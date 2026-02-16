@@ -1,32 +1,28 @@
+// Firebase imports
+import "package:firebase_core/firebase_core.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
-
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/generated/l10n.dart" as gen;
-
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/log_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
-import "package:uy_dosh/presentation/router/app_router.dart";
-import "package:uy_dosh/presentation/screens/onboarding/onboarding_screen.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/animated_svg_logo.dart";
-
-import "package:uy_dosh/base/state/onboarding_state.dart";
-import "package:uy_dosh/base/state/search_filters_state.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
+import "package:uy_dosh/base/state/onboarding_state.dart";
+import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/services/deep_link_service.dart";
-
-// Firebase imports
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import "package:uy_dosh/firebase_options.dart";
+import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/screens/onboarding/onboarding_screen.dart";
+import "package:uy_dosh/presentation/widgets/animated_svg_logo.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Global RouteObserver for handling navigation events
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
@@ -49,15 +45,15 @@ void main() async {
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
         );
-        logger.d('Firebase initialized successfully');
+        logger.d("Firebase initialized successfully");
       } else {
-        logger.d('Firebase already initialized, continuing...');
+        logger.d("Firebase already initialized, continuing...");
       }
     } catch (e) {
-      if (e.toString().contains('duplicate-app')) {
-        logger.d('Firebase already exists, continuing...');
+      if (e.toString().contains("duplicate-app")) {
+        logger.d("Firebase already exists, continuing...");
       } else {
-        logger.d('Firebase initialization error: $e');
+        logger.d("Firebase initialization error: $e");
         rethrow;
       }
     }
@@ -76,22 +72,22 @@ void main() async {
     ]);
 
     logger.d(
-      '🔐 Main: AuthenticationState initialized. Current status: ${AuthenticationState().isAuthenticated}',
+      "🔐 Main: AuthenticationState initialized. Current status: ${AuthenticationState().isAuthenticated}",
     );
 
     // Force refresh authentication status after a delay to ensure Firebase is ready
     Future.delayed(const Duration(seconds: 2), () {
-      logger.d('🔐 Main: Force refreshing authentication status...');
+      logger.d("🔐 Main: Force refreshing authentication status...");
       AuthenticationState().refreshAuthenticationStatus();
     });
 
     // Display saved preferences in console
-    logger.d('=== APP STARTUP - SAVED PREFERENCES ===');
+    logger.d("=== APP STARTUP - SAVED PREFERENCES ===");
     logger.d(
-      '🌍 Language: ${LanguageState().currentLanguage} (${LanguageDisplayHelper.getLanguageDisplayName(LanguageState().currentLanguage)})',
+      "🌍 Language: ${LanguageState().currentLanguage} (${LanguageDisplayHelper.getLanguageDisplayName(LanguageState().currentLanguage)})",
     );
     logger.d(
-      '🎨 Theme: ${ThemeState().currentTheme} (${ThemeState().currentThemeDisplayName})',
+      "🎨 Theme: ${ThemeState().currentTheme} (${ThemeState().currentThemeDisplayName})",
     );
     logger.d(
       '🔐 Authentication: ${AuthenticationState().isAuthenticated ? "AUTHENTICATED" : "NOT AUTHENTICATED"}',
@@ -103,9 +99,9 @@ void main() async {
       '📳 Haptics: ${HapticFeedbackState().isEnabled ? "ENABLED" : "DISABLED"}',
     );
     logger.d(
-      '🔍 Search Filters: listingType=${SearchFiltersState().selectedListingTypeId}, location=${SearchFiltersState().selectedLocationIndex}, line=${SearchFiltersState().selectedSubwayLine}, station=${SearchFiltersState().selectedStationIndex}',
+      "🔍 Search Filters: listingType=${SearchFiltersState().selectedListingTypeId}, location=${SearchFiltersState().selectedLocationIndex}, line=${SearchFiltersState().selectedSubwayLine}, station=${SearchFiltersState().selectedStationIndex}",
     );
-    logger.d('========================================');
+    logger.d("========================================");
 
     await configureDependencies();
     // Bloc.observer = AppBlocObserver.instance(); // Disabled to reduce logging
@@ -119,13 +115,13 @@ void main() async {
 
     runApp(MyApp(navigatorKey: navigatorKey));
   } catch (e, stackTrace) {
-    logger.d('Error during app initialization: $e');
-    logger.d('Stack trace: $stackTrace');
+    logger.d("Error during app initialization: $e");
+    logger.d("Stack trace: $stackTrace");
 
     // Fallback to a simple app if dependency injection fails
     runApp(
       MaterialApp(
-        title: 'UyDosh',
+        title: "UyDosh",
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
           useMaterial3: true,
@@ -134,7 +130,7 @@ void main() async {
         home: const Scaffold(
           body: Center(
             child: Text(
-              'App initialization failed. Check console for details.',
+              "App initialization failed. Check console for details.",
             ),
           ),
         ),
@@ -168,7 +164,7 @@ class _MyAppState extends State<MyApp> {
       listenable: Listenable.merge([ThemeState(), LanguageState()]),
       builder: (context, child) {
         return MaterialApp(
-          title: 'UyDosh',
+          title: "UyDosh",
           theme: ThemeState().currentThemeData,
           debugShowCheckedModeBanner: false,
           navigatorKey: widget.navigatorKey,
@@ -180,7 +176,7 @@ class _MyAppState extends State<MyApp> {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: supportedLocales,
-          locale: Locale(LanguageState().currentLanguage, ''),
+          locale: Locale(LanguageState().currentLanguage, ""),
           home: kSkipSplashScreen ? _getInitialScreen() : const SplashScreen(),
         );
       },
@@ -265,7 +261,7 @@ class _SplashScreenState extends State<SplashScreen>
     _startAnimations();
   }
 
-  void _startAnimations() async {
+  Future<void> _startAnimations() async {
     await Future.delayed(const Duration(milliseconds: 200));
     _fadeController.forward();
 
@@ -367,9 +363,9 @@ class _SplashScreenState extends State<SplashScreen>
                           height: MediaQuery.of(context).size.height * 0.25,
                         ), // Add top spacing
                         // Animated SVG Logo
-                        AnimatedSvgLogo(
+                        const AnimatedSvgLogo(
                           size: 180, // 50% larger (120 * 1.5)
-                          animationDuration: const Duration(milliseconds: 4000),
+                          animationDuration: Duration(milliseconds: 4000),
                         ),
                         const SizedBox(height: 0),
                         // Title animation

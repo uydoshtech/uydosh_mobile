@@ -1,13 +1,13 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_card_tile.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listings_with_complaints_screen.dart";
-import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_search_analytics_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_card_tile.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminPanelScreen extends StatelessWidget {
   const AdminPanelScreen({super.key});

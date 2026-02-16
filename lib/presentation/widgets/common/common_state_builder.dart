@@ -8,11 +8,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class CommonStateBuilder extends StatelessWidget {
   const CommonStateBuilder({
-    super.key,
-    required this.isLoading,
-    required this.hasError,
-    required this.isEmpty,
-    required this.child,
+    required this.isLoading, required this.hasError, required this.isEmpty, required this.child, super.key,
     this.errorMessage,
     this.emptyMessage,
     this.emptySubtitle,

@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 class PriceRangePicker extends StatefulWidget {
   const PriceRangePicker({

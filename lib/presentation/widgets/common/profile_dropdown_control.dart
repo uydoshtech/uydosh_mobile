@@ -28,9 +28,9 @@ class ProfileDropdownControl extends StatelessWidget {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
     final sectionBackground =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceVariant;
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: sectionBackground,
         borderRadius: BorderRadius.circular(12),

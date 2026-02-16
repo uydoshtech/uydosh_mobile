@@ -10,14 +10,14 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   ListingsBloc(this._listingService) : super(const ListingsState.initial()) {
     on<ListingsEvent>((event, emit) async {
       await event.map(
-        fetchListings: (e) async => await _onFetchListings(emit, e),
-        loadMore: (e) async => await _onLoadMore(emit, e),
+        fetchListings: (e) async => _onFetchListings(emit, e),
+        loadMore: (e) async => _onLoadMore(emit, e),
         fetchListingsBySubwayStation:
-            (e) async => await _onFetchListingsBySubwayStation(emit, e),
+            (e) async => _onFetchListingsBySubwayStation(emit, e),
         fetchListingsByLocation:
-            (e) async => await _onFetchListingsByLocation(emit, e),
-        searchListings: (e) async => await _onSearchListings(emit, e),
-        fetchUserListings: (e) async => await _onFetchUserListings(emit, e),
+            (e) async => _onFetchListingsByLocation(emit, e),
+        searchListings: (e) async => _onSearchListings(emit, e),
+        fetchUserListings: (e) async => _onFetchUserListings(emit, e),
       );
     });
   }
@@ -404,27 +404,27 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       fetchListingsByLocation: (e) => null,
       searchListings:
           (e) => {
-            'listingTypeId': e.listingTypeId,
-            'locationId': e.locationId,
-            'subwayStationId': e.subwayStationId,
-            'subwayLineId': e.subwayLineId,
-            'gender': e.gender,
-            'minPrice': e.minPrice,
-            'maxPrice': e.maxPrice,
-            'privateRoom': e.privateRoom,
+            "listingTypeId": e.listingTypeId,
+            "locationId": e.locationId,
+            "subwayStationId": e.subwayStationId,
+            "subwayLineId": e.subwayLineId,
+            "gender": e.gender,
+            "minPrice": e.minPrice,
+            "maxPrice": e.maxPrice,
+            "privateRoom": e.privateRoom,
           },
       fetchUserListings: (e) => null,
     );
 
     if (searchParams != null) {
-      _lastListingTypeId = searchParams['listingTypeId'] as int?;
-      _lastLocationId = searchParams['locationId'] as int?;
-      _lastSubwayStationId = searchParams['subwayStationId'] as int?;
-      _lastSubwayLineId = searchParams['subwayLineId'] as int?;
-      _lastGender = searchParams['gender'] as int?;
-      _lastMinPrice = searchParams['minPrice'] as double?;
-      _lastMaxPrice = searchParams['maxPrice'] as double?;
-      _lastPrivateRoom = searchParams['privateRoom'] as bool?;
+      _lastListingTypeId = searchParams["listingTypeId"] as int?;
+      _lastLocationId = searchParams["locationId"] as int?;
+      _lastSubwayStationId = searchParams["subwayStationId"] as int?;
+      _lastSubwayLineId = searchParams["subwayLineId"] as int?;
+      _lastGender = searchParams["gender"] as int?;
+      _lastMinPrice = searchParams["minPrice"] as double?;
+      _lastMaxPrice = searchParams["maxPrice"] as double?;
+      _lastPrivateRoom = searchParams["privateRoom"] as bool?;
     }
 
     emit(const ListingsState.loading());
@@ -437,14 +437,14 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         fetchListingsByLocation: (e) => null,
         searchListings:
             (e) => {
-              'listingTypeId': e.listingTypeId,
-              'locationId': e.locationId,
-              'subwayStationId': e.subwayStationId,
-              'subwayLineId': e.subwayLineId,
-              'gender': e.gender,
-              'minPrice': e.minPrice,
-              'maxPrice': e.maxPrice,
-              'privateRoom': e.privateRoom,
+              "listingTypeId": e.listingTypeId,
+              "locationId": e.locationId,
+              "subwayStationId": e.subwayStationId,
+              "subwayLineId": e.subwayLineId,
+              "gender": e.gender,
+              "minPrice": e.minPrice,
+              "maxPrice": e.maxPrice,
+              "privateRoom": e.privateRoom,
             },
         fetchUserListings: (e) => null,
       );
@@ -468,14 +468,14 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       );
 
       // Use the new comprehensive search method
-      final subwayStationId = searchParams?['subwayStationId'] as int?;
-      final locationId = searchParams?['locationId'] as int?;
-      final listingTypeId = searchParams?['listingTypeId'] as int?;
-      final subwayLineId = searchParams?['subwayLineId'] as int?;
-      final gender = searchParams?['gender'] as int?;
-      final minPrice = searchParams?['minPrice'] as double?;
-      final maxPrice = searchParams?['maxPrice'] as double?;
-      final privateRoom = searchParams?['privateRoom'] as bool?;
+      final subwayStationId = searchParams?["subwayStationId"] as int?;
+      final locationId = searchParams?["locationId"] as int?;
+      final listingTypeId = searchParams?["listingTypeId"] as int?;
+      final subwayLineId = searchParams?["subwayLineId"] as int?;
+      final gender = searchParams?["gender"] as int?;
+      final minPrice = searchParams?["minPrice"] as double?;
+      final maxPrice = searchParams?["maxPrice"] as double?;
+      final privateRoom = searchParams?["privateRoom"] as bool?;
 
       logger.d("=== COMPREHENSIVE SEARCH BLOC DEBUG ===");
       logger.d("Listing Type ID: $listingTypeId");

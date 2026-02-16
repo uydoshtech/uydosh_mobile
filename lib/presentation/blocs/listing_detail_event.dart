@@ -1,4 +1,4 @@
-part of 'listing_detail_bloc.dart';
+part of "listing_detail_bloc.dart";
 
 @freezed
 class ListingDetailEvent with _$ListingDetailEvent {

@@ -1,29 +1,27 @@
-import "package:flutter/material.dart";
 import "package:flutter/cupertino.dart";
-
-import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
+import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
-import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/services/session_manager.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/profile_toggle_control.dart";
-import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
+import "package:uy_dosh/presentation/widgets/common/profile_toggle_control.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class EditProfileScreen extends StatefulWidget {
-  EditProfileScreen({super.key, required this.profile});
+  const EditProfileScreen({required this.profile, super.key});
 
   final UserProfile profile;
 
@@ -356,7 +354,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ),
                         ),
                       )
-                      : Icon(Icons.save),
+                      : const Icon(Icons.save),
               tooltip: LanguageAwareStringHelper.getCurrent(
                 context,
                 "save_changes",
@@ -813,7 +811,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             fillColor:
                 isBlueTheme
                     ? BlueThemeColors.surface
-                    : theme.colorScheme.surfaceVariant,
+                    : theme.colorScheme.surfaceContainerHighest,
           ),
         ),
       ],
@@ -869,7 +867,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 color:
                     isBlueTheme
                         ? BlueThemeColors.surface
-                        : theme.colorScheme.surfaceVariant,
+                        : theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: theme.colorScheme.outline),
               ),
@@ -897,7 +895,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             : _regionScrollController != null
                             ? CupertinoPicker(
                               itemExtent: 40,
-                              scrollController: _regionScrollController!,
+                              scrollController: _regionScrollController,
                               onSelectedItemChanged: (index) {
                                 setState(() {
                                   if (index == 0) {
@@ -984,7 +982,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         ),
                                       ),
                                     )
-                                    .toList(),
+                                    ,
                               ],
                             )
                             : Center(
@@ -1065,7 +1063,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 color:
                     isBlueTheme
                         ? BlueThemeColors.surface
-                        : theme.colorScheme.surfaceVariant,
+                        : theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: theme.colorScheme.outline),
               ),
@@ -1093,7 +1091,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             : _universityScrollController != null
                             ? CupertinoPicker(
                               itemExtent: 50,
-                              scrollController: _universityScrollController!,
+                              scrollController: _universityScrollController,
                               onSelectedItemChanged: (index) {
                                 setState(() {
                                   if (index == 0) {
@@ -1183,7 +1181,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         ),
                                       ),
                                     )
-                                    .toList(),
+                                    ,
                               ],
                             )
                             : Center(

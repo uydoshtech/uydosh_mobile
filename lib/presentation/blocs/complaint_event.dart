@@ -1,4 +1,4 @@
-part of 'complaint_bloc.dart';
+part of "complaint_bloc.dart";
 
 @freezed
 class ComplaintEvent with _$ComplaintEvent {

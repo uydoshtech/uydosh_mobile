@@ -1,55 +1,54 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uy_dosh/presentation/blocs/messaging_bloc.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import 'package:uy_dosh/domain/models/message.dart';
-import 'package:uy_dosh/base/constants/app_strings.dart';
-import 'package:uy_dosh/base/constants/string_helper.dart';
-import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
-import 'package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart';
-import 'package:uy_dosh/base/injection/injection.dart';
-import 'package:uy_dosh/domain/services/messaging_service.dart';
-import 'package:uy_dosh/base/services/session_manager.dart';
-import 'package:uy_dosh/base/constants/app_colors.dart';
-import 'package:uy_dosh/base/state/theme_state.dart';
-import 'package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart';
-import 'package:uy_dosh/presentation/widgets/chat/date_header_widget.dart';
-import 'package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart';
-import 'package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart';
-import 'package:uy_dosh/presentation/blocs/listing_detail_bloc.dart';
-import 'package:uy_dosh/domain/services/listing_service.dart';
-import 'package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart';
-import 'package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart';
-import 'package:uy_dosh/domain/services/user_profile_service.dart';
-import 'package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart';
-import 'package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart';
-import 'package:uy_dosh/domain/models/user_profile.dart';
-import 'package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart';
-import 'package:uy_dosh/presentation/blocs/complaint_bloc.dart';
-import 'package:uy_dosh/domain/services/complaint_service.dart';
-import 'package:uy_dosh/presentation/widgets/common/toast_theme.dart';
-import 'package:uy_dosh/presentation/widgets/common/common_list_view.dart';
+import "package:cached_network_image/cached_network_image.dart";
+import "package:flutter/cupertino.dart";
+import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/constants/string_helper.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/message.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/complaint_service.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
+import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
+import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
+import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
+import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
+import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
+import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
+import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
+import "package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ChatScreen extends StatefulWidget {
+
+  const ChatScreen({
+    required this.conversationId, super.key,
+    this.listingId,
+    this.otherUserInitials,
+    this.otherUserName,
+    this.otherUserId,
+    this.otherUserAvatar,
+  }) : assert(conversationId > 0, "Conversation ID must be positive");
   final int conversationId;
   final int? listingId;
   final String? otherUserInitials;
   final String? otherUserName;
   final int? otherUserId;
   final String? otherUserAvatar;
-
-  const ChatScreen({
-    super.key,
-    required this.conversationId,
-    this.listingId,
-    this.otherUserInitials,
-    this.otherUserName,
-    this.otherUserId,
-    this.otherUserAvatar,
-  }) : assert(conversationId > 0, 'Conversation ID must be positive');
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -63,7 +62,7 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _currentUserId;
   List<Message> _messages = [];
   bool _isSendingMessage = false;
-  Set<int> _newMessageIds = {}; // Track which messages are new in this session
+  final Set<int> _newMessageIds = {}; // Track which messages are new in this session
   UserProfile? _currentUserProfile; // Store the current user's profile
 
   @override
@@ -99,7 +98,7 @@ class _ChatScreenState extends State<ChatScreen> {
       // Fetch messages
       _messagingBloc.add(FetchMessages(conversationId: widget.conversationId));
     } catch (e) {
-      logger.d('❌ [ChatScreen] Error initializing chat: $e');
+      logger.d("❌ [ChatScreen] Error initializing chat: $e");
     }
   }
 
@@ -251,7 +250,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               },
                               error: (message) {
                                 logger.d(
-                                  '❌ [ChatScreen] Error loading current user profile: $message',
+                                  "❌ [ChatScreen] Error loading current user profile: $message",
                                 );
                               },
                             );
@@ -261,12 +260,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: BlocBuilder<MessagingBloc, MessagingState>(
                         builder: (context, state) {
                           return state.when(
-                            initial: () => _buildLoadingState(),
-                            loading: () => _buildLoadingState(),
+                            initial: _buildLoadingState,
+                            loading: _buildLoadingState,
                             conversationsLoaded:
                                 (conversations, hasMore, currentPage) =>
                                     _buildLoadingState(),
-                            conversationsCleared: () => _buildEmptyState(),
+                            conversationsCleared: _buildEmptyState,
                             messagesLoaded:
                                 (
                                   messages,
@@ -286,7 +285,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     _messages.isNotEmpty
                                         ? _buildMessagesList(_messages)
                                         : _buildEmptyState(),
-                            error: (message) => _buildErrorState(message),
+                            error: _buildErrorState,
                           );
                         },
                       ),
@@ -458,7 +457,7 @@ class _ChatScreenState extends State<ChatScreen> {
               :final isLatest,
             ) =>
               MessageBubble(
-                key: ValueKey('message_${message.id}_${message.createdAt}'),
+                key: ValueKey("message_${message.id}_${message.createdAt}"),
                 message: message,
                 isCurrentUser: isCurrentUser,
                 isLatest: isLatest,
@@ -548,7 +547,7 @@ class _ChatScreenState extends State<ChatScreen> {
               Expanded(
                 child: TextField(
                   controller: _messageController,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black, // Always use black text for visibility
                   ),
                   decoration: InputDecoration(
@@ -676,12 +675,12 @@ class _ChatScreenState extends State<ChatScreen> {
     // Get current language using the same method as the app
     final language = LanguageState().currentLanguage;
     switch (language) {
-      case 'ru':
-        return 'Привет,';
-      case 'uz':
-        return 'Salom,';
+      case "ru":
+        return "Привет,";
+      case "uz":
+        return "Salom,";
       default:
-        return 'Hi,';
+        return "Hi,";
     }
   }
 
@@ -719,7 +718,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _createComplaint() async {
+  Future<void> _createComplaint() async {
     if (widget.listingId == null) return;
 
     final result = await Navigator.of(context).push(
@@ -754,12 +753,12 @@ class _ChatScreenState extends State<ChatScreen> {
           fit: BoxFit.cover,
           memCacheWidth: 48,
           memCacheHeight: 48,
-          placeholder: (context, url) => Icon(Icons.person, size: 20),
-          errorWidget: (context, url, error) => Icon(Icons.person, size: 20),
+          placeholder: (context, url) => const Icon(Icons.person, size: 20),
+          errorWidget: (context, url, error) => const Icon(Icons.person, size: 20),
         ),
       );
     }
-    return Icon(Icons.person, size: 20);
+    return const Icon(Icons.person, size: 20);
   }
 
   int? _getOtherUserIdFromMessages() {
@@ -776,7 +775,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   List<ActionMenuItem> _buildActionMenuItems() {
-    final List<ActionMenuItem> items = [];
+    final items = <ActionMenuItem>[];
     final otherUserId =
         widget.otherUserId ?? _getOtherUserIdFromMessages();
 
@@ -825,14 +824,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
 /// Custom painter for the bubble with integrated tail pointing towards user avatar.
 class _BubbleWithTailPainter extends CustomPainter {
-  final Color color;
-  final Color borderColor;
-  final Color shadowColor;
-  final bool hasBorder;
-  final bool tailPointsRight;
-  final double radius;
-  static const double _tailWidth = 10;
-  static const double _tailHeight = 16;
 
   _BubbleWithTailPainter({
     required this.color,
@@ -842,6 +833,14 @@ class _BubbleWithTailPainter extends CustomPainter {
     this.hasBorder = false,
     this.radius = 18,
   });
+  final Color color;
+  final Color borderColor;
+  final Color shadowColor;
+  final bool hasBorder;
+  final bool tailPointsRight;
+  final double radius;
+  static const double _tailWidth = 10;
+  static const double _tailHeight = 16;
 
   Path _createBubblePath(Size size) {
     final w = size.width;
@@ -911,22 +910,20 @@ class _BubbleWithTailPainter extends CustomPainter {
 }
 
 class MessageBubble extends StatefulWidget {
+
+  const MessageBubble({
+    required this.message, required this.isCurrentUser, super.key,
+    this.isLatest = false,
+    this.onAnimationComplete,
+    this.currentUserProfile,
+    this.otherUserInitials,
+  });
   final Message message;
   final bool isCurrentUser;
   final bool isLatest;
   final VoidCallback? onAnimationComplete;
   final UserProfile? currentUserProfile;
   final String? otherUserInitials;
-
-  const MessageBubble({
-    super.key,
-    required this.message,
-    required this.isCurrentUser,
-    this.isLatest = false,
-    this.onAnimationComplete,
-    this.currentUserProfile,
-    this.otherUserInitials,
-  });
 
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
@@ -1034,7 +1031,7 @@ class _MessageBubbleState extends State<MessageBubble>
                             : MainAxisAlignment.start,
                     children: [
                       if (!widget.isCurrentUser) ...[
-                        Container(
+                        DecoratedBox(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.black, width: 1.5),
@@ -1124,7 +1121,7 @@ class _MessageBubbleState extends State<MessageBubble>
                       ),
                       if (widget.isCurrentUser) ...[
                         const SizedBox(width: 8),
-                        Container(
+                        DecoratedBox(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 1.5),
@@ -1273,7 +1270,7 @@ class _MessageBubbleState extends State<MessageBubble>
         return LanguageAwareStringHelper.getCurrent(context, "now");
       }
     } catch (e) {
-      return '';
+      return "";
     }
   }
 
@@ -1294,13 +1291,13 @@ class _MessageBubbleState extends State<MessageBubble>
 
     // Fallback: Try to get the other user's name from message sender
     final sender = widget.message.sender;
-    String? userName = sender?.profile?.name;
+    var userName = sender?.profile?.name;
 
     // If still no name, try to extract from sender email as fallback
     if (userName == null || userName.isEmpty) {
       if (sender?.email != null && sender!.email.isNotEmpty) {
         // Extract name from email (part before @)
-        final emailParts = sender.email.split('@');
+        final emailParts = sender.email.split("@");
         if (emailParts.isNotEmpty) {
           userName = emailParts[0];
         }
@@ -1332,7 +1329,7 @@ class _MessageBubbleState extends State<MessageBubble>
   /// Build avatar content for current user - first letter(s) of name or person icon
   Widget _buildCurrentUserAvatarContent(ThemeState themeState) {
     // Get the current user's name from profile
-    String? userName = widget.currentUserProfile?.name;
+    final userName = widget.currentUserProfile?.name;
 
     final initials = StringHelper.extractInitials(userName);
 

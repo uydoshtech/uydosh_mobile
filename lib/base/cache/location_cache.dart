@@ -328,10 +328,11 @@ class LocationCache {
     final location = getLocationById(locationId);
     if (location == null ||
         location.latitude == null ||
-        location.longitude == null)
+        location.longitude == null) {
       return null;
+    }
 
-    return {'latitude': location.latitude!, 'longitude': location.longitude!};
+    return {"latitude": location.latitude!, "longitude": location.longitude!};
   }
 
   /// Get coordinates for a location by name
@@ -345,6 +346,6 @@ class LocationCache {
     final location = matchingLocations.first;
     if (location.latitude == null || location.longitude == null) return null;
 
-    return {'latitude': location.latitude!, 'longitude': location.longitude!};
+    return {"latitude": location.latitude!, "longitude": location.longitude!};
   }
 }

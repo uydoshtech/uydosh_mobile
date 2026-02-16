@@ -107,6 +107,16 @@ class $AssetsMapElementsGen {
   ];
 }
 
+class $AssetsSoundsGen {
+  const $AssetsSoundsGen();
+
+  /// File path: assets/sounds/click.wav
+  String get click => 'assets/sounds/click.wav';
+
+  /// List of all assets
+  List<String> get values => [click];
+}
+
 class $AssetsIconComponentsGen {
   const $AssetsIconComponentsGen();
 
@@ -132,6 +142,7 @@ class Assets {
   static const $AssetsIconGen icon = $AssetsIconGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsMapElementsGen mapElements = $AssetsMapElementsGen();
+  static const $AssetsSoundsGen sounds = $AssetsSoundsGen();
 }
 
 class AssetGenImage {

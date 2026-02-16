@@ -2,13 +2,13 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
-import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
-  const AdminUserDetailScreen({super.key, required this.user});
+  const AdminUserDetailScreen({required this.user, super.key});
 
   final AdminUser user;
 
@@ -372,7 +372,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _selectedRole,
+              initialValue: _selectedRole,
               items:
                   _roleOptions(context)
                       .map(

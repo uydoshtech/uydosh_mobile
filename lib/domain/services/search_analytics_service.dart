@@ -9,59 +9,59 @@ class SearchAnalyticsSummary {
     required this.searchesThisWeek,
   });
 
+  factory SearchAnalyticsSummary.fromJson(Map<String, dynamic> json) {
+    return SearchAnalyticsSummary(
+      totalSearches: (json["totalSearches"] as num?)?.toInt() ?? 0,
+      searchesToday: (json["searchesToday"] as num?)?.toInt() ?? 0,
+      searchesThisWeek: (json["searchesThisWeek"] as num?)?.toInt() ?? 0,
+    );
+  }
+
   final int totalSearches;
   final int searchesToday;
   final int searchesThisWeek;
-
-  factory SearchAnalyticsSummary.fromJson(Map<String, dynamic> json) {
-    return SearchAnalyticsSummary(
-      totalSearches: (json['totalSearches'] as num?)?.toInt() ?? 0,
-      searchesToday: (json['searchesToday'] as num?)?.toInt() ?? 0,
-      searchesThisWeek: (json['searchesThisWeek'] as num?)?.toInt() ?? 0,
-    );
-  }
 }
 
 class StationSearchCount {
   StationSearchCount({required this.stationId, required this.count});
 
-  final int stationId;
-  final int count;
-
   factory StationSearchCount.fromJson(Map<String, dynamic> json) {
     return StationSearchCount(
-      stationId: (json['stationId'] as num?)?.toInt() ?? 0,
-      count: (json['count'] as num?)?.toInt() ?? 0,
+      stationId: (json["stationId"] as num?)?.toInt() ?? 0,
+      count: (json["count"] as num?)?.toInt() ?? 0,
     );
   }
+
+  final int stationId;
+  final int count;
 }
 
 class LocationSearchCount {
   LocationSearchCount({required this.locationId, required this.count});
 
-  final int locationId;
-  final int count;
-
   factory LocationSearchCount.fromJson(Map<String, dynamic> json) {
     return LocationSearchCount(
-      locationId: (json['locationId'] as num?)?.toInt() ?? 0,
-      count: (json['count'] as num?)?.toInt() ?? 0,
+      locationId: (json["locationId"] as num?)?.toInt() ?? 0,
+      count: (json["count"] as num?)?.toInt() ?? 0,
     );
   }
+
+  final int locationId;
+  final int count;
 }
 
 class LineSearchCount {
   LineSearchCount({required this.lineId, required this.count});
 
-  final int lineId;
-  final int count;
-
   factory LineSearchCount.fromJson(Map<String, dynamic> json) {
     return LineSearchCount(
-      lineId: (json['lineId'] as num?)?.toInt() ?? 0,
-      count: (json['count'] as num?)?.toInt() ?? 0,
+      lineId: (json["lineId"] as num?)?.toInt() ?? 0,
+      count: (json["count"] as num?)?.toInt() ?? 0,
     );
   }
+
+  final int lineId;
+  final int count;
 }
 
 class SearchAnalyticsResponse {
@@ -72,16 +72,11 @@ class SearchAnalyticsResponse {
     required this.topLines,
   });
 
-  final SearchAnalyticsSummary summary;
-  final List<StationSearchCount> topStations;
-  final List<LocationSearchCount> topLocations;
-  final List<LineSearchCount> topLines;
-
   factory SearchAnalyticsResponse.fromJson(Map<String, dynamic> json) {
-    final summaryJson = json['summary'] as Map<String, dynamic>?;
-    final topStationsJson = json['topStations'] as List<dynamic>? ?? [];
-    final topLocationsJson = json['topLocations'] as List<dynamic>? ?? [];
-    final topLinesJson = json['topLines'] as List<dynamic>? ?? [];
+    final summaryJson = json["summary"] as Map<String, dynamic>?;
+    final topStationsJson = json["topStations"] as List<dynamic>? ?? [];
+    final topLocationsJson = json["topLocations"] as List<dynamic>? ?? [];
+    final topLinesJson = json["topLines"] as List<dynamic>? ?? [];
 
     return SearchAnalyticsResponse(
       summary: summaryJson != null
@@ -102,6 +97,11 @@ class SearchAnalyticsResponse {
           .toList(),
     );
   }
+
+  final SearchAnalyticsSummary summary;
+  final List<StationSearchCount> topStations;
+  final List<LocationSearchCount> topLocations;
+  final List<LineSearchCount> topLines;
 }
 
 abstract class ISearchAnalyticsService {
@@ -118,11 +118,11 @@ class SearchAnalyticsService implements ISearchAnalyticsService {
     try {
       final queryParams = <String, dynamic>{};
       if (days != null) {
-        queryParams['days'] = days; // 0 = all time, >0 = last N days
+        queryParams["days"] = days; // 0 = all time, >0 = last N days
       }
 
       final response = await _oauthApiClient.get<dynamic>(
-        '/admin/search-analytics',
+        "/admin/search-analytics",
         (data) => data,
         basePath: EnvironmentUtil.basePath,
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
@@ -130,14 +130,14 @@ class SearchAnalyticsService implements ISearchAnalyticsService {
 
       if (response is! Map<String, dynamic>) {
         throw Exception(
-          'Search analytics API returned unexpected format. '
-          'Ensure the backend is deployed with the latest admin routes.',
+          "Search analytics API returned unexpected format. "
+          "Ensure the backend is deployed with the latest admin routes.",
         );
       }
 
       return SearchAnalyticsResponse.fromJson(response);
     } catch (e) {
-      logger.d('Error fetching search analytics: $e');
+      logger.d("Error fetching search analytics: $e");
       rethrow;
     }
   }

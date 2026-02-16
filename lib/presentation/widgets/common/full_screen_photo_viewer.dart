@@ -1,19 +1,17 @@
-import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/base/util/environment_util.dart";
 import "package:cached_network_image/cached_network_image.dart";
+import "package:flutter/material.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class FullScreenPhotoViewer extends StatefulWidget {
+
+  const FullScreenPhotoViewer({
+    required this.photoUrls, required this.initialIndex, super.key,
+    this.baseUrl,
+  });
   final List<String> photoUrls;
   final int initialIndex;
   final String? baseUrl;
-
-  const FullScreenPhotoViewer({
-    super.key,
-    required this.photoUrls,
-    required this.initialIndex,
-    this.baseUrl,
-  });
 
   @override
   State<FullScreenPhotoViewer> createState() => _FullScreenPhotoViewerState();
@@ -106,7 +104,7 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
     }
   }
 
-  void _dismissViewer() async {
+  Future<void> _dismissViewer() async {
     await _dismissAnimationController.forward();
     if (mounted) {
       Navigator.of(context).pop();

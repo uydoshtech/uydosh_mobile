@@ -23,9 +23,9 @@ MessageSender _$MessageSenderFromJson(Map<String, dynamic> json) {
 mixin _$MessageSender {
   int get id => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
-  @JsonKey(name: 'firebase_uid')
+  @JsonKey(name: "firebase_uid")
   String get firebaseUid => throw _privateConstructorUsedError;
-  @JsonKey(name: 'telegram_id')
+  @JsonKey(name: "telegram_id")
   String? get telegramId => throw _privateConstructorUsedError;
   MessageSenderProfile? get profile => throw _privateConstructorUsedError;
 
@@ -49,8 +49,8 @@ abstract class $MessageSenderCopyWith<$Res> {
   $Res call({
     int id,
     String email,
-    @JsonKey(name: 'firebase_uid') String firebaseUid,
-    @JsonKey(name: 'telegram_id') String? telegramId,
+    @JsonKey(name: "firebase_uid") String firebaseUid,
+    @JsonKey(name: "telegram_id") String? telegramId,
     MessageSenderProfile? profile,
   });
 
@@ -137,8 +137,8 @@ abstract class _$$MessageSenderImplCopyWith<$Res>
   $Res call({
     int id,
     String email,
-    @JsonKey(name: 'firebase_uid') String firebaseUid,
-    @JsonKey(name: 'telegram_id') String? telegramId,
+    @JsonKey(name: "firebase_uid") String firebaseUid,
+    @JsonKey(name: "telegram_id") String? telegramId,
     MessageSenderProfile? profile,
   });
 
@@ -204,8 +204,8 @@ class _$MessageSenderImpl implements _MessageSender {
   const _$MessageSenderImpl({
     required this.id,
     required this.email,
-    @JsonKey(name: 'firebase_uid') required this.firebaseUid,
-    @JsonKey(name: 'telegram_id') this.telegramId,
+    @JsonKey(name: "firebase_uid") required this.firebaseUid,
+    @JsonKey(name: "telegram_id") this.telegramId,
     this.profile,
   });
 
@@ -217,10 +217,10 @@ class _$MessageSenderImpl implements _MessageSender {
   @override
   final String email;
   @override
-  @JsonKey(name: 'firebase_uid')
+  @JsonKey(name: "firebase_uid")
   final String firebaseUid;
   @override
-  @JsonKey(name: 'telegram_id')
+  @JsonKey(name: "telegram_id")
   final String? telegramId;
   @override
   final MessageSenderProfile? profile;
@@ -267,8 +267,8 @@ abstract class _MessageSender implements MessageSender {
   const factory _MessageSender({
     required final int id,
     required final String email,
-    @JsonKey(name: 'firebase_uid') required final String firebaseUid,
-    @JsonKey(name: 'telegram_id') final String? telegramId,
+    @JsonKey(name: "firebase_uid") required final String firebaseUid,
+    @JsonKey(name: "telegram_id") final String? telegramId,
     final MessageSenderProfile? profile,
   }) = _$MessageSenderImpl;
 
@@ -280,10 +280,10 @@ abstract class _MessageSender implements MessageSender {
   @override
   String get email;
   @override
-  @JsonKey(name: 'firebase_uid')
+  @JsonKey(name: "firebase_uid")
   String get firebaseUid;
   @override
-  @JsonKey(name: 'telegram_id')
+  @JsonKey(name: "telegram_id")
   String? get telegramId;
   @override
   MessageSenderProfile? get profile;
@@ -303,7 +303,7 @@ MessageSenderProfile _$MessageSenderProfileFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$MessageSenderProfile {
   String? get name => throw _privateConstructorUsedError;
-  @JsonKey(name: 'avatar_url')
+  @JsonKey(name: "avatar_url")
   String? get avatarUrl => throw _privateConstructorUsedError;
 
   /// Serializes this MessageSenderProfile to a JSON map.
@@ -323,7 +323,7 @@ abstract class $MessageSenderProfileCopyWith<$Res> {
     $Res Function(MessageSenderProfile) then,
   ) = _$MessageSenderProfileCopyWithImpl<$Res, MessageSenderProfile>;
   @useResult
-  $Res call({String? name, @JsonKey(name: 'avatar_url') String? avatarUrl});
+  $Res call({String? name, @JsonKey(name: "avatar_url") String? avatarUrl});
 }
 
 /// @nodoc
@@ -371,7 +371,7 @@ abstract class _$$MessageSenderProfileImplCopyWith<$Res>
   ) = __$$MessageSenderProfileImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String? name, @JsonKey(name: 'avatar_url') String? avatarUrl});
+  $Res call({String? name, @JsonKey(name: "avatar_url") String? avatarUrl});
 }
 
 /// @nodoc
@@ -410,7 +410,7 @@ class __$$MessageSenderProfileImplCopyWithImpl<$Res>
 class _$MessageSenderProfileImpl implements _MessageSenderProfile {
   const _$MessageSenderProfileImpl({
     this.name,
-    @JsonKey(name: 'avatar_url') this.avatarUrl,
+    @JsonKey(name: "avatar_url") this.avatarUrl,
   });
 
   factory _$MessageSenderProfileImpl.fromJson(Map<String, dynamic> json) =>
@@ -419,7 +419,7 @@ class _$MessageSenderProfileImpl implements _MessageSenderProfile {
   @override
   final String? name;
   @override
-  @JsonKey(name: 'avatar_url')
+  @JsonKey(name: "avatar_url")
   final String? avatarUrl;
 
   @override
@@ -462,7 +462,7 @@ class _$MessageSenderProfileImpl implements _MessageSenderProfile {
 abstract class _MessageSenderProfile implements MessageSenderProfile {
   const factory _MessageSenderProfile({
     final String? name,
-    @JsonKey(name: 'avatar_url') final String? avatarUrl,
+    @JsonKey(name: "avatar_url") final String? avatarUrl,
   }) = _$MessageSenderProfileImpl;
 
   factory _MessageSenderProfile.fromJson(Map<String, dynamic> json) =
@@ -471,7 +471,7 @@ abstract class _MessageSenderProfile implements MessageSenderProfile {
   @override
   String? get name;
   @override
-  @JsonKey(name: 'avatar_url')
+  @JsonKey(name: "avatar_url")
   String? get avatarUrl;
 
   /// Create a copy of MessageSenderProfile

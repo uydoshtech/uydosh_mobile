@@ -1,23 +1,22 @@
-import "package:uy_dosh/base/logger/logger.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/presentation/router/app_router.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/domain/models/listing.dart";
-import "package:uy_dosh/domain/services/favorite_service.dart";
-import "package:uy_dosh/presentation/widgets/listing_tile.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
-
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/services/logout_service.dart";
+import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/services/favorite_service.dart";
+import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -30,7 +29,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   static const int _pageLimit = 50; // Page size for API calls
 
   List<Listing> _favoriteListings = [];
-  Set<int> _itemsBeingRemoved = {}; // Track items being removed for animation
+  final Set<int> _itemsBeingRemoved = {}; // Track items being removed for animation
   bool _isLoading = false;
   bool _isLoadingMore = false;
   bool _hasMoreData = true;
@@ -78,7 +77,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     super.didChangeDependencies();
     // Only reload favorites if we haven't initialized yet and user is authenticated
     if (!_hasInitialized &&
-        ModalRoute.of(context)?.isCurrent == true &&
+        (ModalRoute.of(context)?.isCurrent ?? false) &&
         AuthenticationState().isAuthenticated) {
       _loadFavoriteListings(isRefresh: true);
     }
@@ -558,12 +557,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   // Build theme-aware button - use GhostButton for all themes
   Widget _buildThemeAwareButton() {
-    final onPressed = () {
+    void onPressed() {
       // Navigate to home screen to browse listings
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const MainNavigation()),
       );
-    };
+    }
 
     // Use GhostButton for all themes - it"s already theme-aware
     return GhostButtonFactory.iconText(

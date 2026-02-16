@@ -21,25 +21,25 @@ Complaint _$ComplaintFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Complaint {
-  int? get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'complainant_id')
-  int? get complainantId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'listing_id')
-  int? get listingId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'category_id')
-  int? get categoryId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'category')
-  ComplaintCategory? get category => throw _privateConstructorUsedError;
-  String? get text => throw _privateConstructorUsedError;
   @JsonKey(
-    name: 'status',
+    name: "status",
     fromJson: _complaintStatusFromJson,
-    defaultValue: 'pending',
+    defaultValue: "pending",
   )
   String get status => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  int? get id => throw _privateConstructorUsedError;
+  @JsonKey(name: "complainant_id")
+  int? get complainantId => throw _privateConstructorUsedError;
+  @JsonKey(name: "listing_id")
+  int? get listingId => throw _privateConstructorUsedError;
+  @JsonKey(name: "category_id")
+  int? get categoryId => throw _privateConstructorUsedError;
+  @JsonKey(name: "category")
+  ComplaintCategory? get category => throw _privateConstructorUsedError;
+  String? get text => throw _privateConstructorUsedError;
+  @JsonKey(name: "created_at")
   String? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Complaint to a JSON map.
@@ -58,20 +58,20 @@ abstract class $ComplaintCopyWith<$Res> {
       _$ComplaintCopyWithImpl<$Res, Complaint>;
   @useResult
   $Res call({
-    int? id,
-    @JsonKey(name: 'complainant_id') int? complainantId,
-    @JsonKey(name: 'listing_id') int? listingId,
-    @JsonKey(name: 'category_id') int? categoryId,
-    @JsonKey(name: 'category') ComplaintCategory? category,
-    String? text,
     @JsonKey(
-      name: 'status',
+      name: "status",
       fromJson: _complaintStatusFromJson,
-      defaultValue: 'pending',
+      defaultValue: "pending",
     )
     String status,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    int? id,
+    @JsonKey(name: "complainant_id") int? complainantId,
+    @JsonKey(name: "listing_id") int? listingId,
+    @JsonKey(name: "category_id") int? categoryId,
+    @JsonKey(name: "category") ComplaintCategory? category,
+    String? text,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
   });
 
   $ComplaintCategoryCopyWith<$Res>? get category;
@@ -92,18 +92,23 @@ class _$ComplaintCopyWithImpl<$Res, $Val extends Complaint>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? status = null,
     Object? id = freezed,
     Object? complainantId = freezed,
     Object? listingId = freezed,
     Object? categoryId = freezed,
     Object? category = freezed,
     Object? text = freezed,
-    Object? status = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
     return _then(
       _value.copyWith(
+            status:
+                null == status
+                    ? _value.status
+                    : status // ignore: cast_nullable_to_non_nullable
+                        as String,
             id:
                 freezed == id
                     ? _value.id
@@ -134,11 +139,6 @@ class _$ComplaintCopyWithImpl<$Res, $Val extends Complaint>
                     ? _value.text
                     : text // ignore: cast_nullable_to_non_nullable
                         as String?,
-            status:
-                null == status
-                    ? _value.status
-                    : status // ignore: cast_nullable_to_non_nullable
-                        as String,
             createdAt:
                 freezed == createdAt
                     ? _value.createdAt
@@ -179,20 +179,20 @@ abstract class _$$ComplaintImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    int? id,
-    @JsonKey(name: 'complainant_id') int? complainantId,
-    @JsonKey(name: 'listing_id') int? listingId,
-    @JsonKey(name: 'category_id') int? categoryId,
-    @JsonKey(name: 'category') ComplaintCategory? category,
-    String? text,
     @JsonKey(
-      name: 'status',
+      name: "status",
       fromJson: _complaintStatusFromJson,
-      defaultValue: 'pending',
+      defaultValue: "pending",
     )
     String status,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    int? id,
+    @JsonKey(name: "complainant_id") int? complainantId,
+    @JsonKey(name: "listing_id") int? listingId,
+    @JsonKey(name: "category_id") int? categoryId,
+    @JsonKey(name: "category") ComplaintCategory? category,
+    String? text,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
   });
 
   @override
@@ -213,18 +213,23 @@ class __$$ComplaintImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? status = null,
     Object? id = freezed,
     Object? complainantId = freezed,
     Object? listingId = freezed,
     Object? categoryId = freezed,
     Object? category = freezed,
     Object? text = freezed,
-    Object? status = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
     return _then(
       _$ComplaintImpl(
+        status:
+            null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                    as String,
         id:
             freezed == id
                 ? _value.id
@@ -255,11 +260,6 @@ class __$$ComplaintImplCopyWithImpl<$Res>
                 ? _value.text
                 : text // ignore: cast_nullable_to_non_nullable
                     as String?,
-        status:
-            null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                    as String,
         createdAt:
             freezed == createdAt
                 ? _value.createdAt
@@ -279,58 +279,58 @@ class __$$ComplaintImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ComplaintImpl implements _Complaint {
   const _$ComplaintImpl({
-    this.id,
-    @JsonKey(name: 'complainant_id') this.complainantId,
-    @JsonKey(name: 'listing_id') this.listingId,
-    @JsonKey(name: 'category_id') this.categoryId,
-    @JsonKey(name: 'category') this.category,
-    this.text,
     @JsonKey(
-      name: 'status',
+      name: "status",
       fromJson: _complaintStatusFromJson,
-      defaultValue: 'pending',
+      defaultValue: "pending",
     )
     required this.status,
-    @JsonKey(name: 'created_at') this.createdAt,
-    @JsonKey(name: 'updated_at') this.updatedAt,
+    this.id,
+    @JsonKey(name: "complainant_id") this.complainantId,
+    @JsonKey(name: "listing_id") this.listingId,
+    @JsonKey(name: "category_id") this.categoryId,
+    @JsonKey(name: "category") this.category,
+    this.text,
+    @JsonKey(name: "created_at") this.createdAt,
+    @JsonKey(name: "updated_at") this.updatedAt,
   });
 
   factory _$ComplaintImpl.fromJson(Map<String, dynamic> json) =>
       _$$ComplaintImplFromJson(json);
 
   @override
+  @JsonKey(
+    name: "status",
+    fromJson: _complaintStatusFromJson,
+    defaultValue: "pending",
+  )
+  final String status;
+  @override
   final int? id;
   @override
-  @JsonKey(name: 'complainant_id')
+  @JsonKey(name: "complainant_id")
   final int? complainantId;
   @override
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   final int? listingId;
   @override
-  @JsonKey(name: 'category_id')
+  @JsonKey(name: "category_id")
   final int? categoryId;
   @override
-  @JsonKey(name: 'category')
+  @JsonKey(name: "category")
   final ComplaintCategory? category;
   @override
   final String? text;
   @override
-  @JsonKey(
-    name: 'status',
-    fromJson: _complaintStatusFromJson,
-    defaultValue: 'pending',
-  )
-  final String status;
-  @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String? createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String? updatedAt;
 
   @override
   String toString() {
-    return 'Complaint(id: $id, complainantId: $complainantId, listingId: $listingId, categoryId: $categoryId, category: $category, text: $text, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Complaint(status: $status, id: $id, complainantId: $complainantId, listingId: $listingId, categoryId: $categoryId, category: $category, text: $text, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -338,6 +338,7 @@ class _$ComplaintImpl implements _Complaint {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ComplaintImpl &&
+            (identical(other.status, status) || other.status == status) &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.complainantId, complainantId) ||
                 other.complainantId == complainantId) &&
@@ -348,7 +349,6 @@ class _$ComplaintImpl implements _Complaint {
             (identical(other.category, category) ||
                 other.category == category) &&
             (identical(other.text, text) || other.text == text) &&
-            (identical(other.status, status) || other.status == status) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -359,13 +359,13 @@ class _$ComplaintImpl implements _Complaint {
   @override
   int get hashCode => Object.hash(
     runtimeType,
+    status,
     id,
     complainantId,
     listingId,
     categoryId,
     category,
     text,
-    status,
     createdAt,
     updatedAt,
   );
@@ -386,53 +386,53 @@ class _$ComplaintImpl implements _Complaint {
 
 abstract class _Complaint implements Complaint {
   const factory _Complaint({
-    final int? id,
-    @JsonKey(name: 'complainant_id') final int? complainantId,
-    @JsonKey(name: 'listing_id') final int? listingId,
-    @JsonKey(name: 'category_id') final int? categoryId,
-    @JsonKey(name: 'category') final ComplaintCategory? category,
-    final String? text,
     @JsonKey(
-      name: 'status',
+      name: "status",
       fromJson: _complaintStatusFromJson,
-      defaultValue: 'pending',
+      defaultValue: "pending",
     )
     required final String status,
-    @JsonKey(name: 'created_at') final String? createdAt,
-    @JsonKey(name: 'updated_at') final String? updatedAt,
+    final int? id,
+    @JsonKey(name: "complainant_id") final int? complainantId,
+    @JsonKey(name: "listing_id") final int? listingId,
+    @JsonKey(name: "category_id") final int? categoryId,
+    @JsonKey(name: "category") final ComplaintCategory? category,
+    final String? text,
+    @JsonKey(name: "created_at") final String? createdAt,
+    @JsonKey(name: "updated_at") final String? updatedAt,
   }) = _$ComplaintImpl;
 
   factory _Complaint.fromJson(Map<String, dynamic> json) =
       _$ComplaintImpl.fromJson;
 
   @override
+  @JsonKey(
+    name: "status",
+    fromJson: _complaintStatusFromJson,
+    defaultValue: "pending",
+  )
+  String get status;
+  @override
   int? get id;
   @override
-  @JsonKey(name: 'complainant_id')
+  @JsonKey(name: "complainant_id")
   int? get complainantId;
   @override
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   int? get listingId;
   @override
-  @JsonKey(name: 'category_id')
+  @JsonKey(name: "category_id")
   int? get categoryId;
   @override
-  @JsonKey(name: 'category')
+  @JsonKey(name: "category")
   ComplaintCategory? get category;
   @override
   String? get text;
   @override
-  @JsonKey(
-    name: 'status',
-    fromJson: _complaintStatusFromJson,
-    defaultValue: 'pending',
-  )
-  String get status;
-  @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String? get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt;
 
   /// Create a copy of Complaint
@@ -451,9 +451,9 @@ CreateComplaintRequest _$CreateComplaintRequestFromJson(
 
 /// @nodoc
 mixin _$CreateComplaintRequest {
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   int get listingId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'category_id')
+  @JsonKey(name: "category_id")
   int get categoryId => throw _privateConstructorUsedError;
   String? get text => throw _privateConstructorUsedError;
 
@@ -475,8 +475,8 @@ abstract class $CreateComplaintRequestCopyWith<$Res> {
   ) = _$CreateComplaintRequestCopyWithImpl<$Res, CreateComplaintRequest>;
   @useResult
   $Res call({
-    @JsonKey(name: 'listing_id') int listingId,
-    @JsonKey(name: 'category_id') int categoryId,
+    @JsonKey(name: "listing_id") int listingId,
+    @JsonKey(name: "category_id") int categoryId,
     String? text,
   });
 }
@@ -536,8 +536,8 @@ abstract class _$$CreateComplaintRequestImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    @JsonKey(name: 'listing_id') int listingId,
-    @JsonKey(name: 'category_id') int categoryId,
+    @JsonKey(name: "listing_id") int listingId,
+    @JsonKey(name: "category_id") int categoryId,
     String? text,
   });
 }
@@ -587,8 +587,8 @@ class __$$CreateComplaintRequestImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$CreateComplaintRequestImpl implements _CreateComplaintRequest {
   const _$CreateComplaintRequestImpl({
-    @JsonKey(name: 'listing_id') required this.listingId,
-    @JsonKey(name: 'category_id') required this.categoryId,
+    @JsonKey(name: "listing_id") required this.listingId,
+    @JsonKey(name: "category_id") required this.categoryId,
     this.text,
   });
 
@@ -596,10 +596,10 @@ class _$CreateComplaintRequestImpl implements _CreateComplaintRequest {
       _$$CreateComplaintRequestImplFromJson(json);
 
   @override
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   final int listingId;
   @override
-  @JsonKey(name: 'category_id')
+  @JsonKey(name: "category_id")
   final int categoryId;
   @override
   final String? text;
@@ -645,8 +645,8 @@ class _$CreateComplaintRequestImpl implements _CreateComplaintRequest {
 
 abstract class _CreateComplaintRequest implements CreateComplaintRequest {
   const factory _CreateComplaintRequest({
-    @JsonKey(name: 'listing_id') required final int listingId,
-    @JsonKey(name: 'category_id') required final int categoryId,
+    @JsonKey(name: "listing_id") required final int listingId,
+    @JsonKey(name: "category_id") required final int categoryId,
     final String? text,
   }) = _$CreateComplaintRequestImpl;
 
@@ -654,10 +654,10 @@ abstract class _CreateComplaintRequest implements CreateComplaintRequest {
       _$CreateComplaintRequestImpl.fromJson;
 
   @override
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   int get listingId;
   @override
-  @JsonKey(name: 'category_id')
+  @JsonKey(name: "category_id")
   int get categoryId;
   @override
   String? get text;

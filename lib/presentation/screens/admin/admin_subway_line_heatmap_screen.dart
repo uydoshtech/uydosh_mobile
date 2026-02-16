@@ -8,8 +8,8 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminSubwayLineHeatmapScreen extends StatefulWidget {
@@ -163,7 +163,7 @@ class _AdminSubwayLineHeatmapScreenState
                       child: ListingTypePicker(
                         selectedListingTypeId:
                             _searchFiltersState.selectedListingTypeId,
-                        onListingTypeChanged: (int listingTypeId) {
+                        onListingTypeChanged: (listingTypeId) {
                           _searchFiltersState.setListingTypeId(listingTypeId);
                           setState(() {});
                           _loadCounts();
@@ -177,7 +177,7 @@ class _AdminSubwayLineHeatmapScreenState
                     Expanded(
                       child: GenderPicker(
                         selectedGender: _searchFiltersState.selectedGender,
-                        onGenderChanged: (int gender) {
+                        onGenderChanged: (gender) {
                           _searchFiltersState.setGender(gender);
                           setState(() {});
                           _loadCounts();
@@ -340,7 +340,7 @@ class _AdminSubwayLineHeatmapScreenState
             children: [
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.train,
                     size: 20,
                     color: Colors.black,
@@ -411,18 +411,18 @@ class _AdminSubwayLineHeatmapScreenState
 
   Color _resolveTileColor(BuildContext context, int lineId, int? count) {
     if (count == null) {
-      return Theme.of(context).colorScheme.surfaceVariant;
+      return Theme.of(context).colorScheme.surfaceContainerHighest;
     }
     if (count < 0) {
       return Theme.of(context).colorScheme.errorContainer;
     }
     final max = _maxCount;
     if (max <= 0) {
-      return Theme.of(context).colorScheme.surfaceVariant;
+      return Theme.of(context).colorScheme.surfaceContainerHighest;
     }
     final t = (count / max).clamp(0.0, 1.0);
     return Color.lerp(
-          Theme.of(context).colorScheme.surfaceVariant,
+          Theme.of(context).colorScheme.surfaceContainerHighest,
           AppColors.getMetroLineColor(lineId),
           t,
         ) ??

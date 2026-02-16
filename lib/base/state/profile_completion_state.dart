@@ -1,13 +1,13 @@
-import 'package:flutter/foundation.dart';
-import 'package:uy_dosh/domain/models/user_profile.dart';
+import "package:flutter/foundation.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
 
 /// Global state to track profile completion status.
 /// Used to show the blinking green dot indicator on the profile icon in the app bar.
 class ProfileCompletionState extends ChangeNotifier {
-  static final ProfileCompletionState _instance =
-      ProfileCompletionState._internal();
   factory ProfileCompletionState() => _instance;
   ProfileCompletionState._internal();
+  static final ProfileCompletionState _instance =
+      ProfileCompletionState._internal();
 
   bool _isProfileComplete = true; // Default to true to avoid showing badge initially
   bool _hasEssentialInfo = true;
@@ -74,7 +74,9 @@ class ProfileCompletionState extends ChangeNotifier {
     if (profile.employed == null) return false;
     if (profile.employed == false &&
         profile.university == null &&
-        profile.universityId == null) return false;
+        profile.universityId == null) {
+      return false;
+    }
     return true;
   }
 

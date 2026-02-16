@@ -22,9 +22,9 @@ class LanguageDisplayHelper {
 
 // Global language state with ChangeNotifier for reactivity
 class LanguageState extends ChangeNotifier {
-  static final LanguageState _instance = LanguageState._internal();
   factory LanguageState() => _instance;
   LanguageState._internal();
+  static final LanguageState _instance = LanguageState._internal();
 
   String _currentLanguage = "uz"; // Default language
   bool _isInitialized = false;
@@ -83,7 +83,7 @@ class LanguageState extends ChangeNotifier {
 }
 
 class LanguageSwitcher extends StatefulWidget {
-  const LanguageSwitcher({super.key, required this.child});
+  const LanguageSwitcher({required this.child, super.key});
 
   final Widget child;
 

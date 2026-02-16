@@ -1,4 +1,4 @@
-part of 'listing_owner_profile_bloc.dart';
+part of "listing_owner_profile_bloc.dart";
 
 @freezed
 class ListingOwnerProfileState with _$ListingOwnerProfileState {

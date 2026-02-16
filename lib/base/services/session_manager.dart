@@ -1,7 +1,7 @@
-import 'dart:convert';
+import "dart:convert";
 
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uy_dosh/domain/models/user_profile.dart';
+import "package:shared_preferences/shared_preferences.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
 
 // 🚀 PRODUCTION CONFIGURATION:
 // - Token expires after 1 year (365 days)
@@ -9,15 +9,15 @@ import 'package:uy_dosh/domain/models/user_profile.dart';
 // - These values are suitable for production use
 
 class SessionManager {
-  static const String _tokenKey = 'session_token';
-  static const String _userIdKey = 'user_id';
-  static const String _emailKey = 'user_email';
-  static const String _lastLoginKey = 'last_login';
-  static const String _userRoleKey = 'user_role';
-  static const String _userBlockedKey = 'user_blocked';
-  static const String _googleDisplayNameKey = 'google_display_name';
-  static const String _googlePhotoUrlKey = 'google_photo_url';
-  static const String _userProfileCacheKey = 'user_profile_cache';
+  static const String _tokenKey = "session_token";
+  static const String _userIdKey = "user_id";
+  static const String _emailKey = "user_email";
+  static const String _lastLoginKey = "last_login";
+  static const String _userRoleKey = "user_role";
+  static const String _userBlockedKey = "user_blocked";
+  static const String _googleDisplayNameKey = "google_display_name";
+  static const String _googlePhotoUrlKey = "google_photo_url";
+  static const String _userProfileCacheKey = "user_profile_cache";
 
   // Check if user is currently authenticated
   static Future<bool> isAuthenticated() async {
@@ -46,20 +46,20 @@ class SessionManager {
   // Check if session is fully verified (OTP completed)
   static Future<bool> isSessionVerified() async {
     final prefs = await SharedPreferences.getInstance();
-    final isVerified = prefs.getBool('session_verified') ?? false;
+    final isVerified = prefs.getBool("session_verified") ?? false;
     return isVerified;
   }
 
   // Mark session as verified (after OTP completion)
   static Future<void> markSessionVerified() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('session_verified', true);
+    await prefs.setBool("session_verified", true);
   }
 
   // Clear verification status (when session expires)
   static Future<void> clearVerificationStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('session_verified');
+    await prefs.remove("session_verified");
   }
 
   // Save user session after successful authentication
@@ -80,7 +80,7 @@ class SessionManager {
     }
     await prefs.setString(_lastLoginKey, DateTime.now().toIso8601String());
     // Session starts as unverified (OTP pending)
-    await prefs.setBool('session_verified', false);
+    await prefs.setBool("session_verified", false);
   }
 
   // Get current session token
@@ -246,7 +246,7 @@ class SessionManager {
     if (raw == null || raw.isEmpty) return null;
 
     try {
-      final Map<String, dynamic> json =
+      final json =
           jsonDecode(raw) as Map<String, dynamic>;
       return UserProfile.fromJson(json);
     } catch (_) {

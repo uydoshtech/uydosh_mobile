@@ -26,13 +26,13 @@ mixin _$OtpCode {
   String get code => throw _privateConstructorUsedError; // 4-digit code
   String get type =>
       throw _privateConstructorUsedError; // 'email_verification', 'password_reset', 'login'
-  @JsonKey(name: 'is_used')
+  @JsonKey(name: "is_used")
   bool get isUsed => throw _privateConstructorUsedError;
-  @JsonKey(name: 'expires_at')
+  @JsonKey(name: "expires_at")
   String get expiresAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this OtpCode to a JSON map.
@@ -54,10 +54,10 @@ abstract class $OtpCodeCopyWith<$Res> {
     String email,
     String code,
     String type,
-    @JsonKey(name: 'is_used') bool isUsed,
-    @JsonKey(name: 'expires_at') String expiresAt,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
+    @JsonKey(name: "is_used") bool isUsed,
+    @JsonKey(name: "expires_at") String expiresAt,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
   });
 }
 
@@ -146,10 +146,10 @@ abstract class _$$OtpCodeImplCopyWith<$Res> implements $OtpCodeCopyWith<$Res> {
     String email,
     String code,
     String type,
-    @JsonKey(name: 'is_used') bool isUsed,
-    @JsonKey(name: 'expires_at') String expiresAt,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
+    @JsonKey(name: "is_used") bool isUsed,
+    @JsonKey(name: "expires_at") String expiresAt,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
   });
 }
 
@@ -231,10 +231,10 @@ class _$OtpCodeImpl implements _OtpCode {
     required this.email,
     required this.code,
     required this.type,
-    @JsonKey(name: 'is_used') required this.isUsed,
-    @JsonKey(name: 'expires_at') required this.expiresAt,
-    @JsonKey(name: 'created_at') required this.createdAt,
-    @JsonKey(name: 'updated_at') required this.updatedAt,
+    @JsonKey(name: "is_used") required this.isUsed,
+    @JsonKey(name: "expires_at") required this.expiresAt,
+    @JsonKey(name: "created_at") required this.createdAt,
+    @JsonKey(name: "updated_at") required this.updatedAt,
   });
 
   factory _$OtpCodeImpl.fromJson(Map<String, dynamic> json) =>
@@ -251,16 +251,16 @@ class _$OtpCodeImpl implements _OtpCode {
   final String type;
   // 'email_verification', 'password_reset', 'login'
   @override
-  @JsonKey(name: 'is_used')
+  @JsonKey(name: "is_used")
   final bool isUsed;
   @override
-  @JsonKey(name: 'expires_at')
+  @JsonKey(name: "expires_at")
   final String expiresAt;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String updatedAt;
 
   @override
@@ -320,10 +320,10 @@ abstract class _OtpCode implements OtpCode {
     required final String email,
     required final String code,
     required final String type,
-    @JsonKey(name: 'is_used') required final bool isUsed,
-    @JsonKey(name: 'expires_at') required final String expiresAt,
-    @JsonKey(name: 'created_at') required final String createdAt,
-    @JsonKey(name: 'updated_at') required final String updatedAt,
+    @JsonKey(name: "is_used") required final bool isUsed,
+    @JsonKey(name: "expires_at") required final String expiresAt,
+    @JsonKey(name: "created_at") required final String createdAt,
+    @JsonKey(name: "updated_at") required final String updatedAt,
   }) = _$OtpCodeImpl;
 
   factory _OtpCode.fromJson(Map<String, dynamic> json) = _$OtpCodeImpl.fromJson;
@@ -337,16 +337,16 @@ abstract class _OtpCode implements OtpCode {
   @override
   String get type; // 'email_verification', 'password_reset', 'login'
   @override
-  @JsonKey(name: 'is_used')
+  @JsonKey(name: "is_used")
   bool get isUsed;
   @override
-  @JsonKey(name: 'expires_at')
+  @JsonKey(name: "expires_at")
   String get expiresAt;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String get updatedAt;
 
   /// Create a copy of OtpCode

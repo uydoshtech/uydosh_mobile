@@ -22,26 +22,26 @@ Location _$LocationFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Location {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "created_at")
+  String get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "updated_at")
+  String get updatedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "name_uz")
   String? get nameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String? get nameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String? get nameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String? get shortNameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String? get shortNameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String? get shortNameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name')
+  @JsonKey(name: "short_name")
   String? get shortName => throw _privateConstructorUsedError;
   double? get latitude => throw _privateConstructorUsedError;
   double? get longitude => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
-  String get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
-  String get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Location to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -60,17 +60,17 @@ abstract class $LocationCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name_uz') String? nameUz,
-    @JsonKey(name: 'name_ru') String? nameRu,
-    @JsonKey(name: 'name_en') String? nameEn,
-    @JsonKey(name: 'short_name_uz') String? shortNameUz,
-    @JsonKey(name: 'short_name_ru') String? shortNameRu,
-    @JsonKey(name: 'short_name_en') String? shortNameEn,
-    @JsonKey(name: 'short_name') String? shortName,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
+    @JsonKey(name: "name_uz") String? nameUz,
+    @JsonKey(name: "name_ru") String? nameRu,
+    @JsonKey(name: "name_en") String? nameEn,
+    @JsonKey(name: "short_name_uz") String? shortNameUz,
+    @JsonKey(name: "short_name_ru") String? shortNameRu,
+    @JsonKey(name: "short_name_en") String? shortNameEn,
+    @JsonKey(name: "short_name") String? shortName,
     double? latitude,
     double? longitude,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
   });
 }
 
@@ -90,6 +90,8 @@ class _$LocationCopyWithImpl<$Res, $Val extends Location>
   @override
   $Res call({
     Object? id = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
     Object? nameUz = freezed,
     Object? nameRu = freezed,
     Object? nameEn = freezed,
@@ -99,8 +101,6 @@ class _$LocationCopyWithImpl<$Res, $Val extends Location>
     Object? shortName = freezed,
     Object? latitude = freezed,
     Object? longitude = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
   }) {
     return _then(
       _value.copyWith(
@@ -109,6 +109,16 @@ class _$LocationCopyWithImpl<$Res, $Val extends Location>
                     ? _value.id
                     : id // ignore: cast_nullable_to_non_nullable
                         as int,
+            createdAt:
+                null == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as String,
+            updatedAt:
+                null == updatedAt
+                    ? _value.updatedAt
+                    : updatedAt // ignore: cast_nullable_to_non_nullable
+                        as String,
             nameUz:
                 freezed == nameUz
                     ? _value.nameUz
@@ -154,16 +164,6 @@ class _$LocationCopyWithImpl<$Res, $Val extends Location>
                     ? _value.longitude
                     : longitude // ignore: cast_nullable_to_non_nullable
                         as double?,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            updatedAt:
-                null == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String,
           )
           as $Val,
     );
@@ -181,17 +181,17 @@ abstract class _$$LocationImplCopyWith<$Res>
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name_uz') String? nameUz,
-    @JsonKey(name: 'name_ru') String? nameRu,
-    @JsonKey(name: 'name_en') String? nameEn,
-    @JsonKey(name: 'short_name_uz') String? shortNameUz,
-    @JsonKey(name: 'short_name_ru') String? shortNameRu,
-    @JsonKey(name: 'short_name_en') String? shortNameEn,
-    @JsonKey(name: 'short_name') String? shortName,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
+    @JsonKey(name: "name_uz") String? nameUz,
+    @JsonKey(name: "name_ru") String? nameRu,
+    @JsonKey(name: "name_en") String? nameEn,
+    @JsonKey(name: "short_name_uz") String? shortNameUz,
+    @JsonKey(name: "short_name_ru") String? shortNameRu,
+    @JsonKey(name: "short_name_en") String? shortNameEn,
+    @JsonKey(name: "short_name") String? shortName,
     double? latitude,
     double? longitude,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
   });
 }
 
@@ -210,6 +210,8 @@ class __$$LocationImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
     Object? nameUz = freezed,
     Object? nameRu = freezed,
     Object? nameEn = freezed,
@@ -219,8 +221,6 @@ class __$$LocationImplCopyWithImpl<$Res>
     Object? shortName = freezed,
     Object? latitude = freezed,
     Object? longitude = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
   }) {
     return _then(
       _$LocationImpl(
@@ -229,6 +229,16 @@ class __$$LocationImplCopyWithImpl<$Res>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                     as int,
+        createdAt:
+            null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as String,
+        updatedAt:
+            null == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                    as String,
         nameUz:
             freezed == nameUz
                 ? _value.nameUz
@@ -274,16 +284,6 @@ class __$$LocationImplCopyWithImpl<$Res>
                 ? _value.longitude
                 : longitude // ignore: cast_nullable_to_non_nullable
                     as double?,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        updatedAt:
-            null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String,
       ),
     );
   }
@@ -294,17 +294,17 @@ class __$$LocationImplCopyWithImpl<$Res>
 class _$LocationImpl implements _Location {
   const _$LocationImpl({
     required this.id,
-    @JsonKey(name: 'name_uz') this.nameUz,
-    @JsonKey(name: 'name_ru') this.nameRu,
-    @JsonKey(name: 'name_en') this.nameEn,
-    @JsonKey(name: 'short_name_uz') this.shortNameUz,
-    @JsonKey(name: 'short_name_ru') this.shortNameRu,
-    @JsonKey(name: 'short_name_en') this.shortNameEn,
-    @JsonKey(name: 'short_name') this.shortName,
+    @JsonKey(name: "created_at") required this.createdAt,
+    @JsonKey(name: "updated_at") required this.updatedAt,
+    @JsonKey(name: "name_uz") this.nameUz,
+    @JsonKey(name: "name_ru") this.nameRu,
+    @JsonKey(name: "name_en") this.nameEn,
+    @JsonKey(name: "short_name_uz") this.shortNameUz,
+    @JsonKey(name: "short_name_ru") this.shortNameRu,
+    @JsonKey(name: "short_name_en") this.shortNameEn,
+    @JsonKey(name: "short_name") this.shortName,
     this.latitude,
     this.longitude,
-    @JsonKey(name: 'created_at') required this.createdAt,
-    @JsonKey(name: 'updated_at') required this.updatedAt,
   });
 
   factory _$LocationImpl.fromJson(Map<String, dynamic> json) =>
@@ -313,40 +313,40 @@ class _$LocationImpl implements _Location {
   @override
   final int id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "created_at")
+  final String createdAt;
+  @override
+  @JsonKey(name: "updated_at")
+  final String updatedAt;
+  @override
+  @JsonKey(name: "name_uz")
   final String? nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   final String? nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   final String? nameEn;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   final String? shortNameUz;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   final String? shortNameRu;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   final String? shortNameEn;
   @override
-  @JsonKey(name: 'short_name')
+  @JsonKey(name: "short_name")
   final String? shortName;
   @override
   final double? latitude;
   @override
   final double? longitude;
-  @override
-  @JsonKey(name: 'created_at')
-  final String createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  final String updatedAt;
 
   @override
   String toString() {
-    return 'Location(id: $id, nameUz: $nameUz, nameRu: $nameRu, nameEn: $nameEn, shortNameUz: $shortNameUz, shortNameRu: $shortNameRu, shortNameEn: $shortNameEn, shortName: $shortName, latitude: $latitude, longitude: $longitude, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Location(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, nameUz: $nameUz, nameRu: $nameRu, nameEn: $nameEn, shortNameUz: $shortNameUz, shortNameRu: $shortNameRu, shortNameEn: $shortNameEn, shortName: $shortName, latitude: $latitude, longitude: $longitude)';
   }
 
   @override
@@ -355,6 +355,10 @@ class _$LocationImpl implements _Location {
         (other.runtimeType == runtimeType &&
             other is _$LocationImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
             (identical(other.nameUz, nameUz) || other.nameUz == nameUz) &&
             (identical(other.nameRu, nameRu) || other.nameRu == nameRu) &&
             (identical(other.nameEn, nameEn) || other.nameEn == nameEn) &&
@@ -369,11 +373,7 @@ class _$LocationImpl implements _Location {
             (identical(other.latitude, latitude) ||
                 other.latitude == latitude) &&
             (identical(other.longitude, longitude) ||
-                other.longitude == longitude) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.longitude == longitude));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -381,6 +381,8 @@ class _$LocationImpl implements _Location {
   int get hashCode => Object.hash(
     runtimeType,
     id,
+    createdAt,
+    updatedAt,
     nameUz,
     nameRu,
     nameEn,
@@ -390,8 +392,6 @@ class _$LocationImpl implements _Location {
     shortName,
     latitude,
     longitude,
-    createdAt,
-    updatedAt,
   );
 
   /// Create a copy of Location
@@ -411,17 +411,17 @@ class _$LocationImpl implements _Location {
 abstract class _Location implements Location {
   const factory _Location({
     required final int id,
-    @JsonKey(name: 'name_uz') final String? nameUz,
-    @JsonKey(name: 'name_ru') final String? nameRu,
-    @JsonKey(name: 'name_en') final String? nameEn,
-    @JsonKey(name: 'short_name_uz') final String? shortNameUz,
-    @JsonKey(name: 'short_name_ru') final String? shortNameRu,
-    @JsonKey(name: 'short_name_en') final String? shortNameEn,
-    @JsonKey(name: 'short_name') final String? shortName,
+    @JsonKey(name: "created_at") required final String createdAt,
+    @JsonKey(name: "updated_at") required final String updatedAt,
+    @JsonKey(name: "name_uz") final String? nameUz,
+    @JsonKey(name: "name_ru") final String? nameRu,
+    @JsonKey(name: "name_en") final String? nameEn,
+    @JsonKey(name: "short_name_uz") final String? shortNameUz,
+    @JsonKey(name: "short_name_ru") final String? shortNameRu,
+    @JsonKey(name: "short_name_en") final String? shortNameEn,
+    @JsonKey(name: "short_name") final String? shortName,
     final double? latitude,
     final double? longitude,
-    @JsonKey(name: 'created_at') required final String createdAt,
-    @JsonKey(name: 'updated_at') required final String updatedAt,
   }) = _$LocationImpl;
 
   factory _Location.fromJson(Map<String, dynamic> json) =
@@ -430,36 +430,36 @@ abstract class _Location implements Location {
   @override
   int get id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "created_at")
+  String get createdAt;
+  @override
+  @JsonKey(name: "updated_at")
+  String get updatedAt;
+  @override
+  @JsonKey(name: "name_uz")
   String? get nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String? get nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String? get nameEn;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String? get shortNameUz;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String? get shortNameRu;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String? get shortNameEn;
   @override
-  @JsonKey(name: 'short_name')
+  @JsonKey(name: "short_name")
   String? get shortName;
   @override
   double? get latitude;
   @override
   double? get longitude;
-  @override
-  @JsonKey(name: 'created_at')
-  String get createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  String get updatedAt;
 
   /// Create a copy of Location
   /// with the given fields replaced by the non-null parameter values.

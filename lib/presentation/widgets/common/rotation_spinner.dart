@@ -50,7 +50,7 @@ class RotationSpinner<T> extends StatelessWidget {
     final selectedBg = isDark ? const Color(0xFF616B7E) : Colors.grey[800]!;
     final borderColor = isDark ? const Color(0xFF718096) : theme.colorScheme.outline;
     final unselectedTextColor = isDark ? Colors.white70 : Colors.black87;
-    final selectedTextColor = Colors.white;
+    const selectedTextColor = Colors.white;
 
     final buttons = options.map((opt) {
       final isSelected = _isSelected(opt.value);
@@ -74,7 +74,7 @@ class RotationSpinner<T> extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (isSelected) ...[
-                Icon(Icons.check, size: 16, color: selectedTextColor),
+                const Icon(Icons.check, size: 16, color: selectedTextColor),
                 const SizedBox(width: 6),
               ],
               Text(

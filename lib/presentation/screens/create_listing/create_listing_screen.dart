@@ -1,41 +1,40 @@
-import "package:uy_dosh/base/logger/logger.dart";
-import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:flutter/cupertino.dart";
+import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
-import "package:uy_dosh/domain/models/subway_station.dart";
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/domain/models/location.dart";
-import "package:uy_dosh/base/cache/amenities_cache.dart";
-import "package:uy_dosh/domain/models/amenity.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/base/cache/metro_cache.dart";
-import "package:uy_dosh/presentation/router/app_router.dart";
-import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/amenity_toggle.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
-import "package:uy_dosh/base/state/home_refresh_state.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
-import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
-import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
-import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
-import "package:uy_dosh/base/services/session_manager.dart";
-import "package:uy_dosh/base/api/client/oauth_api_client.dart";
-import "package:uy_dosh/base/api/client/json_encodable.dart";
-import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/domain/services/user_profile_service.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:intl/intl.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/cache/amenities_cache.dart";
+import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/home_refresh_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/amenity.dart";
+import "package:uy_dosh/domain/models/location.dart";
+import "package:uy_dosh/domain/models/subway_station.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
+import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
+import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/amenity_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
+import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({super.key, this.showAppBar = false});
@@ -76,7 +75,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   // Lists
   List<Location> _currentLocations = [];
   List<SubwayStation> _currentStations = [];
-  Set<int> _selectedAmenityIds = {};
+  final Set<int> _selectedAmenityIds = {};
   List<String> _selectedPhotos = [];
   int? _primaryPhotoIndex; // Track which photo is primary
 
@@ -114,7 +113,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   Future<String?> _getUserRole() async {
-    String? role = await SessionManager.getUserRole();
+    var role = await SessionManager.getUserRole();
     if (role != null) return role;
     try {
       final response = await getIt<IOAuthApiClient>()
@@ -488,7 +487,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               Expanded(
                 child: ListingTypePicker(
                   selectedListingTypeId: _selectedListingTypeId,
-                  onListingTypeChanged: (int listingTypeId) {
+                  onListingTypeChanged: (listingTypeId) {
                     setState(() {
                       _selectedListingTypeId = listingTypeId;
                       // Clear photos when switching to "room needed" (listingTypeId == 1)
@@ -508,7 +507,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               Expanded(
                 child: GenderPicker(
                   selectedGender: _selectedGender,
-                  onGenderChanged: (int gender) {
+                  onGenderChanged: (gender) {
                     setState(() {
                       _selectedGender = gender;
                     });
@@ -530,7 +529,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: Theme.of(context).colorScheme.outline,
@@ -567,7 +566,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  MLetterIcon(color: Colors.grey, size: 20),
+                                  const MLetterIcon(color: Colors.grey, size: 20),
                                   const SizedBox(width: 6),
                                   Flexible(
                                     child: LanguageAwareStringHelper.getText(
@@ -660,7 +659,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             border: Border.all(
                               color: Theme.of(context).colorScheme.outline,
                             ),
-                            color: Theme.of(context).colorScheme.surfaceVariant,
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           ),
                           height: 80,
                           child: Row(
@@ -730,7 +729,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                                 Icon(
                                                   Icons.train,
                                                   color: _getLineColor(
-                                                    transferInfo['connectedStationLine'],
+                                                    transferInfo["connectedStationLine"],
                                                   ), // Use connected station's line color
                                                   size: 20,
                                                 ),
@@ -752,7 +751,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             ),
                             color: Theme.of(
                               context,
-                            ).colorScheme.surfaceVariant.withOpacity(0.5),
+                            ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
                           ),
                           height: 80,
                           child: Center(
@@ -788,7 +787,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           locations: _currentLocations,
           selectedLocationIndex: _selectedLocationIndex,
           scrollController: _locationScrollController,
-          onLocationChanged: (int locationIndex) {
+          onLocationChanged: (locationIndex) {
             setState(() {
               _selectedLocationIndex = locationIndex;
               // Clear location error when user selects a location
@@ -891,7 +890,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     filled: true,
                     fillColor:
                         Theme.of(context).brightness == Brightness.dark
-                            ? Theme.of(context).colorScheme.surfaceVariant
+                            ? Theme.of(context).colorScheme.surfaceContainerHighest
                             : Colors.white,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -940,7 +939,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               ),
         ),
         // Amenities Section
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
@@ -951,7 +950,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             ),
             color:
                 Theme.of(context).brightness == Brightness.dark
-                    ? Theme.of(context).colorScheme.surfaceVariant
+                    ? Theme.of(context).colorScheme.surfaceContainerHighest
                     : Colors.white,
           ),
           child: Padding(
@@ -1011,7 +1010,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                           final anyDateText = LanguageAwareStringHelper.getCurrent(
                             context,
                             "any_date",
-                          ).replaceAll('\n', ' ');
+                          ).replaceAll("\n", " ");
                           final displayValue = isEmpty ? anyDateText : value.text;
                           final displayText = "$moveInDateLabel\n$displayValue";
                           final displayStyle = TextStyle(
@@ -1052,7 +1051,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                           !existingDate.isAfter(lastDate)
                                       ? existingDate
                                       : firstDate;
-                              final DateTime? picked =
+                              final picked =
                                   await LanguageAwareDatePicker.showDatePicker(
                                     context: context,
                                     initialDate: initialDate,
@@ -1123,7 +1122,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                             Brightness.dark
                                         ? Theme.of(
                                           context,
-                                        ).colorScheme.surfaceVariant
+                                        ).colorScheme.surfaceContainerHighest
                                         : Colors.white,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -1160,7 +1159,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             const SizedBox(width: 12),
             // Private Room Toggle (50% width)
             Expanded(
-              child: Container(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
@@ -1171,7 +1170,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   ),
                   color:
                       Theme.of(context).brightness == Brightness.dark
-                          ? Theme.of(context).colorScheme.surfaceVariant
+                          ? Theme.of(context).colorScheme.surfaceContainerHighest
                           : Colors.white,
                 ),
                 child: Padding(
@@ -1227,7 +1226,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             _isPrivateRoom = value;
                           });
                         },
-                        activeColor: _getBorderColor(),
+                        activeThumbColor: _getBorderColor(),
                         activeTrackColor: _getBorderColor().withValues(
                           alpha: 0.3,
                         ),
@@ -1267,13 +1266,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 }
               });
             },
-            existingPhotos: [], // No existing photos for new listings
+            existingPhotos: const [], // No existing photos for new listings
             onDeleteExistingPhoto: (index) {}, // No-op for new listings
             onMakePhotoPrimary: (index) {}, // No-op for new listings
             onMakeNewPhotoPrimary:
                 _makeNewPhotoPrimary, // Handle new photo primary selection
-            deletingPhotoIds: {}, // No deleting for new listings
-            makingPhotoPrimaryIds: {}, // No making primary for new listings
+            deletingPhotoIds: const {}, // No deleting for new listings
+            makingPhotoPrimaryIds: const {}, // No making primary for new listings
             maxPhotos: 5,
             isRequired: false,
           ),
@@ -1299,7 +1298,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   Widget _buildUnauthenticatedPrompt() {
-    return Container(
+    return SizedBox(
       height: MediaQuery.of(context).size.height * 0.6,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1321,7 +1320,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           GhostButtonFactory.iconText(
             onPressed: () {
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => AuthWizardScreen()),
+                MaterialPageRoute(builder: (context) => const AuthWizardScreen()),
                 (route) => false,
               );
             },
@@ -1339,7 +1338,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     );
   }
 
-  void _submitForm() async {
+  Future<void> _submitForm() async {
     HapticFeedbackUtils.impact();
 
     // Prevent multiple submissions
@@ -1473,7 +1472,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       final listingService = getIt<IListingService>();
 
       // Reorder photos so primary photo comes first (only for roommate needed listings)
-      List<String> orderedPhotos = [];
+      var orderedPhotos = <String>[];
       if (_selectedListingTypeId != 1) {
         // Only process photos for roommate needed listings
         orderedPhotos = List.from(_selectedPhotos);
@@ -1574,7 +1573,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       }
     } catch (e) {
       logger.d("Error creating listing: $e");
-      String errorMessage = LanguageAwareStringHelper.getCurrent(
+      var errorMessage = LanguageAwareStringHelper.getCurrent(
         context,
         "error_creating_listing",
       );

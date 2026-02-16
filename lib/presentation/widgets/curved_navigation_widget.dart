@@ -10,11 +10,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class CustomCurvedNavigationBar extends StatefulWidget {
   const CustomCurvedNavigationBar({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-    required this.navigationKey,
-    required this.isAuthenticated,
+    required this.currentIndex, required this.onTap, required this.navigationKey, required this.isAuthenticated, super.key,
     this.hasUnreadMessages = false,
   });
 

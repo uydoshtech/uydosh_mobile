@@ -24,28 +24,28 @@ class CustomOAuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     logger.d(
-      '🔑 OAuthInterceptor: onRequest called for ${options.method} ${options.path}',
+      "🔑 OAuthInterceptor: onRequest called for ${options.method} ${options.path}",
     );
-    logger.d('🔑 OAuthInterceptor: Full URL: ${options.uri}');
+    logger.d("🔑 OAuthInterceptor: Full URL: ${options.uri}");
     logger.d(
-      '🔑 OAuthInterceptor: Request headers before auth: ${options.headers}',
+      "🔑 OAuthInterceptor: Request headers before auth: ${options.headers}",
     );
-    logger.d('🔑 OAuthInterceptor: Request method: ${options.method}');
-    logger.d('🔑 OAuthInterceptor: Request data: ${options.data}');
+    logger.d("🔑 OAuthInterceptor: Request method: ${options.method}");
+    logger.d("🔑 OAuthInterceptor: Request data: ${options.data}");
     logger.d(
-      '🔑 OAuthInterceptor: Request query parameters: ${options.queryParameters}',
+      "🔑 OAuthInterceptor: Request query parameters: ${options.queryParameters}",
     );
 
     await _addAuth(options);
 
     logger.d(
-      '🔑 OAuthInterceptor: Request headers after auth: ${options.headers}',
+      "🔑 OAuthInterceptor: Request headers after auth: ${options.headers}",
     );
     logger.d(
       '🔑 OAuthInterceptor: Authorization header: ${options.headers['Authorization']}',
     );
     logger.d(
-      '🔑 OAuthInterceptor: Full request options: ${options.toString()}',
+      "🔑 OAuthInterceptor: Full request options: ${options.toString()}",
     );
 
     super.onRequest(options, handler);
@@ -99,35 +99,35 @@ class CustomOAuthInterceptor extends Interceptor {
   Future<bool> _addAuth(RequestOptions options) async {
     final accessToken = await tokenRepo.getAccessToken();
     logger.d(
-      '🔑 OAuthInterceptor: Adding auth to ${options.method} ${options.path}',
+      "🔑 OAuthInterceptor: Adding auth to ${options.method} ${options.path}",
     );
-    logger.d('🔑 OAuthInterceptor: Token exists: ${accessToken != null}');
+    logger.d("🔑 OAuthInterceptor: Token exists: ${accessToken != null}");
     if (accessToken != null) {
-      logger.d('🔑 OAuthInterceptor: Token length: ${accessToken.length}');
+      logger.d("🔑 OAuthInterceptor: Token length: ${accessToken.length}");
       logger.d(
-        '🔑 OAuthInterceptor: Token preview: ${accessToken.substring(0, accessToken.length > 20 ? 20 : accessToken.length)}...',
+        "🔑 OAuthInterceptor: Token preview: ${accessToken.substring(0, accessToken.length > 20 ? 20 : accessToken.length)}...",
       );
-      logger.d('🔑 OAuthInterceptor: Full token: $accessToken');
+      logger.d("🔑 OAuthInterceptor: Full token: $accessToken");
 
       // Check if token already has "Bearer " prefix
       String authHeader;
-      if (accessToken.startsWith('Bearer ')) {
+      if (accessToken.startsWith("Bearer ")) {
         authHeader = accessToken;
         logger.d(
-          '🔑 OAuthInterceptor: Token already has Bearer prefix, using as-is',
+          "🔑 OAuthInterceptor: Token already has Bearer prefix, using as-is",
         );
       } else {
         authHeader = "Bearer $accessToken";
-        logger.d('🔑 OAuthInterceptor: Adding Bearer prefix to token');
+        logger.d("🔑 OAuthInterceptor: Adding Bearer prefix to token");
       }
 
       options.headers["Authorization"] = authHeader;
       logger.d(
-        '🔑 OAuthInterceptor: Authorization header set: ${authHeader.substring(0, authHeader.length > 20 ? 20 : authHeader.length)}...',
+        "🔑 OAuthInterceptor: Authorization header set: ${authHeader.substring(0, authHeader.length > 20 ? 20 : authHeader.length)}...",
       );
       return true;
     } else {
-      logger.d('❌ OAuthInterceptor: No access token available');
+      logger.d("❌ OAuthInterceptor: No access token available");
     }
     return false;
   }

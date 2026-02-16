@@ -1,5 +1,5 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
+import "dart:async";
+import "package:flutter/material.dart";
 
 /// Utility class for optimized scroll handling with throttling and memory management
 class ScrollUtils {
@@ -15,12 +15,12 @@ class ScrollUtils {
     double scrollDelta = _defaultScrollDelta,
     bool Function()? shouldLoadMore,
   }) {
-    Timer? _throttleTimer;
-    bool _isLoadingMore = false;
+    Timer? throttleTimer;
+    var isLoadingMore = false;
 
     return () {
       // Early return if already loading more
-      if (_isLoadingMore) return;
+      if (isLoadingMore) return;
 
       final currentScroll = scrollController.position.pixels;
       final maxScroll = scrollController.position.maxScrollExtent;
@@ -30,20 +30,20 @@ class ScrollUtils {
         // Check if we should load more (optional custom logic)
         if (shouldLoadMore != null && !shouldLoadMore()) return;
 
-        _isLoadingMore = true;
+        isLoadingMore = true;
 
         // Use throttling to prevent excessive calls
-        _throttleTimer?.cancel();
-        _throttleTimer = Timer(throttleDuration, () {
+        throttleTimer?.cancel();
+        throttleTimer = Timer(throttleDuration, () {
           // Use post-frame callback for better performance
           WidgetsBinding.instance.addPostFrameCallback((_) {
             try {
               onLoadMore();
               // Reset loading state after successful load more call
-              _isLoadingMore = false;
+              isLoadingMore = false;
             } catch (e) {
               // Reset loading state on error
-              _isLoadingMore = false;
+              isLoadingMore = false;
             }
           });
         });
@@ -61,12 +61,12 @@ class ScrollUtils {
     double scrollDelta = _defaultScrollDelta,
     bool Function()? shouldLoadMore,
   }) {
-    Timer? _throttleTimer;
-    bool _isLoadingMore = false;
+    Timer? throttleTimer;
+    var isLoadingMore = false;
 
-    final listener = () {
+    void listener() {
       // Early return if already loading more
-      if (_isLoadingMore) return;
+      if (isLoadingMore) return;
 
       final currentScroll = scrollController.position.pixels;
       final maxScroll = scrollController.position.maxScrollExtent;
@@ -76,30 +76,30 @@ class ScrollUtils {
         // Check if we should load more (optional custom logic)
         if (shouldLoadMore != null && !shouldLoadMore()) return;
 
-        _isLoadingMore = true;
+        isLoadingMore = true;
 
         // Use throttling to prevent excessive calls
-        _throttleTimer?.cancel();
-        _throttleTimer = Timer(throttleDuration, () {
+        throttleTimer?.cancel();
+        throttleTimer = Timer(throttleDuration, () {
           // Use post-frame callback for better performance
           WidgetsBinding.instance.addPostFrameCallback((_) {
             try {
               onLoadMore();
               // Reset loading state after successful load more call
-              _isLoadingMore = false;
+              isLoadingMore = false;
             } catch (e) {
               // Reset loading state on error
-              _isLoadingMore = false;
+              isLoadingMore = false;
             }
           });
         });
       }
-    };
+    }
 
-    final resetLoadingState = () {
-      _isLoadingMore = false;
-      _throttleTimer?.cancel();
-    };
+    void resetLoadingState() {
+      isLoadingMore = false;
+      throttleTimer?.cancel();
+    }
 
     return (listener: listener, resetLoadingState: resetLoadingState);
   }

@@ -1,17 +1,16 @@
-import "package:flutter/material.dart";
 import "package:flutter/cupertino.dart";
+import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/base/util/date_utils.dart";
 
 class ListingViewsStatsScreen extends StatefulWidget {
   const ListingViewsStatsScreen({
-    super.key,
-    required this.listingId,
+    required this.listingId, super.key,
   });
 
   final int listingId;
@@ -196,9 +195,9 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
             itemCount: _stats.length,
             itemBuilder: (context, index) {
               final item = _stats[index];
-              final dateStr = item['date'] as String? ?? '';
-              final count = (item['count'] is num)
-                  ? (item['count'] as num).toInt()
+              final dateStr = item["date"] as String? ?? "";
+              final count = (item["count"] is num)
+                  ? (item["count"] as num).toInt()
                   : 0;
 
               DateTime? date;

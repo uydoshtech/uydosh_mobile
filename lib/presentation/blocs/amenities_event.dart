@@ -1,4 +1,4 @@
-part of 'amenities_bloc.dart';
+part of "amenities_bloc.dart";
 
 @freezed
 class AmenitiesEvent with _$AmenitiesEvent {

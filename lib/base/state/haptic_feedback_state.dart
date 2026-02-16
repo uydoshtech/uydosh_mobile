@@ -4,10 +4,10 @@ import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 
 class HapticFeedbackState extends ChangeNotifier {
-  static final HapticFeedbackState _instance =
-      HapticFeedbackState._internal();
   factory HapticFeedbackState() => _instance;
   HapticFeedbackState._internal();
+  static final HapticFeedbackState _instance =
+      HapticFeedbackState._internal();
 
   bool _isEnabled = AppConfig.enableHapticFeedback;
   bool _isInitialized = false;

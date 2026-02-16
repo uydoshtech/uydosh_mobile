@@ -199,7 +199,7 @@ class ListingTypeDropdown extends StatelessWidget {
     final types = ListingTypeHelper.getAllTypes(context);
 
     return DropdownButtonFormField<String>(
-      value: selectedValue,
+      initialValue: selectedValue,
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: hintText,

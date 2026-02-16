@@ -1,6 +1,6 @@
-import 'package:uy_dosh/domain/models/otp_code.dart';
-import 'package:uy_dosh/domain/models/auth/create_otp_request.dart';
-import 'package:uy_dosh/domain/models/auth/verify_otp_request.dart';
+import "package:uy_dosh/domain/models/auth/create_otp_request.dart";
+import "package:uy_dosh/domain/models/auth/verify_otp_request.dart";
+import "package:uy_dosh/domain/models/otp_code.dart";
 
 abstract class IOtpService {
   /// Create and send an OTP code to the specified email

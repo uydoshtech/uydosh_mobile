@@ -1,28 +1,28 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
-import "package:uy_dosh/base/logger/logger.dart";
-import "package:uy_dosh/domain/models/conversation.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
-import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
-import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
-import "package:uy_dosh/base/services/session_manager.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
-import "package:uy_dosh/base/services/logout_service.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/string_helper.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/logout_service.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
-import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({super.key, this.showCustomHeader = true});
@@ -54,7 +54,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   Future<void> _initializeUser() async {
     _currentUserId = await SessionManager.getUserId();
-    logger.d('🔍 [MessagesInboxScreen] Current user ID: $_currentUserId');
+    logger.d("🔍 [MessagesInboxScreen] Current user ID: $_currentUserId");
     // Refresh conversations after getting user ID to update unread indicators
     if (mounted) {
       setState(() {});
@@ -64,7 +64,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   // Handle authentication state changes
   void _onAuthenticationStateChanged() {
     logger.d(
-      '🔍 [MessagesInboxScreen] Authentication state changed, refreshing conversations...',
+      "🔍 [MessagesInboxScreen] Authentication state changed, refreshing conversations...",
     );
     if (mounted) {
       // Only refresh if user is authenticated
@@ -76,7 +76,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       } else {
         // Clear conversations when user logs out
         logger.d(
-          '🔍 [MessagesInboxScreen] User logged out, clearing conversations...',
+          "🔍 [MessagesInboxScreen] User logged out, clearing conversations...",
         );
         _messagingBloc.add(ClearConversations());
       }
@@ -110,7 +110,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   }
 
   void _loadConversations() {
-    logger.d('🔍 [MessagesInboxScreen] Loading conversations...');
+    logger.d("🔍 [MessagesInboxScreen] Loading conversations...");
     _messagingBloc.add(RefreshConversations());
   }
 
@@ -166,7 +166,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             loading: () {},
             conversationsLoaded: (conversations, hasMore, currentPage) {
               logger.d(
-                '🔍 [MessagesInboxScreen] Conversations loaded: ${conversations.length} conversations',
+                "🔍 [MessagesInboxScreen] Conversations loaded: ${conversations.length} conversations",
               );
 
               // Calculate total unread count and update global state
@@ -192,14 +192,14 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         child: BlocBuilder<MessagingBloc, MessagingState>(
           builder: (context, state) {
             return state.when(
-              initial: () => _buildLoadingState(),
-              loading: () => _buildLoadingState(),
+              initial: _buildLoadingState,
+              loading: _buildLoadingState,
               conversationsLoaded: (conversations, hasMore, currentPage) {
                 return _buildTabbedConversationsList(
                   conversations.cast<ConversationSummary>(),
                 );
               },
-              conversationsCleared: () => _buildEmptyState(),
+              conversationsCleared: _buildEmptyState,
               messagesLoaded:
                   (messages, hasMore, currentPage, conversationId) =>
                       _buildLoadingState(),
@@ -207,7 +207,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               messageSent: (message) => _buildLoadingState(),
               messagesMarkedAsRead:
                   (conversationId, markedCount) => _buildLoadingState(),
-              error: (message) => _buildErrorState(message),
+              error: _buildErrorState,
             );
           },
         ),
@@ -633,13 +633,13 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                           Container(
                             width: 20,
                             height: 20,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: AppColors.success,
                               shape: BoxShape.circle,
                             ),
                             child: Center(
                               child: Text(
-                                '$incomingCount',
+                                "$incomingCount",
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -694,13 +694,13 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                           Container(
                             width: 20,
                             height: 20,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: AppColors.success,
                               shape: BoxShape.circle,
                             ),
                             child: Center(
                               child: Text(
-                                '$outgoingCount',
+                                "$outgoingCount",
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -943,18 +943,16 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 }
 
 class ConversationTile extends StatelessWidget {
+
+  const ConversationTile({
+    required this.conversation, required this.onTap, super.key,
+    this.currentUserId,
+    this.isGrouped = false,
+  });
   final ConversationSummary conversation;
   final VoidCallback onTap;
   final int? currentUserId;
   final bool isGrouped;
-
-  const ConversationTile({
-    super.key,
-    required this.conversation,
-    required this.onTap,
-    this.currentUserId,
-    this.isGrouped = false,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -1070,7 +1068,7 @@ class ConversationTile extends StatelessWidget {
                   Container(
                     width: conversation.unreadCount! > 1 ? 20 : 12,
                     height: conversation.unreadCount! > 1 ? 20 : 12,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color:
                           AppColors.success, // Keep green for unread indicator
                       shape: BoxShape.circle,
@@ -1079,7 +1077,7 @@ class ConversationTile extends StatelessWidget {
                         conversation.unreadCount! > 1
                             ? Center(
                               child: Text(
-                                '${conversation.unreadCount!}',
+                                "${conversation.unreadCount!}",
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -1186,23 +1184,21 @@ class ConversationTile extends StatelessWidget {
         return LanguageAwareStringHelper.getCurrent(context, "now");
       }
     } catch (e) {
-      return '';
+      return "";
     }
   }
 
 }
 
 class GroupedConversationsList extends StatefulWidget {
+
+  const GroupedConversationsList({
+    required this.conversations, required this.onConversationTap, super.key,
+    this.currentUserId,
+  });
   final List<ConversationSummary> conversations;
   final int? currentUserId;
   final Function(ConversationSummary) onConversationTap;
-
-  const GroupedConversationsList({
-    super.key,
-    required this.conversations,
-    this.currentUserId,
-    required this.onConversationTap,
-  });
 
   @override
   State<GroupedConversationsList> createState() =>
@@ -1215,7 +1211,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
   @override
   Widget build(BuildContext context) {
     // Group conversations by listing ID
-    final Map<int, List<ConversationSummary>> groupedConversations = {};
+    final groupedConversations = <int, List<ConversationSummary>>{};
     for (final conversation in widget.conversations) {
       if (!groupedConversations.containsKey(conversation.listingId)) {
         groupedConversations[conversation.listingId] = [];
@@ -1405,13 +1401,13 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                       Container(
                         width: 20,
                         height: 20,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.success,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
                           child: Text(
-                            '${_getGroupUnreadCount(conversations)}',
+                            "${_getGroupUnreadCount(conversations)}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -1520,16 +1516,14 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
 }
 
 class OutgoingConversationTile extends StatelessWidget {
+
+  const OutgoingConversationTile({
+    required this.conversation, required this.onTap, super.key,
+    this.currentUserId,
+  });
   final ConversationSummary conversation;
   final VoidCallback onTap;
   final int? currentUserId;
-
-  const OutgoingConversationTile({
-    super.key,
-    required this.conversation,
-    required this.onTap,
-    this.currentUserId,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -1658,7 +1652,7 @@ class OutgoingConversationTile extends StatelessWidget {
                   Container(
                     width: conversation.unreadCount! > 1 ? 20 : 12,
                     height: conversation.unreadCount! > 1 ? 20 : 12,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color:
                           AppColors.success, // Keep green for unread indicator
                       shape: BoxShape.circle,
@@ -1667,7 +1661,7 @@ class OutgoingConversationTile extends StatelessWidget {
                         conversation.unreadCount! > 1
                             ? Center(
                               child: Text(
-                                '${conversation.unreadCount!}',
+                                "${conversation.unreadCount!}",
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -1774,7 +1768,7 @@ class OutgoingConversationTile extends StatelessWidget {
         return LanguageAwareStringHelper.getCurrent(context, "now");
       }
     } catch (e) {
-      return '';
+      return "";
     }
   }
 }

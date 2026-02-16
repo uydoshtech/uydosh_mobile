@@ -31,10 +31,10 @@ class ProfileSliderControl extends StatelessWidget {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
     final sectionBackground =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceVariant;
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
     final currentValue = value ?? min;
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: sectionBackground,
         borderRadius: BorderRadius.circular(12),

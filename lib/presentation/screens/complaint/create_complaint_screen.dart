@@ -1,23 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uy_dosh/presentation/blocs/complaint_bloc.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import 'package:uy_dosh/domain/models/complaint.dart';
-import 'package:uy_dosh/domain/models/complaint_category.dart';
-import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
-import 'package:uy_dosh/presentation/widgets/common/theme_icon.dart';
-import 'package:uy_dosh/presentation/widgets/common/ghost_button.dart';
-import 'package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart';
-import 'package:uy_dosh/presentation/widgets/common/common_list_view.dart';
-import 'package:uy_dosh/base/constants/app_colors.dart';
-import 'package:uy_dosh/presentation/widgets/common/toast_theme.dart';
-import 'package:uy_dosh/base/util/error_message_helper.dart';
+import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/complaint.dart";
+import "package:uy_dosh/domain/models/complaint_category.dart";
+import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class CreateComplaintScreen extends StatefulWidget {
-  final int listingId;
 
-  const CreateComplaintScreen({super.key, required this.listingId});
+  const CreateComplaintScreen({required this.listingId, super.key});
+  final int listingId;
 
   @override
   State<CreateComplaintScreen> createState() => _CreateComplaintScreenState();
@@ -95,12 +95,12 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
               });
 
               logger.d(
-                '=== COMPLAINT UI: Error state message: ${state.message} ===',
+                "=== COMPLAINT UI: Error state message: ${state.message} ===",
               );
 
               // The bloc now provides localized messages directly
               String errorMessage;
-              if (state.message.startsWith('DIO_ERROR_')) {
+              if (state.message.startsWith("DIO_ERROR_")) {
                 // Handle other Dio errors with ErrorMessageHelper
                 errorMessage = ErrorMessageHelper.sanitizeErrorMessage(
                   state.message,
@@ -112,7 +112,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
               }
 
               logger.d(
-                '=== COMPLAINT UI: Final error message: $errorMessage ===',
+                "=== COMPLAINT UI: Final error message: $errorMessage ===",
               );
 
               ToastTheme.showError(context, message: errorMessage);
@@ -122,20 +122,20 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
         child: BlocBuilder<ComplaintBloc, ComplaintState>(
           builder: (context, state) {
             logger.d(
-              '=== COMPLAINT UI: Current state: ${state.runtimeType} ===',
+              "=== COMPLAINT UI: Current state: ${state.runtimeType} ===",
             );
             return state.map(
               initial: (_) {
-                logger.d('=== COMPLAINT UI: Initial state ===');
+                logger.d("=== COMPLAINT UI: Initial state ===");
                 return const Center(child: CircularProgressIndicator());
               },
               loading: (_) {
-                logger.d('=== COMPLAINT UI: Loading state ===');
+                logger.d("=== COMPLAINT UI: Loading state ===");
                 return const Center(child: CircularProgressIndicator());
               },
               categoriesLoaded: (state) {
                 logger.d(
-                  '=== COMPLAINT UI: Categories loaded: ${state.categories.length} ===',
+                  "=== COMPLAINT UI: Categories loaded: ${state.categories.length} ===",
                 );
                 return _buildContent(state.categories);
               },
@@ -148,7 +148,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.error_outline,
                           size: 64,
                           color: AppColors.error,

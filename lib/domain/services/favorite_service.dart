@@ -1,18 +1,18 @@
-import 'package:dio/dio.dart';
-import '../../base/api/client/oauth_api_client.dart';
-import '../../base/logger/logger.dart';
-import '../../base/api/client/json_encodable.dart';
-import '../../domain/models/listing.dart';
-import '../../base/services/session_manager.dart';
+import "package:dio/dio.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/domain/models/listing.dart";
 
 // Simple request classes for API calls
 class _AddToFavoritesRequest implements IJsonEncodable {
-  final int listingId;
 
   _AddToFavoritesRequest(this.listingId);
+  final int listingId;
 
   @override
-  Map<String, dynamic> toJson() => {'listingId': listingId};
+  Map<String, dynamic> toJson() => {"listingId": listingId};
 }
 
 class _EmptyRequest implements IJsonEncodable {
@@ -31,47 +31,47 @@ abstract class IFavoriteService {
 }
 
 class FavoriteService implements IFavoriteService {
+
+  FavoriteService(this._oauthApiClient);
   final IOAuthApiClient _oauthApiClient;
 
   // Track seen listing IDs across all calls to detect cross-call duplicates
   static final Set<int> _seenListingIds = <int>{};
   static int _totalCalls = 0;
 
-  FavoriteService(this._oauthApiClient);
-
   // Handle 401 unauthorized errors by clearing invalid session
   Future<void> _handleUnauthorized() async {
-    logger.d('🚨 FavoriteService: Session expired, clearing local session...');
+    logger.d("🚨 FavoriteService: Session expired, clearing local session...");
     await SessionManager.clearSession();
     logger.d(
-      '✅ FavoriteService: Local session cleared. User needs to re-authenticate.',
+      "✅ FavoriteService: Local session cleared. User needs to re-authenticate.",
     );
   }
 
   @override
   Future<bool> addToFavorites(int listingId) async {
     try {
-      logger.d('🌐 FavoriteService: Adding listing $listingId to favorites...');
+      logger.d("🌐 FavoriteService: Adding listing $listingId to favorites...");
 
       final response = await _oauthApiClient
           .post<Map<String, dynamic>, _AddToFavoritesRequest>(
-            '/favorites',
+            "/favorites",
             (data) => data as Map<String, dynamic>,
             data: _AddToFavoritesRequest(listingId),
           );
 
-      logger.d('✅ FavoriteService: Successfully added to favorites');
+      logger.d("✅ FavoriteService: Successfully added to favorites");
       return true;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        logger.d('❌ FavoriteService: Unauthorized - session expired');
+        logger.d("❌ FavoriteService: Unauthorized - session expired");
         await _handleUnauthorized();
         return false;
       }
-      logger.d('❌ FavoriteService: Error adding to favorites: ${e.message}');
+      logger.d("❌ FavoriteService: Error adding to favorites: ${e.message}");
       return false;
     } catch (e) {
-      logger.d('❌ FavoriteService: Unexpected error: $e');
+      logger.d("❌ FavoriteService: Unexpected error: $e");
       return false;
     }
   }
@@ -80,29 +80,29 @@ class FavoriteService implements IFavoriteService {
   Future<bool> removeFromFavorites(int listingId) async {
     try {
       logger.d(
-        '🌐 FavoriteService: Removing listing $listingId from favorites...',
+        "🌐 FavoriteService: Removing listing $listingId from favorites...",
       );
 
       final response = await _oauthApiClient
           .delete<Map<String, dynamic>, _EmptyRequest>(
-            '/favorites/$listingId',
+            "/favorites/$listingId",
             (data) => data as Map<String, dynamic>,
           );
 
-      logger.d('✅ FavoriteService: Successfully removed from favorites');
+      logger.d("✅ FavoriteService: Successfully removed from favorites");
       return true;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        logger.d('❌ FavoriteService: Unauthorized - session expired');
+        logger.d("❌ FavoriteService: Unauthorized - session expired");
         await _handleUnauthorized();
         return false;
       }
       logger.d(
-        '❌ FavoriteService: Error removing from favorites: ${e.message}',
+        "❌ FavoriteService: Error removing from favorites: ${e.message}",
       );
       return false;
     } catch (e) {
-      logger.d('❌ FavoriteService: Unexpected error: $e');
+      logger.d("❌ FavoriteService: Unexpected error: $e");
       return false;
     }
   }
@@ -111,39 +111,39 @@ class FavoriteService implements IFavoriteService {
   Future<bool> toggleFavorite(int listingId) async {
     try {
       logger.d(
-        '🌐 FavoriteService: Toggling favorite status for listing $listingId...',
+        "🌐 FavoriteService: Toggling favorite status for listing $listingId...",
       );
 
       // Debug: Check current token
       final token = await SessionManager.getToken();
       logger.d(
-        '🔑 FavoriteService: Current token: ${token?.substring(0, 20)}... (length: ${token?.length})',
+        "🔑 FavoriteService: Current token: ${token?.substring(0, 20)}... (length: ${token?.length})",
       );
 
       final response = await _oauthApiClient
           .put<Map<String, dynamic>, _EmptyRequest>(
-            '/favorites/toggle/$listingId',
+            "/favorites/toggle/$listingId",
             (data) => data as Map<String, dynamic>,
           );
 
-      logger.d('✅ FavoriteService: Successfully toggled favorite status');
-      logger.d('📊 FavoriteService: Response: $response');
+      logger.d("✅ FavoriteService: Successfully toggled favorite status");
+      logger.d("📊 FavoriteService: Response: $response");
       return true;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        logger.d('❌ FavoriteService: Unauthorized - session expired');
+        logger.d("❌ FavoriteService: Unauthorized - session expired");
         // Get token for debugging
         final failedToken = await SessionManager.getToken();
         logger.d(
-          '🔑 FavoriteService: Token that failed: ${failedToken?.substring(0, 20)}... (length: ${failedToken?.length})',
+          "🔑 FavoriteService: Token that failed: ${failedToken?.substring(0, 20)}... (length: ${failedToken?.length})",
         );
         await _handleUnauthorized();
         return false;
       }
-      logger.d('❌ FavoriteService: Error toggling favorite: ${e.message}');
+      logger.d("❌ FavoriteService: Error toggling favorite: ${e.message}");
       return false;
     } catch (e) {
-      logger.d('❌ FavoriteService: Unexpected error: $e');
+      logger.d("❌ FavoriteService: Unexpected error: $e");
       return false;
     }
   }
@@ -153,29 +153,29 @@ class FavoriteService implements IFavoriteService {
     try {
       _totalCalls++;
       logger.d(
-        '🌐 FavoriteService: Getting user favorites (page: $page, limit: $limit)...',
+        "🌐 FavoriteService: Getting user favorites (page: $page, limit: $limit)...",
       );
       logger.d(
-        '🔍 FavoriteService: Request details - Page: $page, Limit: $limit',
+        "🔍 FavoriteService: Request details - Page: $page, Limit: $limit",
       );
-      logger.d('🔍 FavoriteService: Total API calls made: $_totalCalls');
+      logger.d("🔍 FavoriteService: Total API calls made: $_totalCalls");
       logger.d(
-        '🔍 FavoriteService: Previously seen listing IDs: ${_seenListingIds.length}',
+        "🔍 FavoriteService: Previously seen listing IDs: ${_seenListingIds.length}",
       );
 
       // Check authentication token
       final token = await SessionManager.getToken();
-      logger.d('🔑 FavoriteService: Auth token exists: ${token != null}');
+      logger.d("🔑 FavoriteService: Auth token exists: ${token != null}");
       if (token != null) {
-        logger.d('🔑 FavoriteService: Token length: ${token.length}');
+        logger.d("🔑 FavoriteService: Token length: ${token.length}");
         logger.d(
-          '🔑 FavoriteService: Token preview: ${token.substring(0, token.length > 20 ? 20 : token.length)}...',
+          "🔑 FavoriteService: Token preview: ${token.substring(0, token.length > 20 ? 20 : token.length)}...",
         );
       }
 
       // Use the main /favorites endpoint with pagination
-      final endpoint = '/favorites?page=$page&limit=$limit';
-      logger.d('🔍 FavoriteService: Using endpoint: $endpoint');
+      final endpoint = "/favorites?page=$page&limit=$limit";
+      logger.d("🔍 FavoriteService: Using endpoint: $endpoint");
 
       dynamic response;
       try {
@@ -183,35 +183,35 @@ class FavoriteService implements IFavoriteService {
           return data; // Don't force cast to Map<String, dynamic>
         });
       } catch (e) {
-        logger.d('❌ FavoriteService: Endpoint $endpoint failed: $e');
-        logger.d('❌ FavoriteService: Error type: ${e.runtimeType}');
+        logger.d("❌ FavoriteService: Endpoint $endpoint failed: $e");
+        logger.d("❌ FavoriteService: Error type: ${e.runtimeType}");
         if (e is DioException) {
-          logger.d('❌ FavoriteService: DioException details:');
-          logger.d('  - Status code: ${e.response?.statusCode}');
-          logger.d('  - Response data: ${e.response?.data}');
-          logger.d('  - Response headers: ${e.response?.headers}');
-          logger.d('  - Response status message: ${e.response?.statusMessage}');
-          logger.d('  - Message: ${e.message}');
-          logger.d('  - Error type: ${e.type}');
-          logger.d('  - Request URL: ${e.requestOptions.uri}');
-          logger.d('  - Request method: ${e.requestOptions.method}');
-          logger.d('  - Request headers: ${e.requestOptions.headers}');
-          logger.d('  - Request data: ${e.requestOptions.data}');
+          logger.d("❌ FavoriteService: DioException details:");
+          logger.d("  - Status code: ${e.response?.statusCode}");
+          logger.d("  - Response data: ${e.response?.data}");
+          logger.d("  - Response headers: ${e.response?.headers}");
+          logger.d("  - Response status message: ${e.response?.statusMessage}");
+          logger.d("  - Message: ${e.message}");
+          logger.d("  - Error type: ${e.type}");
+          logger.d("  - Request URL: ${e.requestOptions.uri}");
+          logger.d("  - Request method: ${e.requestOptions.method}");
+          logger.d("  - Request headers: ${e.requestOptions.headers}");
+          logger.d("  - Request data: ${e.requestOptions.data}");
           logger.d(
-            '  - Request query parameters: ${e.requestOptions.queryParameters}',
+            "  - Request query parameters: ${e.requestOptions.queryParameters}",
           );
-          logger.d('  - Full request: ${e.requestOptions.toString()}');
+          logger.d("  - Full request: ${e.requestOptions.toString()}");
 
           // Show the exact error response
           if (e.response?.data != null) {
-            logger.d('🔍 FavoriteService: Error response details:');
+            logger.d("🔍 FavoriteService: Error response details:");
             logger.d(
-              '  - Error response type: ${e.response!.data.runtimeType}',
+              "  - Error response type: ${e.response!.data.runtimeType}",
             );
-            logger.d('  - Error response content: ${e.response!.data}');
+            logger.d("  - Error response content: ${e.response!.data}");
             if (e.response!.data is Map) {
               logger.d(
-                '  - Error response keys: ${(e.response!.data as Map).keys.toList()}',
+                "  - Error response keys: ${(e.response!.data as Map).keys.toList()}",
               );
             }
           }
@@ -220,26 +220,26 @@ class FavoriteService implements IFavoriteService {
       }
 
       if (response == null) {
-        logger.d('❌ FavoriteService: Response is null');
+        logger.d("❌ FavoriteService: Response is null");
         return [];
       }
 
       // Handle different possible response structures
-      List<dynamic> favoritesData = <dynamic>[]; // Initialize with empty list
+      var favoritesData = <dynamic>[]; // Initialize with empty list
 
       // First, check if response is directly a list (which seems to be the case based on backend)
       if (response is List) {
-        favoritesData = response as List<dynamic>;
-        logger.d('✅ FavoriteService: Found direct array response');
+        favoritesData = response;
+        logger.d("✅ FavoriteService: Found direct array response");
       } else if (response is Map<String, dynamic>) {
         // Handle map response with different possible field names
-        final mapResponse = response as Map<String, dynamic>;
+        final mapResponse = response;
 
-        if (mapResponse['content'] != null) {
-          favoritesData = mapResponse['content'] as List<dynamic>;
+        if (mapResponse["content"] != null) {
+          favoritesData = mapResponse["content"] as List<dynamic>;
           logger.d('✅ FavoriteService: Found favorites in "content" field');
-        } else if (mapResponse['favorites'] != null) {
-          favoritesData = mapResponse['favorites'] as List<dynamic>;
+        } else if (mapResponse["favorites"] != null) {
+          favoritesData = mapResponse["favorites"] as List<dynamic>;
 
           // Debug: Show first few items to check for duplicates
           if (favoritesData.isNotEmpty) {
@@ -248,16 +248,16 @@ class FavoriteService implements IFavoriteService {
             }
             if (favoritesData.length > 2) {
               logger.d(
-                '🔍 FavoriteService: Third favorite item: ${favoritesData[2]}',
+                "🔍 FavoriteService: Third favorite item: ${favoritesData[2]}",
               );
             }
           }
-        } else if (mapResponse['listings'] != null) {
-          favoritesData = mapResponse['listings'] as List<dynamic>;
+        } else if (mapResponse["listings"] != null) {
+          favoritesData = mapResponse["listings"] as List<dynamic>;
           logger.d('✅ FavoriteService: Found favorites in "listings" field');
-        } else if (mapResponse['result'] != null) {
+        } else if (mapResponse["result"] != null) {
           // Check if backend returns data in 'result' field
-          final result = mapResponse['result'];
+          final result = mapResponse["result"];
           if (result is List) {
             favoritesData = result;
             logger.d('✅ FavoriteService: Found favorites in "result" field');
@@ -266,40 +266,40 @@ class FavoriteService implements IFavoriteService {
               '⚠️ FavoriteService: "result" field is not a list: $result',
             );
           }
-        } else if (mapResponse['items'] != null) {
+        } else if (mapResponse["items"] != null) {
           // Check if backend returns data in 'items' field (common pagination field)
-          final items = mapResponse['items'];
+          final items = mapResponse["items"];
           if (items is List) {
             favoritesData = items;
             logger.d('✅ FavoriteService: Found favorites in "items" field');
           } else {
             logger.d('⚠️ FavoriteService: "items" field is not a list: $items');
           }
-        } else if (mapResponse['data'] != null) {
+        } else if (mapResponse["data"] != null) {
           // Check if backend returns data in 'data' field
-          final data = mapResponse['data'];
+          final data = mapResponse["data"];
           if (data is List) {
             favoritesData = data;
             logger.d('✅ FavoriteService: Found favorites in "data" field');
           } else {
             logger.d('⚠️ FavoriteService: "data" field is not a list: $data');
           }
-        } else if (mapResponse['page'] != null ||
-            mapResponse['total'] != null ||
-            mapResponse['totalPages'] != null) {
+        } else if (mapResponse["page"] != null ||
+            mapResponse["total"] != null ||
+            mapResponse["totalPages"] != null) {
           // This looks like a paginated response, let's check for common pagination field names
-          logger.d('🔍 FavoriteService: Response appears to be paginated');
+          logger.d("🔍 FavoriteService: Response appears to be paginated");
 
           // Try to find the actual data in common pagination field names
           final possibleDataFields = [
-            'content',
-            'items',
-            'listings',
-            'favorites',
-            'data',
-            'results',
+            "content",
+            "items",
+            "listings",
+            "favorites",
+            "data",
+            "results",
           ];
-          bool foundData = false;
+          var foundData = false;
 
           for (final fieldName in possibleDataFields) {
             if (mapResponse[fieldName] != null) {
@@ -317,16 +317,16 @@ class FavoriteService implements IFavoriteService {
 
           if (!foundData) {
             logger.d(
-              '⚠️ FavoriteService: Paginated response but no data field found',
+              "⚠️ FavoriteService: Paginated response but no data field found",
             );
           }
         } else {
           // Check if this might be a paginated response without standard pagination fields
           logger.d(
-            '🔍 FavoriteService: Checking for non-standard pagination fields...',
+            "🔍 FavoriteService: Checking for non-standard pagination fields...",
           );
           final allKeys = mapResponse.keys.toList();
-          logger.d('🔍 FavoriteService: All available keys: $allKeys');
+          logger.d("🔍 FavoriteService: All available keys: $allKeys");
 
           // Look for any field that might contain the data
           for (final key in allKeys) {
@@ -347,9 +347,9 @@ class FavoriteService implements IFavoriteService {
       } else {
         // Fallback to empty list
         logger.d(
-          '⚠️ FavoriteService: Unexpected response structure, no favorites found',
+          "⚠️ FavoriteService: Unexpected response structure, no favorites found",
         );
-        logger.d('⚠️ FavoriteService: Response type: ${response.runtimeType}');
+        logger.d("⚠️ FavoriteService: Response type: ${response.runtimeType}");
       }
 
       if (favoritesData.isNotEmpty) {
@@ -358,21 +358,21 @@ class FavoriteService implements IFavoriteService {
               favoritesData
                   .map((data) {
                     if (data == null) {
-                      logger.d('⚠️ FavoriteService: Skipping null data item');
+                      logger.d("⚠️ FavoriteService: Skipping null data item");
                       return null;
                     }
 
                     // Check if this is a favorite object with nested listing data
                     if (data is Map<String, dynamic> &&
-                        data['listing'] != null) {
+                        data["listing"] != null) {
                       final listingData =
-                          data['listing'] as Map<String, dynamic>;
+                          data["listing"] as Map<String, dynamic>;
                       try {
                         final listing = Listing.fromJson(listingData);
                         return listing;
                       } catch (parseError) {
                         logger.d(
-                          '❌ FavoriteService: Failed to parse listing data: $parseError',
+                          "❌ FavoriteService: Failed to parse listing data: $parseError",
                         );
                         return null;
                       }
@@ -385,7 +385,7 @@ class FavoriteService implements IFavoriteService {
                         return listing;
                       } catch (parseError) {
                         logger.d(
-                          '❌ FavoriteService: Failed to parse direct listing data: $parseError',
+                          "❌ FavoriteService: Failed to parse direct listing data: $parseError",
                         );
                         return null;
                       }
@@ -409,7 +409,7 @@ class FavoriteService implements IFavoriteService {
               }
             } else {
               logger.d(
-                '⚠️ FavoriteService: Duplicate listing ID ${favorite.id} found within this response, skipping',
+                "⚠️ FavoriteService: Duplicate listing ID ${favorite.id} found within this response, skipping",
               );
             }
           }
@@ -417,7 +417,7 @@ class FavoriteService implements IFavoriteService {
           return uniqueFavorites;
         } catch (parseError) {
           logger.d(
-            '❌ FavoriteService: Error parsing favorites data: $parseError',
+            "❌ FavoriteService: Error parsing favorites data: $parseError",
           );
           logger.d(
             '❌ FavoriteService: First data item: ${favoritesData.isNotEmpty ? favoritesData.first : 'empty'}',
@@ -429,16 +429,16 @@ class FavoriteService implements IFavoriteService {
       return [];
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        logger.d('❌ FavoriteService: Unauthorized - session expired');
+        logger.d("❌ FavoriteService: Unauthorized - session expired");
         await _handleUnauthorized();
         return [];
       }
-      logger.d('❌ FavoriteService: Error getting favorites: ${e.message}');
-      logger.d('❌ FavoriteService: Response status: ${e.response?.statusCode}');
-      logger.d('❌ FavoriteService: Response data: ${e.response?.data}');
+      logger.d("❌ FavoriteService: Error getting favorites: ${e.message}");
+      logger.d("❌ FavoriteService: Response status: ${e.response?.statusCode}");
+      logger.d("❌ FavoriteService: Response data: ${e.response?.data}");
       return [];
     } catch (e) {
-      logger.d('❌ FavoriteService: Unexpected error: $e');
+      logger.d("❌ FavoriteService: Unexpected error: $e");
       return [];
     }
   }
@@ -447,31 +447,31 @@ class FavoriteService implements IFavoriteService {
   Future<List<Listing>> getUserFavoriteListings(int userId) async {
     try {
       logger.d(
-        '🌐 FavoriteService: Getting favorite listings for user $userId...',
+        "🌐 FavoriteService: Getting favorite listings for user $userId...",
       );
 
       final response = await _oauthApiClient.get<List<dynamic>>(
-        '/listings/user/$userId',
+        "/listings/user/$userId",
         (data) => data as List<dynamic>,
       );
 
       final favorites = response.map((data) => Listing.fromJson(data)).toList();
       logger.d(
-        '✅ FavoriteService: Successfully loaded ${favorites.length} favorite listings',
+        "✅ FavoriteService: Successfully loaded ${favorites.length} favorite listings",
       );
       return favorites;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        logger.d('❌ FavoriteService: Unauthorized - session expired');
+        logger.d("❌ FavoriteService: Unauthorized - session expired");
         await _handleUnauthorized();
         return [];
       }
       logger.d(
-        '❌ FavoriteService: Error getting favorite listings: ${e.message}',
+        "❌ FavoriteService: Error getting favorite listings: ${e.message}",
       );
       return [];
     } catch (e) {
-      logger.d('❌ FavoriteService: Unexpected error: $e');
+      logger.d("❌ FavoriteService: Unexpected error: $e");
       return [];
     }
   }
@@ -480,33 +480,33 @@ class FavoriteService implements IFavoriteService {
   Future<bool> checkIfFavorited(int listingId) async {
     try {
       logger.d(
-        '🌐 FavoriteService: Checking if listing $listingId is favorited...',
+        "🌐 FavoriteService: Checking if listing $listingId is favorited...",
       );
 
       final response = await _oauthApiClient.get<Map<String, dynamic>>(
-        '/favorites/check/$listingId',
+        "/favorites/check/$listingId",
         (data) => data as Map<String, dynamic>,
       );
 
-      if (response['isFavorited'] != null) {
-        final isFavorited = response['isFavorited'] as bool;
+      if (response["isFavorited"] != null) {
+        final isFavorited = response["isFavorited"] as bool;
         return isFavorited;
       }
 
-      logger.d('✅ FavoriteService: Could not determine favorite status');
+      logger.d("✅ FavoriteService: Could not determine favorite status");
       return false;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        logger.d('❌ FavoriteService: Unauthorized - session expired');
+        logger.d("❌ FavoriteService: Unauthorized - session expired");
         await _handleUnauthorized();
         return false;
       }
       logger.d(
-        '❌ FavoriteService: Error checking favorite status: ${e.message}',
+        "❌ FavoriteService: Error checking favorite status: ${e.message}",
       );
       return false;
     } catch (e) {
-      logger.d('❌ FavoriteService: Unexpected error: $e');
+      logger.d("❌ FavoriteService: Unexpected error: $e");
       return false;
     }
   }
@@ -515,27 +515,27 @@ class FavoriteService implements IFavoriteService {
   Future<int> getFavoriteCount(int listingId) async {
     try {
       logger.d(
-        '🌐 FavoriteService: Getting favorite count for listing $listingId...',
+        "🌐 FavoriteService: Getting favorite count for listing $listingId...",
       );
 
       final response = await _oauthApiClient.get<Map<String, dynamic>>(
-        '/favorites/count/$listingId',
+        "/favorites/count/$listingId",
         (data) => data as Map<String, dynamic>,
       );
 
-      if (response['favoriteCount'] != null) {
-        final count = response['favoriteCount'] as int;
-        logger.d('✅ FavoriteService: Listing $listingId has $count favorites');
+      if (response["favoriteCount"] != null) {
+        final count = response["favoriteCount"] as int;
+        logger.d("✅ FavoriteService: Listing $listingId has $count favorites");
         return count;
       }
 
-      logger.d('✅ FavoriteService: Could not get favorite count');
+      logger.d("✅ FavoriteService: Could not get favorite count");
       return 0;
     } on DioException catch (e) {
-      logger.d('❌ FavoriteService: Error getting favorite count: ${e.message}');
+      logger.d("❌ FavoriteService: Error getting favorite count: ${e.message}");
       return 0;
     } catch (e) {
-      logger.d('❌ FavoriteService: Unexpected error: $e');
+      logger.d("❌ FavoriteService: Unexpected error: $e");
       return 0;
     }
   }

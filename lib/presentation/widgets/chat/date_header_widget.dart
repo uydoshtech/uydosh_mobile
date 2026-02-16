@@ -1,17 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:uy_dosh/base/state/theme_state.dart';
-import 'package:uy_dosh/base/constants/app_colors.dart';
-import 'package:uy_dosh/base/constants/app_theme.dart';
+import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 
 class DateHeaderWidget extends StatelessWidget {
-  final String dateString;
-  final DateTime date;
 
   const DateHeaderWidget({
-    super.key,
-    required this.dateString,
-    required this.date,
+    required this.dateString, required this.date, super.key,
   });
+  final String dateString;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {

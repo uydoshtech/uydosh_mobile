@@ -1,23 +1,19 @@
-import "package:uy_dosh/base/logger/logger.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:url_launcher/url_launcher.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ListingOwnerProfileData {
-  final bool isLoading;
-  final bool hasError;
-  final String errorMessage;
-  final UserProfile? profile;
 
   const _ListingOwnerProfileData({
     required this.isLoading,
@@ -25,6 +21,10 @@ class _ListingOwnerProfileData {
     required this.errorMessage,
     required this.profile,
   });
+  final bool isLoading;
+  final bool hasError;
+  final String errorMessage;
+  final UserProfile? profile;
 
   @override
   bool operator ==(Object other) {
@@ -46,14 +46,13 @@ class _ListingOwnerProfileData {
 }
 
 class ListingOwnerProfileScreen extends StatefulWidget {
-  final int userId;
-  final String? phoneNumber;
 
   const ListingOwnerProfileScreen({
-    super.key,
-    required this.userId,
+    required this.userId, super.key,
     this.phoneNumber,
   });
+  final int userId;
+  final String? phoneNumber;
 
   @override
   State<ListingOwnerProfileScreen> createState() =>
@@ -107,14 +106,14 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
             selector:
                 (state) => state.map(
                   initial:
-                      (_) => _ListingOwnerProfileData(
+                      (_) => const _ListingOwnerProfileData(
                         isLoading: true,
                         hasError: false,
                         errorMessage: "",
                         profile: null,
                       ),
                   loading:
-                      (_) => _ListingOwnerProfileData(
+                      (_) => const _ListingOwnerProfileData(
                         isLoading: true,
                         hasError: false,
                         errorMessage: "",
@@ -226,7 +225,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                       // User Name
                       Row(
                         children: [
-                          Icon(Icons.person, size: 20),
+                          const Icon(Icons.person, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -341,7 +340,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                       // University field
                       Row(
                         children: [
-                          Icon(Icons.school, size: 20),
+                          const Icon(Icons.school, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -382,7 +381,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                       // About Me field
                       Row(
                         children: [
-                          Icon(Icons.info_outline, size: 20),
+                          const Icon(Icons.info_outline, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -943,7 +942,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   }
 
   Widget _buildProfilePicture() {
-    return Center(child: Icon(Icons.person, size: 50, color: Colors.white));
+    return const Center(child: Icon(Icons.person, size: 50, color: Colors.white));
   }
 
   String _getGenderText(int gender, BuildContext context) {

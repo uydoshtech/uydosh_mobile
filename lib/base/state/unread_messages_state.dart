@@ -1,12 +1,12 @@
-import 'package:flutter/foundation.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
+import "package:flutter/foundation.dart";
+import "package:uy_dosh/base/logger/logger.dart";
 
 /// Global state to track unread messages count
 /// This is used to show the blinking green dot indicator in the navigation bar
 class UnreadMessagesState extends ChangeNotifier {
-  static final UnreadMessagesState _instance = UnreadMessagesState._internal();
   factory UnreadMessagesState() => _instance;
   UnreadMessagesState._internal();
+  static final UnreadMessagesState _instance = UnreadMessagesState._internal();
 
   int _unreadCount = 0;
   bool _isInitialized = false;
@@ -26,7 +26,7 @@ class UnreadMessagesState extends ChangeNotifier {
       _unreadCount = count;
       _isInitialized = true;
       notifyListeners();
-      logger.d('🔔 UnreadMessagesState: Updated unread count to $count');
+      logger.d("🔔 UnreadMessagesState: Updated unread count to $count");
     }
   }
 
@@ -36,7 +36,7 @@ class UnreadMessagesState extends ChangeNotifier {
     _isInitialized = true;
     notifyListeners();
     logger.d(
-      '🔔 UnreadMessagesState: Incremented unread count to $_unreadCount',
+      "🔔 UnreadMessagesState: Incremented unread count to $_unreadCount",
     );
   }
 
@@ -47,7 +47,7 @@ class UnreadMessagesState extends ChangeNotifier {
       _isInitialized = true;
       notifyListeners();
       logger.d(
-        '🔔 UnreadMessagesState: Decremented unread count to $_unreadCount',
+        "🔔 UnreadMessagesState: Decremented unread count to $_unreadCount",
       );
     }
   }
@@ -58,7 +58,7 @@ class UnreadMessagesState extends ChangeNotifier {
       _unreadCount = 0;
       _isInitialized = true;
       notifyListeners();
-      logger.d('🔔 UnreadMessagesState: Cleared unread count');
+      logger.d("🔔 UnreadMessagesState: Cleared unread count");
     }
   }
 

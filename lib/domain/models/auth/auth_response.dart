@@ -1,7 +1,7 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import "package:freezed_annotation/freezed_annotation.dart";
 
-part 'auth_response.freezed.dart';
-part 'auth_response.g.dart';
+part "auth_response.freezed.dart";
+part "auth_response.g.dart";
 
 @freezed
 class AuthResponse with _$AuthResponse {
@@ -21,8 +21,7 @@ class User with _$User {
   const factory User({
     required int id,
     required String email,
-    String? role,
-    @JsonKey(name: 'created_at') required String createdAt,
+    @JsonKey(name: "created_at") required String createdAt, String? role,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

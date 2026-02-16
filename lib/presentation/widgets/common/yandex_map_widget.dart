@@ -204,7 +204,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Loading indicator
-                SizedBox(
+                const SizedBox(
                   width: 32,
                   height: 32,
                   child: CircularProgressIndicator(

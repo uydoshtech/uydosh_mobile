@@ -6,7 +6,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Theme switcher widget for selecting app themes
 class ThemeSwitcher extends StatefulWidget {
-  const ThemeSwitcher({super.key, required this.child});
+  const ThemeSwitcher({required this.child, super.key});
 
   final Widget child;
 

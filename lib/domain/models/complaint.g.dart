@@ -8,6 +8,10 @@ part of 'complaint.dart';
 
 _$ComplaintImpl _$$ComplaintImplFromJson(Map<String, dynamic> json) =>
     _$ComplaintImpl(
+      status:
+          json['status'] == null
+              ? 'pending'
+              : _complaintStatusFromJson(json['status']),
       id: (json['id'] as num?)?.toInt(),
       complainantId: (json['complainant_id'] as num?)?.toInt(),
       listingId: (json['listing_id'] as num?)?.toInt(),
@@ -19,23 +23,19 @@ _$ComplaintImpl _$$ComplaintImplFromJson(Map<String, dynamic> json) =>
                 json['category'] as Map<String, dynamic>,
               ),
       text: json['text'] as String?,
-      status:
-          json['status'] == null
-              ? 'pending'
-              : _complaintStatusFromJson(json['status']),
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
     );
 
 Map<String, dynamic> _$$ComplaintImplToJson(_$ComplaintImpl instance) =>
     <String, dynamic>{
+      'status': instance.status,
       'id': instance.id,
       'complainant_id': instance.complainantId,
       'listing_id': instance.listingId,
       'category_id': instance.categoryId,
       'category': instance.category,
       'text': instance.text,
-      'status': instance.status,
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,
     };

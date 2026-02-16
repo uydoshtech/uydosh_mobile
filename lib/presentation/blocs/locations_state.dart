@@ -1,4 +1,4 @@
-part of 'locations_bloc.dart';
+part of "locations_bloc.dart";
 
 @freezed
 class LocationsState with _$LocationsState {

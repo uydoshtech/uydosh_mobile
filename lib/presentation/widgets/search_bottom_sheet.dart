@@ -1,41 +1,35 @@
 import "dart:async";
-import "package:flutter/material.dart";
+
 import "package:flutter/cupertino.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/logger/logger.dart";
-import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
-
-import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/domain/models/subway_station.dart";
-import "package:uy_dosh/domain/models/location.dart";
-import "package:uy_dosh/domain/services/subway_station_service.dart";
-import "package:uy_dosh/domain/services/location_service.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
-
-import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/screens/home/home_screen.dart";
-import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/search_filters_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/location.dart";
+import "package:uy_dosh/domain/models/subway_station.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/location_service.dart";
+import "package:uy_dosh/domain/services/subway_station_service.dart";
+import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
+import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
+import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
+import "package:uy_dosh/presentation/screens/home/home_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
-import "package:uy_dosh/base/injection/injection.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _LocationPickerData {
-  final bool isLoading;
-  final bool hasError;
-  final String errorMessage;
-  final List<Location> locations;
 
   const _LocationPickerData({
     required this.isLoading,
@@ -43,6 +37,10 @@ class _LocationPickerData {
     required this.errorMessage,
     required this.locations,
   });
+  final bool isLoading;
+  final bool hasError;
+  final String errorMessage;
+  final List<Location> locations;
 
   @override
   bool operator ==(Object other) {
@@ -138,6 +136,8 @@ class SearchBottomSheetWidget {
               currentSubwayStationId: currentSubwayStationId,
               currentSubwayLineId: currentSubwayLineId,
               currentGender: currentGender,
+              currentMinPrice: currentMinPrice,
+              currentMaxPrice: currentMaxPrice,
             ),
           ),
     );
@@ -145,14 +145,6 @@ class SearchBottomSheetWidget {
 }
 
 class _SearchBottomSheetContent extends StatefulWidget {
-  final bool replaceCurrentRoute;
-  final int? currentListingTypeId;
-  final int? currentLocationId;
-  final int? currentSubwayStationId;
-  final int? currentSubwayLineId;
-  final int? currentGender;
-  final double? currentMinPrice;
-  final double? currentMaxPrice;
 
   const _SearchBottomSheetContent({
     this.replaceCurrentRoute = false,
@@ -164,6 +156,14 @@ class _SearchBottomSheetContent extends StatefulWidget {
     this.currentMinPrice,
     this.currentMaxPrice,
   });
+  final bool replaceCurrentRoute;
+  final int? currentListingTypeId;
+  final int? currentLocationId;
+  final int? currentSubwayStationId;
+  final int? currentSubwayLineId;
+  final int? currentGender;
+  final double? currentMinPrice;
+  final double? currentMaxPrice;
 
   @override
   State<_SearchBottomSheetContent> createState() =>
@@ -667,7 +667,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                 child: ListingTypePicker(
                                   selectedListingTypeId:
                                       _searchFiltersState.selectedListingTypeId,
-                                  onListingTypeChanged: (int listingTypeId) {
+                                  onListingTypeChanged: (listingTypeId) {
                                     _searchFiltersState.setListingTypeId(
                                       listingTypeId,
                                     );
@@ -683,7 +683,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                 child: GenderPicker(
                                   selectedGender:
                                       _searchFiltersState.selectedGender,
-                                  onGenderChanged: (int gender) {
+                                  onGenderChanged: (gender) {
                                     _searchFiltersState.setGender(gender);
                                     setState(() {});
                                   },
@@ -704,14 +704,14 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                             selector:
                                 (state) => state.when(
                                   initial:
-                                      () => _LocationPickerData(
+                                      () => const _LocationPickerData(
                                         isLoading: false,
                                         hasError: false,
                                         errorMessage: "",
                                         locations: [],
                                       ),
                                   loading:
-                                      () => _LocationPickerData(
+                                      () => const _LocationPickerData(
                                         isLoading: true,
                                         hasError: false,
                                         errorMessage: "",
@@ -750,7 +750,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                   _searchFiltersState.selectedLocationIndex,
                                   data.locations,
                                 ),
-                                onLocationChanged: (int locationIndex) {
+                                onLocationChanged: (locationIndex) {
                                   if (locationIndex == -1) {
                                     _searchFiltersState.setLocationIndex(0);
                                   } else {
@@ -799,7 +799,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                     "metro_line_picker_${_searchFiltersState.selectedLocationIndex}",
                                   ),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.surfaceVariant,
+                                    color: theme.colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                       color: theme.colorScheme.outline,
@@ -954,7 +954,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                             color:
                                                 theme
                                                     .colorScheme
-                                                    .surfaceVariant,
+                                                    .surfaceContainerHighest,
                                             borderRadius: BorderRadius.circular(
                                               10,
                                             ),
@@ -972,7 +972,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                                   ),
                                                   itemExtent: 40,
                                                   scrollController:
-                                                      _stationPickerController!,
+                                                      _stationPickerController,
                                                   onSelectedItemChanged: (
                                                     index,
                                                   ) {
@@ -1134,7 +1134,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                                               Icon(
                                                                 Icons.train,
                                                                 color: _getLineColor(
-                                                                  transferInfo['connectedStationLine'],
+                                                                  transferInfo["connectedStationLine"],
                                                                 ), // Use connected station's line color
                                                                 size: 20,
                                                               ),
@@ -1142,7 +1142,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                                           ],
                                                         ),
                                                       );
-                                                    }).toList(),
+                                                    }),
                                                   ],
                                                 ),
                                               ),
@@ -1159,7 +1159,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                             ),
                                             color: theme
                                                 .colorScheme
-                                                .surfaceVariant
+                                                .surfaceContainerHighest
                                                 .withValues(alpha: 0.5),
                                           ),
                                           height: 80,
@@ -1191,7 +1191,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                           Center(
                             child: Padding(
                               padding: const EdgeInsets.only(top: 10.0),
-                              child: Container(
+                              child: SizedBox(
                                 height: 20, // Fixed height to reserve space
 
                                 child:
@@ -1211,13 +1211,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                           const SizedBox(height: 4),
 
                           // Price Range Picker
-                          Container(
+                          DecoratedBox(
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: theme.colorScheme.outline,
                               ),
                               borderRadius: BorderRadius.circular(10),
-                              color: theme.colorScheme.surfaceVariant,
+                              color: theme.colorScheme.surfaceContainerHighest,
                             ),
                             child: PriceRangePicker(
                               initialMinPrice: _searchFiltersState.minPrice,
@@ -1235,13 +1235,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                           const SizedBox(height: 15),
 
                           // Private Room Toggle
-                          Container(
+                          DecoratedBox(
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: theme.colorScheme.outline,
                               ),
                               borderRadius: BorderRadius.circular(10),
-                              color: theme.colorScheme.surfaceVariant,
+                              color: theme.colorScheme.surfaceContainerHighest,
                             ),
                             child: UydoshToggle(
                               icon: Icons.lock_outline,
@@ -1263,7 +1263,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                 ),
                               ),
                               value: _searchFiltersState.privateRoom,
-                              onChanged: (bool value) {
+                              onChanged: (value) {
                                 HapticFeedbackUtils.impact();
                                 _searchFiltersState.setPrivateRoom(value);
                                 setState(() {});
@@ -1282,7 +1282,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.search, size: 20),
+                                  const Icon(Icons.search, size: 20),
                                   const SizedBox(width: 8),
                                   Text(
                                     LanguageAwareStringHelper.getCurrent(
@@ -1323,7 +1323,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       decoration: BoxDecoration(
         border: Border.all(color: theme.colorScheme.outline),
         borderRadius: BorderRadius.circular(10),
-        color: theme.colorScheme.surfaceVariant,
+        color: theme.colorScheme.surfaceContainerHighest,
       ),
       child: Row(
         children: [
@@ -1373,7 +1373,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         "location_picker_${_searchFiltersState.selectedSubwayLine}",
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant,
+        color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
       ),
@@ -1477,7 +1477,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                         ),
                       ),
                     )
-                    .toList(),
+                    ,
               ],
             ),
           ),
@@ -1488,9 +1488,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
   Widget _buildMetroLinePicker() {
     final theme = Theme.of(context);
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant,
+        color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
       ),
@@ -1636,11 +1636,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         });
       },
       borderRadius: BorderRadius.circular(10),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color, width: 2),
-          color: isSelected ? color : theme.colorScheme.surfaceVariant,
+          color: isSelected ? color : theme.colorScheme.surfaceContainerHighest,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -1675,11 +1675,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         });
       },
       borderRadius: BorderRadius.circular(10),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color, width: 2),
-          color: isSelected ? color : theme.colorScheme.surfaceVariant,
+          color: isSelected ? color : theme.colorScheme.surfaceContainerHighest,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -1711,7 +1711,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant,
+        color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
       ),
@@ -1757,7 +1757,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         "location_picker_${_searchFiltersState.selectedSubwayLine}",
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant,
+        color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
       ),
@@ -1859,7 +1859,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                         ),
                       ),
                     )
-                    .toList(),
+                    ,
               ],
             ),
           ),
@@ -1955,9 +1955,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         );
 
     // Parse the text and create TextSpans for bold formatting
-    final List<TextSpan> spans = [];
-    final RegExp boldRegex = RegExp(r'<b>(.*?)</b>');
-    int lastIndex = 0;
+    final spans = <TextSpan>[];
+    final boldRegex = RegExp("<b>(.*?)</b>");
+    var lastIndex = 0;
 
     for (final Match match in boldRegex.allMatches(explanationText)) {
       // Add text before the bold tag

@@ -1,5 +1,5 @@
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -10,27 +10,24 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
+import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
-import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/photo_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
-import "package:uy_dosh/base/util/date_utils.dart";
-import "package:uy_dosh/domain/utils/listing_utils.dart";
-import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
-import "package:flutter/cupertino.dart";
 
 class ListingTile extends StatefulWidget {
   const ListingTile({
-    super.key,
-    required this.listing,
+    required this.listing, super.key,
     this.forceFavorite, // Optional parameter
     this.onFavoriteRemoved, // Optional callback
     this.showHeartIcon =
@@ -172,7 +169,7 @@ class _ListingTileState extends State<ListingTile>
                       children: [
                         // Views count
                         if (_isLoadingViewCount)
-                          SizedBox(
+                          const SizedBox(
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
@@ -186,7 +183,7 @@ class _ListingTileState extends State<ListingTile>
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
+                                const Icon(
                                   CupertinoIcons.eye,
                                   size: 16,
                                   color: AppColors.textGrey600,
@@ -197,7 +194,7 @@ class _ListingTileState extends State<ListingTile>
                                     context,
                                     "listing_views_by_others",
                                   ).replaceAll("{count}", _viewCount.toString()),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                     color: AppColors.textGrey600,
@@ -273,7 +270,7 @@ class _ListingTileState extends State<ListingTile>
                                 // Photo indicator icon
                                 if (widget.listing.photos != null &&
                                     widget.listing.photos!.isNotEmpty) ...[
-                                  PhotoIcon(),
+                                  const PhotoIcon(),
                                 ],
                               ],
                             ),
@@ -595,7 +592,7 @@ class _ListingTileState extends State<ListingTile>
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         CupertinoIcons.money_dollar_circle,
                                         size: 22,
                                         color: Colors.green,
@@ -603,7 +600,7 @@ class _ListingTileState extends State<ListingTile>
                                       const SizedBox(width: 4),
                                       Text(
                                         _formatPriceRange(),
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.green,
                                           fontWeight: FontWeight.bold,
@@ -613,7 +610,7 @@ class _ListingTileState extends State<ListingTile>
                                   ),
                                 ],
                                 // Private Room indicator below price
-                                if (widget.listing.privateRoom == true) ...[
+                                if (widget.listing.privateRoom ?? false) ...[
                                   const SizedBox(height: 8),
                                   ListenableBuilder(
                                     listenable: LanguageState(),
@@ -727,19 +724,12 @@ class _ListingTileState extends State<ListingTile>
     final minPrice = widget.listing.minPrice;
     final maxPrice = widget.listing.maxPrice;
 
-    if (minPrice != null && maxPrice != null) {
-      if (minPrice == maxPrice) {
-        return minPrice.toString();
-      } else {
-        return "$minPrice - $maxPrice";
-      }
-    } else if (minPrice != null) {
-      return "от $minPrice";
-    } else if (maxPrice != null) {
-      return "до $maxPrice";
+    if (minPrice == maxPrice) {
+      return minPrice.toString();
     } else {
-      return "";
+      return "$minPrice - $maxPrice";
     }
+    
   }
 
   String _formatMoveInDate() {
@@ -857,12 +847,14 @@ class _ListingTileState extends State<ListingTile>
       // Air conditioning gets second priority (2)
       if (a.code == "air_conditioning" &&
           b.code != "air_conditioning" &&
-          b.code != "wifi")
+          b.code != "wifi") {
         return -1;
+      }
       if (a.code != "air_conditioning" &&
           b.code == "air_conditioning" &&
-          a.code != "wifi")
+          a.code != "wifi") {
         return 1;
+      }
 
       // For all other amenities, sort alphabetically by code
       // Handle nullable codes safely

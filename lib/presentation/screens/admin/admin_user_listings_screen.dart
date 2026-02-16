@@ -3,14 +3,13 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/presentation/widgets/listing_tile.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 class AdminUserListingsScreen extends StatefulWidget {
   const AdminUserListingsScreen({
-    super.key,
-    required this.userId,
+    required this.userId, super.key,
     this.userEmail,
   });
 

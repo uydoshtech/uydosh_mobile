@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import "package:flutter/material.dart";
 
 /// Utility class for optimized animation controller management
 class AnimationUtils {
@@ -24,7 +24,7 @@ class AnimationUtils {
         controller.dispose();
       } catch (e) {
         // Controller might already be disposed
-        debugPrint('Animation controller disposal error: $e');
+        debugPrint("Animation controller disposal error: $e");
       }
     }
   }
@@ -87,7 +87,7 @@ class AnimationUtils {
       }
     } catch (e) {
       // Handle animation errors gracefully
-      debugPrint('Animation error: $e');
+      debugPrint("Animation error: $e");
     }
   }
 }

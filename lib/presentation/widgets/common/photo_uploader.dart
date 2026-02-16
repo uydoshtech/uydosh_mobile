@@ -1,18 +1,31 @@
 import "dart:io";
+
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:image_picker/image_picker.dart";
-
+import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/photo.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
-import "package:uy_dosh/base/util/environment_util.dart";
-import "package:cached_network_image/cached_network_image.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class PhotoUploader extends StatefulWidget {
+
+  const PhotoUploader({
+    required this.selectedPhotos,
+    required this.onPhotosChanged,
+    required this.existingPhotos,
+    required this.onDeleteExistingPhoto,
+    required this.onMakePhotoPrimary,
+    required this.deletingPhotoIds,
+    required this.makingPhotoPrimaryIds,
+    super.key,
+    this.onMakeNewPhotoPrimary, // Optional callback for new photos
+    this.maxPhotos = 5,
+    this.isRequired = false,
+  });
   final List<String> selectedPhotos;
   final Function(List<String>) onPhotosChanged;
   final List<Photo> existingPhotos;
@@ -23,20 +36,6 @@ class PhotoUploader extends StatefulWidget {
   final Set<int> makingPhotoPrimaryIds;
   final int maxPhotos;
   final bool isRequired;
-
-  const PhotoUploader({
-    super.key,
-    required this.selectedPhotos,
-    required this.onPhotosChanged,
-    required this.existingPhotos,
-    required this.onDeleteExistingPhoto,
-    required this.onMakePhotoPrimary,
-    this.onMakeNewPhotoPrimary, // Optional callback for new photos
-    required this.deletingPhotoIds,
-    required this.makingPhotoPrimaryIds,
-    this.maxPhotos = 5,
-    this.isRequired = false,
-  });
 
   @override
   State<PhotoUploader> createState() => _PhotoUploaderState();
@@ -85,7 +84,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
     try {
       if (source == ImageSource.gallery) {
         // For gallery, allow multiple image selection
-        final List<XFile> images = await _picker.pickMultiImage(
+        final images = await _picker.pickMultiImage(
           maxWidth: 1280,
           maxHeight: 720,
           imageQuality: 75,
@@ -98,10 +97,10 @@ class _PhotoUploaderState extends State<PhotoUploader>
           final imagesToProcess = images.take(remainingSlots).toList();
 
           if (imagesToProcess.isNotEmpty) {
-            final List<String> newPhotos = List.from(widget.selectedPhotos);
+            final newPhotos = List<String>.from(widget.selectedPhotos);
 
             // Add each selected image
-            for (final XFile image in imagesToProcess) {
+            for (final image in imagesToProcess) {
               newPhotos.add(image.path);
             }
 
@@ -119,7 +118,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
         }
       } else {
         // For camera, keep single image selection
-        final XFile? image = await _picker.pickImage(
+        final image = await _picker.pickImage(
           source: source,
           maxWidth: 1280,
           maxHeight: 720,
@@ -128,7 +127,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
 
         if (image != null) {
           if (widget.selectedPhotos.length < widget.maxPhotos) {
-            final List<String> newPhotos = List.from(widget.selectedPhotos);
+            final newPhotos = List<String>.from(widget.selectedPhotos);
             newPhotos.add(image.path);
 
             // If this is the first photo being added AND no existing photos, make it primary
@@ -157,7 +156,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
   void _showMaxPhotosDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return AlertDialog(
           title: Text(
             LanguageAwareStringHelper.getCurrent(context, "max_photos_reached"),
@@ -179,7 +178,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
   void _showImageSourceDialog() {
     showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return SafeArea(
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -242,7 +241,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
   }
 
   void _deleteNewPhoto(int index) {
-    final List<String> newPhotos = List.from(widget.selectedPhotos);
+    final newPhotos = List<String>.from(widget.selectedPhotos);
     newPhotos.removeAt(index);
 
     // Handle primary photo reassignment
@@ -302,7 +301,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
 
   // Helper method to get existing photos in correct order (primary first)
   List<Photo> _getOrderedExistingPhotos() {
-    final List<Photo> orderedPhotos = List.from(widget.existingPhotos);
+    final orderedPhotos = List<Photo>.from(widget.existingPhotos);
 
     // Find the primary photo and move it to the front
     final primaryPhotoIndex = orderedPhotos.indexWhere(
@@ -321,11 +320,11 @@ class _PhotoUploaderState extends State<PhotoUploader>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
-        color: theme.colorScheme.surfaceVariant,
+        color: theme.colorScheme.surfaceContainerHighest,
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -472,7 +471,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
     final photo = widget.existingPhotos[index];
     final isDeleting = widget.deletingPhotoIds.contains(photo.id);
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
@@ -503,15 +502,15 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 fadeInDuration: const Duration(milliseconds: 200),
                 fadeInCurve: Curves.easeOut,
                 placeholder:
-                    (context, url) => Container(
-                      color: Theme.of(context).colorScheme.surfaceVariant,
+                    (context, url) => ColoredBox(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       child: const Center(
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     ),
                 errorWidget:
-                    (context, url, error) => Container(
-                      color: Theme.of(context).colorScheme.surfaceVariant,
+                    (context, url, error) => ColoredBox(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       child: Icon(
                         Icons.broken_image,
                         color: Theme.of(
@@ -524,7 +523,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
             // Overlay loader when making photo primary
             if (widget.makingPhotoPrimaryIds.contains(photo.id))
               Positioned.fill(
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(8),
@@ -535,10 +534,10 @@ class _PhotoUploaderState extends State<PhotoUploader>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        HouseLoadingIndicator(
+                        const HouseLoadingIndicator(
                           size: 32,
                           color: Colors.white,
-                          rotationDuration: const Duration(milliseconds: 1000),
+                          rotationDuration: Duration(milliseconds: 1000),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -546,7 +545,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                             context,
                             "making_primary",
                           ),
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -616,7 +615,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
         _primaryNewPhotoIndex == index &&
         !widget.existingPhotos.any((photo) => photo.isPrimary);
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
@@ -645,8 +644,8 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 height: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Theme.of(context).colorScheme.surfaceVariant,
+                  return ColoredBox(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: Icon(
                       Icons.broken_image,
                       color: Theme.of(

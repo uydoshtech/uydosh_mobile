@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 class ActionDropdownMenu extends StatelessWidget {
   const ActionDropdownMenu({
@@ -24,10 +24,8 @@ class ActionDropdownMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      onOpened: () {
-        HapticFeedbackUtils.impact();
-      },
-      onSelected: (String value) {
+      onOpened: HapticFeedbackUtils.impact,
+      onSelected: (value) {
         HapticFeedbackUtils.impact();
         final item = items.firstWhere((item) => item.value == value);
         if (!item.enabled) {
@@ -36,7 +34,7 @@ class ActionDropdownMenu extends StatelessWidget {
         item.onPressed();
       },
       color: Theme.of(context).popupMenuTheme.color,
-      itemBuilder: (BuildContext context) {
+      itemBuilder: (context) {
         return items.map((item) {
           final baseTextStyle = Theme.of(context).popupMenuTheme.textStyle;
           final disabledColor = Theme.of(context).disabledColor;

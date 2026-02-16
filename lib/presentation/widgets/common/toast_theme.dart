@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "../../../base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 
 /// ToastTheme provides a centralized way to show toast messages throughout the app.
 ///
@@ -306,13 +306,13 @@ class ToastTheme {
 
 /// Custom animated toast content with rolling animation
 class _RollingToastContent extends StatefulWidget {
-  final String message;
-  final Color backgroundColor;
 
   const _RollingToastContent({
     required this.message,
     required this.backgroundColor,
   });
+  final String message;
+  final Color backgroundColor;
 
   @override
   State<_RollingToastContent> createState() => _RollingToastContentState();
@@ -437,15 +437,15 @@ class _RollingToastContentState extends State<_RollingToastContent>
 /// This toast appears right below the app header (AppBar) with a small buffer space
 /// to ensure it doesn"t overlap with the header content.
 class _TopToastOverlay extends StatefulWidget {
-  final String message;
-  final Color backgroundColor;
-  final VoidCallback onDismiss;
 
   const _TopToastOverlay({
     required this.message,
     required this.backgroundColor,
     required this.onDismiss,
   });
+  final String message;
+  final Color backgroundColor;
+  final VoidCallback onDismiss;
 
   @override
   State<_TopToastOverlay> createState() => _TopToastOverlayState();

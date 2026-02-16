@@ -1,5 +1,5 @@
-import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/domain/models/region.dart";
 
 /// Cache for regions data fetched from the API
 /// This cache stores regions with proper localization support
@@ -12,8 +12,8 @@ class RegionCache {
     if (_isInitialized) return;
 
     try {
-      logger.d('=== REGION CACHE INITIALIZATION ===');
-      logger.d('Fetching regions from API...');
+      logger.d("=== REGION CACHE INITIALIZATION ===");
+      logger.d("Fetching regions from API...");
 
       // For now, we'll create the regions with proper localized data
       // In a real implementation, this would fetch from the API
@@ -21,11 +21,11 @@ class RegionCache {
 
       _isInitialized = true;
       logger.d(
-        'Region cache initialized with ${_cachedRegions.length} regions',
+        "Region cache initialized with ${_cachedRegions.length} regions",
       );
-      logger.d('=====================================');
+      logger.d("=====================================");
     } catch (e) {
-      logger.d('Error initializing region cache: $e');
+      logger.d("Error initializing region cache: $e");
       rethrow;
     }
   }
@@ -34,7 +34,7 @@ class RegionCache {
   static List<Region> _getRegionsFromApi() {
     // This simulates the API response with proper localized data from the database
     return [
-      Region(
+      const Region(
         id: 1,
         name: "Toshkent shahri",
         nameRu: "Город Ташкент",
@@ -49,7 +49,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 2,
         name: "Qoraqalpogiston Respublikasi",
         nameRu: "Республика Каракалпакстан",
@@ -64,7 +64,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 3,
         name: "Andijon viloyati",
         nameRu: "Андижанская область",
@@ -79,7 +79,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 4,
         name: "Buxoro viloyati",
         nameRu: "Бухарская область",
@@ -94,7 +94,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 5,
         name: "Jizzax viloyati",
         nameRu: "Джизакская область",
@@ -109,7 +109,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 6,
         name: "Qashqadaryo viloyati",
         nameRu: "Кашкадарьинская область",
@@ -124,7 +124,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 7,
         name: "Navoiy viloyati",
         nameRu: "Навоийская область",
@@ -139,7 +139,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 8,
         name: "Namangan viloyati",
         nameRu: "Наманганская область",
@@ -154,7 +154,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 9,
         name: "Samarqand viloyati",
         nameRu: "Самаркандская область",
@@ -169,7 +169,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 10,
         name: "Surxondaryo viloyati",
         nameRu: "Сурхандарьинская область",
@@ -184,7 +184,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 11,
         name: "Sirdaryo viloyati",
         nameRu: "Сырдарьинская область",
@@ -199,7 +199,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 12,
         name: "Toshkent viloyati",
         nameRu: "Ташкентская область",
@@ -214,7 +214,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 13,
         name: "Fargona viloyati",
         nameRu: "Ферганская область",
@@ -229,7 +229,7 @@ class RegionCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      Region(
+      const Region(
         id: 14,
         name: "Xorazm viloyati",
         nameRu: "Хорезмская область",
@@ -250,7 +250,7 @@ class RegionCache {
   /// Get all regions
   static List<Region> getAllRegions() {
     if (!_isInitialized) {
-      logger.d('Region cache not initialized, returning empty list');
+      logger.d("Region cache not initialized, returning empty list");
       return [];
     }
     return _cachedRegions;
@@ -259,7 +259,7 @@ class RegionCache {
   /// Get regions sorted alphabetically by localized name
   static List<Region> getRegionsSortedByLanguage(String language) {
     if (!_isInitialized) {
-      logger.d('Region cache not initialized, returning empty list');
+      logger.d("Region cache not initialized, returning empty list");
       return [];
     }
 
@@ -275,7 +275,7 @@ class RegionCache {
   /// Get a specific region by ID
   static Region? getRegionById(int id) {
     if (!_isInitialized) {
-      logger.d('Region cache not initialized, returning null');
+      logger.d("Region cache not initialized, returning null");
       return null;
     }
 
@@ -289,7 +289,7 @@ class RegionCache {
   /// Get regions by name (case-insensitive search)
   static List<Region> getRegionsByName(String name) {
     if (!_isInitialized) {
-      logger.d('Region cache not initialized, returning empty list');
+      logger.d("Region cache not initialized, returning empty list");
       return [];
     }
 
@@ -335,6 +335,6 @@ class RegionCache {
   static void clearCache() {
     _cachedRegions = [];
     _isInitialized = false;
-    logger.d('Region cache cleared');
+    logger.d("Region cache cleared");
   }
 }

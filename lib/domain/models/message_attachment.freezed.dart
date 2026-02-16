@@ -22,22 +22,22 @@ MessageAttachment _$MessageAttachmentFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$MessageAttachment {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'message_id')
+  @JsonKey(name: "message_id")
   int get messageId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'file_name')
+  @JsonKey(name: "file_name")
   String get fileName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'file_url')
+  @JsonKey(name: "file_url")
   String get fileUrl => throw _privateConstructorUsedError;
-  @JsonKey(name: 'file_type')
+  @JsonKey(name: "file_type")
   String get fileType => throw _privateConstructorUsedError;
-  @JsonKey(name: 'file_size')
-  int? get fileSize => throw _privateConstructorUsedError;
-  @JsonKey(name: 'mime_type')
-  String? get mimeType => throw _privateConstructorUsedError;
-  @JsonKey(name: 'thumbnail_url')
-  String? get thumbnailUrl => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "file_size")
+  int? get fileSize => throw _privateConstructorUsedError;
+  @JsonKey(name: "mime_type")
+  String? get mimeType => throw _privateConstructorUsedError;
+  @JsonKey(name: "thumbnail_url")
+  String? get thumbnailUrl => throw _privateConstructorUsedError;
 
   /// Serializes this MessageAttachment to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -58,14 +58,14 @@ abstract class $MessageAttachmentCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'message_id') int messageId,
-    @JsonKey(name: 'file_name') String fileName,
-    @JsonKey(name: 'file_url') String fileUrl,
-    @JsonKey(name: 'file_type') String fileType,
-    @JsonKey(name: 'file_size') int? fileSize,
-    @JsonKey(name: 'mime_type') String? mimeType,
-    @JsonKey(name: 'thumbnail_url') String? thumbnailUrl,
-    @JsonKey(name: 'created_at') String createdAt,
+    @JsonKey(name: "message_id") int messageId,
+    @JsonKey(name: "file_name") String fileName,
+    @JsonKey(name: "file_url") String fileUrl,
+    @JsonKey(name: "file_type") String fileType,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "file_size") int? fileSize,
+    @JsonKey(name: "mime_type") String? mimeType,
+    @JsonKey(name: "thumbnail_url") String? thumbnailUrl,
   });
 }
 
@@ -89,10 +89,10 @@ class _$MessageAttachmentCopyWithImpl<$Res, $Val extends MessageAttachment>
     Object? fileName = null,
     Object? fileUrl = null,
     Object? fileType = null,
+    Object? createdAt = null,
     Object? fileSize = freezed,
     Object? mimeType = freezed,
     Object? thumbnailUrl = freezed,
-    Object? createdAt = null,
   }) {
     return _then(
       _value.copyWith(
@@ -121,6 +121,11 @@ class _$MessageAttachmentCopyWithImpl<$Res, $Val extends MessageAttachment>
                     ? _value.fileType
                     : fileType // ignore: cast_nullable_to_non_nullable
                         as String,
+            createdAt:
+                null == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as String,
             fileSize:
                 freezed == fileSize
                     ? _value.fileSize
@@ -136,11 +141,6 @@ class _$MessageAttachmentCopyWithImpl<$Res, $Val extends MessageAttachment>
                     ? _value.thumbnailUrl
                     : thumbnailUrl // ignore: cast_nullable_to_non_nullable
                         as String?,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
           )
           as $Val,
     );
@@ -158,14 +158,14 @@ abstract class _$$MessageAttachmentImplCopyWith<$Res>
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'message_id') int messageId,
-    @JsonKey(name: 'file_name') String fileName,
-    @JsonKey(name: 'file_url') String fileUrl,
-    @JsonKey(name: 'file_type') String fileType,
-    @JsonKey(name: 'file_size') int? fileSize,
-    @JsonKey(name: 'mime_type') String? mimeType,
-    @JsonKey(name: 'thumbnail_url') String? thumbnailUrl,
-    @JsonKey(name: 'created_at') String createdAt,
+    @JsonKey(name: "message_id") int messageId,
+    @JsonKey(name: "file_name") String fileName,
+    @JsonKey(name: "file_url") String fileUrl,
+    @JsonKey(name: "file_type") String fileType,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "file_size") int? fileSize,
+    @JsonKey(name: "mime_type") String? mimeType,
+    @JsonKey(name: "thumbnail_url") String? thumbnailUrl,
   });
 }
 
@@ -188,10 +188,10 @@ class __$$MessageAttachmentImplCopyWithImpl<$Res>
     Object? fileName = null,
     Object? fileUrl = null,
     Object? fileType = null,
+    Object? createdAt = null,
     Object? fileSize = freezed,
     Object? mimeType = freezed,
     Object? thumbnailUrl = freezed,
-    Object? createdAt = null,
   }) {
     return _then(
       _$MessageAttachmentImpl(
@@ -220,6 +220,11 @@ class __$$MessageAttachmentImplCopyWithImpl<$Res>
                 ? _value.fileType
                 : fileType // ignore: cast_nullable_to_non_nullable
                     as String,
+        createdAt:
+            null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as String,
         fileSize:
             freezed == fileSize
                 ? _value.fileSize
@@ -235,11 +240,6 @@ class __$$MessageAttachmentImplCopyWithImpl<$Res>
                 ? _value.thumbnailUrl
                 : thumbnailUrl // ignore: cast_nullable_to_non_nullable
                     as String?,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
       ),
     );
   }
@@ -250,14 +250,14 @@ class __$$MessageAttachmentImplCopyWithImpl<$Res>
 class _$MessageAttachmentImpl implements _MessageAttachment {
   const _$MessageAttachmentImpl({
     required this.id,
-    @JsonKey(name: 'message_id') required this.messageId,
-    @JsonKey(name: 'file_name') required this.fileName,
-    @JsonKey(name: 'file_url') required this.fileUrl,
-    @JsonKey(name: 'file_type') required this.fileType,
-    @JsonKey(name: 'file_size') this.fileSize,
-    @JsonKey(name: 'mime_type') this.mimeType,
-    @JsonKey(name: 'thumbnail_url') this.thumbnailUrl,
-    @JsonKey(name: 'created_at') required this.createdAt,
+    @JsonKey(name: "message_id") required this.messageId,
+    @JsonKey(name: "file_name") required this.fileName,
+    @JsonKey(name: "file_url") required this.fileUrl,
+    @JsonKey(name: "file_type") required this.fileType,
+    @JsonKey(name: "created_at") required this.createdAt,
+    @JsonKey(name: "file_size") this.fileSize,
+    @JsonKey(name: "mime_type") this.mimeType,
+    @JsonKey(name: "thumbnail_url") this.thumbnailUrl,
   });
 
   factory _$MessageAttachmentImpl.fromJson(Map<String, dynamic> json) =>
@@ -266,33 +266,33 @@ class _$MessageAttachmentImpl implements _MessageAttachment {
   @override
   final int id;
   @override
-  @JsonKey(name: 'message_id')
+  @JsonKey(name: "message_id")
   final int messageId;
   @override
-  @JsonKey(name: 'file_name')
+  @JsonKey(name: "file_name")
   final String fileName;
   @override
-  @JsonKey(name: 'file_url')
+  @JsonKey(name: "file_url")
   final String fileUrl;
   @override
-  @JsonKey(name: 'file_type')
+  @JsonKey(name: "file_type")
   final String fileType;
   @override
-  @JsonKey(name: 'file_size')
+  @JsonKey(name: "created_at")
+  final String createdAt;
+  @override
+  @JsonKey(name: "file_size")
   final int? fileSize;
   @override
-  @JsonKey(name: 'mime_type')
+  @JsonKey(name: "mime_type")
   final String? mimeType;
   @override
-  @JsonKey(name: 'thumbnail_url')
+  @JsonKey(name: "thumbnail_url")
   final String? thumbnailUrl;
-  @override
-  @JsonKey(name: 'created_at')
-  final String createdAt;
 
   @override
   String toString() {
-    return 'MessageAttachment(id: $id, messageId: $messageId, fileName: $fileName, fileUrl: $fileUrl, fileType: $fileType, fileSize: $fileSize, mimeType: $mimeType, thumbnailUrl: $thumbnailUrl, createdAt: $createdAt)';
+    return 'MessageAttachment(id: $id, messageId: $messageId, fileName: $fileName, fileUrl: $fileUrl, fileType: $fileType, createdAt: $createdAt, fileSize: $fileSize, mimeType: $mimeType, thumbnailUrl: $thumbnailUrl)';
   }
 
   @override
@@ -308,14 +308,14 @@ class _$MessageAttachmentImpl implements _MessageAttachment {
             (identical(other.fileUrl, fileUrl) || other.fileUrl == fileUrl) &&
             (identical(other.fileType, fileType) ||
                 other.fileType == fileType) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
             (identical(other.fileSize, fileSize) ||
                 other.fileSize == fileSize) &&
             (identical(other.mimeType, mimeType) ||
                 other.mimeType == mimeType) &&
             (identical(other.thumbnailUrl, thumbnailUrl) ||
-                other.thumbnailUrl == thumbnailUrl) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.thumbnailUrl == thumbnailUrl));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -327,10 +327,10 @@ class _$MessageAttachmentImpl implements _MessageAttachment {
     fileName,
     fileUrl,
     fileType,
+    createdAt,
     fileSize,
     mimeType,
     thumbnailUrl,
-    createdAt,
   );
 
   /// Create a copy of MessageAttachment
@@ -353,14 +353,14 @@ class _$MessageAttachmentImpl implements _MessageAttachment {
 abstract class _MessageAttachment implements MessageAttachment {
   const factory _MessageAttachment({
     required final int id,
-    @JsonKey(name: 'message_id') required final int messageId,
-    @JsonKey(name: 'file_name') required final String fileName,
-    @JsonKey(name: 'file_url') required final String fileUrl,
-    @JsonKey(name: 'file_type') required final String fileType,
-    @JsonKey(name: 'file_size') final int? fileSize,
-    @JsonKey(name: 'mime_type') final String? mimeType,
-    @JsonKey(name: 'thumbnail_url') final String? thumbnailUrl,
-    @JsonKey(name: 'created_at') required final String createdAt,
+    @JsonKey(name: "message_id") required final int messageId,
+    @JsonKey(name: "file_name") required final String fileName,
+    @JsonKey(name: "file_url") required final String fileUrl,
+    @JsonKey(name: "file_type") required final String fileType,
+    @JsonKey(name: "created_at") required final String createdAt,
+    @JsonKey(name: "file_size") final int? fileSize,
+    @JsonKey(name: "mime_type") final String? mimeType,
+    @JsonKey(name: "thumbnail_url") final String? thumbnailUrl,
   }) = _$MessageAttachmentImpl;
 
   factory _MessageAttachment.fromJson(Map<String, dynamic> json) =
@@ -369,29 +369,29 @@ abstract class _MessageAttachment implements MessageAttachment {
   @override
   int get id;
   @override
-  @JsonKey(name: 'message_id')
+  @JsonKey(name: "message_id")
   int get messageId;
   @override
-  @JsonKey(name: 'file_name')
+  @JsonKey(name: "file_name")
   String get fileName;
   @override
-  @JsonKey(name: 'file_url')
+  @JsonKey(name: "file_url")
   String get fileUrl;
   @override
-  @JsonKey(name: 'file_type')
+  @JsonKey(name: "file_type")
   String get fileType;
   @override
-  @JsonKey(name: 'file_size')
+  @JsonKey(name: "created_at")
+  String get createdAt;
+  @override
+  @JsonKey(name: "file_size")
   int? get fileSize;
   @override
-  @JsonKey(name: 'mime_type')
+  @JsonKey(name: "mime_type")
   String? get mimeType;
   @override
-  @JsonKey(name: 'thumbnail_url')
+  @JsonKey(name: "thumbnail_url")
   String? get thumbnailUrl;
-  @override
-  @JsonKey(name: 'created_at')
-  String get createdAt;
 
   /// Create a copy of MessageAttachment
   /// with the given fields replaced by the non-null parameter values.

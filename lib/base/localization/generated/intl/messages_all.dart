@@ -9,31 +9,31 @@
 // ignore_for_file:prefer_single_quotes, prefer_generic_function_type_aliases
 // ignore_for_file:comment_references
 
-import 'dart:async';
+import "dart:async";
 
-import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
-import 'package:intl/message_lookup_by_library.dart';
-import 'package:intl/src/intl_helpers.dart';
+import "package:flutter/foundation.dart";
+import "package:intl/intl.dart";
+import "package:intl/message_lookup_by_library.dart";
+import "package:intl/src/intl_helpers.dart";
 
-import 'messages_en.dart' as messages_en;
-import 'messages_ru.dart' as messages_ru;
-import 'messages_uz.dart' as messages_uz;
+import "package:uy_dosh/base/localization/generated/intl/messages_en.dart" as messages_en;
+import "package:uy_dosh/base/localization/generated/intl/messages_ru.dart" as messages_ru;
+import "package:uy_dosh/base/localization/generated/intl/messages_uz.dart" as messages_uz;
 
 typedef Future<dynamic> LibraryLoader();
 Map<String, LibraryLoader> _deferredLibraries = {
-  'en': () => new SynchronousFuture(null),
-  'ru': () => new SynchronousFuture(null),
-  'uz': () => new SynchronousFuture(null),
+  "en": () => new SynchronousFuture(null),
+  "ru": () => new SynchronousFuture(null),
+  "uz": () => new SynchronousFuture(null),
 };
 
 MessageLookupByLibrary? _findExact(String localeName) {
   switch (localeName) {
-    case 'en':
+    case "en":
       return messages_en.messages;
-    case 'ru':
+    case "ru":
       return messages_ru.messages;
-    case 'uz':
+    case "uz":
       return messages_uz.messages;
     default:
       return null;
@@ -42,7 +42,7 @@ MessageLookupByLibrary? _findExact(String localeName) {
 
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName) {
-  var availableLocale = Intl.verifiedLocale(
+  final availableLocale = Intl.verifiedLocale(
     localeName,
     (locale) => _deferredLibraries[locale] != null,
     onFailure: (_) => null,
@@ -50,9 +50,9 @@ Future<bool> initializeMessages(String localeName) {
   if (availableLocale == null) {
     return new SynchronousFuture(false);
   }
-  var lib = _deferredLibraries[availableLocale];
+  final lib = _deferredLibraries[availableLocale];
   lib == null ? new SynchronousFuture(false) : lib();
-  initializeInternalMessageLookup(() => new CompositeMessageLookup());
+  initializeInternalMessageLookup(CompositeMessageLookup.new);
   messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
   return new SynchronousFuture(true);
 }
@@ -66,7 +66,7 @@ bool _messagesExistFor(String locale) {
 }
 
 MessageLookupByLibrary? _findGeneratedMessagesFor(String locale) {
-  var actualLocale = Intl.verifiedLocale(
+  final actualLocale = Intl.verifiedLocale(
     locale,
     _messagesExistFor,
     onFailure: (_) => null,

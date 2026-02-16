@@ -5,10 +5,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 
 class ProfileToggleControl extends StatelessWidget {
   const ProfileToggleControl({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.onChanged,
+    required this.label, required this.value, required this.onChanged, super.key,
     this.icon,
   });
 
@@ -22,9 +19,9 @@ class ProfileToggleControl extends StatelessWidget {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
     final sectionBackground =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceVariant;
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: sectionBackground,
         borderRadius: BorderRadius.circular(12),
@@ -51,7 +48,7 @@ class ProfileToggleControl extends StatelessWidget {
           ),
         ),
         value: value ?? false,
-        onChanged: (v) => onChanged(v),
+        onChanged: onChanged,
       ),
     );
   }

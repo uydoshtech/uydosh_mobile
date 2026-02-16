@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 
 /// Widget for switching between different app themes
@@ -129,13 +129,11 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
           "light_theme",
           _getCurrentLanguage(context),
         );
-        break;
       case AppTheme.blueTheme:
         displayName = AppStrings.get(
           "blue_theme",
           _getCurrentLanguage(context),
         );
-        break;
       default:
         displayName = AppStrings.get(
           "light_theme",
@@ -148,10 +146,8 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
     switch (themeName) {
       case AppTheme.lightTheme:
         themeColor = Colors.white;
-        break;
       case AppTheme.blueTheme:
         themeColor = Colors.blue;
-        break;
       default:
         themeColor = AppColors.primary;
     }
@@ -177,8 +173,7 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
         },
         title: Text(displayName, style: const TextStyle(color: Colors.white)),
         subtitle: Text(
-          AppStrings.get("theme_color", _getCurrentLanguage(context)) +
-              ": ${themeColor.toString()}",
+          "${AppStrings.get("theme_color", _getCurrentLanguage(context))}: ${themeColor.toString()}",
           style: const TextStyle(color: Colors.white70),
         ),
         secondary: Container(

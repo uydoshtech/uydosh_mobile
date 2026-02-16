@@ -22,32 +22,32 @@ Message _$MessageFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Message {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'conversation_id')
+  @JsonKey(name: "conversation_id")
   int get conversationId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'sender_id')
+  @JsonKey(name: "sender_id")
   int get senderId => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
-  @JsonKey(name: 'message_type')
+  @JsonKey(name: "message_type")
   String get messageType => throw _privateConstructorUsedError;
-  @JsonKey(name: 'reply_to_message_id')
-  int? get replyToMessageId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_edited')
-  bool? get isEdited => throw _privateConstructorUsedError;
-  @JsonKey(name: 'edited_at')
-  String? get editedAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_deleted')
-  bool? get isDeleted => throw _privateConstructorUsedError;
-  @JsonKey(name: 'deleted_at')
-  String? get deletedAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
-  String get updatedAt => throw _privateConstructorUsedError; // Related data
+  @JsonKey(name: "updated_at")
+  String get updatedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "reply_to_message_id")
+  int? get replyToMessageId => throw _privateConstructorUsedError;
+  @JsonKey(name: "is_edited")
+  bool? get isEdited => throw _privateConstructorUsedError;
+  @JsonKey(name: "edited_at")
+  String? get editedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "is_deleted")
+  bool? get isDeleted => throw _privateConstructorUsedError;
+  @JsonKey(name: "deleted_at")
+  String? get deletedAt => throw _privateConstructorUsedError; // Related data
   MessageSender? get sender => throw _privateConstructorUsedError;
   List<MessageAttachment>? get attachments =>
       throw _privateConstructorUsedError;
   Message? get replyToMessage => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_read_by_current_user')
+  @JsonKey(name: "is_read_by_current_user")
   bool? get isReadByCurrentUser => throw _privateConstructorUsedError;
 
   /// Serializes this Message to a JSON map.
@@ -66,21 +66,21 @@ abstract class $MessageCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'conversation_id') int conversationId,
-    @JsonKey(name: 'sender_id') int senderId,
+    @JsonKey(name: "conversation_id") int conversationId,
+    @JsonKey(name: "sender_id") int senderId,
     String content,
-    @JsonKey(name: 'message_type') String messageType,
-    @JsonKey(name: 'reply_to_message_id') int? replyToMessageId,
-    @JsonKey(name: 'is_edited') bool? isEdited,
-    @JsonKey(name: 'edited_at') String? editedAt,
-    @JsonKey(name: 'is_deleted') bool? isDeleted,
-    @JsonKey(name: 'deleted_at') String? deletedAt,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
+    @JsonKey(name: "message_type") String messageType,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
+    @JsonKey(name: "reply_to_message_id") int? replyToMessageId,
+    @JsonKey(name: "is_edited") bool? isEdited,
+    @JsonKey(name: "edited_at") String? editedAt,
+    @JsonKey(name: "is_deleted") bool? isDeleted,
+    @JsonKey(name: "deleted_at") String? deletedAt,
     MessageSender? sender,
     List<MessageAttachment>? attachments,
     Message? replyToMessage,
-    @JsonKey(name: 'is_read_by_current_user') bool? isReadByCurrentUser,
+    @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
   });
 
   $MessageSenderCopyWith<$Res>? get sender;
@@ -107,13 +107,13 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
     Object? senderId = null,
     Object? content = null,
     Object? messageType = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
     Object? replyToMessageId = freezed,
     Object? isEdited = freezed,
     Object? editedAt = freezed,
     Object? isDeleted = freezed,
     Object? deletedAt = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
     Object? sender = freezed,
     Object? attachments = freezed,
     Object? replyToMessage = freezed,
@@ -146,6 +146,16 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
                     ? _value.messageType
                     : messageType // ignore: cast_nullable_to_non_nullable
                         as String,
+            createdAt:
+                null == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as String,
+            updatedAt:
+                null == updatedAt
+                    ? _value.updatedAt
+                    : updatedAt // ignore: cast_nullable_to_non_nullable
+                        as String,
             replyToMessageId:
                 freezed == replyToMessageId
                     ? _value.replyToMessageId
@@ -171,16 +181,6 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
                     ? _value.deletedAt
                     : deletedAt // ignore: cast_nullable_to_non_nullable
                         as String?,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            updatedAt:
-                null == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String,
             sender:
                 freezed == sender
                     ? _value.sender
@@ -245,21 +245,21 @@ abstract class _$$MessageImplCopyWith<$Res> implements $MessageCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'conversation_id') int conversationId,
-    @JsonKey(name: 'sender_id') int senderId,
+    @JsonKey(name: "conversation_id") int conversationId,
+    @JsonKey(name: "sender_id") int senderId,
     String content,
-    @JsonKey(name: 'message_type') String messageType,
-    @JsonKey(name: 'reply_to_message_id') int? replyToMessageId,
-    @JsonKey(name: 'is_edited') bool? isEdited,
-    @JsonKey(name: 'edited_at') String? editedAt,
-    @JsonKey(name: 'is_deleted') bool? isDeleted,
-    @JsonKey(name: 'deleted_at') String? deletedAt,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
+    @JsonKey(name: "message_type") String messageType,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
+    @JsonKey(name: "reply_to_message_id") int? replyToMessageId,
+    @JsonKey(name: "is_edited") bool? isEdited,
+    @JsonKey(name: "edited_at") String? editedAt,
+    @JsonKey(name: "is_deleted") bool? isDeleted,
+    @JsonKey(name: "deleted_at") String? deletedAt,
     MessageSender? sender,
     List<MessageAttachment>? attachments,
     Message? replyToMessage,
-    @JsonKey(name: 'is_read_by_current_user') bool? isReadByCurrentUser,
+    @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
   });
 
   @override
@@ -287,13 +287,13 @@ class __$$MessageImplCopyWithImpl<$Res>
     Object? senderId = null,
     Object? content = null,
     Object? messageType = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
     Object? replyToMessageId = freezed,
     Object? isEdited = freezed,
     Object? editedAt = freezed,
     Object? isDeleted = freezed,
     Object? deletedAt = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
     Object? sender = freezed,
     Object? attachments = freezed,
     Object? replyToMessage = freezed,
@@ -326,6 +326,16 @@ class __$$MessageImplCopyWithImpl<$Res>
                 ? _value.messageType
                 : messageType // ignore: cast_nullable_to_non_nullable
                     as String,
+        createdAt:
+            null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as String,
+        updatedAt:
+            null == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                    as String,
         replyToMessageId:
             freezed == replyToMessageId
                 ? _value.replyToMessageId
@@ -351,16 +361,6 @@ class __$$MessageImplCopyWithImpl<$Res>
                 ? _value.deletedAt
                 : deletedAt // ignore: cast_nullable_to_non_nullable
                     as String?,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        updatedAt:
-            null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String,
         sender:
             freezed == sender
                 ? _value.sender
@@ -391,21 +391,21 @@ class __$$MessageImplCopyWithImpl<$Res>
 class _$MessageImpl implements _Message {
   const _$MessageImpl({
     required this.id,
-    @JsonKey(name: 'conversation_id') required this.conversationId,
-    @JsonKey(name: 'sender_id') required this.senderId,
+    @JsonKey(name: "conversation_id") required this.conversationId,
+    @JsonKey(name: "sender_id") required this.senderId,
     required this.content,
-    @JsonKey(name: 'message_type') required this.messageType,
-    @JsonKey(name: 'reply_to_message_id') this.replyToMessageId,
-    @JsonKey(name: 'is_edited') this.isEdited,
-    @JsonKey(name: 'edited_at') this.editedAt,
-    @JsonKey(name: 'is_deleted') this.isDeleted,
-    @JsonKey(name: 'deleted_at') this.deletedAt,
-    @JsonKey(name: 'created_at') required this.createdAt,
-    @JsonKey(name: 'updated_at') required this.updatedAt,
+    @JsonKey(name: "message_type") required this.messageType,
+    @JsonKey(name: "created_at") required this.createdAt,
+    @JsonKey(name: "updated_at") required this.updatedAt,
+    @JsonKey(name: "reply_to_message_id") this.replyToMessageId,
+    @JsonKey(name: "is_edited") this.isEdited,
+    @JsonKey(name: "edited_at") this.editedAt,
+    @JsonKey(name: "is_deleted") this.isDeleted,
+    @JsonKey(name: "deleted_at") this.deletedAt,
     this.sender,
     final List<MessageAttachment>? attachments,
     this.replyToMessage,
-    @JsonKey(name: 'is_read_by_current_user') this.isReadByCurrentUser,
+    @JsonKey(name: "is_read_by_current_user") this.isReadByCurrentUser,
   }) : _attachments = attachments;
 
   factory _$MessageImpl.fromJson(Map<String, dynamic> json) =>
@@ -414,37 +414,37 @@ class _$MessageImpl implements _Message {
   @override
   final int id;
   @override
-  @JsonKey(name: 'conversation_id')
+  @JsonKey(name: "conversation_id")
   final int conversationId;
   @override
-  @JsonKey(name: 'sender_id')
+  @JsonKey(name: "sender_id")
   final int senderId;
   @override
   final String content;
   @override
-  @JsonKey(name: 'message_type')
+  @JsonKey(name: "message_type")
   final String messageType;
   @override
-  @JsonKey(name: 'reply_to_message_id')
-  final int? replyToMessageId;
-  @override
-  @JsonKey(name: 'is_edited')
-  final bool? isEdited;
-  @override
-  @JsonKey(name: 'edited_at')
-  final String? editedAt;
-  @override
-  @JsonKey(name: 'is_deleted')
-  final bool? isDeleted;
-  @override
-  @JsonKey(name: 'deleted_at')
-  final String? deletedAt;
-  @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String updatedAt;
+  @override
+  @JsonKey(name: "reply_to_message_id")
+  final int? replyToMessageId;
+  @override
+  @JsonKey(name: "is_edited")
+  final bool? isEdited;
+  @override
+  @JsonKey(name: "edited_at")
+  final String? editedAt;
+  @override
+  @JsonKey(name: "is_deleted")
+  final bool? isDeleted;
+  @override
+  @JsonKey(name: "deleted_at")
+  final String? deletedAt;
   // Related data
   @override
   final MessageSender? sender;
@@ -461,12 +461,12 @@ class _$MessageImpl implements _Message {
   @override
   final Message? replyToMessage;
   @override
-  @JsonKey(name: 'is_read_by_current_user')
+  @JsonKey(name: "is_read_by_current_user")
   final bool? isReadByCurrentUser;
 
   @override
   String toString() {
-    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, createdAt: $createdAt, updatedAt: $updatedAt, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser)';
+    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, createdAt: $createdAt, updatedAt: $updatedAt, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser)';
   }
 
   @override
@@ -482,6 +482,10 @@ class _$MessageImpl implements _Message {
             (identical(other.content, content) || other.content == content) &&
             (identical(other.messageType, messageType) ||
                 other.messageType == messageType) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
             (identical(other.replyToMessageId, replyToMessageId) ||
                 other.replyToMessageId == replyToMessageId) &&
             (identical(other.isEdited, isEdited) ||
@@ -492,10 +496,6 @@ class _$MessageImpl implements _Message {
                 other.isDeleted == isDeleted) &&
             (identical(other.deletedAt, deletedAt) ||
                 other.deletedAt == deletedAt) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt) &&
             (identical(other.sender, sender) || other.sender == sender) &&
             const DeepCollectionEquality().equals(
               other._attachments,
@@ -516,13 +516,13 @@ class _$MessageImpl implements _Message {
     senderId,
     content,
     messageType,
+    createdAt,
+    updatedAt,
     replyToMessageId,
     isEdited,
     editedAt,
     isDeleted,
     deletedAt,
-    createdAt,
-    updatedAt,
     sender,
     const DeepCollectionEquality().hash(_attachments),
     replyToMessage,
@@ -546,21 +546,21 @@ class _$MessageImpl implements _Message {
 abstract class _Message implements Message {
   const factory _Message({
     required final int id,
-    @JsonKey(name: 'conversation_id') required final int conversationId,
-    @JsonKey(name: 'sender_id') required final int senderId,
+    @JsonKey(name: "conversation_id") required final int conversationId,
+    @JsonKey(name: "sender_id") required final int senderId,
     required final String content,
-    @JsonKey(name: 'message_type') required final String messageType,
-    @JsonKey(name: 'reply_to_message_id') final int? replyToMessageId,
-    @JsonKey(name: 'is_edited') final bool? isEdited,
-    @JsonKey(name: 'edited_at') final String? editedAt,
-    @JsonKey(name: 'is_deleted') final bool? isDeleted,
-    @JsonKey(name: 'deleted_at') final String? deletedAt,
-    @JsonKey(name: 'created_at') required final String createdAt,
-    @JsonKey(name: 'updated_at') required final String updatedAt,
+    @JsonKey(name: "message_type") required final String messageType,
+    @JsonKey(name: "created_at") required final String createdAt,
+    @JsonKey(name: "updated_at") required final String updatedAt,
+    @JsonKey(name: "reply_to_message_id") final int? replyToMessageId,
+    @JsonKey(name: "is_edited") final bool? isEdited,
+    @JsonKey(name: "edited_at") final String? editedAt,
+    @JsonKey(name: "is_deleted") final bool? isDeleted,
+    @JsonKey(name: "deleted_at") final String? deletedAt,
     final MessageSender? sender,
     final List<MessageAttachment>? attachments,
     final Message? replyToMessage,
-    @JsonKey(name: 'is_read_by_current_user') final bool? isReadByCurrentUser,
+    @JsonKey(name: "is_read_by_current_user") final bool? isReadByCurrentUser,
   }) = _$MessageImpl;
 
   factory _Message.fromJson(Map<String, dynamic> json) = _$MessageImpl.fromJson;
@@ -568,37 +568,37 @@ abstract class _Message implements Message {
   @override
   int get id;
   @override
-  @JsonKey(name: 'conversation_id')
+  @JsonKey(name: "conversation_id")
   int get conversationId;
   @override
-  @JsonKey(name: 'sender_id')
+  @JsonKey(name: "sender_id")
   int get senderId;
   @override
   String get content;
   @override
-  @JsonKey(name: 'message_type')
+  @JsonKey(name: "message_type")
   String get messageType;
   @override
-  @JsonKey(name: 'reply_to_message_id')
-  int? get replyToMessageId;
-  @override
-  @JsonKey(name: 'is_edited')
-  bool? get isEdited;
-  @override
-  @JsonKey(name: 'edited_at')
-  String? get editedAt;
-  @override
-  @JsonKey(name: 'is_deleted')
-  bool? get isDeleted;
-  @override
-  @JsonKey(name: 'deleted_at')
-  String? get deletedAt;
-  @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
-  String get updatedAt; // Related data
+  @JsonKey(name: "updated_at")
+  String get updatedAt;
+  @override
+  @JsonKey(name: "reply_to_message_id")
+  int? get replyToMessageId;
+  @override
+  @JsonKey(name: "is_edited")
+  bool? get isEdited;
+  @override
+  @JsonKey(name: "edited_at")
+  String? get editedAt;
+  @override
+  @JsonKey(name: "is_deleted")
+  bool? get isDeleted;
+  @override
+  @JsonKey(name: "deleted_at")
+  String? get deletedAt; // Related data
   @override
   MessageSender? get sender;
   @override
@@ -606,7 +606,7 @@ abstract class _Message implements Message {
   @override
   Message? get replyToMessage;
   @override
-  @JsonKey(name: 'is_read_by_current_user')
+  @JsonKey(name: "is_read_by_current_user")
   bool? get isReadByCurrentUser;
 
   /// Create a copy of Message

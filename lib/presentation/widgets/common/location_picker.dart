@@ -1,16 +1,13 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class LocationPicker extends StatelessWidget {
   const LocationPicker({
-    super.key,
-    required this.locations,
-    required this.selectedLocationIndex,
-    required this.onLocationChanged,
+    required this.locations, required this.selectedLocationIndex, required this.onLocationChanged, super.key,
     this.useThemeColors = false,
     this.height = 80,
     this.itemExtent = 40,
@@ -55,7 +52,7 @@ class LocationPicker extends StatelessWidget {
     final displayLocations = locations;
 
     // Use the same styling as metro line picker
-    final backgroundColor = theme.colorScheme.surfaceVariant;
+    final backgroundColor = theme.colorScheme.surfaceContainerHighest;
     final borderColor = theme.colorScheme.outline;
     final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
     final iconColor = theme.colorScheme.onSurfaceVariant;

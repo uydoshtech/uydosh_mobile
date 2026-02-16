@@ -1,41 +1,37 @@
-import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
-
+import "package:firebase_auth/firebase_auth.dart";
+import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
-import "package:uy_dosh/base/state/profile_completion_state.dart";
-
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
-import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
+import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/create_listing/create_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
-import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
-import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
-import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
-import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
+import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/base/services/session_manager.dart";
-import "package:uy_dosh/base/services/deep_link_service.dart";
-
-import "package:firebase_auth/firebase_auth.dart";
 
 class AppRouter {
   static Widget buildMainNavigation({bool attachKey = false}) => BlocProvider(

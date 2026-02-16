@@ -9,9 +9,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 /// Fully theme-aware for blue and light themes
 class PriceRangeBadge extends StatelessWidget {
   const PriceRangeBadge({
-    super.key,
-    required this.minPrice,
-    required this.maxPrice,
+    required this.minPrice, required this.maxPrice, super.key,
     this.showCurrency = true,
     this.showIcon = false,
     this.fontSize,
@@ -169,7 +167,7 @@ class PriceRangeHelper {
     final priceString = price.toString();
     final buffer = StringBuffer();
 
-    for (int i = 0; i < priceString.length; i++) {
+    for (var i = 0; i < priceString.length; i++) {
       if (i > 0 && (priceString.length - i) % 3 == 0) {
         buffer.write(",");
       }
@@ -193,9 +191,7 @@ class PriceRangeHelper {
 /// Fully theme-aware for blue and light themes
 class PriceRangeText extends StatelessWidget {
   const PriceRangeText({
-    super.key,
-    required this.minPrice,
-    required this.maxPrice,
+    required this.minPrice, required this.maxPrice, super.key,
     this.style,
     this.showCurrency = true,
     this.currencySymbol,
@@ -261,9 +257,7 @@ class PriceRangeText extends StatelessWidget {
 /// Fully theme-aware for blue and light themes
 class CompactPriceRangeBadge extends StatelessWidget {
   const CompactPriceRangeBadge({
-    super.key,
-    required this.minPrice,
-    required this.maxPrice,
+    required this.minPrice, required this.maxPrice, super.key,
     this.showCurrency = true,
     this.fontSize,
     this.isActive = true,

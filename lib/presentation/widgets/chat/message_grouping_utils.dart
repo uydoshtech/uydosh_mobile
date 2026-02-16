@@ -1,22 +1,22 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:uy_dosh/domain/models/message.dart';
-import 'package:uy_dosh/presentation/widgets/chat/date_header_widget.dart';
-import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
+import "package:flutter/material.dart";
+import "package:intl/intl.dart";
+import "package:uy_dosh/domain/models/message.dart";
+import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Represents a single item in the grouped message list for lazy building
 sealed class MessageGroupListItem {}
 
 class DateHeaderListItem extends MessageGroupListItem {
-  final DateTime date;
   DateHeaderListItem(this.date);
+  final DateTime date;
 }
 
 class MessageListItem extends MessageGroupListItem {
+  MessageListItem(this.message, this.isCurrentUser, this.isLatest);
   final Message message;
   final bool isCurrentUser;
   final bool isLatest;
-  MessageListItem(this.message, this.isCurrentUser, this.isLatest);
 }
 
 class MessageGroupingUtils {
@@ -39,7 +39,7 @@ class MessageGroupingUtils {
     if (messages.isEmpty) return [];
 
     // Group messages by date
-    final Map<String, List<Message>> groupedMessages = {};
+    final groupedMessages = <String, List<Message>>{};
 
     for (final message in messages) {
       final messageDate = DateTime.parse(message.createdAt).toLocal();
@@ -56,7 +56,7 @@ class MessageGroupingUtils {
         groupedMessages.keys.toList()
           ..sort((a, b) => a.compareTo(b)); // Oldest first
 
-    final List<Widget> widgets = [];
+    final widgets = <Widget>[];
 
     for (final dateKey in sortedDates) {
       final messagesForDate = groupedMessages[dateKey]!;
@@ -107,7 +107,7 @@ class MessageGroupingUtils {
   ) {
     if (messages.isEmpty) return [];
 
-    final Map<String, List<Message>> groupedMessages = {};
+    final groupedMessages = <String, List<Message>>{};
 
     for (final message in messages) {
       final messageDate = DateTime.parse(message.createdAt).toLocal();
@@ -123,7 +123,7 @@ class MessageGroupingUtils {
         groupedMessages.keys.toList()
           ..sort((a, b) => a.compareTo(b));
 
-    final List<MessageGroupListItem> items = [];
+    final items = <MessageGroupListItem>[];
 
     for (final dateKey in sortedDates) {
       final messagesForDate = groupedMessages[dateKey]!;
@@ -154,7 +154,7 @@ class MessageGroupingUtils {
   static String _getDateKey(DateTime date) {
     // Convert to local timezone for proper date grouping
     final localDate = date.toLocal();
-    return DateFormat('yyyy-MM-dd').format(localDate);
+    return DateFormat("yyyy-MM-dd").format(localDate);
   }
 
   /// Formats a date for display in the date header (public for lazy building)
@@ -240,7 +240,7 @@ class MessageGroupingUtils {
   static Map<String, List<Message>> groupMessagesByDateKey(
     List<Message> messages,
   ) {
-    final Map<String, List<Message>> groupedMessages = {};
+    final groupedMessages = <String, List<Message>>{};
 
     for (final message in messages) {
       final messageDate = DateTime.parse(message.createdAt).toLocal();

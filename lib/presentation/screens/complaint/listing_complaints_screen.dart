@@ -1,22 +1,22 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
-import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
+import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ListingComplaintsScreen extends StatefulWidget {
-  final int listingId;
 
-  const ListingComplaintsScreen({super.key, required this.listingId});
+  const ListingComplaintsScreen({required this.listingId, super.key});
+  final int listingId;
 
   @override
   State<ListingComplaintsScreen> createState() =>
@@ -243,7 +243,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       children: [
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.calendar_today_outlined,
               size: 16,
               color: AppColors.textGrey,
@@ -273,7 +273,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
   }
 
   Widget _buildCountChip(int count) {
-    final color = AppColors.primary;
+    const color = AppColors.primary;
     final label =
         LanguageAwareStringHelper.getCurrent(
           context,
@@ -289,7 +289,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: const TextStyle(
           color: color,
           fontSize: 12,
           fontWeight: FontWeight.w600,
@@ -303,7 +303,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 64, color: AppColors.error),
+          const Icon(Icons.error_outline, size: 64, color: AppColors.error),
           const SizedBox(height: 16),
           Text(
             message,
@@ -326,10 +326,6 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
 }
 
 class _ComplaintGroup {
-  final int categoryId;
-  final ComplaintCategory? category;
-  final List<Complaint> complaints;
-  final Complaint? latestComplaint;
 
   _ComplaintGroup({
     required this.categoryId,
@@ -337,6 +333,10 @@ class _ComplaintGroup {
     required this.complaints,
     required this.latestComplaint,
   });
+  final int categoryId;
+  final ComplaintCategory? category;
+  final List<Complaint> complaints;
+  final Complaint? latestComplaint;
 
   int get count => complaints.length;
 }

@@ -1,8 +1,8 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ListingTypePicker extends StatelessWidget {
@@ -44,7 +44,7 @@ class ListingTypePicker extends StatelessWidget {
     final initialIndex = listingTypeOptions.indexOf(selectedListingTypeId);
 
     // Use the same styling as metro line picker
-    final backgroundColor = theme.colorScheme.surfaceVariant;
+    final backgroundColor = theme.colorScheme.surfaceContainerHighest;
     final borderColor = theme.colorScheme.outline;
     final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
 

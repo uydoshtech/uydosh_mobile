@@ -1,12 +1,23 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class PricePicker extends StatelessWidget {
+
+  const PricePicker({
+    required this.selectedPrice, required this.onPriceChanged, super.key,
+    this.priceIconColor,
+    this.useThemeColors = true,
+    this.isRequired = false,
+    this.height = 80,
+    this.borderRadius = 10,
+    this.enableHapticFeedback = true,
+    this.showArrows = true,
+  });
   /// The currently selected price in dollars
   final int selectedPrice;
 
@@ -33,19 +44,6 @@ class PricePicker extends StatelessWidget {
 
   /// Whether to show scroll arrows on the right side
   final bool showArrows;
-
-  const PricePicker({
-    super.key,
-    required this.selectedPrice,
-    required this.onPriceChanged,
-    this.priceIconColor,
-    this.useThemeColors = true,
-    this.isRequired = false,
-    this.height = 80,
-    this.borderRadius = 10,
-    this.enableHapticFeedback = true,
-    this.showArrows = true,
-  });
 
   /// Get the appropriate price icon color based on theme and price
   Color _getPriceIconColor() {
@@ -78,7 +76,7 @@ class PricePicker extends StatelessWidget {
     final theme = Theme.of(context);
 
     // Use the same styling as listing type picker
-    final backgroundColor = theme.colorScheme.surfaceVariant;
+    final backgroundColor = theme.colorScheme.surfaceContainerHighest;
     final borderColor = theme.colorScheme.outline;
     // Use black font for light theme, theme-aware color otherwise
     final textColor =

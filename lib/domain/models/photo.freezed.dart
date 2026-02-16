@@ -22,13 +22,13 @@ Photo _$PhotoFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Photo {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'photo_url')
+  @JsonKey(name: "photo_url")
   String get photoUrl => throw _privateConstructorUsedError;
-  @JsonKey(name: 'photo_order')
+  @JsonKey(name: "photo_order")
   int get photoOrder => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_primary')
+  @JsonKey(name: "is_primary")
   bool get isPrimary => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this Photo to a JSON map.
@@ -47,10 +47,10 @@ abstract class $PhotoCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'photo_url') String photoUrl,
-    @JsonKey(name: 'photo_order') int photoOrder,
-    @JsonKey(name: 'is_primary') bool isPrimary,
-    @JsonKey(name: 'created_at') String createdAt,
+    @JsonKey(name: "photo_url") String photoUrl,
+    @JsonKey(name: "photo_order") int photoOrder,
+    @JsonKey(name: "is_primary") bool isPrimary,
+    @JsonKey(name: "created_at") String createdAt,
   });
 }
 
@@ -118,10 +118,10 @@ abstract class _$$PhotoImplCopyWith<$Res> implements $PhotoCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'photo_url') String photoUrl,
-    @JsonKey(name: 'photo_order') int photoOrder,
-    @JsonKey(name: 'is_primary') bool isPrimary,
-    @JsonKey(name: 'created_at') String createdAt,
+    @JsonKey(name: "photo_url") String photoUrl,
+    @JsonKey(name: "photo_order") int photoOrder,
+    @JsonKey(name: "is_primary") bool isPrimary,
+    @JsonKey(name: "created_at") String createdAt,
   });
 }
 
@@ -182,10 +182,10 @@ class __$$PhotoImplCopyWithImpl<$Res>
 class _$PhotoImpl implements _Photo {
   const _$PhotoImpl({
     required this.id,
-    @JsonKey(name: 'photo_url') required this.photoUrl,
-    @JsonKey(name: 'photo_order') required this.photoOrder,
-    @JsonKey(name: 'is_primary') required this.isPrimary,
-    @JsonKey(name: 'created_at') required this.createdAt,
+    @JsonKey(name: "photo_url") required this.photoUrl,
+    @JsonKey(name: "photo_order") required this.photoOrder,
+    @JsonKey(name: "is_primary") required this.isPrimary,
+    @JsonKey(name: "created_at") required this.createdAt,
   });
 
   factory _$PhotoImpl.fromJson(Map<String, dynamic> json) =>
@@ -194,16 +194,16 @@ class _$PhotoImpl implements _Photo {
   @override
   final int id;
   @override
-  @JsonKey(name: 'photo_url')
+  @JsonKey(name: "photo_url")
   final String photoUrl;
   @override
-  @JsonKey(name: 'photo_order')
+  @JsonKey(name: "photo_order")
   final int photoOrder;
   @override
-  @JsonKey(name: 'is_primary')
+  @JsonKey(name: "is_primary")
   final bool isPrimary;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String createdAt;
 
   @override
@@ -249,10 +249,10 @@ class _$PhotoImpl implements _Photo {
 abstract class _Photo implements Photo {
   const factory _Photo({
     required final int id,
-    @JsonKey(name: 'photo_url') required final String photoUrl,
-    @JsonKey(name: 'photo_order') required final int photoOrder,
-    @JsonKey(name: 'is_primary') required final bool isPrimary,
-    @JsonKey(name: 'created_at') required final String createdAt,
+    @JsonKey(name: "photo_url") required final String photoUrl,
+    @JsonKey(name: "photo_order") required final int photoOrder,
+    @JsonKey(name: "is_primary") required final bool isPrimary,
+    @JsonKey(name: "created_at") required final String createdAt,
   }) = _$PhotoImpl;
 
   factory _Photo.fromJson(Map<String, dynamic> json) = _$PhotoImpl.fromJson;
@@ -260,16 +260,16 @@ abstract class _Photo implements Photo {
   @override
   int get id;
   @override
-  @JsonKey(name: 'photo_url')
+  @JsonKey(name: "photo_url")
   String get photoUrl;
   @override
-  @JsonKey(name: 'photo_order')
+  @JsonKey(name: "photo_order")
   int get photoOrder;
   @override
-  @JsonKey(name: 'is_primary')
+  @JsonKey(name: "is_primary")
   bool get isPrimary;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt;
 
   /// Create a copy of Photo

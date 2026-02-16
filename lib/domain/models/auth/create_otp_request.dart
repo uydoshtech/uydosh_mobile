@@ -1,14 +1,14 @@
-import 'package:uy_dosh/base/api/client/json_encodable.dart';
+import "package:uy_dosh/base/api/client/json_encodable.dart";
 
 class CreateOtpRequest implements IJsonEncodable {
+
+  CreateOtpRequest({required this.email, required this.type});
   final String email;
   final String type;
 
-  CreateOtpRequest({required this.email, required this.type});
-
   @override
   dynamic toJson() {
-    final Map<String, dynamic> json = {'email': email, 'type': type};
+    final json = <String, dynamic>{"email": email, "type": type};
 
     return json;
   }

@@ -1,9 +1,9 @@
-import 'package:uy_dosh/base/api/client/public_api_client.dart';
-import 'package:uy_dosh/domain/models/subway_station.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import 'package:uy_dosh/base/util/environment_util.dart';
-import 'package:injectable/injectable.dart';
-import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
+import "package:injectable/injectable.dart";
+import "package:uy_dosh/base/api/client/public_api_client.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/domain/models/subway_station.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 abstract class ISubwayStationService {
   Future<List<SubwayStation>> getSubwayStations({String? language});
@@ -26,10 +26,10 @@ class SubwayStationService implements ISubwayStationService {
 
     try {
       final response = await _apiClient.get<List<dynamic>>(
-        '/subway-stations',
+        "/subway-stations",
         (json) => json,
         basePath: EnvironmentUtil.basePath,
-        queryParameters: {'language': currentLanguage},
+        queryParameters: {"language": currentLanguage},
       );
 
       // Debug: Print response structure
@@ -37,23 +37,8 @@ class SubwayStationService implements ISubwayStationService {
 
       // Handle different possible response structures
       List<dynamic> stationsData;
-      if (response is List) {
-        stationsData = response;
-      } else if (response is Map) {
-        final responseMap = response as Map<String, dynamic>;
-        if (responseMap['content'] != null) {
-          stationsData = responseMap['content'] as List<dynamic>;
-        } else if (responseMap['stations'] != null) {
-          stationsData = responseMap['stations'] as List<dynamic>;
-        } else if (responseMap['data'] != null) {
-          stationsData = responseMap['data'] as List<dynamic>;
-        } else {
-          stationsData = <dynamic>[];
-        }
-      } else {
-        stationsData = <dynamic>[];
-      }
-
+      stationsData = response;
+    
       final stations =
           stationsData
               .map(
@@ -75,7 +60,7 @@ class SubwayStationService implements ISubwayStationService {
 
       return sortedStations;
     } catch (e) {
-      logger.d('Error fetching subway stations: $e');
+      logger.d("Error fetching subway stations: $e");
       rethrow;
     }
   }
@@ -90,10 +75,10 @@ class SubwayStationService implements ISubwayStationService {
 
     try {
       final response = await _apiClient.get<List<dynamic>>(
-        '/subway-stations/line/$line',
+        "/subway-stations/line/$line",
         (json) => json,
         basePath: EnvironmentUtil.basePath,
-        queryParameters: {'language': currentLanguage},
+        queryParameters: {"language": currentLanguage},
       );
 
       // Debug: Print response structure
@@ -101,23 +86,8 @@ class SubwayStationService implements ISubwayStationService {
 
       // Handle different possible response structures
       List<dynamic> stationsData;
-      if (response is List) {
-        stationsData = response;
-      } else if (response is Map) {
-        final responseMap = response as Map<String, dynamic>;
-        if (responseMap['content'] != null) {
-          stationsData = responseMap['content'] as List<dynamic>;
-        } else if (responseMap['stations'] != null) {
-          stationsData = responseMap['stations'] as List<dynamic>;
-        } else if (responseMap['data'] != null) {
-          stationsData = responseMap['data'] as List<dynamic>;
-        } else {
-          stationsData = <dynamic>[];
-        }
-      } else {
-        stationsData = <dynamic>[];
-      }
-
+      stationsData = response;
+    
       final stations =
           stationsData
               .map(
@@ -129,7 +99,7 @@ class SubwayStationService implements ISubwayStationService {
       // The server handles the ordering: ORDER BY ordinal ASC, name_ru ASC, name_en ASC, name_uz ASC
       return stations;
     } catch (e) {
-      logger.d('Error fetching subway stations for line $line: $e');
+      logger.d("Error fetching subway stations for line $line: $e");
       rethrow;
     }
   }

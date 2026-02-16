@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:uy_dosh/base/services/session_manager.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import 'package:uy_dosh/base/state/theme_state.dart';
+import "package:firebase_auth/firebase_auth.dart";
+import "package:flutter/material.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 
 // Global authentication state with ChangeNotifier for reactivity
 class AuthenticationState extends ChangeNotifier {
-  static final AuthenticationState _instance = AuthenticationState._internal();
   factory AuthenticationState() => _instance;
   AuthenticationState._internal();
+  static final AuthenticationState _instance = AuthenticationState._internal();
 
   bool _isAuthenticated = false;
   bool _isInitialized = false;
@@ -20,14 +20,14 @@ class AuthenticationState extends ChangeNotifier {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    logger.d('🔐 AuthenticationState: Starting initialization...');
+    logger.d("🔐 AuthenticationState: Starting initialization...");
 
     // Check initial auth status
     await _checkAuthenticationStatus();
 
     // Listen to Firebase auth state changes
-    logger.d('🔐 AuthenticationState: Setting up Firebase auth listener...');
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    logger.d("🔐 AuthenticationState: Setting up Firebase auth listener...");
+    FirebaseAuth.instance.authStateChanges().listen((user) {
       logger.d(
         '🔐 AuthenticationState: Firebase auth state changed - User: ${user?.email ?? 'null'}',
       );
@@ -36,7 +36,7 @@ class AuthenticationState extends ChangeNotifier {
 
     _isInitialized = true;
     logger.d(
-      '🔐 AuthenticationState: Initialization complete. Current status: $_isAuthenticated',
+      "🔐 AuthenticationState: Initialization complete. Current status: $_isAuthenticated",
     );
     notifyListeners();
   }
@@ -58,17 +58,17 @@ class AuthenticationState extends ChangeNotifier {
       _isAuthenticated = isFirebaseAuthenticated || isLocalAuthenticated;
 
       logger.d(
-        '🔐 AuthenticationState: Checking status - Firebase: $isFirebaseAuthenticated, Local: $isLocalAuthenticated, Combined: $_isAuthenticated',
+        "🔐 AuthenticationState: Checking status - Firebase: $isFirebaseAuthenticated, Local: $isLocalAuthenticated, Combined: $_isAuthenticated",
       );
       if (firebaseUser != null) {
         logger.d(
-          '🔐 AuthenticationState: Firebase user email: ${firebaseUser.email}',
+          "🔐 AuthenticationState: Firebase user email: ${firebaseUser.email}",
         );
       }
       if (isLocalAuthenticated) {
-        logger.d('🔐 AuthenticationState: Local session is valid');
+        logger.d("🔐 AuthenticationState: Local session is valid");
       } else {
-        logger.d('🔐 AuthenticationState: Local session is NOT valid');
+        logger.d("🔐 AuthenticationState: Local session is NOT valid");
       }
 
       // Apply system theme on first login when user has no saved preference
@@ -79,16 +79,16 @@ class AuthenticationState extends ChangeNotifier {
       // Always notify listeners to ensure UI updates
       if (wasAuthenticated != _isAuthenticated) {
         logger.d(
-          '🔐 AuthenticationState: Status changed from $wasAuthenticated to $_isAuthenticated - notifying listeners',
+          "🔐 AuthenticationState: Status changed from $wasAuthenticated to $_isAuthenticated - notifying listeners",
         );
       } else {
         logger.d(
-          '🔐 AuthenticationState: Status unchanged ($_isAuthenticated) - notifying listeners anyway for UI sync',
+          "🔐 AuthenticationState: Status unchanged ($_isAuthenticated) - notifying listeners anyway for UI sync",
         );
       }
       notifyListeners();
     } catch (e) {
-      logger.d('❌ AuthenticationState: Error checking authentication: $e');
+      logger.d("❌ AuthenticationState: Error checking authentication: $e");
       _isAuthenticated = false;
       notifyListeners();
     }
@@ -103,16 +103,16 @@ class AuthenticationState extends ChangeNotifier {
   void setAuthenticationStatus(bool status) {
     if (_isAuthenticated != status) {
       _isAuthenticated = status;
-      logger.d('🔐 AuthenticationState: Manually set to $_isAuthenticated');
+      logger.d("🔐 AuthenticationState: Manually set to $_isAuthenticated");
       notifyListeners();
     }
   }
 
   // Force logout - clear authentication state
   Future<void> logout() async {
-    logger.d('🔐 AuthenticationState: Force logout called');
+    logger.d("🔐 AuthenticationState: Force logout called");
     _isAuthenticated = false;
     notifyListeners();
-    logger.d('🔐 AuthenticationState: Logout completed, notifying listeners');
+    logger.d("🔐 AuthenticationState: Logout completed, notifying listeners");
   }
 }

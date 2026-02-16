@@ -1,25 +1,25 @@
-import 'package:uy_dosh/domain/models/amenity.dart';
-import 'package:uy_dosh/base/api/client/public_api_client.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
+import "package:uy_dosh/base/api/client/public_api_client.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/domain/models/amenity.dart";
 
 abstract class IAmenityService {
   Future<List<Amenity>> getAmenities();
 }
 
 class AmenityService implements IAmenityService {
-  final IPublicApiClient _apiClient;
 
   AmenityService(this._apiClient);
+  final IPublicApiClient _apiClient;
 
   @override
   Future<List<Amenity>> getAmenities() async {
     try {
       final amenities = await _apiClient.get<
         List<Amenity>
-      >('/amenities/ordered', (dynamic json) {
-        if (json is Map<String, dynamic> && json.containsKey('amenities')) {
+      >("/amenities/ordered", (dynamic json) {
+        if (json is Map<String, dynamic> && json.containsKey("amenities")) {
           // Handle the actual API response structure
-          final amenitiesList = json['amenities'] as List;
+          final amenitiesList = json["amenities"] as List;
           final result =
               amenitiesList
                   .map((item) => Amenity.fromJson(item as Map<String, dynamic>))
@@ -34,9 +34,9 @@ class AmenityService implements IAmenityService {
                   .toList();
 
           return result;
-        } else if (json is Map<String, dynamic> && json.containsKey('data')) {
+        } else if (json is Map<String, dynamic> && json.containsKey("data")) {
           // Fallback for data field structure
-          final data = json['data'] as List;
+          final data = json["data"] as List;
           final result =
               data
                   .map((item) => Amenity.fromJson(item as Map<String, dynamic>))
@@ -44,7 +44,7 @@ class AmenityService implements IAmenityService {
 
           return result;
         } else {
-          logger.d('Unexpected JSON structure: $json'); // Debug print
+          logger.d("Unexpected JSON structure: $json"); // Debug print
           return <Amenity>[];
         }
       });

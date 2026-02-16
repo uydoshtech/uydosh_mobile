@@ -1,17 +1,15 @@
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_svg/flutter_svg.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 class AnimatedULetter extends StatelessWidget {
-  final double progress;
-  final double size;
 
   const AnimatedULetter({
-    super.key,
-    required this.progress,
-    required this.size,
+    required this.progress, required this.size, super.key,
   });
+  final double progress;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +21,9 @@ class AnimatedULetter extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.topRight,
           stops: [progress, progress + 0.1],
-          colors: [
+          colors: const [
             Colors.white, // White color (final state)
-            const Color(
+            Color(
               0xFF00426E,
             ), // Blue color matching the square (initial state)
           ],
@@ -37,7 +35,7 @@ class AnimatedULetter extends StatelessWidget {
         height: size * 1.44,
         colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
         placeholderBuilder:
-            (context) => Container(
+            (context) => SizedBox(
               width: size * 1.92,
               height: size * 1.44,
               child: const Center(
@@ -243,7 +241,7 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
                           BlendMode.srcIn,
                         ),
                         placeholderBuilder:
-                            (context) => Container(
+                            (context) => SizedBox(
                               width: widget.size * 1.44, // 1.2 * 1.2
                               height: widget.size * 1.44, // 1.2 * 1.2
                               child: const Center(
@@ -295,7 +293,7 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
                         BlendMode.srcIn,
                       ),
                       placeholderBuilder:
-                          (context) => Container(
+                          (context) => SizedBox(
                             width: widget.size * 2.16, // 1.8 * 1.2
                             height: widget.size * 0.96, // 0.8 * 1.2
                             child: const Center(
@@ -332,7 +330,7 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
                         BlendMode.srcIn,
                       ),
                       placeholderBuilder:
-                          (context) => Container(
+                          (context) => SizedBox(
                             width: widget.size * 1.44, // 1.2 * 1.2
                             height: widget.size * 1.44, // 1.2 * 1.2
                             child: const Center(

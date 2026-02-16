@@ -1,6 +1,6 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import "package:freezed_annotation/freezed_annotation.dart";
 
-part 'pageable_response.freezed.dart';
+part "pageable_response.freezed.dart";
 
 @freezed
 class PageableResponse<T> with _$PageableResponse<T> {

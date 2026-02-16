@@ -4,9 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 /// A themed text button with consistent styling
 class TextButtonThemed extends StatelessWidget {
   const TextButtonThemed({
-    super.key,
-    required this.onPressed,
-    required this.child,
+    required this.onPressed, required this.child, super.key,
     this.padding,
     this.style,
   });

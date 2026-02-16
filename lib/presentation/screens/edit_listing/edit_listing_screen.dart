@@ -1,41 +1,41 @@
-import "package:uy_dosh/base/logger/logger.dart";
-import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:flutter/cupertino.dart";
+import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
-import "package:uy_dosh/domain/models/subway_station.dart";
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/domain/models/location.dart";
+import "package:intl/intl.dart";
 import "package:uy_dosh/base/cache/amenities_cache.dart";
+import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/home_refresh_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/photo.dart";
+import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/base/cache/metro_cache.dart";
-import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
-import "package:uy_dosh/base/state/home_refresh_state.dart";
-import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/amenity_toggle.dart";
-import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
-import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
-import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
+import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
-import "package:intl/intl.dart";
+import "package:uy_dosh/presentation/widgets/common/amenity_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
+import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 
 class EditListingScreen extends StatefulWidget {
-  final ListingDetail listingDetail;
 
-  const EditListingScreen({super.key, required this.listingDetail});
+  const EditListingScreen({required this.listingDetail, super.key});
+  final ListingDetail listingDetail;
 
   @override
   State<EditListingScreen> createState() => _EditListingScreenState();
@@ -72,8 +72,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
   // Photos state
   List<String> _selectedPhotos = [];
   List<Photo> _existingPhotos = [];
-  Set<int> _deletingPhotoIds = {}; // Track which photos are being deleted
-  Set<int> _makingPhotoPrimaryIds =
+  final Set<int> _deletingPhotoIds = {}; // Track which photos are being deleted
+  final Set<int> _makingPhotoPrimaryIds =
       {}; // Track which photos are being made primary
 
   @override
@@ -90,7 +90,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _descriptionController.text = widget.listingDetail.description ?? "";
 
     // Extract only the date part from moveInDate (remove time component)
-    String moveInDate = widget.listingDetail.moveInDate ?? "";
+    var moveInDate = widget.listingDetail.moveInDate ?? "";
     if (moveInDate.isNotEmpty && moveInDate.contains("T")) {
       moveInDate =
           moveInDate.split("T")[0]; // Take only the date part before "T"
@@ -111,12 +111,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _showLocationError = false;
 
     // Set listing type
-    if (widget.listingDetail.listingType != null) {
-      // Convert string code to integer ID: "roommate_needed" -> 2, "room_needed" -> 1
-      _selectedListingTypeId =
-          widget.listingDetail.listingType!.code == "roommate_needed" ? 2 : 1;
-    }
-
+    // Convert string code to integer ID: "roommate_needed" -> 2, "room_needed" -> 1
+    _selectedListingTypeId =
+        widget.listingDetail.listingType.code == "roommate_needed" ? 2 : 1;
+  
     // Set price range
     _minPrice = widget.listingDetail.minPrice.toDouble();
     _maxPrice = widget.listingDetail.maxPrice.toDouble();
@@ -423,7 +421,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Expanded(
                             child: ListingTypePicker(
                               selectedListingTypeId: _selectedListingTypeId,
-                              onListingTypeChanged: (int listingTypeId) {
+                              onListingTypeChanged: (listingTypeId) {
                                 setState(() {
                                   _selectedListingTypeId = listingTypeId;
                                 });
@@ -437,7 +435,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Expanded(
                             child: GenderPicker(
                               selectedGender: _selectedGender,
-                              onGenderChanged: (int gender) {
+                              onGenderChanged: (gender) {
                                 setState(() {
                                   _selectedGender = gender;
                                 });
@@ -459,7 +457,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceVariant,
+                                color: theme.colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: theme.colorScheme.outline,
@@ -497,7 +495,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              MLetterIcon(
+                                              const MLetterIcon(
                                                 color: Colors.grey,
                                                 size: 20,
                                               ),
@@ -610,7 +608,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                         border: Border.all(
                                           color: theme.colorScheme.outline,
                                         ),
-                                        color: theme.colorScheme.surfaceVariant,
+                                        color: theme.colorScheme.surfaceContainerHighest,
                                       ),
                                       height: 80,
                                       child: Row(
@@ -701,7 +699,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                         border: Border.all(
                                           color: theme.colorScheme.outline,
                                         ),
-                                        color: theme.colorScheme.surfaceVariant
+                                        color: theme.colorScheme.surfaceContainerHighest
                                             .withOpacity(0.5),
                                       ),
                                       height: 80,
@@ -739,7 +737,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                       locations: _currentLocations,
                       selectedLocationIndex: _selectedLocationIndex,
                       scrollController: _locationScrollController,
-                      onLocationChanged: (int locationIndex) {
+                      onLocationChanged: (locationIndex) {
                         setState(() {
                           _selectedLocationIndex = locationIndex;
                           // Clear location error when user selects a location
@@ -851,7 +849,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           filled: true,
                           fillColor:
                               Theme.of(context).brightness == Brightness.dark
-                                  ? theme.colorScheme.surfaceVariant
+                                  ? theme.colorScheme.surfaceContainerHighest
                                   : Colors.white,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -925,7 +923,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                           LanguageAwareStringHelper.getCurrent(
                                             context,
                                             "any_date",
-                                          ).replaceAll('\n', ' ');
+                                          ).replaceAll("\n", " ");
                                       final displayValue =
                                           isEmpty ? anyDateText : value.text;
                                       final displayText =
@@ -973,8 +971,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                                       )
                                                   ? existingDate
                                                   : firstDate;
-                                          final DateTime?
-                                          picked = await LanguageAwareDatePicker.showDatePicker(
+                                          final picked = await LanguageAwareDatePicker.showDatePicker(
                                             context: context,
                                             initialDate: initialDate,
                                             firstDate: firstDate,
@@ -1053,7 +1050,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                                         Brightness.dark
                                                     ? theme
                                                         .colorScheme
-                                                        .surfaceVariant
+                                                        .surfaceContainerHighest
                                                     : Colors.white,
                                             contentPadding:
                                                 const EdgeInsets.symmetric(
@@ -1096,7 +1093,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                         const SizedBox(width: 12),
                         // Private Room Toggle (50% width)
                         Expanded(
-                          child: Container(
+                          child: DecoratedBox(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
@@ -1109,7 +1106,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               color:
                                   Theme.of(context).brightness ==
                                           Brightness.dark
-                                      ? theme.colorScheme.surfaceVariant
+                                      ? theme.colorScheme.surfaceContainerHighest
                                       : Colors.white,
                             ),
                             child: Padding(
@@ -1166,7 +1163,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                         _isPrivateRoom = value;
                                       });
                                     },
-                                    activeColor: _getBorderColor(),
+                                    activeThumbColor: _getBorderColor(),
                                     activeTrackColor: _getBorderColor()
                                         .withValues(alpha: 0.3),
                                     inactiveThumbColor:
@@ -1194,7 +1191,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                     // Photos Section
                     PhotoUploader(
                       selectedPhotos: _selectedPhotos,
-                      onPhotosChanged: (List<String> photos) {
+                      onPhotosChanged: (photos) {
                         logger.d("=== PHOTO SELECTION CHANGED ===");
                         logger.d("Previous selected photos: $_selectedPhotos");
                         logger.d("New selected photos: $photos");
@@ -1216,7 +1213,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                     const SizedBox(height: 20),
 
                     // Amenities Section
-                    Container(
+                    DecoratedBox(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
@@ -1227,7 +1224,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                         ),
                         color:
                             Theme.of(context).brightness == Brightness.dark
-                                ? theme.colorScheme.surfaceVariant
+                                ? theme.colorScheme.surfaceContainerHighest
                                 : Colors.white,
                       ),
                       child: Padding(
@@ -1304,7 +1301,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     );
   }
 
-  void _submitForm() async {
+  Future<void> _submitForm() async {
     HapticFeedbackUtils.impact();
 
     // Prevent multiple submissions
@@ -1439,7 +1436,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
           logger.d("Existing photos count: ${_existingPhotos.length}");
 
           // Create isPrimary flags (first new photo is primary if no existing photos)
-          final List<bool> isPrimaryFlags = List.generate(
+          final isPrimaryFlags = List<bool>.generate(
             _selectedPhotos.length,
             (index) =>
                 _existingPhotos.isEmpty &&
@@ -1496,7 +1493,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Navigate back to listing detail screen with updated flag
       Navigator.of(context).pop(true); // true indicates listing was updated
     } catch (e) {
-      String errorMessage = LanguageAwareStringHelper.getCurrent(
+      var errorMessage = LanguageAwareStringHelper.getCurrent(
         context,
         "error_updating_listing",
       );
@@ -1534,7 +1531,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     return AmenitiesCache.getDefaultOrderedAmenities();
   }
 
-  void _deleteExistingPhoto(int index) async {
+  Future<void> _deleteExistingPhoto(int index) async {
     final photo = _existingPhotos[index];
 
     // Prevent deletion if this is the last photo and photos are required
@@ -1556,7 +1553,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       messageKey: "delete_photo_confirmation",
     );
 
-    if (shouldDelete == true) {
+    if (shouldDelete ?? false) {
       try {
         // Show loading state
         setState(() {
@@ -1594,7 +1591,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
           // automatically promote the first photo to primary
           if (shouldPromoteNewPrimary) {
             // First, ensure no other photos are marked as primary
-            for (int i = 0; i < _existingPhotos.length; i++) {
+            for (var i = 0; i < _existingPhotos.length; i++) {
               if (_existingPhotos[i].isPrimary) {
                 _existingPhotos[i] = _existingPhotos[i].copyWith(
                   isPrimary: false,
@@ -1678,7 +1675,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     }
   }
 
-  void _makePhotoPrimary(int index) async {
+  Future<void> _makePhotoPrimary(int index) async {
     final photo = _existingPhotos[index];
 
     // Don"t do anything if photo is already primary
@@ -1702,7 +1699,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Update local state to reflect the change
       setState(() {
         // Update all photos to set isPrimary to false
-        for (int i = 0; i < _existingPhotos.length; i++) {
+        for (var i = 0; i < _existingPhotos.length; i++) {
           _existingPhotos[i] = _existingPhotos[i].copyWith(
             isPrimary: i == index,
           );
@@ -1738,7 +1735,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     // We need to clear primary status from existing photos
     setState(() {
       // Clear primary status from all existing photos
-      for (int i = 0; i < _existingPhotos.length; i++) {
+      for (var i = 0; i < _existingPhotos.length; i++) {
         _existingPhotos[i] = _existingPhotos[i].copyWith(isPrimary: false);
       }
     });

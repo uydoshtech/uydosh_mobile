@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import 'package:uy_dosh/base/services/session_manager.dart';
-import 'package:uy_dosh/base/injection/injection.dart';
-import 'package:uy_dosh/domain/services/user_profile_service.dart';
-import 'package:uy_dosh/base/api/client/oauth_api_client.dart';
-import 'package:uy_dosh/base/api/client/json_encodable.dart';
+import "package:flutter/material.dart";
+import "package:shared_preferences/shared_preferences.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 
 // Global search filters state with ChangeNotifier for reactivity
 class SearchFiltersState extends ChangeNotifier {
-  static final SearchFiltersState _instance = SearchFiltersState._internal();
   factory SearchFiltersState() => _instance;
   SearchFiltersState._internal();
+  static final SearchFiltersState _instance = SearchFiltersState._internal();
 
   int _selectedListingTypeId = 2; // Default to roommate needed
   int _selectedLocationIndex = 0;
@@ -45,49 +45,49 @@ class SearchFiltersState extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
 
       // Load listing type ID - use profile default when no saved preference
-      final savedListingTypeId = prefs.getInt('search_listing_type_id');
+      final savedListingTypeId = prefs.getInt("search_listing_type_id");
       _selectedListingTypeId = savedListingTypeId ?? 2;
 
       // Load location index
-      _selectedLocationIndex = prefs.getInt('search_location_index') ?? 0;
+      _selectedLocationIndex = prefs.getInt("search_location_index") ?? 0;
 
       // Load subway line
-      _selectedSubwayLine = prefs.getInt('search_subway_line') ?? 0;
+      _selectedSubwayLine = prefs.getInt("search_subway_line") ?? 0;
       logger.d(
-        'DEBUG: SearchFiltersState.initialize - loaded subway line from SharedPreferences: $_selectedSubwayLine',
+        "DEBUG: SearchFiltersState.initialize - loaded subway line from SharedPreferences: $_selectedSubwayLine",
       );
 
       // Load station index (for backward compatibility)
-      _selectedStationIndex = prefs.getInt('search_station_index') ?? 0;
+      _selectedStationIndex = prefs.getInt("search_station_index") ?? 0;
       logger.d(
-        'DEBUG: SearchFiltersState.initialize - loaded station index from SharedPreferences: $_selectedStationIndex',
+        "DEBUG: SearchFiltersState.initialize - loaded station index from SharedPreferences: $_selectedStationIndex",
       );
 
       // Load station ID (new field)
-      _selectedStationId = prefs.getInt('search_station_id') ?? 0;
+      _selectedStationId = prefs.getInt("search_station_id") ?? 0;
       logger.d(
-        'DEBUG: SearchFiltersState.initialize - loaded station ID from SharedPreferences: $_selectedStationId',
+        "DEBUG: SearchFiltersState.initialize - loaded station ID from SharedPreferences: $_selectedStationId",
       );
 
       // Load gender - use profile default when no saved preference
-      final savedGender = prefs.getInt('search_gender');
+      final savedGender = prefs.getInt("search_gender");
       _selectedGender = savedGender ?? 1;
 
       // Load price range
-      _minPrice = prefs.getDouble('search_min_price') ?? 10.0;
-      _maxPrice = prefs.getDouble('search_max_price') ?? 500.0;
+      _minPrice = prefs.getDouble("search_min_price") ?? 10.0;
+      _maxPrice = prefs.getDouble("search_max_price") ?? 500.0;
 
       // Load private room preference
-      _privateRoom = prefs.getBool('search_private_room') ?? false;
+      _privateRoom = prefs.getBool("search_private_room") ?? false;
 
       // Mark whether we need to apply profile defaults (when no saved values)
       _profileDefaultsApplied = savedListingTypeId != null && savedGender != null;
 
       logger.d(
-        'Loaded saved search filters: listingType=$_selectedListingTypeId, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom',
+        "Loaded saved search filters: listingType=$_selectedListingTypeId, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom",
       );
     } catch (e) {
-      logger.d('Error loading saved search filters: $e');
+      logger.d("Error loading saved search filters: $e");
       // Keep default values if there's an error
     }
 
@@ -107,7 +107,7 @@ class SearchFiltersState extends ChangeNotifier {
       final savedListingTypeId = prefs.getInt("search_listing_type_id");
       final savedGender = prefs.getInt("search_gender");
 
-      bool updated = false;
+      var updated = false;
 
       // Apply listing type from profile role when no saved preference
       if (savedListingTypeId == null) {
@@ -164,17 +164,17 @@ class SearchFiltersState extends ChangeNotifier {
   }
 
   Future<String?> _getUserRole() async {
-    String? role = await SessionManager.getUserRole();
+    var role = await SessionManager.getUserRole();
     if (role != null) return role;
     try {
       final response = await getIt<IOAuthApiClient>()
           .post<Map<String, dynamic>, _EmptyRequest>(
-            '/users/verify-session',
+            "/users/verify-session",
             (json) => json as Map<String, dynamic>,
             data: _EmptyRequest(),
           );
-      final user = response['user'];
-      role = user is Map<String, dynamic> ? user['role'] as String? : null;
+      final user = response["user"];
+      role = user is Map<String, dynamic> ? user["role"] as String? : null;
       if (role != null) await SessionManager.storeUserRole(role);
       return role;
     } catch (_) {
@@ -204,9 +204,9 @@ class SearchFiltersState extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('search_listing_type_id', listingTypeId);
+      await prefs.setInt("search_listing_type_id", listingTypeId);
     } catch (e) {
-      logger.d('Error saving listing type ID: $e');
+      logger.d("Error saving listing type ID: $e");
     }
 
     notifyListeners();
@@ -218,9 +218,9 @@ class SearchFiltersState extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('search_location_index', locationIndex);
+      await prefs.setInt("search_location_index", locationIndex);
     } catch (e) {
-      logger.d('Error saving location index: $e');
+      logger.d("Error saving location index: $e");
     }
 
     notifyListeners();
@@ -229,18 +229,18 @@ class SearchFiltersState extends ChangeNotifier {
   // Update subway line
   Future<void> setSubwayLine(int subwayLine) async {
     logger.d(
-      'DEBUG: SearchFiltersState.setSubwayLine - saving subway line: $subwayLine',
+      "DEBUG: SearchFiltersState.setSubwayLine - saving subway line: $subwayLine",
     );
     _selectedSubwayLine = subwayLine;
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('search_subway_line', subwayLine);
+      await prefs.setInt("search_subway_line", subwayLine);
       logger.d(
-        'DEBUG: SearchFiltersState.setSubwayLine - saved to SharedPreferences: $subwayLine',
+        "DEBUG: SearchFiltersState.setSubwayLine - saved to SharedPreferences: $subwayLine",
       );
     } catch (e) {
-      logger.d('Error saving subway line: $e');
+      logger.d("Error saving subway line: $e");
     }
 
     notifyListeners();
@@ -249,18 +249,18 @@ class SearchFiltersState extends ChangeNotifier {
   // Update station index
   Future<void> setStationIndex(int stationIndex) async {
     logger.d(
-      'DEBUG: SearchFiltersState.setStationIndex - saving station index: $stationIndex',
+      "DEBUG: SearchFiltersState.setStationIndex - saving station index: $stationIndex",
     );
     _selectedStationIndex = stationIndex;
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('search_station_index', stationIndex);
+      await prefs.setInt("search_station_index", stationIndex);
       logger.d(
-        'DEBUG: SearchFiltersState.setStationIndex - saved to SharedPreferences: $stationIndex',
+        "DEBUG: SearchFiltersState.setStationIndex - saved to SharedPreferences: $stationIndex",
       );
     } catch (e) {
-      logger.d('Error saving station index: $e');
+      logger.d("Error saving station index: $e");
     }
 
     notifyListeners();
@@ -269,18 +269,18 @@ class SearchFiltersState extends ChangeNotifier {
   // Update station ID (new method)
   Future<void> setStationId(int stationId) async {
     logger.d(
-      'DEBUG: SearchFiltersState.setStationId - saving station ID: $stationId',
+      "DEBUG: SearchFiltersState.setStationId - saving station ID: $stationId",
     );
     _selectedStationId = stationId;
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('search_station_id', stationId);
+      await prefs.setInt("search_station_id", stationId);
       logger.d(
-        'DEBUG: SearchFiltersState.setStationId - saved to SharedPreferences: $stationId',
+        "DEBUG: SearchFiltersState.setStationId - saved to SharedPreferences: $stationId",
       );
     } catch (e) {
-      logger.d('Error saving station ID: $e');
+      logger.d("Error saving station ID: $e");
     }
 
     notifyListeners();
@@ -292,9 +292,9 @@ class SearchFiltersState extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('search_gender', gender);
+      await prefs.setInt("search_gender", gender);
     } catch (e) {
-      logger.d('Error saving gender: $e');
+      logger.d("Error saving gender: $e");
     }
 
     notifyListeners();
@@ -307,10 +307,10 @@ class SearchFiltersState extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble('search_min_price', minPrice);
-      await prefs.setDouble('search_max_price', maxPrice);
+      await prefs.setDouble("search_min_price", minPrice);
+      await prefs.setDouble("search_max_price", maxPrice);
     } catch (e) {
-      logger.d('Error saving price range: $e');
+      logger.d("Error saving price range: $e");
     }
 
     notifyListeners();
@@ -322,9 +322,9 @@ class SearchFiltersState extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('search_private_room', privateRoom);
+      await prefs.setBool("search_private_room", privateRoom);
     } catch (e) {
-      logger.d('Error saving private room preference: $e');
+      logger.d("Error saving private room preference: $e");
     }
 
     notifyListeners();
@@ -345,17 +345,17 @@ class SearchFiltersState extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('search_listing_type_id');
-      await prefs.remove('search_location_index');
-      await prefs.remove('search_subway_line');
-      await prefs.remove('search_station_index');
-      await prefs.remove('search_station_id');
-      await prefs.remove('search_gender');
-      await prefs.remove('search_min_price');
-      await prefs.remove('search_max_price');
-      await prefs.remove('search_private_room');
+      await prefs.remove("search_listing_type_id");
+      await prefs.remove("search_location_index");
+      await prefs.remove("search_subway_line");
+      await prefs.remove("search_station_index");
+      await prefs.remove("search_station_id");
+      await prefs.remove("search_gender");
+      await prefs.remove("search_min_price");
+      await prefs.remove("search_max_price");
+      await prefs.remove("search_private_room");
     } catch (e) {
-      logger.d('Error clearing search filters: $e');
+      logger.d("Error clearing search filters: $e");
     }
 
     notifyListeners();

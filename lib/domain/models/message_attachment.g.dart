@@ -14,10 +14,10 @@ _$MessageAttachmentImpl _$$MessageAttachmentImplFromJson(
   fileName: json['file_name'] as String,
   fileUrl: json['file_url'] as String,
   fileType: json['file_type'] as String,
+  createdAt: json['created_at'] as String,
   fileSize: (json['file_size'] as num?)?.toInt(),
   mimeType: json['mime_type'] as String?,
   thumbnailUrl: json['thumbnail_url'] as String?,
-  createdAt: json['created_at'] as String,
 );
 
 Map<String, dynamic> _$$MessageAttachmentImplToJson(
@@ -28,8 +28,8 @@ Map<String, dynamic> _$$MessageAttachmentImplToJson(
   'file_name': instance.fileName,
   'file_url': instance.fileUrl,
   'file_type': instance.fileType,
+  'created_at': instance.createdAt,
   'file_size': instance.fileSize,
   'mime_type': instance.mimeType,
   'thumbnail_url': instance.thumbnailUrl,
-  'created_at': instance.createdAt,
 };

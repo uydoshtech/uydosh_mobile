@@ -1,11 +1,11 @@
-import 'package:flutter/foundation.dart';
+import "package:flutter/foundation.dart";
 
 /// Global state to track when home screen should refresh
 /// This is used to trigger refresh when returning from listing-related screens
 class HomeRefreshState extends ChangeNotifier {
-  static final HomeRefreshState _instance = HomeRefreshState._internal();
   factory HomeRefreshState() => _instance;
   HomeRefreshState._internal();
+  static final HomeRefreshState _instance = HomeRefreshState._internal();
 
   bool _shouldRefresh = false;
   bool _forceRefresh = false;

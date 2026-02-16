@@ -681,8 +681,9 @@ class MetroCache {
     final station = getStationById(stationId);
     if (station == null ||
         station.latitude == null ||
-        station.longitude == null)
+        station.longitude == null) {
       return null;
+    }
 
     return {"latitude": station.latitude!, "longitude": station.longitude!};
   }
@@ -752,7 +753,7 @@ class MetroCache {
 
     for (final entry in transferStationPairs.entries) {
       if (!processed.contains(entry.key)) {
-        pairs.add({'station1': entry.key, 'station2': entry.value});
+        pairs.add({"station1": entry.key, "station2": entry.value});
         processed.add(entry.key);
         processed.add(entry.value);
       }
@@ -784,12 +785,12 @@ class MetroCache {
     if (connectedStation == null) return null;
 
     return {
-      'isTransfer': true,
-      'connectedStationId': connectedStation.id,
-      'connectedStationName': connectedStation.nameUz,
-      'connectedStationNameRu': connectedStation.nameRu,
-      'connectedStationNameEn': connectedStation.nameEn,
-      'connectedStationLine': connectedStation.line,
+      "isTransfer": true,
+      "connectedStationId": connectedStation.id,
+      "connectedStationName": connectedStation.nameUz,
+      "connectedStationNameRu": connectedStation.nameRu,
+      "connectedStationNameEn": connectedStation.nameEn,
+      "connectedStationLine": connectedStation.line,
     };
   }
 }

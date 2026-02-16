@@ -1,17 +1,17 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/app_version.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/constants/app_version.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/version_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:cached_network_image/cached_network_image.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -20,22 +20,18 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
+import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
-import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
-import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _BurgerMenuProfileData {
-  final bool isLoading;
-  final bool hasError;
-  final String errorMessage;
-  final UserProfile? profile;
 
   const _BurgerMenuProfileData({
     required this.isLoading,
@@ -43,6 +39,10 @@ class _BurgerMenuProfileData {
     required this.errorMessage,
     required this.profile,
   });
+  final bool isLoading;
+  final bool hasError;
+  final String errorMessage;
+  final UserProfile? profile;
 
   @override
   bool operator ==(Object other) {
@@ -150,14 +150,12 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
     switch (currentTheme) {
       case AppTheme.blueTheme:
         dividerColor = AppColors.textLight;
-        break;
       case AppTheme.lightTheme:
       default:
         // Use a darker color for better visibility in light theme
         dividerColor = const Color(
           0xFFD1D5DB,
         ); // Medium gray for better contrast
-        break;
     }
 
     return Divider(color: dividerColor, thickness: 1.0, height: 1.0);
@@ -300,14 +298,14 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                                 selector:
                                     (state) => state.map(
                                       initial:
-                                          (_) => _BurgerMenuProfileData(
+                                          (_) => const _BurgerMenuProfileData(
                                             isLoading: true,
                                             hasError: false,
                                             errorMessage: "",
                                             profile: null,
                                           ),
                                       loading:
-                                          (_) => _BurgerMenuProfileData(
+                                          (_) => const _BurgerMenuProfileData(
                                             isLoading: true,
                                             hasError: false,
                                             errorMessage: "",
@@ -322,7 +320,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                                                 profile: loadedState.profile,
                                               ),
                                       error:
-                                          (_) => _BurgerMenuProfileData(
+                                          (_) => const _BurgerMenuProfileData(
                                             isLoading: false,
                                             hasError: true,
                                             errorMessage: "",

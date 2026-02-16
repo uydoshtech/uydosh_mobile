@@ -1,43 +1,38 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:url_launcher/url_launcher.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
-import "package:uy_dosh/base/api/client/oauth_api_client.dart";
-import "package:uy_dosh/base/api/client/json_encodable.dart";
-import "package:uy_dosh/base/services/logout_service.dart" show LogoutService, AccountBlockedException;
+import "package:uy_dosh/base/services/logout_service.dart" show AccountBlockedException, LogoutService;
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
+import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
-import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
-import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
-
-import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
-import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:cached_network_image/cached_network_image.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ProfileScreenData {
-  final bool isLoading;
-  final bool hasError;
-  final String errorMessage;
-  final UserProfile? profile;
 
   const _ProfileScreenData({
     required this.isLoading,
@@ -45,6 +40,10 @@ class _ProfileScreenData {
     required this.errorMessage,
     required this.profile,
   });
+  final bool isLoading;
+  final bool hasError;
+  final String errorMessage;
+  final UserProfile? profile;
 
   @override
   bool operator ==(Object other) {
@@ -141,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _cachedGoogleDisplayName = results[0] as String?;
       _cachedGooglePhotoUrl = results[1] as String?;
       _cachedUserProfile = results[2] as UserProfile?;
-      _userBlocked = results[3] as bool;
+      _userBlocked = results[3]! as bool;
     });
 
     if (_cachedUserProfile == null &&
@@ -160,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
     setState(() {
       _userRole = results[0] as String?;
-      _userBlocked = results[1] as bool;
+      _userBlocked = results[1]! as bool;
       _userRoleLoaded = true;
     });
     if (_userRole == null) {
@@ -252,14 +251,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               selector:
                   (state) => state.map(
                     initial:
-                        (_) => _ProfileScreenData(
+                        (_) => const _ProfileScreenData(
                           isLoading: true,
                           hasError: false,
                           errorMessage: "",
                           profile: null,
                         ),
                     loading:
-                        (_) => _ProfileScreenData(
+                        (_) => const _ProfileScreenData(
                           isLoading: true,
                           hasError: false,
                           errorMessage: "",
@@ -742,7 +741,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             context,
                                             "not_specified",
                                           ),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -1166,13 +1165,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Row(
               children: [
                 if (!isComplete) ...[
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                     height: 10,
                     child: BlinkingDotWidget(
                       color: Colors.green,
                       size: 10,
-                      duration: const Duration(milliseconds: 1000),
+                      duration: Duration(milliseconds: 1000),
                     ),
                   ),
                   const SizedBox(width: 8),

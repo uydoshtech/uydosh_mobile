@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
-import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// A selectable amenity chip with icon, localized label, and tap animation.

@@ -7,9 +7,9 @@ import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
-import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -109,7 +109,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     final switchRegExp = RegExp(
       r'<switch[^>]*transform="translate\(([-\d.]+),([-\d.]+)\)"[^>]*>([\s\S]*?)</switch>',
     );
-    final tspanRegExp = RegExp(r"<tspan[^>]*>([^<]+)</tspan>");
+    final tspanRegExp = RegExp("<tspan[^>]*>([^<]+)</tspan>");
 
     for (final match in switchRegExp.allMatches(svg)) {
       final x = double.tryParse(match.group(1) ?? "");
@@ -164,7 +164,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static String _normalizeStationLabel(String value) {
     return value
         .toLowerCase()
-        .replaceAll(RegExp(r"[’ʻ'`.]"), "")
+        .replaceAll(RegExp("[’ʻ'`.]"), "")
         .replaceAll(RegExp(r"\s+"), " ")
         .trim();
   }
@@ -412,10 +412,10 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
         if (textValue == null) return "";
 
         final transformMatch =
-            RegExp(r'transform="[^"]+"').firstMatch(attributes);
+            RegExp('transform="[^"]+"').firstMatch(attributes);
         if (transformMatch == null) return textValue;
 
-        return '<g ${transformMatch.group(0)}>$textValue</g>';
+        return "<g ${transformMatch.group(0)}>$textValue</g>";
       },
     );
     return flattenedSwitches

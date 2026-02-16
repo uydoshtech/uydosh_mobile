@@ -1,12 +1,12 @@
-import 'package:bloc/bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:uy_dosh/domain/models/listing_detail.dart';
-import 'package:uy_dosh/domain/services/listing_service.dart';
-import 'package:uy_dosh/base/util/error_message_helper.dart';
+import "package:bloc/bloc.dart";
+import "package:freezed_annotation/freezed_annotation.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
 
-part 'listing_detail_event.dart';
-part 'listing_detail_state.dart';
-part 'listing_detail_bloc.freezed.dart';
+part "listing_detail_bloc.freezed.dart";
+part "listing_detail_event.dart";
+part "listing_detail_state.dart";
 
 class ListingDetailBloc extends Bloc<ListingDetailEvent, ListingDetailState> {
   ListingDetailBloc(this._listingService)
@@ -14,9 +14,9 @@ class ListingDetailBloc extends Bloc<ListingDetailEvent, ListingDetailState> {
     on<ListingDetailEvent>((event, emit) async {
       await event.map(
         fetchListingDetail:
-            (e) async => await _onFetchListingDetail(emit, e.id),
+            (e) async => _onFetchListingDetail(emit, e.id),
         updateListingDetail:
-            (e) async => await _onUpdateListingDetail(emit, e.listingDetail),
+            (e) async => _onUpdateListingDetail(emit, e.listingDetail),
       );
     });
   }

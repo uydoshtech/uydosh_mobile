@@ -1,7 +1,7 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:uy_dosh/domain/models/listing.dart';
+import "package:freezed_annotation/freezed_annotation.dart";
+import "package:uy_dosh/domain/models/listing.dart";
 
-part 'listings_state.freezed.dart';
+part "listings_state.freezed.dart";
 
 @freezed
 class ListingsState with _$ListingsState {

@@ -22,29 +22,29 @@ Region _$RegionFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Region {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name')
+  @JsonKey(name: "name")
   String? get name => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String? get nameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String? get nameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String? get nameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name')
+  @JsonKey(name: "short_name")
   String? get shortName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String? get shortNameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String? get shortNameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String? get shortNameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'latitude')
+  @JsonKey(name: "latitude")
   String? get latitude => throw _privateConstructorUsedError;
-  @JsonKey(name: 'longitude')
+  @JsonKey(name: "longitude")
   String? get longitude => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Region to a JSON map.
@@ -63,18 +63,18 @@ abstract class $RegionCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name') String? name,
-    @JsonKey(name: 'name_en') String? nameEn,
-    @JsonKey(name: 'name_ru') String? nameRu,
-    @JsonKey(name: 'name_uz') String? nameUz,
-    @JsonKey(name: 'short_name') String? shortName,
-    @JsonKey(name: 'short_name_en') String? shortNameEn,
-    @JsonKey(name: 'short_name_ru') String? shortNameRu,
-    @JsonKey(name: 'short_name_uz') String? shortNameUz,
-    @JsonKey(name: 'latitude') String? latitude,
-    @JsonKey(name: 'longitude') String? longitude,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    @JsonKey(name: "name") String? name,
+    @JsonKey(name: "name_en") String? nameEn,
+    @JsonKey(name: "name_ru") String? nameRu,
+    @JsonKey(name: "name_uz") String? nameUz,
+    @JsonKey(name: "short_name") String? shortName,
+    @JsonKey(name: "short_name_en") String? shortNameEn,
+    @JsonKey(name: "short_name_ru") String? shortNameRu,
+    @JsonKey(name: "short_name_uz") String? shortNameUz,
+    @JsonKey(name: "latitude") String? latitude,
+    @JsonKey(name: "longitude") String? longitude,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
   });
 }
 
@@ -190,18 +190,18 @@ abstract class _$$RegionImplCopyWith<$Res> implements $RegionCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name') String? name,
-    @JsonKey(name: 'name_en') String? nameEn,
-    @JsonKey(name: 'name_ru') String? nameRu,
-    @JsonKey(name: 'name_uz') String? nameUz,
-    @JsonKey(name: 'short_name') String? shortName,
-    @JsonKey(name: 'short_name_en') String? shortNameEn,
-    @JsonKey(name: 'short_name_ru') String? shortNameRu,
-    @JsonKey(name: 'short_name_uz') String? shortNameUz,
-    @JsonKey(name: 'latitude') String? latitude,
-    @JsonKey(name: 'longitude') String? longitude,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    @JsonKey(name: "name") String? name,
+    @JsonKey(name: "name_en") String? nameEn,
+    @JsonKey(name: "name_ru") String? nameRu,
+    @JsonKey(name: "name_uz") String? nameUz,
+    @JsonKey(name: "short_name") String? shortName,
+    @JsonKey(name: "short_name_en") String? shortNameEn,
+    @JsonKey(name: "short_name_ru") String? shortNameRu,
+    @JsonKey(name: "short_name_uz") String? shortNameUz,
+    @JsonKey(name: "latitude") String? latitude,
+    @JsonKey(name: "longitude") String? longitude,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
   });
 }
 
@@ -310,18 +310,18 @@ class __$$RegionImplCopyWithImpl<$Res>
 class _$RegionImpl implements _Region {
   const _$RegionImpl({
     required this.id,
-    @JsonKey(name: 'name') this.name,
-    @JsonKey(name: 'name_en') this.nameEn,
-    @JsonKey(name: 'name_ru') this.nameRu,
-    @JsonKey(name: 'name_uz') this.nameUz,
-    @JsonKey(name: 'short_name') this.shortName,
-    @JsonKey(name: 'short_name_en') this.shortNameEn,
-    @JsonKey(name: 'short_name_ru') this.shortNameRu,
-    @JsonKey(name: 'short_name_uz') this.shortNameUz,
-    @JsonKey(name: 'latitude') this.latitude,
-    @JsonKey(name: 'longitude') this.longitude,
-    @JsonKey(name: 'created_at') this.createdAt,
-    @JsonKey(name: 'updated_at') this.updatedAt,
+    @JsonKey(name: "name") this.name,
+    @JsonKey(name: "name_en") this.nameEn,
+    @JsonKey(name: "name_ru") this.nameRu,
+    @JsonKey(name: "name_uz") this.nameUz,
+    @JsonKey(name: "short_name") this.shortName,
+    @JsonKey(name: "short_name_en") this.shortNameEn,
+    @JsonKey(name: "short_name_ru") this.shortNameRu,
+    @JsonKey(name: "short_name_uz") this.shortNameUz,
+    @JsonKey(name: "latitude") this.latitude,
+    @JsonKey(name: "longitude") this.longitude,
+    @JsonKey(name: "created_at") this.createdAt,
+    @JsonKey(name: "updated_at") this.updatedAt,
   });
 
   factory _$RegionImpl.fromJson(Map<String, dynamic> json) =>
@@ -330,40 +330,40 @@ class _$RegionImpl implements _Region {
   @override
   final int id;
   @override
-  @JsonKey(name: 'name')
+  @JsonKey(name: "name")
   final String? name;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   final String? nameEn;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   final String? nameRu;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   final String? nameUz;
   @override
-  @JsonKey(name: 'short_name')
+  @JsonKey(name: "short_name")
   final String? shortName;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   final String? shortNameEn;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   final String? shortNameRu;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   final String? shortNameUz;
   @override
-  @JsonKey(name: 'latitude')
+  @JsonKey(name: "latitude")
   final String? latitude;
   @override
-  @JsonKey(name: 'longitude')
+  @JsonKey(name: "longitude")
   final String? longitude;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String? createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String? updatedAt;
 
   @override
@@ -435,18 +435,18 @@ class _$RegionImpl implements _Region {
 abstract class _Region implements Region {
   const factory _Region({
     required final int id,
-    @JsonKey(name: 'name') final String? name,
-    @JsonKey(name: 'name_en') final String? nameEn,
-    @JsonKey(name: 'name_ru') final String? nameRu,
-    @JsonKey(name: 'name_uz') final String? nameUz,
-    @JsonKey(name: 'short_name') final String? shortName,
-    @JsonKey(name: 'short_name_en') final String? shortNameEn,
-    @JsonKey(name: 'short_name_ru') final String? shortNameRu,
-    @JsonKey(name: 'short_name_uz') final String? shortNameUz,
-    @JsonKey(name: 'latitude') final String? latitude,
-    @JsonKey(name: 'longitude') final String? longitude,
-    @JsonKey(name: 'created_at') final String? createdAt,
-    @JsonKey(name: 'updated_at') final String? updatedAt,
+    @JsonKey(name: "name") final String? name,
+    @JsonKey(name: "name_en") final String? nameEn,
+    @JsonKey(name: "name_ru") final String? nameRu,
+    @JsonKey(name: "name_uz") final String? nameUz,
+    @JsonKey(name: "short_name") final String? shortName,
+    @JsonKey(name: "short_name_en") final String? shortNameEn,
+    @JsonKey(name: "short_name_ru") final String? shortNameRu,
+    @JsonKey(name: "short_name_uz") final String? shortNameUz,
+    @JsonKey(name: "latitude") final String? latitude,
+    @JsonKey(name: "longitude") final String? longitude,
+    @JsonKey(name: "created_at") final String? createdAt,
+    @JsonKey(name: "updated_at") final String? updatedAt,
   }) = _$RegionImpl;
 
   factory _Region.fromJson(Map<String, dynamic> json) = _$RegionImpl.fromJson;
@@ -454,40 +454,40 @@ abstract class _Region implements Region {
   @override
   int get id;
   @override
-  @JsonKey(name: 'name')
+  @JsonKey(name: "name")
   String? get name;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String? get nameEn;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String? get nameRu;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String? get nameUz;
   @override
-  @JsonKey(name: 'short_name')
+  @JsonKey(name: "short_name")
   String? get shortName;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String? get shortNameEn;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String? get shortNameRu;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String? get shortNameUz;
   @override
-  @JsonKey(name: 'latitude')
+  @JsonKey(name: "latitude")
   String? get latitude;
   @override
-  @JsonKey(name: 'longitude')
+  @JsonKey(name: "longitude")
   String? get longitude;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String? get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt;
 
   /// Create a copy of Region

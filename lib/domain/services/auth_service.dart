@@ -1,8 +1,8 @@
-import 'package:uy_dosh/domain/models/auth/auth_request.dart';
-import 'package:uy_dosh/domain/models/auth/auth_response.dart';
-import 'package:uy_dosh/base/api/client/public_api_client.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import 'package:uy_dosh/base/services/session_manager.dart';
+import "package:uy_dosh/base/api/client/public_api_client.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/domain/models/auth/auth_request.dart";
+import "package:uy_dosh/domain/models/auth/auth_response.dart";
 
 abstract class IAuthService {
   Future<AuthResponse> register(String email);
@@ -12,16 +12,16 @@ abstract class IAuthService {
 }
 
 class AuthService implements IAuthService {
-  final IPublicApiClient _apiClient;
 
   AuthService(this._apiClient);
+  final IPublicApiClient _apiClient;
 
   @override
   Future<AuthResponse> register(String email) async {
     try {
       final request = AuthRequest(email: email);
       final response = await _apiClient.post<AuthResponse, AuthRequest>(
-        '/users/register',
+        "/users/register",
         (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
         data: request,
       );
@@ -36,7 +36,7 @@ class AuthService implements IAuthService {
 
       return response;
     } catch (e) {
-      throw Exception('Failed to register user: $e');
+      throw Exception("Failed to register user: $e");
     }
   }
 
@@ -45,7 +45,7 @@ class AuthService implements IAuthService {
     try {
       final request = AuthRequest(email: email);
       final response = await _apiClient.post<AuthResponse, AuthRequest>(
-        '/users/login',
+        "/users/login",
         (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
         data: request,
       );
@@ -60,7 +60,7 @@ class AuthService implements IAuthService {
 
       return response;
     } catch (e) {
-      throw Exception('Failed to login user: $e');
+      throw Exception("Failed to login user: $e");
     }
   }
 
@@ -91,10 +91,10 @@ class AuthService implements IAuthService {
         // Call backend logout endpoint to invalidate server session
         // Note: You'll need to implement this with proper HTTP client
         // For now, we'll just clear local session
-        logger.d('TODO: Implement backend logout call with token: $token');
+        logger.d("TODO: Implement backend logout call with token: $token");
       }
     } catch (e) {
-      logger.d('Logout error: $e');
+      logger.d("Logout error: $e");
       // Continue with local logout even if backend call fails
     } finally {
       // Always clear local session

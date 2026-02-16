@@ -93,7 +93,7 @@ class AppStrings {
       "chat_with": "Chat with {name}",
       "profile_interlocutor": "Interlocutor's Profile",
       "view_listing": "View Listing",
-      "menu_messages": 'Messages',
+      "menu_messages": "Messages",
       "type_message": "Type a message...",
       "conversation_created": "Conversation started",
       "conversation_failed": "Failed to start conversation",

@@ -72,7 +72,7 @@ class AppTheme {
       ),
 
       // AppBar theme
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: BlueThemeColors.primary, // Blue background (original)
         foregroundColor: BlueThemeColors.textPrimary,
         elevation: 0,
@@ -113,7 +113,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: BlueThemeColors.buttonPrimary,
-          side: BorderSide(color: BlueThemeColors.buttonPrimary),
+          side: const BorderSide(color: BlueThemeColors.buttonPrimary),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
@@ -124,20 +124,20 @@ class AppTheme {
         fillColor: BlueThemeColors.inputBackground,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: BlueThemeColors.inputBorder),
+          borderSide: const BorderSide(color: BlueThemeColors.inputBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: BlueThemeColors.inputFocused, width: 2),
+          borderSide: const BorderSide(color: BlueThemeColors.inputFocused, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: BlueThemeColors.inputError),
+          borderSide: const BorderSide(color: BlueThemeColors.inputError),
         ),
       ),
 
       // Bottom navigation bar theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: BlueThemeColors.navigationBackground,
         selectedItemColor: BlueThemeColors.navigationSelected,
         unselectedItemColor: BlueThemeColors.navigationUnselected,
@@ -145,13 +145,13 @@ class AppTheme {
       ),
 
       // Floating action button theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: BlueThemeColors.buttonPrimary,
         foregroundColor: BlueThemeColors.textPrimary,
       ),
 
       // Divider theme
-      dividerTheme: DividerThemeData(
+      dividerTheme: const DividerThemeData(
         color: BlueThemeColors.divider,
         thickness: 1,
       ),
@@ -162,12 +162,12 @@ class AppTheme {
       ),
 
       // Icon theme
-      iconTheme: IconThemeData(color: BlueThemeColors.iconPrimary, size: 24),
+      iconTheme: const IconThemeData(color: BlueThemeColors.iconPrimary, size: 24),
 
       // Popup menu theme - White background with blue text and icons
       popupMenuTheme: PopupMenuThemeData(
         color: Colors.white, // White background
-        textStyle: TextStyle(
+        textStyle: const TextStyle(
           color: BlueThemeColors.primary, // Blue text
           fontSize: 16,
         ),
@@ -176,8 +176,8 @@ class AppTheme {
       ),
 
       // Drawer theme
-      drawerTheme: DrawerThemeData(
-        backgroundColor: const Color(0xFF1A1A1A), // Dark almost black color
+      drawerTheme: const DrawerThemeData(
+        backgroundColor: Color(0xFF1A1A1A), // Dark almost black color
         surfaceTintColor: BlueThemeColors.primary,
       ),
 
@@ -249,7 +249,7 @@ class AppTheme {
       ),
 
       // AppBar theme
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor:
             LightThemeColors
                 .surface, // Light gray surface instead of hardcoded purple
@@ -298,7 +298,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: LightThemeColors.buttonPrimary,
-          side: BorderSide(color: LightThemeColors.buttonPrimary),
+          side: const BorderSide(color: LightThemeColors.buttonPrimary),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
@@ -309,23 +309,23 @@ class AppTheme {
         fillColor: LightThemeColors.inputBackground,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: LightThemeColors.inputBorder),
+          borderSide: const BorderSide(color: LightThemeColors.inputBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: LightThemeColors.inputFocused,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: LightThemeColors.inputError),
+          borderSide: const BorderSide(color: LightThemeColors.inputError),
         ),
       ),
 
       // Bottom navigation bar theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: LightThemeColors.navigationBackground,
         selectedItemColor: LightThemeColors.navigationSelected,
         unselectedItemColor: LightThemeColors.navigationUnselected,
@@ -333,24 +333,24 @@ class AppTheme {
       ),
 
       // Floating action button theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: LightThemeColors.buttonPrimary,
         foregroundColor: Colors.white,
       ),
 
       // Divider theme
-      dividerTheme: DividerThemeData(
+      dividerTheme: const DividerThemeData(
         color: LightThemeColors.divider,
         thickness: 1,
       ),
 
       // Icon theme
-      iconTheme: IconThemeData(color: LightThemeColors.iconPrimary, size: 24),
+      iconTheme: const IconThemeData(color: LightThemeColors.iconPrimary, size: 24),
 
       // Popup menu theme - White background with light theme primary text and icons
       popupMenuTheme: PopupMenuThemeData(
         color: Colors.white, // White background
-        textStyle: TextStyle(
+        textStyle: const TextStyle(
           color: LightThemeColors.primary, // Light theme primary text
           fontSize: 16,
         ),
@@ -359,13 +359,13 @@ class AppTheme {
       ),
 
       // Drawer theme
-      drawerTheme: DrawerThemeData(
+      drawerTheme: const DrawerThemeData(
         backgroundColor: LightThemeColors.surface,
         surfaceTintColor: LightThemeColors.primary,
       ),
 
       // Text theme
-      textTheme: TextTheme(
+      textTheme: const TextTheme(
         displayLarge: TextStyle(color: LightThemeColors.textPrimary),
         displayMedium: TextStyle(color: LightThemeColors.textPrimary),
         displaySmall: TextStyle(color: LightThemeColors.textPrimary),
@@ -424,7 +424,7 @@ class AppTheme {
       ),
 
       // AppBar theme
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: MessagingThemeColors.appBarBackground,
         foregroundColor: MessagingThemeColors.appBarForeground,
         elevation: 0,
@@ -460,7 +460,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: MessagingThemeColors.buttonPrimary,
-          side: BorderSide(color: MessagingThemeColors.buttonPrimary),
+          side: const BorderSide(color: MessagingThemeColors.buttonPrimary),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
@@ -471,23 +471,23 @@ class AppTheme {
         fillColor: MessagingThemeColors.inputBackground,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: MessagingThemeColors.inputBorder),
+          borderSide: const BorderSide(color: MessagingThemeColors.inputBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: MessagingThemeColors.inputFocused,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: MessagingThemeColors.inputError),
+          borderSide: const BorderSide(color: MessagingThemeColors.inputError),
         ),
       ),
 
       // Bottom navigation bar theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         selectedItemColor: MessagingThemeColors.navigationSelected,
         unselectedItemColor: MessagingThemeColors.navigationUnselected,
         backgroundColor: MessagingThemeColors.background,
@@ -495,13 +495,13 @@ class AppTheme {
       ),
 
       // Floating action button theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: MessagingThemeColors.buttonPrimary,
         foregroundColor: MessagingThemeColors.buttonText,
       ),
 
       // Icon theme
-      iconTheme: IconThemeData(
+      iconTheme: const IconThemeData(
         color: MessagingThemeColors.iconPrimary,
         size: 24,
       ),
@@ -509,7 +509,7 @@ class AppTheme {
       // Popup menu theme - White background with messaging theme primary text and icons
       popupMenuTheme: PopupMenuThemeData(
         color: Colors.white, // White background
-        textStyle: TextStyle(
+        textStyle: const TextStyle(
           color: MessagingThemeColors.primary, // Messaging theme primary text
           fontSize: 16,
         ),
@@ -518,7 +518,7 @@ class AppTheme {
       ),
 
       // Text theme
-      textTheme: TextTheme(
+      textTheme: const TextTheme(
         displayLarge: TextStyle(color: MessagingThemeColors.textPrimary),
         displayMedium: TextStyle(color: MessagingThemeColors.textPrimary),
         displaySmall: TextStyle(color: MessagingThemeColors.textPrimary),

@@ -1,7 +1,7 @@
-import "package:uy_dosh/domain/models/university.dart";
-import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/domain/models/university.dart";
 
 /// Cache for universities data fetched from the API
 /// This cache stores universities with proper localization support
@@ -15,8 +15,8 @@ class UniversityCache {
     if (_isInitialized) return;
 
     try {
-      logger.d('=== UNIVERSITY CACHE INITIALIZATION ===');
-      logger.d('Fetching universities from API...');
+      logger.d("=== UNIVERSITY CACHE INITIALIZATION ===");
+      logger.d("Fetching universities from API...");
 
       // Fetch universities from the actual API
       _cachedUniversities = await _getUniversitiesFromApi();
@@ -24,12 +24,12 @@ class UniversityCache {
 
       _isInitialized = true;
       logger.d(
-        'University cache initialized with ${_cachedUniversities.length} universities',
+        "University cache initialized with ${_cachedUniversities.length} universities",
       );
-      logger.d('Cache last updated: $_lastUpdated');
-      logger.d('=====================================');
+      logger.d("Cache last updated: $_lastUpdated");
+      logger.d("=====================================");
     } catch (e) {
-      logger.d('Error initializing university cache: $e');
+      logger.d("Error initializing university cache: $e");
       rethrow;
     }
   }
@@ -37,50 +37,50 @@ class UniversityCache {
   /// Get universities from API
   static Future<List<University>> _getUniversitiesFromApi() async {
     try {
-      logger.d('=== FETCHING UNIVERSITIES FROM API ===');
+      logger.d("=== FETCHING UNIVERSITIES FROM API ===");
 
       final apiClient = getIt<IPublicApiClient>();
 
       final response = await apiClient.get<dynamic>(
-        '/universities',
+        "/universities",
         (json) => json,
         queryParameters: {
-          'page': 1,
-          'limit': 1000, // Set high limit to get all universities
+          "page": 1,
+          "limit": 1000, // Set high limit to get all universities
         },
       );
 
-      logger.d('Raw API Response: $response');
-      logger.d('Response type: ${response.runtimeType}');
+      logger.d("Raw API Response: $response");
+      logger.d("Response type: ${response.runtimeType}");
 
       // Handle different possible response structures
       List<dynamic> universitiesData;
       if (response is Map) {
         final responseMap = response;
-        if (responseMap['content'] != null) {
+        if (responseMap["content"] != null) {
           logger.d('Found universities in "content" key');
-          universitiesData = responseMap['content'] as List<dynamic>;
-        } else if (responseMap['universities'] != null) {
+          universitiesData = responseMap["content"] as List<dynamic>;
+        } else if (responseMap["universities"] != null) {
           logger.d('Found universities in "universities" key');
-          universitiesData = responseMap['universities'] as List<dynamic>;
-        } else if (responseMap['data'] != null) {
+          universitiesData = responseMap["universities"] as List<dynamic>;
+        } else if (responseMap["data"] != null) {
           logger.d('Found universities in "data" key');
-          universitiesData = responseMap['data'] as List<dynamic>;
+          universitiesData = responseMap["data"] as List<dynamic>;
         } else {
-          logger.d('No recognized data structure found in Map, using fallback');
+          logger.d("No recognized data structure found in Map, using fallback");
           universitiesData = <dynamic>[];
         }
       } else if (response is List) {
-        logger.d('Response is a direct list');
+        logger.d("Response is a direct list");
         universitiesData = response;
       } else {
         logger.d(
-          'Response is neither Map nor List, type: ${response.runtimeType}, using fallback',
+          "Response is neither Map nor List, type: ${response.runtimeType}, using fallback",
         );
         universitiesData = <dynamic>[];
       }
 
-      logger.d('Universities data length from API: ${universitiesData.length}');
+      logger.d("Universities data length from API: ${universitiesData.length}");
 
       final universities =
           universitiesData
@@ -88,7 +88,7 @@ class UniversityCache {
               .toList();
 
       logger.d(
-        'Successfully created ${universities.length} University objects from API',
+        "Successfully created ${universities.length} University objects from API",
       );
       logger.d(
         'First university: ${universities.isNotEmpty ? universities.first.name : "None"}',
@@ -96,31 +96,31 @@ class UniversityCache {
       logger.d(
         'Last university: ${universities.isNotEmpty ? universities.last.name : "None"}',
       );
-      logger.d('=====================================');
+      logger.d("=====================================");
 
       // Debug print for verification
       print(
-        '🎓 UNIVERSITY CACHE DEBUG: Loaded ${universities.length} universities from API',
+        "🎓 UNIVERSITY CACHE DEBUG: Loaded ${universities.length} universities from API",
       );
       if (universities.isNotEmpty) {
-        print('🎓 First university: ${universities.first.name}');
-        print('🎓 Last university: ${universities.last.name}');
+        print("🎓 First university: ${universities.first.name}");
+        print("🎓 Last university: ${universities.last.name}");
       }
 
       return universities;
     } catch (error) {
-      logger.d('=== UNIVERSITY API ERROR DEBUG ===');
-      logger.d('Error fetching universities from API: $error');
-      logger.d('Error type: ${error.runtimeType}');
-      logger.d('Error stack trace: ${StackTrace.current}');
-      logger.d('=====================================');
+      logger.d("=== UNIVERSITY API ERROR DEBUG ===");
+      logger.d("Error fetching universities from API: $error");
+      logger.d("Error type: ${error.runtimeType}");
+      logger.d("Error stack trace: ${StackTrace.current}");
+      logger.d("=====================================");
 
       // Fallback to hardcoded data if API fails
       logger.d(
-        '⚠️ API failed, falling back to hardcoded university data (10 universities)',
+        "⚠️ API failed, falling back to hardcoded university data (10 universities)",
       );
       logger.d(
-        'This means the app will only show 10 universities instead of 101',
+        "This means the app will only show 10 universities instead of 101",
       );
       return _getHardcodedUniversities();
     }
@@ -130,7 +130,7 @@ class UniversityCache {
   static List<University> _getHardcodedUniversities() {
     // This simulates the API response with proper localized data from the database
     return [
-      University(
+      const University(
         id: 1,
         name: "O'ZBEKISTON MILLIY UNIVERSITETI",
         nameRu: "НАЦИОНАЛЬНЫЙ УНИВЕРСИТЕТ УЗБЕКИСТАНА",
@@ -145,7 +145,7 @@ class UniversityCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      University(
+      const University(
         id: 2,
         name: "PEDAGOGIKA UNIVERSITETI",
         nameRu: "ПЕДАГОГИЧЕСКИЙ УНИВЕРСИТЕТ",
@@ -160,7 +160,7 @@ class UniversityCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      University(
+      const University(
         id: 3,
         name: "JAHON TILLARI UNIVERSITETI",
         nameRu: "УНИВЕРСИТЕТ МИРОВЫХ ЯЗЫКОВ",
@@ -175,7 +175,7 @@ class UniversityCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      University(
+      const University(
         id: 4,
         name: "TOSHKENT TIBBIYOT AKADEMIYASI",
         nameRu: "ТАШКЕНТСКАЯ МЕДИЦИНСКАЯ АКАДЕМИЯ",
@@ -190,7 +190,7 @@ class UniversityCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      University(
+      const University(
         id: 5,
         name: "TOSHKENT DAVLAT TEXNIKA UNIVERSITETI",
         nameRu: "ТАШКЕНТСКИЙ ТЕХНИЧЕСКИЙ УНИВЕРСИТЕТ",
@@ -205,7 +205,7 @@ class UniversityCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      University(
+      const University(
         id: 6,
         name: "STOMATOLOGIYA INSTITUTI",
         nameRu: "СТОМАТОЛОГИЧЕСКИЙ ИНСТИТУТ",
@@ -220,7 +220,7 @@ class UniversityCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      University(
+      const University(
         id: 7,
         name: "SHARQSHUNOSLIK UNIVERSITETI",
         nameRu: "УНИВЕРСИТЕТ ВОСТОКОВЕДЕНИЯ",
@@ -235,7 +235,7 @@ class UniversityCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      University(
+      const University(
         id: 8,
         name: "TOSHKENT AXBOROT TEXNOLOGIYALARI UNIVERSITETI",
         nameRu: "УНИВЕРСИТЕТ ИНФОРМАЦИОННЫХ ТЕХНОЛОГИЙ",
@@ -250,7 +250,7 @@ class UniversityCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      University(
+      const University(
         id: 9,
         name: "TOSHKENT PEDIATRIYA TIBBIYOT INSTITUTI",
         nameRu: "ТАШКЕНТСКИЙ ПЕДИАТРИЧЕСКИЙ МЕДИЦИНСКИЙ ИНСТИТУТ",
@@ -265,7 +265,7 @@ class UniversityCache {
         createdAt: "2025-08-01T12:57:51.498Z",
         updatedAt: "2025-08-01T12:57:51.498Z",
       ),
-      University(
+      const University(
         id: 10,
         name: "TOSHKENT DAVLAT IQTISODIYOT UNIVERSITETI",
         nameRu: "ТАШКЕНТСКИЙ ГОСУДАРСТВЕННЫЙ ЭКОНОМИЧЕСКИЙ УНИВЕРСИТЕТ",
@@ -289,7 +289,7 @@ class UniversityCache {
   /// Get all universities
   static List<University> getAllUniversities() {
     if (!_isInitialized) {
-      logger.d('University cache not initialized, returning empty list');
+      logger.d("University cache not initialized, returning empty list");
       return [];
     }
     return _cachedUniversities;
@@ -298,7 +298,7 @@ class UniversityCache {
   /// Get universities sorted alphabetically by localized name
   static List<University> getUniversitiesSortedByLanguage(String language) {
     if (!_isInitialized) {
-      logger.d('University cache not initialized, returning empty list');
+      logger.d("University cache not initialized, returning empty list");
       return [];
     }
 
@@ -314,7 +314,7 @@ class UniversityCache {
   /// Get a specific university by ID
   static University? getUniversityById(int id) {
     if (!_isInitialized) {
-      logger.d('University cache not initialized, returning null');
+      logger.d("University cache not initialized, returning null");
       return null;
     }
 
@@ -330,7 +330,7 @@ class UniversityCache {
   /// Get universities by name (case-insensitive search)
   static List<University> getUniversitiesByName(String name) {
     if (!_isInitialized) {
-      logger.d('University cache not initialized, returning empty list');
+      logger.d("University cache not initialized, returning empty list");
       return [];
     }
 
@@ -380,27 +380,27 @@ class UniversityCache {
     _cachedUniversities = [];
     _isInitialized = false;
     _lastUpdated = null;
-    logger.d('University cache cleared');
+    logger.d("University cache cleared");
   }
 
   /// Refresh the cache by fetching fresh data from API
   static Future<void> refreshCache() async {
-    logger.d('=== REFRESHING UNIVERSITY CACHE ===');
+    logger.d("=== REFRESHING UNIVERSITY CACHE ===");
     _isInitialized = false;
     await initialize();
     logger.d(
-      'University cache refreshed with ${_cachedUniversities.length} universities',
+      "University cache refreshed with ${_cachedUniversities.length} universities",
     );
   }
 
   /// Get cache statistics
   static Map<String, dynamic> getCacheStats() {
     return {
-      'isInitialized': _isInitialized,
-      'universityCount': _cachedUniversities.length,
-      'cacheSize': _cachedUniversities.length,
-      'lastUpdated': _lastUpdated?.toIso8601String(),
-      'isStale': _isStale(),
+      "isInitialized": _isInitialized,
+      "universityCount": _cachedUniversities.length,
+      "cacheSize": _cachedUniversities.length,
+      "lastUpdated": _lastUpdated?.toIso8601String(),
+      "isStale": _isStale(),
     };
   }
 

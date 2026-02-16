@@ -1,5 +1,5 @@
-import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 
@@ -34,7 +34,7 @@ class AdminUserService implements IAdminUserService {
         },
       );
 
-      final List<dynamic> usersData =
+      final usersData =
           response is List ? response : <dynamic>[];
 
       return usersData

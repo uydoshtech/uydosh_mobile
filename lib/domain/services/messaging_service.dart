@@ -1,18 +1,17 @@
-import 'dart:io';
-import 'dart:typed_data';
+import "dart:io";
+import "dart:typed_data";
 
-import 'package:dio/dio.dart';
-import 'package:uy_dosh/base/api/client/oauth_api_client.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import 'package:uy_dosh/base/api/client/json_encodable.dart';
-import 'package:uy_dosh/domain/models/conversation.dart';
-import 'package:uy_dosh/domain/models/message.dart';
-import 'package:uy_dosh/domain/models/message_attachment.dart';
-import 'package:uy_dosh/domain/models/messaging_requests.dart';
-import 'package:uy_dosh/domain/models/pageable_response.dart';
-import 'package:uy_dosh/base/services/session_manager.dart';
-
-import 'package:injectable/injectable.dart';
+import "package:dio/dio.dart";
+import "package:injectable/injectable.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/message.dart";
+import "package:uy_dosh/domain/models/message_attachment.dart";
+import "package:uy_dosh/domain/models/messaging_requests.dart";
+import "package:uy_dosh/domain/models/pageable_response.dart";
 
 // Empty request class for delete operations
 class _EmptyRequest implements IJsonEncodable {
@@ -51,7 +50,7 @@ abstract class IMessagingService {
   Future<Message> sendMessage({
     required int conversationId,
     required String content,
-    String messageType = 'text',
+    String messageType = "text",
     int? replyToMessageId,
   });
 
@@ -85,21 +84,21 @@ abstract class IMessagingService {
 
 @LazySingleton(as: IMessagingService)
 class MessagingService implements IMessagingService {
-  final IOAuthApiClient _apiClient;
 
   MessagingService(this._apiClient);
+  final IOAuthApiClient _apiClient;
 
   // Helper method to check authentication before making API calls
   Future<void> _checkAuthentication() async {
     final isAuthenticated = await SessionManager.isAuthenticated();
     if (!isAuthenticated) {
       logger.d(
-        '❌ MessagingService: User not authenticated, cannot perform operation',
+        "❌ MessagingService: User not authenticated, cannot perform operation",
       );
-      throw Exception('User not authenticated. Please log in first.');
+      throw Exception("User not authenticated. Please log in first.");
     }
     logger.d(
-      '🔐 MessagingService: User is authenticated, proceeding with operation...',
+      "🔐 MessagingService: User is authenticated, proceeding with operation...",
     );
   }
 
@@ -112,9 +111,9 @@ class MessagingService implements IMessagingService {
       await _checkAuthentication();
 
       final response = await _apiClient.get<Map<String, dynamic>>(
-        '/conversations',
+        "/conversations",
         (json) => json as Map<String, dynamic>,
-        queryParameters: {'page': page, 'limit': limit},
+        queryParameters: {"page": page, "limit": limit},
       );
 
       // Check if response is a list directly (not wrapped in an object)
@@ -138,7 +137,7 @@ class MessagingService implements IMessagingService {
       }
 
       // Check if response has 'data' field
-      final conversationsData = response['data'];
+      final conversationsData = response["data"];
 
       if (conversationsData is List) {
         // Direct list format
@@ -153,15 +152,15 @@ class MessagingService implements IMessagingService {
 
         return PageableResponse<ConversationSummary>(
           data: conversations,
-          total: response['total'] as int? ?? conversations.length,
-          page: response['page'] as int? ?? page,
-          limit: response['limit'] as int? ?? limit,
-          totalPages: response['totalPages'] as int? ?? 1,
+          total: response["total"] as int? ?? conversations.length,
+          page: response["page"] as int? ?? page,
+          limit: response["limit"] as int? ?? limit,
+          totalPages: response["totalPages"] as int? ?? 1,
         );
       } else if (conversationsData is Map) {
         // Nested structure: data.conversations
         final conversationsList =
-            conversationsData['conversations'] as List? ?? [];
+            conversationsData["conversations"] as List? ?? [];
 
         final conversations =
             conversationsList
@@ -174,18 +173,18 @@ class MessagingService implements IMessagingService {
 
         return PageableResponse<ConversationSummary>(
           data: conversations,
-          total: conversationsData['total'] as int? ?? conversations.length,
-          page: conversationsData['page'] as int? ?? page,
-          limit: conversationsData['limit'] as int? ?? limit,
-          totalPages: conversationsData['totalPages'] as int? ?? 1,
+          total: conversationsData["total"] as int? ?? conversations.length,
+          page: conversationsData["page"] as int? ?? page,
+          limit: conversationsData["limit"] as int? ?? limit,
+          totalPages: conversationsData["totalPages"] as int? ?? 1,
         );
       } else {
         throw Exception(
-          'Unexpected response structure: ${response.runtimeType}',
+          "Unexpected response structure: ${response.runtimeType}",
         );
       }
     } catch (e) {
-      throw Exception('Failed to fetch conversations: $e');
+      throw Exception("Failed to fetch conversations: $e");
     }
   }
 
@@ -197,32 +196,32 @@ class MessagingService implements IMessagingService {
     try {
       await _checkAuthentication();
 
-      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
+      final queryParams = <String, dynamic>{"page": page, "limit": limit};
 
       final response = await _apiClient.get<Map<String, dynamic>>(
-        '/conversations/participant',
+        "/conversations/participant",
         (json) => json as Map<String, dynamic>,
         queryParameters: queryParams,
       );
 
       // Handle different possible response structures
       List<dynamic> conversationsData;
-      int total = 0;
-      int totalPages = 0;
+      var total = 0;
+      var totalPages = 0;
 
-      if (response['data'] != null && response['data'] is Map) {
-        final data = response['data'] as Map<String, dynamic>;
-        if (data['conversations'] != null) {
-          conversationsData = data['conversations'] as List<dynamic>;
-          total = data['total'] ?? conversationsData.length;
-          totalPages = data['totalPages'] ?? 1;
+      if (response["data"] != null && response["data"] is Map) {
+        final data = response["data"] as Map<String, dynamic>;
+        if (data["conversations"] != null) {
+          conversationsData = data["conversations"] as List<dynamic>;
+          total = data["total"] ?? conversationsData.length;
+          totalPages = data["totalPages"] ?? 1;
         } else {
           conversationsData = <dynamic>[];
         }
-      } else if (response['conversations'] != null) {
-        conversationsData = response['conversations'] as List<dynamic>;
-        total = response['total'] ?? conversationsData.length;
-        totalPages = response['totalPages'] ?? 1;
+      } else if (response["conversations"] != null) {
+        conversationsData = response["conversations"] as List<dynamic>;
+        total = response["total"] ?? conversationsData.length;
+        totalPages = response["totalPages"] ?? 1;
       } else {
         conversationsData = <dynamic>[];
       }
@@ -243,7 +242,7 @@ class MessagingService implements IMessagingService {
         totalPages: totalPages,
       );
     } catch (e) {
-      throw Exception('Failed to fetch participant conversations: $e');
+      throw Exception("Failed to fetch participant conversations: $e");
     }
   }
 
@@ -253,12 +252,12 @@ class MessagingService implements IMessagingService {
       await _checkAuthentication();
 
       final response = await _apiClient.get<Conversation>(
-        '/conversations/$conversationId',
+        "/conversations/$conversationId",
         (json) => Conversation.fromJson(json as Map<String, dynamic>),
       );
       return response;
     } catch (e) {
-      throw Exception('Failed to fetch conversation: $e');
+      throw Exception("Failed to fetch conversation: $e");
     }
   }
 
@@ -276,26 +275,26 @@ class MessagingService implements IMessagingService {
       );
 
       final response = await _apiClient
-          .post<Conversation, CreateConversationRequest>('/conversations', (
+          .post<Conversation, CreateConversationRequest>("/conversations", (
             json,
           ) {
             // Extract the data field from the response
             final jsonMap = json as Map<String, dynamic>;
-            final conversationData = jsonMap['data'] as Map<String, dynamic>;
+            final conversationData = jsonMap["data"] as Map<String, dynamic>;
 
             // Remove fields that don't exist in the Conversation model
             final cleanJsonMap = Map<String, dynamic>.from(conversationData);
-            cleanJsonMap.remove('initiator');
-            cleanJsonMap.remove('participant');
-            cleanJsonMap.remove('last_message_sender');
-            cleanJsonMap.remove('listing');
+            cleanJsonMap.remove("initiator");
+            cleanJsonMap.remove("participant");
+            cleanJsonMap.remove("last_message_sender");
+            cleanJsonMap.remove("listing");
 
             return Conversation.fromJson(cleanJsonMap);
           }, data: request);
 
       return response;
     } catch (e) {
-      throw Exception('Failed to create conversation: $e');
+      throw Exception("Failed to create conversation: $e");
     }
   }
 
@@ -303,12 +302,12 @@ class MessagingService implements IMessagingService {
   Future<void> deleteConversation(int conversationId) async {
     try {
       await _apiClient.delete<Map<String, dynamic>, _EmptyRequest>(
-        '/conversations/$conversationId',
+        "/conversations/$conversationId",
         (json) => json as Map<String, dynamic>,
         data: _EmptyRequest(),
       );
     } catch (e) {
-      throw Exception('Failed to delete conversation: $e');
+      throw Exception("Failed to delete conversation: $e");
     }
   }
 
@@ -322,9 +321,9 @@ class MessagingService implements IMessagingService {
       await _checkAuthentication();
 
       final response = await _apiClient.get<Map<String, dynamic>>(
-        '/conversations/$conversationId/messages',
+        "/conversations/$conversationId/messages",
         (json) => json as Map<String, dynamic>,
-        queryParameters: {'page': page, 'limit': limit},
+        queryParameters: {"page": page, "limit": limit},
       );
 
       // Check if response indicates empty conversation
@@ -355,7 +354,7 @@ class MessagingService implements IMessagingService {
       }
 
       // Check if response has 'data' field
-      final messagesData = response['data'];
+      final messagesData = response["data"];
 
       if (messagesData is List) {
         // Direct list format
@@ -366,14 +365,14 @@ class MessagingService implements IMessagingService {
 
         return PageableResponse<Message>(
           data: messages,
-          total: response['total'] as int? ?? messages.length,
-          page: response['page'] as int? ?? page,
-          limit: response['limit'] as int? ?? limit,
-          totalPages: response['totalPages'] as int? ?? 1,
+          total: response["total"] as int? ?? messages.length,
+          page: response["page"] as int? ?? page,
+          limit: response["limit"] as int? ?? limit,
+          totalPages: response["totalPages"] as int? ?? 1,
         );
       } else if (messagesData is Map) {
         // Nested structure: data.messages
-        final messagesList = messagesData['messages'] as List? ?? [];
+        final messagesList = messagesData["messages"] as List? ?? [];
 
         final messages =
             messagesList
@@ -382,19 +381,19 @@ class MessagingService implements IMessagingService {
 
         return PageableResponse<Message>(
           data: messages,
-          total: messagesData['total'] as int? ?? messages.length,
-          page: messagesData['page'] as int? ?? page,
-          limit: messagesData['limit'] as int? ?? limit,
-          totalPages: messagesData['totalPages'] as int? ?? 1,
+          total: messagesData["total"] as int? ?? messages.length,
+          page: messagesData["page"] as int? ?? page,
+          limit: messagesData["limit"] as int? ?? limit,
+          totalPages: messagesData["totalPages"] as int? ?? 1,
         );
       } else {
         throw Exception(
-          'Unexpected response structure: ${response.runtimeType}',
+          "Unexpected response structure: ${response.runtimeType}",
         );
       }
     } catch (e) {
       // Check if it's a 404 error (conversation not found or no messages)
-      if (e.toString().contains('404') || e.toString().contains('Not Found')) {
+      if (e.toString().contains("404") || e.toString().contains("Not Found")) {
         return PageableResponse<Message>(
           data: [],
           total: 0,
@@ -404,7 +403,7 @@ class MessagingService implements IMessagingService {
         );
       }
 
-      throw Exception('Failed to fetch messages: $e');
+      throw Exception("Failed to fetch messages: $e");
     }
   }
 
@@ -412,7 +411,7 @@ class MessagingService implements IMessagingService {
   Future<Message> sendMessage({
     required int conversationId,
     required String content,
-    String messageType = 'text',
+    String messageType = "text",
     int? replyToMessageId,
   }) async {
     try {
@@ -426,15 +425,15 @@ class MessagingService implements IMessagingService {
 
       final response = await _apiClient
           .post<Map<String, dynamic>, SendMessageRequest>(
-            '/conversations/$conversationId/messages',
+            "/conversations/$conversationId/messages",
             (json) => json as Map<String, dynamic>,
             data: request,
           );
 
       // Extract message data from the nested structure
-      final messageData = response['data'] as Map<String, dynamic>?;
+      final messageData = response["data"] as Map<String, dynamic>?;
       if (messageData == null) {
-        throw Exception('No message data found in response');
+        throw Exception("No message data found in response");
       }
 
       // Parse the message from the extracted data
@@ -445,14 +444,14 @@ class MessagingService implements IMessagingService {
       if (e.response?.statusCode == 403) {
         final data = e.response?.data;
         if (data is Map &&
-            ((data['code'] == 'USER_BLOCKED') ||
-                (data['error'] as String? ?? '').contains('restricted'))) {
-          throw Exception('USER_BLOCKED');
+            ((data["code"] == "USER_BLOCKED") ||
+                (data["error"] as String? ?? "").contains("restricted"))) {
+          throw Exception("USER_BLOCKED");
         }
       }
-      throw Exception('Failed to send message: $e');
+      throw Exception("Failed to send message: $e");
     } catch (e) {
-      throw Exception('Failed to send message: $e');
+      throw Exception("Failed to send message: $e");
     }
   }
 
@@ -465,7 +464,7 @@ class MessagingService implements IMessagingService {
       final request = SendMessageRequest(content: newContent);
 
       final response = await _apiClient.put<Message, SendMessageRequest>(
-        '/messages/$messageId',
+        "/messages/$messageId",
         (json) => Message.fromJson(json as Map<String, dynamic>),
         data: request,
       );
@@ -474,14 +473,14 @@ class MessagingService implements IMessagingService {
       if (e.response?.statusCode == 403) {
         final data = e.response?.data;
         if (data is Map &&
-            ((data['code'] == 'USER_BLOCKED') ||
-                (data['error'] as String? ?? '').contains('restricted'))) {
-          throw Exception('USER_BLOCKED');
+            ((data["code"] == "USER_BLOCKED") ||
+                (data["error"] as String? ?? "").contains("restricted"))) {
+          throw Exception("USER_BLOCKED");
         }
       }
-      throw Exception('Failed to edit message: $e');
+      throw Exception("Failed to edit message: $e");
     } catch (e) {
-      throw Exception('Failed to edit message: $e');
+      throw Exception("Failed to edit message: $e");
     }
   }
 
@@ -489,7 +488,7 @@ class MessagingService implements IMessagingService {
   Future<void> deleteMessage(int messageId) async {
     try {
       await _apiClient.delete<Map<String, dynamic>, _EmptyRequest>(
-        '/messages/$messageId',
+        "/messages/$messageId",
         (json) => json as Map<String, dynamic>,
         data: _EmptyRequest(),
       );
@@ -497,14 +496,14 @@ class MessagingService implements IMessagingService {
       if (e.response?.statusCode == 403) {
         final data = e.response?.data;
         if (data is Map &&
-            ((data['code'] == 'USER_BLOCKED') ||
-                (data['error'] as String? ?? '').contains('restricted'))) {
-          throw Exception('USER_BLOCKED');
+            ((data["code"] == "USER_BLOCKED") ||
+                (data["error"] as String? ?? "").contains("restricted"))) {
+          throw Exception("USER_BLOCKED");
         }
       }
-      throw Exception('Failed to delete message: $e');
+      throw Exception("Failed to delete message: $e");
     } catch (e) {
-      throw Exception('Failed to delete message: $e');
+      throw Exception("Failed to delete message: $e");
     }
   }
 
@@ -514,12 +513,12 @@ class MessagingService implements IMessagingService {
       final request = MarkMessagesAsReadRequest(conversationId: conversationId);
 
       await _apiClient.put<void, MarkMessagesAsReadRequest>(
-        '/conversations/$conversationId/read',
-        (json) => null,
+        "/conversations/$conversationId/read",
+        (json) {},
         data: request,
       );
     } catch (e) {
-      throw Exception('Failed to mark messages as read: $e');
+      throw Exception("Failed to mark messages as read: $e");
     }
   }
 
@@ -529,12 +528,12 @@ class MessagingService implements IMessagingService {
       await _checkAuthentication();
 
       final response = await _apiClient.get<UnreadCountResponse>(
-        '/messages/unread-count',
+        "/messages/unread-count",
         (json) => UnreadCountResponse.fromJson(json as Map<String, dynamic>),
       );
       return response.count;
     } catch (e) {
-      throw Exception('Failed to get unread message count: $e');
+      throw Exception("Failed to get unread message count: $e");
     }
   }
 
@@ -547,7 +546,7 @@ class MessagingService implements IMessagingService {
       // For file uploads, you'll need to implement multipart form data
       // This is a simplified version - you may need to adjust based on your API
       final bytes = await file.readAsBytes();
-      final fileName = file.path.split('/').last;
+      final fileName = file.path.split("/").last;
       final mimeType = _getMimeType(fileName);
 
       return await uploadAttachmentFromBytes(
@@ -557,7 +556,7 @@ class MessagingService implements IMessagingService {
         mimeType: mimeType,
       );
     } catch (e) {
-      throw Exception('Failed to upload attachment: $e');
+      throw Exception("Failed to upload attachment: $e");
     }
   }
 
@@ -579,13 +578,13 @@ class MessagingService implements IMessagingService {
 
       final response = await _apiClient
           .post<MessageAttachment, UploadAttachmentRequest>(
-            '/messages/$messageId/attachments',
+            "/messages/$messageId/attachments",
             (json) => MessageAttachment.fromJson(json as Map<String, dynamic>),
             data: request,
           );
       return response;
     } catch (e) {
-      throw Exception('Failed to upload attachment: $e');
+      throw Exception("Failed to upload attachment: $e");
     }
   }
 
@@ -593,47 +592,47 @@ class MessagingService implements IMessagingService {
   Future<void> deleteAttachment(int attachmentId) async {
     try {
       await _apiClient.delete<Map<String, dynamic>, _EmptyRequest>(
-        '/attachments/$attachmentId',
+        "/attachments/$attachmentId",
         (json) => json as Map<String, dynamic>,
         data: _EmptyRequest(),
       );
     } catch (e) {
-      throw Exception('Failed to delete attachment: $e');
+      throw Exception("Failed to delete attachment: $e");
     }
   }
 
   String _getMimeType(String fileName) {
-    final extension = fileName.split('.').last.toLowerCase();
+    final extension = fileName.split(".").last.toLowerCase();
     switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'pdf':
-        return 'application/pdf';
-      case 'doc':
-        return 'application/msword';
-      case 'docx':
-        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      case 'txt':
-        return 'text/plain';
+      case "jpg":
+      case "jpeg":
+        return "image/jpeg";
+      case "png":
+        return "image/png";
+      case "gif":
+        return "image/gif";
+      case "pdf":
+        return "application/pdf";
+      case "doc":
+        return "application/msword";
+      case "docx":
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      case "txt":
+        return "text/plain";
       default:
-        return 'application/octet-stream';
+        return "application/octet-stream";
     }
   }
 
   String _getFileTypeFromMimeType(String mimeType) {
-    if (mimeType.startsWith('image/')) {
-      return 'image';
-    } else if (mimeType.startsWith('video/')) {
-      return 'video';
-    } else if (mimeType.startsWith('audio/')) {
-      return 'audio';
+    if (mimeType.startsWith("image/")) {
+      return "image";
+    } else if (mimeType.startsWith("video/")) {
+      return "video";
+    } else if (mimeType.startsWith("audio/")) {
+      return "audio";
     } else {
-      return 'document';
+      return "document";
     }
   }
 }

@@ -1,30 +1,30 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:uy_dosh/domain/services/user_profile_service.dart';
-import 'package:uy_dosh/domain/models/user_profile.dart';
-import 'package:uy_dosh/base/util/error_message_helper.dart';
-import 'package:uy_dosh/base/services/session_manager.dart';
-import 'package:uy_dosh/base/state/profile_completion_state.dart';
+import "package:dio/dio.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
+import "package:freezed_annotation/freezed_annotation.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 
-part 'current_user_profile_event.dart';
-part 'current_user_profile_state.dart';
-part 'current_user_profile_bloc.freezed.dart';
+part "current_user_profile_bloc.freezed.dart";
+part "current_user_profile_event.dart";
+part "current_user_profile_state.dart";
 
-const String profileNotFoundErrorCode = 'profile_not_found';
+const String profileNotFoundErrorCode = "profile_not_found";
 
 class CurrentUserProfileBloc
     extends Bloc<CurrentUserProfileEvent, CurrentUserProfileState> {
-  final IUserProfileService _userProfileService;
 
   CurrentUserProfileBloc(this._userProfileService)
     : super(const CurrentUserProfileState.initial()) {
     on<CurrentUserProfileEvent>((event, emit) async {
       await event.map(
-        fetchProfile: (e) async => await _onFetchProfile(e, emit),
+        fetchProfile: (e) async => _onFetchProfile(e, emit),
       );
     });
   }
+  final IUserProfileService _userProfileService;
 
   Future<void> _onFetchProfile(
     _FetchProfile event,

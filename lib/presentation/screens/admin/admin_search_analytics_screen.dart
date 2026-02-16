@@ -59,12 +59,12 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
 
   String _getStationName(int stationId) {
     final station = MetroCache.getStationById(stationId);
-    if (station == null) return '#$stationId';
+    if (station == null) return "#$stationId";
     final lang = LanguageState().currentLanguage;
     return switch (lang) {
-      'ru' => station.nameRu ?? station.nameEn ?? station.nameUz ?? '#$stationId',
-      'uz' => station.nameUz ?? station.nameEn ?? station.nameRu ?? '#$stationId',
-      _ => station.nameEn ?? station.nameRu ?? station.nameUz ?? '#$stationId',
+      "ru" => station.nameRu ?? station.nameEn ?? station.nameUz ?? "#$stationId",
+      "uz" => station.nameUz ?? station.nameEn ?? station.nameRu ?? "#$stationId",
+      _ => station.nameEn ?? station.nameRu ?? station.nameUz ?? "#$stationId",
     };
   }
 
@@ -293,7 +293,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: stations.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (_, _) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final item = stations[index];
           final station = MetroCache.getStationById(item.stationId);
@@ -321,7 +321,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '${item.count}',
+                "${item.count}",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -351,7 +351,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: locations.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (_, _) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final item = locations[index];
           final intensity = maxCount > 0 ? (item.count / maxCount).clamp(0.0, 1.0) : 0.0;
@@ -376,7 +376,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '${item.count}',
+                "${item.count}",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -447,7 +447,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${item.count}',
+                  "${item.count}",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

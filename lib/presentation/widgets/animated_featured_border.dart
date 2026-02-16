@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import "dart:math" as math;
+
+import "package:flutter/material.dart";
 
 class AnimatedFeaturedBorder extends StatefulWidget {
-  final Widget child;
-  final double borderWidth;
-  final BorderRadius borderRadius;
 
   const AnimatedFeaturedBorder({
-    super.key,
-    required this.child,
+    required this.child, super.key,
     this.borderWidth = 3.0,
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
   });
+  final Widget child;
+  final double borderWidth;
+  final BorderRadius borderRadius;
 
   @override
   State<AnimatedFeaturedBorder> createState() => _AnimatedFeaturedBorderState();
@@ -47,7 +47,7 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        return Container(
+        return DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: widget.borderRadius,
             border: Border.all(
@@ -55,11 +55,11 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder>
               color: Colors.transparent,
             ),
           ),
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: widget.borderRadius,
               gradient: SweepGradient(
-                colors: [
+                colors: const [
                   Colors.red,
                   Colors.orange,
                   Colors.yellow,

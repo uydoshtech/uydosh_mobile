@@ -9,8 +9,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 /// Fully theme-aware for blue and light themes
 class PriceBadge extends StatelessWidget {
   const PriceBadge({
-    super.key,
-    required this.price,
+    required this.price, super.key,
     this.showCurrency = true,
     this.showIcon = false,
     this.fontSize,
@@ -141,7 +140,7 @@ class PriceHelper {
     final priceString = price.toString();
     final buffer = StringBuffer();
 
-    for (int i = 0; i < priceString.length; i++) {
+    for (var i = 0; i < priceString.length; i++) {
       if (i > 0 && (priceString.length - i) % 3 == 0) {
         buffer.write(",");
       }
@@ -181,8 +180,7 @@ class PriceHelper {
 /// Fully theme-aware for blue and light themes
 class PriceText extends StatelessWidget {
   const PriceText({
-    super.key,
-    required this.price,
+    required this.price, super.key,
     this.style,
     this.showCurrency = true,
     this.currencySymbol,
@@ -247,8 +245,7 @@ class PriceText extends StatelessWidget {
 /// Fully theme-aware for blue and light themes
 class CompactPriceBadge extends StatelessWidget {
   const CompactPriceBadge({
-    super.key,
-    required this.price,
+    required this.price, super.key,
     this.showCurrency = true,
     this.fontSize,
     this.isActive = true,

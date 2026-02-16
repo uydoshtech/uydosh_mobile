@@ -1,18 +1,17 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uy_dosh/presentation/blocs/messaging_bloc.dart';
-import 'package:uy_dosh/domain/models/conversation.dart';
-import 'package:uy_dosh/base/constants/app_strings.dart';
-import 'package:uy_dosh/base/constants/string_helper.dart';
-import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
-import 'package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart';
-import 'package:uy_dosh/base/injection/injection.dart';
-import 'package:uy_dosh/domain/services/messaging_service.dart';
-import 'package:uy_dosh/base/services/session_manager.dart';
-import 'package:uy_dosh/presentation/screens/chat/chat_screen.dart';
-import 'package:uy_dosh/presentation/widgets/common/index.dart';
+import "package:cached_network_image/cached_network_image.dart";
+import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/string_helper.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
+import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/index.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ConversationsScreen extends StatefulWidget {
   const ConversationsScreen({super.key});
@@ -56,16 +55,11 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                 child: BlocBuilder<MessagingBloc, MessagingState>(
                   builder: (context, state) {
                     return state.when(
-                      initial: () => _buildLoadingState(),
-                      loading: () => _buildLoadingState(),
+                      initial: _buildLoadingState,
+                      loading: _buildLoadingState,
                       conversationsLoaded:
-                          (conversations, hasMore, currentPage) =>
-                              _buildConversationsList(
-                                conversations,
-                                hasMore,
-                                currentPage,
-                              ),
-                      conversationsCleared: () => _buildEmptyState(),
+                          _buildConversationsList,
+                      conversationsCleared: _buildEmptyState,
                       messagesLoaded:
                           (messages, hasMore, currentPage, conversationId) =>
                               _buildLoadingState(), // This shouldn't happen in conversations screen
@@ -74,7 +68,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                       messageSent: (message) => _buildLoadingState(),
                       messagesMarkedAsRead:
                           (conversationId, markedCount) => _buildLoadingState(),
-                      error: (message) => _buildErrorState(message),
+                      error: _buildErrorState,
                     );
                   },
                 ),
@@ -308,14 +302,12 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 }
 
 class ConversationCard extends StatelessWidget {
-  final ConversationSummary conversation;
-  final VoidCallback onTap;
 
   const ConversationCard({
-    super.key,
-    required this.conversation,
-    required this.onTap,
+    required this.conversation, required this.onTap, super.key,
   });
+  final ConversationSummary conversation;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -360,7 +352,7 @@ class ConversationCard extends StatelessWidget {
                 ),
               ),
         title: Text(
-          conversation.otherUserName ?? 'Unknown User',
+          conversation.otherUserName ?? "Unknown User",
           style: TextStyle(
             fontWeight:
                 conversation.unreadCount != null &&
@@ -443,11 +435,11 @@ class ConversationCard extends StatelessWidget {
       final difference = now.difference(dateTime);
 
       if (difference.inDays > 0) {
-        return '${difference.inDays}d';
+        return "${difference.inDays}d";
       } else if (difference.inHours > 0) {
-        return '${difference.inHours}h';
+        return "${difference.inHours}h";
       } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes}m';
+        return "${difference.inMinutes}m";
       } else {
         return LanguageAwareStringHelper.getCurrent(context, "now");
       }

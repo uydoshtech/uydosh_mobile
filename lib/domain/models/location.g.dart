@@ -9,6 +9,8 @@ part of 'location.dart';
 _$LocationImpl _$$LocationImplFromJson(Map<String, dynamic> json) =>
     _$LocationImpl(
       id: (json['id'] as num).toInt(),
+      createdAt: json['created_at'] as String,
+      updatedAt: json['updated_at'] as String,
       nameUz: json['name_uz'] as String?,
       nameRu: json['name_ru'] as String?,
       nameEn: json['name_en'] as String?,
@@ -18,13 +20,13 @@ _$LocationImpl _$$LocationImplFromJson(Map<String, dynamic> json) =>
       shortName: json['short_name'] as String?,
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
-      createdAt: json['created_at'] as String,
-      updatedAt: json['updated_at'] as String,
     );
 
 Map<String, dynamic> _$$LocationImplToJson(_$LocationImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'created_at': instance.createdAt,
+      'updated_at': instance.updatedAt,
       'name_uz': instance.nameUz,
       'name_ru': instance.nameRu,
       'name_en': instance.nameEn,
@@ -34,6 +36,4 @@ Map<String, dynamic> _$$LocationImplToJson(_$LocationImpl instance) =>
       'short_name': instance.shortName,
       'latitude': instance.latitude,
       'longitude': instance.longitude,
-      'created_at': instance.createdAt,
-      'updated_at': instance.updatedAt,
     };

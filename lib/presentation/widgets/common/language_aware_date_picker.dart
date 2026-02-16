@@ -1,8 +1,7 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class LanguageAwareDatePicker {
@@ -17,7 +16,7 @@ class LanguageAwareDatePicker {
   }) {
     return showDialog<DateTime>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return LanguageAwareDatePickerDialog(
           initialDate: initialDate,
           firstDate: firstDate,
@@ -32,22 +31,19 @@ class LanguageAwareDatePicker {
 }
 
 class LanguageAwareDatePickerDialog extends StatefulWidget {
+
+  const LanguageAwareDatePickerDialog({
+    required this.initialDate, required this.firstDate, required this.lastDate, super.key,
+    this.helpText,
+    this.cancelText,
+    this.confirmText,
+  });
   final DateTime initialDate;
   final DateTime firstDate;
   final DateTime lastDate;
   final String? helpText;
   final String? cancelText;
   final String? confirmText;
-
-  const LanguageAwareDatePickerDialog({
-    super.key,
-    required this.initialDate,
-    required this.firstDate,
-    required this.lastDate,
-    this.helpText,
-    this.cancelText,
-    this.confirmText,
-  });
 
   @override
   State<LanguageAwareDatePickerDialog> createState() =>
@@ -167,15 +163,15 @@ class _LanguageAwareDatePickerDialogState
     final lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
     final firstDayOfWeek = firstDayOfMonth.weekday;
 
-    List<DateTime> days = [];
+    final days = <DateTime>[];
 
     // Add empty cells for days before the first day of the month
-    for (int i = 1; i < firstDayOfWeek; i++) {
+    for (var i = 1; i < firstDayOfWeek; i++) {
       days.add(DateTime(month.year, month.month, 0 - (firstDayOfWeek - 1 - i)));
     }
 
     // Add all days of the month
-    for (int day = 1; day <= lastDayOfMonth.day; day++) {
+    for (var day = 1; day <= lastDayOfMonth.day; day++) {
       days.add(DateTime(month.year, month.month, day));
     }
 
@@ -223,7 +219,7 @@ class _LanguageAwareDatePickerDialogState
 
             // Month navigation + calendar (swipeable)
             GestureDetector(
-              onHorizontalDragEnd: (DragEndDetails details) {
+              onHorizontalDragEnd: (details) {
                 final velocity = details.primaryVelocity ?? 0;
                 const swipeThreshold = 100.0;
                 if (velocity > swipeThreshold) {

@@ -1,5 +1,5 @@
-import 'package:uy_dosh/domain/models/listing.dart';
-import 'package:uy_dosh/domain/models/listing_detail.dart';
+import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/models/listing_detail.dart";
 
 class ListingUtils {
   /// Returns true if the listing is featured (featured_at is not null)

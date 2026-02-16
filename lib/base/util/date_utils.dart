@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
+import "package:flutter/material.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AppDateUtils {
   /// Format date with month name in the format: "hh:mm • dd MMMM YYYY"

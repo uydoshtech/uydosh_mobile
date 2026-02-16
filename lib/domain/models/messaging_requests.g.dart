@@ -23,7 +23,7 @@ Map<String, dynamic> _$CreateConversationRequestToJson(
 SendMessageRequest _$SendMessageRequestFromJson(Map<String, dynamic> json) =>
     SendMessageRequest(
       content: json['content'] as String,
-      messageType: json['message_type'] as String? ?? 'text',
+      messageType: json['message_type'] as String? ?? "text",
       replyToMessageId: (json['reply_to_message_id'] as num?)?.toInt(),
     );
 

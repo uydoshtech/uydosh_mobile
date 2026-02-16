@@ -4,6 +4,9 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/base/utils/scroll_utils.dart";
+import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
@@ -11,7 +14,6 @@ import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
-import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/presentation/screens/create_listing/create_listing_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
@@ -19,17 +21,10 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
-import "package:uy_dosh/base/util/error_message_helper.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _UserListingsData {
-  final bool isLoading;
-  final bool hasError;
-  final String errorMessage;
-  final List<Listing> listings;
-  final bool hasMore;
 
   const _UserListingsData({
     required this.isLoading,
@@ -38,6 +33,11 @@ class _UserListingsData {
     required this.listings,
     required this.hasMore,
   });
+  final bool isLoading;
+  final bool hasError;
+  final String errorMessage;
+  final List<Listing> listings;
+  final bool hasMore;
 
   @override
   bool operator ==(Object other) {
@@ -156,7 +156,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           selector:
               (state) => state.map(
                 initial:
-                    (_) => _UserListingsData(
+                    (_) => const _UserListingsData(
                       isLoading: false,
                       hasError: false,
                       errorMessage: "",
@@ -164,7 +164,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
                       hasMore: false,
                     ),
                 loading:
-                    (_) => _UserListingsData(
+                    (_) => const _UserListingsData(
                       isLoading: true,
                       hasError: false,
                       errorMessage: "",
@@ -250,14 +250,14 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           const SizedBox(height: 16),
           Text(
             LanguageAwareStringHelper.getCurrent(context, "no_listings_found"),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
               color: AppColors.textGrey600,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             "You haven't created any listings yet.",
             style: TextStyle(fontSize: 14, color: AppColors.textGrey500),
           ),
@@ -308,7 +308,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           const SizedBox(height: 16),
           Text(
             LanguageAwareStringHelper.getCurrent(context, "error"),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
               color: AppColors.statusInactive,
@@ -317,7 +317,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           const SizedBox(height: 8),
           Text(
             ErrorMessageHelper.sanitizeErrorMessage(errorMessage),
-            style: TextStyle(fontSize: 14, color: AppColors.textGrey600),
+            style: const TextStyle(fontSize: 14, color: AppColors.textGrey600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),

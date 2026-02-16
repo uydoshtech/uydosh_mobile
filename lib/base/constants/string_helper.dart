@@ -119,7 +119,7 @@ class StringHelper {
       return "";
     }
 
-    final nameParts = name.trim().split(' ');
+    final nameParts = name.trim().split(" ");
 
     if (nameParts.length >= 2) {
       return "${nameParts[0][0].toUpperCase()}${nameParts[1][0].toUpperCase()}";

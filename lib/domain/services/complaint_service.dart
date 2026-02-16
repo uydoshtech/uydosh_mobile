@@ -1,9 +1,9 @@
-import 'package:uy_dosh/domain/models/complaint.dart';
-import 'package:uy_dosh/domain/models/complaint_category.dart';
-import 'package:uy_dosh/base/api/client/oauth_api_client.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import 'package:uy_dosh/base/api/client/public_api_client.dart';
-import 'package:uy_dosh/base/api/client/json_encodable.dart';
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/api/client/public_api_client.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/domain/models/complaint.dart";
+import "package:uy_dosh/domain/models/complaint_category.dart";
 
 abstract class IComplaintService {
   // Complaint Categories
@@ -29,46 +29,46 @@ abstract class IComplaintService {
 }
 
 class ComplaintService implements IComplaintService {
-  final IPublicApiClient _publicApiClient;
-  final IOAuthApiClient _oauthApiClient;
 
   ComplaintService(this._publicApiClient, this._oauthApiClient);
+  final IPublicApiClient _publicApiClient;
+  final IOAuthApiClient _oauthApiClient;
 
   @override
   Future<List<ComplaintCategory>> getComplaintCategories() async {
     try {
-      logger.d('=== COMPLAINT CATEGORIES API REQUEST DEBUG ===');
-      logger.d('Requesting: /complaint-categories');
+      logger.d("=== COMPLAINT CATEGORIES API REQUEST DEBUG ===");
+      logger.d("Requesting: /complaint-categories");
 
       final response = await _publicApiClient.get<dynamic>(
-        '/complaint-categories',
+        "/complaint-categories",
         (json) => json,
       );
 
-      logger.d('Raw API Response: $response');
-      logger.d('Response type: ${response.runtimeType}');
+      logger.d("Raw API Response: $response");
+      logger.d("Response type: ${response.runtimeType}");
       if (response is Map) {
-        logger.d('Response keys: ${response.keys.toList()}');
+        logger.d("Response keys: ${response.keys.toList()}");
       }
 
       List<dynamic> categoriesData;
-      if (response is Map && response.containsKey('data')) {
+      if (response is Map && response.containsKey("data")) {
         logger.d('Found categories in "data" key');
-        categoriesData = response['data'] as List<dynamic>;
-      } else if (response is Map && response.containsKey('content')) {
+        categoriesData = response["data"] as List<dynamic>;
+      } else if (response is Map && response.containsKey("content")) {
         logger.d('Found categories in "content" key');
-        categoriesData = response['content'] as List<dynamic>;
+        categoriesData = response["content"] as List<dynamic>;
       } else if (response is List) {
-        logger.d('Response is a direct list');
-        categoriesData = response as List<dynamic>;
+        logger.d("Response is a direct list");
+        categoriesData = response;
       } else {
-        logger.d('No recognized data structure found, using fallback');
+        logger.d("No recognized data structure found, using fallback");
         categoriesData = <dynamic>[];
       }
 
-      logger.d('Categories data length: ${categoriesData.length}');
+      logger.d("Categories data length: ${categoriesData.length}");
       if (categoriesData.isNotEmpty) {
-        logger.d('First category: ${categoriesData.first}');
+        logger.d("First category: ${categoriesData.first}");
       }
 
       final categories =
@@ -79,10 +79,10 @@ class ComplaintService implements IComplaintService {
               )
               .toList();
 
-      logger.d('Parsed categories count: ${categories.length}');
+      logger.d("Parsed categories count: ${categories.length}");
       return categories;
     } catch (e) {
-      logger.d('Error fetching complaint categories: $e');
+      logger.d("Error fetching complaint categories: $e");
       rethrow;
     }
   }
@@ -91,7 +91,7 @@ class ComplaintService implements IComplaintService {
   Future<ComplaintCategory> getComplaintCategory(int id) async {
     try {
       final category = await _publicApiClient.get<ComplaintCategory>(
-        '/complaint-categories/$id',
+        "/complaint-categories/$id",
         (json) => ComplaintCategory.fromJson(json as Map<String, dynamic>),
       );
       return category;
@@ -103,47 +103,47 @@ class ComplaintService implements IComplaintService {
   @override
   Future<Complaint> createComplaint(CreateComplaintRequest request) async {
     try {
-      logger.d('=== COMPLAINT SERVICE: Creating complaint ===');
-      logger.d('Request: ${request.toJson()}');
+      logger.d("=== COMPLAINT SERVICE: Creating complaint ===");
+      logger.d("Request: ${request.toJson()}");
 
       // First get the raw response to debug
       final rawResponse = await _oauthApiClient
           .post<Map<String, dynamic>, CreateComplaintRequest>(
-            '/complaints',
+            "/complaints",
             (json) => json as Map<String, dynamic>,
             data: request,
           );
 
-      logger.d('=== COMPLAINT SERVICE: Raw response received ===');
-      logger.d('Raw response: $rawResponse');
-      logger.d('Response type: ${rawResponse.runtimeType}');
-      logger.d('Response keys: ${rawResponse.keys.toList()}');
+      logger.d("=== COMPLAINT SERVICE: Raw response received ===");
+      logger.d("Raw response: $rawResponse");
+      logger.d("Response type: ${rawResponse.runtimeType}");
+      logger.d("Response keys: ${rawResponse.keys.toList()}");
 
       // Try to parse the complaint from the response
       Complaint complaint;
-      if (rawResponse.containsKey('data')) {
+      if (rawResponse.containsKey("data")) {
         logger.d('Found complaint in "data" key');
         complaint = Complaint.fromJson(
-          rawResponse['data'] as Map<String, dynamic>,
+          rawResponse["data"] as Map<String, dynamic>,
         );
-      } else if (rawResponse.containsKey('complaint')) {
+      } else if (rawResponse.containsKey("complaint")) {
         logger.d('Found complaint in "complaint" key');
         complaint = Complaint.fromJson(
-          rawResponse['complaint'] as Map<String, dynamic>,
+          rawResponse["complaint"] as Map<String, dynamic>,
         );
       } else {
-        logger.d('Complaint data is at root level');
+        logger.d("Complaint data is at root level");
         complaint = Complaint.fromJson(rawResponse);
       }
 
-      logger.d('=== COMPLAINT SERVICE: Complaint created successfully ===');
-      logger.d('Parsed complaint: ${complaint.toString()}');
+      logger.d("=== COMPLAINT SERVICE: Complaint created successfully ===");
+      logger.d("Parsed complaint: ${complaint.toString()}");
       return complaint;
     } catch (e) {
-      logger.d('=== COMPLAINT SERVICE: Error creating complaint: $e ===');
-      logger.d('Error type: ${e.runtimeType}');
+      logger.d("=== COMPLAINT SERVICE: Error creating complaint: $e ===");
+      logger.d("Error type: ${e.runtimeType}");
       if (e is Exception) {
-        logger.d('Exception message: ${e.toString()}');
+        logger.d("Exception message: ${e.toString()}");
       }
       rethrow;
     }
@@ -158,14 +158,14 @@ class ComplaintService implements IComplaintService {
   }) async {
     try {
       final queryParams = <String, String>{};
-      if (page != null) queryParams['page'] = page.toString();
-      if (limit != null) queryParams['limit'] = limit.toString();
-      if (status != null) queryParams['status'] = status;
-      if (listingId != null) queryParams['listing_id'] = listingId.toString();
+      if (page != null) queryParams["page"] = page.toString();
+      if (limit != null) queryParams["limit"] = limit.toString();
+      if (status != null) queryParams["status"] = status;
+      if (listingId != null) queryParams["listing_id"] = listingId.toString();
 
       final queryString = queryParams.entries
-          .map((e) => '${e.key}=${e.value}')
-          .join('&');
+          .map((e) => "${e.key}=${e.value}")
+          .join("&");
 
       final response = await _oauthApiClient.get<dynamic>(
         '/complaints${queryString.isNotEmpty ? '?$queryString' : ''}',
@@ -185,7 +185,7 @@ class ComplaintService implements IComplaintService {
   Future<Complaint> getComplaint(int id) async {
     try {
       final complaint = await _oauthApiClient.get<Complaint>(
-        '/complaints/$id',
+        "/complaints/$id",
         (json) => Complaint.fromJson(json as Map<String, dynamic>),
       );
       return complaint;
@@ -201,7 +201,7 @@ class ComplaintService implements IComplaintService {
       final request = _StatusUpdateRequest(status: status);
       final complaint = await _oauthApiClient
           .put<Complaint, _StatusUpdateRequest>(
-            '/complaints/$id/status',
+            "/complaints/$id/status",
             (json) => Complaint.fromJson(json as Map<String, dynamic>),
             data: request,
           );
@@ -215,7 +215,7 @@ class ComplaintService implements IComplaintService {
   Future<void> deleteComplaint(int id) async {
     try {
       await _oauthApiClient.delete<Map<String, dynamic>, _EmptyRequest>(
-        '/complaints/$id',
+        "/complaints/$id",
         (json) => json as Map<String, dynamic>,
         data: const _EmptyRequest(),
       );
@@ -228,7 +228,7 @@ class ComplaintService implements IComplaintService {
   Future<List<Complaint>> getUserComplaints(int userId) async {
     try {
       final response = await _oauthApiClient.get<dynamic>(
-        '/users/$userId/complaints',
+        "/users/$userId/complaints",
         (json) => json,
       );
 
@@ -245,7 +245,7 @@ class ComplaintService implements IComplaintService {
   Future<List<Complaint>> getUserListingComplaints(int userId) async {
     try {
       final response = await _oauthApiClient.get<dynamic>(
-        '/users/$userId/listing-complaints',
+        "/users/$userId/listing-complaints",
         (json) => json,
       );
 
@@ -262,7 +262,7 @@ class ComplaintService implements IComplaintService {
   Future<List<Complaint>> getListingComplaints(int listingId) async {
     try {
       final response = await _publicApiClient.get<dynamic>(
-        '/listings/$listingId/complaints',
+        "/listings/$listingId/complaints",
         (json) => json,
       );
 
@@ -284,17 +284,17 @@ class ComplaintService implements IComplaintService {
   Future<int> getListingComplaintsCount(int listingId) async {
     try {
       final response = await _publicApiClient.get<dynamic>(
-        '/complaints/counts-by-listing?listing_id=$listingId',
+        "/complaints/counts-by-listing?listing_id=$listingId",
         (json) => json,
       );
 
       if (response is Map) {
-        final data = response['data'];
-        if (data is Map && data['count'] is num) {
-          return (data['count'] as num).toInt();
+        final data = response["data"];
+        if (data is Map && data["count"] is num) {
+          return (data["count"] as num).toInt();
         }
-        if (response['count'] is num) {
-          return (response['count'] as num).toInt();
+        if (response["count"] is num) {
+          return (response["count"] as num).toInt();
         }
       }
 
@@ -308,14 +308,14 @@ class ComplaintService implements IComplaintService {
   Future<int> getComplaintsCount({String? status}) async {
     try {
       final queryParams = <String, String>{
-        'page': '1',
-        'limit': '1',
+        "page": "1",
+        "limit": "1",
       };
-      if (status != null) queryParams['status'] = status;
+      if (status != null) queryParams["status"] = status;
 
       final queryString = queryParams.entries
-          .map((e) => '${e.key}=${e.value}')
-          .join('&');
+          .map((e) => "${e.key}=${e.value}")
+          .join("&");
 
       final response = await _oauthApiClient.get<dynamic>(
         '/complaints${queryString.isNotEmpty ? '?$queryString' : ''}',
@@ -336,13 +336,13 @@ class ComplaintService implements IComplaintService {
 
   List<dynamic>? _extractComplaintsData(dynamic response) {
     if (response is Map) {
-      final data = response['data'];
+      final data = response["data"];
       final dataList = _extractListFromDataContainer(data);
       if (dataList != null) {
         return dataList;
       }
 
-      final contentList = _extractListFromDataContainer(response['content']);
+      final contentList = _extractListFromDataContainer(response["content"]);
       if (contentList != null) {
         return contentList;
       }
@@ -358,15 +358,15 @@ class ComplaintService implements IComplaintService {
       return container;
     }
     if (container is Map) {
-      final content = container['content'];
+      final content = container["content"];
       if (content is List) {
         return content;
       }
-      final items = container['items'];
+      final items = container["items"];
       if (items is List) {
         return items;
       }
-      final results = container['results'];
+      final results = container["results"];
       if (results is List) {
         return results;
       }
@@ -376,9 +376,9 @@ class ComplaintService implements IComplaintService {
 
   int? _extractPaginationTotal(dynamic response) {
     if (response is Map) {
-      final pagination = response['pagination'];
-      if (pagination is Map && pagination['total'] is num) {
-        return (pagination['total'] as num).toInt();
+      final pagination = response["pagination"];
+      if (pagination is Map && pagination["total"] is num) {
+        return (pagination["total"] as num).toInt();
       }
     }
     return null;
@@ -387,12 +387,12 @@ class ComplaintService implements IComplaintService {
 
 // Helper class for status update requests
 class _StatusUpdateRequest implements IJsonEncodable {
-  final String status;
 
   _StatusUpdateRequest({required this.status});
+  final String status;
 
   @override
-  Map<String, dynamic> toJson() => {'status': status};
+  Map<String, dynamic> toJson() => {"status": status};
 }
 
 // Helper class for empty requests (like delete operations)

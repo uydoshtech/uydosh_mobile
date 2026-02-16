@@ -100,7 +100,7 @@ class CoordinatesCache {
     }
 
     // Try partial match (case insensitive)
-    for (String key in locationCoordinates.keys) {
+    for (final key in locationCoordinates.keys) {
       if (key.toLowerCase().contains(locationName.toLowerCase()) ||
           locationName.toLowerCase().contains(key.toLowerCase())) {
         return locationCoordinates[key];
@@ -118,7 +118,7 @@ class CoordinatesCache {
     }
 
     // Try partial match (case insensitive)
-    for (String key in metroStationCoordinates.keys) {
+    for (final key in metroStationCoordinates.keys) {
       if (key.toLowerCase().contains(stationName.toLowerCase()) ||
           stationName.toLowerCase().contains(key.toLowerCase())) {
         return metroStationCoordinates[key];

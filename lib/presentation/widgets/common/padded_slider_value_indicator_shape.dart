@@ -20,7 +20,7 @@ class PaddedSliderValueIndicatorShape extends SliderComponentShape {
     double scale,
     double textScaleFactor,
   ) {
-    final double unscaledWidth =
+    final unscaledWidth =
         math.max(_minLabelWidth * textScaleFactor, labelPainter.width) +
         labelPadding * 2;
     return unscaledWidth * scale;
@@ -34,7 +34,7 @@ class PaddedSliderValueIndicatorShape extends SliderComponentShape {
     double? textScaleFactor,
   }) {
     assert(labelPainter != null);
-    assert(textScaleFactor != null && textScaleFactor! >= 0);
+    assert(textScaleFactor != null && textScaleFactor >= 0);
     return Size(
       _upperRectangleWidth(labelPainter!, 1, textScaleFactor!),
       labelPainter.height + labelPadding,
@@ -56,15 +56,15 @@ class PaddedSliderValueIndicatorShape extends SliderComponentShape {
     required double textScaleFactor,
     required Size sizeWithOverflow,
   }) {
-    final Canvas canvas = context.canvas;
-    final double scale = activationAnimation.value;
+    final canvas = context.canvas;
+    final scale = activationAnimation.value;
     if (scale == 0.0) return;
     assert(!sizeWithOverflow.isEmpty);
 
     const edgePadding = 8.0;
-    final double rectangleWidth =
+    final rectangleWidth =
         _upperRectangleWidth(labelPainter, scale, textScaleFactor);
-    final Offset globalCenter = parentBox.localToGlobal(center);
+    final globalCenter = parentBox.localToGlobal(center);
 
     final double overflowLeft = math.max(
       0,
@@ -85,7 +85,7 @@ class PaddedSliderValueIndicatorShape extends SliderComponentShape {
       horizontalShift = -overflowRight + (edgePadding * textScaleFactor);
     }
 
-    final double rectHeight = labelPainter.height + labelPadding;
+    final rectHeight = labelPainter.height + labelPadding;
     final upperRect = Rect.fromLTWH(
       -rectangleWidth / 2 + horizontalShift,
       -_triangleHeight - rectHeight,
@@ -115,13 +115,13 @@ class PaddedSliderValueIndicatorShape extends SliderComponentShape {
     canvas.drawPath(trianglePath, fillPaint);
 
     const preferredHalfHeight = 16.0;
-    final double bottomTipToUpperRectTranslateY =
+    final bottomTipToUpperRectTranslateY =
         -preferredHalfHeight / 2 - upperRect.height;
     canvas.translate(0, bottomTipToUpperRectTranslateY);
     final boxCenter = Offset(horizontalShift, upperRect.height / 2);
     final halfLabelPainterOffset =
         Offset(labelPainter.width / 2, labelPainter.height / 2);
-    final Offset labelOffset = boxCenter - halfLabelPainterOffset;
+    final labelOffset = boxCenter - halfLabelPainterOffset;
     labelPainter.paint(canvas, labelOffset);
     canvas.restore();
   }

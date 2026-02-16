@@ -1,16 +1,16 @@
-import 'package:bloc/bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:uy_dosh/domain/models/complaint.dart';
-import 'package:uy_dosh/domain/models/complaint_category.dart';
-import 'package:uy_dosh/domain/services/complaint_service.dart';
-import 'package:uy_dosh/base/util/error_message_helper.dart';
-import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
-import 'package:uy_dosh/base/constants/app_strings.dart';
-import 'package:dio/dio.dart';
+import "package:bloc/bloc.dart";
+import "package:dio/dio.dart";
+import "package:freezed_annotation/freezed_annotation.dart";
+import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/domain/models/complaint.dart";
+import "package:uy_dosh/domain/models/complaint_category.dart";
+import "package:uy_dosh/domain/services/complaint_service.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
-part 'complaint_event.dart';
-part 'complaint_state.dart';
-part 'complaint_bloc.freezed.dart';
+part "complaint_bloc.freezed.dart";
+part "complaint_event.dart";
+part "complaint_state.dart";
 
 class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
   ComplaintBloc(this._complaintService)
@@ -18,15 +18,15 @@ class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
     on<ComplaintEvent>((event, emit) async {
       await event.map(
         fetchComplaintCategories:
-            (e) async => await _onFetchComplaintCategories(emit),
-        createComplaint: (e) async => await _onCreateComplaint(emit, e.request),
+            (e) async => _onFetchComplaintCategories(emit),
+        createComplaint: (e) async => _onCreateComplaint(emit, e.request),
         fetchUserComplaints:
-            (e) async => await _onFetchUserComplaints(emit, e.userId),
+            (e) async => _onFetchUserComplaints(emit, e.userId),
         fetchListingComplaints:
-            (e) async => await _onFetchListingComplaints(emit, e.listingId),
+            (e) async => _onFetchListingComplaints(emit, e.listingId),
         updateComplaintStatus:
-            (e) async => await _onUpdateComplaintStatus(emit, e.id, e.status),
-        deleteComplaint: (e) async => await _onDeleteComplaint(emit, e.id),
+            (e) async => _onUpdateComplaintStatus(emit, e.id, e.status),
+        deleteComplaint: (e) async => _onDeleteComplaint(emit, e.id),
       );
     });
   }

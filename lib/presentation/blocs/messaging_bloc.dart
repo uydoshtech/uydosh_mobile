@@ -1,70 +1,70 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:uy_dosh/domain/models/conversation.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import 'package:uy_dosh/domain/models/message.dart';
-import 'package:uy_dosh/domain/services/messaging_service.dart';
+import "package:flutter_bloc/flutter_bloc.dart";
+import "package:freezed_annotation/freezed_annotation.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/message.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
 
-part 'messaging_bloc.freezed.dart';
+part "messaging_bloc.freezed.dart";
 
 // Events
 abstract class MessagingEvent {}
 
 class FetchConversations extends MessagingEvent {
-  final int page;
-  final int limit;
 
   FetchConversations({this.page = 1, this.limit = 20});
+  final int page;
+  final int limit;
 }
 
 class FetchParticipantConversations extends MessagingEvent {
-  final int page;
-  final int limit;
 
   FetchParticipantConversations({this.page = 1, this.limit = 20});
+  final int page;
+  final int limit;
 }
 
 class CreateConversation extends MessagingEvent {
-  final int listingId;
-  final int participantId;
 
   CreateConversation({required this.listingId, required this.participantId});
+  final int listingId;
+  final int participantId;
 }
 
 class FetchMessages extends MessagingEvent {
+
+  FetchMessages({required this.conversationId, this.page = 1, this.limit = 50});
   final int conversationId;
   final int page;
   final int limit;
-
-  FetchMessages({required this.conversationId, this.page = 1, this.limit = 50});
 }
 
 class SendMessage extends MessagingEvent {
-  final int conversationId;
-  final String content;
-  final String messageType;
-  final int? replyToMessageId;
 
   SendMessage({
     required this.conversationId,
     required this.content,
-    this.messageType = 'text',
+    this.messageType = "text",
     this.replyToMessageId,
   });
+  final int conversationId;
+  final String content;
+  final String messageType;
+  final int? replyToMessageId;
 }
 
 class MarkMessagesAsRead extends MessagingEvent {
-  final int conversationId;
 
   MarkMessagesAsRead({required this.conversationId});
+  final int conversationId;
 }
 
 class RefreshConversations extends MessagingEvent {}
 
 class RefreshMessages extends MessagingEvent {
-  final int conversationId;
 
   RefreshMessages({required this.conversationId});
+  final int conversationId;
 }
 
 class ClearConversations extends MessagingEvent {}
@@ -101,12 +101,8 @@ class MessagingState with _$MessagingState {
 
 // BLoC
 class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
-  final IMessagingService _messagingService;
 
-  // Local cache for conversations to implement frontend workaround
-  List<ConversationSummary> _cachedConversations = [];
-
-  MessagingBloc(this._messagingService) : super(MessagingInitial()) {
+  MessagingBloc(this._messagingService) : super(const MessagingInitial()) {
     on<FetchConversations>(_onFetchConversations);
     on<FetchParticipantConversations>(_onFetchParticipantConversations);
     on<CreateConversation>(_onCreateConversation);
@@ -117,6 +113,10 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     on<RefreshMessages>(_onRefreshMessages);
     on<ClearConversations>(_onClearConversations);
   }
+  final IMessagingService _messagingService;
+
+  // Local cache for conversations to implement frontend workaround
+  List<ConversationSummary> _cachedConversations = [];
 
   Future<void> _onFetchConversations(
     FetchConversations event,
@@ -124,7 +124,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   ) async {
     try {
       if (event.page == 1) {
-        emit(MessagingLoading());
+        emit(const MessagingLoading());
       }
 
       final response = await _messagingService.getConversations(
@@ -156,7 +156,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
 
       if (isAuthError) {
         emit(
-          MessagingError(
+          const MessagingError(
             message: "Authentication required. Please log in again.",
           ),
         );
@@ -172,7 +172,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   ) async {
     try {
       if (event.page == 1) {
-        emit(MessagingLoading());
+        emit(const MessagingLoading());
       }
 
       final response = await _messagingService.getParticipantConversations(
@@ -197,7 +197,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     Emitter<MessagingState> emit,
   ) async {
     try {
-      emit(MessagingLoading());
+      emit(const MessagingLoading());
 
       final conversation = await _messagingService.createConversation(
         listingId: event.listingId,
@@ -215,29 +215,29 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     Emitter<MessagingState> emit,
   ) async {
     try {
-      logger.d('🔄 [MessagingBloc] Starting to fetch messages...');
-      logger.d('   - Conversation ID: ${event.conversationId}');
-      logger.d('   - Page: ${event.page}');
-      logger.d('   - Limit: ${event.limit}');
+      logger.d("🔄 [MessagingBloc] Starting to fetch messages...");
+      logger.d("   - Conversation ID: ${event.conversationId}");
+      logger.d("   - Page: ${event.page}");
+      logger.d("   - Limit: ${event.limit}");
 
       if (event.page == 1) {
-        logger.d('🔄 [MessagingBloc] Emitting loading state...');
-        emit(MessagingLoading());
+        logger.d("🔄 [MessagingBloc] Emitting loading state...");
+        emit(const MessagingLoading());
       }
 
-      logger.d('🌐 [MessagingBloc] Calling messaging service...');
+      logger.d("🌐 [MessagingBloc] Calling messaging service...");
       final response = await _messagingService.getMessages(
         conversationId: event.conversationId,
         page: event.page,
         limit: event.limit,
       );
 
-      logger.d('✅ [MessagingBloc] Messages fetched successfully!');
-      logger.d('   - Messages count: ${response.data.length}');
-      logger.d('   - Has more: ${response.hasMore}');
-      logger.d('   - Current page: ${event.page}');
+      logger.d("✅ [MessagingBloc] Messages fetched successfully!");
+      logger.d("   - Messages count: ${response.data.length}");
+      logger.d("   - Has more: ${response.hasMore}");
+      logger.d("   - Current page: ${event.page}");
 
-      logger.d('🔄 [MessagingBloc] Emitting messages loaded state...');
+      logger.d("🔄 [MessagingBloc] Emitting messages loaded state...");
       emit(
         MessagesLoaded(
           messages: response.data,
@@ -246,11 +246,11 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
           conversationId: event.conversationId,
         ),
       );
-      logger.d('✅ [MessagingBloc] Messages loaded state emitted successfully!');
+      logger.d("✅ [MessagingBloc] Messages loaded state emitted successfully!");
     } catch (e) {
-      logger.d('❌ [MessagingBloc] Error fetching messages: $e');
-      logger.d('❌ [MessagingBloc] Error type: ${e.runtimeType}');
-      logger.d('❌ [MessagingBloc] Error details: $e');
+      logger.d("❌ [MessagingBloc] Error fetching messages: $e");
+      logger.d("❌ [MessagingBloc] Error type: ${e.runtimeType}");
+      logger.d("❌ [MessagingBloc] Error details: $e");
       emit(MessagingError(message: e.toString()));
     }
   }
@@ -291,7 +291,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         _cachedConversations[conversationIndex] = updatedConversation;
 
         logger.d(
-          '🔧 [MessagingBloc] Frontend workaround: Set unread count to 0 for conversation ${event.conversationId}',
+          "🔧 [MessagingBloc] Frontend workaround: Set unread count to 0 for conversation ${event.conversationId}",
         );
       }
 
@@ -334,7 +334,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
 
       if (isAuthError) {
         emit(
-          MessagingError(
+          const MessagingError(
             message: "Authentication required. Please log in again.",
           ),
         );
@@ -357,6 +357,6 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   ) async {
     // Clear cached conversations and emit cleared state
     _cachedConversations.clear();
-    emit(MessagingState.conversationsCleared());
+    emit(const MessagingState.conversationsCleared());
   }
 }

@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+import "package:flutter/material.dart";
 
 // Global favorites state with ChangeNotifier for reactivity
 class FavoritesState extends ChangeNotifier {
-  static final FavoritesState _instance = FavoritesState._internal();
   factory FavoritesState() => _instance;
   FavoritesState._internal();
+  static final FavoritesState _instance = FavoritesState._internal();
 
-  Set<int> _favoriteListingIds = {};
+  final Set<int> _favoriteListingIds = {};
   bool _isInitialized = false;
 
   Set<int> get favoriteListingIds => Set.from(_favoriteListingIds);

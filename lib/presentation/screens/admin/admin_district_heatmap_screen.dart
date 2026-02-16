@@ -8,8 +8,8 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminDistrictHeatmapScreen extends StatefulWidget {
@@ -166,7 +166,7 @@ class _AdminDistrictHeatmapScreenState
                       child: ListingTypePicker(
                         selectedListingTypeId:
                             _searchFiltersState.selectedListingTypeId,
-                        onListingTypeChanged: (int listingTypeId) {
+                        onListingTypeChanged: (listingTypeId) {
                           _searchFiltersState.setListingTypeId(listingTypeId);
                           setState(() {});
                           _loadCounts();
@@ -180,7 +180,7 @@ class _AdminDistrictHeatmapScreenState
                     Expanded(
                       child: GenderPicker(
                         selectedGender: _searchFiltersState.selectedGender,
-                        onGenderChanged: (int gender) {
+                        onGenderChanged: (gender) {
                           _searchFiltersState.setGender(gender);
                           setState(() {});
                           _loadCounts();

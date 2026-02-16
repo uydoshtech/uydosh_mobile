@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/app_theme.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
-import '../constants/app_strings.dart';
-import '../../presentation/widgets/language_switcher.dart';
+import "package:flutter/material.dart";
+import "package:shared_preferences/shared_preferences.dart";
+import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// State management for app themes
 class ThemeState extends ChangeNotifier {
-  static final ThemeState _instance = ThemeState._internal();
   factory ThemeState() => _instance;
   ThemeState._internal();
+  static final ThemeState _instance = ThemeState._internal();
 
   String _currentTheme = AppTheme.lightTheme;
   bool _isInitialized = false;
@@ -49,13 +49,13 @@ class ThemeState extends ChangeNotifier {
       if (savedTheme != null && savedTheme.isNotEmpty) {
         _currentTheme =
             savedTheme == "purple" ? AppTheme.lightTheme : savedTheme;
-        logger.d('Loaded saved theme: $_currentTheme');
+        logger.d("Loaded saved theme: $_currentTheme");
       } else {
-        logger.d('No saved theme found, using default: $_currentTheme');
+        logger.d("No saved theme found, using default: $_currentTheme");
       }
     } catch (e) {
       // If there's an error loading, keep the default theme
-      logger.d('Error loading saved theme: $e');
+      logger.d("Error loading saved theme: $e");
     }
 
     _isInitialized = true;
@@ -71,9 +71,9 @@ class ThemeState extends ChangeNotifier {
       try {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(StorageKeys.selectedTheme, themeName);
-        logger.d('Saved theme to storage: $themeName');
+        logger.d("Saved theme to storage: $themeName");
       } catch (e) {
-        logger.d('Error saving theme to storage: $e');
+        logger.d("Error saving theme to storage: $e");
       }
 
       notifyListeners();
@@ -114,12 +114,12 @@ class ThemeState extends ChangeNotifier {
       _currentTheme = themeName;
       await prefs.setString(StorageKeys.selectedTheme, themeName);
       logger.d(
-        'Applied system theme on first login: $themeName (brightness: $brightness)',
+        "Applied system theme on first login: $themeName (brightness: $brightness)",
       );
       notifyListeners();
       return true;
     } catch (e) {
-      logger.d('Error applying system theme: $e');
+      logger.d("Error applying system theme: $e");
       return false;
     }
   }
@@ -132,7 +132,7 @@ class ThemeState extends ChangeNotifier {
       _currentTheme = AppTheme.lightTheme; // Reset to default
       notifyListeners();
     } catch (e) {
-      logger.d('Error clearing saved theme: $e');
+      logger.d("Error clearing saved theme: $e");
     }
   }
 }

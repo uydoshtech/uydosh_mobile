@@ -1,6 +1,6 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import "package:freezed_annotation/freezed_annotation.dart";
 
-part 'listings_event.freezed.dart';
+part "listings_event.freezed.dart";
 
 @freezed
 class ListingsEvent with _$ListingsEvent {

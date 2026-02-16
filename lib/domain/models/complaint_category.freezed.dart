@@ -21,16 +21,16 @@ ComplaintCategory _$ComplaintCategoryFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$ComplaintCategory {
-  int? get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  int? get id => throw _privateConstructorUsedError;
+  @JsonKey(name: "created_at")
   String? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this ComplaintCategory to a JSON map.
@@ -51,12 +51,12 @@ abstract class $ComplaintCategoryCopyWith<$Res> {
   ) = _$ComplaintCategoryCopyWithImpl<$Res, ComplaintCategory>;
   @useResult
   $Res call({
+    @JsonKey(name: "name_uz") String nameUz,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_en") String nameEn,
     int? id,
-    @JsonKey(name: 'name_uz') String nameUz,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_en') String nameEn,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
   });
 }
 
@@ -75,20 +75,15 @@ class _$ComplaintCategoryCopyWithImpl<$Res, $Val extends ComplaintCategory>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
     Object? nameUz = null,
     Object? nameRu = null,
     Object? nameEn = null,
+    Object? id = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
     return _then(
       _value.copyWith(
-            id:
-                freezed == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int?,
             nameUz:
                 null == nameUz
                     ? _value.nameUz
@@ -104,6 +99,11 @@ class _$ComplaintCategoryCopyWithImpl<$Res, $Val extends ComplaintCategory>
                     ? _value.nameEn
                     : nameEn // ignore: cast_nullable_to_non_nullable
                         as String,
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
             createdAt:
                 freezed == createdAt
                     ? _value.createdAt
@@ -130,12 +130,12 @@ abstract class _$$ComplaintCategoryImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
+    @JsonKey(name: "name_uz") String nameUz,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_en") String nameEn,
     int? id,
-    @JsonKey(name: 'name_uz') String nameUz,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_en') String nameEn,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
   });
 }
 
@@ -153,20 +153,15 @@ class __$$ComplaintCategoryImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
     Object? nameUz = null,
     Object? nameRu = null,
     Object? nameEn = null,
+    Object? id = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
     return _then(
       _$ComplaintCategoryImpl(
-        id:
-            freezed == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int?,
         nameUz:
             null == nameUz
                 ? _value.nameUz
@@ -182,6 +177,11 @@ class __$$ComplaintCategoryImplCopyWithImpl<$Res>
                 ? _value.nameEn
                 : nameEn // ignore: cast_nullable_to_non_nullable
                     as String,
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
         createdAt:
             freezed == createdAt
                 ? _value.createdAt
@@ -201,38 +201,38 @@ class __$$ComplaintCategoryImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ComplaintCategoryImpl implements _ComplaintCategory {
   const _$ComplaintCategoryImpl({
+    @JsonKey(name: "name_uz") required this.nameUz,
+    @JsonKey(name: "name_ru") required this.nameRu,
+    @JsonKey(name: "name_en") required this.nameEn,
     this.id,
-    @JsonKey(name: 'name_uz') required this.nameUz,
-    @JsonKey(name: 'name_ru') required this.nameRu,
-    @JsonKey(name: 'name_en') required this.nameEn,
-    @JsonKey(name: 'created_at') this.createdAt,
-    @JsonKey(name: 'updated_at') this.updatedAt,
+    @JsonKey(name: "created_at") this.createdAt,
+    @JsonKey(name: "updated_at") this.updatedAt,
   });
 
   factory _$ComplaintCategoryImpl.fromJson(Map<String, dynamic> json) =>
       _$$ComplaintCategoryImplFromJson(json);
 
   @override
-  final int? id;
-  @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   final String nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   final String nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   final String nameEn;
   @override
-  @JsonKey(name: 'created_at')
+  final int? id;
+  @override
+  @JsonKey(name: "created_at")
   final String? createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String? updatedAt;
 
   @override
   String toString() {
-    return 'ComplaintCategory(id: $id, nameUz: $nameUz, nameRu: $nameRu, nameEn: $nameEn, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'ComplaintCategory(nameUz: $nameUz, nameRu: $nameRu, nameEn: $nameEn, id: $id, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -240,10 +240,10 @@ class _$ComplaintCategoryImpl implements _ComplaintCategory {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ComplaintCategoryImpl &&
-            (identical(other.id, id) || other.id == id) &&
             (identical(other.nameUz, nameUz) || other.nameUz == nameUz) &&
             (identical(other.nameRu, nameRu) || other.nameRu == nameRu) &&
             (identical(other.nameEn, nameEn) || other.nameEn == nameEn) &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -254,10 +254,10 @@ class _$ComplaintCategoryImpl implements _ComplaintCategory {
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    id,
     nameUz,
     nameRu,
     nameEn,
+    id,
     createdAt,
     updatedAt,
   );
@@ -281,33 +281,33 @@ class _$ComplaintCategoryImpl implements _ComplaintCategory {
 
 abstract class _ComplaintCategory implements ComplaintCategory {
   const factory _ComplaintCategory({
+    @JsonKey(name: "name_uz") required final String nameUz,
+    @JsonKey(name: "name_ru") required final String nameRu,
+    @JsonKey(name: "name_en") required final String nameEn,
     final int? id,
-    @JsonKey(name: 'name_uz') required final String nameUz,
-    @JsonKey(name: 'name_ru') required final String nameRu,
-    @JsonKey(name: 'name_en') required final String nameEn,
-    @JsonKey(name: 'created_at') final String? createdAt,
-    @JsonKey(name: 'updated_at') final String? updatedAt,
+    @JsonKey(name: "created_at") final String? createdAt,
+    @JsonKey(name: "updated_at") final String? updatedAt,
   }) = _$ComplaintCategoryImpl;
 
   factory _ComplaintCategory.fromJson(Map<String, dynamic> json) =
       _$ComplaintCategoryImpl.fromJson;
 
   @override
-  int? get id;
-  @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn;
   @override
-  @JsonKey(name: 'created_at')
+  int? get id;
+  @override
+  @JsonKey(name: "created_at")
   String? get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt;
 
   /// Create a copy of ComplaintCategory

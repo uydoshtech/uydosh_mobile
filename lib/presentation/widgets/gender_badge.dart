@@ -4,8 +4,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 
 class GenderBadge extends StatelessWidget {
   const GenderBadge({
-    super.key,
-    required this.gender,
+    required this.gender, super.key,
     this.size = 20,
     this.padding = const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
   });

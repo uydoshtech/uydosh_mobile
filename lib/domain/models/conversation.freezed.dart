@@ -22,27 +22,27 @@ Conversation _$ConversationFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Conversation {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   int get listingId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'initiator_id')
+  @JsonKey(name: "initiator_id")
   int get initiatorId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'participant_id')
+  @JsonKey(name: "participant_id")
   int get participantId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_message_at')
-  String? get lastMessageAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_message_content')
-  String? get lastMessageContent => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_message_sender_id')
-  int? get lastMessageSenderId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: "is_active")
   bool get isActive => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
-  String get updatedAt => throw _privateConstructorUsedError; // Related data
+  @JsonKey(name: "updated_at")
+  String get updatedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "last_message_at")
+  String? get lastMessageAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "last_message_content")
+  String? get lastMessageContent => throw _privateConstructorUsedError;
+  @JsonKey(name: "last_message_sender_id")
+  int? get lastMessageSenderId => throw _privateConstructorUsedError; // Related data
   Listing? get listing => throw _privateConstructorUsedError;
   UserProfile? get otherUser => throw _privateConstructorUsedError;
-  @JsonKey(name: 'unread_count')
+  @JsonKey(name: "unread_count")
   int? get unreadCount => throw _privateConstructorUsedError;
 
   /// Serializes this Conversation to a JSON map.
@@ -64,18 +64,18 @@ abstract class $ConversationCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'listing_id') int listingId,
-    @JsonKey(name: 'initiator_id') int initiatorId,
-    @JsonKey(name: 'participant_id') int participantId,
-    @JsonKey(name: 'last_message_at') String? lastMessageAt,
-    @JsonKey(name: 'last_message_content') String? lastMessageContent,
-    @JsonKey(name: 'last_message_sender_id') int? lastMessageSenderId,
-    @JsonKey(name: 'is_active') bool isActive,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
+    @JsonKey(name: "listing_id") int listingId,
+    @JsonKey(name: "initiator_id") int initiatorId,
+    @JsonKey(name: "participant_id") int participantId,
+    @JsonKey(name: "is_active") bool isActive,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
+    @JsonKey(name: "last_message_at") String? lastMessageAt,
+    @JsonKey(name: "last_message_content") String? lastMessageContent,
+    @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
     Listing? listing,
     UserProfile? otherUser,
-    @JsonKey(name: 'unread_count') int? unreadCount,
+    @JsonKey(name: "unread_count") int? unreadCount,
   });
 
   $ListingCopyWith<$Res>? get listing;
@@ -101,12 +101,12 @@ class _$ConversationCopyWithImpl<$Res, $Val extends Conversation>
     Object? listingId = null,
     Object? initiatorId = null,
     Object? participantId = null,
-    Object? lastMessageAt = freezed,
-    Object? lastMessageContent = freezed,
-    Object? lastMessageSenderId = freezed,
     Object? isActive = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? lastMessageAt = freezed,
+    Object? lastMessageContent = freezed,
+    Object? lastMessageSenderId = freezed,
     Object? listing = freezed,
     Object? otherUser = freezed,
     Object? unreadCount = freezed,
@@ -133,21 +133,6 @@ class _$ConversationCopyWithImpl<$Res, $Val extends Conversation>
                     ? _value.participantId
                     : participantId // ignore: cast_nullable_to_non_nullable
                         as int,
-            lastMessageAt:
-                freezed == lastMessageAt
-                    ? _value.lastMessageAt
-                    : lastMessageAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            lastMessageContent:
-                freezed == lastMessageContent
-                    ? _value.lastMessageContent
-                    : lastMessageContent // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            lastMessageSenderId:
-                freezed == lastMessageSenderId
-                    ? _value.lastMessageSenderId
-                    : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
-                        as int?,
             isActive:
                 null == isActive
                     ? _value.isActive
@@ -163,6 +148,21 @@ class _$ConversationCopyWithImpl<$Res, $Val extends Conversation>
                     ? _value.updatedAt
                     : updatedAt // ignore: cast_nullable_to_non_nullable
                         as String,
+            lastMessageAt:
+                freezed == lastMessageAt
+                    ? _value.lastMessageAt
+                    : lastMessageAt // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastMessageContent:
+                freezed == lastMessageContent
+                    ? _value.lastMessageContent
+                    : lastMessageContent // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastMessageSenderId:
+                freezed == lastMessageSenderId
+                    ? _value.lastMessageSenderId
+                    : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+                        as int?,
             listing:
                 freezed == listing
                     ? _value.listing
@@ -223,18 +223,18 @@ abstract class _$$ConversationImplCopyWith<$Res>
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'listing_id') int listingId,
-    @JsonKey(name: 'initiator_id') int initiatorId,
-    @JsonKey(name: 'participant_id') int participantId,
-    @JsonKey(name: 'last_message_at') String? lastMessageAt,
-    @JsonKey(name: 'last_message_content') String? lastMessageContent,
-    @JsonKey(name: 'last_message_sender_id') int? lastMessageSenderId,
-    @JsonKey(name: 'is_active') bool isActive,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
+    @JsonKey(name: "listing_id") int listingId,
+    @JsonKey(name: "initiator_id") int initiatorId,
+    @JsonKey(name: "participant_id") int participantId,
+    @JsonKey(name: "is_active") bool isActive,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
+    @JsonKey(name: "last_message_at") String? lastMessageAt,
+    @JsonKey(name: "last_message_content") String? lastMessageContent,
+    @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
     Listing? listing,
     UserProfile? otherUser,
-    @JsonKey(name: 'unread_count') int? unreadCount,
+    @JsonKey(name: "unread_count") int? unreadCount,
   });
 
   @override
@@ -261,12 +261,12 @@ class __$$ConversationImplCopyWithImpl<$Res>
     Object? listingId = null,
     Object? initiatorId = null,
     Object? participantId = null,
-    Object? lastMessageAt = freezed,
-    Object? lastMessageContent = freezed,
-    Object? lastMessageSenderId = freezed,
     Object? isActive = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? lastMessageAt = freezed,
+    Object? lastMessageContent = freezed,
+    Object? lastMessageSenderId = freezed,
     Object? listing = freezed,
     Object? otherUser = freezed,
     Object? unreadCount = freezed,
@@ -293,21 +293,6 @@ class __$$ConversationImplCopyWithImpl<$Res>
                 ? _value.participantId
                 : participantId // ignore: cast_nullable_to_non_nullable
                     as int,
-        lastMessageAt:
-            freezed == lastMessageAt
-                ? _value.lastMessageAt
-                : lastMessageAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        lastMessageContent:
-            freezed == lastMessageContent
-                ? _value.lastMessageContent
-                : lastMessageContent // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        lastMessageSenderId:
-            freezed == lastMessageSenderId
-                ? _value.lastMessageSenderId
-                : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
-                    as int?,
         isActive:
             null == isActive
                 ? _value.isActive
@@ -323,6 +308,21 @@ class __$$ConversationImplCopyWithImpl<$Res>
                 ? _value.updatedAt
                 : updatedAt // ignore: cast_nullable_to_non_nullable
                     as String,
+        lastMessageAt:
+            freezed == lastMessageAt
+                ? _value.lastMessageAt
+                : lastMessageAt // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastMessageContent:
+            freezed == lastMessageContent
+                ? _value.lastMessageContent
+                : lastMessageContent // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastMessageSenderId:
+            freezed == lastMessageSenderId
+                ? _value.lastMessageSenderId
+                : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+                    as int?,
         listing:
             freezed == listing
                 ? _value.listing
@@ -348,18 +348,18 @@ class __$$ConversationImplCopyWithImpl<$Res>
 class _$ConversationImpl implements _Conversation {
   const _$ConversationImpl({
     required this.id,
-    @JsonKey(name: 'listing_id') required this.listingId,
-    @JsonKey(name: 'initiator_id') required this.initiatorId,
-    @JsonKey(name: 'participant_id') required this.participantId,
-    @JsonKey(name: 'last_message_at') this.lastMessageAt,
-    @JsonKey(name: 'last_message_content') this.lastMessageContent,
-    @JsonKey(name: 'last_message_sender_id') this.lastMessageSenderId,
-    @JsonKey(name: 'is_active') required this.isActive,
-    @JsonKey(name: 'created_at') required this.createdAt,
-    @JsonKey(name: 'updated_at') required this.updatedAt,
+    @JsonKey(name: "listing_id") required this.listingId,
+    @JsonKey(name: "initiator_id") required this.initiatorId,
+    @JsonKey(name: "participant_id") required this.participantId,
+    @JsonKey(name: "is_active") required this.isActive,
+    @JsonKey(name: "created_at") required this.createdAt,
+    @JsonKey(name: "updated_at") required this.updatedAt,
+    @JsonKey(name: "last_message_at") this.lastMessageAt,
+    @JsonKey(name: "last_message_content") this.lastMessageContent,
+    @JsonKey(name: "last_message_sender_id") this.lastMessageSenderId,
     this.listing,
     this.otherUser,
-    @JsonKey(name: 'unread_count') this.unreadCount,
+    @JsonKey(name: "unread_count") this.unreadCount,
   });
 
   factory _$ConversationImpl.fromJson(Map<String, dynamic> json) =>
@@ -368,44 +368,44 @@ class _$ConversationImpl implements _Conversation {
   @override
   final int id;
   @override
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   final int listingId;
   @override
-  @JsonKey(name: 'initiator_id')
+  @JsonKey(name: "initiator_id")
   final int initiatorId;
   @override
-  @JsonKey(name: 'participant_id')
+  @JsonKey(name: "participant_id")
   final int participantId;
   @override
-  @JsonKey(name: 'last_message_at')
-  final String? lastMessageAt;
-  @override
-  @JsonKey(name: 'last_message_content')
-  final String? lastMessageContent;
-  @override
-  @JsonKey(name: 'last_message_sender_id')
-  final int? lastMessageSenderId;
-  @override
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: "is_active")
   final bool isActive;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String updatedAt;
+  @override
+  @JsonKey(name: "last_message_at")
+  final String? lastMessageAt;
+  @override
+  @JsonKey(name: "last_message_content")
+  final String? lastMessageContent;
+  @override
+  @JsonKey(name: "last_message_sender_id")
+  final int? lastMessageSenderId;
   // Related data
   @override
   final Listing? listing;
   @override
   final UserProfile? otherUser;
   @override
-  @JsonKey(name: 'unread_count')
+  @JsonKey(name: "unread_count")
   final int? unreadCount;
 
   @override
   String toString() {
-    return 'Conversation(id: $id, listingId: $listingId, initiatorId: $initiatorId, participantId: $participantId, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listing: $listing, otherUser: $otherUser, unreadCount: $unreadCount)';
+    return 'Conversation(id: $id, listingId: $listingId, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, listing: $listing, otherUser: $otherUser, unreadCount: $unreadCount)';
   }
 
   @override
@@ -420,18 +420,18 @@ class _$ConversationImpl implements _Conversation {
                 other.initiatorId == initiatorId) &&
             (identical(other.participantId, participantId) ||
                 other.participantId == participantId) &&
-            (identical(other.lastMessageAt, lastMessageAt) ||
-                other.lastMessageAt == lastMessageAt) &&
-            (identical(other.lastMessageContent, lastMessageContent) ||
-                other.lastMessageContent == lastMessageContent) &&
-            (identical(other.lastMessageSenderId, lastMessageSenderId) ||
-                other.lastMessageSenderId == lastMessageSenderId) &&
             (identical(other.isActive, isActive) ||
                 other.isActive == isActive) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt) &&
+            (identical(other.lastMessageAt, lastMessageAt) ||
+                other.lastMessageAt == lastMessageAt) &&
+            (identical(other.lastMessageContent, lastMessageContent) ||
+                other.lastMessageContent == lastMessageContent) &&
+            (identical(other.lastMessageSenderId, lastMessageSenderId) ||
+                other.lastMessageSenderId == lastMessageSenderId) &&
             (identical(other.listing, listing) || other.listing == listing) &&
             (identical(other.otherUser, otherUser) ||
                 other.otherUser == otherUser) &&
@@ -447,12 +447,12 @@ class _$ConversationImpl implements _Conversation {
     listingId,
     initiatorId,
     participantId,
-    lastMessageAt,
-    lastMessageContent,
-    lastMessageSenderId,
     isActive,
     createdAt,
     updatedAt,
+    lastMessageAt,
+    lastMessageContent,
+    lastMessageSenderId,
     listing,
     otherUser,
     unreadCount,
@@ -475,18 +475,18 @@ class _$ConversationImpl implements _Conversation {
 abstract class _Conversation implements Conversation {
   const factory _Conversation({
     required final int id,
-    @JsonKey(name: 'listing_id') required final int listingId,
-    @JsonKey(name: 'initiator_id') required final int initiatorId,
-    @JsonKey(name: 'participant_id') required final int participantId,
-    @JsonKey(name: 'last_message_at') final String? lastMessageAt,
-    @JsonKey(name: 'last_message_content') final String? lastMessageContent,
-    @JsonKey(name: 'last_message_sender_id') final int? lastMessageSenderId,
-    @JsonKey(name: 'is_active') required final bool isActive,
-    @JsonKey(name: 'created_at') required final String createdAt,
-    @JsonKey(name: 'updated_at') required final String updatedAt,
+    @JsonKey(name: "listing_id") required final int listingId,
+    @JsonKey(name: "initiator_id") required final int initiatorId,
+    @JsonKey(name: "participant_id") required final int participantId,
+    @JsonKey(name: "is_active") required final bool isActive,
+    @JsonKey(name: "created_at") required final String createdAt,
+    @JsonKey(name: "updated_at") required final String updatedAt,
+    @JsonKey(name: "last_message_at") final String? lastMessageAt,
+    @JsonKey(name: "last_message_content") final String? lastMessageContent,
+    @JsonKey(name: "last_message_sender_id") final int? lastMessageSenderId,
     final Listing? listing,
     final UserProfile? otherUser,
-    @JsonKey(name: 'unread_count') final int? unreadCount,
+    @JsonKey(name: "unread_count") final int? unreadCount,
   }) = _$ConversationImpl;
 
   factory _Conversation.fromJson(Map<String, dynamic> json) =
@@ -495,38 +495,38 @@ abstract class _Conversation implements Conversation {
   @override
   int get id;
   @override
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   int get listingId;
   @override
-  @JsonKey(name: 'initiator_id')
+  @JsonKey(name: "initiator_id")
   int get initiatorId;
   @override
-  @JsonKey(name: 'participant_id')
+  @JsonKey(name: "participant_id")
   int get participantId;
   @override
-  @JsonKey(name: 'last_message_at')
-  String? get lastMessageAt;
-  @override
-  @JsonKey(name: 'last_message_content')
-  String? get lastMessageContent;
-  @override
-  @JsonKey(name: 'last_message_sender_id')
-  int? get lastMessageSenderId;
-  @override
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: "is_active")
   bool get isActive;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
-  String get updatedAt; // Related data
+  @JsonKey(name: "updated_at")
+  String get updatedAt;
+  @override
+  @JsonKey(name: "last_message_at")
+  String? get lastMessageAt;
+  @override
+  @JsonKey(name: "last_message_content")
+  String? get lastMessageContent;
+  @override
+  @JsonKey(name: "last_message_sender_id")
+  int? get lastMessageSenderId; // Related data
   @override
   Listing? get listing;
   @override
   UserProfile? get otherUser;
   @override
-  @JsonKey(name: 'unread_count')
+  @JsonKey(name: "unread_count")
   int? get unreadCount;
 
   /// Create a copy of Conversation
@@ -544,63 +544,63 @@ ConversationSummary _$ConversationSummaryFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$ConversationSummary {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   int get listingId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'initiator_id')
+  @JsonKey(name: "initiator_id")
   int get initiatorId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'participant_id')
+  @JsonKey(name: "participant_id")
   int get participantId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_message_at')
-  String? get lastMessageAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_message_content')
-  String? get lastMessageContent => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_message_sender_id')
-  int? get lastMessageSenderId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: "is_active")
   bool get isActive => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
-  String get updatedAt => throw _privateConstructorUsedError; // Summary data
-  @JsonKey(name: 'listing_title')
+  @JsonKey(name: "updated_at")
+  String get updatedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "last_message_at")
+  String? get lastMessageAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "last_message_content")
+  String? get lastMessageContent => throw _privateConstructorUsedError;
+  @JsonKey(name: "last_message_sender_id")
+  int? get lastMessageSenderId => throw _privateConstructorUsedError; // Summary data
+  @JsonKey(name: "listing_title")
   String? get listingTitle => throw _privateConstructorUsedError;
-  @JsonKey(name: 'listing_min_price')
+  @JsonKey(name: "listing_min_price")
   int? get listingMinPrice => throw _privateConstructorUsedError;
-  @JsonKey(name: 'listing_max_price')
+  @JsonKey(name: "listing_max_price")
   int? get listingMaxPrice => throw _privateConstructorUsedError;
-  @JsonKey(name: 'other_user_name')
+  @JsonKey(name: "other_user_name")
   String? get otherUserName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'other_user_avatar')
+  @JsonKey(name: "other_user_avatar")
   String? get otherUserAvatar => throw _privateConstructorUsedError;
-  @JsonKey(name: 'unread_count')
+  @JsonKey(name: "unread_count")
   int? get unreadCount => throw _privateConstructorUsedError; // Location and metro station data
-  @JsonKey(name: 'listing_subway_line_id')
+  @JsonKey(name: "listing_subway_line_id")
   int? get listingSubwayLineId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'listing_subway_station_id')
+  @JsonKey(name: "listing_subway_station_id")
   int? get listingSubwayStationId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'listing_location_id')
+  @JsonKey(name: "listing_location_id")
   int? get listingLocationId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'subway_station_name_uz')
+  @JsonKey(name: "subway_station_name_uz")
   String? get subwayStationNameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'subway_station_name_ru')
+  @JsonKey(name: "subway_station_name_ru")
   String? get subwayStationNameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'subway_station_name_en')
+  @JsonKey(name: "subway_station_name_en")
   String? get subwayStationNameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'subway_station_line')
+  @JsonKey(name: "subway_station_line")
   int? get subwayStationLine => throw _privateConstructorUsedError;
-  @JsonKey(name: 'subway_station_ordinal')
+  @JsonKey(name: "subway_station_ordinal")
   int? get subwayStationOrdinal => throw _privateConstructorUsedError;
-  @JsonKey(name: 'location_name_uz')
+  @JsonKey(name: "location_name_uz")
   String? get locationNameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'location_name_ru')
+  @JsonKey(name: "location_name_ru")
   String? get locationNameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'location_name_en')
+  @JsonKey(name: "location_name_en")
   String? get locationNameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'location_short_name_uz')
+  @JsonKey(name: "location_short_name_uz")
   String? get locationShortNameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'location_short_name_ru')
+  @JsonKey(name: "location_short_name_ru")
   String? get locationShortNameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'location_short_name_en')
+  @JsonKey(name: "location_short_name_en")
   String? get locationShortNameEn => throw _privateConstructorUsedError;
 
   /// Serializes this ConversationSummary to a JSON map.
@@ -622,35 +622,35 @@ abstract class $ConversationSummaryCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'listing_id') int listingId,
-    @JsonKey(name: 'initiator_id') int initiatorId,
-    @JsonKey(name: 'participant_id') int participantId,
-    @JsonKey(name: 'last_message_at') String? lastMessageAt,
-    @JsonKey(name: 'last_message_content') String? lastMessageContent,
-    @JsonKey(name: 'last_message_sender_id') int? lastMessageSenderId,
-    @JsonKey(name: 'is_active') bool isActive,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
-    @JsonKey(name: 'listing_title') String? listingTitle,
-    @JsonKey(name: 'listing_min_price') int? listingMinPrice,
-    @JsonKey(name: 'listing_max_price') int? listingMaxPrice,
-    @JsonKey(name: 'other_user_name') String? otherUserName,
-    @JsonKey(name: 'other_user_avatar') String? otherUserAvatar,
-    @JsonKey(name: 'unread_count') int? unreadCount,
-    @JsonKey(name: 'listing_subway_line_id') int? listingSubwayLineId,
-    @JsonKey(name: 'listing_subway_station_id') int? listingSubwayStationId,
-    @JsonKey(name: 'listing_location_id') int? listingLocationId,
-    @JsonKey(name: 'subway_station_name_uz') String? subwayStationNameUz,
-    @JsonKey(name: 'subway_station_name_ru') String? subwayStationNameRu,
-    @JsonKey(name: 'subway_station_name_en') String? subwayStationNameEn,
-    @JsonKey(name: 'subway_station_line') int? subwayStationLine,
-    @JsonKey(name: 'subway_station_ordinal') int? subwayStationOrdinal,
-    @JsonKey(name: 'location_name_uz') String? locationNameUz,
-    @JsonKey(name: 'location_name_ru') String? locationNameRu,
-    @JsonKey(name: 'location_name_en') String? locationNameEn,
-    @JsonKey(name: 'location_short_name_uz') String? locationShortNameUz,
-    @JsonKey(name: 'location_short_name_ru') String? locationShortNameRu,
-    @JsonKey(name: 'location_short_name_en') String? locationShortNameEn,
+    @JsonKey(name: "listing_id") int listingId,
+    @JsonKey(name: "initiator_id") int initiatorId,
+    @JsonKey(name: "participant_id") int participantId,
+    @JsonKey(name: "is_active") bool isActive,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
+    @JsonKey(name: "last_message_at") String? lastMessageAt,
+    @JsonKey(name: "last_message_content") String? lastMessageContent,
+    @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
+    @JsonKey(name: "listing_title") String? listingTitle,
+    @JsonKey(name: "listing_min_price") int? listingMinPrice,
+    @JsonKey(name: "listing_max_price") int? listingMaxPrice,
+    @JsonKey(name: "other_user_name") String? otherUserName,
+    @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+    @JsonKey(name: "unread_count") int? unreadCount,
+    @JsonKey(name: "listing_subway_line_id") int? listingSubwayLineId,
+    @JsonKey(name: "listing_subway_station_id") int? listingSubwayStationId,
+    @JsonKey(name: "listing_location_id") int? listingLocationId,
+    @JsonKey(name: "subway_station_name_uz") String? subwayStationNameUz,
+    @JsonKey(name: "subway_station_name_ru") String? subwayStationNameRu,
+    @JsonKey(name: "subway_station_name_en") String? subwayStationNameEn,
+    @JsonKey(name: "subway_station_line") int? subwayStationLine,
+    @JsonKey(name: "subway_station_ordinal") int? subwayStationOrdinal,
+    @JsonKey(name: "location_name_uz") String? locationNameUz,
+    @JsonKey(name: "location_name_ru") String? locationNameRu,
+    @JsonKey(name: "location_name_en") String? locationNameEn,
+    @JsonKey(name: "location_short_name_uz") String? locationShortNameUz,
+    @JsonKey(name: "location_short_name_ru") String? locationShortNameRu,
+    @JsonKey(name: "location_short_name_en") String? locationShortNameEn,
   });
 }
 
@@ -673,12 +673,12 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
     Object? listingId = null,
     Object? initiatorId = null,
     Object? participantId = null,
-    Object? lastMessageAt = freezed,
-    Object? lastMessageContent = freezed,
-    Object? lastMessageSenderId = freezed,
     Object? isActive = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? lastMessageAt = freezed,
+    Object? lastMessageContent = freezed,
+    Object? lastMessageSenderId = freezed,
     Object? listingTitle = freezed,
     Object? listingMinPrice = freezed,
     Object? listingMaxPrice = freezed,
@@ -722,21 +722,6 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
                     ? _value.participantId
                     : participantId // ignore: cast_nullable_to_non_nullable
                         as int,
-            lastMessageAt:
-                freezed == lastMessageAt
-                    ? _value.lastMessageAt
-                    : lastMessageAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            lastMessageContent:
-                freezed == lastMessageContent
-                    ? _value.lastMessageContent
-                    : lastMessageContent // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            lastMessageSenderId:
-                freezed == lastMessageSenderId
-                    ? _value.lastMessageSenderId
-                    : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
-                        as int?,
             isActive:
                 null == isActive
                     ? _value.isActive
@@ -752,6 +737,21 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
                     ? _value.updatedAt
                     : updatedAt // ignore: cast_nullable_to_non_nullable
                         as String,
+            lastMessageAt:
+                freezed == lastMessageAt
+                    ? _value.lastMessageAt
+                    : lastMessageAt // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastMessageContent:
+                freezed == lastMessageContent
+                    ? _value.lastMessageContent
+                    : lastMessageContent // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastMessageSenderId:
+                freezed == lastMessageSenderId
+                    ? _value.lastMessageSenderId
+                    : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+                        as int?,
             listingTitle:
                 freezed == listingTitle
                     ? _value.listingTitle
@@ -869,35 +869,35 @@ abstract class _$$ConversationSummaryImplCopyWith<$Res>
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'listing_id') int listingId,
-    @JsonKey(name: 'initiator_id') int initiatorId,
-    @JsonKey(name: 'participant_id') int participantId,
-    @JsonKey(name: 'last_message_at') String? lastMessageAt,
-    @JsonKey(name: 'last_message_content') String? lastMessageContent,
-    @JsonKey(name: 'last_message_sender_id') int? lastMessageSenderId,
-    @JsonKey(name: 'is_active') bool isActive,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
-    @JsonKey(name: 'listing_title') String? listingTitle,
-    @JsonKey(name: 'listing_min_price') int? listingMinPrice,
-    @JsonKey(name: 'listing_max_price') int? listingMaxPrice,
-    @JsonKey(name: 'other_user_name') String? otherUserName,
-    @JsonKey(name: 'other_user_avatar') String? otherUserAvatar,
-    @JsonKey(name: 'unread_count') int? unreadCount,
-    @JsonKey(name: 'listing_subway_line_id') int? listingSubwayLineId,
-    @JsonKey(name: 'listing_subway_station_id') int? listingSubwayStationId,
-    @JsonKey(name: 'listing_location_id') int? listingLocationId,
-    @JsonKey(name: 'subway_station_name_uz') String? subwayStationNameUz,
-    @JsonKey(name: 'subway_station_name_ru') String? subwayStationNameRu,
-    @JsonKey(name: 'subway_station_name_en') String? subwayStationNameEn,
-    @JsonKey(name: 'subway_station_line') int? subwayStationLine,
-    @JsonKey(name: 'subway_station_ordinal') int? subwayStationOrdinal,
-    @JsonKey(name: 'location_name_uz') String? locationNameUz,
-    @JsonKey(name: 'location_name_ru') String? locationNameRu,
-    @JsonKey(name: 'location_name_en') String? locationNameEn,
-    @JsonKey(name: 'location_short_name_uz') String? locationShortNameUz,
-    @JsonKey(name: 'location_short_name_ru') String? locationShortNameRu,
-    @JsonKey(name: 'location_short_name_en') String? locationShortNameEn,
+    @JsonKey(name: "listing_id") int listingId,
+    @JsonKey(name: "initiator_id") int initiatorId,
+    @JsonKey(name: "participant_id") int participantId,
+    @JsonKey(name: "is_active") bool isActive,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
+    @JsonKey(name: "last_message_at") String? lastMessageAt,
+    @JsonKey(name: "last_message_content") String? lastMessageContent,
+    @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
+    @JsonKey(name: "listing_title") String? listingTitle,
+    @JsonKey(name: "listing_min_price") int? listingMinPrice,
+    @JsonKey(name: "listing_max_price") int? listingMaxPrice,
+    @JsonKey(name: "other_user_name") String? otherUserName,
+    @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+    @JsonKey(name: "unread_count") int? unreadCount,
+    @JsonKey(name: "listing_subway_line_id") int? listingSubwayLineId,
+    @JsonKey(name: "listing_subway_station_id") int? listingSubwayStationId,
+    @JsonKey(name: "listing_location_id") int? listingLocationId,
+    @JsonKey(name: "subway_station_name_uz") String? subwayStationNameUz,
+    @JsonKey(name: "subway_station_name_ru") String? subwayStationNameRu,
+    @JsonKey(name: "subway_station_name_en") String? subwayStationNameEn,
+    @JsonKey(name: "subway_station_line") int? subwayStationLine,
+    @JsonKey(name: "subway_station_ordinal") int? subwayStationOrdinal,
+    @JsonKey(name: "location_name_uz") String? locationNameUz,
+    @JsonKey(name: "location_name_ru") String? locationNameRu,
+    @JsonKey(name: "location_name_en") String? locationNameEn,
+    @JsonKey(name: "location_short_name_uz") String? locationShortNameUz,
+    @JsonKey(name: "location_short_name_ru") String? locationShortNameRu,
+    @JsonKey(name: "location_short_name_en") String? locationShortNameEn,
   });
 }
 
@@ -919,12 +919,12 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
     Object? listingId = null,
     Object? initiatorId = null,
     Object? participantId = null,
-    Object? lastMessageAt = freezed,
-    Object? lastMessageContent = freezed,
-    Object? lastMessageSenderId = freezed,
     Object? isActive = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? lastMessageAt = freezed,
+    Object? lastMessageContent = freezed,
+    Object? lastMessageSenderId = freezed,
     Object? listingTitle = freezed,
     Object? listingMinPrice = freezed,
     Object? listingMaxPrice = freezed,
@@ -968,21 +968,6 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
                 ? _value.participantId
                 : participantId // ignore: cast_nullable_to_non_nullable
                     as int,
-        lastMessageAt:
-            freezed == lastMessageAt
-                ? _value.lastMessageAt
-                : lastMessageAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        lastMessageContent:
-            freezed == lastMessageContent
-                ? _value.lastMessageContent
-                : lastMessageContent // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        lastMessageSenderId:
-            freezed == lastMessageSenderId
-                ? _value.lastMessageSenderId
-                : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
-                    as int?,
         isActive:
             null == isActive
                 ? _value.isActive
@@ -998,6 +983,21 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
                 ? _value.updatedAt
                 : updatedAt // ignore: cast_nullable_to_non_nullable
                     as String,
+        lastMessageAt:
+            freezed == lastMessageAt
+                ? _value.lastMessageAt
+                : lastMessageAt // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastMessageContent:
+            freezed == lastMessageContent
+                ? _value.lastMessageContent
+                : lastMessageContent // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastMessageSenderId:
+            freezed == lastMessageSenderId
+                ? _value.lastMessageSenderId
+                : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+                    as int?,
         listingTitle:
             freezed == listingTitle
                 ? _value.listingTitle
@@ -1108,35 +1108,35 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
 class _$ConversationSummaryImpl implements _ConversationSummary {
   const _$ConversationSummaryImpl({
     required this.id,
-    @JsonKey(name: 'listing_id') required this.listingId,
-    @JsonKey(name: 'initiator_id') required this.initiatorId,
-    @JsonKey(name: 'participant_id') required this.participantId,
-    @JsonKey(name: 'last_message_at') this.lastMessageAt,
-    @JsonKey(name: 'last_message_content') this.lastMessageContent,
-    @JsonKey(name: 'last_message_sender_id') this.lastMessageSenderId,
-    @JsonKey(name: 'is_active') required this.isActive,
-    @JsonKey(name: 'created_at') required this.createdAt,
-    @JsonKey(name: 'updated_at') required this.updatedAt,
-    @JsonKey(name: 'listing_title') this.listingTitle,
-    @JsonKey(name: 'listing_min_price') this.listingMinPrice,
-    @JsonKey(name: 'listing_max_price') this.listingMaxPrice,
-    @JsonKey(name: 'other_user_name') this.otherUserName,
-    @JsonKey(name: 'other_user_avatar') this.otherUserAvatar,
-    @JsonKey(name: 'unread_count') this.unreadCount,
-    @JsonKey(name: 'listing_subway_line_id') this.listingSubwayLineId,
-    @JsonKey(name: 'listing_subway_station_id') this.listingSubwayStationId,
-    @JsonKey(name: 'listing_location_id') this.listingLocationId,
-    @JsonKey(name: 'subway_station_name_uz') this.subwayStationNameUz,
-    @JsonKey(name: 'subway_station_name_ru') this.subwayStationNameRu,
-    @JsonKey(name: 'subway_station_name_en') this.subwayStationNameEn,
-    @JsonKey(name: 'subway_station_line') this.subwayStationLine,
-    @JsonKey(name: 'subway_station_ordinal') this.subwayStationOrdinal,
-    @JsonKey(name: 'location_name_uz') this.locationNameUz,
-    @JsonKey(name: 'location_name_ru') this.locationNameRu,
-    @JsonKey(name: 'location_name_en') this.locationNameEn,
-    @JsonKey(name: 'location_short_name_uz') this.locationShortNameUz,
-    @JsonKey(name: 'location_short_name_ru') this.locationShortNameRu,
-    @JsonKey(name: 'location_short_name_en') this.locationShortNameEn,
+    @JsonKey(name: "listing_id") required this.listingId,
+    @JsonKey(name: "initiator_id") required this.initiatorId,
+    @JsonKey(name: "participant_id") required this.participantId,
+    @JsonKey(name: "is_active") required this.isActive,
+    @JsonKey(name: "created_at") required this.createdAt,
+    @JsonKey(name: "updated_at") required this.updatedAt,
+    @JsonKey(name: "last_message_at") this.lastMessageAt,
+    @JsonKey(name: "last_message_content") this.lastMessageContent,
+    @JsonKey(name: "last_message_sender_id") this.lastMessageSenderId,
+    @JsonKey(name: "listing_title") this.listingTitle,
+    @JsonKey(name: "listing_min_price") this.listingMinPrice,
+    @JsonKey(name: "listing_max_price") this.listingMaxPrice,
+    @JsonKey(name: "other_user_name") this.otherUserName,
+    @JsonKey(name: "other_user_avatar") this.otherUserAvatar,
+    @JsonKey(name: "unread_count") this.unreadCount,
+    @JsonKey(name: "listing_subway_line_id") this.listingSubwayLineId,
+    @JsonKey(name: "listing_subway_station_id") this.listingSubwayStationId,
+    @JsonKey(name: "listing_location_id") this.listingLocationId,
+    @JsonKey(name: "subway_station_name_uz") this.subwayStationNameUz,
+    @JsonKey(name: "subway_station_name_ru") this.subwayStationNameRu,
+    @JsonKey(name: "subway_station_name_en") this.subwayStationNameEn,
+    @JsonKey(name: "subway_station_line") this.subwayStationLine,
+    @JsonKey(name: "subway_station_ordinal") this.subwayStationOrdinal,
+    @JsonKey(name: "location_name_uz") this.locationNameUz,
+    @JsonKey(name: "location_name_ru") this.locationNameRu,
+    @JsonKey(name: "location_name_en") this.locationNameEn,
+    @JsonKey(name: "location_short_name_uz") this.locationShortNameUz,
+    @JsonKey(name: "location_short_name_ru") this.locationShortNameRu,
+    @JsonKey(name: "location_short_name_en") this.locationShortNameEn,
   });
 
   factory _$ConversationSummaryImpl.fromJson(Map<String, dynamic> json) =>
@@ -1145,98 +1145,98 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @override
   final int id;
   @override
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   final int listingId;
   @override
-  @JsonKey(name: 'initiator_id')
+  @JsonKey(name: "initiator_id")
   final int initiatorId;
   @override
-  @JsonKey(name: 'participant_id')
+  @JsonKey(name: "participant_id")
   final int participantId;
   @override
-  @JsonKey(name: 'last_message_at')
-  final String? lastMessageAt;
-  @override
-  @JsonKey(name: 'last_message_content')
-  final String? lastMessageContent;
-  @override
-  @JsonKey(name: 'last_message_sender_id')
-  final int? lastMessageSenderId;
-  @override
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: "is_active")
   final bool isActive;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String updatedAt;
+  @override
+  @JsonKey(name: "last_message_at")
+  final String? lastMessageAt;
+  @override
+  @JsonKey(name: "last_message_content")
+  final String? lastMessageContent;
+  @override
+  @JsonKey(name: "last_message_sender_id")
+  final int? lastMessageSenderId;
   // Summary data
   @override
-  @JsonKey(name: 'listing_title')
+  @JsonKey(name: "listing_title")
   final String? listingTitle;
   @override
-  @JsonKey(name: 'listing_min_price')
+  @JsonKey(name: "listing_min_price")
   final int? listingMinPrice;
   @override
-  @JsonKey(name: 'listing_max_price')
+  @JsonKey(name: "listing_max_price")
   final int? listingMaxPrice;
   @override
-  @JsonKey(name: 'other_user_name')
+  @JsonKey(name: "other_user_name")
   final String? otherUserName;
   @override
-  @JsonKey(name: 'other_user_avatar')
+  @JsonKey(name: "other_user_avatar")
   final String? otherUserAvatar;
   @override
-  @JsonKey(name: 'unread_count')
+  @JsonKey(name: "unread_count")
   final int? unreadCount;
   // Location and metro station data
   @override
-  @JsonKey(name: 'listing_subway_line_id')
+  @JsonKey(name: "listing_subway_line_id")
   final int? listingSubwayLineId;
   @override
-  @JsonKey(name: 'listing_subway_station_id')
+  @JsonKey(name: "listing_subway_station_id")
   final int? listingSubwayStationId;
   @override
-  @JsonKey(name: 'listing_location_id')
+  @JsonKey(name: "listing_location_id")
   final int? listingLocationId;
   @override
-  @JsonKey(name: 'subway_station_name_uz')
+  @JsonKey(name: "subway_station_name_uz")
   final String? subwayStationNameUz;
   @override
-  @JsonKey(name: 'subway_station_name_ru')
+  @JsonKey(name: "subway_station_name_ru")
   final String? subwayStationNameRu;
   @override
-  @JsonKey(name: 'subway_station_name_en')
+  @JsonKey(name: "subway_station_name_en")
   final String? subwayStationNameEn;
   @override
-  @JsonKey(name: 'subway_station_line')
+  @JsonKey(name: "subway_station_line")
   final int? subwayStationLine;
   @override
-  @JsonKey(name: 'subway_station_ordinal')
+  @JsonKey(name: "subway_station_ordinal")
   final int? subwayStationOrdinal;
   @override
-  @JsonKey(name: 'location_name_uz')
+  @JsonKey(name: "location_name_uz")
   final String? locationNameUz;
   @override
-  @JsonKey(name: 'location_name_ru')
+  @JsonKey(name: "location_name_ru")
   final String? locationNameRu;
   @override
-  @JsonKey(name: 'location_name_en')
+  @JsonKey(name: "location_name_en")
   final String? locationNameEn;
   @override
-  @JsonKey(name: 'location_short_name_uz')
+  @JsonKey(name: "location_short_name_uz")
   final String? locationShortNameUz;
   @override
-  @JsonKey(name: 'location_short_name_ru')
+  @JsonKey(name: "location_short_name_ru")
   final String? locationShortNameRu;
   @override
-  @JsonKey(name: 'location_short_name_en')
+  @JsonKey(name: "location_short_name_en")
   final String? locationShortNameEn;
 
   @override
   String toString() {
-    return 'ConversationSummary(id: $id, listingId: $listingId, initiatorId: $initiatorId, participantId: $participantId, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingTitle: $listingTitle, listingMinPrice: $listingMinPrice, listingMaxPrice: $listingMaxPrice, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
+    return 'ConversationSummary(id: $id, listingId: $listingId, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, listingTitle: $listingTitle, listingMinPrice: $listingMinPrice, listingMaxPrice: $listingMaxPrice, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
   }
 
   @override
@@ -1251,18 +1251,18 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
                 other.initiatorId == initiatorId) &&
             (identical(other.participantId, participantId) ||
                 other.participantId == participantId) &&
-            (identical(other.lastMessageAt, lastMessageAt) ||
-                other.lastMessageAt == lastMessageAt) &&
-            (identical(other.lastMessageContent, lastMessageContent) ||
-                other.lastMessageContent == lastMessageContent) &&
-            (identical(other.lastMessageSenderId, lastMessageSenderId) ||
-                other.lastMessageSenderId == lastMessageSenderId) &&
             (identical(other.isActive, isActive) ||
                 other.isActive == isActive) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt) &&
+            (identical(other.lastMessageAt, lastMessageAt) ||
+                other.lastMessageAt == lastMessageAt) &&
+            (identical(other.lastMessageContent, lastMessageContent) ||
+                other.lastMessageContent == lastMessageContent) &&
+            (identical(other.lastMessageSenderId, lastMessageSenderId) ||
+                other.lastMessageSenderId == lastMessageSenderId) &&
             (identical(other.listingTitle, listingTitle) ||
                 other.listingTitle == listingTitle) &&
             (identical(other.listingMinPrice, listingMinPrice) ||
@@ -1313,12 +1313,12 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
     listingId,
     initiatorId,
     participantId,
-    lastMessageAt,
-    lastMessageContent,
-    lastMessageSenderId,
     isActive,
     createdAt,
     updatedAt,
+    lastMessageAt,
+    lastMessageContent,
+    lastMessageSenderId,
     listingTitle,
     listingMinPrice,
     listingMaxPrice,
@@ -1361,36 +1361,36 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
 abstract class _ConversationSummary implements ConversationSummary {
   const factory _ConversationSummary({
     required final int id,
-    @JsonKey(name: 'listing_id') required final int listingId,
-    @JsonKey(name: 'initiator_id') required final int initiatorId,
-    @JsonKey(name: 'participant_id') required final int participantId,
-    @JsonKey(name: 'last_message_at') final String? lastMessageAt,
-    @JsonKey(name: 'last_message_content') final String? lastMessageContent,
-    @JsonKey(name: 'last_message_sender_id') final int? lastMessageSenderId,
-    @JsonKey(name: 'is_active') required final bool isActive,
-    @JsonKey(name: 'created_at') required final String createdAt,
-    @JsonKey(name: 'updated_at') required final String updatedAt,
-    @JsonKey(name: 'listing_title') final String? listingTitle,
-    @JsonKey(name: 'listing_min_price') final int? listingMinPrice,
-    @JsonKey(name: 'listing_max_price') final int? listingMaxPrice,
-    @JsonKey(name: 'other_user_name') final String? otherUserName,
-    @JsonKey(name: 'other_user_avatar') final String? otherUserAvatar,
-    @JsonKey(name: 'unread_count') final int? unreadCount,
-    @JsonKey(name: 'listing_subway_line_id') final int? listingSubwayLineId,
-    @JsonKey(name: 'listing_subway_station_id')
+    @JsonKey(name: "listing_id") required final int listingId,
+    @JsonKey(name: "initiator_id") required final int initiatorId,
+    @JsonKey(name: "participant_id") required final int participantId,
+    @JsonKey(name: "is_active") required final bool isActive,
+    @JsonKey(name: "created_at") required final String createdAt,
+    @JsonKey(name: "updated_at") required final String updatedAt,
+    @JsonKey(name: "last_message_at") final String? lastMessageAt,
+    @JsonKey(name: "last_message_content") final String? lastMessageContent,
+    @JsonKey(name: "last_message_sender_id") final int? lastMessageSenderId,
+    @JsonKey(name: "listing_title") final String? listingTitle,
+    @JsonKey(name: "listing_min_price") final int? listingMinPrice,
+    @JsonKey(name: "listing_max_price") final int? listingMaxPrice,
+    @JsonKey(name: "other_user_name") final String? otherUserName,
+    @JsonKey(name: "other_user_avatar") final String? otherUserAvatar,
+    @JsonKey(name: "unread_count") final int? unreadCount,
+    @JsonKey(name: "listing_subway_line_id") final int? listingSubwayLineId,
+    @JsonKey(name: "listing_subway_station_id")
     final int? listingSubwayStationId,
-    @JsonKey(name: 'listing_location_id') final int? listingLocationId,
-    @JsonKey(name: 'subway_station_name_uz') final String? subwayStationNameUz,
-    @JsonKey(name: 'subway_station_name_ru') final String? subwayStationNameRu,
-    @JsonKey(name: 'subway_station_name_en') final String? subwayStationNameEn,
-    @JsonKey(name: 'subway_station_line') final int? subwayStationLine,
-    @JsonKey(name: 'subway_station_ordinal') final int? subwayStationOrdinal,
-    @JsonKey(name: 'location_name_uz') final String? locationNameUz,
-    @JsonKey(name: 'location_name_ru') final String? locationNameRu,
-    @JsonKey(name: 'location_name_en') final String? locationNameEn,
-    @JsonKey(name: 'location_short_name_uz') final String? locationShortNameUz,
-    @JsonKey(name: 'location_short_name_ru') final String? locationShortNameRu,
-    @JsonKey(name: 'location_short_name_en') final String? locationShortNameEn,
+    @JsonKey(name: "listing_location_id") final int? listingLocationId,
+    @JsonKey(name: "subway_station_name_uz") final String? subwayStationNameUz,
+    @JsonKey(name: "subway_station_name_ru") final String? subwayStationNameRu,
+    @JsonKey(name: "subway_station_name_en") final String? subwayStationNameEn,
+    @JsonKey(name: "subway_station_line") final int? subwayStationLine,
+    @JsonKey(name: "subway_station_ordinal") final int? subwayStationOrdinal,
+    @JsonKey(name: "location_name_uz") final String? locationNameUz,
+    @JsonKey(name: "location_name_ru") final String? locationNameRu,
+    @JsonKey(name: "location_name_en") final String? locationNameEn,
+    @JsonKey(name: "location_short_name_uz") final String? locationShortNameUz,
+    @JsonKey(name: "location_short_name_ru") final String? locationShortNameRu,
+    @JsonKey(name: "location_short_name_en") final String? locationShortNameEn,
   }) = _$ConversationSummaryImpl;
 
   factory _ConversationSummary.fromJson(Map<String, dynamic> json) =
@@ -1399,91 +1399,91 @@ abstract class _ConversationSummary implements ConversationSummary {
   @override
   int get id;
   @override
-  @JsonKey(name: 'listing_id')
+  @JsonKey(name: "listing_id")
   int get listingId;
   @override
-  @JsonKey(name: 'initiator_id')
+  @JsonKey(name: "initiator_id")
   int get initiatorId;
   @override
-  @JsonKey(name: 'participant_id')
+  @JsonKey(name: "participant_id")
   int get participantId;
   @override
-  @JsonKey(name: 'last_message_at')
-  String? get lastMessageAt;
-  @override
-  @JsonKey(name: 'last_message_content')
-  String? get lastMessageContent;
-  @override
-  @JsonKey(name: 'last_message_sender_id')
-  int? get lastMessageSenderId;
-  @override
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: "is_active")
   bool get isActive;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
-  String get updatedAt; // Summary data
+  @JsonKey(name: "updated_at")
+  String get updatedAt;
   @override
-  @JsonKey(name: 'listing_title')
+  @JsonKey(name: "last_message_at")
+  String? get lastMessageAt;
+  @override
+  @JsonKey(name: "last_message_content")
+  String? get lastMessageContent;
+  @override
+  @JsonKey(name: "last_message_sender_id")
+  int? get lastMessageSenderId; // Summary data
+  @override
+  @JsonKey(name: "listing_title")
   String? get listingTitle;
   @override
-  @JsonKey(name: 'listing_min_price')
+  @JsonKey(name: "listing_min_price")
   int? get listingMinPrice;
   @override
-  @JsonKey(name: 'listing_max_price')
+  @JsonKey(name: "listing_max_price")
   int? get listingMaxPrice;
   @override
-  @JsonKey(name: 'other_user_name')
+  @JsonKey(name: "other_user_name")
   String? get otherUserName;
   @override
-  @JsonKey(name: 'other_user_avatar')
+  @JsonKey(name: "other_user_avatar")
   String? get otherUserAvatar;
   @override
-  @JsonKey(name: 'unread_count')
+  @JsonKey(name: "unread_count")
   int? get unreadCount; // Location and metro station data
   @override
-  @JsonKey(name: 'listing_subway_line_id')
+  @JsonKey(name: "listing_subway_line_id")
   int? get listingSubwayLineId;
   @override
-  @JsonKey(name: 'listing_subway_station_id')
+  @JsonKey(name: "listing_subway_station_id")
   int? get listingSubwayStationId;
   @override
-  @JsonKey(name: 'listing_location_id')
+  @JsonKey(name: "listing_location_id")
   int? get listingLocationId;
   @override
-  @JsonKey(name: 'subway_station_name_uz')
+  @JsonKey(name: "subway_station_name_uz")
   String? get subwayStationNameUz;
   @override
-  @JsonKey(name: 'subway_station_name_ru')
+  @JsonKey(name: "subway_station_name_ru")
   String? get subwayStationNameRu;
   @override
-  @JsonKey(name: 'subway_station_name_en')
+  @JsonKey(name: "subway_station_name_en")
   String? get subwayStationNameEn;
   @override
-  @JsonKey(name: 'subway_station_line')
+  @JsonKey(name: "subway_station_line")
   int? get subwayStationLine;
   @override
-  @JsonKey(name: 'subway_station_ordinal')
+  @JsonKey(name: "subway_station_ordinal")
   int? get subwayStationOrdinal;
   @override
-  @JsonKey(name: 'location_name_uz')
+  @JsonKey(name: "location_name_uz")
   String? get locationNameUz;
   @override
-  @JsonKey(name: 'location_name_ru')
+  @JsonKey(name: "location_name_ru")
   String? get locationNameRu;
   @override
-  @JsonKey(name: 'location_name_en')
+  @JsonKey(name: "location_name_en")
   String? get locationNameEn;
   @override
-  @JsonKey(name: 'location_short_name_uz')
+  @JsonKey(name: "location_short_name_uz")
   String? get locationShortNameUz;
   @override
-  @JsonKey(name: 'location_short_name_ru')
+  @JsonKey(name: "location_short_name_ru")
   String? get locationShortNameRu;
   @override
-  @JsonKey(name: 'location_short_name_en')
+  @JsonKey(name: "location_short_name_en")
   String? get locationShortNameEn;
 
   /// Create a copy of ConversationSummary

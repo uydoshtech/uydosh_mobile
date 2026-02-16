@@ -1,14 +1,12 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class GenderPicker extends StatelessWidget {
   const GenderPicker({
-    super.key,
-    required this.selectedGender,
-    required this.onGenderChanged,
+    required this.selectedGender, required this.onGenderChanged, super.key,
     this.height = 80,
     this.itemExtent = 40,
     this.showArrows = true,
@@ -41,7 +39,7 @@ class GenderPicker extends StatelessWidget {
     final initialIndex = genderOptions.indexOf(selectedGender);
 
     // Use the same styling as metro line picker
-    final backgroundColor = theme.colorScheme.surfaceVariant;
+    final backgroundColor = theme.colorScheme.surfaceContainerHighest;
     final borderColor = theme.colorScheme.outline;
     final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
 

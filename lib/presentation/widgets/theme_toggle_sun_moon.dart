@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 /// A theme toggle with sun (light) and moon (dark/blue) icons.

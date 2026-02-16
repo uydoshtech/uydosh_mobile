@@ -22,39 +22,39 @@ ListingDetail _$ListingDetailFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$ListingDetail {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: "user_id")
   int get userId => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
-  @JsonKey(name: 'listing_type_id')
+  @JsonKey(name: "listing_type_id")
   int get listingTypeId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'min_price')
+  @JsonKey(name: "min_price")
   int get minPrice => throw _privateConstructorUsedError;
-  @JsonKey(name: 'max_price')
+  @JsonKey(name: "max_price")
   int get maxPrice => throw _privateConstructorUsedError;
-  String? get description => throw _privateConstructorUsedError;
-  @JsonKey(name: 'subway_station_id')
-  int? get subwayStationId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'subway_line_id')
-  int? get subwayLineId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'location_id')
-  int? get locationId => throw _privateConstructorUsedError;
-  int? get gender => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: "is_active")
   bool get isActive => throw _privateConstructorUsedError;
-  @JsonKey(name: 'featured_at')
-  String? get featuredAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'move_in_date')
-  String? get moveInDate => throw _privateConstructorUsedError;
-  @JsonKey(name: 'private_room')
-  bool? get privateRoom => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String get updatedAt => throw _privateConstructorUsedError;
   UserDetail get user => throw _privateConstructorUsedError;
-  @JsonKey(name: 'listing_type')
+  @JsonKey(name: "listing_type")
   ListingTypeDetail get listingType => throw _privateConstructorUsedError;
-  @JsonKey(name: 'subway_station')
+  String? get description => throw _privateConstructorUsedError;
+  @JsonKey(name: "subway_station_id")
+  int? get subwayStationId => throw _privateConstructorUsedError;
+  @JsonKey(name: "subway_line_id")
+  int? get subwayLineId => throw _privateConstructorUsedError;
+  @JsonKey(name: "location_id")
+  int? get locationId => throw _privateConstructorUsedError;
+  int? get gender => throw _privateConstructorUsedError;
+  @JsonKey(name: "featured_at")
+  String? get featuredAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "move_in_date")
+  String? get moveInDate => throw _privateConstructorUsedError;
+  @JsonKey(name: "private_room")
+  bool? get privateRoom => throw _privateConstructorUsedError;
+  @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation => throw _privateConstructorUsedError;
   LocationDetail? get location => throw _privateConstructorUsedError;
   List<Amenity>? get amenities => throw _privateConstructorUsedError;
@@ -79,25 +79,25 @@ abstract class $ListingDetailCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'user_id') int userId,
+    @JsonKey(name: "user_id") int userId,
     String title,
-    @JsonKey(name: 'listing_type_id') int listingTypeId,
-    @JsonKey(name: 'min_price') int minPrice,
-    @JsonKey(name: 'max_price') int maxPrice,
-    String? description,
-    @JsonKey(name: 'subway_station_id') int? subwayStationId,
-    @JsonKey(name: 'subway_line_id') int? subwayLineId,
-    @JsonKey(name: 'location_id') int? locationId,
-    int? gender,
-    @JsonKey(name: 'is_active') bool isActive,
-    @JsonKey(name: 'featured_at') String? featuredAt,
-    @JsonKey(name: 'move_in_date') String? moveInDate,
-    @JsonKey(name: 'private_room') bool? privateRoom,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
+    @JsonKey(name: "listing_type_id") int listingTypeId,
+    @JsonKey(name: "min_price") int minPrice,
+    @JsonKey(name: "max_price") int maxPrice,
+    @JsonKey(name: "is_active") bool isActive,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
     UserDetail user,
-    @JsonKey(name: 'listing_type') ListingTypeDetail listingType,
-    @JsonKey(name: 'subway_station') SubwayStationDetail? subwayStation,
+    @JsonKey(name: "listing_type") ListingTypeDetail listingType,
+    String? description,
+    @JsonKey(name: "subway_station_id") int? subwayStationId,
+    @JsonKey(name: "subway_line_id") int? subwayLineId,
+    @JsonKey(name: "location_id") int? locationId,
+    int? gender,
+    @JsonKey(name: "featured_at") String? featuredAt,
+    @JsonKey(name: "move_in_date") String? moveInDate,
+    @JsonKey(name: "private_room") bool? privateRoom,
+    @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
     LocationDetail? location,
     List<Amenity>? amenities,
     List<Photo>? photos,
@@ -130,19 +130,19 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? listingTypeId = null,
     Object? minPrice = null,
     Object? maxPrice = null,
+    Object? isActive = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
+    Object? user = null,
+    Object? listingType = null,
     Object? description = freezed,
     Object? subwayStationId = freezed,
     Object? subwayLineId = freezed,
     Object? locationId = freezed,
     Object? gender = freezed,
-    Object? isActive = null,
     Object? featuredAt = freezed,
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
-    Object? user = null,
-    Object? listingType = null,
     Object? subwayStation = freezed,
     Object? location = freezed,
     Object? amenities = freezed,
@@ -180,6 +180,31 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
                     ? _value.maxPrice
                     : maxPrice // ignore: cast_nullable_to_non_nullable
                         as int,
+            isActive:
+                null == isActive
+                    ? _value.isActive
+                    : isActive // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            createdAt:
+                null == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as String,
+            updatedAt:
+                null == updatedAt
+                    ? _value.updatedAt
+                    : updatedAt // ignore: cast_nullable_to_non_nullable
+                        as String,
+            user:
+                null == user
+                    ? _value.user
+                    : user // ignore: cast_nullable_to_non_nullable
+                        as UserDetail,
+            listingType:
+                null == listingType
+                    ? _value.listingType
+                    : listingType // ignore: cast_nullable_to_non_nullable
+                        as ListingTypeDetail,
             description:
                 freezed == description
                     ? _value.description
@@ -205,11 +230,6 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
                     ? _value.gender
                     : gender // ignore: cast_nullable_to_non_nullable
                         as int?,
-            isActive:
-                null == isActive
-                    ? _value.isActive
-                    : isActive // ignore: cast_nullable_to_non_nullable
-                        as bool,
             featuredAt:
                 freezed == featuredAt
                     ? _value.featuredAt
@@ -225,26 +245,6 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
                     ? _value.privateRoom
                     : privateRoom // ignore: cast_nullable_to_non_nullable
                         as bool?,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            updatedAt:
-                null == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            user:
-                null == user
-                    ? _value.user
-                    : user // ignore: cast_nullable_to_non_nullable
-                        as UserDetail,
-            listingType:
-                null == listingType
-                    ? _value.listingType
-                    : listingType // ignore: cast_nullable_to_non_nullable
-                        as ListingTypeDetail,
             subwayStation:
                 freezed == subwayStation
                     ? _value.subwayStation
@@ -330,25 +330,25 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'user_id') int userId,
+    @JsonKey(name: "user_id") int userId,
     String title,
-    @JsonKey(name: 'listing_type_id') int listingTypeId,
-    @JsonKey(name: 'min_price') int minPrice,
-    @JsonKey(name: 'max_price') int maxPrice,
-    String? description,
-    @JsonKey(name: 'subway_station_id') int? subwayStationId,
-    @JsonKey(name: 'subway_line_id') int? subwayLineId,
-    @JsonKey(name: 'location_id') int? locationId,
-    int? gender,
-    @JsonKey(name: 'is_active') bool isActive,
-    @JsonKey(name: 'featured_at') String? featuredAt,
-    @JsonKey(name: 'move_in_date') String? moveInDate,
-    @JsonKey(name: 'private_room') bool? privateRoom,
-    @JsonKey(name: 'created_at') String createdAt,
-    @JsonKey(name: 'updated_at') String updatedAt,
+    @JsonKey(name: "listing_type_id") int listingTypeId,
+    @JsonKey(name: "min_price") int minPrice,
+    @JsonKey(name: "max_price") int maxPrice,
+    @JsonKey(name: "is_active") bool isActive,
+    @JsonKey(name: "created_at") String createdAt,
+    @JsonKey(name: "updated_at") String updatedAt,
     UserDetail user,
-    @JsonKey(name: 'listing_type') ListingTypeDetail listingType,
-    @JsonKey(name: 'subway_station') SubwayStationDetail? subwayStation,
+    @JsonKey(name: "listing_type") ListingTypeDetail listingType,
+    String? description,
+    @JsonKey(name: "subway_station_id") int? subwayStationId,
+    @JsonKey(name: "subway_line_id") int? subwayLineId,
+    @JsonKey(name: "location_id") int? locationId,
+    int? gender,
+    @JsonKey(name: "featured_at") String? featuredAt,
+    @JsonKey(name: "move_in_date") String? moveInDate,
+    @JsonKey(name: "private_room") bool? privateRoom,
+    @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
     LocationDetail? location,
     List<Amenity>? amenities,
     List<Photo>? photos,
@@ -384,19 +384,19 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? listingTypeId = null,
     Object? minPrice = null,
     Object? maxPrice = null,
+    Object? isActive = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
+    Object? user = null,
+    Object? listingType = null,
     Object? description = freezed,
     Object? subwayStationId = freezed,
     Object? subwayLineId = freezed,
     Object? locationId = freezed,
     Object? gender = freezed,
-    Object? isActive = null,
     Object? featuredAt = freezed,
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
-    Object? user = null,
-    Object? listingType = null,
     Object? subwayStation = freezed,
     Object? location = freezed,
     Object? amenities = freezed,
@@ -434,6 +434,31 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
                 ? _value.maxPrice
                 : maxPrice // ignore: cast_nullable_to_non_nullable
                     as int,
+        isActive:
+            null == isActive
+                ? _value.isActive
+                : isActive // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        createdAt:
+            null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as String,
+        updatedAt:
+            null == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                    as String,
+        user:
+            null == user
+                ? _value.user
+                : user // ignore: cast_nullable_to_non_nullable
+                    as UserDetail,
+        listingType:
+            null == listingType
+                ? _value.listingType
+                : listingType // ignore: cast_nullable_to_non_nullable
+                    as ListingTypeDetail,
         description:
             freezed == description
                 ? _value.description
@@ -459,11 +484,6 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
                 ? _value.gender
                 : gender // ignore: cast_nullable_to_non_nullable
                     as int?,
-        isActive:
-            null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                    as bool,
         featuredAt:
             freezed == featuredAt
                 ? _value.featuredAt
@@ -479,26 +499,6 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
                 ? _value.privateRoom
                 : privateRoom // ignore: cast_nullable_to_non_nullable
                     as bool?,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        updatedAt:
-            null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        user:
-            null == user
-                ? _value.user
-                : user // ignore: cast_nullable_to_non_nullable
-                    as UserDetail,
-        listingType:
-            null == listingType
-                ? _value.listingType
-                : listingType // ignore: cast_nullable_to_non_nullable
-                    as ListingTypeDetail,
         subwayStation:
             freezed == subwayStation
                 ? _value.subwayStation
@@ -529,25 +529,25 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
 class _$ListingDetailImpl implements _ListingDetail {
   const _$ListingDetailImpl({
     required this.id,
-    @JsonKey(name: 'user_id') required this.userId,
+    @JsonKey(name: "user_id") required this.userId,
     required this.title,
-    @JsonKey(name: 'listing_type_id') required this.listingTypeId,
-    @JsonKey(name: 'min_price') required this.minPrice,
-    @JsonKey(name: 'max_price') required this.maxPrice,
-    this.description,
-    @JsonKey(name: 'subway_station_id') this.subwayStationId,
-    @JsonKey(name: 'subway_line_id') this.subwayLineId,
-    @JsonKey(name: 'location_id') this.locationId,
-    this.gender,
-    @JsonKey(name: 'is_active') required this.isActive,
-    @JsonKey(name: 'featured_at') this.featuredAt,
-    @JsonKey(name: 'move_in_date') this.moveInDate,
-    @JsonKey(name: 'private_room') this.privateRoom,
-    @JsonKey(name: 'created_at') required this.createdAt,
-    @JsonKey(name: 'updated_at') required this.updatedAt,
+    @JsonKey(name: "listing_type_id") required this.listingTypeId,
+    @JsonKey(name: "min_price") required this.minPrice,
+    @JsonKey(name: "max_price") required this.maxPrice,
+    @JsonKey(name: "is_active") required this.isActive,
+    @JsonKey(name: "created_at") required this.createdAt,
+    @JsonKey(name: "updated_at") required this.updatedAt,
     required this.user,
-    @JsonKey(name: 'listing_type') required this.listingType,
-    @JsonKey(name: 'subway_station') this.subwayStation,
+    @JsonKey(name: "listing_type") required this.listingType,
+    this.description,
+    @JsonKey(name: "subway_station_id") this.subwayStationId,
+    @JsonKey(name: "subway_line_id") this.subwayLineId,
+    @JsonKey(name: "location_id") this.locationId,
+    this.gender,
+    @JsonKey(name: "featured_at") this.featuredAt,
+    @JsonKey(name: "move_in_date") this.moveInDate,
+    @JsonKey(name: "private_room") this.privateRoom,
+    @JsonKey(name: "subway_station") this.subwayStation,
     this.location,
     final List<Amenity>? amenities,
     final List<Photo>? photos,
@@ -560,57 +560,57 @@ class _$ListingDetailImpl implements _ListingDetail {
   @override
   final int id;
   @override
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: "user_id")
   final int userId;
   @override
   final String title;
   @override
-  @JsonKey(name: 'listing_type_id')
+  @JsonKey(name: "listing_type_id")
   final int listingTypeId;
   @override
-  @JsonKey(name: 'min_price')
+  @JsonKey(name: "min_price")
   final int minPrice;
   @override
-  @JsonKey(name: 'max_price')
+  @JsonKey(name: "max_price")
   final int maxPrice;
   @override
-  final String? description;
-  @override
-  @JsonKey(name: 'subway_station_id')
-  final int? subwayStationId;
-  @override
-  @JsonKey(name: 'subway_line_id')
-  final int? subwayLineId;
-  @override
-  @JsonKey(name: 'location_id')
-  final int? locationId;
-  @override
-  final int? gender;
-  @override
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: "is_active")
   final bool isActive;
   @override
-  @JsonKey(name: 'featured_at')
-  final String? featuredAt;
-  @override
-  @JsonKey(name: 'move_in_date')
-  final String? moveInDate;
-  @override
-  @JsonKey(name: 'private_room')
-  final bool? privateRoom;
-  @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String updatedAt;
   @override
   final UserDetail user;
   @override
-  @JsonKey(name: 'listing_type')
+  @JsonKey(name: "listing_type")
   final ListingTypeDetail listingType;
   @override
-  @JsonKey(name: 'subway_station')
+  final String? description;
+  @override
+  @JsonKey(name: "subway_station_id")
+  final int? subwayStationId;
+  @override
+  @JsonKey(name: "subway_line_id")
+  final int? subwayLineId;
+  @override
+  @JsonKey(name: "location_id")
+  final int? locationId;
+  @override
+  final int? gender;
+  @override
+  @JsonKey(name: "featured_at")
+  final String? featuredAt;
+  @override
+  @JsonKey(name: "move_in_date")
+  final String? moveInDate;
+  @override
+  @JsonKey(name: "private_room")
+  final bool? privateRoom;
+  @override
+  @JsonKey(name: "subway_station")
   final SubwayStationDetail? subwayStation;
   @override
   final LocationDetail? location;
@@ -636,7 +636,7 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, minPrice: $minPrice, maxPrice: $maxPrice, description: $description, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, isActive: $isActive, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos)';
   }
 
   @override
@@ -653,6 +653,15 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.minPrice == minPrice) &&
             (identical(other.maxPrice, maxPrice) ||
                 other.maxPrice == maxPrice) &&
+            (identical(other.isActive, isActive) ||
+                other.isActive == isActive) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
+            (identical(other.user, user) || other.user == user) &&
+            (identical(other.listingType, listingType) ||
+                other.listingType == listingType) &&
             (identical(other.description, description) ||
                 other.description == description) &&
             (identical(other.subwayStationId, subwayStationId) ||
@@ -662,21 +671,12 @@ class _$ListingDetailImpl implements _ListingDetail {
             (identical(other.locationId, locationId) ||
                 other.locationId == locationId) &&
             (identical(other.gender, gender) || other.gender == gender) &&
-            (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
             (identical(other.featuredAt, featuredAt) ||
                 other.featuredAt == featuredAt) &&
             (identical(other.moveInDate, moveInDate) ||
                 other.moveInDate == moveInDate) &&
             (identical(other.privateRoom, privateRoom) ||
                 other.privateRoom == privateRoom) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt) &&
-            (identical(other.user, user) || other.user == user) &&
-            (identical(other.listingType, listingType) ||
-                other.listingType == listingType) &&
             (identical(other.subwayStation, subwayStation) ||
                 other.subwayStation == subwayStation) &&
             (identical(other.location, location) ||
@@ -698,19 +698,19 @@ class _$ListingDetailImpl implements _ListingDetail {
     listingTypeId,
     minPrice,
     maxPrice,
+    isActive,
+    createdAt,
+    updatedAt,
+    user,
+    listingType,
     description,
     subwayStationId,
     subwayLineId,
     locationId,
     gender,
-    isActive,
     featuredAt,
     moveInDate,
     privateRoom,
-    createdAt,
-    updatedAt,
-    user,
-    listingType,
     subwayStation,
     location,
     const DeepCollectionEquality().hash(_amenities),
@@ -734,25 +734,25 @@ class _$ListingDetailImpl implements _ListingDetail {
 abstract class _ListingDetail implements ListingDetail {
   const factory _ListingDetail({
     required final int id,
-    @JsonKey(name: 'user_id') required final int userId,
+    @JsonKey(name: "user_id") required final int userId,
     required final String title,
-    @JsonKey(name: 'listing_type_id') required final int listingTypeId,
-    @JsonKey(name: 'min_price') required final int minPrice,
-    @JsonKey(name: 'max_price') required final int maxPrice,
-    final String? description,
-    @JsonKey(name: 'subway_station_id') final int? subwayStationId,
-    @JsonKey(name: 'subway_line_id') final int? subwayLineId,
-    @JsonKey(name: 'location_id') final int? locationId,
-    final int? gender,
-    @JsonKey(name: 'is_active') required final bool isActive,
-    @JsonKey(name: 'featured_at') final String? featuredAt,
-    @JsonKey(name: 'move_in_date') final String? moveInDate,
-    @JsonKey(name: 'private_room') final bool? privateRoom,
-    @JsonKey(name: 'created_at') required final String createdAt,
-    @JsonKey(name: 'updated_at') required final String updatedAt,
+    @JsonKey(name: "listing_type_id") required final int listingTypeId,
+    @JsonKey(name: "min_price") required final int minPrice,
+    @JsonKey(name: "max_price") required final int maxPrice,
+    @JsonKey(name: "is_active") required final bool isActive,
+    @JsonKey(name: "created_at") required final String createdAt,
+    @JsonKey(name: "updated_at") required final String updatedAt,
     required final UserDetail user,
-    @JsonKey(name: 'listing_type') required final ListingTypeDetail listingType,
-    @JsonKey(name: 'subway_station') final SubwayStationDetail? subwayStation,
+    @JsonKey(name: "listing_type") required final ListingTypeDetail listingType,
+    final String? description,
+    @JsonKey(name: "subway_station_id") final int? subwayStationId,
+    @JsonKey(name: "subway_line_id") final int? subwayLineId,
+    @JsonKey(name: "location_id") final int? locationId,
+    final int? gender,
+    @JsonKey(name: "featured_at") final String? featuredAt,
+    @JsonKey(name: "move_in_date") final String? moveInDate,
+    @JsonKey(name: "private_room") final bool? privateRoom,
+    @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
     final LocationDetail? location,
     final List<Amenity>? amenities,
     final List<Photo>? photos,
@@ -764,57 +764,57 @@ abstract class _ListingDetail implements ListingDetail {
   @override
   int get id;
   @override
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: "user_id")
   int get userId;
   @override
   String get title;
   @override
-  @JsonKey(name: 'listing_type_id')
+  @JsonKey(name: "listing_type_id")
   int get listingTypeId;
   @override
-  @JsonKey(name: 'min_price')
+  @JsonKey(name: "min_price")
   int get minPrice;
   @override
-  @JsonKey(name: 'max_price')
+  @JsonKey(name: "max_price")
   int get maxPrice;
   @override
-  String? get description;
-  @override
-  @JsonKey(name: 'subway_station_id')
-  int? get subwayStationId;
-  @override
-  @JsonKey(name: 'subway_line_id')
-  int? get subwayLineId;
-  @override
-  @JsonKey(name: 'location_id')
-  int? get locationId;
-  @override
-  int? get gender;
-  @override
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: "is_active")
   bool get isActive;
   @override
-  @JsonKey(name: 'featured_at')
-  String? get featuredAt;
-  @override
-  @JsonKey(name: 'move_in_date')
-  String? get moveInDate;
-  @override
-  @JsonKey(name: 'private_room')
-  bool? get privateRoom;
-  @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String get updatedAt;
   @override
   UserDetail get user;
   @override
-  @JsonKey(name: 'listing_type')
+  @JsonKey(name: "listing_type")
   ListingTypeDetail get listingType;
   @override
-  @JsonKey(name: 'subway_station')
+  String? get description;
+  @override
+  @JsonKey(name: "subway_station_id")
+  int? get subwayStationId;
+  @override
+  @JsonKey(name: "subway_line_id")
+  int? get subwayLineId;
+  @override
+  @JsonKey(name: "location_id")
+  int? get locationId;
+  @override
+  int? get gender;
+  @override
+  @JsonKey(name: "featured_at")
+  String? get featuredAt;
+  @override
+  @JsonKey(name: "move_in_date")
+  String? get moveInDate;
+  @override
+  @JsonKey(name: "private_room")
+  bool? get privateRoom;
+  @override
+  @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation;
   @override
   LocationDetail? get location;
@@ -838,12 +838,11 @@ UserDetail _$UserDetailFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$UserDetail {
   int get id => throw _privateConstructorUsedError;
+  @JsonKey(name: "created_at")
+  String get createdAt => throw _privateConstructorUsedError;
   String? get email =>
       throw _privateConstructorUsedError; // Add email field from API response
-  String? get phone =>
-      throw _privateConstructorUsedError; // Make phone optional since it was removed from database
-  @JsonKey(name: 'created_at')
-  String get createdAt => throw _privateConstructorUsedError;
+  String? get phone => throw _privateConstructorUsedError;
 
   /// Serializes this UserDetail to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -864,9 +863,9 @@ abstract class $UserDetailCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
+    @JsonKey(name: "created_at") String createdAt,
     String? email,
     String? phone,
-    @JsonKey(name: 'created_at') String createdAt,
   });
 }
 
@@ -886,9 +885,9 @@ class _$UserDetailCopyWithImpl<$Res, $Val extends UserDetail>
   @override
   $Res call({
     Object? id = null,
+    Object? createdAt = null,
     Object? email = freezed,
     Object? phone = freezed,
-    Object? createdAt = null,
   }) {
     return _then(
       _value.copyWith(
@@ -897,6 +896,11 @@ class _$UserDetailCopyWithImpl<$Res, $Val extends UserDetail>
                     ? _value.id
                     : id // ignore: cast_nullable_to_non_nullable
                         as int,
+            createdAt:
+                null == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as String,
             email:
                 freezed == email
                     ? _value.email
@@ -907,11 +911,6 @@ class _$UserDetailCopyWithImpl<$Res, $Val extends UserDetail>
                     ? _value.phone
                     : phone // ignore: cast_nullable_to_non_nullable
                         as String?,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
           )
           as $Val,
     );
@@ -929,9 +928,9 @@ abstract class _$$UserDetailImplCopyWith<$Res>
   @useResult
   $Res call({
     int id,
+    @JsonKey(name: "created_at") String createdAt,
     String? email,
     String? phone,
-    @JsonKey(name: 'created_at') String createdAt,
   });
 }
 
@@ -950,9 +949,9 @@ class __$$UserDetailImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? createdAt = null,
     Object? email = freezed,
     Object? phone = freezed,
-    Object? createdAt = null,
   }) {
     return _then(
       _$UserDetailImpl(
@@ -961,6 +960,11 @@ class __$$UserDetailImplCopyWithImpl<$Res>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                     as int,
+        createdAt:
+            null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as String,
         email:
             freezed == email
                 ? _value.email
@@ -971,11 +975,6 @@ class __$$UserDetailImplCopyWithImpl<$Res>
                 ? _value.phone
                 : phone // ignore: cast_nullable_to_non_nullable
                     as String?,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
       ),
     );
   }
@@ -986,9 +985,9 @@ class __$$UserDetailImplCopyWithImpl<$Res>
 class _$UserDetailImpl implements _UserDetail {
   const _$UserDetailImpl({
     required this.id,
+    @JsonKey(name: "created_at") required this.createdAt,
     this.email,
     this.phone,
-    @JsonKey(name: 'created_at') required this.createdAt,
   });
 
   factory _$UserDetailImpl.fromJson(Map<String, dynamic> json) =>
@@ -997,18 +996,17 @@ class _$UserDetailImpl implements _UserDetail {
   @override
   final int id;
   @override
+  @JsonKey(name: "created_at")
+  final String createdAt;
+  @override
   final String? email;
   // Add email field from API response
   @override
   final String? phone;
-  // Make phone optional since it was removed from database
-  @override
-  @JsonKey(name: 'created_at')
-  final String createdAt;
 
   @override
   String toString() {
-    return 'UserDetail(id: $id, email: $email, phone: $phone, createdAt: $createdAt)';
+    return 'UserDetail(id: $id, createdAt: $createdAt, email: $email, phone: $phone)';
   }
 
   @override
@@ -1017,15 +1015,15 @@ class _$UserDetailImpl implements _UserDetail {
         (other.runtimeType == runtimeType &&
             other is _$UserDetailImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.phone, phone) || other.phone == phone) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.email, email) || other.email == email) &&
+            (identical(other.phone, phone) || other.phone == phone));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, phone, createdAt);
+  int get hashCode => Object.hash(runtimeType, id, createdAt, email, phone);
 
   /// Create a copy of UserDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -1044,9 +1042,9 @@ class _$UserDetailImpl implements _UserDetail {
 abstract class _UserDetail implements UserDetail {
   const factory _UserDetail({
     required final int id,
+    @JsonKey(name: "created_at") required final String createdAt,
     final String? email,
     final String? phone,
-    @JsonKey(name: 'created_at') required final String createdAt,
   }) = _$UserDetailImpl;
 
   factory _UserDetail.fromJson(Map<String, dynamic> json) =
@@ -1055,12 +1053,12 @@ abstract class _UserDetail implements UserDetail {
   @override
   int get id;
   @override
+  @JsonKey(name: "created_at")
+  String get createdAt;
+  @override
   String? get email; // Add email field from API response
   @override
-  String? get phone; // Make phone optional since it was removed from database
-  @override
-  @JsonKey(name: 'created_at')
-  String get createdAt;
+  String? get phone;
 
   /// Create a copy of UserDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -1077,11 +1075,11 @@ ListingTypeDetail _$ListingTypeDetailFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$ListingTypeDetail {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn => throw _privateConstructorUsedError;
   String get code => throw _privateConstructorUsedError;
 
@@ -1104,9 +1102,9 @@ abstract class $ListingTypeDetailCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name_uz') String nameUz,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_en') String nameEn,
+    @JsonKey(name: "name_uz") String nameUz,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_en") String nameEn,
     String code,
   });
 }
@@ -1176,9 +1174,9 @@ abstract class _$$ListingTypeDetailImplCopyWith<$Res>
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name_uz') String nameUz,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_en') String nameEn,
+    @JsonKey(name: "name_uz") String nameUz,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_en") String nameEn,
     String code,
   });
 }
@@ -1240,9 +1238,9 @@ class __$$ListingTypeDetailImplCopyWithImpl<$Res>
 class _$ListingTypeDetailImpl implements _ListingTypeDetail {
   const _$ListingTypeDetailImpl({
     required this.id,
-    @JsonKey(name: 'name_uz') required this.nameUz,
-    @JsonKey(name: 'name_ru') required this.nameRu,
-    @JsonKey(name: 'name_en') required this.nameEn,
+    @JsonKey(name: "name_uz") required this.nameUz,
+    @JsonKey(name: "name_ru") required this.nameRu,
+    @JsonKey(name: "name_en") required this.nameEn,
     required this.code,
   });
 
@@ -1252,13 +1250,13 @@ class _$ListingTypeDetailImpl implements _ListingTypeDetail {
   @override
   final int id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   final String nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   final String nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   final String nameEn;
   @override
   final String code;
@@ -1305,9 +1303,9 @@ class _$ListingTypeDetailImpl implements _ListingTypeDetail {
 abstract class _ListingTypeDetail implements ListingTypeDetail {
   const factory _ListingTypeDetail({
     required final int id,
-    @JsonKey(name: 'name_uz') required final String nameUz,
-    @JsonKey(name: 'name_ru') required final String nameRu,
-    @JsonKey(name: 'name_en') required final String nameEn,
+    @JsonKey(name: "name_uz") required final String nameUz,
+    @JsonKey(name: "name_ru") required final String nameRu,
+    @JsonKey(name: "name_en") required final String nameEn,
     required final String code,
   }) = _$ListingTypeDetailImpl;
 
@@ -1317,13 +1315,13 @@ abstract class _ListingTypeDetail implements ListingTypeDetail {
   @override
   int get id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn;
   @override
   String get code;
@@ -1343,11 +1341,11 @@ SubwayStationDetail _$SubwayStationDetailFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$SubwayStationDetail {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn => throw _privateConstructorUsedError;
   int get line => throw _privateConstructorUsedError;
 
@@ -1370,9 +1368,9 @@ abstract class $SubwayStationDetailCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name_uz') String nameUz,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_en') String nameEn,
+    @JsonKey(name: "name_uz") String nameUz,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_en") String nameEn,
     int line,
   });
 }
@@ -1442,9 +1440,9 @@ abstract class _$$SubwayStationDetailImplCopyWith<$Res>
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name_uz') String nameUz,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_en') String nameEn,
+    @JsonKey(name: "name_uz") String nameUz,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_en") String nameEn,
     int line,
   });
 }
@@ -1506,9 +1504,9 @@ class __$$SubwayStationDetailImplCopyWithImpl<$Res>
 class _$SubwayStationDetailImpl implements _SubwayStationDetail {
   const _$SubwayStationDetailImpl({
     required this.id,
-    @JsonKey(name: 'name_uz') required this.nameUz,
-    @JsonKey(name: 'name_ru') required this.nameRu,
-    @JsonKey(name: 'name_en') required this.nameEn,
+    @JsonKey(name: "name_uz") required this.nameUz,
+    @JsonKey(name: "name_ru") required this.nameRu,
+    @JsonKey(name: "name_en") required this.nameEn,
     required this.line,
   });
 
@@ -1518,13 +1516,13 @@ class _$SubwayStationDetailImpl implements _SubwayStationDetail {
   @override
   final int id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   final String nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   final String nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   final String nameEn;
   @override
   final int line;
@@ -1571,9 +1569,9 @@ class _$SubwayStationDetailImpl implements _SubwayStationDetail {
 abstract class _SubwayStationDetail implements SubwayStationDetail {
   const factory _SubwayStationDetail({
     required final int id,
-    @JsonKey(name: 'name_uz') required final String nameUz,
-    @JsonKey(name: 'name_ru') required final String nameRu,
-    @JsonKey(name: 'name_en') required final String nameEn,
+    @JsonKey(name: "name_uz") required final String nameUz,
+    @JsonKey(name: "name_ru") required final String nameRu,
+    @JsonKey(name: "name_en") required final String nameEn,
     required final int line,
   }) = _$SubwayStationDetailImpl;
 
@@ -1583,13 +1581,13 @@ abstract class _SubwayStationDetail implements SubwayStationDetail {
   @override
   int get id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn;
   @override
   int get line;
@@ -1609,17 +1607,17 @@ LocationDetail _$LocationDetailFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$LocationDetail {
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String get shortNameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String get shortNameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String get shortNameEn => throw _privateConstructorUsedError;
 
   /// Serializes this LocationDetail to a JSON map.
@@ -1641,12 +1639,12 @@ abstract class $LocationDetailCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name_uz') String nameUz,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_en') String nameEn,
-    @JsonKey(name: 'short_name_uz') String shortNameUz,
-    @JsonKey(name: 'short_name_ru') String shortNameRu,
-    @JsonKey(name: 'short_name_en') String shortNameEn,
+    @JsonKey(name: "name_uz") String nameUz,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_en") String nameEn,
+    @JsonKey(name: "short_name_uz") String shortNameUz,
+    @JsonKey(name: "short_name_ru") String shortNameRu,
+    @JsonKey(name: "short_name_en") String shortNameEn,
   });
 }
 
@@ -1727,12 +1725,12 @@ abstract class _$$LocationDetailImplCopyWith<$Res>
   @useResult
   $Res call({
     int id,
-    @JsonKey(name: 'name_uz') String nameUz,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_en') String nameEn,
-    @JsonKey(name: 'short_name_uz') String shortNameUz,
-    @JsonKey(name: 'short_name_ru') String shortNameRu,
-    @JsonKey(name: 'short_name_en') String shortNameEn,
+    @JsonKey(name: "name_uz") String nameUz,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_en") String nameEn,
+    @JsonKey(name: "short_name_uz") String shortNameUz,
+    @JsonKey(name: "short_name_ru") String shortNameRu,
+    @JsonKey(name: "short_name_en") String shortNameEn,
   });
 }
 
@@ -1805,12 +1803,12 @@ class __$$LocationDetailImplCopyWithImpl<$Res>
 class _$LocationDetailImpl implements _LocationDetail {
   const _$LocationDetailImpl({
     required this.id,
-    @JsonKey(name: 'name_uz') required this.nameUz,
-    @JsonKey(name: 'name_ru') required this.nameRu,
-    @JsonKey(name: 'name_en') required this.nameEn,
-    @JsonKey(name: 'short_name_uz') required this.shortNameUz,
-    @JsonKey(name: 'short_name_ru') required this.shortNameRu,
-    @JsonKey(name: 'short_name_en') required this.shortNameEn,
+    @JsonKey(name: "name_uz") required this.nameUz,
+    @JsonKey(name: "name_ru") required this.nameRu,
+    @JsonKey(name: "name_en") required this.nameEn,
+    @JsonKey(name: "short_name_uz") required this.shortNameUz,
+    @JsonKey(name: "short_name_ru") required this.shortNameRu,
+    @JsonKey(name: "short_name_en") required this.shortNameEn,
   });
 
   factory _$LocationDetailImpl.fromJson(Map<String, dynamic> json) =>
@@ -1819,22 +1817,22 @@ class _$LocationDetailImpl implements _LocationDetail {
   @override
   final int id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   final String nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   final String nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   final String nameEn;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   final String shortNameUz;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   final String shortNameRu;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   final String shortNameEn;
 
   @override
@@ -1892,12 +1890,12 @@ class _$LocationDetailImpl implements _LocationDetail {
 abstract class _LocationDetail implements LocationDetail {
   const factory _LocationDetail({
     required final int id,
-    @JsonKey(name: 'name_uz') required final String nameUz,
-    @JsonKey(name: 'name_ru') required final String nameRu,
-    @JsonKey(name: 'name_en') required final String nameEn,
-    @JsonKey(name: 'short_name_uz') required final String shortNameUz,
-    @JsonKey(name: 'short_name_ru') required final String shortNameRu,
-    @JsonKey(name: 'short_name_en') required final String shortNameEn,
+    @JsonKey(name: "name_uz") required final String nameUz,
+    @JsonKey(name: "name_ru") required final String nameRu,
+    @JsonKey(name: "name_en") required final String nameEn,
+    @JsonKey(name: "short_name_uz") required final String shortNameUz,
+    @JsonKey(name: "short_name_ru") required final String shortNameRu,
+    @JsonKey(name: "short_name_en") required final String shortNameEn,
   }) = _$LocationDetailImpl;
 
   factory _LocationDetail.fromJson(Map<String, dynamic> json) =
@@ -1906,22 +1904,22 @@ abstract class _LocationDetail implements LocationDetail {
   @override
   int get id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String get shortNameUz;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String get shortNameRu;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String get shortNameEn;
 
   /// Create a copy of LocationDetail

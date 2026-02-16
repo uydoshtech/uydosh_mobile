@@ -1,9 +1,17 @@
-import 'package:flutter/material.dart';
-import '../language_switcher.dart';
+import "package:flutter/material.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// A reusable confirmation dialog that follows the app's theme guidelines
 /// and provides consistent styling across all confirmation dialogs
 class ConfirmationDialog extends StatelessWidget {
+
+  const ConfirmationDialog({
+    required this.titleKey, required this.messageKey, required this.confirmButtonKey, required this.cancelButtonKey, super.key,
+    this.onConfirm,
+    this.onCancel,
+    this.confirmButtonColor,
+    this.isDestructive = false,
+  });
   final String titleKey;
   final String messageKey;
   final String confirmButtonKey;
@@ -12,18 +20,6 @@ class ConfirmationDialog extends StatelessWidget {
   final VoidCallback? onCancel;
   final Color? confirmButtonColor;
   final bool isDestructive;
-
-  const ConfirmationDialog({
-    super.key,
-    required this.titleKey,
-    required this.messageKey,
-    required this.confirmButtonKey,
-    required this.cancelButtonKey,
-    this.onConfirm,
-    this.onCancel,
-    this.confirmButtonColor,
-    this.isDestructive = false,
-  });
 
   /// Show a confirmation dialog with the given parameters
   static Future<bool?> show({
@@ -39,7 +35,7 @@ class ConfirmationDialog extends StatelessWidget {
   }) {
     return showDialog<bool>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return ConfirmationDialog(
           titleKey: titleKey,
           messageKey: messageKey,

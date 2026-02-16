@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:uy_dosh/base/services/session_manager.dart';
-import 'package:uy_dosh/base/logger/logger.dart';
+import "package:flutter/material.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 
 // Global user listing state with ChangeNotifier for reactivity
 class UserListingState extends ChangeNotifier {
-  static final UserListingState _instance = UserListingState._internal();
   factory UserListingState() => _instance;
   UserListingState._internal();
+  static final UserListingState _instance = UserListingState._internal();
 
   int? _currentUserId;
   bool _isInitialized = false;
@@ -20,9 +20,9 @@ class UserListingState extends ChangeNotifier {
 
     try {
       _currentUserId = await SessionManager.getUserId();
-      logger.d('UserListingState initialized with user ID: $_currentUserId');
+      logger.d("UserListingState initialized with user ID: $_currentUserId");
     } catch (e) {
-      logger.d('Error initializing UserListingState: $e');
+      logger.d("Error initializing UserListingState: $e");
       _currentUserId = null;
     }
 
@@ -60,10 +60,10 @@ class UserListingState extends ChangeNotifier {
   Future<void> refreshUserId() async {
     try {
       _currentUserId = await SessionManager.getUserId();
-      logger.d('UserListingState refreshed with user ID: $_currentUserId');
+      logger.d("UserListingState refreshed with user ID: $_currentUserId");
       notifyListeners();
     } catch (e) {
-      logger.d('Error refreshing user ID: $e');
+      logger.d("Error refreshing user ID: $e");
       _currentUserId = null;
       notifyListeners();
     }

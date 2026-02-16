@@ -1,38 +1,36 @@
-import "package:uy_dosh/base/logger/logger.dart";
-import "package:flutter/material.dart";
-import "package:flutter/cupertino.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "dart:async";
-import "package:flutter_svg/flutter_svg.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-
-import "package:uy_dosh/presentation/router/app_router.dart";
-import "package:uy_dosh/domain/models/university.dart";
-import "package:uy_dosh/domain/services/university_service.dart";
-import "package:uy_dosh/domain/services/user_profile_service.dart";
-import "package:uy_dosh/domain/models/auth/create_profile_request.dart";
-import "package:uy_dosh/base/services/session_manager.dart";
-import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
-import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+// HTTP imports for backend API calls
+import "dart:convert";
 
 // Firebase and Google Sign-In imports
 import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
-import "package:google_sign_in/google_sign_in.dart";
-
-// HTTP imports for backend API calls
-import "dart:convert";
-import "package:http/http.dart" as http;
+import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
+import "package:flutter/material.dart";
+import "package:flutter_svg/flutter_svg.dart";
+import "package:google_sign_in/google_sign_in.dart";
+import "package:http/http.dart" as http;
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/auth/create_profile_request.dart";
 import "package:uy_dosh/domain/models/region.dart";
+import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
+import "package:uy_dosh/domain/services/university_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 
 class AuthWizardScreen extends StatefulWidget {
   const AuthWizardScreen({
@@ -121,7 +119,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
 
     // Listen to Firebase auth state changes
-    _auth.authStateChanges().listen((User? user) {
+    _auth.authStateChanges().listen((user) {
       if (mounted) {
         setState(() {
           _currentUser = user;
@@ -182,7 +180,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
     try {
       // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
         // User cancelled the sign-in
@@ -193,7 +191,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
 
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth =
+      final googleAuth =
           await googleUser.authentication;
 
       // Create a new credential
@@ -234,7 +232,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             context,
             "successfully_signed_in_google",
           ),
-          duration: Duration(seconds: 3),
+          duration: const Duration(seconds: 3),
         );
       }
     } catch (e) {
@@ -333,7 +331,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     required String email,
     required String firebaseUid,
   }) async {
-    final url = "${EnvironmentUtil.basePath}/users/firebase-auth";
+    const url = "${EnvironmentUtil.basePath}/users/firebase-auth";
     final body = {"email": email, "firebase_uid": firebaseUid};
 
     logger.d("🌐 Calling backend: $url");
@@ -425,7 +423,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           context,
           "please_sign_in_google_first",
         ),
-        duration: Duration(seconds: 3),
+        duration: const Duration(seconds: 3),
       );
       return;
     }
@@ -668,7 +666,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       logger.d(
         "Regions loaded successfully. _regions length: ${_regions.length}",
       );
-      logger.d("Current _selectedRegionId: ${_selectedRegionId}");
+      logger.d("Current _selectedRegionId: $_selectedRegionId");
     } catch (error) {
       logger.d("Error loading regions: $error");
       setState(() {
@@ -704,7 +702,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       return;
     }
 
-    if (_isStudent == true && _selectedUniversity == null) {
+    if ((_isStudent ?? false) && _selectedUniversity == null) {
       logger.d(
         "❌ VALIDATION FAILED: User is student but no university selected",
       );
@@ -746,35 +744,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     try {
       // Get backend user ID from session (set during Firebase auth)
       var backendUserId = await SessionManager.getBackendUserId();
-
-      if (backendUserId == null) {
-        // Check if we need to re-authenticate with backend
-        final currentUser = _auth.currentUser;
-        if (currentUser != null) {
-          try {
-            await _authenticateWithBackend();
-            // Try to get backend user ID again
-            final newBackendUserId = await SessionManager.getBackendUserId();
-
-            if (newBackendUserId != null) {
-              // Use the new backend user ID
-              backendUserId = newBackendUserId;
-            } else {
-              throw Exception(
-                "Backend re-authentication failed - still no user ID",
-              );
-            }
-          } catch (e) {
-            throw Exception(
-              "Backend user ID not found and re-authentication failed: $e",
-            );
-          }
-        } else {
-          throw Exception(
-            "Backend user ID not found - please authenticate with backend first",
-          );
-        }
-      }
 
       if (backendUserId == null) {
         // Check if we need to re-authenticate with backend
@@ -1153,14 +1122,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                 context,
                                 "please_complete_previous_steps",
                               ),
-                              duration: Duration(seconds: 3),
+                              duration: const Duration(seconds: 3),
                             );
                             return;
                           }
                         }
                       },
                       physics:
-                          NeverScrollableScrollPhysics(), // Disable swiping completely
+                          const NeverScrollableScrollPhysics(), // Disable swiping completely
                       children: [
                         _buildLanguageSelectionPage(),
                         _buildGoogleSignInPage(),
@@ -1370,7 +1339,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           // Google Sign-In button
           if (!_isGoogleSignedIn) ...[
             Center(
-              child: Container(
+              child: SizedBox(
                 width: 199,
                 height: 44,
                 child: InkWell(
@@ -1512,7 +1481,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Container(
+            DecoratedBox(
               decoration: BoxDecoration(
                 color: _getOnboardingCardColor(context),
                 borderRadius: BorderRadius.circular(12),
@@ -1534,14 +1503,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: AppColors.cardBorder,
                       width: 1.5,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: AppColors.cardBorder,
                       width: 1.5,
                     ),
@@ -1719,7 +1688,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             ),
 
             // University selection (only shown when user is a student)
-            if (_isStudent == true) ...[
+            if (_isStudent ?? false) ...[
               const SizedBox(height: 32),
 
               if (_isLoadingUniversities)
@@ -1876,7 +1845,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   Widget _buildRegionSelector() {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color:
             _selectedRegionId != null
@@ -1916,7 +1885,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         _getRegionName(
                           _regions.firstWhere(
                             (r) => r.id == _selectedRegionId,
-                          )!,
+                          ),
                         ),
                         style: TextStyle(
                           color: _getSelectedButtonTextColor(),
@@ -1995,12 +1964,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => _buildRegionPicker(sheetContext),
+      builder: _buildRegionPicker,
     );
   }
 
   Widget _buildRegionPicker(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: _getBottomSheetBackgroundColor(),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -2034,7 +2003,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           ),
 
           // Region wheel picker
-          Container(
+          SizedBox(
             height: 200,
             child: CupertinoPicker(
               itemExtent: 50,
@@ -2205,7 +2174,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   Widget _buildUniversitySelector() {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color:
             _selectedUniversity != null
@@ -2322,12 +2291,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => _buildUniversityPicker(sheetContext),
+      builder: _buildUniversityPicker,
     );
   }
 
   Widget _buildUniversityPicker(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: _getBottomSheetBackgroundColor(),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -2364,7 +2333,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           ),
 
           // University wheel picker
-          Container(
+          SizedBox(
             height: 200,
             child: CupertinoPicker(
               itemExtent: 50,
@@ -2482,9 +2451,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         if (_nameController.text.trim().isEmpty ||
             _selectedGender == null ||
             _selectedRegionId == null ||
-            _isStudent == null)
+            _isStudent == null) {
           return null;
-        if (_isStudent == true && _selectedUniversity == null) return null;
+        }
+        if ((_isStudent ?? false) && _selectedUniversity == null) return null;
         return _completeProfile;
       default:
         return null;
@@ -2532,7 +2502,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   /// Get theme-aware onboarding card color (uses theme from MaterialApp)
   Color _getOnboardingCardColor(BuildContext context) =>
-      Theme.of(context).colorScheme.surfaceVariant;
+      Theme.of(context).colorScheme.surfaceContainerHighest;
 
   /// Get theme-aware success color
   Color _getSuccessColor() {

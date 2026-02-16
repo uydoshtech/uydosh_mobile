@@ -4,8 +4,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 
 class ThemeIcon extends StatelessWidget {
   const ThemeIcon({
-    super.key,
-    required this.icon,
+    required this.icon, super.key,
     this.size,
     this.color,
     this.useThemeColor = true,

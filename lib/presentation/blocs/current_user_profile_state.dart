@@ -1,4 +1,4 @@
-part of 'current_user_profile_bloc.dart';
+part of "current_user_profile_bloc.dart";
 
 @freezed
 class CurrentUserProfileState with _$CurrentUserProfileState {

@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:uy_dosh/base/utils/haptic_feedback_utils.dart';
-import 'package:uy_dosh/base/constants/app_strings.dart';
-import 'package:uy_dosh/base/state/theme_state.dart';
-import 'package:uy_dosh/base/constants/app_colors.dart';
-import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
+import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class QuickQuestionsWidget extends StatelessWidget {
-  final Function(String) onQuestionTap;
 
-  const QuickQuestionsWidget({super.key, required this.onQuestionTap});
+  const QuickQuestionsWidget({required this.onQuestionTap, super.key});
+  final Function(String) onQuestionTap;
 
   @override
   Widget build(BuildContext context) {

@@ -5,22 +5,22 @@ import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 
-part 'listing_owner_profile_event.dart';
-part 'listing_owner_profile_state.dart';
-part 'listing_owner_profile_bloc.freezed.dart';
+part "listing_owner_profile_event.dart";
+part "listing_owner_profile_state.dart";
+part "listing_owner_profile_bloc.freezed.dart";
 
 class ListingOwnerProfileBloc
     extends Bloc<ListingOwnerProfileEvent, ListingOwnerProfileState> {
-  final IUserProfileService _userProfileService;
 
   ListingOwnerProfileBloc(this._userProfileService)
     : super(const ListingOwnerProfileState.initial()) {
     on<ListingOwnerProfileEvent>((event, emit) async {
       await event.map(
-        fetchProfile: (e) async => await _onFetchProfile(e, emit),
+        fetchProfile: (e) async => _onFetchProfile(e, emit),
       );
     });
   }
+  final IUserProfileService _userProfileService;
 
   Future<void> _onFetchProfile(
     _FetchProfile event,

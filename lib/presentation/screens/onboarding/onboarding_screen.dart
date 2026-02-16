@@ -1,11 +1,12 @@
 import "dart:async";
+
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -145,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _startAutoSwitchTimer();
   }
 
-  void _navigateToMainApp() async {
+  Future<void> _navigateToMainApp() async {
     // Automatically turn off onboarding after it's shown once
     await OnboardingState().turnOffOnboarding();
 
@@ -504,7 +505,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         ),
                       ],
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.favorite,
                       color:
                           AppColors
@@ -644,7 +645,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     final themeState = ThemeState();
 
     if (themeState.isLightTheme) {
-      return OnboardingColors(
+      return const OnboardingColors(
         primary: LightThemeColors.onboardingPrimary,
         secondary: LightThemeColors.onboardingSecondary,
         surface: LightThemeColors.onboardingSurface,
@@ -654,7 +655,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         textSecondary: LightThemeColors.onboardingTextSecondary,
       );
     } else if (themeState.isBlueTheme) {
-      return OnboardingColors(
+      return const OnboardingColors(
         primary: BlueThemeColors.onboardingPrimary,
         secondary: BlueThemeColors.onboardingSecondary,
         surface: BlueThemeColors.onboardingSurface,
@@ -665,7 +666,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       );
     } else {
       // Default theme
-      return OnboardingColors(
+      return const OnboardingColors(
         primary: AppColors.onboardingPrimary,
         secondary: AppColors.onboardingSecondary,
         surface: AppColors.onboardingSurface,
@@ -702,13 +703,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
 /// Colors specifically designed for the onboarding screen
 class OnboardingColors {
-  final Color primary;
-  final Color secondary;
-  final Color surface;
-  final Color background;
-  final Color card;
-  final Color text;
-  final Color textSecondary;
 
   const OnboardingColors({
     required this.primary,
@@ -719,14 +713,16 @@ class OnboardingColors {
     required this.text,
     required this.textSecondary,
   });
+  final Color primary;
+  final Color secondary;
+  final Color surface;
+  final Color background;
+  final Color card;
+  final Color text;
+  final Color textSecondary;
 }
 
 class _OnboardingPage {
-  final String titleKey;
-  final String descriptionKey;
-  final IconData icon;
-  final Color color;
-  final bool isFirstPage;
 
   _OnboardingPage({
     required this.titleKey,
@@ -735,4 +731,9 @@ class _OnboardingPage {
     required this.color,
     this.isFirstPage = false,
   });
+  final String titleKey;
+  final String descriptionKey;
+  final IconData icon;
+  final Color color;
+  final bool isFirstPage;
 }

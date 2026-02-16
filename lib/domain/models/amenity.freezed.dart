@@ -24,17 +24,17 @@ mixin _$Amenity {
   int get id => throw _privateConstructorUsedError;
   String? get code =>
       throw _privateConstructorUsedError; // Made optional since backend doesn't always provide it
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz => throw _privateConstructorUsedError;
   String? get icon =>
       throw _privateConstructorUsedError; // Added icon field from backend response
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Amenity to a JSON map.
@@ -54,12 +54,12 @@ abstract class $AmenityCopyWith<$Res> {
   $Res call({
     int id,
     String? code,
-    @JsonKey(name: 'name_en') String nameEn,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_uz') String nameUz,
+    @JsonKey(name: "name_en") String nameEn,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_uz") String nameUz,
     String? icon,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
   });
 }
 
@@ -146,12 +146,12 @@ abstract class _$$AmenityImplCopyWith<$Res> implements $AmenityCopyWith<$Res> {
   $Res call({
     int id,
     String? code,
-    @JsonKey(name: 'name_en') String nameEn,
-    @JsonKey(name: 'name_ru') String nameRu,
-    @JsonKey(name: 'name_uz') String nameUz,
+    @JsonKey(name: "name_en") String nameEn,
+    @JsonKey(name: "name_ru") String nameRu,
+    @JsonKey(name: "name_uz") String nameUz,
     String? icon,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
   });
 }
 
@@ -231,12 +231,12 @@ class _$AmenityImpl implements _Amenity {
   const _$AmenityImpl({
     required this.id,
     this.code,
-    @JsonKey(name: 'name_en') required this.nameEn,
-    @JsonKey(name: 'name_ru') required this.nameRu,
-    @JsonKey(name: 'name_uz') required this.nameUz,
+    @JsonKey(name: "name_en") required this.nameEn,
+    @JsonKey(name: "name_ru") required this.nameRu,
+    @JsonKey(name: "name_uz") required this.nameUz,
     this.icon,
-    @JsonKey(name: 'created_at') this.createdAt,
-    @JsonKey(name: 'updated_at') this.updatedAt,
+    @JsonKey(name: "created_at") this.createdAt,
+    @JsonKey(name: "updated_at") this.updatedAt,
   });
 
   factory _$AmenityImpl.fromJson(Map<String, dynamic> json) =>
@@ -248,22 +248,22 @@ class _$AmenityImpl implements _Amenity {
   final String? code;
   // Made optional since backend doesn't always provide it
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   final String nameEn;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   final String nameRu;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   final String nameUz;
   @override
   final String? icon;
   // Added icon field from backend response
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String? createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String? updatedAt;
 
   @override
@@ -320,12 +320,12 @@ abstract class _Amenity implements Amenity {
   const factory _Amenity({
     required final int id,
     final String? code,
-    @JsonKey(name: 'name_en') required final String nameEn,
-    @JsonKey(name: 'name_ru') required final String nameRu,
-    @JsonKey(name: 'name_uz') required final String nameUz,
+    @JsonKey(name: "name_en") required final String nameEn,
+    @JsonKey(name: "name_ru") required final String nameRu,
+    @JsonKey(name: "name_uz") required final String nameUz,
     final String? icon,
-    @JsonKey(name: 'created_at') final String? createdAt,
-    @JsonKey(name: 'updated_at') final String? updatedAt,
+    @JsonKey(name: "created_at") final String? createdAt,
+    @JsonKey(name: "updated_at") final String? updatedAt,
   }) = _$AmenityImpl;
 
   factory _Amenity.fromJson(Map<String, dynamic> json) = _$AmenityImpl.fromJson;
@@ -335,21 +335,21 @@ abstract class _Amenity implements Amenity {
   @override
   String? get code; // Made optional since backend doesn't always provide it
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String get nameEn;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String get nameRu;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String get nameUz;
   @override
   String? get icon; // Added icon field from backend response
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String? get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt;
 
   /// Create a copy of Amenity

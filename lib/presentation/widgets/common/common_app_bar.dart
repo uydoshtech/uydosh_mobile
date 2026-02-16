@@ -3,8 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CommonAppBar({
-    super.key,
-    required this.title,
+    required this.title, super.key,
     this.actions,
     this.leading,
     this.showBackButton = false,

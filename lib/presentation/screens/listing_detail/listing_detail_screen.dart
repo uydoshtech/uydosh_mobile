@@ -1,82 +1,73 @@
-import "package:uy_dosh/base/logger/logger.dart";
-import "package:flutter/material.dart";
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
-import "package:uy_dosh/domain/models/listing_detail.dart";
-import "package:uy_dosh/domain/models/amenity.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/base/state/favorites_state.dart";
-import "package:uy_dosh/base/state/home_refresh_state.dart";
+import "package:http/http.dart" as http;
+import "package:share_plus/share_plus.dart";
+import "package:shared_preferences/shared_preferences.dart";
+import "package:smooth_page_indicator/smooth_page_indicator.dart";
+import "package:url_launcher/url_launcher.dart";
+import "package:uy_dosh/base/api/auth_token_repository.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
+import "package:uy_dosh/base/cache/location_cache.dart";
+import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
-import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
-import "package:uy_dosh/presentation/widgets/private_room_icon.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/string_helper.dart";
-import "package:share_plus/share_plus.dart";
-import "package:uy_dosh/base/services/deep_link_service.dart";
-import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
-import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
-import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
-import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/domain/services/subway_station_service.dart";
-import "package:uy_dosh/domain/services/location_service.dart";
-import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/home_refresh_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
-import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/base/util/date_utils.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/utils/animation_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/amenity.dart";
+import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/location_service.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/subway_station_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/utils/listing_utils.dart";
+import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
+import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
+import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
+import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
+import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen.dart";
-import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
-import "package:uy_dosh/domain/services/complaint_service.dart";
-import "package:uy_dosh/base/api/client/oauth_api_client.dart";
-import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
-import "package:uy_dosh/base/api/auth_token_repository.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/state/user_listing_state.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
-import "package:uy_dosh/base/state/home_refresh_state.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
-import "package:uy_dosh/base/services/session_manager.dart";
-import "package:http/http.dart" as http;
-import "package:uy_dosh/base/util/environment_util.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/domain/utils/listing_utils.dart";
-import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
-import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
-import "package:uy_dosh/base/utils/animation_utils.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
-import "package:uy_dosh/base/constants/app_config.dart";
-import "package:cached_network_image/cached_network_image.dart";
-import "package:smooth_page_indicator/smooth_page_indicator.dart";
-import "package:uy_dosh/base/util/date_utils.dart";
-import "package:url_launcher/url_launcher.dart";
-import "package:uy_dosh/base/cache/metro_cache.dart";
-import "package:uy_dosh/base/cache/location_cache.dart";
-import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
+import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_screen.dart";
-import "package:shared_preferences/shared_preferences.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
+import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
-  final bool isLoading;
-  final bool hasError;
-  final String errorMessage;
-  final ListingDetail? listingDetail;
 
   const _ListingDetailIconsData({
     required this.isLoading,
@@ -84,6 +75,10 @@ class _ListingDetailIconsData {
     required this.errorMessage,
     required this.listingDetail,
   });
+  final bool isLoading;
+  final bool hasError;
+  final String errorMessage;
+  final ListingDetail? listingDetail;
 
   @override
   bool operator ==(Object other) {
@@ -105,10 +100,6 @@ class _ListingDetailIconsData {
 }
 
 class _ListingDetailBodyData {
-  final bool isLoading;
-  final bool hasError;
-  final String errorMessage;
-  final ListingDetail? listingDetail;
 
   const _ListingDetailBodyData({
     required this.isLoading,
@@ -116,6 +107,10 @@ class _ListingDetailBodyData {
     required this.errorMessage,
     required this.listingDetail,
   });
+  final bool isLoading;
+  final bool hasError;
+  final String errorMessage;
+  final ListingDetail? listingDetail;
 
   @override
   bool operator ==(Object other) {
@@ -137,34 +132,30 @@ class _ListingDetailBodyData {
 }
 
 class _CompatibilityResult {
-  final int? percent;
-  final List<_CompatibilityMatch> matches;
-  final List<_CompatibilityDifference> differences;
 
   const _CompatibilityResult({
     required this.percent,
     required this.matches,
     required this.differences,
   });
+  final int? percent;
+  final List<_CompatibilityMatch> matches;
+  final List<_CompatibilityDifference> differences;
 }
 
 class _CompatibilityMatch {
-  final String labelKey;
-  final String label;
-  final String value;
 
   const _CompatibilityMatch({
     required this.labelKey,
     required this.label,
     required this.value,
   });
+  final String labelKey;
+  final String label;
+  final String value;
 }
 
 class _CompatibilityDifference {
-  final String labelKey;
-  final String label;
-  final String currentText;
-  final String ownerText;
 
   const _CompatibilityDifference({
     required this.labelKey,
@@ -172,12 +163,16 @@ class _CompatibilityDifference {
     required this.currentText,
     required this.ownerText,
   });
+  final String labelKey;
+  final String label;
+  final String currentText;
+  final String ownerText;
 }
 
 class ListingDetailScreen extends StatefulWidget {
-  final int listingId;
 
-  const ListingDetailScreen({super.key, required this.listingId});
+  const ListingDetailScreen({required this.listingId, super.key});
+  final int listingId;
 
   @override
   State<ListingDetailScreen> createState() => _ListingDetailScreenState();
@@ -626,8 +621,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     UserProfile currentProfile,
     UserProfile ownerProfile,
   ) {
-    int total = 0;
-    int matched = 0;
+    var total = 0;
+    var matched = 0;
     final matches = <_CompatibilityMatch>[];
     final differences = <_CompatibilityDifference>[];
 
@@ -878,10 +873,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
   // Helper method to get the appropriate name based on current language
   String _getLocalizedName({
-    String? nameUz,
+    required String language, String? nameUz,
     String? nameRu,
     String? nameEn,
-    required String language,
   }) {
     switch (language) {
       case "uz":
@@ -941,7 +935,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final currentLanguage = LanguageState().currentLanguage;
 
     // Build share text based on current language
-    String shareText = _buildShareText(listingDetail, currentLanguage);
+    final shareText = _buildShareText(listingDetail, currentLanguage);
 
     // Share the text
     Share.share(shareText, subject: _getShareSubject(currentLanguage));
@@ -960,7 +954,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final maxPrice = listingDetail.maxPrice;
 
     // Build location info
-    String locationInfo = "";
+    var locationInfo = "";
     if (listingDetail.location != null) {
       final locationName = _getLocalizedName(
         nameUz: listingDetail.location!.nameUz,
@@ -972,19 +966,17 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
 
     // Build listing type info
-    String typeInfo = "";
-    if (listingDetail.listingType != null) {
-      final typeName = _getLocalizedName(
-        nameUz: listingDetail.listingType!.nameUz,
-        nameRu: listingDetail.listingType!.nameRu,
-        nameEn: listingDetail.listingType!.nameEn,
-        language: language,
-      );
-      typeInfo = "\n🏠 $typeName";
-    }
-
+    var typeInfo = "";
+    final typeName = _getLocalizedName(
+      nameUz: listingDetail.listingType.nameUz,
+      nameRu: listingDetail.listingType.nameRu,
+      nameEn: listingDetail.listingType.nameEn,
+      language: language,
+    );
+    typeInfo = "\n🏠 $typeName";
+  
     // Build subway station info
-    String subwayInfo = "";
+    var subwayInfo = "";
     if (listingDetail.subwayStation != null) {
       final stationName = _getLocalizedName(
         nameUz: listingDetail.subwayStation!.nameUz,
@@ -1063,7 +1055,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
 
   // Helper method to get photos in correct order (primary first)
   List<dynamic> _getOrderedPhotos(List<dynamic> photos) {
-    final List<dynamic> orderedPhotos = List.from(photos);
+    final orderedPhotos = List<dynamic>.from(photos);
 
     // Find the primary photo and move it to the front
     final primaryPhotoIndex = orderedPhotos.indexWhere(
@@ -1143,7 +1135,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     );
   }
 
-  void _navigateToEdit(ListingDetail listingDetail) async {
+  Future<void> _navigateToEdit(ListingDetail listingDetail) async {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder:
@@ -1189,7 +1181,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     ToastTheme.showError(context, message: message);
   }
 
-  void _toggleFeatureListing() async {
+  Future<void> _toggleFeatureListing() async {
     // Get the current listing detail from the bloc state
     final currentState = context.read<ListingDetailBloc>().state;
 
@@ -1225,7 +1217,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     final userId = await SessionManager.getUserId();
     if (userId == null) return true; // Fallback if somehow unauthenticated
     final prefs = await SharedPreferences.getInstance();
-    final key = 'promotion_last_used_$userId';
+    final key = "promotion_last_used_$userId";
     final lastUsedMillis = prefs.getInt(key);
     if (lastUsedMillis == null) return true;
     final lastUsed = DateTime.fromMillisecondsSinceEpoch(lastUsedMillis);
@@ -1238,12 +1230,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     if (userId == null) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(
-      'promotion_last_used_$userId',
+      "promotion_last_used_$userId",
       DateTime.now().millisecondsSinceEpoch,
     );
   }
 
-  void _performToggleFeature(ListingDetail listingDetail) async {
+  Future<void> _performToggleFeature(ListingDetail listingDetail) async {
     try {
       final isPromoting = !ListingUtils.isCurrentlyFeaturedDetail(listingDetail);
       if (isPromoting) {
@@ -1333,7 +1325,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     ToastTheme.showError(context, message: message);
   }
 
-  void _toggleFavorite() async {
+  Future<void> _toggleFavorite() async {
     // Add haptic feedback
     HapticFeedbackUtils.impact();
 
@@ -1413,7 +1405,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     final isAuthenticated = authState.isAuthenticated;
     final menuEnabled = isAuthenticated;
 
-    List<ActionMenuItem> items = [];
+    final items = <ActionMenuItem>[];
 
     if (!isAuthenticated) {
       items.add(
@@ -1539,7 +1531,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     return items;
   }
 
-  void _createComplaint(ListingDetail listingDetail) async {
+  Future<void> _createComplaint(ListingDetail listingDetail) async {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder:
@@ -1575,7 +1567,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     );
   }
 
-  void _startConversation(ListingDetail listingDetail) async {
+  Future<void> _startConversation(ListingDetail listingDetail) async {
     try {
       logger.d("🚀 [Frontend] Starting conversation creation process...");
 
@@ -1723,7 +1715,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         logger.d("🔍 [Frontend] Is DioException 400: $isDioException400");
 
         // Consider it an "already exists" error if we can detect it
-        bool isAlreadyExistsError =
+        final isAlreadyExistsError =
             containsExactMessage ||
             containsPartialMessage ||
             containsGenericMessage ||
@@ -1828,7 +1820,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       if (mounted) Navigator.of(context).pop();
 
       // Show error message with details
-      String errorMessage = LanguageAwareStringHelper.getCurrent(
+      var errorMessage = LanguageAwareStringHelper.getCurrent(
         context,
         "conversation_failed",
       );
@@ -2000,14 +1992,14 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                 selector:
                     (state) => state.map(
                       initial:
-                          (_) => _ListingDetailIconsData(
+                          (_) => const _ListingDetailIconsData(
                             isLoading: true,
                             hasError: false,
                             errorMessage: "",
                             listingDetail: null,
                           ),
                       loading:
-                          (_) => _ListingDetailIconsData(
+                          (_) => const _ListingDetailIconsData(
                             isLoading: true,
                             hasError: false,
                             errorMessage: "",
@@ -2070,14 +2062,14 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           selector:
               (state) => state.map(
                 initial:
-                    (_) => _ListingDetailBodyData(
+                    (_) => const _ListingDetailBodyData(
                       isLoading: true,
                       hasError: false,
                       errorMessage: "",
                       listingDetail: null,
                     ),
                 loading:
-                    (_) => _ListingDetailBodyData(
+                    (_) => const _ListingDetailBodyData(
                       isLoading: true,
                       hasError: false,
                       errorMessage: "",
@@ -2218,7 +2210,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                       TextButton.icon(
                         onPressed: _isToggling
                             ? null
-                            : () => _toggleFeatureListing(),
+                            : _toggleFeatureListing,
                         icon: _isToggling
                             ? SizedBox(
                                 width: 16,
@@ -2451,17 +2443,17 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                       Row(
                         children: [
                           // Listing Type Tag
-                          if (listingDetail.listingType != null) ...[
-                            ListingTypeBadge(
-                              listingTypeCode: listingDetail.listingType.code,
-                              fontSize: 14,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
+                          ...[
+                          ListingTypeBadge(
+                            listingTypeCode: listingDetail.listingType.code,
+                            fontSize: 14,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
                             ),
-                            const SizedBox(width: 12),
-                          ],
+                          ),
+                          const SizedBox(width: 12),
+                        ],
                           // Gender Badge
                           if (listingDetail.gender != null) ...[
                             Container(

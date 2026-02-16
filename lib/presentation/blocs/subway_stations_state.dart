@@ -1,4 +1,4 @@
-part of 'subway_stations_bloc.dart';
+part of "subway_stations_bloc.dart";
 
 @freezed
 class SubwayStationsState with _$SubwayStationsState {

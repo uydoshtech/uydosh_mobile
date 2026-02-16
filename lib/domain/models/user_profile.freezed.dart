@@ -26,44 +26,44 @@ mixin _$UserProfile {
     toJson: NullableIntConverter.convertToJson,
   )
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: "user_id")
   int get userId => throw _privateConstructorUsedError;
   String? get name => throw _privateConstructorUsedError;
   int? get gender => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_verified')
+  @JsonKey(name: "is_verified")
   bool? get isVerified => throw _privateConstructorUsedError;
-  @JsonKey(name: 'region_id')
+  @JsonKey(name: "region_id")
   int? get regionId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'university_id')
+  @JsonKey(name: "university_id")
   int? get universityId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'avatar_url')
+  @JsonKey(name: "avatar_url")
   String? get avatarUrl => throw _privateConstructorUsedError;
   String? get telegram => throw _privateConstructorUsedError;
   double? get rating => throw _privateConstructorUsedError;
-  @JsonKey(name: 'about_me')
+  @JsonKey(name: "about_me")
   String? get aboutMe => throw _privateConstructorUsedError;
   bool? get employed => throw _privateConstructorUsedError;
   int? get cleanliness => throw _privateConstructorUsedError;
-  @JsonKey(name: 'noise_level')
+  @JsonKey(name: "noise_level")
   int? get noiseLevel => throw _privateConstructorUsedError;
   int? get sociability => throw _privateConstructorUsedError;
-  @JsonKey(name: 'guests_allowed')
+  @JsonKey(name: "guests_allowed")
   bool? get guestsAllowed => throw _privateConstructorUsedError;
-  @JsonKey(name: 'smoking_preference')
+  @JsonKey(name: "smoking_preference")
   String? get smokingPreference => throw _privateConstructorUsedError;
-  @JsonKey(name: 'alcohol_preference')
+  @JsonKey(name: "alcohol_preference")
   String? get alcoholPreference => throw _privateConstructorUsedError;
-  @JsonKey(name: 'cooking_habits')
+  @JsonKey(name: "cooking_habits")
   bool? get cookingHabits => throw _privateConstructorUsedError;
-  @JsonKey(name: 'pets_preference')
+  @JsonKey(name: "pets_preference")
   bool? get petsPreference => throw _privateConstructorUsedError;
-  @JsonKey(name: 'wakeup_time')
+  @JsonKey(name: "wakeup_time")
   String? get wakeupTime => throw _privateConstructorUsedError;
-  @JsonKey(name: 'sleep_time')
+  @JsonKey(name: "sleep_time")
   String? get sleepTime => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt => throw _privateConstructorUsedError;
   UserProfileRegion? get region => throw _privateConstructorUsedError;
   UserProfileUniversity? get university => throw _privateConstructorUsedError;
@@ -91,29 +91,29 @@ abstract class $UserProfileCopyWith<$Res> {
       toJson: NullableIntConverter.convertToJson,
     )
     int id,
-    @JsonKey(name: 'user_id') int userId,
+    @JsonKey(name: "user_id") int userId,
     String? name,
     int? gender,
-    @JsonKey(name: 'is_verified') bool? isVerified,
-    @JsonKey(name: 'region_id') int? regionId,
-    @JsonKey(name: 'university_id') int? universityId,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: "is_verified") bool? isVerified,
+    @JsonKey(name: "region_id") int? regionId,
+    @JsonKey(name: "university_id") int? universityId,
+    @JsonKey(name: "avatar_url") String? avatarUrl,
     String? telegram,
     double? rating,
-    @JsonKey(name: 'about_me') String? aboutMe,
+    @JsonKey(name: "about_me") String? aboutMe,
     bool? employed,
     int? cleanliness,
-    @JsonKey(name: 'noise_level') int? noiseLevel,
+    @JsonKey(name: "noise_level") int? noiseLevel,
     int? sociability,
-    @JsonKey(name: 'guests_allowed') bool? guestsAllowed,
-    @JsonKey(name: 'smoking_preference') String? smokingPreference,
-    @JsonKey(name: 'alcohol_preference') String? alcoholPreference,
-    @JsonKey(name: 'cooking_habits') bool? cookingHabits,
-    @JsonKey(name: 'pets_preference') bool? petsPreference,
-    @JsonKey(name: 'wakeup_time') String? wakeupTime,
-    @JsonKey(name: 'sleep_time') String? sleepTime,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    @JsonKey(name: "guests_allowed") bool? guestsAllowed,
+    @JsonKey(name: "smoking_preference") String? smokingPreference,
+    @JsonKey(name: "alcohol_preference") String? alcoholPreference,
+    @JsonKey(name: "cooking_habits") bool? cookingHabits,
+    @JsonKey(name: "pets_preference") bool? petsPreference,
+    @JsonKey(name: "wakeup_time") String? wakeupTime,
+    @JsonKey(name: "sleep_time") String? sleepTime,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
     UserProfileRegion? region,
     UserProfileUniversity? university,
   });
@@ -345,29 +345,29 @@ abstract class _$$UserProfileImplCopyWith<$Res>
       toJson: NullableIntConverter.convertToJson,
     )
     int id,
-    @JsonKey(name: 'user_id') int userId,
+    @JsonKey(name: "user_id") int userId,
     String? name,
     int? gender,
-    @JsonKey(name: 'is_verified') bool? isVerified,
-    @JsonKey(name: 'region_id') int? regionId,
-    @JsonKey(name: 'university_id') int? universityId,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: "is_verified") bool? isVerified,
+    @JsonKey(name: "region_id") int? regionId,
+    @JsonKey(name: "university_id") int? universityId,
+    @JsonKey(name: "avatar_url") String? avatarUrl,
     String? telegram,
     double? rating,
-    @JsonKey(name: 'about_me') String? aboutMe,
+    @JsonKey(name: "about_me") String? aboutMe,
     bool? employed,
     int? cleanliness,
-    @JsonKey(name: 'noise_level') int? noiseLevel,
+    @JsonKey(name: "noise_level") int? noiseLevel,
     int? sociability,
-    @JsonKey(name: 'guests_allowed') bool? guestsAllowed,
-    @JsonKey(name: 'smoking_preference') String? smokingPreference,
-    @JsonKey(name: 'alcohol_preference') String? alcoholPreference,
-    @JsonKey(name: 'cooking_habits') bool? cookingHabits,
-    @JsonKey(name: 'pets_preference') bool? petsPreference,
-    @JsonKey(name: 'wakeup_time') String? wakeupTime,
-    @JsonKey(name: 'sleep_time') String? sleepTime,
-    @JsonKey(name: 'created_at') String? createdAt,
-    @JsonKey(name: 'updated_at') String? updatedAt,
+    @JsonKey(name: "guests_allowed") bool? guestsAllowed,
+    @JsonKey(name: "smoking_preference") String? smokingPreference,
+    @JsonKey(name: "alcohol_preference") String? alcoholPreference,
+    @JsonKey(name: "cooking_habits") bool? cookingHabits,
+    @JsonKey(name: "pets_preference") bool? petsPreference,
+    @JsonKey(name: "wakeup_time") String? wakeupTime,
+    @JsonKey(name: "sleep_time") String? sleepTime,
+    @JsonKey(name: "created_at") String? createdAt,
+    @JsonKey(name: "updated_at") String? updatedAt,
     UserProfileRegion? region,
     UserProfileUniversity? university,
   });
@@ -565,29 +565,29 @@ class _$UserProfileImpl implements _UserProfile {
       toJson: NullableIntConverter.convertToJson,
     )
     required this.id,
-    @JsonKey(name: 'user_id') required this.userId,
+    @JsonKey(name: "user_id") required this.userId,
     this.name,
     this.gender,
-    @JsonKey(name: 'is_verified') this.isVerified,
-    @JsonKey(name: 'region_id') this.regionId,
-    @JsonKey(name: 'university_id') this.universityId,
-    @JsonKey(name: 'avatar_url') this.avatarUrl,
+    @JsonKey(name: "is_verified") this.isVerified,
+    @JsonKey(name: "region_id") this.regionId,
+    @JsonKey(name: "university_id") this.universityId,
+    @JsonKey(name: "avatar_url") this.avatarUrl,
     this.telegram,
     this.rating,
-    @JsonKey(name: 'about_me') this.aboutMe,
+    @JsonKey(name: "about_me") this.aboutMe,
     this.employed,
     this.cleanliness,
-    @JsonKey(name: 'noise_level') this.noiseLevel,
+    @JsonKey(name: "noise_level") this.noiseLevel,
     this.sociability,
-    @JsonKey(name: 'guests_allowed') this.guestsAllowed,
-    @JsonKey(name: 'smoking_preference') this.smokingPreference,
-    @JsonKey(name: 'alcohol_preference') this.alcoholPreference,
-    @JsonKey(name: 'cooking_habits') this.cookingHabits,
-    @JsonKey(name: 'pets_preference') this.petsPreference,
-    @JsonKey(name: 'wakeup_time') this.wakeupTime,
-    @JsonKey(name: 'sleep_time') this.sleepTime,
-    @JsonKey(name: 'created_at') this.createdAt,
-    @JsonKey(name: 'updated_at') this.updatedAt,
+    @JsonKey(name: "guests_allowed") this.guestsAllowed,
+    @JsonKey(name: "smoking_preference") this.smokingPreference,
+    @JsonKey(name: "alcohol_preference") this.alcoholPreference,
+    @JsonKey(name: "cooking_habits") this.cookingHabits,
+    @JsonKey(name: "pets_preference") this.petsPreference,
+    @JsonKey(name: "wakeup_time") this.wakeupTime,
+    @JsonKey(name: "sleep_time") this.sleepTime,
+    @JsonKey(name: "created_at") this.createdAt,
+    @JsonKey(name: "updated_at") this.updatedAt,
     this.region,
     this.university,
   });
@@ -602,66 +602,66 @@ class _$UserProfileImpl implements _UserProfile {
   )
   final int id;
   @override
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: "user_id")
   final int userId;
   @override
   final String? name;
   @override
   final int? gender;
   @override
-  @JsonKey(name: 'is_verified')
+  @JsonKey(name: "is_verified")
   final bool? isVerified;
   @override
-  @JsonKey(name: 'region_id')
+  @JsonKey(name: "region_id")
   final int? regionId;
   @override
-  @JsonKey(name: 'university_id')
+  @JsonKey(name: "university_id")
   final int? universityId;
   @override
-  @JsonKey(name: 'avatar_url')
+  @JsonKey(name: "avatar_url")
   final String? avatarUrl;
   @override
   final String? telegram;
   @override
   final double? rating;
   @override
-  @JsonKey(name: 'about_me')
+  @JsonKey(name: "about_me")
   final String? aboutMe;
   @override
   final bool? employed;
   @override
   final int? cleanliness;
   @override
-  @JsonKey(name: 'noise_level')
+  @JsonKey(name: "noise_level")
   final int? noiseLevel;
   @override
   final int? sociability;
   @override
-  @JsonKey(name: 'guests_allowed')
+  @JsonKey(name: "guests_allowed")
   final bool? guestsAllowed;
   @override
-  @JsonKey(name: 'smoking_preference')
+  @JsonKey(name: "smoking_preference")
   final String? smokingPreference;
   @override
-  @JsonKey(name: 'alcohol_preference')
+  @JsonKey(name: "alcohol_preference")
   final String? alcoholPreference;
   @override
-  @JsonKey(name: 'cooking_habits')
+  @JsonKey(name: "cooking_habits")
   final bool? cookingHabits;
   @override
-  @JsonKey(name: 'pets_preference')
+  @JsonKey(name: "pets_preference")
   final bool? petsPreference;
   @override
-  @JsonKey(name: 'wakeup_time')
+  @JsonKey(name: "wakeup_time")
   final String? wakeupTime;
   @override
-  @JsonKey(name: 'sleep_time')
+  @JsonKey(name: "sleep_time")
   final String? sleepTime;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   final String? createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   final String? updatedAt;
   @override
   final UserProfileRegion? region;
@@ -778,29 +778,29 @@ abstract class _UserProfile implements UserProfile {
       toJson: NullableIntConverter.convertToJson,
     )
     required final int id,
-    @JsonKey(name: 'user_id') required final int userId,
+    @JsonKey(name: "user_id") required final int userId,
     final String? name,
     final int? gender,
-    @JsonKey(name: 'is_verified') final bool? isVerified,
-    @JsonKey(name: 'region_id') final int? regionId,
-    @JsonKey(name: 'university_id') final int? universityId,
-    @JsonKey(name: 'avatar_url') final String? avatarUrl,
+    @JsonKey(name: "is_verified") final bool? isVerified,
+    @JsonKey(name: "region_id") final int? regionId,
+    @JsonKey(name: "university_id") final int? universityId,
+    @JsonKey(name: "avatar_url") final String? avatarUrl,
     final String? telegram,
     final double? rating,
-    @JsonKey(name: 'about_me') final String? aboutMe,
+    @JsonKey(name: "about_me") final String? aboutMe,
     final bool? employed,
     final int? cleanliness,
-    @JsonKey(name: 'noise_level') final int? noiseLevel,
+    @JsonKey(name: "noise_level") final int? noiseLevel,
     final int? sociability,
-    @JsonKey(name: 'guests_allowed') final bool? guestsAllowed,
-    @JsonKey(name: 'smoking_preference') final String? smokingPreference,
-    @JsonKey(name: 'alcohol_preference') final String? alcoholPreference,
-    @JsonKey(name: 'cooking_habits') final bool? cookingHabits,
-    @JsonKey(name: 'pets_preference') final bool? petsPreference,
-    @JsonKey(name: 'wakeup_time') final String? wakeupTime,
-    @JsonKey(name: 'sleep_time') final String? sleepTime,
-    @JsonKey(name: 'created_at') final String? createdAt,
-    @JsonKey(name: 'updated_at') final String? updatedAt,
+    @JsonKey(name: "guests_allowed") final bool? guestsAllowed,
+    @JsonKey(name: "smoking_preference") final String? smokingPreference,
+    @JsonKey(name: "alcohol_preference") final String? alcoholPreference,
+    @JsonKey(name: "cooking_habits") final bool? cookingHabits,
+    @JsonKey(name: "pets_preference") final bool? petsPreference,
+    @JsonKey(name: "wakeup_time") final String? wakeupTime,
+    @JsonKey(name: "sleep_time") final String? sleepTime,
+    @JsonKey(name: "created_at") final String? createdAt,
+    @JsonKey(name: "updated_at") final String? updatedAt,
     final UserProfileRegion? region,
     final UserProfileUniversity? university,
   }) = _$UserProfileImpl;
@@ -815,66 +815,66 @@ abstract class _UserProfile implements UserProfile {
   )
   int get id;
   @override
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: "user_id")
   int get userId;
   @override
   String? get name;
   @override
   int? get gender;
   @override
-  @JsonKey(name: 'is_verified')
+  @JsonKey(name: "is_verified")
   bool? get isVerified;
   @override
-  @JsonKey(name: 'region_id')
+  @JsonKey(name: "region_id")
   int? get regionId;
   @override
-  @JsonKey(name: 'university_id')
+  @JsonKey(name: "university_id")
   int? get universityId;
   @override
-  @JsonKey(name: 'avatar_url')
+  @JsonKey(name: "avatar_url")
   String? get avatarUrl;
   @override
   String? get telegram;
   @override
   double? get rating;
   @override
-  @JsonKey(name: 'about_me')
+  @JsonKey(name: "about_me")
   String? get aboutMe;
   @override
   bool? get employed;
   @override
   int? get cleanliness;
   @override
-  @JsonKey(name: 'noise_level')
+  @JsonKey(name: "noise_level")
   int? get noiseLevel;
   @override
   int? get sociability;
   @override
-  @JsonKey(name: 'guests_allowed')
+  @JsonKey(name: "guests_allowed")
   bool? get guestsAllowed;
   @override
-  @JsonKey(name: 'smoking_preference')
+  @JsonKey(name: "smoking_preference")
   String? get smokingPreference;
   @override
-  @JsonKey(name: 'alcohol_preference')
+  @JsonKey(name: "alcohol_preference")
   String? get alcoholPreference;
   @override
-  @JsonKey(name: 'cooking_habits')
+  @JsonKey(name: "cooking_habits")
   bool? get cookingHabits;
   @override
-  @JsonKey(name: 'pets_preference')
+  @JsonKey(name: "pets_preference")
   bool? get petsPreference;
   @override
-  @JsonKey(name: 'wakeup_time')
+  @JsonKey(name: "wakeup_time")
   String? get wakeupTime;
   @override
-  @JsonKey(name: 'sleep_time')
+  @JsonKey(name: "sleep_time")
   String? get sleepTime;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: "created_at")
   String? get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: "updated_at")
   String? get updatedAt;
   @override
   UserProfileRegion? get region;
@@ -900,17 +900,17 @@ mixin _$UserProfileRegion {
     toJson: NullableIntConverter.convertToJson,
   )
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String? get nameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String? get nameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String? get nameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String? get shortNameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String? get shortNameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String? get shortNameEn => throw _privateConstructorUsedError;
 
   /// Serializes this UserProfileRegion to a JSON map.
@@ -936,12 +936,12 @@ abstract class $UserProfileRegionCopyWith<$Res> {
       toJson: NullableIntConverter.convertToJson,
     )
     int id,
-    @JsonKey(name: 'name_uz') String? nameUz,
-    @JsonKey(name: 'name_ru') String? nameRu,
-    @JsonKey(name: 'name_en') String? nameEn,
-    @JsonKey(name: 'short_name_uz') String? shortNameUz,
-    @JsonKey(name: 'short_name_ru') String? shortNameRu,
-    @JsonKey(name: 'short_name_en') String? shortNameEn,
+    @JsonKey(name: "name_uz") String? nameUz,
+    @JsonKey(name: "name_ru") String? nameRu,
+    @JsonKey(name: "name_en") String? nameEn,
+    @JsonKey(name: "short_name_uz") String? shortNameUz,
+    @JsonKey(name: "short_name_ru") String? shortNameRu,
+    @JsonKey(name: "short_name_en") String? shortNameEn,
   });
 }
 
@@ -1026,12 +1026,12 @@ abstract class _$$UserProfileRegionImplCopyWith<$Res>
       toJson: NullableIntConverter.convertToJson,
     )
     int id,
-    @JsonKey(name: 'name_uz') String? nameUz,
-    @JsonKey(name: 'name_ru') String? nameRu,
-    @JsonKey(name: 'name_en') String? nameEn,
-    @JsonKey(name: 'short_name_uz') String? shortNameUz,
-    @JsonKey(name: 'short_name_ru') String? shortNameRu,
-    @JsonKey(name: 'short_name_en') String? shortNameEn,
+    @JsonKey(name: "name_uz") String? nameUz,
+    @JsonKey(name: "name_ru") String? nameRu,
+    @JsonKey(name: "name_en") String? nameEn,
+    @JsonKey(name: "short_name_uz") String? shortNameUz,
+    @JsonKey(name: "short_name_ru") String? shortNameRu,
+    @JsonKey(name: "short_name_en") String? shortNameEn,
   });
 }
 
@@ -1108,12 +1108,12 @@ class _$UserProfileRegionImpl implements _UserProfileRegion {
       toJson: NullableIntConverter.convertToJson,
     )
     required this.id,
-    @JsonKey(name: 'name_uz') this.nameUz,
-    @JsonKey(name: 'name_ru') this.nameRu,
-    @JsonKey(name: 'name_en') this.nameEn,
-    @JsonKey(name: 'short_name_uz') this.shortNameUz,
-    @JsonKey(name: 'short_name_ru') this.shortNameRu,
-    @JsonKey(name: 'short_name_en') this.shortNameEn,
+    @JsonKey(name: "name_uz") this.nameUz,
+    @JsonKey(name: "name_ru") this.nameRu,
+    @JsonKey(name: "name_en") this.nameEn,
+    @JsonKey(name: "short_name_uz") this.shortNameUz,
+    @JsonKey(name: "short_name_ru") this.shortNameRu,
+    @JsonKey(name: "short_name_en") this.shortNameEn,
   });
 
   factory _$UserProfileRegionImpl.fromJson(Map<String, dynamic> json) =>
@@ -1126,22 +1126,22 @@ class _$UserProfileRegionImpl implements _UserProfileRegion {
   )
   final int id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   final String? nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   final String? nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   final String? nameEn;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   final String? shortNameUz;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   final String? shortNameRu;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   final String? shortNameEn;
 
   @override
@@ -1203,12 +1203,12 @@ abstract class _UserProfileRegion implements UserProfileRegion {
       toJson: NullableIntConverter.convertToJson,
     )
     required final int id,
-    @JsonKey(name: 'name_uz') final String? nameUz,
-    @JsonKey(name: 'name_ru') final String? nameRu,
-    @JsonKey(name: 'name_en') final String? nameEn,
-    @JsonKey(name: 'short_name_uz') final String? shortNameUz,
-    @JsonKey(name: 'short_name_ru') final String? shortNameRu,
-    @JsonKey(name: 'short_name_en') final String? shortNameEn,
+    @JsonKey(name: "name_uz") final String? nameUz,
+    @JsonKey(name: "name_ru") final String? nameRu,
+    @JsonKey(name: "name_en") final String? nameEn,
+    @JsonKey(name: "short_name_uz") final String? shortNameUz,
+    @JsonKey(name: "short_name_ru") final String? shortNameRu,
+    @JsonKey(name: "short_name_en") final String? shortNameEn,
   }) = _$UserProfileRegionImpl;
 
   factory _UserProfileRegion.fromJson(Map<String, dynamic> json) =
@@ -1221,22 +1221,22 @@ abstract class _UserProfileRegion implements UserProfileRegion {
   )
   int get id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String? get nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String? get nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String? get nameEn;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String? get shortNameUz;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String? get shortNameRu;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String? get shortNameEn;
 
   /// Create a copy of UserProfileRegion
@@ -1260,17 +1260,17 @@ mixin _$UserProfileUniversity {
     toJson: NullableIntConverter.convertToJson,
   )
   int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String? get nameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String? get nameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String? get nameEn => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String? get shortNameUz => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String? get shortNameRu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String? get shortNameEn => throw _privateConstructorUsedError;
   String? get address => throw _privateConstructorUsedError;
   String? get website => throw _privateConstructorUsedError;
@@ -1298,12 +1298,12 @@ abstract class $UserProfileUniversityCopyWith<$Res> {
       toJson: NullableIntConverter.convertToJson,
     )
     int id,
-    @JsonKey(name: 'name_uz') String? nameUz,
-    @JsonKey(name: 'name_ru') String? nameRu,
-    @JsonKey(name: 'name_en') String? nameEn,
-    @JsonKey(name: 'short_name_uz') String? shortNameUz,
-    @JsonKey(name: 'short_name_ru') String? shortNameRu,
-    @JsonKey(name: 'short_name_en') String? shortNameEn,
+    @JsonKey(name: "name_uz") String? nameUz,
+    @JsonKey(name: "name_ru") String? nameRu,
+    @JsonKey(name: "name_en") String? nameEn,
+    @JsonKey(name: "short_name_uz") String? shortNameUz,
+    @JsonKey(name: "short_name_ru") String? shortNameRu,
+    @JsonKey(name: "short_name_en") String? shortNameEn,
     String? address,
     String? website,
   });
@@ -1405,12 +1405,12 @@ abstract class _$$UserProfileUniversityImplCopyWith<$Res>
       toJson: NullableIntConverter.convertToJson,
     )
     int id,
-    @JsonKey(name: 'name_uz') String? nameUz,
-    @JsonKey(name: 'name_ru') String? nameRu,
-    @JsonKey(name: 'name_en') String? nameEn,
-    @JsonKey(name: 'short_name_uz') String? shortNameUz,
-    @JsonKey(name: 'short_name_ru') String? shortNameRu,
-    @JsonKey(name: 'short_name_en') String? shortNameEn,
+    @JsonKey(name: "name_uz") String? nameUz,
+    @JsonKey(name: "name_ru") String? nameRu,
+    @JsonKey(name: "name_en") String? nameEn,
+    @JsonKey(name: "short_name_uz") String? shortNameUz,
+    @JsonKey(name: "short_name_ru") String? shortNameRu,
+    @JsonKey(name: "short_name_en") String? shortNameEn,
     String? address,
     String? website,
   });
@@ -1502,12 +1502,12 @@ class _$UserProfileUniversityImpl implements _UserProfileUniversity {
       toJson: NullableIntConverter.convertToJson,
     )
     required this.id,
-    @JsonKey(name: 'name_uz') this.nameUz,
-    @JsonKey(name: 'name_ru') this.nameRu,
-    @JsonKey(name: 'name_en') this.nameEn,
-    @JsonKey(name: 'short_name_uz') this.shortNameUz,
-    @JsonKey(name: 'short_name_ru') this.shortNameRu,
-    @JsonKey(name: 'short_name_en') this.shortNameEn,
+    @JsonKey(name: "name_uz") this.nameUz,
+    @JsonKey(name: "name_ru") this.nameRu,
+    @JsonKey(name: "name_en") this.nameEn,
+    @JsonKey(name: "short_name_uz") this.shortNameUz,
+    @JsonKey(name: "short_name_ru") this.shortNameRu,
+    @JsonKey(name: "short_name_en") this.shortNameEn,
     this.address,
     this.website,
   });
@@ -1522,22 +1522,22 @@ class _$UserProfileUniversityImpl implements _UserProfileUniversity {
   )
   final int id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   final String? nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   final String? nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   final String? nameEn;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   final String? shortNameUz;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   final String? shortNameRu;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   final String? shortNameEn;
   @override
   final String? address;
@@ -1608,12 +1608,12 @@ abstract class _UserProfileUniversity implements UserProfileUniversity {
       toJson: NullableIntConverter.convertToJson,
     )
     required final int id,
-    @JsonKey(name: 'name_uz') final String? nameUz,
-    @JsonKey(name: 'name_ru') final String? nameRu,
-    @JsonKey(name: 'name_en') final String? nameEn,
-    @JsonKey(name: 'short_name_uz') final String? shortNameUz,
-    @JsonKey(name: 'short_name_ru') final String? shortNameRu,
-    @JsonKey(name: 'short_name_en') final String? shortNameEn,
+    @JsonKey(name: "name_uz") final String? nameUz,
+    @JsonKey(name: "name_ru") final String? nameRu,
+    @JsonKey(name: "name_en") final String? nameEn,
+    @JsonKey(name: "short_name_uz") final String? shortNameUz,
+    @JsonKey(name: "short_name_ru") final String? shortNameRu,
+    @JsonKey(name: "short_name_en") final String? shortNameEn,
     final String? address,
     final String? website,
   }) = _$UserProfileUniversityImpl;
@@ -1628,22 +1628,22 @@ abstract class _UserProfileUniversity implements UserProfileUniversity {
   )
   int get id;
   @override
-  @JsonKey(name: 'name_uz')
+  @JsonKey(name: "name_uz")
   String? get nameUz;
   @override
-  @JsonKey(name: 'name_ru')
+  @JsonKey(name: "name_ru")
   String? get nameRu;
   @override
-  @JsonKey(name: 'name_en')
+  @JsonKey(name: "name_en")
   String? get nameEn;
   @override
-  @JsonKey(name: 'short_name_uz')
+  @JsonKey(name: "short_name_uz")
   String? get shortNameUz;
   @override
-  @JsonKey(name: 'short_name_ru')
+  @JsonKey(name: "short_name_ru")
   String? get shortNameRu;
   @override
-  @JsonKey(name: 'short_name_en')
+  @JsonKey(name: "short_name_en")
   String? get shortNameEn;
   @override
   String? get address;
