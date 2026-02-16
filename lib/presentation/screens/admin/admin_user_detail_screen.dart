@@ -125,7 +125,11 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             if (blocked) ...[
               Row(
                 children: [
-                  Icon(Icons.block, color: Theme.of(context).colorScheme.error, size: 20),
+                  Icon(
+                    Icons.block,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 24,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     LanguageAwareStringHelper.getCurrent(
@@ -133,8 +137,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                       "admin_user_detail_blocked",
                     ),
                     style: TextStyle(
+                      fontSize: 16,
                       color: Theme.of(context).colorScheme.error,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

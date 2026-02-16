@@ -444,22 +444,21 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                         padding: const EdgeInsets.only(top: 4),
                         child: Row(
                           children: [
-                            Text(
-                              "${LanguageAwareStringHelper.getCurrent(context, "admin_user_detail_block_title")}: ",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.error,
-                              ),
+                            Icon(
+                              Icons.block,
+                              color: Theme.of(context).colorScheme.error,
+                              size: 16,
                             ),
-                            Tooltip(
-                              message: LanguageAwareStringHelper.getCurrent(
+                            const SizedBox(width: 6),
+                            Text(
+                              LanguageAwareStringHelper.getCurrent(
                                 context,
                                 "admin_user_detail_blocked",
                               ),
-                              child: Icon(
-                                Icons.block,
+                              style: TextStyle(
+                                fontSize: 12,
                                 color: Theme.of(context).colorScheme.error,
-                                size: 16,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
