@@ -14,6 +14,7 @@ CreateProfileRequest _$CreateProfileRequestFromJson(
   gender: (json['gender'] as num).toInt(),
   universityId: (json['universityId'] as num?)?.toInt(),
   regionId: (json['regionId'] as num?)?.toInt(),
+  role: json['role'] as String?,
 );
 
 Map<String, dynamic> _$CreateProfileRequestToJson(
@@ -24,4 +25,5 @@ Map<String, dynamic> _$CreateProfileRequestToJson(
   'gender': instance.gender,
   'universityId': instance.universityId,
   'regionId': instance.regionId,
+  'role': instance.role,
 };

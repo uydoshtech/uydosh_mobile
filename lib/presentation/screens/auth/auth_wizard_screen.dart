@@ -57,6 +57,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   final TextEditingController _nameController = TextEditingController();
   int? _selectedGender;
   bool? _isStudent = false; // Initialize to false instead of null
+  String? _selectedRole; // "tenant" or "landlord"
   String _selectedLanguage = "uz"; // Default to Uzbek
 
   // University selection
@@ -687,10 +688,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   Future<void> _completeProfile() async {
-    // Profile setup - require name, gender, region, student status, and university if student
+    // Profile setup - require name, gender, region, role, student status, and university if student
     if (_nameController.text.trim().isEmpty ||
         _selectedGender == null ||
         _selectedRegionId == null ||
+        _selectedRole == null ||
         _isStudent == null) {
       ToastTheme.showWarning(
         context,
@@ -878,6 +880,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         gender: _selectedGender!,
         universityId: _isStudent! ? _selectedUniversity!.id : null,
         regionId: _selectedRegionId,
+        role: _selectedRole,
       );
 
       // CRITICAL: Verify the request object has the correct data
@@ -992,6 +995,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
 
       if (mounted) {
+        // Store user role in session for immediate use
+        if (_selectedRole != null) {
+          await SessionManager.storeUserRole(_selectedRole);
+        }
+
         // Show success message
         ToastTheme.showSuccess(
           context,
@@ -1031,7 +1039,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       listenable: ThemeState(),
       builder: (context, child) {
         return Scaffold(
-          backgroundColor: _getOnboardingBackgroundColor(),
+          backgroundColor: colorScheme.surface,
           body: SafeArea(
             child: Column(
               children: [
@@ -1046,7 +1054,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       IconButton(
                         icon: Icon(
                           Icons.close,
-                          color: _getOnboardingTextColor(),
+                          color: _getOnboardingTextColor(context),
                         ),
                         tooltip: LanguageAwareStringHelper.getCurrent(
                           context,
@@ -1067,7 +1075,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: _getOnboardingTextColor(),
+                          color: _getOnboardingTextColor(context),
                         ),
                       ),
                       const Spacer(),
@@ -1078,8 +1086,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           "switch_theme",
                         ),
                         child: ThemeToggleSunMoon(
-                          iconColor: _getOnboardingTextColor(),
-                          size: 45,
+                          iconColor: _getOnboardingTextColor(context),
+                          size: 36,
                         ),
                       ),
                     ],
@@ -1098,10 +1106,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           decoration: BoxDecoration(
                             color:
                                 index <= _currentPage
-                                    ? _getOnboardingTextColor()
-                                    : _getOnboardingTextColor().withOpacity(
-                                      0.3,
-                                    ),
+                                    ? _getOnboardingTextColor(context)
+                                    : _getOnboardingTextColor(context).withValues(
+                                        alpha: 0.3,
+                                      ),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -1229,7 +1237,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: _getOnboardingTextColor(),
+                color: _getOnboardingTextColor(context),
               ),
             ),
             const SizedBox(height: 40),
@@ -1286,7 +1294,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 fontSize: 32,
                 color:
                     isSelected
-                        ? _getOnboardingTextColor()
+                        ? _getOnboardingTextColor(context)
                         : _getUnselectedButtonTextColor(),
               ),
             ),
@@ -1302,7 +1310,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       fontWeight: FontWeight.bold,
                       color:
                           isSelected
-                              ? _getOnboardingTextColor()
+                              ? _getOnboardingTextColor(context)
                               : _getUnselectedButtonTextColor(),
                     ),
                   ),
@@ -1312,7 +1320,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       fontSize: 14,
                       color:
                           isSelected
-                              ? _getOnboardingTextSecondaryColor()
+                              ? _getOnboardingTextSecondaryColor(context)
                               : _getUnselectedButtonTextColor().withOpacity(
                                 0.7,
                               ),
@@ -1324,7 +1332,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             if (isSelected)
               Icon(
                 Icons.check_circle,
-                color: _getOnboardingTextColor(),
+                color: _getOnboardingTextColor(context),
                 size: 28,
               ),
           ],
@@ -1345,7 +1353,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: _getOnboardingTextColor(),
+              color: _getOnboardingTextColor(context),
             ),
           ),
           const SizedBox(height: 16),
@@ -1354,7 +1362,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             context,
             style: TextStyle(
               fontSize: 16,
-              color: _getOnboardingTextSecondaryColor(),
+              color: _getOnboardingTextSecondaryColor(context),
             ),
           ),
           const SizedBox(height: 40),
@@ -1391,7 +1399,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: _getOnboardingTextColor().withOpacity(0.1),
+                  color: _getOnboardingTextColor(context).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -1409,13 +1417,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   (context, url) => Icon(
                                     Icons.person,
                                     size: 30,
-                                    color: _getOnboardingTextColor(),
+                                    color: _getOnboardingTextColor(context),
                                   ),
                               errorWidget:
                                   (context, url, error) => Icon(
                                     Icons.person,
                                     size: 30,
-                                    color: _getOnboardingTextColor(),
+                                    color: _getOnboardingTextColor(context),
                                   ),
                             ),
                           )
@@ -1424,7 +1432,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             child: Icon(
                               Icons.person,
                               size: 30,
-                              color: _getOnboardingTextColor(),
+                              color: _getOnboardingTextColor(context),
                             ),
                           ),
                     const SizedBox(width: 16),
@@ -1435,7 +1443,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           Text(
                             _currentUser!.displayName ?? "User",
                             style: TextStyle(
-                              color: _getOnboardingTextColor(),
+                              color: _getOnboardingTextColor(context),
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1443,7 +1451,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           Text(
                             _currentUser!.email ?? "",
                             style: TextStyle(
-                              color: _getOnboardingTextSecondaryColor(),
+                              color: _getOnboardingTextSecondaryColor(context),
                               fontSize: 14,
                             ),
                           ),
@@ -1464,7 +1472,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             CenteredHouseLoadingIndicator(
               text: LanguageAwareStringHelper.getCurrent(context, "signing_in"),
               textStyle: TextStyle(
-                color: _getOnboardingTextSecondaryColor(),
+                color: _getOnboardingTextSecondaryColor(context),
                 fontSize: 16,
               ),
             ),
@@ -1488,7 +1496,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: _getOnboardingTextColor(),
+                color: _getOnboardingTextColor(context),
               ),
             ),
             const SizedBox(height: 32),
@@ -1500,13 +1508,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(),
+                color: _getOnboardingTextColor(context),
               ),
             ),
             const SizedBox(height: 16),
             Container(
               decoration: BoxDecoration(
-                color: _getOnboardingCardColor(),
+                color: _getOnboardingCardColor(context),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TextField(
@@ -1522,7 +1530,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     "full_name_hint",
                   ),
                   hintStyle: TextStyle(
-                    color: _getOnboardingTextSecondaryColor().withOpacity(0.6),
+                    color: _getOnboardingTextSecondaryColor(context).withOpacity(0.6),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -1548,7 +1556,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   contentPadding: const EdgeInsets.all(16),
                   prefixIcon: Icon(
                     Icons.person,
-                    color: _getOnboardingTextSecondaryColor(),
+                    color: _getOnboardingTextSecondaryColor(context),
                   ),
                 ),
               ),
@@ -1563,7 +1571,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(),
+                color: _getOnboardingTextColor(context),
               ),
             ),
             const SizedBox(height: 16),
@@ -1596,7 +1604,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(),
+                color: _getOnboardingTextColor(context),
               ),
             ),
             const SizedBox(height: 16),
@@ -1604,7 +1612,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: _getOnboardingTextColor().withOpacity(0.1),
+                  color: _getOnboardingTextColor(context).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: CenteredHouseLoadingIndicator(
@@ -1613,7 +1621,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     "loading_regions",
                   ),
                   textStyle: TextStyle(
-                    color: _getOnboardingTextColor(),
+                    color: _getOnboardingTextColor(context),
                     fontSize: 16,
                   ),
                   size: 20,
@@ -1625,7 +1633,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: _getOnboardingTextColor().withOpacity(0.1),
+                  color: _getOnboardingTextColor(context).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -1634,12 +1642,45 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     "no_regions_available",
                   ),
                   style: TextStyle(
-                    color: _getOnboardingTextSecondaryColor(),
+                    color: _getOnboardingTextSecondaryColor(context),
                     fontSize: 16,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
+
+            const SizedBox(height: 32),
+
+            // Role selection (landlord or renter)
+            LanguageAwareStringHelper.getText(
+              "are_you_landlord_or_renter",
+              context,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: _getOnboardingTextColor(context),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Flexible(
+                  child: _buildRoleOption(
+                    "landlord",
+                    LanguageAwareStringHelper.getCurrent(context, "role_landlord"),
+                    Icons.home_work,
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Flexible(
+                  child: _buildRoleOption(
+                    "tenant",
+                    LanguageAwareStringHelper.getCurrent(context, "role_tenant"),
+                    Icons.key,
+                  ),
+                ),
+              ],
+            ),
 
             const SizedBox(height: 32),
 
@@ -1650,7 +1691,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(),
+                color: _getOnboardingTextColor(context),
               ),
             ),
             const SizedBox(height: 16),
@@ -1685,7 +1726,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: _getOnboardingTextColor().withOpacity(0.1),
+                    color: _getOnboardingTextColor(context).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: CenteredHouseLoadingIndicator(
@@ -1694,7 +1735,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       "loading_universities",
                     ),
                     textStyle: TextStyle(
-                      color: _getOnboardingTextColor(),
+                      color: _getOnboardingTextColor(context),
                       fontSize: 16,
                     ),
                     size: 20,
@@ -1706,7 +1747,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: _getOnboardingTextColor().withOpacity(0.1),
+                    color: _getOnboardingTextColor(context).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -1715,7 +1756,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       "no_universities_available",
                     ),
                     style: TextStyle(
-                      color: _getOnboardingTextSecondaryColor(),
+                      color: _getOnboardingTextSecondaryColor(context),
                       fontSize: 16,
                     ),
                     textAlign: TextAlign.center,
@@ -1744,7 +1785,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           color:
               isSelected
                   ? _getSelectedButtonBackgroundColor()
-                  : _getOnboardingTextColor().withOpacity(0.1),
+                  : _getOnboardingTextColor(context).withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color:
@@ -1761,7 +1802,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 color:
                     isSelected
                         ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextColor(),
+                        : _getOnboardingTextColor(context),
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
@@ -1773,7 +1814,59 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               color:
                   isSelected
                       ? _getSelectedButtonTextColor()
-                      : _getOnboardingTextColor(),
+                      : _getOnboardingTextColor(context),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleOption(String role, String label, IconData icon) {
+    final isSelected = _selectedRole == role;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedRole = role;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color:
+              isSelected
+                  ? _getSelectedButtonBackgroundColor()
+                  : _getOnboardingTextColor(context).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color:
+                isSelected ? _getSelectedButtonTextColor() : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color:
+                    isSelected
+                        ? _getSelectedButtonTextColor()
+                        : _getOnboardingTextColor(context),
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.left,
+            ),
+            const SizedBox(width: 12),
+            Icon(
+              icon,
+              color:
+                  isSelected
+                      ? _getSelectedButtonTextColor()
+                      : _getOnboardingTextColor(context),
               size: 20,
             ),
           ],
@@ -1788,7 +1881,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         color:
             _selectedRegionId != null
                 ? _getSelectedButtonBackgroundColor()
-                : _getOnboardingCardColor(),
+                : _getOnboardingCardColor(context),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color:
@@ -1810,7 +1903,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 color:
                     _selectedRegionId != null
                         ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextSecondaryColor(),
+                        : _getOnboardingTextSecondaryColor(context),
                 size: 24,
               ),
               const SizedBox(width: 20),
@@ -1851,7 +1944,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           "tap_to_select_region",
                         ),
                         style: TextStyle(
-                          color: _getOnboardingTextSecondaryColor(),
+                          color: _getOnboardingTextSecondaryColor(context),
                           fontSize: 16,
                           fontWeight: FontWeight.normal,
                           height: 1.2,
@@ -1870,7 +1963,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 color:
                     _selectedRegionId != null
                         ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextSecondaryColor(),
+                        : _getOnboardingTextSecondaryColor(context),
                 size: 24,
               ),
             ],
@@ -1902,11 +1995,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => _buildRegionPicker(),
+      builder: (sheetContext) => _buildRegionPicker(sheetContext),
     );
   }
 
-  Widget _buildRegionPicker() {
+  Widget _buildRegionPicker(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: _getBottomSheetBackgroundColor(),
@@ -1921,7 +2014,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: _getBottomSheetHandleColor(),
+              color: _getBottomSheetHandleColor(context),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -2073,7 +2166,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           color:
               isSelected
                   ? _getSelectedButtonBackgroundColor()
-                  : _getOnboardingTextColor().withOpacity(0.1),
+                  : _getOnboardingTextColor(context).withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color:
@@ -2090,7 +2183,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 color:
                     isSelected
                         ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextColor(),
+                        : _getOnboardingTextColor(context),
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
@@ -2102,7 +2195,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               color:
                   isSelected
                       ? _getSelectedButtonTextColor()
-                      : _getOnboardingTextColor(),
+                      : _getOnboardingTextColor(context),
               size: 20,
             ),
           ],
@@ -2117,7 +2210,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         color:
             _selectedUniversity != null
                 ? _getSelectedButtonBackgroundColor()
-                : _getOnboardingCardColor(),
+                : _getOnboardingCardColor(context),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color:
@@ -2139,7 +2232,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 color:
                     _selectedUniversity != null
                         ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextSecondaryColor(),
+                        : _getOnboardingTextSecondaryColor(context),
                 size: 24,
               ),
               const SizedBox(width: 20),
@@ -2176,7 +2269,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           "tap_to_select_university",
                         ),
                         style: TextStyle(
-                          color: _getOnboardingTextSecondaryColor(),
+                          color: _getOnboardingTextSecondaryColor(context),
                           fontSize: 16,
                           fontWeight: FontWeight.normal,
                           height: 1.2,
@@ -2195,7 +2288,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 color:
                     _selectedUniversity != null
                         ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextSecondaryColor(),
+                        : _getOnboardingTextSecondaryColor(context),
                 size: 24,
               ),
             ],
@@ -2229,11 +2322,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => _buildUniversityPicker(),
+      builder: (sheetContext) => _buildUniversityPicker(sheetContext),
     );
   }
 
-  Widget _buildUniversityPicker() {
+  Widget _buildUniversityPicker(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: _getBottomSheetBackgroundColor(),
@@ -2248,7 +2341,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: _getBottomSheetHandleColor(),
+              color: _getBottomSheetHandleColor(context),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -2429,39 +2522,17 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
   }
 
-  /// Get theme-aware onboarding text color
-  Color _getOnboardingTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.onboardingText;
-    } else if (ThemeState().isLightTheme) {
-      return LightThemeColors.onboardingText;
-    } else {
-      // Purple theme (default) - ensure white text for proper contrast
-      return Colors.white;
-    }
-  }
+  /// Get theme-aware onboarding text color (uses theme from MaterialApp)
+  Color _getOnboardingTextColor(BuildContext context) =>
+      Theme.of(context).colorScheme.onSurface;
 
-  /// Get theme-aware onboarding secondary text color
-  Color _getOnboardingTextSecondaryColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.onboardingTextSecondary;
-    } else if (ThemeState().isLightTheme) {
-      return LightThemeColors.onboardingTextSecondary;
-    } else {
-      return AppColors.onboardingTextSecondary;
-    }
-  }
+  /// Get theme-aware onboarding secondary text color (uses theme from MaterialApp)
+  Color _getOnboardingTextSecondaryColor(BuildContext context) =>
+      Theme.of(context).colorScheme.onSurfaceVariant;
 
-  /// Get theme-aware onboarding card color
-  Color _getOnboardingCardColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.onboardingCard;
-    } else if (ThemeState().isLightTheme) {
-      return LightThemeColors.onboardingCard;
-    } else {
-      return AppColors.onboardingCard;
-    }
-  }
+  /// Get theme-aware onboarding card color (uses theme from MaterialApp)
+  Color _getOnboardingCardColor(BuildContext context) =>
+      Theme.of(context).colorScheme.surfaceVariant;
 
   /// Get theme-aware success color
   Color _getSuccessColor() {
@@ -2556,15 +2627,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   /// Get theme-aware bottom sheet handle bar color
-  Color _getBottomSheetHandleColor() {
+  Color _getBottomSheetHandleColor(BuildContext context) {
     if (ThemeState().isBlueTheme) {
       return Colors
           .grey
           .shade400; // Light grey handle on white background for blue theme
     } else if (ThemeState().isLightTheme) {
-      return _getOnboardingTextSecondaryColor().withOpacity(0.3);
+      return _getOnboardingTextSecondaryColor(context).withValues(alpha: 0.3);
     } else {
-      return _getOnboardingTextSecondaryColor().withOpacity(0.3);
+      return _getOnboardingTextSecondaryColor(context).withValues(alpha: 0.3);
     }
   }
 

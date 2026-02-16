@@ -6,6 +6,7 @@ import 'package:uy_dosh/base/api/client/json_encodable.dart';
 import 'package:uy_dosh/base/services/session_manager.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
 import 'package:uy_dosh/base/state/authentication_state.dart';
+import 'package:uy_dosh/base/state/profile_completion_state.dart';
 import 'package:uy_dosh/presentation/widgets/common/toast_theme.dart';
 import 'package:uy_dosh/presentation/widgets/language_switcher.dart';
 
@@ -51,6 +52,7 @@ class LogoutService {
       // 3. Clear local session
       logger.d('🗑️ Clearing local session...');
       await SessionManager.clearSession();
+      ProfileCompletionState().reset();
       logger.d('✅ Local session cleared');
 
       // 4. Update global authentication state
@@ -62,6 +64,7 @@ class LogoutService {
       // Even if there's an error, try to clear local state
       try {
         await SessionManager.clearSession();
+        ProfileCompletionState().reset();
         await AuthenticationState().logout();
         logger.d('✅ Local logout completed despite error');
       } catch (localError) {

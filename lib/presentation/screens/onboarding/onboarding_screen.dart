@@ -156,45 +156,48 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
 
-    // Get onboarding-specific colors based on current theme
-    final onboardingColors = _getOnboardingColors(theme);
+        // Get onboarding-specific colors based on current theme
+        final onboardingColors = _getOnboardingColors(theme);
 
-    // Use the exact original gradient colors for the default theme
-    final gradientColors = _getGradientColors(theme);
+        // Use the exact original gradient colors for the default theme
+        final gradientColors = _getGradientColors(theme);
 
-    return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: gradientColors,
-            stops: const [0.0, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Skip button
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: TextButtonThemedFactory.text(
-                    onPressed: _navigateToMainApp,
-                    text: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "onboarding_skip",
+        return Scaffold(
+          body: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: gradientColors,
+                stops: const [0.0, 1.0],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Skip button
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextButtonThemedFactory.text(
+                        onPressed: _navigateToMainApp,
+                        text: LanguageAwareStringHelper.getCurrent(
+                          context,
+                          "onboarding_skip",
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
 
-              // Page content
-              Expanded(
+                  // Page content
+                  Expanded(
                 child: PageView.builder(
                   controller: _pageController,
                   onPageChanged: _onPageChanged,
@@ -281,6 +284,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           ),
         ),
       ),
+    );
+  },
     );
   }
 

@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
@@ -10,6 +11,7 @@ import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -59,6 +61,34 @@ class _ProfileScreenData {
         hasError.hashCode ^
         errorMessage.hashCode ^
         (profile?.id ?? 0).hashCode;
+  }
+}
+
+class _RoleBadge extends StatelessWidget {
+  const _RoleBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final isBlueTheme = ThemeState().currentTheme == AppTheme.blueTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      decoration: BoxDecoration(
+        color: isBlueTheme
+            ? BlueThemeColors.buttonPrimary
+            : Colors.black,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+    );
   }
 }
 
@@ -316,7 +346,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
-        final isComplete = _calculateProfileCompletionPercent(profile) >= 100;
+        final isComplete =
+            ProfileCompletionState.completionPercent(profile) >= 100;
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -331,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         if (isComplete)
                           Container(
-                            padding: const EdgeInsets.all(4),
+                            padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
@@ -365,15 +396,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     if (_userRoleLoaded) ...[
                       const SizedBox(height: 8),
-                      Text(
-                        _getRoleLabel(_userRole, context),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color:
-                              Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                        ),
+                      _RoleBadge(
+                        label: _getRoleLabel(_userRole, context),
                       ),
                     ],
                     if (_userBlocked) ...[
@@ -1011,6 +1035,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildAdminPanelButton(context),
               ],
 
+              if (_userRole == "landlord") ...[
+                const SizedBox(height: 16),
+                _buildManagePropertyButton(context),
+              ],
+
               // Logout Button Section
               const SizedBox(height: 20),
               _buildLogoutButton(context),
@@ -1074,7 +1103,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     UserProfile profile,
     BuildContext context,
   ) {
-    final completionPercent = _calculateProfileCompletionPercent(profile);
+    final completionPercent =
+        ProfileCompletionState.completionPercent(profile);
     final completionFraction = completionPercent / 100;
     final isComplete = completionPercent >= 100;
 
@@ -1406,6 +1436,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildManagePropertyButton(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => BlocProvider(
+                create: (context) =>
+                    ListingsBloc(getIt<IListingService>()),
+                child: const UserListingsScreen(),
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(
+                Icons.home_work,
+                color:
+                    ThemeState().isBlueTheme
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  LanguageAwareStringHelper.getCurrent(
+                    context,
+                    "manage_property",
+                  ),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // Show logout confirmation dialog
   void _showLogoutDialog(BuildContext context) {
     CommonConfirmationDialogs.showLogoutConfirmation(
@@ -1500,40 +1586,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         profile.petsPreference != null ||
         profile.wakeupTime != null ||
         profile.sleepTime != null;
-  }
-
-  int _calculateProfileCompletionPercent(UserProfile profile) {
-    const totalFields = 17;
-    final completedFields = _countCompletedProfileFields(profile);
-    return ((completedFields / totalFields) * 100).round();
-  }
-
-  int _countCompletedProfileFields(UserProfile profile) {
-    var completedFields = 0;
-
-    if (_hasText(profile.name)) completedFields++;
-    if (profile.gender != null) completedFields++;
-    if (profile.region != null) completedFields++;
-    if (profile.university != null) completedFields++;
-    if (_hasText(profile.aboutMe)) completedFields++;
-    if (_hasText(profile.telegram)) completedFields++;
-    if (profile.employed != null) completedFields++;
-    if (profile.cleanliness != null) completedFields++;
-    if (profile.noiseLevel != null) completedFields++;
-    if (profile.sociability != null) completedFields++;
-    if (profile.guestsAllowed != null) completedFields++;
-    if (_hasText(profile.smokingPreference)) completedFields++;
-    if (_hasText(profile.alcoholPreference)) completedFields++;
-    if (profile.cookingHabits != null) completedFields++;
-    if (profile.petsPreference != null) completedFields++;
-    if (_hasText(profile.wakeupTime)) completedFields++;
-    if (_hasText(profile.sleepTime)) completedFields++;
-
-    return completedFields;
-  }
-
-  bool _hasText(String? value) {
-    return value != null && value.trim().isNotEmpty;
   }
 
   // Helper method to build profile field

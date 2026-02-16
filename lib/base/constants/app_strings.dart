@@ -387,6 +387,8 @@ class AppStrings {
       "yes_student": "Yes, I'm a student",
       "no_student": "No, I'm not a student",
 
+      "are_you_landlord_or_renter": "Are you a landlord or renter?",
+
       "selected": "Selected",
 
       "full_name_hint": "Enter your full name",
@@ -418,6 +420,7 @@ class AppStrings {
       "menu_registration": "Sign in",
       "menu_logout": "Logout",
       "menu_admin_panel": "Admin Panel",
+      "manage_property": "Manage Property",
 
       "admin_panel_title": "Admin Panel",
       "admin_panel_description":
@@ -1055,6 +1058,8 @@ class AppStrings {
       "yes_student": "Студент",
       "no_student": "Не студент",
 
+      "are_you_landlord_or_renter": "Вы арендодатель или арендатор?",
+
       "selected": "Выбрано",
 
       "full_name_hint": "Введите ваше полное имя",
@@ -1087,6 +1092,7 @@ class AppStrings {
       "menu_registration": "Вход",
       "menu_logout": "Выйти",
       "menu_admin_panel": "Админ-панель",
+      "manage_property": "Управление жильём",
 
       "admin_panel_title": "Админ-панель",
       "admin_panel_description":
@@ -1735,6 +1741,8 @@ class AppStrings {
       "yes_student": "Men talabaman",
       "no_student": "Men talaba emasman",
 
+      "are_you_landlord_or_renter": "Siz ijaraga beruvchimisiz yoki ijarachimisiz?",
+
       "selected": "Tanlangan",
 
       "full_name_hint": "To'liq ismingizni kiriting",
@@ -1766,6 +1774,7 @@ class AppStrings {
       "menu_registration": "Kirish",
       "menu_logout": "Chiqish",
       "menu_admin_panel": "Admin paneli",
+      "manage_property": "Uyni boshqarish",
 
       "admin_panel_title": "Admin paneli",
       "admin_panel_description":

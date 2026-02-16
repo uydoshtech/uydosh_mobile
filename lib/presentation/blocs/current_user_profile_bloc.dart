@@ -5,6 +5,7 @@ import 'package:uy_dosh/domain/services/user_profile_service.dart';
 import 'package:uy_dosh/domain/models/user_profile.dart';
 import 'package:uy_dosh/base/util/error_message_helper.dart';
 import 'package:uy_dosh/base/services/session_manager.dart';
+import 'package:uy_dosh/base/state/profile_completion_state.dart';
 
 part 'current_user_profile_event.dart';
 part 'current_user_profile_state.dart';
@@ -34,6 +35,7 @@ class CurrentUserProfileBloc
     try {
       final profile = await _userProfileService.getCurrentUserProfile();
       await SessionManager.storeUserProfile(profile);
+      ProfileCompletionState().updateFromProfile(profile);
       emit(CurrentUserProfileState.loaded(profile: profile));
     } catch (error) {
       if (error is DioException && error.response?.statusCode == 404) {

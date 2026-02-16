@@ -11,6 +11,7 @@ class CreateProfileRequest implements IJsonEncodable {
     required this.gender,
     @JsonKey(name: 'universityId') this.universityId,
     @JsonKey(name: 'regionId') this.regionId,
+    this.role,
   });
 
   @JsonKey(name: 'userId')
@@ -21,6 +22,7 @@ class CreateProfileRequest implements IJsonEncodable {
   final int? universityId;
   @JsonKey(name: 'regionId')
   final int? regionId;
+  final String? role;
 
   factory CreateProfileRequest.fromJson(Map<String, dynamic> json) =>
       _$CreateProfileRequestFromJson(json);

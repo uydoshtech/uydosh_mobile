@@ -7,6 +7,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
@@ -27,6 +28,8 @@ import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -95,6 +98,23 @@ class _MainNavigationState extends State<MainNavigation>
 
     // Check initial authentication status
     _checkAuthenticationStatus();
+
+    // Initialize profile completion state from cache when authenticated
+    _initProfileCompletionFromCache();
+  }
+
+  Future<void> _initProfileCompletionFromCache() async {
+    if (!AuthenticationState().isAuthenticated) return;
+    try {
+      var profile = await SessionManager.getCachedUserProfile();
+      profile ??= await getIt<IUserProfileService>().getCurrentUserProfile();
+      await SessionManager.storeUserProfile(profile);
+      if (mounted) {
+        ProfileCompletionState().updateFromProfile(profile);
+      }
+    } catch (_) {
+      // Ignore - profile will be loaded when user opens profile/burger menu
+    }
   }
 
   @override
@@ -190,7 +210,10 @@ class _MainNavigationState extends State<MainNavigation>
       profile ??= await getIt<IUserProfileService>().getCurrentUserProfile();
       await SessionManager.storeUserProfile(profile);
 
-      final completionPercent = _calculateProfileCompletionPercent(profile);
+      ProfileCompletionState().updateFromProfile(profile);
+
+      final completionPercent =
+          ProfileCompletionState.completionPercent(profile);
       if (completionPercent >= 100) return;
 
       _profileCompletionPromptShown = true;
@@ -333,40 +356,6 @@ class _MainNavigationState extends State<MainNavigation>
         );
       },
     );
-  }
-
-  int _calculateProfileCompletionPercent(UserProfile profile) {
-    const totalFields = 17;
-    final completedFields = _countCompletedProfileFields(profile);
-    return ((completedFields / totalFields) * 100).round();
-  }
-
-  int _countCompletedProfileFields(UserProfile profile) {
-    var completedFields = 0;
-
-    if (_hasText(profile.name)) completedFields++;
-    if (profile.gender != null) completedFields++;
-    if (profile.region != null) completedFields++;
-    if (profile.university != null) completedFields++;
-    if (_hasText(profile.aboutMe)) completedFields++;
-    if (_hasText(profile.telegram)) completedFields++;
-    if (profile.employed != null) completedFields++;
-    if (profile.cleanliness != null) completedFields++;
-    if (profile.noiseLevel != null) completedFields++;
-    if (profile.sociability != null) completedFields++;
-    if (profile.guestsAllowed != null) completedFields++;
-    if (_hasText(profile.smokingPreference)) completedFields++;
-    if (_hasText(profile.alcoholPreference)) completedFields++;
-    if (profile.cookingHabits != null) completedFields++;
-    if (profile.petsPreference != null) completedFields++;
-    if (_hasText(profile.wakeupTime)) completedFields++;
-    if (_hasText(profile.sleepTime)) completedFields++;
-
-    return completedFields;
-  }
-
-  bool _hasText(String? value) {
-    return value != null && value.trim().isNotEmpty;
   }
 
   // Redirect to auth wizard
@@ -574,7 +563,10 @@ class _MainNavigationState extends State<MainNavigation>
 
                 // Show just the person icon (no circle) when user is authenticated
                 return ListenableBuilder(
-                  listenable: ThemeState(),
+                  listenable: Listenable.merge([
+                    ThemeState(),
+                    ProfileCompletionState(),
+                  ]),
                   builder: (context, child) {
                     final themeState = ThemeState();
                     Color iconColor;
@@ -586,20 +578,43 @@ class _MainNavigationState extends State<MainNavigation>
                       iconColor = Colors.black; // Black icon for light theme
                     }
 
-                    return IconButton(
-                      onPressed: () {
-                        HapticFeedbackUtils.impact();
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const ProfileScreen(),
+                    final needsCompletion =
+                        ProfileCompletionState().needsProfileCompletion;
+
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            HapticFeedbackUtils.impact();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const ProfileScreen(),
+                              ),
+                            );
+                          },
+                          icon: Icon(Icons.person, color: iconColor, size: 28),
+                          tooltip: LanguageAwareStringHelper.getCurrent(
+                            context,
+                            "profile",
                           ),
-                        );
-                      },
-                      icon: Icon(Icons.person, color: iconColor, size: 28),
-                      tooltip: LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "profile",
-                      ),
+                        ),
+                        if (needsCompletion)
+                          Positioned(
+                            right: 5,
+                            top: 22,
+                            child: BlinkingDotWidget(
+                              color: AppColors.success,
+                              size: 12,
+                              duration: const Duration(milliseconds: 750),
+                              borderColor:
+                                  Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white
+                                      : Colors.grey.shade300,
+                              borderWidth: 2,
+                            ),
+                          ),
+                      ],
                     );
                   },
                 );
