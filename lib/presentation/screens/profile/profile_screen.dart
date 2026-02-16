@@ -24,6 +24,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -1118,6 +1119,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Row(
               children: [
+                if (!isComplete) ...[
+                  SizedBox(
+                    width: 10,
+                    height: 10,
+                    child: BlinkingDotWidget(
+                      color: Colors.green,
+                      size: 10,
+                      duration: const Duration(milliseconds: 1000),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: Text(
                     LanguageAwareStringHelper.getCurrent(
