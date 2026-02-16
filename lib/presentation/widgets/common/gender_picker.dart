@@ -1,5 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -22,15 +23,38 @@ class GenderPicker extends StatelessWidget {
   final bool showArrows;
   final bool includeUnselected;
 
-  Color _getGenderColor(int gender) {
-    // Light theme: black/gray only. Other themes: blue/red
+  Color _getItemTextColor(BuildContext context, int gender) {
+    final theme = Theme.of(context);
+    final isSelected = selectedGender == gender;
+    // Selected item: white (matches region/university spinners)
+    if (isSelected && ThemeState().isBlueTheme) {
+      return Colors.white;
+    }
+    // Unselected in blue theme: dimmer text
+    if (ThemeState().isBlueTheme) {
+      return theme.colorScheme.onSurfaceVariant;
+    }
+    return ThemeState().isBlueTheme ? Colors.white : Colors.black;
+  }
+
+  Color _getGenderIconColor(BuildContext context, int gender, bool isSelected) {
+    final theme = Theme.of(context);
+    // Selected item: bright green (matches region/university spinners)
+    if (isSelected && ThemeState().isBlueTheme) {
+      return BlueThemeColors.iconSuccess;
+    }
+    // Unselected in blue theme: dimmer colors
+    if (ThemeState().isBlueTheme) {
+      return theme.colorScheme.onSurfaceVariant;
+    }
+    // Light theme: black/gray only
     if (ThemeState().isLightTheme) {
       return gender == 0 ? Colors.grey : Colors.black;
     }
     switch (gender) {
-      case 1: // Male
+      case 1:
         return Colors.blue;
-      case 2: // Female
+      case 2:
       default:
         return gender == 0 ? Colors.grey : Colors.red;
     }
@@ -42,10 +66,11 @@ class GenderPicker extends StatelessWidget {
     final genderOptions = includeUnselected ? [1, 2, 0] : [1, 2];
     final initialIndex = genderOptions.indexOf(selectedGender);
 
-    // Use the same styling as metro line picker
-    final backgroundColor = theme.colorScheme.surfaceContainerHighest;
+    // Use the same styling as region and university spinners in edit profile
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final backgroundColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
     final borderColor = theme.colorScheme.outline;
-    final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
 
     return Container(
       decoration: BoxDecoration(
@@ -77,7 +102,11 @@ class GenderPicker extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.male, color: _getGenderColor(1), size: 22),
+                      Icon(
+                        Icons.male,
+                        color: _getGenderIconColor(context, 1, selectedGender == 1),
+                        size: 22,
+                      ),
                       const SizedBox(width: 6),
                       Flexible(
                         child: LanguageAwareStringHelper.getText(
@@ -86,7 +115,7 @@ class GenderPicker extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: textColor,
+                            color: _getItemTextColor(context, 1),
                           ),
                         ),
                       ),
@@ -98,7 +127,11 @@ class GenderPicker extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.female, color: _getGenderColor(2), size: 22),
+                      Icon(
+                        Icons.female,
+                        color: _getGenderIconColor(context, 2, selectedGender == 2),
+                        size: 22,
+                      ),
                       const SizedBox(width: 6),
                       Flexible(
                         child: LanguageAwareStringHelper.getText(
@@ -107,7 +140,7 @@ class GenderPicker extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: textColor,
+                            color: _getItemTextColor(context, 2),
                           ),
                         ),
                       ),
@@ -121,7 +154,7 @@ class GenderPicker extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.remove_circle_outline,
-                          color: _getGenderColor(0),
+                          color: _getGenderIconColor(context, 0, selectedGender == 0),
                           size: 20,
                         ),
                         const SizedBox(width: 6),
@@ -132,7 +165,7 @@ class GenderPicker extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: textColor,
+                              color: _getItemTextColor(context, 0),
                             ),
                           ),
                         ),
