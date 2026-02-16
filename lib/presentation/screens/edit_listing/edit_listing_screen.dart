@@ -333,6 +333,15 @@ class _EditListingScreenState extends State<EditListingScreen> {
     FocusScope.of(context).unfocus();
   }
 
+  Color _getControlBackgroundColor() {
+    if (ThemeState().isBlueTheme) {
+      return BlueThemeColors.surface;
+    }
+    return Theme.of(context).brightness == Brightness.dark
+        ? Theme.of(context).colorScheme.surfaceContainerHighest
+        : Colors.white;
+  }
+
   // Theme-dependent color method for borders
   Color _getBorderColor() {
     if (ThemeState().isBlueTheme) {
@@ -457,7 +466,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerHighest,
+                                color: _getControlBackgroundColor(),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: theme.colorScheme.outline,
@@ -606,11 +615,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(10),
                                         border: Border.all(
-                                          color: theme.colorScheme.outline,
-                                        ),
-                                        color: theme.colorScheme.surfaceContainerHighest,
+                                        color: theme.colorScheme.outline,
                                       ),
-                                      height: 80,
+                                    color: _getControlBackgroundColor(),
+                                  ),
+                                  height: 80,
                                       child: Row(
                                         children: [
                                           Expanded(
@@ -699,7 +708,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                         border: Border.all(
                                           color: theme.colorScheme.outline,
                                         ),
-                                        color: theme.colorScheme.surfaceContainerHighest
+                                        color: _getControlBackgroundColor()
                                             .withOpacity(0.5),
                                       ),
                                       height: 80,
@@ -847,10 +856,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             ),
                           ),
                           filled: true,
-                          fillColor:
-                              Theme.of(context).brightness == Brightness.dark
-                                  ? theme.colorScheme.surfaceContainerHighest
-                                  : Colors.white,
+                          fillColor: _getControlBackgroundColor(),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 12,
@@ -1046,12 +1052,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                             ),
                                             filled: true,
                                             fillColor:
-                                                Theme.of(context).brightness ==
-                                                        Brightness.dark
-                                                    ? theme
-                                                        .colorScheme
-                                                        .surfaceContainerHighest
-                                                    : Colors.white,
+                                                _getControlBackgroundColor(),
                                             contentPadding:
                                                 const EdgeInsets.symmetric(
                                                   horizontal: 12,
@@ -1104,10 +1105,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                         : Colors.grey[600]!,
                               ),
                               color:
-                                  Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? theme.colorScheme.surfaceContainerHighest
-                                      : Colors.white,
+                                  _getControlBackgroundColor(),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -1222,10 +1220,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   ? theme.colorScheme.outline
                                   : AppColors.borderGrey600,
                         ),
-                        color:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? theme.colorScheme.surfaceContainerHighest
-                                : Colors.white,
+                        color: _getControlBackgroundColor(),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),

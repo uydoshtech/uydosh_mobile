@@ -4,6 +4,7 @@ import "package:flutter/material.dart";
 import "package:image/image.dart" as img;
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
@@ -357,10 +358,11 @@ class _PhotoPickerState extends State<PhotoPicker> {
                   ? Theme.of(context).colorScheme.outline
                   : AppColors.borderGrey600,
         ),
-        color:
-            Theme.of(context).brightness == Brightness.dark
+        color: ThemeState().isBlueTheme
+            ? BlueThemeColors.surface
+            : (Theme.of(context).brightness == Brightness.dark
                 ? Theme.of(context).colorScheme.surfaceContainerHighest
-                : Colors.white,
+                : Colors.white),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -483,13 +485,14 @@ class _PhotoPickerState extends State<PhotoPicker> {
             if (widget.selectedPhotos.isEmpty)
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color:
-                      Theme.of(context).brightness == Brightness.dark
+                  color: ThemeState().isBlueTheme
+                      ? BlueThemeColors.surface.withValues(alpha: 0.5)
+                      : (Theme.of(context).brightness == Brightness.dark
                           ? Theme.of(context)
                               .colorScheme
                               .surfaceContainerHighest
                               .withValues(alpha: 0.5)
-                          : Colors.grey[100],
+                          : Colors.grey[100]),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color:

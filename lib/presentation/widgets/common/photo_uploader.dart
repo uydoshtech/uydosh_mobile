@@ -3,6 +3,8 @@ import "dart:io";
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/photo.dart";
@@ -320,11 +322,15 @@ class _PhotoUploaderState extends State<PhotoUploader>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final controlBgColor = ThemeState().isBlueTheme
+        ? BlueThemeColors.surface
+        : theme.colorScheme.surfaceContainerHighest;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: controlBgColor,
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -503,14 +509,18 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 fadeInCurve: Curves.easeOut,
                 placeholder:
                     (context, url) => ColoredBox(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: ThemeState().isBlueTheme
+                          ? BlueThemeColors.surface
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
                       child: const Center(
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     ),
                 errorWidget:
                     (context, url, error) => ColoredBox(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: ThemeState().isBlueTheme
+                          ? BlueThemeColors.surface
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
                       child: Icon(
                         Icons.broken_image,
                         color: Theme.of(
@@ -645,7 +655,9 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return ColoredBox(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: ThemeState().isBlueTheme
+                        ? BlueThemeColors.surface
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: Icon(
                       Icons.broken_image,
                       color: Theme.of(

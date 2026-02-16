@@ -1161,9 +1161,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                             border: Border.all(
                                               color: theme.colorScheme.outline,
                                             ),
-                                            color: theme
-                                                .colorScheme
-                                                .surfaceContainerHighest
+                                            color: (ThemeState().isBlueTheme
+                                                    ? BlueThemeColors.surface
+                                                    : theme
+                                                        .colorScheme
+                                                        .surfaceContainerHighest)
                                                 .withValues(alpha: 0.5),
                                           ),
                                           height: 80,
@@ -1500,9 +1502,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
   Widget _buildMetroLinePicker() {
     final theme = Theme.of(context);
+    final controlBg = ThemeState().isBlueTheme
+        ? BlueThemeColors.surface
+        : theme.colorScheme.surfaceContainerHighest;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: controlBg,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
       ),
@@ -1652,7 +1657,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color, width: 2),
-          color: isSelected ? color : theme.colorScheme.surfaceContainerHighest,
+          color: isSelected
+              ? color
+              : (ThemeState().isBlueTheme
+                  ? BlueThemeColors.surface
+                  : theme.colorScheme.surfaceContainerHighest),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -1691,7 +1700,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color, width: 2),
-          color: isSelected ? color : theme.colorScheme.surfaceContainerHighest,
+          color: isSelected
+              ? color
+              : (ThemeState().isBlueTheme
+                  ? BlueThemeColors.surface
+                  : theme.colorScheme.surfaceContainerHighest),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -1721,9 +1734,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
   Widget _buildLocationWheelPlaceholder({bool isLoading = false}) {
     final theme = Theme.of(context);
+    final controlBg = ThemeState().isBlueTheme
+        ? BlueThemeColors.surface
+        : theme.colorScheme.surfaceContainerHighest;
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: controlBg,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
       ),
@@ -1763,13 +1779,16 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   Widget _buildLocationWheelPicker(List<Location> locations) {
     final theme = Theme.of(context);
     _currentLocations = List.from(locations);
+    final controlBg = ThemeState().isBlueTheme
+        ? BlueThemeColors.surface
+        : theme.colorScheme.surfaceContainerHighest;
 
     return Container(
       key: ValueKey(
         "location_picker_${_searchFiltersState.selectedSubwayLine}",
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: controlBg,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: theme.colorScheme.outline),
       ),

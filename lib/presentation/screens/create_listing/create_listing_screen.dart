@@ -377,6 +377,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
   }
 
+  // Theme-dependent color for control backgrounds (inputs, cards, sections)
+  Color _getControlBackgroundColor() {
+    if (ThemeState().isBlueTheme) {
+      return BlueThemeColors.surface;
+    }
+    return Theme.of(context).brightness == Brightness.dark
+        ? Theme.of(context).colorScheme.surfaceContainerHighest
+        : Colors.white;
+  }
+
   // Theme-dependent color method for borders
   Color _getBorderColor() {
     if (ThemeState().isBlueTheme) {
@@ -753,9 +763,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             border: Border.all(
                               color: Theme.of(context).colorScheme.outline,
                             ),
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                            color: _getControlBackgroundColor().withValues(alpha: 0.5),
                           ),
                           height: 80,
                           child: Center(
@@ -892,10 +900,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       borderSide: const BorderSide(color: Colors.red, width: 2),
                     ),
                     filled: true,
-                    fillColor:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Theme.of(context).colorScheme.surfaceContainerHighest
-                            : Colors.white,
+                    fillColor: _getControlBackgroundColor(),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 12,
@@ -952,10 +957,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       ? Theme.of(context).colorScheme.outline
                       : AppColors.borderGrey600,
             ),
-            color:
-                Theme.of(context).brightness == Brightness.dark
-                    ? Theme.of(context).colorScheme.surfaceContainerHighest
-                    : Colors.white,
+            color: _getControlBackgroundColor(),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -1121,13 +1123,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                   ),
                                 ),
                                 filled: true,
-                                fillColor:
-                                    Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Theme.of(
-                                          context,
-                                        ).colorScheme.surfaceContainerHighest
-                                        : Colors.white,
+                                fillColor: _getControlBackgroundColor(),
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 16,
@@ -1172,10 +1168,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             ? Theme.of(context).colorScheme.outline
                             : Colors.grey[600]!,
                   ),
-                  color:
-                      Theme.of(context).brightness == Brightness.dark
-                          ? Theme.of(context).colorScheme.surfaceContainerHighest
-                          : Colors.white,
+                  color: _getControlBackgroundColor(),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
