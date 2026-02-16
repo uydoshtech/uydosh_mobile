@@ -796,25 +796,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  child: ExpansionTile(
+                    initiallyExpanded: false,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    collapsedShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    tilePadding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+                    childrenPadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                    title: Row(
                       children: [
-                        Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "lifestyle_preferences",
-                          ),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: _getLifestyleHeaderColor(),
+                        Icon(
+                          Icons.spa,
+                          size: 24,
+                          color: _getLifestyleHeaderColor(),
+                        ),
+                        const SizedBox(width: 12),
+                        Flexible(
+                          child: Text(
+                            LanguageAwareStringHelper.getCurrent(
+                              context,
+                              "lifestyle_preferences",
+                            ),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: _getLifestyleHeaderColor(),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-
-                        // Wake-up Time field
+                      ],
+                    ),
+                    children: [
+                      // Wake-up Time field
                         if (profile.wakeupTime != null) ...[
                           _buildProfileField(
                             icon: Icons.wb_sunny,
@@ -1002,31 +1018,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 16),
                         ],
 
-                        // Pets Preference field
-                        if (profile.petsPreference != null) ...[
-                          _buildProfileField(
-                            icon: Icons.pets,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "pets_preference",
-                            ),
-                            value:
-                                profile.petsPreference!
-                                    ? LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "pets_okay",
-                                    )
-                                    : LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "pets_not_okay",
-                                    ),
-                            context: context,
+                      // Pets Preference field
+                      if (profile.petsPreference != null) ...[
+                        _buildProfileField(
+                          icon: Icons.pets,
+                          label: LanguageAwareStringHelper.getCurrent(
+                            context,
+                            "pets_preference",
                           ),
-                          const SizedBox(height: 16),
-                        ],
-
+                          value:
+                              profile.petsPreference!
+                                  ? LanguageAwareStringHelper.getCurrent(
+                                    context,
+                                    "pets_okay",
+                                  )
+                                  : LanguageAwareStringHelper.getCurrent(
+                                    context,
+                                    "pets_not_okay",
+                                  ),
+                          context: context,
+                        ),
+                        const SizedBox(height: 16),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ],
