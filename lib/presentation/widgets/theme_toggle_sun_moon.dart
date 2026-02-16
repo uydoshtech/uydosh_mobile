@@ -48,7 +48,7 @@ class ThemeToggleSunMoon extends StatelessWidget {
             onToggled?.call();
           },
           child: Container(
-            width: size * 2.0,
+            width: size * 1.6,
             height: size * 0.9,
             decoration: BoxDecoration(
               color: trackColor,

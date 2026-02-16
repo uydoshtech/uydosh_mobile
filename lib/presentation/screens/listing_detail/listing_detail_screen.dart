@@ -544,6 +544,22 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
   }
 
+  Future<void> _onListingLoaded(ListingDetail listingDetail) async {
+    // Ensure UserListingState is initialized before owner check
+    await UserListingState().initialize();
+    if (!mounted) return;
+
+    final isOwner = UserListingState().isOwner(listingDetail.user.id);
+    if (isOwner) {
+      _loadViewCount(listingDetail.id);
+    } else {
+      if (AuthenticationState().isAuthenticated) {
+        _recordView(listingDetail.id);
+      }
+      _loadCompatibility(listingDetail.user.id);
+    }
+  }
+
   Future<void> _recordView(int listingId) async {
     try {
       final listingService = getIt<IListingService>();
@@ -1903,17 +1919,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
             // Check favorite status after listing data is loaded
             _checkFavoriteStatusFromServer();
             _loadComplaintCount(loadedState.listingDetail.id);
-            final isOwner = UserListingState().isOwner(
-              loadedState.listingDetail.user.id,
-            );
-            if (isOwner) {
-              _loadViewCount(loadedState.listingDetail.id);
-            } else {
-              if (AuthenticationState().isAuthenticated) {
-                _recordView(loadedState.listingDetail.id);
-              }
-              _loadCompatibility(loadedState.listingDetail.user.id);
-            }
+            _onListingLoaded(loadedState.listingDetail);
           },
           error: (_) {},
         );
@@ -2103,7 +2109,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
               if (UserListingState().isOwner(listingDetail.user.id)) ...[
                 if (_isLoadingViewCount && _viewCount == null)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
+                    padding: const EdgeInsets.only(bottom: 8, left: 12),
                     child: Row(
                       children: [
                         SizedBox(
@@ -2127,11 +2133,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                   )
                 else if (_viewCount != null)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
+                    padding: const EdgeInsets.only(bottom: 8, left: 8),
                     child: Row(
                       children: [
                         Icon(
-                          Icons.visibility_outlined,
+                          CupertinoIcons.eye,
                           size: 18,
                           color: _getIconColor(),
                         ),

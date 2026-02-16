@@ -1230,29 +1230,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 8),
-            Center(
-              child: OutlinedButton(
-                onPressed: () => _openEditProfileScreen(context, profile),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  side: BorderSide(
-                    color: ThemeState().isBlueTheme ? Colors.white : Colors.black,
-                    width: 1,
+            if (!_userBlocked) ...[
+              const SizedBox(height: 8),
+              Center(
+                child: OutlinedButton(
+                  onPressed: () => _openEditProfileScreen(context, profile),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    side: BorderSide(
+                      color: ThemeState().isBlueTheme ? Colors.white : Colors.black,
+                      width: 1,
+                    ),
                   ),
-                ),
-                child: Text(
-                  LanguageAwareStringHelper.getCurrent(context, "complete_profile"),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: ThemeState().isBlueTheme ? Colors.white : Colors.black,
+                  child: Text(
+                    LanguageAwareStringHelper.getCurrent(context, "complete_profile"),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: ThemeState().isBlueTheme ? Colors.white : Colors.black,
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -1827,12 +1829,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// Build action menu items for the dropdown menu
   List<ActionMenuItem> _buildActionMenuItems(BuildContext context) {
     return [
-      // Edit Profile item (moved to first position)
-      ActionMenuItem(
-        value: "edit_profile",
-        icon: Icons.edit,
-        textKey: "edit_profile",
-        onPressed: () async {
+      // Edit Profile item (hidden for blocked users - they get 403 on save)
+      if (!_userBlocked)
+        ActionMenuItem(
+          value: "edit_profile",
+          icon: Icons.edit,
+          textKey: "edit_profile",
+          onPressed: () async {
           try {
             // Get the current profile from the bloc
             final currentState = context.read<CurrentUserProfileBloc>().state;
@@ -1894,7 +1897,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           }
         },
-      ),
+        ),
       // Messages item
       ActionMenuItem(
         value: "messages",

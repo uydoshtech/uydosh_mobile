@@ -57,10 +57,15 @@ class _ListingTileState extends State<ListingTile>
   late AnimationController _heartAnimationController;
   late Animation<double> _heartScaleAnimation;
   bool _isTogglingFavorite = false;
+  int? _viewCount;
+  bool _isLoadingViewCount = false;
 
   @override
   void initState() {
     super.initState();
+    if (widget.showActiveStatus) {
+      _loadViewCount();
+    }
     _heartAnimationController = AnimationController(
       duration: const Duration(milliseconds: 150),
       vsync: this,
@@ -77,6 +82,26 @@ class _ListingTileState extends State<ListingTile>
   void dispose() {
     _heartAnimationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadViewCount() async {
+    if (_isLoadingViewCount) return;
+    setState(() => _isLoadingViewCount = true);
+    try {
+      final count = await getIt<IListingService>().getListingViewCount(
+        widget.listing.id,
+      );
+      if (mounted) {
+        setState(() {
+          _viewCount = count;
+          _isLoadingViewCount = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingViewCount = false);
+      }
+    }
   }
 
   void _pulsateHeart() {
@@ -137,43 +162,85 @@ class _ListingTileState extends State<ListingTile>
             borderRadius: BorderRadius.circular(12),
             child: Stack(
               children: [
-                // Active/Inactive badge in top-right corner (for my listings)
+                // Active/Inactive badge and views count in top-right corner (for my listings)
                 if (widget.showActiveStatus)
                   Positioned(
                     top: 8,
                     right: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: widget.listing.isActive
-                            ? AppColors.statusActive.withValues(alpha: 0.2)
-                            : AppColors.statusInactive.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: widget.listing.isActive
-                              ? AppColors.statusActive
-                              : AppColors.statusInactive,
-                          width: 1,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Views count
+                        if (_isLoadingViewCount)
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.textGrey600,
+                            ),
+                          )
+                        else if (_viewCount != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.eye,
+                                  size: 16,
+                                  color: AppColors.textGrey600,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  LanguageAwareStringHelper.getCurrent(
+                                    context,
+                                    "listing_views_by_others",
+                                  ).replaceAll("{count}", _viewCount.toString()),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textGrey600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        // Active/Inactive badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: widget.listing.isActive
+                                ? AppColors.statusActive.withValues(alpha: 0.2)
+                                : AppColors.statusInactive.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: widget.listing.isActive
+                                  ? AppColors.statusActive
+                                  : AppColors.statusInactive,
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            LanguageAwareStringHelper.getCurrent(
+                              context,
+                              widget.listing.isActive
+                                  ? "listing_active"
+                                  : "listing_inactive",
+                            ),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: widget.listing.isActive
+                                  ? AppColors.statusActive
+                                  : AppColors.statusInactive,
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          widget.listing.isActive
-                              ? "listing_active"
-                              : "listing_inactive",
-                        ),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: widget.listing.isActive
-                              ? AppColors.statusActive
-                              : AppColors.statusInactive,
-                        ),
-                      ),
+                      ],
                     ),
                   ),
                 Padding(

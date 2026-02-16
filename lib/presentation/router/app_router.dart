@@ -204,6 +204,9 @@ class _MainNavigationState extends State<MainNavigation>
     }
     if (!_isAuthenticated) return;
 
+    // Don't prompt blocked users - they can't save profile edits (403)
+    if (await SessionManager.getIsUserBlocked()) return;
+
     _checkingProfileCompletion = true;
     try {
       var profile = await SessionManager.getCachedUserProfile();
