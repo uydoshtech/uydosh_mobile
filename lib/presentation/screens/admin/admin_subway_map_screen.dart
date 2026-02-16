@@ -497,11 +497,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
                 "${(_zoomLevel * 100).round()}%",
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(
-                    alpha: 0.7,
-                  ),
+                  color: Colors.black87,
                 ),
               ),
             ),
