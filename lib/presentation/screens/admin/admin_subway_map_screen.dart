@@ -92,6 +92,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static const double _tapTargetOffsetX = 15.0;
   /// Extra width for end-anchor text (Cyrillic often wider than estimate)
   static const double _endAnchorWidthExtra = 12.0;
+  /// Extra width for start-anchor text
+  static const double _startAnchorWidthExtra = 12.0;
   static const double _initialMapShiftX = -20;
   static const double _initialMapShiftY = -50;
 
@@ -447,7 +449,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
               : posX - _tapTargetOffsetX;
       final width = label.textAnchor == "end"
           ? tapWidth + _tapTargetOffsetX + _endAnchorWidthExtra
-          : tapWidth;
+          : label.textAnchor == "start"
+              ? tapWidth + _startAnchorWidthExtra
+              : tapWidth;
       return Positioned(
         left: left,
         top: posY - _tapTargetHeight / 2,
