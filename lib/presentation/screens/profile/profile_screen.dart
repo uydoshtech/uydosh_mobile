@@ -429,6 +429,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 8),
               ],
 
+              // My Listings section (above all others)
+              _buildMyListingsSection(context),
+              const SizedBox(height: 16),
+
               // Merged Profile Information Card
               Card(
                 elevation: 4,
@@ -1457,6 +1461,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Icon(
                 Icons.arrow_forward_ios,
                 color: Theme.of(context).colorScheme.error,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMyListingsSection(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => BlocProvider(
+                create: (context) => ListingsBloc(getIt<IListingService>()),
+                child: const UserListingsScreen(),
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(
+                Icons.list_alt,
+                color:
+                    ThemeState().isBlueTheme
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  LanguageAwareStringHelper.getCurrent(
+                    context,
+                    "menu_my_listings",
+                  ),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 16,
               ),
             ],
