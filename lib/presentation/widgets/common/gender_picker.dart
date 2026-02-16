@@ -23,6 +23,10 @@ class GenderPicker extends StatelessWidget {
   final bool includeUnselected;
 
   Color _getGenderColor(int gender) {
+    // Light theme: black/gray only. Other themes: blue/red
+    if (ThemeState().isLightTheme) {
+      return gender == 0 ? Colors.grey : Colors.black;
+    }
     switch (gender) {
       case 1: // Male
         return Colors.blue;

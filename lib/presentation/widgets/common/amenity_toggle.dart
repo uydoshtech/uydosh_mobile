@@ -81,6 +81,21 @@ class _AmenityToggleState extends State<AmenityToggle>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isSelected = widget.isSelected;
+    final isLightTheme = theme.brightness == Brightness.light;
+
+    // Light theme: white bg, thin grey border, black/gray icons
+    final backgroundColor = isLightTheme
+        ? Colors.white
+        : (isSelected ? theme.colorScheme.primary : Colors.grey[200]!);
+    final borderColor = isLightTheme
+        ? Colors.grey[400]!
+        : (isSelected ? theme.colorScheme.primary : Colors.grey[400]!);
+    final iconColor = isLightTheme
+        ? (isSelected ? Colors.black : Colors.grey[600]!)
+        : (isSelected ? theme.colorScheme.onPrimary : Colors.grey[600]!);
+    final textColor = isLightTheme
+        ? (isSelected ? Colors.black : Colors.grey[600]!)
+        : (isSelected ? theme.colorScheme.onPrimary : Colors.grey[600]!);
 
     return AnimatedBuilder(
       animation: _scaleAnimation,
@@ -94,29 +109,13 @@ class _AmenityToggleState extends State<AmenityToggle>
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color:
-                    isSelected
-                        ? theme.colorScheme.primary
-                        : Colors.grey[200],
-                border: Border.all(
-                  color:
-                      isSelected
-                          ? theme.colorScheme.primary
-                          : Colors.grey[400]!,
-                  width: 1,
-                ),
+                color: backgroundColor,
+                border: Border.all(color: borderColor, width: 1),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    _getIcon(widget.amenity),
-                    size: 18,
-                    color:
-                        isSelected
-                            ? theme.colorScheme.onPrimary
-                            : Colors.grey[600],
-                  ),
+                  Icon(_getIcon(widget.amenity), size: 18, color: iconColor),
                   const SizedBox(width: 6),
                   ListenableBuilder(
                     listenable: LanguageState(),
@@ -126,10 +125,7 @@ class _AmenityToggleState extends State<AmenityToggle>
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color:
-                              isSelected
-                                  ? theme.colorScheme.onPrimary
-                                  : Colors.grey[600],
+                          color: textColor,
                         ),
                       );
                     },

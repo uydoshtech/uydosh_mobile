@@ -1651,6 +1651,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildDeleteAccountButton(BuildContext context) {
     return Card(
       elevation: 4,
+      color: Theme.of(context).colorScheme.error,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () => _showDeleteAccountDialog(context),
@@ -1662,7 +1663,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Icon(
                 Icons.delete_forever,
-                color: Theme.of(context).colorScheme.error,
+                color: Colors.white,
                 size: 24,
               ),
               const SizedBox(width: 16),
@@ -1672,16 +1673,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     context,
                     "delete_account",
                   ),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.error,
+                    color: Colors.white,
                   ),
                 ),
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.error,
+                color: Colors.white,
                 size: 16,
               ),
             ],

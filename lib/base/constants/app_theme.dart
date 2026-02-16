@@ -208,7 +208,7 @@ class AppTheme {
     );
   }
 
-  /// Light theme (new)
+  /// Light theme (new) - Black and white only with thin grey borders
   static ThemeData _getLightTheme() {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
@@ -236,6 +236,12 @@ class AppTheme {
         brightness: Brightness.light,
         inverseSurface: LightThemeColors.cardBackground,
         onInverseSurface: LightThemeColors.textPrimary,
+        // Override surface containers to white/light gray (no pinkish tint)
+        surfaceContainerHighest: LightThemeColors.card,
+        surfaceContainerHigh: LightThemeColors.card,
+        surfaceContainer: LightThemeColors.surface,
+        surfaceContainerLow: LightThemeColors.surface,
+        surfaceContainerLowest: LightThemeColors.background,
       ),
       useMaterial3: true,
 
@@ -268,16 +274,16 @@ class AppTheme {
         ),
       ),
 
-      // Card theme
+      // Card theme - white with thin grey border
       cardTheme: CardThemeData(
         color: LightThemeColors.card,
-        elevation:
-            10, // Maximum elevation for the most prominent shadows in light theme
+        elevation: 0,
         margin: const EdgeInsets.all(8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        shadowColor:
-            LightThemeColors
-                .cardShadow, // Explicitly set shadow color for better control
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: LightThemeColors.cardBorder, width: 1),
+        ),
+        shadowColor: Colors.transparent,
       ),
 
       // Button themes
@@ -332,10 +338,14 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
       ),
 
-      // Floating action button theme
+      // Floating action button theme - white bg, black icon, thin grey border
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: LightThemeColors.buttonPrimary,
-        foregroundColor: Colors.white,
+        backgroundColor: LightThemeColors.background,
+        foregroundColor: LightThemeColors.textPrimary,
+        elevation: 0,
+        shape: CircleBorder(
+          side: BorderSide(color: LightThemeColors.cardBorder, width: 1),
+        ),
       ),
 
       // Divider theme

@@ -534,7 +534,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     if (_searchFiltersState.selectedLocationIndex <= 0) {
       return Colors.grey; // Grey when no location is selected
     }
-    // Alternate between different colors based on location index
+    // Light theme: black/gray only. Other themes: colored icons
+    if (ThemeState().isLightTheme) {
+      return Colors.black;
+    }
     final colors = [
       Colors.red,
       Colors.orange,
@@ -550,7 +553,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   }
 
   Color _getLocationIconColorForIndex(int index) {
-    // Alternate between different colors based on location index
+    // Light theme: black/gray only. Other themes: colored icons
+    if (ThemeState().isLightTheme) {
+      return index <= 0 ? Colors.grey : Colors.black;
+    }
     final colors = [
       Colors.red,
       Colors.orange,
