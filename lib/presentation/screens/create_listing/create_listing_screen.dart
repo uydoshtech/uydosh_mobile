@@ -28,6 +28,11 @@ import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.d
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:intl/intl.dart";
@@ -51,7 +56,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   // State variables
   int _selectedListingTypeId = 2; // 2 = roommate needed, 1 = room needed
+  int _defaultListingTypeFromProfile = 2; // Profile-based default for reset
   int _selectedGender = 1;
+  int _defaultGenderFromProfile = 1; // Profile-based default for reset
   double _minPrice = 50.0;
   double _maxPrice = 200.0;
   bool _isPrivateRoom = false; // Add private room toggle
@@ -78,10 +85,66 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     super.initState();
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
     _loadLocations();
+    _initProfileDefaults();
     // Initialize title with default generated title
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateTitle();
     });
+  }
+
+  /// Set default listing type and gender from profile
+  Future<void> _initProfileDefaults() async {
+    // Run role and gender fetch in parallel
+    final roleFuture = _getUserRole();
+    final genderFuture = _getProfileGender();
+
+    final role = await roleFuture;
+    final gender = await genderFuture;
+
+    if (!mounted) return;
+    final defaultType = role == "tenant" ? 1 : 2;
+    final defaultGender = (gender == 1 || gender == 2) ? gender! : 1;
+    setState(() {
+      _defaultListingTypeFromProfile = defaultType;
+      _selectedListingTypeId = defaultType;
+      _defaultGenderFromProfile = defaultGender;
+      _selectedGender = defaultGender;
+    });
+    _updateTitle();
+  }
+
+  Future<String?> _getUserRole() async {
+    String? role = await SessionManager.getUserRole();
+    if (role != null) return role;
+    try {
+      final response = await getIt<IOAuthApiClient>()
+          .post<Map<String, dynamic>, _EmptyRequest>(
+            "/users/verify-session",
+            (json) => json as Map<String, dynamic>,
+            data: _EmptyRequest(),
+          );
+      final user = response["user"];
+      role = user is Map<String, dynamic> ? user["role"] as String? : null;
+      if (role != null) await SessionManager.storeUserRole(role);
+      return role;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Get profile gender (1 = male, 2 = female). Returns null if not available.
+  Future<int?> _getProfileGender() async {
+    var profile = await SessionManager.getCachedUserProfile();
+    if (profile?.gender != null && (profile!.gender == 1 || profile.gender == 2)) {
+      return profile.gender;
+    }
+    try {
+      profile = await getIt<IUserProfileService>().getCurrentUserProfile();
+      if (profile.gender != null && (profile.gender == 1 || profile.gender == 2)) {
+        return profile.gender;
+      }
+    } catch (_) {}
+    return null;
   }
 
   void _loadStationsForLine(int line) {
@@ -1459,8 +1522,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       _titleController.clear();
       _descriptionController.clear();
       setState(() {
-        _selectedListingTypeId = 2;
-        _selectedGender = 1;
+        _selectedListingTypeId = _defaultListingTypeFromProfile;
+        _selectedGender = _defaultGenderFromProfile;
         _minPrice = 50.0;
         _maxPrice = 200.0;
         _selectedSubwayLine = 0;
@@ -1536,4 +1599,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   List<Amenity> _getOrderedAmenities() {
     return AmenitiesCache.getDefaultOrderedAmenities();
   }
+}
+
+class _EmptyRequest implements IJsonEncodable {
+  _EmptyRequest();
+  @override
+  Map<String, dynamic> toJson() => {};
 }

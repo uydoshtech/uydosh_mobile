@@ -56,6 +56,7 @@ class GenderPicker extends StatelessWidget {
         children: [
           Expanded(
             child: CupertinoPicker(
+              key: ValueKey(selectedGender),
               itemExtent: itemExtent,
               scrollController: FixedExtentScrollController(
                 initialItem: initialIndex >= 0 ? initialIndex : 0,

@@ -59,6 +59,7 @@ class ListingTypePicker extends StatelessWidget {
         children: [
           Expanded(
             child: CupertinoPicker(
+              key: ValueKey(selectedListingTypeId),
               itemExtent: itemExtent,
               scrollController: FixedExtentScrollController(
                 initialItem: initialIndex >= 0 ? initialIndex : 0,
