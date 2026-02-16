@@ -69,6 +69,7 @@ import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_screen.dart";
+import "package:shared_preferences/shared_preferences.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
@@ -1218,8 +1219,46 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     );
   }
 
+  static const _promotionCooldownDays = 7;
+
+  Future<bool> _canPromoteListing() async {
+    final userId = await SessionManager.getUserId();
+    if (userId == null) return true; // Fallback if somehow unauthenticated
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'promotion_last_used_$userId';
+    final lastUsedMillis = prefs.getInt(key);
+    if (lastUsedMillis == null) return true;
+    final lastUsed = DateTime.fromMillisecondsSinceEpoch(lastUsedMillis);
+    final now = DateTime.now();
+    return now.difference(lastUsed).inDays >= _promotionCooldownDays;
+  }
+
+  Future<void> _savePromotionTimestamp() async {
+    final userId = await SessionManager.getUserId();
+    if (userId == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(
+      'promotion_last_used_$userId',
+      DateTime.now().millisecondsSinceEpoch,
+    );
+  }
+
   void _performToggleFeature(ListingDetail listingDetail) async {
     try {
+      final isPromoting = !ListingUtils.isCurrentlyFeaturedDetail(listingDetail);
+      if (isPromoting) {
+        final canPromote = await _canPromoteListing();
+        if (!canPromote) {
+          _showFeatureError(
+            LanguageAwareStringHelper.getCurrent(
+              context,
+              "error_promotion_once_per_week",
+            ),
+          );
+          return;
+        }
+      }
+
       // Show loading state
       setState(() {
         _isToggling = true;
@@ -1246,6 +1285,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                 );
 
         ToastTheme.showSuccess(context, message: message);
+
+        if (isPromoting) {
+          await _savePromotionTimestamp();
+        }
 
         // Update the listing detail with new featured state
         final updatedListingDetail = listingDetail.copyWith(

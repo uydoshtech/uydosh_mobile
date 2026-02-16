@@ -258,6 +258,8 @@ class AppStrings {
       "feature_listing_success": "Listing moved to top",
       "unfeature_listing_success": "Listing removed from top",
       "feature_listing_error": "Failed to update listing",
+      "error_promotion_once_per_week":
+          "You can only promote a listing once per week",
 
       "listing_title_hint": "Enter listing title",
 
@@ -941,6 +943,8 @@ class AppStrings {
       "feature_listing_success": "Объявление поднято вверх",
       "unfeature_listing_success": "Объявление убрано с верха",
       "feature_listing_error": "Не удалось обновить объявление",
+      "error_promotion_once_per_week":
+          "Вы можете поднять объявление только раз в неделю",
 
       "listing_title_hint": "Введите заголовок объявления",
 
@@ -1632,6 +1636,8 @@ class AppStrings {
       "feature_listing_success": "E'lon yuqoriga ko'tarildi",
       "unfeature_listing_success": "E'lon yuqoridan olib tashlandi",
       "feature_listing_error": "E'loni yangilash muvaffaqiyatsiz",
+      "error_promotion_once_per_week":
+          "E'loni haftada faqat bir marta yuqoriga ko'tarish mumkin",
 
       "listing_title_hint": "E'lon sarlavhasini kiriting",
 
