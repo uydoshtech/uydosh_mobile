@@ -29,12 +29,15 @@ class _StationLabel {
     required this.label,
     required this.x,
     required this.y,
+    required this.textAnchor,
   });
 
   final int stationId;
   final String label;
   final double x;
   final double y;
+  /// "start" | "middle" | "end" - how (x,y) aligns to the text
+  final String textAnchor;
 }
 
 class AdminSubwayMapScreen extends StatefulWidget {
@@ -80,8 +83,13 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static const double _svgHeight = 1200;
   static const double _viewBoxMinX = -80;
   static const Offset _mapOffset = Offset(40, 80);
-  static const double _tapTargetWidth = 140;
-  static const double _tapTargetHeight = 26;
+  /// stname_group in SVG has transform="translate(0,4)"
+  static const double _stnameGroupOffsetY = 4.0;
+  /// Approximate character width for 13px font (matches SVG station labels)
+  static const double _charWidth = 7.0;
+  static const double _tapTargetHeight = 18.0;
+  /// Shift tap targets left to better align with SVG text
+  static const double _tapTargetOffsetX = 15.0;
   static const double _initialMapShiftX = -20;
   static const double _initialMapShiftY = -50;
 
@@ -103,13 +111,27 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     return _mapDataFuture!;
   }
 
+  /// SVG label variants that don't match MetroCache names directly
+  static const Map<String, String> _labelFixups = {
+    "Чоштепа": "Чаштепа",
+    "Choshtepa": "Chashtepa",
+    "Чилонзор": "Чиланзар",
+    "Chilonzor": "Chilanzar",
+    "Олмазор": "Алмазар",
+    "Olmazor": "Almazar",
+    "Миллий Бог": "Milliy bog",
+    "Миллий Боғ": "Milliy bog",
+    "Milliy bogh": "Milliy bog",
+    "Milliy bogʻ": "Milliy bog",
+  };
+
   static List<_StationLabel> _extractStationLabels(String svg) {
     final labels = <_StationLabel>[];
-    final usedStationIds = <int>{};
     final switchRegExp = RegExp(
       r'<switch[^>]*transform="translate\(([-\d.]+),([-\d.]+)\)"[^>]*>([\s\S]*?)</switch>',
     );
     final tspanRegExp = RegExp("<tspan[^>]*>([^<]+)</tspan>");
+    final anchorRegExp = RegExp(r'class="[^"]*\b(end|mid)\b');
 
     for (final match in switchRegExp.allMatches(svg)) {
       final x = double.tryParse(match.group(1) ?? "");
@@ -117,20 +139,60 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       final content = match.group(3) ?? "";
       if (x == null || y == null) continue;
 
-      final tspanMatch = tspanRegExp.firstMatch(content);
-      final label = tspanMatch?.group(1)?.trim();
-      if (label == null || label.isEmpty) continue;
+      final preceding = match.start > 150
+          ? svg.substring(match.start - 150, match.start)
+          : svg.substring(0, match.start);
+      final anchorMatches = anchorRegExp.allMatches(preceding).toList();
+      final anchorMatch = anchorMatches.isEmpty ? null : anchorMatches.last;
+      final textAnchor = anchorMatch?.group(1) == "end"
+          ? "end"
+          : anchorMatch?.group(1) == "mid"
+              ? "middle"
+              : "start";
 
-      final station = _findStationByLabel(label);
-      if (station == null) continue;
-      if (!usedStationIds.add(station.id)) continue;
+      final labelCandidates = tspanRegExp
+          .allMatches(content)
+          .map((m) => m.group(1)?.trim())
+          .whereType<String>()
+          .where((s) => s.isNotEmpty)
+          .toSet()
+          .toList();
+      if (labelCandidates.isEmpty) continue;
+
+      SubwayStation? station;
+      String? matchedLabel;
+      for (final label in labelCandidates) {
+        station = _findStationByLabel(label);
+        if (station != null) {
+          matchedLabel = label;
+          break;
+        }
+        final fixup = _labelFixups[label];
+        if (fixup != null) {
+          station = _findStationByLabel(fixup);
+          if (station != null) {
+            matchedLabel = label;
+            break;
+          }
+        }
+        final abbrevMatch = RegExp(r"^[^\s]+\.\s*(.+)$").firstMatch(label);
+        if (abbrevMatch != null) {
+          station = _findStationByLabel(abbrevMatch.group(1)!.trim());
+          if (station != null) {
+            matchedLabel = label;
+            break;
+          }
+        }
+      }
+      if (station == null || matchedLabel == null) continue;
 
       labels.add(
         _StationLabel(
           stationId: station.id,
-          label: label,
+          label: matchedLabel,
           x: x,
           y: y,
+          textAnchor: textAnchor,
         ),
       );
     }
@@ -360,15 +422,23 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   ) {
     return stationLabels.map((label) {
       final posX = offsetX + (_mapOffset.dx + label.x - _viewBoxMinX) * scale;
-      final posY = offsetY + (_mapOffset.dy + label.y) * scale;
+      final posY = offsetY +
+          (_mapOffset.dy + label.y + _stnameGroupOffsetY) * scale;
+      final tapWidth = (label.label.length * _charWidth).clamp(40.0, 120.0);
+      final baseLeft = label.textAnchor == "end"
+          ? posX - tapWidth
+          : label.textAnchor == "middle"
+              ? posX - tapWidth / 2
+              : posX;
+      final left = baseLeft - _tapTargetOffsetX;
       return Positioned(
-        left: posX - _tapTargetWidth / 2,
+        left: left,
         top: posY - _tapTargetHeight / 2,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => _openStationListings(context, label.stationId),
           child: Container(
-            width: _tapTargetWidth,
+            width: tapWidth,
             height: _tapTargetHeight,
             decoration: BoxDecoration(
               color: Colors.purple.withOpacity(0.4),
@@ -518,7 +588,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                   ..scale(1.3);
               });
             },
-            tooltip: "Refresh map icons",
+            tooltip: "Refresh map",
           ),
         ],
       ),
