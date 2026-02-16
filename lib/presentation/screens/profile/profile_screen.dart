@@ -8,7 +8,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
-import "package:uy_dosh/base/services/logout_service.dart";
+import "package:uy_dosh/base/services/logout_service.dart" show LogoutService, AccountBlockedException;
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -1572,6 +1572,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onConfirm: () async {
         try {
           await LogoutService().performDeleteAccount(context);
+        } on AccountBlockedException {
+          if (!context.mounted) return;
+          ToastTheme.showError(
+            context,
+            message: LanguageAwareStringHelper.getCurrent(
+              context,
+              "delete_account_blocked",
+            ),
+          );
         } catch (e) {
           if (!context.mounted) return;
           ToastTheme.showError(

@@ -572,6 +572,8 @@ class AppStrings {
           "Are you sure you want to delete your account? This action cannot be undone. All your data, listings, and messages will be permanently removed.",
       "delete_account_success": "Account deleted successfully",
       "delete_account_error": "Error deleting account",
+      "delete_account_blocked":
+          "Your account has been restricted. You cannot delete your account while it is blocked. Please contact support.",
 
       // ===== FAVORITES =====
       "favorites_title": "Favorites",
@@ -1248,6 +1250,8 @@ class AppStrings {
           "Вы уверены, что хотите удалить свой аккаунт? Это действие нельзя отменить. Все ваши данные, объявления и сообщения будут безвозвратно удалены.",
       "delete_account_success": "Аккаунт успешно удалён",
       "delete_account_error": "Ошибка удаления аккаунта",
+      "delete_account_blocked":
+          "Ваш аккаунт ограничен. Вы не можете удалить аккаунт, пока он заблокирован. Обратитесь в службу поддержки.",
 
       // ===== FAVORITES =====
       "favorites_title": "Избранное",
@@ -1932,6 +1936,8 @@ class AppStrings {
           "Hisobingizni o'chirishni xohlaysizmi? Bu amalni bekor qilish mumkin emas. Barcha ma'lumotlaringiz, e'lonlaringiz va xabarlaringiz butunlay o'chiriladi.",
       "delete_account_success": "Hisob muvaffaqiyatli o'chirildi",
       "delete_account_error": "Hisobni o'chirishda xatolik",
+      "delete_account_blocked":
+          "Hisobingiz cheklangan. Bloklangan paytda hisobni o'chirish mumkin emas. Qo'llab-quvvatlash xizmatiga murojaat qiling.",
 
       // ===== FAVORITES =====
       "favorites_title": "Sevimlilar",
