@@ -1118,7 +1118,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
 
                 // Page content
                 Expanded(
@@ -1486,7 +1486,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     return SingleChildScrollView(
       controller: _profileScrollController,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        padding: const EdgeInsets.only(left: 32, right: 32, top: 0, bottom: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1494,12 +1494,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               "complete_profile",
               context,
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
                 color: _getOnboardingTextColor(context),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
 
             // Name input
             LanguageAwareStringHelper.getText(
@@ -1562,7 +1562,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
 
             // Gender selection
             LanguageAwareStringHelper.getText(

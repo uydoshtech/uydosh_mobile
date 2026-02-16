@@ -10,6 +10,7 @@ class UpdateProfileRequest implements IJsonEncodable {
     this.gender,
     this.regionId,
     this.universityId,
+    this.role,
     this.aboutMe,
     this.telegram,
     this.avatarUrl,
@@ -36,6 +37,7 @@ class UpdateProfileRequest implements IJsonEncodable {
   final int? regionId;
   @JsonKey(name: "university_id")
   final int? universityId;
+  final String? role;
   @JsonKey(name: "about_me")
   final String? aboutMe;
   final String? telegram;

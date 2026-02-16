@@ -10,6 +10,7 @@ import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 
@@ -44,6 +45,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isLoading = false;
   bool _isLoadingRegions = true;
   bool _isLoadingUniversities = true;
+
+  String _selectedRole = "tenant";
 
   // Scroll controllers for wheel pickers
   FixedExtentScrollController? _regionScrollController;
@@ -93,6 +96,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     _loadRegions();
     _loadUniversities();
+    _loadUserRole();
+  }
+
+  Future<void> _loadUserRole() async {
+    final role = await SessionManager.getUserRole();
+    if (mounted) {
+      setState(() {
+        _selectedRole = role == "landlord" ? "landlord" : "tenant";
+      });
+    }
   }
 
   @override
@@ -238,6 +251,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         gender: gender,
         regionId: regionId,
         universityId: universityId,
+        role: _selectedRole,
         aboutMe: aboutMeToSend,
         telegram: telegramToSend,
         employed: _employed,
@@ -286,6 +300,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             "profile_updated_success",
           ),
         );
+
+        await SessionManager.storeUserRole(_selectedRole);
 
         Navigator.of(context).pop(true); // Return true to indicate success
       }
@@ -393,6 +409,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               label: LanguageAwareStringHelper.getCurrent(context, "telegram"),
               controller: _telegramController,
               icon: Icons.telegram,
+            ),
+
+            const SizedBox(height: 24),
+
+            // Role Dropdown (landlord / tenant only)
+            ProfileDropdownControl(
+              label: LanguageAwareStringHelper.getCurrent(
+                context,
+                "are_you_landlord_or_renter",
+              ),
+              value: _selectedRole,
+              onChanged: (value) => setState(() => _selectedRole = value ?? "tenant"),
+              icon: Icons.badge,
+              options: [
+                DropdownOption(
+                  value: "landlord",
+                  label: LanguageAwareStringHelper.getCurrent(
+                    context,
+                    "role_landlord",
+                  ),
+                ),
+                DropdownOption(
+                  value: "tenant",
+                  label: LanguageAwareStringHelper.getCurrent(
+                    context,
+                    "role_tenant",
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 24),
