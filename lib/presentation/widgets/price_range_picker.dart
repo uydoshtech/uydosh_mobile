@@ -91,6 +91,14 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
     final backgroundColor = getBackgroundColor();
     final textColor = getTextColor();
 
+    // Inactive track: use lighter color in blue theme for visibility on dark background
+    Color getInactiveTrackColor() {
+      if (themeState.isBlueTheme) {
+        return Colors.white.withValues(alpha: 0.35);
+      }
+      return sliderColor.withValues(alpha: 0.2);
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -141,7 +149,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                   overlayRadius: 32.0,
                 ),
                 activeTrackColor: sliderColor,
-                inactiveTrackColor: sliderColor.withValues(alpha: 0.2),
+                inactiveTrackColor: getInactiveTrackColor(),
                 thumbColor: sliderColor,
                 overlayColor: sliderColor.withValues(alpha: 0.1),
               ),
@@ -156,7 +164,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                   max: widget.maxPrice,
                   // Removed divisions to eliminate visual tick marks
                   activeColor: sliderColor,
-                  inactiveColor: sliderColor.withValues(alpha: 0.2),
+                  inactiveColor: getInactiveTrackColor(),
                   labels: RangeLabels(
                     "${_minPrice.round()} y.e.",
                     "${_maxPrice.round()} y.e.",
