@@ -46,20 +46,22 @@ class SearchFloatingActionButton extends StatelessWidget {
   }
 
   void _handleSearchPressed(BuildContext context) {
-    // Add haptic feedback
     HapticFeedbackUtils.impact();
 
-    // Show search bottom sheet
-    SearchBottomSheetWidget.show(
-      context,
-      replaceCurrentRoute: replaceCurrentRoute,
-      currentListingTypeId: searchFiltersState.selectedListingTypeId,
-      currentLocationId: searchFiltersState.selectedLocationIndex,
-      currentSubwayStationId: searchFiltersState.selectedStationId,
-      currentSubwayLineId: searchFiltersState.selectedSubwayLine,
-      currentGender: searchFiltersState.selectedGender,
-      currentMinPrice: searchFiltersState.minPrice,
-      currentMaxPrice: searchFiltersState.maxPrice,
-    );
+    // Apply profile-based listing type and gender before showing the sheet
+    searchFiltersState.applyProfileValuesForSearchSheet().then((_) {
+      if (!context.mounted) return;
+      SearchBottomSheetWidget.show(
+        context,
+        replaceCurrentRoute: replaceCurrentRoute,
+        currentListingTypeId: searchFiltersState.selectedListingTypeId,
+        currentLocationId: searchFiltersState.selectedLocationIndex,
+        currentSubwayStationId: searchFiltersState.selectedStationId,
+        currentSubwayLineId: searchFiltersState.selectedSubwayLine,
+        currentGender: searchFiltersState.selectedGender,
+        currentMinPrice: searchFiltersState.minPrice,
+        currentMaxPrice: searchFiltersState.maxPrice,
+      );
+    });
   }
 }

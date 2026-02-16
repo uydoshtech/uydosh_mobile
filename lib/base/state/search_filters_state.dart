@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uy_dosh/base/logger/logger.dart';
+import 'package:uy_dosh/base/services/session_manager.dart';
+import 'package:uy_dosh/base/injection/injection.dart';
+import 'package:uy_dosh/domain/services/user_profile_service.dart';
+import 'package:uy_dosh/base/api/client/oauth_api_client.dart';
+import 'package:uy_dosh/base/api/client/json_encodable.dart';
 
 // Global search filters state with ChangeNotifier for reactivity
 class SearchFiltersState extends ChangeNotifier {
@@ -19,6 +24,7 @@ class SearchFiltersState extends ChangeNotifier {
   double _maxPrice = 500.0; // Default max price
   bool _privateRoom = false; // Default to false (show all)
   bool _isInitialized = false;
+  bool _profileDefaultsApplied = false;
 
   int get selectedListingTypeId => _selectedListingTypeId;
   int get selectedLocationIndex => _selectedLocationIndex;
@@ -38,8 +44,9 @@ class SearchFiltersState extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Load listing type ID
-      _selectedListingTypeId = prefs.getInt('search_listing_type_id') ?? 2;
+      // Load listing type ID - use profile default when no saved preference
+      final savedListingTypeId = prefs.getInt('search_listing_type_id');
+      _selectedListingTypeId = savedListingTypeId ?? 2;
 
       // Load location index
       _selectedLocationIndex = prefs.getInt('search_location_index') ?? 0;
@@ -62,8 +69,9 @@ class SearchFiltersState extends ChangeNotifier {
         'DEBUG: SearchFiltersState.initialize - loaded station ID from SharedPreferences: $_selectedStationId',
       );
 
-      // Load gender
-      _selectedGender = prefs.getInt('search_gender') ?? 1;
+      // Load gender - use profile default when no saved preference
+      final savedGender = prefs.getInt('search_gender');
+      _selectedGender = savedGender ?? 1;
 
       // Load price range
       _minPrice = prefs.getDouble('search_min_price') ?? 10.0;
@@ -71,6 +79,9 @@ class SearchFiltersState extends ChangeNotifier {
 
       // Load private room preference
       _privateRoom = prefs.getBool('search_private_room') ?? false;
+
+      // Mark whether we need to apply profile defaults (when no saved values)
+      _profileDefaultsApplied = savedListingTypeId != null && savedGender != null;
 
       logger.d(
         'Loaded saved search filters: listingType=$_selectedListingTypeId, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom',
@@ -82,6 +93,109 @@ class SearchFiltersState extends ChangeNotifier {
 
     _isInitialized = true;
     notifyListeners();
+  }
+
+  /// Applies profile-based defaults for listing type and gender when no saved
+  /// preferences exist. Call after dependency injection is configured (e.g. from
+  /// HomeScreen). Only applies for logged-in users.
+  Future<void> ensureProfileDefaultsApplied() async {
+    if (_profileDefaultsApplied) return;
+    if (!await SessionManager.isAuthenticated()) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedListingTypeId = prefs.getInt("search_listing_type_id");
+      final savedGender = prefs.getInt("search_gender");
+
+      bool updated = false;
+
+      // Apply listing type from profile role when no saved preference
+      if (savedListingTypeId == null) {
+        final role = await _getUserRole();
+        final defaultType = role == "tenant" ? 2 : 1; // tenant=Need roommate (2), landlord=Needs Room (1)
+        _selectedListingTypeId = defaultType;
+        await prefs.setInt("search_listing_type_id", defaultType);
+        updated = true;
+        logger.d(
+          "SearchFiltersState: Applied profile listing type default: $defaultType (role: $role)",
+        );
+      }
+
+      // Apply gender from profile when no saved preference
+      if (savedGender == null) {
+        final gender = await _getProfileGender();
+        if (gender != null && (gender == 1 || gender == 2)) {
+          _selectedGender = gender;
+          await prefs.setInt("search_gender", gender);
+          updated = true;
+          logger.d(
+            "SearchFiltersState: Applied profile gender default: $gender",
+          );
+        }
+      }
+
+      if (updated) {
+        _profileDefaultsApplied = true;
+        notifyListeners();
+      }
+    } catch (e) {
+      logger.d("Error applying profile defaults to search filters: $e");
+    }
+  }
+
+  /// Applies profile listing type and gender to search filters. Call before
+  /// opening the search sheet so it displays profile-based values. Always
+  /// overwrites current values with profile data for logged-in users.
+  Future<void> applyProfileValuesForSearchSheet() async {
+    if (!await SessionManager.isAuthenticated()) return;
+
+    try {
+      final role = await _getUserRole();
+      final defaultType = role == "tenant" ? 2 : 1; // tenant=Need roommate (2), landlord=Needs Room (1)
+      await setListingTypeId(defaultType);
+
+      final gender = await _getProfileGender();
+      if (gender != null && (gender == 1 || gender == 2)) {
+        await setGender(gender);
+      }
+    } catch (e) {
+      logger.d("Error applying profile values for search sheet: $e");
+    }
+  }
+
+  Future<String?> _getUserRole() async {
+    String? role = await SessionManager.getUserRole();
+    if (role != null) return role;
+    try {
+      final response = await getIt<IOAuthApiClient>()
+          .post<Map<String, dynamic>, _EmptyRequest>(
+            '/users/verify-session',
+            (json) => json as Map<String, dynamic>,
+            data: _EmptyRequest(),
+          );
+      final user = response['user'];
+      role = user is Map<String, dynamic> ? user['role'] as String? : null;
+      if (role != null) await SessionManager.storeUserRole(role);
+      return role;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<int?> _getProfileGender() async {
+    var profile = await SessionManager.getCachedUserProfile();
+    if (profile?.gender != null &&
+        (profile!.gender == 1 || profile.gender == 2)) {
+      return profile.gender;
+    }
+    try {
+      profile = await getIt<IUserProfileService>().getCurrentUserProfile();
+      if (profile.gender != null &&
+          (profile.gender == 1 || profile.gender == 2)) {
+        return profile.gender;
+      }
+    } catch (_) {}
+    return null;
   }
 
   // Update listing type ID
@@ -224,6 +338,7 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedStationIndex = 0;
     _selectedStationId = 0;
     _selectedGender = 1;
+    _profileDefaultsApplied = false; // Allow profile defaults to re-apply
     _minPrice = 10.0;
     _maxPrice = 500.0;
     _privateRoom = false;
@@ -245,4 +360,11 @@ class SearchFiltersState extends ChangeNotifier {
 
     notifyListeners();
   }
+}
+
+class _EmptyRequest implements IJsonEncodable {
+  _EmptyRequest();
+
+  @override
+  Map<String, dynamic> toJson() => {};
 }

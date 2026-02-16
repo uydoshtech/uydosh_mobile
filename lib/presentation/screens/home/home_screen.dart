@@ -130,6 +130,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // Initialize search filters state
     _searchFiltersState.initialize();
 
+    // Apply profile-based defaults for listing type and gender when no saved prefs
+    _searchFiltersState.ensureProfileDefaultsApplied();
+
     // Initialize search filters with current parameters if in search mode
     if (widget.isSearchMode) {
       if (!widget.useExplicitFiltersOnly) {
@@ -438,8 +441,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ),
           const SizedBox(height: 24),
           GhostButtonFactory.iconText(
-            onPressed:
-                () => SearchBottomSheetWidget.show(
+            onPressed: () {
+              _searchFiltersState.applyProfileValuesForSearchSheet().then((_) {
+                if (!context.mounted) return;
+                SearchBottomSheetWidget.show(
                   context,
                   replaceCurrentRoute: true,
                   currentListingTypeId:
@@ -450,7 +455,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   currentGender: _searchFiltersState.selectedGender,
                   currentMinPrice: _searchFiltersState.minPrice,
                   currentMaxPrice: _searchFiltersState.maxPrice,
-                ),
+                );
+              });
+            },
             icon: Icons.search,
             text: LanguageAwareStringHelper.getCurrent(
               context,
