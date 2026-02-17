@@ -40,6 +40,26 @@ class _StationLabel {
   final String textAnchor;
 }
 
+/// Per-station overrides for tappable area position and size.
+/// dx, dy are in SVG coordinates (scaled with map).
+/// widthDelta is added to the computed width.
+class _TapTargetOverride {
+  const _TapTargetOverride({
+    required this.dx,
+    required this.dy,
+    required this.widthDelta,
+  });
+
+  const _TapTargetOverride.only({double dx = 0, double dy = 0, double widthDelta = 0})
+      : dx = dx,
+        dy = dy,
+        widthDelta = widthDelta;
+
+  final double dx;
+  final double dy;
+  final double widthDelta;
+}
+
 class AdminSubwayMapScreen extends StatefulWidget {
   const AdminSubwayMapScreen({super.key});
 
@@ -96,6 +116,14 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static const double _startAnchorWidthExtra = 12.0;
   static const double _initialMapShiftX = -20;
   static const double _initialMapShiftY = -50;
+
+  /// Per-station tappable area overrides (stationId -> offset/width adjustments)
+  static const Map<int, _TapTargetOverride> _tapTargetOverrides = {
+    // Beruniy (18) - extend right to cover full "Беруни"
+    18: _TapTargetOverride.only(widthDelta: 15),
+    // Add more as needed, e.g.:
+    // 23: _TapTargetOverride.only(dx: -5, dy: 2, widthDelta: 10),
+  };
 
   static const String _svgAssetPath =
       "assets/map_elements/tashkent_metro_map.svg";
@@ -438,20 +466,28 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     double offsetY,
   ) {
     return stationLabels.map((label) {
-      final posX = offsetX + (_mapOffset.dx + label.x - _viewBoxMinX) * scale;
-      final posY = offsetY +
+      final override = _tapTargetOverrides[label.stationId];
+      var posX = offsetX + (_mapOffset.dx + label.x - _viewBoxMinX) * scale;
+      var posY = offsetY +
           (_mapOffset.dy + label.y + _stnameGroupOffsetY) * scale;
+      if (override != null) {
+        posX += override.dx * scale;
+        posY += override.dy * scale;
+      }
       final tapWidth = (label.label.length * _charWidth).clamp(40.0, 120.0);
-      final left = label.textAnchor == "end"
+      var left = label.textAnchor == "end"
           ? posX - tapWidth - _tapTargetOffsetX - _endAnchorWidthExtra
           : label.textAnchor == "middle"
               ? posX - tapWidth / 2
               : posX - _tapTargetOffsetX;
-      final width = label.textAnchor == "end"
+      var width = label.textAnchor == "end"
           ? tapWidth + _tapTargetOffsetX + _endAnchorWidthExtra
           : label.textAnchor == "start"
               ? tapWidth + _startAnchorWidthExtra
               : tapWidth;
+      if (override != null && override.widthDelta != 0) {
+        width += override.widthDelta;
+      }
       return Positioned(
         left: left,
         top: posY - _tapTargetHeight / 2,
