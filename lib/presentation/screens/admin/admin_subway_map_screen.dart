@@ -107,7 +107,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static const double _stnameGroupOffsetY = 4.0;
   /// Approximate character width for 13px font (matches SVG station labels)
   static const double _charWidth = 7.0;
-  static const double _tapTargetHeight = 18.0;
+  static const double _tapTargetHeight = 16.0;
   /// Shift tap targets left to better align with SVG text
   static const double _tapTargetOffsetX = 15.0;
   /// Extra width for end-anchor text (Cyrillic often wider than estimate)
@@ -134,39 +134,39 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     11: _TapTargetOverride.only(),  // Xalqlar doʻstligi
     12: _TapTargetOverride.only(),  // Paxtakor
     13: _TapTargetOverride(dx: 0, dy: 0, widthDelta: -50),  // Mustaqil. Maydoni
-    14: _TapTargetOverride.only(),  // A. Temur Xiyoboni
-    15: _TapTargetOverride.only(),  // Hamid Olimjon
-    16: _TapTargetOverride.only(),  // Pushkin
-    17: _TapTargetOverride.only(),  // Buyuk Ipak Yoli
+    14: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -40),  // A. Temur Xiyoboni
+    15: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -40),  // Hamid Olimjon
+    16: _TapTargetOverride(dx: 0, dy: -6, widthDelta: 4),  // Pushkin
+    17: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Buyuk Ipak Yoli
     // Line 2 – Oʻzbekiston
     18: _TapTargetOverride(dx: 80, dy: -5, widthDelta: -20),  // Beruniy
     19: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Tinchlik
-    20: _TapTargetOverride(dx: 0, dy: 0, widthDelta: -20),  // Chorsu
-    21: _TapTargetOverride(dx: 0, dy: -5, widthDelta: -20),  // Gafur Gulom
-    22: _TapTargetOverride.only(),  // Alisher Navoiy
+    20: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Chorsu
+    21: _TapTargetOverride(dx: 0, dy: -7, widthDelta: -20),  // Gafur Gulom
+    22: _TapTargetOverride(dx: 70, dy: -10, widthDelta: -50),  // Alisher Navoiy
     23: _TapTargetOverride(dx: 60, dy: -5, widthDelta: -50),  // Oʻzbekiston
     24: _TapTargetOverride(dx: -80, dy: -4, widthDelta: -30),  // Kosmonavtlar
-    25: _TapTargetOverride.only(),  // Oybek
+    25: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -10),  // Oybek
     26: _TapTargetOverride.only(),  // Toshkent
-    27: _TapTargetOverride(dx: 40, dy: 0, widthDelta: -20),  // Mashinasozlar
-    28: _TapTargetOverride.only(),  // Doʻstlik
+    27: _TapTargetOverride(dx: 40, dy: -6, widthDelta: -20),  // Mashinasozlar
+    28: _TapTargetOverride(dx: 0, dy: -6, widthDelta: 0),  // Doʻstlik
     // Line 3 – Yunusobod
-    29: _TapTargetOverride(dx: 0, dy: -10, widthDelta: -20),  // Mingurik
-    30: _TapTargetOverride(dx: 140, dy: 4, widthDelta: -50),  // Yunus Rajabiy
-    31: _TapTargetOverride(dx: 90, dy: 0, widthDelta: -50),  // Abdulla Qodiriy
-    32: _TapTargetOverride.only(),  // Minor
-    33: _TapTargetOverride.only(),  // Bodomzor
-    34: _TapTargetOverride.only(),  // Shahriston
-    35: _TapTargetOverride.only(),  // Yunusobod
-    36: _TapTargetOverride.only(),  // Turkiston
+    29: _TapTargetOverride(dx: 0, dy: -4, widthDelta: -20),  // Mingurik
+    30: _TapTargetOverride(dx: 140, dy: 0, widthDelta: -50),  // Yunus Rajabiy
+    31: _TapTargetOverride(dx: 80, dy: 0, widthDelta: -50),  // Abdulla Qodiriy
+    32: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Minor
+    33: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Bodomzor
+    34: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Shahriston
+    35: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Yunusobod
+    36: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Turkiston
     // Line 4 – Halqa
-    37: _TapTargetOverride.only(),  // Texnopark
-    38: _TapTargetOverride.only(),  // Yashnobod
-    39: _TapTargetOverride.only(),  // Tuzel
-    40: _TapTargetOverride.only(),  // Olmos
-    41: _TapTargetOverride.only(),  // Rohat
-    42: _TapTargetOverride.only(),  // Yangiobod
-    43: _TapTargetOverride.only(),  // Quyliuq
+    37: _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Texnopark
+    38:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Yashnobod
+    39:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Tuzel
+    40:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Olmos
+    41:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Rohat
+    42:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Yangiobod
+    43:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Quyliuq
     44: _TapTargetOverride(dx: -10, dy: 0, widthDelta: -10),  // Matonat
     45: _TapTargetOverride(dx: -5, dy: 0, widthDelta: -10),  // Qiyot
     46: _TapTargetOverride(dx: -15, dy: 0, widthDelta: -20),  // Tolarik
