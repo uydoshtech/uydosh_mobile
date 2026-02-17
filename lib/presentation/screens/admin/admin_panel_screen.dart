@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listings_with_complaints_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_listing_creation_analytics_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_search_analytics_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart";
@@ -117,6 +118,19 @@ class AdminPanelScreen extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const AdminSearchAnalyticsScreen(),
+                ),
+              );
+            },
+          ),
+          _buildAdminSection(
+            context,
+            icon: Icons.trending_up,
+            titleKey: "admin_panel_section_listing_creation_analytics",
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const AdminListingCreationAnalyticsScreen(),
                 ),
               );
             },

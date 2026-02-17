@@ -443,6 +443,8 @@ class AppStrings {
       "admin_panel_section_subway_heatmap": "Subway line heat map",
       "admin_panel_section_subway_map": "Subway map",
       "admin_panel_section_search_analytics": "Search analytics",
+      "admin_panel_section_listing_creation_analytics":
+          "Listings creation analytics",
 
       "admin_search_analytics_title": "Search analytics",
       "admin_search_analytics_loading": "Loading search analytics...",
@@ -461,6 +463,19 @@ class AppStrings {
       "admin_search_analytics_no_stations": "No station search data yet",
       "admin_search_analytics_no_districts": "No district search data yet",
       "admin_search_analytics_no_lines": "No line search data yet",
+
+      "admin_listing_creation_analytics_title": "Listings creation analytics",
+      "admin_listing_creation_analytics_loading":
+          "Loading listings creation analytics...",
+      "admin_listing_creation_analytics_error":
+          "Failed to load listings creation analytics",
+      "admin_listing_creation_analytics_retry": "Retry",
+      "admin_listing_creation_analytics_time_range": "Time range",
+      "admin_listing_creation_analytics_total": "Total in period",
+      "admin_listing_creation_analytics_today": "Today",
+      "admin_listing_creation_analytics_week": "This week",
+      "admin_listing_creation_analytics_by_day": "Listings by day",
+      "admin_listing_creation_analytics_no_data": "No listing data in this period",
 
       "admin_district_heatmap_title": "District heat map",
       "admin_district_heatmap_description":
@@ -1129,6 +1144,8 @@ class AppStrings {
       "admin_panel_section_subway_heatmap": "Тепловая карта линий метро",
       "admin_panel_section_subway_map": "Схема метро",
       "admin_panel_section_search_analytics": "Аналитика поиска",
+      "admin_panel_section_listing_creation_analytics":
+          "Аналитика создания объявлений",
 
       "admin_search_analytics_title": "Аналитика поиска",
       "admin_search_analytics_loading": "Загрузка аналитики поиска...",
@@ -1147,6 +1164,21 @@ class AppStrings {
       "admin_search_analytics_no_stations": "Нет данных по станциям",
       "admin_search_analytics_no_districts": "Нет данных по районам",
       "admin_search_analytics_no_lines": "Нет данных по линиям",
+
+      "admin_listing_creation_analytics_title":
+          "Аналитика создания объявлений",
+      "admin_listing_creation_analytics_loading":
+          "Загрузка аналитики создания объявлений...",
+      "admin_listing_creation_analytics_error":
+          "Не удалось загрузить аналитику",
+      "admin_listing_creation_analytics_retry": "Повторить",
+      "admin_listing_creation_analytics_time_range": "Период",
+      "admin_listing_creation_analytics_total": "Всего за период",
+      "admin_listing_creation_analytics_today": "Сегодня",
+      "admin_listing_creation_analytics_week": "За неделю",
+      "admin_listing_creation_analytics_by_day": "Объявления по дням",
+      "admin_listing_creation_analytics_no_data":
+          "Нет данных за выбранный период",
 
       "admin_district_heatmap_title": "Тепловая карта районов",
       "admin_district_heatmap_description":
@@ -1826,6 +1858,8 @@ class AppStrings {
           "Metro liniyalari issiqlik xaritasi",
       "admin_panel_section_subway_map": "Metro sxemasi",
       "admin_panel_section_search_analytics": "Qidiruv statistikasi",
+      "admin_panel_section_listing_creation_analytics":
+          "E'lonlar yaratilishi statistikasi",
 
       "admin_search_analytics_title": "Qidiruv statistikasi",
       "admin_search_analytics_loading": "Qidiruv statistikasi yuklanmoqda...",
@@ -1844,6 +1878,20 @@ class AppStrings {
       "admin_search_analytics_no_stations": "Bekatlar bo'yicha ma'lumot yo'q",
       "admin_search_analytics_no_districts": "Tumanlar bo'yicha ma'lumot yo'q",
       "admin_search_analytics_no_lines": "Liniyalar bo'yicha ma'lumot yo'q",
+
+      "admin_listing_creation_analytics_title":
+          "E'lonlar yaratilishi statistikasi",
+      "admin_listing_creation_analytics_loading":
+          "E'lonlar statistikasi yuklanmoqda...",
+      "admin_listing_creation_analytics_error": "Statistika yuklanmadi",
+      "admin_listing_creation_analytics_retry": "Qayta urinish",
+      "admin_listing_creation_analytics_time_range": "Davr",
+      "admin_listing_creation_analytics_total": "Davrdagi jami",
+      "admin_listing_creation_analytics_today": "Bugun",
+      "admin_listing_creation_analytics_week": "Haftada",
+      "admin_listing_creation_analytics_by_day": "Kunlar bo'yicha e'lonlar",
+      "admin_listing_creation_analytics_no_data":
+          "Tanlangan davrda ma'lumot yo'q",
 
       "admin_district_heatmap_title": "Tumanlar issiqlik xaritasi",
       "admin_district_heatmap_description":

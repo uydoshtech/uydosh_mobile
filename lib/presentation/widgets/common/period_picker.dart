@@ -17,7 +17,7 @@ class PeriodPicker extends StatefulWidget {
     this.title,
     this.height = 120,
     this.itemExtent = 44,
-    this.showArrows = true,
+    this.showArrows = false,
   });
 
   /// Selected value: 1, 7, 30, 90 for days, or 0 for all time
