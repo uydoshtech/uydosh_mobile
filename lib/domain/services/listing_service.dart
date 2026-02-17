@@ -243,7 +243,12 @@ class ListingService implements IListingService {
         final expandedStationIds = MetroCache.expandWithTransferStations(
           finalStationIds,
         );
-        queryParams["subwayStationIds"] = expandedStationIds.join(",");
+        // Use single subwayStationId for analytics when one station; otherwise subwayStationIds
+        if (expandedStationIds.length == 1) {
+          queryParams["subwayStationId"] = expandedStationIds.first;
+        } else {
+          queryParams["subwayStationIds"] = expandedStationIds.join(",");
+        }
 
         logger.d("\x1B[36m=== TRANSFER STATION EXPANSION DEBUG ===");
         logger.d("Original station IDs: $finalStationIds");
@@ -844,7 +849,12 @@ class ListingService implements IListingService {
         final expandedStationIds = MetroCache.expandWithTransferStations(
           finalStationIds,
         );
-        queryParams["subwayStationIds"] = expandedStationIds.join(",");
+        // Use single subwayStationId for analytics when one station; otherwise subwayStationIds
+        if (expandedStationIds.length == 1) {
+          queryParams["subwayStationId"] = expandedStationIds.first;
+        } else {
+          queryParams["subwayStationIds"] = expandedStationIds.join(",");
+        }
 
         logger.d("\x1B[36m=== TRANSFER STATION EXPANSION DEBUG ===");
         logger.d("Original station IDs: $finalStationIds");
