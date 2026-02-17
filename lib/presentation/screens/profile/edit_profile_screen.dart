@@ -47,6 +47,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isLoadingUniversities = true;
 
   String _selectedRole = "tenant";
+  bool _isAdmin = false;
 
   // Scroll controllers for wheel pickers
   FixedExtentScrollController? _regionScrollController;
@@ -103,7 +104,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final role = await SessionManager.getUserRole();
     if (mounted) {
       setState(() {
-        _selectedRole = role == "landlord" ? "landlord" : "tenant";
+        _isAdmin = role == "admin";
+        _selectedRole = (role == "admin" || role == "landlord") ? role! : "tenant";
       });
     }
   }
@@ -413,7 +415,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             const SizedBox(height: 24),
 
-            // Role Dropdown (landlord / tenant only)
+            // Role Dropdown (landlord / tenant; admin option when user is admin)
             ProfileDropdownControl(
               label: LanguageAwareStringHelper.getCurrent(
                 context,
@@ -423,6 +425,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               onChanged: (value) => setState(() => _selectedRole = value ?? "tenant"),
               icon: Icons.badge,
               options: [
+                if (_isAdmin)
+                  DropdownOption(
+                    value: "admin",
+                    label: LanguageAwareStringHelper.getCurrent(
+                      context,
+                      "role_admin",
+                    ),
+                  ),
                 DropdownOption(
                   value: "landlord",
                   label: LanguageAwareStringHelper.getCurrent(
