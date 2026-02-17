@@ -639,6 +639,29 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   void _dispatchSearch({required bool isRefresh}) {
     final listingsBloc = context.read<ListingsBloc>();
+
+    // When opened from metro map with only station: use station-only API (no transfer expansion, no other filters)
+    final isStationOnlyFromMap =
+        widget.useExplicitFiltersOnly &&
+        widget.subwayStationId != null &&
+        widget.listingTypeId == null &&
+        widget.locationId == null &&
+        widget.subwayLineId == null &&
+        widget.gender == null &&
+        widget.minPrice == null &&
+        widget.maxPrice == null &&
+        widget.privateRoom == null;
+
+    if (isStationOnlyFromMap) {
+      listingsBloc.add(
+        ListingsEvent.fetchListingsBySubwayStation(
+          subwayStationId: widget.subwayStationId!,
+          isRefresh: isRefresh,
+        ),
+      );
+      return;
+    }
+
     final listingTypeId =
         widget.useExplicitFiltersOnly
             ? widget.listingTypeId

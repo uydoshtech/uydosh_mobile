@@ -285,6 +285,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
               child: HomeScreen(
                 subwayStationId: stationId,
                 isSearchMode: true,
+                useExplicitFiltersOnly: true,
               ),
             ),
       ),

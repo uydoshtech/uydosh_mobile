@@ -36,6 +36,8 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   double? _lastMinPrice;
   double? _lastMaxPrice;
   bool? _lastPrivateRoom;
+  /// When true, load more uses getListingsBySubwayStation (station-only, no transfer expansion)
+  bool _stationOnlyMode = false;
 
   Future<void> _onFetchListings(
     Emitter<ListingsState> emit,
@@ -156,6 +158,26 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         fetchUserListings: (e) => true,
       );
 
+      // Station-only mode (from metro map): use getListingsBySubwayStation
+      if (_stationOnlyMode && _lastSubwayStationId != null) {
+        final listings = await _listingService.getListingsBySubwayStation(
+          _lastSubwayStationId!,
+          page: _currentPage,
+          limit: limit,
+        );
+        _hasMore = listings.length >= limit;
+        final updatedListings = [...currentListings, ...listings];
+        emit(
+          ListingsState.loaded(
+            listings: updatedListings,
+            hasMore: _hasMore,
+            currentPage: _currentPage,
+          ),
+        );
+        _currentPage++;
+        return;
+      }
+
       // Check if we have stored search parameters
       if (_lastListingTypeId != null ||
           _lastLocationId != null ||
@@ -238,6 +260,16 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _hasMore = true;
       _currentListings = [];
     }
+
+    _stationOnlyMode = true;
+    event.map(
+      fetchListings: (_) {},
+      loadMore: (_) {},
+      fetchListingsBySubwayStation: (e) => _lastSubwayStationId = e.subwayStationId,
+      fetchListingsByLocation: (_) {},
+      searchListings: (_) {},
+      fetchUserListings: (_) {},
+    );
 
     emit(const ListingsState.loading());
 
@@ -417,6 +449,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     );
 
     if (searchParams != null) {
+      _stationOnlyMode = false;
       _lastListingTypeId = searchParams["listingTypeId"] as int?;
       _lastLocationId = searchParams["locationId"] as int?;
       _lastSubwayStationId = searchParams["subwayStationId"] as int?;
