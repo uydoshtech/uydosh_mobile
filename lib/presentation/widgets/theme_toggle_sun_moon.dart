@@ -4,7 +4,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 /// A theme toggle with sun (light) and moon (dark/blue) icons.
-/// Matches the design: pill-shaped track, circular sliding thumb, sun left / moon right.
+/// Matches the design: pill-shaped track, circular sliding thumb, moon left / sun right.
 class ThemeToggleSunMoon extends StatelessWidget {
   const ThemeToggleSunMoon({
     super.key,
@@ -57,24 +57,9 @@ class ThemeToggleSunMoon extends StatelessWidget {
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                // Sun icon (left)
+                // Moon icon (left)
                 Positioned(
                   left: size * 0.22,
-                  top: 0,
-                  bottom: 0,
-                  child: Center(
-                    child: Icon(
-                      Icons.light_mode,
-                      size: size * 0.5,
-                      color: isLight
-                          ? iconAndThumbColor
-                          : iconAndThumbColor.withValues(alpha: 0.4),
-                    ),
-                  ),
-                ),
-                // Moon icon (right)
-                Positioned(
-                  right: size * 0.22,
                   top: 0,
                   bottom: 0,
                   child: Center(
@@ -87,12 +72,27 @@ class ThemeToggleSunMoon extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Sun icon (right)
+                Positioned(
+                  right: size * 0.22,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: Icon(
+                      Icons.light_mode,
+                      size: size * 0.5,
+                      color: isLight
+                          ? iconAndThumbColor
+                          : iconAndThumbColor.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ),
                 // Circular sliding thumb
                 AnimatedAlign(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
                   alignment:
-                      isLight ? Alignment.centerLeft : Alignment.centerRight,
+                      isLight ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     width: size * 0.7,
                     height: size * 0.7,
