@@ -16,11 +16,11 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 class _MapData {
   const _MapData({
     required this.stationLabels,
-    required this.mapSvg,
+    required this.rawSvg,
   });
 
   final List<_StationLabel> stationLabels;
-  final String mapSvg;
+  final String rawSvg;
 }
 
 class _StationLabel {
@@ -137,7 +137,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
             .then(
               (rawSvg) => _MapData(
                 stationLabels: _extractStationLabels(rawSvg),
-                mapSvg: _processSvg(rawSvg),
+                rawSvg: rawSvg,
               ),
             );
     return _mapDataFuture!;
@@ -465,6 +465,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     double scale,
     double offsetX,
     double offsetY,
+    String language,
   ) {
     return stationLabels.map((label) {
       final override = _tapTargetOverrides[label.stationId];
@@ -475,7 +476,12 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
         posX += override.dx * scale;
         posY += override.dy * scale;
       }
-      final tapWidth = (label.label.length * _charWidth).clamp(40.0, 120.0);
+      final displayName =
+          MetroCache.getStationDisplayName(label.stationId, language);
+      final tapWidth =
+          ((displayName.isNotEmpty ? displayName : label.label).length *
+                  _charWidth)
+              .clamp(40.0, 120.0);
       var left = label.textAnchor == "end"
           ? posX - tapWidth - _tapTargetOffsetX - _endAnchorWidthExtra
           : label.textAnchor == "middle"
@@ -508,7 +514,26 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     }).toList();
   }
 
-  static String _processSvg(String svg) {
+  /// Select the text element matching [language] from switch content.
+  /// SVG uses systemLanguage="ru", "en", "uz". Falls back to element without systemLanguage.
+  static String? _selectTextForLanguage(String switchContent, String language) {
+    final textRegExp = RegExp(r"<text([^>]*)>([\s\S]*?)</text>");
+    String? langMatch;
+    String? fallback;
+    for (final m in textRegExp.allMatches(switchContent)) {
+      final attrs = m.group(1) ?? "";
+      final full = m.group(0) ?? "";
+      final sysLang = RegExp(r'systemLanguage="([^"]+)"').firstMatch(attrs);
+      if (sysLang != null && sysLang.group(1) == language) {
+        langMatch = full;
+        break;
+      }
+      if (sysLang == null) fallback = full;
+    }
+    return langMatch ?? fallback ?? textRegExp.firstMatch(switchContent)?.group(0);
+  }
+
+  static String _processSvg(String svg, String language) {
     final withoutStyle = svg.replaceAll(
       RegExp(r"<style[\s\S]*?</style>"),
       "",
@@ -539,8 +564,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       (match) {
         final attributes = match.group(1) ?? "";
         final content = match.group(2) ?? "";
-        final firstText = RegExp(r"<text[\s\S]*?</text>").firstMatch(content);
-        final textValue = firstText?.group(0);
+        final textValue = _selectTextForLanguage(content, language);
         if (textValue == null) return "";
 
         final transformMatch =
@@ -697,7 +721,10 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                             child: Stack(
                               children: [
                                 SvgPicture.string(
-                                  mapData.mapSvg,
+                                  _processSvg(
+                                    mapData.rawSvg,
+                                    LanguageState().currentLanguage,
+                                  ),
                                   width: mapWidth,
                                   height: mapHeight,
                                   fit: BoxFit.contain,
@@ -715,6 +742,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                                   scale,
                                   offsetX,
                                   offsetY,
+                                  LanguageState().currentLanguage,
                                 ),
                               ],
                             ),

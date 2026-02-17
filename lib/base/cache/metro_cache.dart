@@ -597,6 +597,25 @@ class MetroCache {
     return metroStations.values.expand((stations) => stations).toList();
   }
 
+  /// Get station display name for a specific language.
+  /// [stationId] - station ID
+  /// [language] - language code ("en", "ru", "uz")
+  static String getStationDisplayName(int stationId, String language) {
+    final station = getStationById(stationId);
+    if (station == null) return "";
+
+    switch (language) {
+      case "uz":
+        return station.nameUz ?? station.nameEn ?? station.nameRu ?? "";
+      case "ru":
+        return station.nameRu ?? station.nameUz ?? station.nameEn ?? "";
+      case "en":
+        return station.nameEn ?? station.nameUz ?? station.nameRu ?? "";
+      default:
+        return station.nameUz ?? station.nameEn ?? station.nameRu ?? "";
+    }
+  }
+
   /// Get a specific station by ID
   static SubwayStation? getStationById(int id) {
     for (final stations in metroStations.values) {
