@@ -285,7 +285,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildBody();
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) => _buildBody(),
+    );
   }
 
   Widget _buildBody() {

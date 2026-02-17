@@ -47,6 +47,11 @@ class ActionDropdownMenu extends StatelessWidget {
                 color: effectiveTextColor,
               );
 
+          final effectiveIconColor =
+              item.enabled
+                  ? (item.iconColor ?? baseTextStyle?.color)
+                  : disabledColor;
+
           return PopupMenuItem<String>(
             value: item.value,
             enabled: item.enabled,
@@ -55,15 +60,19 @@ class ActionDropdownMenu extends StatelessWidget {
                 SizedBox(
                   width: 24,
                   height: 24,
-                  child: item.iconWidget ??
-                      Icon(
-                        item.icon,
-                        size: 20,
-                        color:
-                            item.enabled
-                                ? (item.iconColor ?? baseTextStyle?.color)
-                                : disabledColor,
-                      ),
+                  child: item.iconWidget != null
+                      ? IconTheme(
+                          data: IconThemeData(
+                            color: effectiveIconColor,
+                            size: 20,
+                          ),
+                          child: item.iconWidget!,
+                        )
+                      : Icon(
+                          item.icon,
+                          size: 20,
+                          color: effectiveIconColor,
+                        ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
