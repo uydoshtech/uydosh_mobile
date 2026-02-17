@@ -119,10 +119,10 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
 
   /// Per-station tappable area overrides (stationId -> offset/width adjustments)
   static const Map<int, _TapTargetOverride> _tapTargetOverrides = {
-    // Beruniy (18) - extend right to cover full "Беруни"
-    18: _TapTargetOverride.only(widthDelta: 15),
-    // Add more as needed, e.g.:
-    // 23: _TapTargetOverride.only(dx: -5, dy: 2, widthDelta: 10),
+    // Beruniy (18) - overlay was misaligned; text sits low in box, shift right and down
+    18: _TapTargetOverride(dx: 80, dy: -5, widthDelta: 0),
+    // Kosmonavtlar (24) - purple tap target overlapped station name on the right
+    24: _TapTargetOverride(dx: -80, dy: -4, widthDelta: -30),
   };
 
   static const String _svgAssetPath =
