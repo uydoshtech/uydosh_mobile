@@ -49,6 +49,8 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
     required this.compatibilityError,
     required this.matches,
     required this.differences,
+    required this.onMessage,
+    required this.onViewProfile,
     super.key,
   });
 
@@ -60,6 +62,8 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
   final String? compatibilityError;
   final List<CompatibilityMatch> matches;
   final List<CompatibilityDifference> differences;
+  final VoidCallback onMessage;
+  final VoidCallback onViewProfile;
 
   static IconData _getLifestyleIcon(String labelKey) {
     switch (labelKey) {
@@ -365,6 +369,74 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                       color: _getDescriptionTextColor(),
                     ),
                   ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          HapticFeedbackUtils.impact();
+                          onMessage();
+                        },
+                        icon: Icon(
+                          Icons.chat_bubble_outline,
+                          size: 18,
+                          color: _getIconColor(),
+                        ),
+                        label: Text(
+                          LanguageAwareStringHelper.getCurrent(
+                            context,
+                            "message",
+                          ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: _getDescriptionTextColor(),
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(color: _getIconColor()),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          HapticFeedbackUtils.impact();
+                          onViewProfile();
+                        },
+                        icon: Icon(
+                          Icons.person_outline,
+                          size: 18,
+                          color: _getIconColor(),
+                        ),
+                        label: Text(
+                          LanguageAwareStringHelper.getCurrent(
+                            context,
+                            "view_profile",
+                          ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: _getDescriptionTextColor(),
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(color: _getIconColor()),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
         ],

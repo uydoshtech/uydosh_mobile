@@ -2826,6 +2826,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                         ),
                       )
                       .toList(),
+                  onMessage: () => _startConversation(listingDetail),
+                  onViewProfile: () =>
+                      _navigateToProfile(listingDetail.user.id),
                 ),
               if (_complaintsCount != null && _complaintsCount! > 0)
                 Card(

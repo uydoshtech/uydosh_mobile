@@ -686,6 +686,7 @@ class AppStrings {
       "share_subject_en": "UyDosh - Housing Listing",
 
       "contact_user": "Contact User",
+      "message": "Write",
 
       // ===== STATUS & STATE =====
       "delete_listing": "Delete Listing",
@@ -1394,6 +1395,7 @@ class AppStrings {
       "share_subject_en": "UyDosh - Housing Listing",
 
       "contact_user": "Связаться с пользователем",
+      "message": "Написать",
 
       // ===== STATUS & STATE =====
       "delete_listing": "Удалить объявление",
@@ -2109,6 +2111,7 @@ class AppStrings {
       "share_subject_en": "UyDosh - Housing Listing",
 
       "contact_user": "Foydalanuvchi bilan bog'lanish",
+      "message": "Yozish",
 
       // ===== STATUS & STATE =====
       "delete_listing": "E'loni o'chirish",
