@@ -70,7 +70,6 @@ class AdminSubwayMapScreen extends StatefulWidget {
 class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   Key _mapKey = UniqueKey();
   late final TransformationController _transformationController;
-  double _zoomLevel = 1.3;
 
   @override
   void initState() {
@@ -80,21 +79,10 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
         ..translate(_initialMapShiftX, _initialMapShiftY)
         ..scale(1.3),
     );
-    _transformationController.addListener(_onTransformationChanged);
-  }
-
-  void _onTransformationChanged() {
-    final scale = _transformationController.value.getMaxScaleOnAxis();
-    if (_zoomLevel != scale) {
-      setState(() {
-        _zoomLevel = scale;
-      });
-    }
   }
 
   @override
   void dispose() {
-    _transformationController.removeListener(_onTransformationChanged);
     _transformationController.dispose();
     super.dispose();
   }
@@ -179,18 +167,32 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static const String _svgAssetPath =
       "assets/map_elements/tashkent_metro_map.svg";
 
+  static const List<String> _overlayAssetPaths = [
+    "assets/map_elements/bazaar_chorsu.svg",
+    "assets/map_elements/tv_tower.svg",
+    "assets/map_elements/monument2.svg",
+    "assets/map_elements/airport.svg",
+    "assets/map_elements/city_park.svg",
+    "assets/map_elements/bus_hub.svg",
+    "assets/map_elements/circus.svg",
+  ];
+
   static Future<_MapData>? _mapDataFuture;
 
   static Future<_MapData> _loadMapData() {
-    _mapDataFuture ??=
-        rootBundle
-            .loadString(_svgAssetPath)
-            .then(
-              (rawSvg) => _MapData(
-                stationLabels: _extractStationLabels(rawSvg),
-                rawSvg: rawSvg,
-              ),
-            );
+    _mapDataFuture ??= () async {
+      final results = await Future.wait([
+        rootBundle.loadString(_svgAssetPath),
+        Future.wait(
+          _overlayAssetPaths.map((p) => rootBundle.loadString(p)),
+        ),
+      ]);
+      final rawSvg = results[0] as String;
+      return _MapData(
+        stationLabels: _extractStationLabels(rawSvg),
+        rawSvg: rawSvg,
+      );
+    }();
     return _mapDataFuture!;
   }
 
@@ -584,7 +586,13 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     return langMatch ?? fallback ?? textRegExp.firstMatch(switchContent)?.group(0);
   }
 
+  static final Map<String, String> _processedSvgCache = {};
+
   static String _processSvg(String svg, String language) {
+    return _processedSvgCache.putIfAbsent(language, () => _processSvgImpl(svg, language));
+  }
+
+  static String _processSvgImpl(String svg, String language) {
     final withoutStyle = svg.replaceAll(
       RegExp(r"<style[\s\S]*?</style>"),
       "",
@@ -699,17 +707,23 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                "${(_zoomLevel * 100).round()}%",
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
+          ListenableBuilder(
+            listenable: _transformationController,
+            builder: (context, _) {
+              final scale = _transformationController.value.getMaxScaleOnAxis();
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    "${(scale * 100).round()}%",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -769,18 +783,19 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                             key: _mapKey,
                             width: mapWidth,
                             height: mapHeight,
-                            child: Stack(
-                              children: [
-                                SvgPicture.string(
-                                  _processSvg(
-                                    mapData.rawSvg,
-                                    LanguageState().currentLanguage,
+                            child: RepaintBoundary(
+                              child: Stack(
+                                children: [
+                                  SvgPicture.string(
+                                    _processSvg(
+                                      mapData.rawSvg,
+                                      LanguageState().currentLanguage,
+                                    ),
+                                    width: mapWidth,
+                                    height: mapHeight,
+                                    fit: BoxFit.contain,
+                                    semanticsLabel: "Tashkent subway map",
                                   ),
-                                  width: mapWidth,
-                                  height: mapHeight,
-                                  fit: BoxFit.contain,
-                                  semanticsLabel: "Tashkent subway map",
-                                ),
                                 ..._buildMapOverlays(
                                   scale,
                                   offsetX,
@@ -796,6 +811,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                                   LanguageState().currentLanguage,
                                 ),
                               ],
+                            ),
                             ),
                           ),
                         );
