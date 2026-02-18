@@ -389,10 +389,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             // Region Selector
             _buildRegionSelector(context),
 
-            const SizedBox(height: 24),
-
-            // University Selector
-            _buildUniversitySelector(context),
+            // University Selector (only show when user is a student, i.e. universityId is set)
+            if (widget.profile.universityId != null) ...[
+              const SizedBox(height: 24),
+              _buildUniversitySelector(context),
+            ],
 
             const SizedBox(height: 24),
 

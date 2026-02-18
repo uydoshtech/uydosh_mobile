@@ -1,4 +1,5 @@
 import "package:flutter/foundation.dart";
+import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 
 /// Global state to track profile completion status.
@@ -47,6 +48,13 @@ class ProfileCompletionState extends ChangeNotifier {
     final isComplete = percent >= 100;
     final hasEssential = _checkHasEssentialInfo(profile);
 
+    if (!isComplete && kDebugMode) {
+      final missing = getMissingFields(profile);
+      logger.d(
+        "Profile not 100% complete ($percent%). Missing fields: ${missing.join(", ")}",
+      );
+    }
+
     if (_isProfileComplete != isComplete ||
         _hasEssentialInfo != hasEssential ||
         !_isInitialized) {
@@ -81,7 +89,8 @@ class ProfileCompletionState extends ChangeNotifier {
   }
 
   static int _calculateProfileCompletionPercent(UserProfile profile) {
-    const totalFields = 17;
+    // Non-students (employed=true) don't need university; total = 16. Students need 17.
+    final totalFields = profile.employed == true ? 16 : 17;
     final completedFields = _countCompletedProfileFields(profile);
     return ((completedFields / totalFields) * 100).round();
   }
@@ -92,7 +101,11 @@ class ProfileCompletionState extends ChangeNotifier {
     if (_hasText(profile.name)) completedFields++;
     if (profile.gender != null) completedFields++;
     if (profile.region != null) completedFields++;
-    if (profile.university != null) completedFields++;
+    if (profile.employed == false) {
+      if (profile.university != null || profile.universityId != null) {
+        completedFields++;
+      }
+    }
     if (_hasText(profile.aboutMe)) completedFields++;
     if (_hasText(profile.telegram)) completedFields++;
     if (profile.employed != null) completedFields++;
@@ -112,5 +125,33 @@ class ProfileCompletionState extends ChangeNotifier {
 
   static bool _hasText(String? value) {
     return value != null && value.trim().isNotEmpty;
+  }
+
+  /// Returns list of field names that are not populated (for debug).
+  /// Aligned with _countCompletedProfileFields. University only when employed=false (student).
+  static List<String> getMissingFields(UserProfile profile) {
+    final missing = <String>[];
+    if (!_hasText(profile.name)) missing.add('name');
+    if (profile.gender == null) missing.add('gender');
+    if (profile.region == null) missing.add('region');
+    if (profile.employed == null) missing.add('employed');
+    if (profile.employed == false &&
+        profile.university == null &&
+        profile.universityId == null) {
+      missing.add('university');
+    }
+    if (!_hasText(profile.aboutMe)) missing.add('aboutMe');
+    if (!_hasText(profile.telegram)) missing.add('telegram');
+    if (profile.cleanliness == null) missing.add('cleanliness');
+    if (profile.noiseLevel == null) missing.add('noiseLevel');
+    if (profile.sociability == null) missing.add('sociability');
+    if (profile.guestsAllowed == null) missing.add('guestsAllowed');
+    if (!_hasText(profile.smokingPreference)) missing.add('smokingPreference');
+    if (!_hasText(profile.alcoholPreference)) missing.add('alcoholPreference');
+    if (profile.cookingHabits == null) missing.add('cookingHabits');
+    if (profile.petsPreference == null) missing.add('petsPreference');
+    if (!_hasText(profile.wakeupTime)) missing.add('wakeupTime');
+    if (!_hasText(profile.sleepTime)) missing.add('sleepTime');
+    return missing;
   }
 }

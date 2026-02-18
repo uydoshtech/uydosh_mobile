@@ -15,6 +15,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
@@ -217,9 +218,10 @@ class _MainNavigationState extends State<MainNavigation>
 
       _profileCompletionPromptShown = true;
       if (!mounted) return;
+      final profileToShow = profile;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _showProfileCompletionPrompt(context, completionPercent);
+        _showProfileCompletionPrompt(context, completionPercent, profileToShow);
       });
     } catch (_) {
       // Ignore failures to avoid blocking navigation.
@@ -231,6 +233,7 @@ class _MainNavigationState extends State<MainNavigation>
   void _showProfileCompletionPrompt(
     BuildContext context,
     int completionPercent,
+    UserProfile profile,
   ) {
     showModalBottomSheet<void>(
       context: context,
