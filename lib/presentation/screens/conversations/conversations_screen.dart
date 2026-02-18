@@ -1,7 +1,7 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/constants/string_helper.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -290,7 +290,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               listingId: conv?.listingId,
               otherUserInitials:
                   conv != null
-                      ? StringHelper.extractInitials(conv.otherUserName)
+                      ? StringUtils.extractInitials(conv.otherUserName)
                       : null,
               otherUserName: conv?.otherUserName,
               otherUserId: otherUserId,

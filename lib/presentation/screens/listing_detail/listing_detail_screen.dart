@@ -15,7 +15,8 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
-import "package:uy_dosh/base/constants/string_helper.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
@@ -399,9 +400,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       // Show error message
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "error_deactivating_listing",
+        message: L10n.get("error_deactivating_listing",
         ),
       );
     } finally {
@@ -638,7 +637,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       }
 
       total += 1;
-      final label = LanguageAwareStringHelper.getCurrent(context, labelKey);
+      final label = L10n.get(labelKey);
       final currentText = formatValue(currentValue);
       final ownerText = formatValue(ownerValue);
 
@@ -760,23 +759,17 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   }
 
   String _formatBooleanPreference(bool value) {
-    return LanguageAwareStringHelper.getCurrent(
-      context,
-      value ? "yes" : "no",
+    return L10n.get(value ? "yes" : "no",
     );
   }
 
   String _formatCookingHabits(bool value) {
-    return LanguageAwareStringHelper.getCurrent(
-      context,
-      value ? "cook" : "dont_cook",
+    return L10n.get(value ? "cook" : "dont_cook",
     );
   }
 
   String _formatPetsPreference(bool value) {
-    return LanguageAwareStringHelper.getCurrent(
-      context,
-      value ? "pets_okay" : "pets_not_okay",
+    return L10n.get(value ? "pets_okay" : "pets_not_okay",
     );
   }
 
@@ -786,7 +779,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       case "morning":
       case "evening":
       case "night":
-        return LanguageAwareStringHelper.getCurrent(context, value);
+        return L10n.get( value);
       default:
         return value;
     }
@@ -801,7 +794,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final key = map[value];
     return key == null
         ? value
-        : LanguageAwareStringHelper.getCurrent(context, key);
+        : L10n.get( key);
   }
 
   String _formatAlcoholPreference(String value) {
@@ -813,7 +806,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final key = map[value];
     return key == null
         ? value
-        : LanguageAwareStringHelper.getCurrent(context, key);
+        : L10n.get( key);
   }
 
   String _formatCleanlinessLevel(int value) {
@@ -825,7 +818,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       "very_clean",
     ];
     final index = (value - 1).clamp(0, keys.length - 1);
-    return LanguageAwareStringHelper.getCurrent(context, keys[index]);
+    return L10n.get( keys[index]);
   }
 
   String _formatNoiseLevel(int value) {
@@ -837,7 +830,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       "very_loud",
     ];
     final index = (value - 1).clamp(0, keys.length - 1);
-    return LanguageAwareStringHelper.getCurrent(context, keys[index]);
+    return L10n.get( keys[index]);
   }
 
   String _formatSociabilityLevel(int value) {
@@ -849,22 +842,18 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       "very_extroverted",
     ];
     final index = (value - 1).clamp(0, keys.length - 1);
-    return LanguageAwareStringHelper.getCurrent(context, keys[index]);
+    return L10n.get( keys[index]);
   }
 
   String _buildComplaintsButtonLabel() {
-    final base = LanguageAwareStringHelper.getCurrent(
-      context,
-      "view_listing_complaints",
+    final base = L10n.get("view_listing_complaints",
     );
 
     if (_isLoadingComplaintsCount && _complaintsCount == null) {
       return "$base ...";
     }
     if (_complaintsCount != null) {
-      final countText = LanguageAwareStringHelper.getCurrent(
-        context,
-        "complaints_count_short",
+      final countText = L10n.get("complaints_count_short",
       ).replaceAll("{count}", _complaintsCount!.toString());
       return "$base • $countText";
     }
@@ -882,22 +871,22 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         return nameUz ??
             nameRu ??
             nameEn ??
-            LanguageAwareStringHelper.getCurrent(context, "unknown");
+            L10n.get( "unknown");
       case "ru":
         return nameRu ??
             nameUz ??
             nameEn ??
-            LanguageAwareStringHelper.getCurrent(context, "unknown");
+            L10n.get( "unknown");
       case "en":
         return nameRu ??
             nameUz ??
             nameEn ??
-            LanguageAwareStringHelper.getCurrent(context, "unknown");
+            L10n.get( "unknown");
       default:
         return nameRu ??
             nameUz ??
             nameEn ??
-            LanguageAwareStringHelper.getCurrent(context, "unknown");
+            L10n.get( "unknown");
     }
   }
 
@@ -908,24 +897,18 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     currentState.map(
       initial:
           (_) => _showShareError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_listing_not_loaded",
+            L10n.get("error_listing_not_loaded",
             ),
           ),
       loading:
           (_) => _showShareError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_listing_still_loading",
+            L10n.get("error_listing_still_loading",
             ),
           ),
       loaded: (loadedState) => _performShare(loadedState.listingDetail),
       error:
           (errorState) => _showShareError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_loading_listing_details",
+            L10n.get("error_loading_listing_details",
             ),
           ),
     );
@@ -993,7 +976,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
 ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
 
-📱 ${LanguageAwareStringHelper.getCurrent(context, "check_out_listing_on_uydosh")}
+📱 ${L10n.get( "check_out_listing_on_uydosh")}
 
 🔗 $deepLink""";
   }
@@ -1073,25 +1056,13 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
   String _getShareSubject(String language) {
     switch (language) {
       case "uz":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "share_subject_uz",
-        );
+        return L10n.get("share_subject_uz");
       case "ru":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "share_subject_ru",
-        );
+        return L10n.get("share_subject_ru");
       case "en":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "share_subject_en",
-        );
+        return L10n.get("share_subject_en");
       default:
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "share_subject_en",
-        );
+        return L10n.get("share_subject_en");
     }
   }
 
@@ -1112,24 +1083,18 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     currentState.map(
       initial:
           (_) => _showEditError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_listing_not_loaded",
+            L10n.get("error_listing_not_loaded",
             ),
           ),
       loading:
           (_) => _showEditError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_listing_still_loading",
+            L10n.get("error_listing_still_loading",
             ),
           ),
       loaded: (loadedState) => _navigateToEdit(loadedState.listingDetail),
       error:
           (errorState) => _showEditError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_loading_listing_details",
+            L10n.get("error_loading_listing_details",
             ),
           ),
     );
@@ -1188,24 +1153,18 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     currentState.map(
       initial:
           (_) => _showFeatureError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_listing_not_loaded",
+            L10n.get("error_listing_not_loaded",
             ),
           ),
       loading:
           (_) => _showFeatureError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_listing_still_loading",
+            L10n.get("error_listing_still_loading",
             ),
           ),
       loaded: (loadedState) => _performToggleFeature(loadedState.listingDetail),
       error:
           (errorState) => _showFeatureError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_loading_listing_details",
+            L10n.get("error_loading_listing_details",
             ),
           ),
     );
@@ -1242,9 +1201,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         final canPromote = await _canPromoteListing();
         if (!canPromote) {
           _showFeatureError(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_promotion_once_per_week",
+L10n.get("error_promotion_once_per_week",
             ),
           );
           return;
@@ -1267,13 +1224,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         // Show success message based on current state
         final message =
             ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
-                ? LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "unfeature_listing_success",
+                ? L10n.get("unfeature_listing_success",
                 )
-                : LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "feature_listing_success",
+                : L10n.get("feature_listing_success",
                 );
 
         ToastTheme.showSuccess(context, message: message);
@@ -1301,16 +1254,14 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         HomeRefreshState().markForRefresh();
       } else {
         _showFeatureError(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "feature_listing_error",
+L10n.get("feature_listing_error",
           ),
         );
       }
     } catch (e) {
       logger.e("Error toggling feature listing: $e");
       _showFeatureError(
-        LanguageAwareStringHelper.getCurrent(context, "feature_listing_error"),
+        L10n.get( "feature_listing_error"),
       );
     } finally {
       if (mounted) {
@@ -1359,13 +1310,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           context,
           message:
               wasFavorite
-                  ? LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "removed_from_favorites",
+                  ? L10n.get("removed_from_favorites",
                   )
-                  : LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "added_to_favorites",
+                  : L10n.get("added_to_favorites",
                   ),
         );
       } else {
@@ -1373,9 +1320,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         if (context.mounted) {
           ToastTheme.showError(
             context,
-            message: LanguageAwareStringHelper.getCurrent(
-              context,
-              "favorite_toggle_network_error",
+            message: L10n.get("favorite_toggle_network_error",
             ),
           );
         }
@@ -1386,9 +1331,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       if (context.mounted) {
         ToastTheme.showError(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "favorite_toggle_network_error",
+          message: L10n.get("favorite_toggle_network_error",
           ),
         );
       }
@@ -1546,9 +1489,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
     if (result == true) {
       ToastTheme.showSuccess(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "complaint_created_success",
+        message: L10n.get("complaint_created_success",
         ),
       );
       _loadComplaintCount(listingDetail.id);
@@ -1582,9 +1523,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         logger.d("❌ [Frontend] No current user ID found");
         ToastTheme.showError(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "error_not_authenticated",
+          message: L10n.get("error_not_authenticated",
           ),
         );
         return;
@@ -1595,9 +1534,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         logger.d("❌ [Frontend] User trying to message themselves");
         ToastTheme.showError(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "error_cannot_message_self",
+          message: L10n.get("error_cannot_message_self",
           ),
         );
         return;
@@ -1648,7 +1585,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
             final chatScreen = ChatScreen(
               conversationId: conversation.id,
               listingId: widget.listingId,
-              otherUserInitials: StringHelper.extractInitials(
+              otherUserInitials: StringUtils.extractInitials(
                 listingDetail.user.email,
               ),
               otherUserName: listingDetail.user.email,
@@ -1674,9 +1611,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         // Show success message
         ToastTheme.showSuccess(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "conversation_created",
+          message: L10n.get("conversation_created",
           ),
         );
         return; // Exit early on success
@@ -1770,7 +1705,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                         (context) => ChatScreen(
                           conversationId: existingConversation.id,
                           listingId: widget.listingId,
-                          otherUserInitials: StringHelper.extractInitials(
+                          otherUserInitials: StringUtils.extractInitials(
                             existingConversation.otherUserName,
                           ),
                           otherUserName: existingConversation.otherUserName,
@@ -1794,9 +1729,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
             // Show info message
             ToastTheme.showInfo(
               context,
-              message: LanguageAwareStringHelper.getCurrent(
-                context,
-                "opening_existing_conversation",
+              message: L10n.get("opening_existing_conversation",
               ),
             );
             return; // Exit early on success
@@ -1820,9 +1753,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       if (mounted) Navigator.of(context).pop();
 
       // Show error message with details
-      var errorMessage = LanguageAwareStringHelper.getCurrent(
-        context,
-        "conversation_failed",
+      var errorMessage = L10n.get("conversation_failed",
       );
       if (e.toString().contains("DioException")) {
         errorMessage = "Network error: ${e.toString()}";
@@ -1854,9 +1785,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       if (coordinates == null) {
         ToastTheme.showError(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "error_loading_listing_details",
+          message: L10n.get("error_loading_listing_details",
           ),
         );
         return;
@@ -2108,18 +2037,14 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
 
   Widget _buildInitialState() {
     return CenteredHouseLoadingIndicator(
-      text: LanguageAwareStringHelper.getCurrent(
-        context,
-        "loading_listing_details",
+      text: L10n.get("loading_listing_details",
       ),
     );
   }
 
   Widget _buildLoadingState() {
     return CenteredHouseLoadingIndicator(
-      text: LanguageAwareStringHelper.getCurrent(
-        context,
-        "loading_listing_details",
+      text: L10n.get("loading_listing_details",
       ),
       textStyle: TextStyle(
         color: _getLoadingTextColor(),
@@ -2190,9 +2115,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
-                                  "listing_views_by_others",
+L10n.get("listing_views_by_others",
                                 ).replaceAll("{count}", _viewCount.toString()),
                                 style: TextStyle(
                                   fontSize: 14,
@@ -2230,8 +2153,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                                 color: _getIconColor(),
                               ),
                         label: Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
+                          L10n.get(
                             ListingUtils.isCurrentlyFeaturedDetail(
                               listingDetail,
                             )
@@ -2550,9 +2472,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "private_room",
+L10n.get("private_room",
                               ),
                               style: TextStyle(
                                 fontSize: 15,
@@ -2662,7 +2582,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                                 TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: "${LanguageAwareStringHelper.getCurrent(context, "move_in_date_label")} ",
+                                      text: "${L10n.get( "move_in_date_label")} ",
                                       style: TextStyle(
                                         fontSize: 15,
                                         color: _getDateTextColor(),
@@ -2701,7 +2621,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              "${LanguageAwareStringHelper.getCurrent(context, "publication_date")} ${AppDateUtils.formatDateWithShortMonth(
+                              "${L10n.get( "publication_date")} ${AppDateUtils.formatDateWithShortMonth(
                                 context,
                                 DateTime.parse(listingDetail.createdAt),
                               )}",
@@ -2736,9 +2656,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "location_on_map",
+L10n.get("location_on_map",
                               ),
                               style: TextStyle(
                                 fontSize: 18,
@@ -2769,9 +2687,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
                               color: _getYandexButtonColor(),
                             ),
                             label: Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "open_in_yandex_maps",
+L10n.get("open_in_yandex_maps",
                               ),
                               style: TextStyle(
                                 fontSize: 16,
@@ -2889,9 +2805,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           ),
           const SizedBox(height: 24),
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_loading_listing_details",
+            L10n.get("error_loading_listing_details",
             ),
             style: const TextStyle(
               fontSize: 18,
@@ -2902,9 +2816,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           ),
           const SizedBox(height: 12),
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_internet_connection",
+L10n.get("error_internet_connection",
             ),
             style: const TextStyle(fontSize: 14, color: AppColors.textLight70),
             textAlign: TextAlign.center,
@@ -2917,7 +2829,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
               );
             },
             icon: Icons.refresh_rounded,
-            text: LanguageAwareStringHelper.getCurrent(context, "retry"),
+            text: L10n.get( "retry"),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
         ],
@@ -3019,11 +2931,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
   String _getGenderText(int gender, BuildContext context) {
     switch (gender) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(context, "male");
+        return L10n.get( "male");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "female");
+        return L10n.get( "female");
       default:
-        return LanguageAwareStringHelper.getCurrent(context, "other");
+        return L10n.get( "other");
     }
   }
 
@@ -3191,9 +3103,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       final difference = date.difference(now).inDays;
 
       if (difference == 0) {
-        return LanguageAwareStringHelper.getCurrent(context, "today");
+        return L10n.get( "today");
       } else if (difference == 1) {
-        return LanguageAwareStringHelper.getCurrent(context, "tomorrow");
+        return L10n.get( "tomorrow");
       } else if (difference > 0 && difference <= 7) {
         return AppStrings.getWithParams(
           "in_days",
@@ -3216,10 +3128,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
           "november",
           "december",
         ];
-        final localizedMonth = LanguageAwareStringHelper.getCurrent(
-          context,
-          monthKeys[date.month - 1],
-        );
+        final localizedMonth = L10n.get(monthKeys[date.month - 1]);
         return "${localizedMonth.substring(0, 3)} ${date.day}, ${date.year}";
       }
     } catch (e) {
@@ -3370,9 +3279,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
         // Show success message
         ToastTheme.showSuccess(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "delete_listing_success",
+          message: L10n.get("delete_listing_success",
           ),
         );
 
@@ -3390,9 +3297,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
       // Show error message
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "delete_listing_error",
+        message: L10n.get("delete_listing_error",
         ),
       );
     } finally {

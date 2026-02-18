@@ -2,7 +2,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/string_helper.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
@@ -759,7 +759,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 (context) => ChatScreen(
                   conversationId: conversation.id,
                   listingId: conversation.listingId,
-                  otherUserInitials: StringHelper.extractInitials(
+                  otherUserInitials: StringUtils.extractInitials(
                     conversation.otherUserName,
                   ),
                   otherUserName: conversation.otherUserName,
@@ -824,7 +824,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     (context) => ChatScreen(
                       conversationId: conversation.id,
                       listingId: conversation.listingId,
-                      otherUserInitials: StringHelper.extractInitials(
+                      otherUserInitials: StringUtils.extractInitials(
                         conversation.otherUserName,
                       ),
                       otherUserName: conversation.otherUserName,

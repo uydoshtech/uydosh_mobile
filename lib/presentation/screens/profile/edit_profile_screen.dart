@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dar
 import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_toggle_control.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class EditProfileScreen extends StatefulWidget {
@@ -165,8 +166,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         ToastTheme.showError(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
+          message: L10n.get(
             "error_loading_regions",
           ).replaceAll("{error}", e.toString()),
         );
@@ -203,8 +203,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         ToastTheme.showError(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
+          message: L10n.get(
             "error_loading_universities",
           ).replaceAll("{error}", e.toString()),
         );
@@ -227,7 +226,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_nameController.text.trim().isEmpty) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(context, "name_required"),
+        message: L10n.get( "name_required"),
       );
       return;
     }
@@ -305,8 +304,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         ToastTheme.showSuccess(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
+          message: L10n.get(
             "profile_updated_success",
           ),
         );
@@ -321,8 +319,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         ToastTheme.showError(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
+          message: L10n.get(
             "error_updating_profile",
           ).replaceAll("{error}", e.toString()),
         );
@@ -342,7 +339,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(context, "edit_profile"),
+          L10n.get( "edit_profile"),
           style: theme.appBarTheme.titleTextStyle,
         ),
         backgroundColor:
@@ -369,8 +366,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                       )
                       : const Icon(Icons.save),
-              tooltip: LanguageAwareStringHelper.getCurrent(
-                context,
+              tooltip: L10n.get(
                 "save_changes",
               ),
             ),
@@ -384,7 +380,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           children: [
             // Name Field
             _buildTextField(
-              label: LanguageAwareStringHelper.getCurrent(context, "name"),
+              label: L10n.get( "name"),
               controller: _nameController,
               icon: Icons.person,
             ),
@@ -409,7 +405,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // About Me Field
             _buildTextField(
-              label: LanguageAwareStringHelper.getCurrent(context, "about_me"),
+              label: L10n.get( "about_me"),
               controller: _aboutMeController,
               icon: Icons.info,
               maxLines: 3,
@@ -419,7 +415,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Telegram Field
             _buildTextField(
-              label: LanguageAwareStringHelper.getCurrent(context, "telegram"),
+              label: L10n.get( "telegram"),
               controller: _telegramController,
               icon: Icons.telegram,
             ),
@@ -431,8 +427,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _buildRoleLoadingPlaceholder(context)
             else
               ProfileDropdownControl(
-                label: LanguageAwareStringHelper.getCurrent(
-                  context,
+                label: L10n.get(
                   "are_you_landlord_or_renter",
                 ),
                 value: _selectedRole,
@@ -442,22 +437,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   if (_isAdmin)
                     DropdownOption(
                       value: "admin",
-                      label: LanguageAwareStringHelper.getCurrent(
-                        context,
+                      label: L10n.get(
                         "role_admin",
                       ),
                     ),
                   DropdownOption(
                     value: "landlord",
-                    label: LanguageAwareStringHelper.getCurrent(
-                      context,
+                    label: L10n.get(
                       "role_landlord",
                     ),
                   ),
                   DropdownOption(
                     value: "tenant",
-                    label: LanguageAwareStringHelper.getCurrent(
-                      context,
+                    label: L10n.get(
                       "role_tenant",
                     ),
                   ),
@@ -468,8 +460,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // New Profile Fields Section
             Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
+L10n.get(
                 "lifestyle_preferences",
               ),
               style: theme.textTheme.titleLarge?.copyWith(
@@ -482,7 +473,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Employed Toggle
             ProfileToggleControl(
-              label: LanguageAwareStringHelper.getCurrent(context, "employed"),
+              label: L10n.get( "employed"),
               value: _employed,
               onChanged: (value) => setState(() => _employed = value),
               icon: Icons.work,
@@ -492,8 +483,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Cleanliness Slider
             ProfileSliderControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "cleanliness",
               ),
               value: _cleanliness,
@@ -502,11 +492,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               max: 5,
               icon: Icons.cleaning_services,
               labels: [
-                LanguageAwareStringHelper.getCurrent(context, "very_messy"),
-                LanguageAwareStringHelper.getCurrent(context, "messy"),
-                LanguageAwareStringHelper.getCurrent(context, "average"),
-                LanguageAwareStringHelper.getCurrent(context, "clean"),
-                LanguageAwareStringHelper.getCurrent(context, "very_clean"),
+                L10n.get( "very_messy"),
+                L10n.get( "messy"),
+                L10n.get( "average"),
+                L10n.get( "clean"),
+                L10n.get( "very_clean"),
               ],
             ),
 
@@ -514,8 +504,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Noise Level Slider
             ProfileSliderControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "noise_level",
               ),
               value: _noiseLevel,
@@ -524,11 +513,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               max: 5,
               icon: Icons.volume_up,
               labels: [
-                LanguageAwareStringHelper.getCurrent(context, "very_quiet"),
-                LanguageAwareStringHelper.getCurrent(context, "quiet"),
-                LanguageAwareStringHelper.getCurrent(context, "average"),
-                LanguageAwareStringHelper.getCurrent(context, "loud"),
-                LanguageAwareStringHelper.getCurrent(context, "very_loud"),
+                L10n.get( "very_quiet"),
+                L10n.get( "quiet"),
+                L10n.get( "average"),
+                L10n.get( "loud"),
+                L10n.get( "very_loud"),
               ],
             ),
 
@@ -536,8 +525,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Sociability Slider
             ProfileSliderControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "sociability",
               ),
               value: _sociability,
@@ -546,15 +534,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               max: 5,
               icon: Icons.people,
               labels: [
-                LanguageAwareStringHelper.getCurrent(
-                  context,
+L10n.get(
                   "very_introverted",
                 ),
-                LanguageAwareStringHelper.getCurrent(context, "introverted"),
-                LanguageAwareStringHelper.getCurrent(context, "balanced"),
-                LanguageAwareStringHelper.getCurrent(context, "extroverted"),
-                LanguageAwareStringHelper.getCurrent(
-                  context,
+                L10n.get( "introverted"),
+                L10n.get( "balanced"),
+                L10n.get( "extroverted"),
+L10n.get(
                   "very_extroverted",
                 ),
               ],
@@ -564,8 +550,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Guests Allowed Toggle
             ProfileToggleControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "guests_allowed",
               ),
               value: _guestsAllowed,
@@ -577,8 +562,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Smoking Preference Dropdown
             ProfileDropdownControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "smoking_preference",
               ),
               value: _smokingPreference,
@@ -587,29 +571,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               options: [
                 DropdownOption(
                   value: null,
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "not_specified",
                   ),
                 ),
                 DropdownOption(
                   value: "non-smoker",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "non_smoker",
                   ),
                 ),
                 DropdownOption(
                   value: "occasional",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "occasional_smoker",
                   ),
                 ),
                 DropdownOption(
                   value: "regular",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "regular_smoker",
                   ),
                 ),
@@ -620,8 +600,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Alcohol Preference Dropdown
             ProfileDropdownControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "alcohol_preference",
               ),
               value: _alcoholPreference,
@@ -630,29 +609,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               options: [
                 DropdownOption(
                   value: null,
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "not_specified",
                   ),
                 ),
                 DropdownOption(
                   value: "non-drinker",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "non_drinker",
                   ),
                 ),
                 DropdownOption(
                   value: "occasional",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "occasional_drinker",
                   ),
                 ),
                 DropdownOption(
                   value: "regular",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "regular_drinker",
                   ),
                 ),
@@ -663,8 +638,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Cooking Habits Toggle
             ProfileToggleControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "cooking_habits",
               ),
               value: _cookingHabits,
@@ -676,8 +650,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Pets Preference Toggle
             ProfileToggleControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "pets_preference",
               ),
               value: _petsPreference,
@@ -689,8 +662,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Wake-up Time Dropdown
             ProfileDropdownControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "wakeup_time",
               ),
               value: _wakeupTime,
@@ -699,28 +671,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               options: [
                 DropdownOption(
                   value: null,
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "not_specified",
                   ),
                 ),
                 DropdownOption(
                   value: "morning",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "morning",
                   ),
                 ),
                 DropdownOption(
                   value: "evening",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "evening",
                   ),
                 ),
                 DropdownOption(
                   value: "night",
-                  label: LanguageAwareStringHelper.getCurrent(context, "night"),
+                  label: L10n.get( "night"),
                 ),
               ],
             ),
@@ -729,8 +698,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Sleep Time Dropdown
             ProfileDropdownControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
+              label: L10n.get(
                 "sleep_time",
               ),
               value: _sleepTime,
@@ -739,28 +707,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               options: [
                 DropdownOption(
                   value: null,
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "not_specified",
                   ),
                 ),
                 DropdownOption(
                   value: "morning",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "morning",
                   ),
                 ),
                 DropdownOption(
                   value: "evening",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
+                  label: L10n.get(
                     "evening",
                   ),
                 ),
                 DropdownOption(
                   value: "night",
-                  label: LanguageAwareStringHelper.getCurrent(context, "night"),
+                  label: L10n.get( "night"),
                 ),
               ],
             ),
@@ -775,12 +740,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 icon: Icons.save,
                 text:
                     _isLoading
-                        ? LanguageAwareStringHelper.getCurrent(
-                          context,
+                        ? L10n.get(
                           "saving",
                         )
-                        : LanguageAwareStringHelper.getCurrent(
-                          context,
+                        : L10n.get(
                           "save_changes",
                         ),
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -820,8 +783,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
+L10n.get(
                   "are_you_landlord_or_renter",
                 ),
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -907,7 +869,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          LanguageAwareStringHelper.getCurrent(context, "gender"),
+          L10n.get( "gender"),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -938,7 +900,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              LanguageAwareStringHelper.getCurrent(context, "im_from"),
+              L10n.get( "im_from"),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -963,8 +925,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         _isLoadingRegions
                             ? Center(
                               child: Text(
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
+L10n.get(
                                   "loading_regions",
                                 ),
                                 style: TextStyle(
@@ -1011,8 +972,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        LanguageAwareStringHelper.getCurrent(
-                                          context,
+L10n.get(
                                           "select_region",
                                         ),
                                         style: TextStyle(
@@ -1073,8 +1033,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             )
                             : Center(
                               child: Text(
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
+L10n.get(
                                   "loading_regions",
                                 ),
                                 style: TextStyle(
@@ -1136,7 +1095,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              LanguageAwareStringHelper.getCurrent(context, "university"),
+              L10n.get( "university"),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -1161,8 +1120,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         _isLoadingUniversities
                             ? Center(
                               child: Text(
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
+L10n.get(
                                   "loading_universities",
                                 ),
                                 style: TextStyle(
@@ -1210,8 +1168,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        LanguageAwareStringHelper.getCurrent(
-                                          context,
+L10n.get(
                                           "select_university",
                                         ),
                                         style: TextStyle(
@@ -1274,8 +1231,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             )
                             : Center(
                               child: Text(
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
+L10n.get(
                                   "loading_universities",
                                 ),
                                 style: TextStyle(
@@ -1329,11 +1285,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   String _getSelectedRegionName() {
     if (_isLoadingRegions) {
-      return LanguageAwareStringHelper.getCurrent(context, "loading_regions");
+      return L10n.get( "loading_regions");
     }
 
     if (_selectedRegionId == null) {
-      return LanguageAwareStringHelper.getCurrent(context, "select_region");
+      return L10n.get( "select_region");
     }
 
     final selectedRegion = _regions.firstWhere(
@@ -1341,8 +1297,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       orElse:
           () => Region(
             id: 0,
-            name: LanguageAwareStringHelper.getCurrent(context, "unknown"),
-            shortName: LanguageAwareStringHelper.getCurrent(context, "unknown"),
+            name: L10n.get( "unknown"),
+            shortName: L10n.get( "unknown"),
           ),
     );
 

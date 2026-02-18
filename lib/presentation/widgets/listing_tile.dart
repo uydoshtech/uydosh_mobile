@@ -3,8 +3,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
-import "package:uy_dosh/base/constants/string_helper.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
@@ -190,10 +189,8 @@ class _ListingTileState extends State<ListingTile>
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "listing_views_by_others",
-                                  ).replaceAll("{count}", _viewCount.toString()),
+                                  L10n.get("listing_views_by_others")
+                                  .replaceAll("{count}", _viewCount.toString()),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -222,8 +219,7 @@ class _ListingTileState extends State<ListingTile>
                             ),
                           ),
                           child: Text(
-                            LanguageAwareStringHelper.getCurrent(
-                              context,
+                            L10n.get(
                               widget.listing.isActive
                                   ? "listing_active"
                                   : "listing_inactive",
@@ -353,13 +349,11 @@ class _ListingTileState extends State<ListingTile>
                                                     if (context.mounted) {
                                                       ToastTheme.showSuccess(
                                                         context,
-                                                        message:
-                                                            StringHelper.getCurrent(
-                                                              wasFavorite
-                                                                  ? "favorite_removed_success"
-                                                                  : "favorite_added_success",
-                                                              context,
-                                                            ),
+                                                        message: L10n.get(
+                                                        wasFavorite
+                                                            ? "favorite_removed_success"
+                                                            : "favorite_added_success",
+                                                      ),
                                                       );
                                                     }
                                                   } else {
@@ -367,11 +361,7 @@ class _ListingTileState extends State<ListingTile>
                                                     if (context.mounted) {
                                                       ToastTheme.showError(
                                                         context,
-                                                        message:
-                                                            StringHelper.getCurrent(
-                                                              "favorite_toggle_error",
-                                                              context,
-                                                            ),
+                                                        message: L10n.get("favorite_toggle_error"),
                                                       );
                                                     }
                                                   }
@@ -380,11 +370,7 @@ class _ListingTileState extends State<ListingTile>
                                                   if (context.mounted) {
                                                     ToastTheme.showError(
                                                       context,
-                                                      message:
-                                                          StringHelper.getCurrent(
-                                                            "favorite_toggle_network_error",
-                                                            context,
-                                                          ),
+                                                      message: L10n.get("favorite_toggle_network_error"),
                                                   );
                                                   }
                                                 } finally {
@@ -624,11 +610,7 @@ class _ListingTileState extends State<ListingTile>
                                           ),
                                           const SizedBox(width: 6),
                                           Text(
-                                            StringHelper.get(
-                                              "private_room",
-                                              LanguageState()
-                                                  .currentLanguage,
-                                            ),
+                                            L10n.get("private_room"),
                                             style: TextStyle(
                                               fontSize: 14,
                                               color:
@@ -654,7 +636,7 @@ class _ListingTileState extends State<ListingTile>
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        "${StringHelper.get("move_in_date_label", LanguageState().currentLanguage)} ${_formatMoveInDate()}",
+                                        "${L10n.get("move_in_date_label")} ${_formatMoveInDate()}",
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: _getDateTextColor(),
@@ -744,13 +726,12 @@ class _ListingTileState extends State<ListingTile>
       final difference = date.difference(now).inDays;
 
       if (difference == 0) {
-        return StringHelper.get("today", LanguageState().currentLanguage);
+        return L10n.get("today");
       } else if (difference == 1) {
-        return StringHelper.get("tomorrow", LanguageState().currentLanguage);
+        return L10n.get("tomorrow");
       } else if (difference > 0 && difference <= 7) {
-        return AppStrings.getWithParams(
+        return L10n.getWithParams(
           "in_days",
-          LanguageState().currentLanguage,
           params: {"days": difference.toString()},
         );
       } else {
@@ -769,10 +750,7 @@ class _ListingTileState extends State<ListingTile>
           "november",
           "december",
         ];
-        final localizedMonth = StringHelper.get(
-          monthKeys[date.month - 1],
-          LanguageState().currentLanguage,
-        );
+        final localizedMonth = L10n.get(monthKeys[date.month - 1]);
         return "${localizedMonth.substring(0, 3)} ${date.day}, ${date.year}";
       }
     } catch (e) {
@@ -785,19 +763,19 @@ class _ListingTileState extends State<ListingTile>
   String _getDayName(int weekday) {
     switch (weekday) {
       case 1:
-        return StringHelper.get("monday", LanguageState().currentLanguage);
+        return L10n.get("monday");
       case 2:
-        return StringHelper.get("tuesday", LanguageState().currentLanguage);
+        return L10n.get("tuesday");
       case 3:
-        return StringHelper.get("wednesday", LanguageState().currentLanguage);
+        return L10n.get("wednesday");
       case 4:
-        return StringHelper.get("thursday", LanguageState().currentLanguage);
+        return L10n.get("thursday");
       case 5:
-        return StringHelper.get("friday", LanguageState().currentLanguage);
+        return L10n.get("friday");
       case 6:
-        return StringHelper.get("saturday", LanguageState().currentLanguage);
+        return L10n.get("saturday");
       case 7:
-        return StringHelper.get("sunday", LanguageState().currentLanguage);
+        return L10n.get("sunday");
       default:
         return "";
     }
@@ -807,29 +785,29 @@ class _ListingTileState extends State<ListingTile>
   String _getMonthName(int month) {
     switch (month) {
       case 1:
-        return StringHelper.get("january", LanguageState().currentLanguage);
+        return L10n.get("january");
       case 2:
-        return StringHelper.get("february", LanguageState().currentLanguage);
+        return L10n.get("february");
       case 3:
-        return StringHelper.get("march", LanguageState().currentLanguage);
+        return L10n.get("march");
       case 4:
-        return StringHelper.get("april", LanguageState().currentLanguage);
+        return L10n.get("april");
       case 5:
-        return StringHelper.get("may", LanguageState().currentLanguage);
+        return L10n.get("may");
       case 6:
-        return StringHelper.get("june", LanguageState().currentLanguage);
+        return L10n.get("june");
       case 7:
-        return StringHelper.get("july", LanguageState().currentLanguage);
+        return L10n.get("july");
       case 8:
-        return StringHelper.get("august", LanguageState().currentLanguage);
+        return L10n.get("august");
       case 9:
-        return StringHelper.get("september", LanguageState().currentLanguage);
+        return L10n.get("september");
       case 10:
-        return StringHelper.get("october", LanguageState().currentLanguage);
+        return L10n.get("october");
       case 11:
-        return StringHelper.get("november", LanguageState().currentLanguage);
+        return L10n.get("november");
       case 12:
-        return StringHelper.get("december", LanguageState().currentLanguage);
+        return L10n.get("december");
       default:
         return "";
     }

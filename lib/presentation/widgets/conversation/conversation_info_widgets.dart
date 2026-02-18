@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/string_helper.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -21,7 +21,7 @@ class ConversationAvatarContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userName = conversation.otherUserName;
-    final initials = StringHelper.extractInitials(userName);
+    final initials = StringUtils.extractInitials(userName);
 
     if (initials.isNotEmpty) {
       return Text(

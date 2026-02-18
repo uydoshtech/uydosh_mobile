@@ -3,8 +3,8 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
-import "package:uy_dosh/base/constants/string_helper.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -106,14 +106,13 @@ class _ChatScreenState extends State<ChatScreen> {
   String _getHeaderTitle(BuildContext context) {
     final name = widget.otherUserName?.trim();
     if (name != null && name.isNotEmpty) {
-      return AppStrings.getWithParams(
+      return L10n.getWithParams(
         "chat_with",
-        LanguageAwareStringHelper.getCurrentLanguage(context),
         params: {"name": name},
         fallback: "Chat with $name",
       );
     }
-    return LanguageAwareStringHelper.getCurrent(context, "chat");
+    return L10n.get("chat");
   }
 
   @override
@@ -147,10 +146,7 @@ class _ChatScreenState extends State<ChatScreen> {
             actions: [
               IconButton(
                 icon: Icon(Icons.refresh, color: textColor),
-                tooltip: LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "refresh",
-                ),
+                tooltip: L10n.get("refresh"),
                 onPressed: () {
                   _messagingBloc.add(
                     RefreshMessages(conversationId: widget.conversationId),
@@ -163,10 +159,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   items: _buildActionMenuItems(),
                   icon: Icons.more_vert,
                   iconColor: textColor,
-                  tooltip: LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "actions",
-                  ),
+                  tooltip: L10n.get("actions"),
                 ),
               ),
             ],
@@ -372,16 +365,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildErrorState(String message) {
     final displayMessage = message.contains("USER_BLOCKED")
-        ? LanguageAwareStringHelper.getCurrent(
-              context,
-              "user_blocked_violation_message",
+        ? L10n.get("user_blocked_violation_message",
             )
             : (message.contains("DioException") ||
                 message.contains("bad response") ||
                 message.contains("status code"))
-            ? LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "error_generic",
+            ? L10n.get("error_generic",
                 )
             : message;
 
@@ -410,7 +399,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 RefreshMessages(conversationId: widget.conversationId),
               );
             },
-            child: Text(LanguageAwareStringHelper.getCurrent(context, "retry")),
+            child: Text(L10n.get("retry")),
           ),
         ],
       ),
@@ -500,7 +489,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                LanguageAwareStringHelper.getCurrent(context, "no_messages"),
+                L10n.get("no_messages"),
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: Theme.of(
                     context,
@@ -509,9 +498,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "send_first_message",
+                L10n.get("send_first_message",
                 ),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(
@@ -553,10 +540,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     color: Colors.black, // Always use black text for visibility
                   ),
                   decoration: InputDecoration(
-                    hintText: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "type_message",
-                    ),
+                    hintText: L10n.get("type_message"),
                     hintStyle: TextStyle(
                       color: Colors.grey[600], // Grey hint text
                     ),
@@ -736,10 +720,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (result == true && context.mounted) {
       ToastTheme.showSuccess(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "complaint_created_success",
-        ),
+        message: L10n.get("complaint_created_success"),
       );
     }
   }
@@ -1269,7 +1250,7 @@ class _MessageBubbleState extends State<MessageBubble>
       if (difference.inMinutes > 0) {
         return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
       } else {
-        return LanguageAwareStringHelper.getCurrent(context, "now");
+        return L10n.get("now");
       }
     } catch (e) {
       return "";
@@ -1306,7 +1287,7 @@ class _MessageBubbleState extends State<MessageBubble>
       }
     }
 
-    final initials = StringHelper.extractInitials(userName);
+    final initials = StringUtils.extractInitials(userName);
 
     // If we have initials, show them
     if (initials.isNotEmpty) {
@@ -1333,7 +1314,7 @@ class _MessageBubbleState extends State<MessageBubble>
     // Get the current user's name from profile
     final userName = widget.currentUserProfile?.name;
 
-    final initials = StringHelper.extractInitials(userName);
+    final initials = StringUtils.extractInitials(userName);
 
     // Debug logging (can be removed in production)
     // logger.d('🔍 [ChatScreen] Current User Avatar debug:');
