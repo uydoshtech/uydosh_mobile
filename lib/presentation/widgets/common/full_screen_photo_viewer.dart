@@ -20,16 +20,15 @@ class FullScreenPhotoViewer extends StatefulWidget {
 class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
     with TickerProviderStateMixin {
   late PageController _pageController;
-  late int _currentIndex;
+  final ValueNotifier<int> _currentIndexNotifier = ValueNotifier(0);
+  final ValueNotifier<Offset> _dragOffsetNotifier = ValueNotifier(Offset.zero);
   late AnimationController _dismissAnimationController;
   late Animation<double> _dismissAnimation;
-  Offset _dragOffset = Offset.zero;
-  bool _isDragging = false;
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
+    _currentIndexNotifier.value = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
 
     // Initialize dismiss animation
@@ -48,6 +47,8 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
 
   @override
   void dispose() {
+    _currentIndexNotifier.dispose();
+    _dragOffsetNotifier.dispose();
     _pageController.dispose();
     _dismissAnimationController.dispose();
     super.dispose();
@@ -67,40 +68,26 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
   }
 
   void _onPageChanged(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    _currentIndexNotifier.value = index;
   }
 
   void _onVerticalDragStart(DragStartDetails details) {
-    setState(() {
-      _isDragging = true;
-      _dragOffset = Offset.zero;
-    });
+    _dragOffsetNotifier.value = Offset.zero;
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     if (details.delta.dy > 0) {
-      // Only allow downward drag
-      setState(() {
-        _dragOffset += details.delta;
-      });
+      _dragOffsetNotifier.value =
+          _dragOffsetNotifier.value + details.delta;
     }
   }
 
   void _onVerticalDragEnd(DragEndDetails details) {
-    setState(() {
-      _isDragging = false;
-    });
-
-    // If dragged down significantly, dismiss the viewer
-    if (_dragOffset.dy > 100) {
+    final offset = _dragOffsetNotifier.value;
+    if (offset.dy > 100) {
       _dismissViewer();
     } else {
-      // Reset position if not dragged enough
-      setState(() {
-        _dragOffset = Offset.zero;
-      });
+      _dragOffsetNotifier.value = Offset.zero;
     }
   }
 
@@ -123,16 +110,19 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
           child: AnimatedBuilder(
             animation: _dismissAnimation,
             builder: (context, child) {
-              return Transform.translate(
-                offset: _dragOffset,
-                child: Transform.scale(
-                  scale: _dismissAnimation.value,
-                  child: Opacity(
-                    opacity: _dismissAnimation.value,
-                    child: Stack(
-                      children: [
-                        // Photo PageView
-                        PageView.builder(
+              return ValueListenableBuilder<Offset>(
+                valueListenable: _dragOffsetNotifier,
+                builder: (context, dragOffset, _) {
+                  return Transform.translate(
+                    offset: dragOffset,
+                    child: Transform.scale(
+                      scale: _dismissAnimation.value,
+                      child: Opacity(
+                        opacity: _dismissAnimation.value,
+                        child: Stack(
+                          children: [
+                            // Photo PageView
+                            PageView.builder(
                           controller: _pageController,
                           onPageChanged: _onPageChanged,
                           itemCount: widget.photoUrls.length,
@@ -204,72 +194,88 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                           top: 0,
                           left: 0,
                           right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.black.withValues(alpha: 0.7),
-                                  Colors.transparent,
-                                ],
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                // Close button
-                                GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.5,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: _currentIndexNotifier,
+                            builder: (context, currentIndex, _) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.black.withValues(alpha: 0.7),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Close button
+                                    GestureDetector(
+                                      onTap: () =>
+                                          Navigator.of(context).pop(),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: const Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
                                     ),
-                                    child: const Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                      size: 24,
-                                    ),
-                                  ),
-                                ),
 
-                                const Spacer(),
+                                    const Spacer(),
 
-                                // Photo counter
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Text(
-                                    "${_currentIndex + 1} / ${widget.photoUrls.length}",
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                                    // Photo counter
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(16),
+                                      ),
+                                      child: Text(
+                                        "${currentIndex + 1} / ${widget.photoUrls.length}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
                         ),
 
                         // Bottom navigation arrows (if multiple photos)
-                        if (widget.photoUrls.length > 1) ...[
-                          // Previous button
-                          if (_currentIndex > 0)
+                        if (widget.photoUrls.length > 1)
+                          ValueListenableBuilder<int>(
+                            valueListenable: _currentIndexNotifier,
+                            builder: (context, currentIndex, _) {
+                              return Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  // Previous button
+                                  if (currentIndex > 0)
                             Positioned(
                               left: 16,
                               top: 0,
@@ -302,8 +308,8 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                               ),
                             ),
 
-                          // Next button
-                          if (_currentIndex < widget.photoUrls.length - 1)
+                                  // Next button
+                                  if (currentIndex < widget.photoUrls.length - 1)
                             Positioned(
                               right: 16,
                               top: 0,
@@ -335,16 +341,21 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                 ),
                               ),
                             ),
-                        ],
+                                ],
+                              );
+                            },
+                          ),
                       ],
                     ),
                   ),
                 ),
               );
             },
-          ),
-        ),
+          );
+        },
       ),
+    ),
+  ),
     );
   }
 }

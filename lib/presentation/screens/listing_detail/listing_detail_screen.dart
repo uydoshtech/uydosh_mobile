@@ -5,7 +5,6 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:http/http.dart" as http;
 import "package:share_plus/share_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
-import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/api/auth_token_repository.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
@@ -26,13 +25,13 @@ import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
-import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -54,6 +53,11 @@ import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_map_section.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -2068,653 +2072,42 @@ L10n.get("feature_listing_error",
             children: [
               // View count and promote button for owner - at the top
               if (UserListingState().isOwner(listingDetail.user.id)) ...[
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
-                  child: Row(
-                    children: [
-                      // Left: views count (or loading)
-                      if (_isLoadingViewCount && _viewCount == null)
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: _getIconColor(),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "...",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: _getSecondaryTextColor(),
-                              ),
-                            ),
-                          ],
-                        )
-                      else if (_viewCount != null)
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedbackUtils.impact();
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => ListingViewsStatsScreen(
-                                  listingId: listingDetail.id,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Row(
-                            children: [
-                              Icon(
-                                CupertinoIcons.eye,
-                                size: 18,
-                                color: _getIconColor(),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-L10n.get("listing_views_by_others",
-                                ).replaceAll("{count}", _viewCount.toString()),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: _getSecondaryTextColor(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        const SizedBox.shrink(),
-                      const Spacer(),
-                      // Right: promote button
-                      TextButton.icon(
-                        onPressed: _isToggling
-                            ? null
-                            : _toggleFeatureListing,
-                        icon: _isToggling
-                            ? SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: _getIconColor(),
-                                ),
-                              )
-                            : Icon(
-                                ListingUtils.isCurrentlyFeaturedDetail(
-                                  listingDetail,
-                                )
-                                    ? CupertinoIcons.arrow_down
-                                    : CupertinoIcons.arrow_up,
-                                size: 16,
-                                color: _getIconColor(),
-                              ),
-                        label: Text(
-                          L10n.get(
-                            ListingUtils.isCurrentlyFeaturedDetail(
-                              listingDetail,
-                            )
-                                ? "remove_from_top"
-                                : "promote_listing",
-                          ),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: _getIconColor(),
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ],
-                  ),
+                ListingDetailOwnerToolbar(
+                  listingDetail: listingDetail,
+                  viewCount: _viewCount,
+                  isLoadingViewCount: _isLoadingViewCount,
+                  isToggling: _isToggling,
+                  onToggleFeature: _toggleFeatureListing,
                 ),
                 const SizedBox(height: 4),
               ],
               // Photos Section - moved to very top
               if (listingDetail.photos != null &&
-                  listingDetail.photos!.isNotEmpty) ...[
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(5, 10, 5, 5),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Photos Carousel
-                        SizedBox(
-                          height: 200,
-                          child: PageView.builder(
-                            controller: _pageController,
-                            itemCount:
-                                _getOrderedPhotos(listingDetail.photos!).length,
-                            onPageChanged: (index) {
-                              // Optional: Add any page change logic here
-                            },
-                            itemBuilder: (context, index) {
-                              final orderedPhotos = _getOrderedPhotos(
-                                listingDetail.photos!,
-                              );
-                              final photo = orderedPhotos[index];
-                              logger.d(
-                                "🖼️ [Photo] Photo $index: id=${photo.id}, url=${photo.photoUrl}, isPrimary=${photo.isPrimary}",
-                              );
-                              return GestureDetector(
-                                onTap: () {
-                                  // Find the original index in the original photos list for the fullscreen viewer
-                                  final originalIndex = listingDetail.photos!
-                                      .indexOf(photo);
-                                  _openFullScreenPhotoViewer(originalIndex);
-                                },
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Stack(
-                                        children: [
-                                          // Photo with caching
-                                          CachedNetworkImage(
-                                            imageUrl: _buildPhotoUrl(
-                                              photo.photoUrl,
-                                            ),
-                                            width: double.infinity,
-                                            height: 200,
-                                            fit: BoxFit.cover,
-                                            memCacheWidth: 400,
-                                            memCacheHeight: 400,
-                                            fadeInDuration: const Duration(
-                                              milliseconds: 300,
-                                            ),
-                                            fadeInCurve: Curves.easeOut,
-                                            placeholder:
-                                                (context, url) => Container(
-                                                  width: double.infinity,
-                                                  height: 200,
-                                                  color: Colors.grey[200],
-                                                  child: const Center(
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          strokeWidth: 2,
-                                                        ),
-                                                  ),
-                                                ),
-                                            errorWidget:
-                                                (
-                                                  context,
-                                                  url,
-                                                  error,
-                                                ) => Container(
-                                                  width: double.infinity,
-                                                  height: 200,
-                                                  color: Colors.grey[300],
-                                                  child: Icon(
-                                                    Icons.image_not_supported,
-                                                    color: Colors.grey[600],
-                                                    size: 48,
-                                                  ),
-                                                ),
-                                          ),
-                                          // Fullscreen indicator
-                                          Positioned(
-                                            bottom: 12,
-                                            right: 12,
-                                            child: Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: Colors.black.withValues(
-                                                  alpha: 0.6,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: const Icon(
-                                                Icons.fullscreen,
-                                                color: Colors.white,
-                                                size: 20,
-                                              ),
-                                            ),
-                                          ),
-                                          // Photo counter
-                                          if (_getOrderedPhotos(
-                                                listingDetail.photos!,
-                                              ).length >
-                                              1)
-                                            Positioned(
-                                              top: 12,
-                                              right: 12,
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 4,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.black
-                                                      .withValues(alpha: 0.6),
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                child: Text(
-                                                  "${index + 1}/${_getOrderedPhotos(listingDetail.photos!).length}",
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-
-                        // Page indicators
-                        if (_getOrderedPhotos(listingDetail.photos!).length >
-                            1) ...[
-                          const SizedBox(height: 10),
-                          Center(
-                            child: SmoothPageIndicator(
-                              controller: _pageController,
-                              count:
-                                  _getOrderedPhotos(
-                                    listingDetail.photos!,
-                                  ).length,
-                              effect: WormEffect(
-                                dotColor: Colors.grey[300]!,
-                                activeDotColor: _getIconColor(),
-                                dotHeight: 8,
-                                dotWidth: 8,
-                                spacing: 8,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                        ],
-                      ],
-                    ),
-                  ),
+                  listingDetail.photos!.isNotEmpty)
+                ListingDetailPhotoSection(
+                  photos: listingDetail.photos!,
+                  orderedPhotos: _getOrderedPhotos(listingDetail.photos!)
+                      .cast<Photo>(),
+                  pageController: _pageController,
+                  buildPhotoUrl: _buildPhotoUrl,
+                  onPhotoTap: _openFullScreenPhotoViewer,
                 ),
-              ],
 
               // Unified Listing Detail Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header with Listing Type and Price
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          // Listing Type Tag
-                          ListingTypeBadge(
-                            listingTypeCode: listingDetail.listingType.code,
-                            fontSize: 14,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                          ),
-                          // Gender Badge
-                          if (listingDetail.gender != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color:
-                                    ThemeState().isLightTheme
-                                        ? null
-                                        : _getGenderColor(
-                                          listingDetail.gender!,
-                                        ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: _getGenderColor(listingDetail.gender!),
-                                  width: 1.0,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ThemeIconFactory.detail(
-                                    icon: _getGenderIcon(listingDetail.gender!),
-                                    color: _getGenderColor(listingDetail.gender!),
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    _getGenderText(
-                                      listingDetail.gender!,
-                                      context,
-                                    ),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: _getGenderColor(
-                                        listingDetail.gender!,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          // Price Range Tag
-                          PriceRangeBadge(
-                            minPrice: listingDetail.minPrice,
-                            maxPrice: listingDetail.maxPrice,
-                            isActive: listingDetail.isActive,
-                            fontSize: 13,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            currencySymbol: "y.e.",
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Title
-                      Text(
-                        listingDetail.title,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      // Description
-                      if (listingDetail.description != null &&
-                          listingDetail.description!.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          listingDetail.description!,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: _getDescriptionTextColor(),
-                          ),
-                        ),
-                      ],
-
-                      // Private Room Information
-                      if (listingDetail.privateRoom != null) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            ThemeIconFactory.detail(
-                              icon: Icons.lock_outline,
-                              color: _getPrivateRoomIconColor(),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-L10n.get("private_room",
-                              ),
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: _getLocationTextColor(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-
-                      const SizedBox(height: 10),
-
-                      // Location Information
-                      if (listingDetail.location != null ||
-                          listingDetail.subwayStation != null) ...[
-                        if (listingDetail.location != null) ...[
-                          ListenableBuilder(
-                            listenable: LanguageState(),
-                            builder: (context, child) {
-                              return Row(
-                                children: [
-                                  ThemeIconFactory.detail(
-                                    icon: Icons.location_on,
-                                    color: Colors.red,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      _getLocalizedName(
-                                        nameUz: listingDetail.location!.nameUz,
-                                        nameRu: listingDetail.location!.nameRu,
-                                        nameEn: listingDetail.location!.nameEn,
-                                        language: currentLanguage,
-                                      ),
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: _getLocationTextColor(),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          if (listingDetail.subwayStation != null)
-                            const SizedBox(height: 8)
-                          else
-                            const SizedBox(height: 20),
-                        ],
-                        if (listingDetail.subwayStation != null) ...[
-                          ListenableBuilder(
-                            listenable: LanguageState(),
-                            builder: (context, child) {
-                              return _buildSubwayStationDisplay(
-                                listingDetail.subwayStation!,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                      ],
-
-                      // Amenities Section
-                      if (listingDetail.amenities != null &&
-                          listingDetail.amenities!.isNotEmpty) ...[
-
-                        // Amenities Grid
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children:
-                              listingDetail.amenities!
-                                  .map(
-                                    (amenity) => _buildAmenityChip(
-                                      amenity,
-                                      currentLanguage,
-                                    ),
-                                  )
-                                  .toList(),
-                        ),
-                      ],
-
-                      const SizedBox(height: 10),
-
-                      // Additional Information
-                      // Move-in Date
-                      if (listingDetail.moveInDate != null &&
-                          listingDetail.moveInDate!.isNotEmpty) ...[
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Center(
-                                child: ThemeIconFactory.detail(
-                                  icon: CupertinoIcons.square_arrow_right,
-                                  color: _getDateIconColor(),
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text.rich(
-                                TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: "${L10n.get( "move_in_date_label")} ",
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: _getDateTextColor(),
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: _formatMoveInDate(context, listingDetail.moveInDate!),
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: _getDateTextColor(),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                      // Publishing Date
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: Center(
-                              child: ThemeIconFactory.detail(
-                                icon: Icons.schedule,
-                                color: _getDateIconColor(),
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "${L10n.get( "publication_date")} ${AppDateUtils.formatDateWithShortMonth(
-                                context,
-                                DateTime.parse(listingDetail.createdAt),
-                              )}",
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: _getDateTextColor(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+              ListingDetailContentCard(
+                listingDetail: listingDetail,
+                currentLanguage: currentLanguage,
+                formatMoveInDate: _formatMoveInDate,
+                getLocalizedName: _getLocalizedName,
               ),
 
               // Map Section - moved to bottom
-              if (listingDetail.location != null) ...[
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Map Header
-                        Row(
-                          children: [
-                            ThemeIconFactory.detail(
-                              icon: CupertinoIcons.placemark_fill,
-                              color: _getIconColor(),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-L10n.get("location_on_map",
-                              ),
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: _getDescriptionTextColor(),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Map Widget
-                        YandexMapWidget(
-                          apiKey: AppConfig.yandexMapsApiKey,
-                          height: 250,
-                          listingDetail: listingDetail,
-                        ),
-                        const SizedBox(height: 16),
-                        // Open in Yandex Maps Button
-                        Center(
-                          child: TextButton.icon(
-                            onPressed: () {
-                              HapticFeedbackUtils.impact();
-                              _confirmOpenInYandexMaps(listingDetail);
-                            },
-                            icon: Icon(
-                              Icons.link,
-                              size: 18,
-                              color: _getYandexButtonColor(),
-                            ),
-                            label: Text(
-L10n.get("open_in_yandex_maps",
-                              ),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: _getYandexButtonColor(),
-                              ),
-                            ),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: BorderSide(
-                                  color: _getYandexButtonColor(),
-                                  width: 1,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              if (listingDetail.location != null)
+                ListingDetailMapSection(
+                  listingDetail: listingDetail,
+                  onOpenInYandexMaps: () =>
+                      _confirmOpenInYandexMaps(listingDetail),
                 ),
-              ],
               if (!UserListingState().isOwner(listingDetail.user.id))
                 ListingDetailCompatibilitySection(
                   listingDetail: listingDetail,
@@ -2747,32 +2140,10 @@ L10n.get("open_in_yandex_maps",
                       _navigateToProfile(listingDetail.user.id),
                 ),
               if (_complaintsCount != null && _complaintsCount! > 0)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed:
-                            () => _viewListingComplaints(listingDetail.id),
-                        icon: FadeTransition(
-                          opacity: _warningBlinkAnimation,
-                          child: const Icon(Icons.report_outlined),
-                        ),
-                        label: FadeTransition(
-                          opacity: _warningBlinkAnimation,
-                          child: Text(
-                            _buildComplaintsButtonLabel(),
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          backgroundColor: AppColors.error,
-                          foregroundColor: AppColors.textLight,
-                        ),
-                      ),
-                    ),
-                  ),
+                ListingDetailComplaintsCard(
+                  complaintsLabel: _buildComplaintsButtonLabel(),
+                  onPressed: () => _viewListingComplaints(listingDetail.id),
+                  warningBlinkAnimation: _warningBlinkAnimation,
                 ),
             ],
           ),
@@ -2837,119 +2208,6 @@ L10n.get("error_internet_connection",
     );
   }
 
-  Color _getLineColor(int line) {
-    switch (line) {
-      case 1:
-        return AppColors.metroLine1;
-      case 2:
-        return AppColors.metroLine2;
-      case 3:
-        return AppColors.metroLine3;
-      case 4:
-        return AppColors.metroLine4;
-      default:
-        return AppColors.metroLine1;
-    }
-  }
-
-  // Build subway station display with transfer station support
-  Widget _buildSubwayStationDisplay(SubwayStationDetail station) {
-    final transferInfo = MetroCache.getTransferStationInfo(station.id);
-
-    if (transferInfo != null) {
-      // This is a transfer station - show both stations with <-> icon
-      final connectedStation = SubwayStationDetail(
-        id: transferInfo["connectedStationId"],
-        nameUz: transferInfo["connectedStationName"],
-        nameRu: transferInfo["connectedStationNameRu"],
-        nameEn: transferInfo["connectedStationNameEn"],
-        line: transferInfo["connectedStationLine"],
-      );
-
-      return Row(
-        children: [
-          Icon(Icons.train, color: _getLineColor(station.line), size: 20),
-          const SizedBox(width: 4),
-          Text(
-            _getLocalizedName(
-              nameUz: station.nameUz,
-              nameRu: station.nameRu,
-              nameEn: station.nameEn,
-              language: LanguageState().currentLanguage,
-            ),
-            style: TextStyle(fontSize: 15, color: _getLocationTextColor()),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.swap_horiz, color: _getLocationTextColor(), size: 16),
-          const SizedBox(width: 4),
-          Icon(Icons.train, color: _getLineColor(connectedStation.line), size: 20),
-          const SizedBox(width: 4),
-          Text(
-            _getLocalizedName(
-              nameUz: connectedStation.nameUz,
-              nameRu: connectedStation.nameRu,
-              nameEn: connectedStation.nameEn,
-              language: LanguageState().currentLanguage,
-            ),
-            style: TextStyle(fontSize: 15, color: _getLocationTextColor()),
-          ),
-        ],
-      );
-    } else {
-      // Regular station - show normally
-      return Row(
-        children: [
-          Icon(Icons.train, color: _getLineColor(station.line), size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _getLocalizedName(
-                nameUz: station.nameUz,
-                nameRu: station.nameRu,
-                nameEn: station.nameEn,
-                language: LanguageState().currentLanguage,
-              ),
-              style: TextStyle(fontSize: 15, color: _getLocationTextColor()),
-            ),
-          ),
-        ],
-      );
-    }
-  }
-
-  Color _getGenderColor(int gender) {
-    switch (gender) {
-      case 1: // Male
-        return AppColors.genderMale;
-      case 2: // Female
-        return AppColors.genderFemale;
-      default:
-        return AppColors.textGrey;
-    }
-  }
-
-  String _getGenderText(int gender, BuildContext context) {
-    switch (gender) {
-      case 1:
-        return L10n.get( "male");
-      case 2:
-        return L10n.get( "female");
-      default:
-        return L10n.get( "other");
-    }
-  }
-
-  IconData _getGenderIcon(int gender) {
-    switch (gender) {
-      case 1: // Male
-        return Icons.male;
-      case 2: // Female
-        return Icons.female;
-      default:
-        return Icons.person;
-    }
-  }
-
   void _navigateToProfile(int userId, {String? phoneNumber}) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -2965,134 +2223,6 @@ L10n.get("error_internet_connection",
             ),
       ),
     );
-  }
-
-  Widget _buildAmenityChip(Amenity amenity, String language) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: _getAmenityChipBackgroundColor(),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _getAmenityChipBorderColor(), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ThemeIconFactory.detail(
-            icon: _getAmenityIcon(amenity),
-            size: 18,
-            color: _getAmenityIconColor(),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            _getAmenityLocalizedName(amenity, language),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: _getAmenityIconColor(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData _getAmenityIcon(Amenity amenity) {
-    if (amenity.code != null && amenity.code!.isNotEmpty) {
-      return AmenityIconHelper.getIcon(amenity.code!);
-    }
-    return Icons.home; // Default icon
-  }
-
-  String _getAmenityLocalizedName(Amenity amenity, String language) {
-    switch (language) {
-      case "ru":
-        return amenity.nameRu;
-      case "uz":
-        return amenity.nameUz;
-      case "en":
-      default:
-        return amenity.nameEn;
-    }
-  }
-
-  // Theme-dependent color methods for amenities
-  Color _getAmenityIconColor() {
-    // Use ThemeState to detect current theme
-    if (ThemeState().isBlueTheme) {
-      // Blue theme - use white for icons
-      return AppColors.textLight;
-    } else if (ThemeState().isLightTheme) {
-      // Light theme - use black for icons and text
-      return Colors.black;
-    } else {
-      // Default theme - use primary icon color
-      return AppColors.iconPrimary; // This is Color(0xFF6B46C1)
-    }
-  }
-
-  Color _getAmenityChipBackgroundColor() {
-    // Use ThemeState to detect current theme
-    if (ThemeState().isBlueTheme) {
-      // Blue theme - use semi-transparent white background
-      return AppColors.textLight.withValues(alpha: 0.1);
-    } else if (ThemeState().isLightTheme) {
-      // Light theme - use white background
-      return Colors.white;
-    } else {
-      // Default theme - use semi-transparent primary background
-      return AppColors.primary.withValues(alpha: 0.1);
-    }
-  }
-
-  Color _getAmenityChipBorderColor() {
-    // Use ThemeState to detect current theme
-    if (ThemeState().isBlueTheme) {
-      // Blue theme - use white border
-      return AppColors.textLight;
-    } else if (ThemeState().isLightTheme) {
-      // Light theme - use black border
-      return Colors.black;
-    } else {
-      // Default theme - use primary border
-      return AppColors.primary;
-    }
-  }
-
-  // Theme-dependent color method for description text
-  Color _getDescriptionTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
-    } else {
-      return AppColors.textGrey; // Default grey for light theme
-    }
-  }
-
-  // Theme-dependent color method for location and metro text
-  Color _getLocationTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
-    } else {
-      return AppColors.textDark87; // Default dark text for light theme
-    }
-  }
-
-  // Theme-dependent color method for date text
-  Color _getDateTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
-    } else {
-      return AppColors.textDark87; // Default dark text for light theme
-    }
-  }
-
-  // Theme-dependent color method for date icon
-  Color _getDateIconColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
-    } else {
-      return AppColors.textGrey600; // Default grey for light theme
-    }
   }
 
   // Move-in date helper method
@@ -3143,26 +2273,6 @@ L10n.get("error_internet_connection",
     return Theme.of(context).appBarTheme.backgroundColor ?? AppColors.primary;
   }
 
-  // Theme-dependent color method for primary buttons
-  Color _getPrimaryButtonColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.buttonPrimary; // Blue for blue theme
-    } else {
-      return AppColors.primary; // Primary for non-blue theme
-    }
-  }
-
-  // Theme-dependent color method for loading indicator
-  Color _getLoadingIndicatorColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.buttonPrimary; // Blue for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black for light theme
-    } else {
-      return AppColors.primary; // Primary for non-blue theme
-    }
-  }
-
   // Theme-dependent color method for loading text
   Color _getLoadingTextColor() {
     if (ThemeState().isBlueTheme) {
@@ -3171,50 +2281,6 @@ L10n.get("error_internet_connection",
       return Colors.black; // Black text for light theme
     } else {
       return AppColors.primary; // Primary text for non-blue theme
-    }
-  }
-
-  // Theme-dependent color method for icons
-  Color _getSecondaryTextColor() {
-    return Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7);
-  }
-
-  Color _getIconColor() {
-    if (ThemeState().isLightTheme) {
-      return Colors.black; // Black for light theme
-    } else if (ThemeState().isBlueTheme) {
-      return Colors.white; // White for blue theme
-    } else {
-      return AppColors.primary; // Primary for non-blue theme
-    }
-  }
-
-  // Theme-dependent color method for private room icon
-  Color _getPrivateRoomIconColor() {
-    if (ThemeState().isLightTheme) {
-      return AppColors.primary; // Primary for light theme
-    } else if (ThemeState().isBlueTheme) {
-      return Colors.white; // White for blue theme
-    } else {
-      return AppColors.primary; // Primary for non-blue theme
-    }
-  }
-
-  // Theme-dependent color method for button foreground
-  Color _getButtonForegroundColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.buttonPrimary; // Blue for blue theme
-    } else {
-      return AppColors.primary; // Primary for non-blue theme
-    }
-  }
-
-  // Theme-dependent color method for Yandex Maps button
-  Color _getYandexButtonColor() {
-    if (ThemeState().isBlueTheme) {
-      return Colors.white;
-    } else {
-      return AppColors.textDark;
     }
   }
 

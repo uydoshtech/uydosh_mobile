@@ -274,7 +274,10 @@ class _ListingTileState extends State<ListingTile>
                           // Heart icon in top-right corner - only show when showHeartIcon is true and user is authenticated
                           if (widget.showHeartIcon)
                             ListenableBuilder(
-                              listenable: AuthenticationState(),
+                              listenable: Listenable.merge([
+                                AuthenticationState(),
+                                FavoritesState(),
+                              ]),
                               builder: (context, child) {
                                 final isAuthenticated =
                                     AuthenticationState().isAuthenticated;
@@ -282,17 +285,14 @@ class _ListingTileState extends State<ListingTile>
                                   return const SizedBox.shrink();
                                 }
 
-                                return ListenableBuilder(
-                                  listenable: FavoritesState(),
-                                  builder: (context, child) {
-                                    final favoritesState = FavoritesState();
-                                    // Use forceFavorite parameter if provided, otherwise check FavoritesState
-                                    final isFavorite =
-                                        widget.forceFavorite ??
-                                        favoritesState.isFavorite(
-                                          widget.listing.id,
-                                        );
-                                    return GestureDetector(
+                                final favoritesState = FavoritesState();
+                                // Use forceFavorite parameter if provided, otherwise check FavoritesState
+                                final isFavorite =
+                                    widget.forceFavorite ??
+                                    favoritesState.isFavorite(
+                                      widget.listing.id,
+                                    );
+                                return GestureDetector(
                                       onTap:
                                           _isTogglingFavorite
                                               ? null
@@ -432,9 +432,7 @@ class _ListingTileState extends State<ListingTile>
                                       ),
                                     );
                                   },
-                                );
-                              },
-                            )
+                                )
                           else
                             const SizedBox(
                               width: 51, // 27 (icon size) + 24 (padding: 12 * 2)

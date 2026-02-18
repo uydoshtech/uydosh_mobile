@@ -168,6 +168,12 @@ abstract class IListingService {
   // Record a view when non-owner views a listing (auth required)
   Future<void> recordListingView(int listingId);
 
+  // Get listings the user has viewed (auth required)
+  Future<PageableResponse<Listing>> getViewedListings({
+    int page = 1,
+    int limit = 50,
+  });
+
   // Get view count for owner (auth required)
   Future<int> getListingViewCount(int listingId);
 
@@ -1493,6 +1499,47 @@ class ListingService implements IListingService {
     } catch (e) {
       logger.d("Error recording listing view: $e");
       // Fire-and-forget - don't rethrow
+    }
+  }
+
+  @override
+  Future<PageableResponse<Listing>> getViewedListings({
+    int page = 1,
+    int limit = 50,
+  }) async {
+    try {
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        "/listings/viewed-by-me?page=$page&limit=$limit",
+        (json) => json as Map<String, dynamic>,
+        basePath: EnvironmentUtil.basePath,
+      );
+
+      final listingsData = response["listings"];
+      final list = listingsData is List
+          ? (listingsData as List)
+              .map((e) => Listing.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : <Listing>[];
+
+      final total = (response["total"] is num)
+          ? (response["total"] as num).toInt()
+          : list.length;
+      final pageNum =
+          (response["page"] is num) ? (response["page"] as num).toInt() : page;
+      final totalPages = (response["totalPages"] is num)
+          ? (response["totalPages"] as num).toInt()
+          : 1;
+
+      return PageableResponse<Listing>(
+        data: list,
+        total: total,
+        page: pageNum,
+        limit: limit,
+        totalPages: totalPages,
+      );
+    } catch (e) {
+      logger.d("Error fetching viewed listings: $e");
+      rethrow;
     }
   }
 

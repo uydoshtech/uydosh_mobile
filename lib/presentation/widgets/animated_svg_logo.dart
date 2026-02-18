@@ -174,31 +174,6 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
       ),
     );
 
-    _controller.addListener(() {
-      final currentHalfRotationIndex =
-          _squareRotationAnimation.value.floor().clamp(0, 6);
-      if (currentHalfRotationIndex > _lastHalfRotationIndex) {
-        for (var i = _lastHalfRotationIndex + 1;
-            i <= currentHalfRotationIndex;
-            i++) {
-          HapticFeedbackUtils.strongImpact();
-        }
-        _lastHalfRotationIndex = currentHalfRotationIndex;
-      }
-      if (!_hasLoggedSquareStop && _controller.value >= 0.4) {
-        _hasLoggedSquareStop = true;
-        _logStage("Logo animation: square rotation completed");
-      }
-      if (!_hasLoggedULetterDone && _controller.value >= 0.7) {
-        _hasLoggedULetterDone = true;
-        _logStage("Logo animation: U letter drawing completed");
-      }
-      if (!_hasLoggedRoofDone && _controller.value >= 0.9) {
-        _hasLoggedRoofDone = true;
-        _logStage("Logo animation: roof animation completed");
-      }
-    });
-
     _controller.forward();
   }
 
@@ -208,11 +183,37 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
     super.dispose();
   }
 
+  void _handleAnimationSideEffects() {
+    final currentHalfRotationIndex =
+        _squareRotationAnimation.value.floor().clamp(0, 6);
+    if (currentHalfRotationIndex > _lastHalfRotationIndex) {
+      for (var i = _lastHalfRotationIndex + 1;
+          i <= currentHalfRotationIndex;
+          i++) {
+        HapticFeedbackUtils.strongImpact();
+      }
+      _lastHalfRotationIndex = currentHalfRotationIndex;
+    }
+    if (!_hasLoggedSquareStop && _controller.value >= 0.4) {
+      _hasLoggedSquareStop = true;
+      _logStage("Logo animation: square rotation completed");
+    }
+    if (!_hasLoggedULetterDone && _controller.value >= 0.7) {
+      _hasLoggedULetterDone = true;
+      _logStage("Logo animation: U letter drawing completed");
+    }
+    if (!_hasLoggedRoofDone && _controller.value >= 0.9) {
+      _hasLoggedRoofDone = true;
+      _logStage("Logo animation: roof animation completed");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        _handleAnimationSideEffects();
         return Center(
           child: SizedBox(
             width: widget.size * 1.5, // Larger to accommodate rotated square

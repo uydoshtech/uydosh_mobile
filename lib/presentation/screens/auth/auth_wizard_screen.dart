@@ -89,16 +89,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   // Navigation control
   bool _isProgrammaticNavigation = false;
 
+  /// Debounce timer for name input to avoid setState on every keystroke
+  Timer? _nameDebounceTimer;
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: widget.initialPage);
     _currentPage = widget.initialPage;
-    _nameController.addListener(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    _nameController.addListener(_onNameChanged);
 
     // Initialize university service
     _universityService = getIt<IUniversityService>();
@@ -133,8 +132,19 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     _loadRegions();
   }
 
+  void _onNameChanged() {
+    _nameDebounceTimer?.cancel();
+    _nameDebounceTimer = Timer(const Duration(milliseconds: 150), () {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _nameDebounceTimer?.cancel();
+    _nameController.removeListener(_onNameChanged);
     _pageController.dispose();
     _profileScrollController.dispose();
     _nameController.dispose();

@@ -25,6 +25,7 @@ import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
+import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
@@ -547,6 +548,35 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                               ),
                             );
                           }
+                        }
+                      },
+                    );
+                  },
+                ),
+
+                // History menu item - Only show when user is logged in (tenants and landlords)
+                ListenableBuilder(
+                  listenable: AuthenticationState(),
+                  builder: (context, child) {
+                    final isAuthenticated =
+                        AuthenticationState().isAuthenticated;
+
+                    if (!isAuthenticated) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return _buildMenuItem(
+                      icon: Icons.history,
+                      titleKey: "menu_history",
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (context.mounted) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => const ViewHistoryScreen(),
+                            ),
+                          );
                         }
                       },
                     );

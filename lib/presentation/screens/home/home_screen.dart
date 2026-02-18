@@ -473,7 +473,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return CommonListView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       itemSpacing: 16.0,
-      children: List.generate(6, (index) => const ListingTileSkeleton()),
+      itemCount: 6,
+      itemBuilder: (context, index) => const ListingTileSkeleton(),
     );
   }
 

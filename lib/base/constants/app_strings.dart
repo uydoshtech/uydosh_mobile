@@ -420,6 +420,7 @@ class AppStrings {
       "menu_language": "Language",
 
       "menu_favorites": "Favorites",
+      "menu_history": "History",
       "menu_add_listing": "Add Listing",
       "menu_my_listings": "My Listings",
 
@@ -606,6 +607,14 @@ class AppStrings {
       "favorites_empty_title": "No favorites yet",
       "favorites_browse_button": "Browse Listings",
 
+      // ===== VIEW HISTORY =====
+      "view_history_title": "View history",
+      "view_history_empty_title": "No viewed listings yet",
+      "view_history_browse_button": "Browse Listings",
+      "view_history_auth_prompt": "Please log in to view your history.",
+      "unable_to_load_view_history":
+          "Unable to load view history. Please try again later.",
+
       "favorite_toggle_error": "Failed to update favorite status",
       "favorite_toggle_network_error": "Network error updating favorite status",
 
@@ -624,6 +633,7 @@ class AppStrings {
       "description_too_long": "Description must be 500 characters or less",
       "location_required": "Please select a location",
 
+      "auth_required_title": "Authentication required",
       "authentication_required":
           "Authentication required. Please log in to create listings.",
 
@@ -1122,6 +1132,7 @@ class AppStrings {
       "menu_language": "Язык",
 
       "menu_favorites": "Избранное",
+      "menu_history": "История",
       "menu_add_listing": "Добавить объявление",
       "menu_my_listings": "Мои объявления",
 
@@ -1314,6 +1325,13 @@ class AppStrings {
       "favorites_empty_title": "Пока нет избранного",
       "favorites_browse_button": "Просмотреть объявления",
 
+      "view_history_title": "История просмотров",
+      "view_history_empty_title": "Пока нет просмотренных объявлений",
+      "view_history_browse_button": "Просмотреть объявления",
+      "view_history_auth_prompt": "Войдите, чтобы просмотреть историю.",
+      "unable_to_load_view_history":
+          "Не удалось загрузить историю. Попробуйте позже.",
+
       "favorite_toggle_error": "Не удалось обновить статус избранного",
       "favorite_toggle_network_error":
           "Ошибка сети при обновлении статуса избранного",
@@ -1333,6 +1351,7 @@ class AppStrings {
       "description_too_long": "Описание должно быть не более 500 символов",
       "location_required": "Пожалуйста, выберите район",
 
+      "auth_required_title": "Требуется аутентификация",
       "authentication_required":
           "Требуется аутентификация. Пожалуйста, войдите в систему для создания объявлений.",
 
@@ -1836,6 +1855,7 @@ class AppStrings {
       "menu_language": "Til",
 
       "menu_favorites": "Sevimlilar",
+      "menu_history": "Tarix",
       "menu_add_listing": "E'lon qo'shish",
       "menu_my_listings": "Mening e'lonlarim",
 
@@ -2029,6 +2049,13 @@ class AppStrings {
       "favorites_empty_title": "Hali sevimlilar yo'q",
       "favorites_browse_button": "E'lonlarni ko'rish",
 
+      "view_history_title": "Ko'rilganlar tarixi",
+      "view_history_empty_title": "Hali ko'rilgan e'lonlar yo'q",
+      "view_history_browse_button": "E'lonlarni ko'rish",
+      "view_history_auth_prompt": "Tarixni ko'rish uchun tizimga kiring.",
+      "unable_to_load_view_history":
+          "Tarixni yuklash imkoni yo'q. Keyinroq urinib ko'ring.",
+
       "favorite_toggle_error": "Sevimli holatini yangilashda xatolik",
       "favorite_toggle_network_error":
           "Sevimli holatini yangilashda tarmoq xatoligi",
@@ -2048,6 +2075,7 @@ class AppStrings {
       "description_too_long": "Tavsif 500 belgidan ko'p bo'p bo'lmasligi kerak",
       "location_required": "Iltimos, tuman tanlang",
 
+      "auth_required_title": "Autentifikatsiya talab qilinadi",
       "authentication_required":
           "Autentifikatsiya talab qilinadi. Iltimos, e'lon yaratish uchun tizimga kiring.",
 
