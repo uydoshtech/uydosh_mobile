@@ -4,6 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
@@ -304,6 +305,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
 
         await SessionManager.storeUserRole(_selectedRole);
+        await SessionManager.storeUserProfile(updatedProfile);
+        ProfileCompletionState().updateFromProfile(updatedProfile);
 
         Navigator.of(context).pop(true); // Return true to indicate success
       }

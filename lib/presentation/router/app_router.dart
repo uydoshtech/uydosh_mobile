@@ -336,12 +336,15 @@ class _MainNavigationState extends State<MainNavigation>
                         final profile =
                             await SessionManager.getCachedUserProfile();
                         if (profile == null || !mounted) return;
-                        Navigator.of(context).push(
+                        final result = await Navigator.of(context).push<bool>(
                           MaterialPageRoute(
                             builder:
                                 (_) => EditProfileScreen(profile: profile),
                           ),
                         );
+                        if (result == true && mounted) {
+                          setState(() {});
+                        }
                       },
                       child: Text(
                         LanguageAwareStringHelper.getCurrent(
