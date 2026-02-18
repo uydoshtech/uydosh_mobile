@@ -49,6 +49,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   String _selectedRole = "tenant";
   bool _isAdmin = false;
+  bool _isRoleLoaded = false;
 
   // Scroll controllers for wheel pickers
   FixedExtentScrollController? _regionScrollController;
@@ -107,6 +108,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       setState(() {
         _isAdmin = role == "admin";
         _selectedRole = (role == "admin" || role == "landlord") ? role! : "tenant";
+        _isRoleLoaded = true;
       });
     }
   }
@@ -249,12 +251,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final telegram = _telegramController.text.trim();
       final telegramToSend = telegram.isEmpty ? null : telegram;
 
+      // Preserve admin role: check actual role at save time to avoid overwriting
+      // when dropdown wasn't loaded yet (race condition)
+      final currentRole = await SessionManager.getUserRole();
+      final roleToSave = (currentRole == "admin") ? "admin" : _selectedRole;
+
       final updateRequest = UpdateProfileRequest(
         name: name,
         gender: gender,
         regionId: regionId,
         universityId: universityId,
-        role: _selectedRole,
+        role: roleToSave,
         aboutMe: aboutMeToSend,
         telegram: telegramToSend,
         employed: _employed,
@@ -304,7 +311,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         );
 
-        await SessionManager.storeUserRole(_selectedRole);
+        await SessionManager.storeUserRole(roleToSave);
         await SessionManager.storeUserProfile(updatedProfile);
         ProfileCompletionState().updateFromProfile(updatedProfile);
 
@@ -420,39 +427,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 24),
 
             // Role Dropdown (landlord / tenant; admin option when user is admin)
-            ProfileDropdownControl(
-              label: LanguageAwareStringHelper.getCurrent(
-                context,
-                "are_you_landlord_or_renter",
-              ),
-              value: _selectedRole,
-              onChanged: (value) => setState(() => _selectedRole = value ?? "tenant"),
-              icon: Icons.badge,
-              options: [
-                if (_isAdmin)
+            if (!_isRoleLoaded)
+              _buildRoleLoadingPlaceholder(context)
+            else
+              ProfileDropdownControl(
+                label: LanguageAwareStringHelper.getCurrent(
+                  context,
+                  "are_you_landlord_or_renter",
+                ),
+                value: _selectedRole,
+                onChanged: (value) => setState(() => _selectedRole = value ?? "tenant"),
+                icon: Icons.badge,
+                options: [
+                  if (_isAdmin)
+                    DropdownOption(
+                      value: "admin",
+                      label: LanguageAwareStringHelper.getCurrent(
+                        context,
+                        "role_admin",
+                      ),
+                    ),
                   DropdownOption(
-                    value: "admin",
+                    value: "landlord",
                     label: LanguageAwareStringHelper.getCurrent(
                       context,
-                      "role_admin",
+                      "role_landlord",
                     ),
                   ),
-                DropdownOption(
-                  value: "landlord",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "role_landlord",
+                  DropdownOption(
+                    value: "tenant",
+                    label: LanguageAwareStringHelper.getCurrent(
+                      context,
+                      "role_tenant",
+                    ),
                   ),
-                ),
-                DropdownOption(
-                  value: "tenant",
-                  label: LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "role_tenant",
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
 
             const SizedBox(height: 24),
 
@@ -775,6 +785,63 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 isLoading: _isLoading,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleLoadingPlaceholder(BuildContext context) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color:
+            isBlueTheme
+                ? BlueThemeColors.surface
+                : theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outline),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              Icons.badge,
+              color:
+                  isBlueTheme
+                      ? Colors.white
+                      : theme.colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                LanguageAwareStringHelper.getCurrent(
+                  context,
+                  "are_you_landlord_or_renter",
+                ),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color:
+                      isBlueTheme
+                          ? Colors.white
+                          : theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  theme.colorScheme.primary,
+                ),
               ),
             ),
           ],

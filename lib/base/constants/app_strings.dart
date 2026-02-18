@@ -188,7 +188,7 @@ class AppStrings {
       "all_stations_count": "All {count} stations",
       "all_stations_explanation":
           "Search along the entire line <b>{line}</b> through <b>{count}</b> stations",
-      "select_region": "I'm from:",
+      "select_region": "Choose region:",
       "select_university": "Select university",
 
       "select_language": "Select Language",
@@ -889,7 +889,7 @@ class AppStrings {
       "all_stations_count": "Все {count} станций",
       "all_stations_explanation":
           "Поиск вдоль ВСЕЙ линии <b>{line}</b> по <b>{count}</b> станциям",
-      "select_region": "Я родом из:",
+      "select_region": "Выберите область",
       "select_university": "Выберите университет",
 
       "select_language": "Выбрать язык",
@@ -1601,7 +1601,7 @@ class AppStrings {
       "all_stations_count": "Barcha {count} bekatlar",
       "all_stations_explanation":
           "Liniya <b>{line}</b> bo'ylab <b>{count}</b> bekat orqali qidiruv",
-      "select_region": "Qayerdanman:",
+      "select_region": "Tumanni tanlang",
       "select_university": "Universitetni tanlang",
 
       "select_language": "Tilni tanlang",
