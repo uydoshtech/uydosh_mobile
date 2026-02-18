@@ -82,7 +82,7 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
     if (kDebugMode) {
       debugPrint(message);
     }
-    HapticFeedbackUtils.selection();
+    HapticFeedbackUtils.strongImpact();
   }
 
   @override
@@ -181,7 +181,7 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
         for (var i = _lastHalfRotationIndex + 1;
             i <= currentHalfRotationIndex;
             i++) {
-          HapticFeedbackUtils.selection();
+          HapticFeedbackUtils.strongImpact();
         }
         _lastHalfRotationIndex = currentHalfRotationIndex;
       }

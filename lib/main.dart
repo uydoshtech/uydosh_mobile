@@ -7,7 +7,6 @@ import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/localization/generated/l10n.dart" as gen;
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/log_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -170,7 +169,6 @@ class _MyAppState extends State<MyApp> {
           navigatorKey: widget.navigatorKey,
           navigatorObservers: [routeObserver],
           localizationsDelegates: const [
-            gen.S.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
@@ -226,13 +224,13 @@ class _SplashScreenState extends State<SplashScreen>
 
     _titleController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        HapticFeedbackUtils.lightImpact();
+        HapticFeedbackUtils.strongImpact();
       }
     });
 
     _subtitleController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        HapticFeedbackUtils.lightImpact();
+        HapticFeedbackUtils.strongImpact();
       }
     });
 
