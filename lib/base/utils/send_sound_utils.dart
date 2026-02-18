@@ -1,9 +1,11 @@
 import "dart:async";
 
 import "package:audioplayers/audioplayers.dart";
+import "package:flutter/foundation.dart" show defaultTargetPlatform, TargetPlatform;
+import "package:flutter/services.dart";
 
 /// Utility for playing the message send confirmation sound at full volume.
-/// Uses a custom sound asset instead of SystemSound for volume control.
+/// Uses custom asset when possible; falls back to SystemSound on Android.
 class SendSoundUtils {
   static final AudioPlayer _player = AudioPlayer();
 
@@ -16,7 +18,9 @@ class SendSoundUtils {
   static const String _clickAsset = "sounds/click.wav";
 
   static bool _selectionPlayerInitialized = false;
-  static bool _sendPlayerInitialized = false;
+
+  /// Shared future so concurrent calls wait for init to complete.
+  static Future<void>? _sendPlayerInitFuture;
 
   static void _ensureSelectionPlayerReady() {
     if (_selectionPlayerInitialized) return;
@@ -26,37 +30,45 @@ class SendSoundUtils {
   }
 
   /// Ensures send player is configured for audioplayers 6.0+ compatibility.
-  /// Must await setAudioContext before play to fix Android FileNotFoundException
-  /// (see https://github.com/bluefireteam/audioplayers/issues/1786).
   static Future<void> _ensureSendPlayerReady() async {
-    if (_sendPlayerInitialized) return;
-    _sendPlayerInitialized = true;
-    await _player.setPlayerMode(PlayerMode.lowLatency);
-    await _player.setVolume(1.0);
-    await _player.setAudioContext(
-      AudioContext(
-        android: const AudioContextAndroid(
-          audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+    _sendPlayerInitFuture ??= () async {
+      await _player.setPlayerMode(PlayerMode.lowLatency);
+      await _player.setVolume(1.0);
+      await _player.setAudioContext(
+        AudioContext(
+          android: const AudioContextAndroid(
+            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+          ),
+          iOS: AudioContextIOS(),
         ),
-        iOS: AudioContextIOS(),
-      ),
-    );
+      );
+    }();
+    await _sendPlayerInitFuture;
   }
 
   /// Plays the send confirmation sound at full volume (1.0).
-  /// Fire-and-forget; does not block.
+  /// Uses SystemSound (reliable on Android) with audioplayers fallback for iOS.
   static void playSendSound() {
     unawaited(_playSendSoundImpl());
   }
 
   static Future<void> _playSendSoundImpl() async {
+    // SystemSound works reliably on Android; no-op on iOS
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        await SystemSound.play(SystemSoundType.click);
+        return;
+      } catch (_) {}
+    }
+
+    // Custom asset via audioplayers (iOS, desktop, or Android fallback)
     try {
       await _ensureSendPlayerReady();
-      await _player.stop();
+      try {
+        await _player.stop();
+      } catch (_) {}
       await _player.play(AssetSource(_clickAsset));
-    } catch (_) {
-      // Fire-and-forget: avoid unhandled exceptions; sound is non-critical
-    }
+    } catch (_) {}
   }
 
   /// Plays the click sound for spinner/picker selection feedback.

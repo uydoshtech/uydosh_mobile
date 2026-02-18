@@ -220,9 +220,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                 // Clear the input and scroll to bottom
                                 _messageController.clear();
                                 _scrollToBottom();
-                                // Trigger light haptic feedback and click sound
+                                // Haptic feedback (sound plays on send button press)
                                 HapticFeedbackUtils.impact();
-                                SendSoundUtils.playSendSound();
                               },
                               messagesMarkedAsRead:
                                   (conversationId, markedCount) {},
@@ -628,6 +627,9 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     _messageController.clear();
+
+    // Play sound immediately on send for reliable feedback
+    SendSoundUtils.playSendSound();
 
     _messagingBloc.add(
       SendMessage(conversationId: widget.conversationId, content: content),
