@@ -10,6 +10,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
@@ -226,8 +227,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                 // Clear the input and scroll to bottom
                                 _messageController.clear();
                                 _scrollToBottom();
-                                // Trigger light haptic feedback
+                                // Trigger light haptic feedback and click sound
                                 HapticFeedbackUtils.impact();
+                                SendSoundUtils.playSendSound();
                               },
                               messagesMarkedAsRead:
                                   (conversationId, markedCount) {},
