@@ -133,8 +133,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     20: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Chorsu
     21: _TapTargetOverride(dx: 0, dy: -7, widthDelta: -20),  // Gafur Gulom
     22: _TapTargetOverride(dx: 70, dy: -10, widthDelta: -50),  // Alisher Navoiy
-    23: _TapTargetOverride(dx: 60, dy: -5, widthDelta: -50),  // Oʻzbekiston
-    24: _TapTargetOverride(dx: -80, dy: -4, widthDelta: -30),  // Kosmonavtlar
+    23: _TapTargetOverride(dx: 90, dy: -5, widthDelta: -50),  // Oʻzbekiston
+    24: _TapTargetOverride(dx: -60, dy: -4, widthDelta: -30),  // Kosmonavtlar
     25: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -10),  // Oybek
     26: _TapTargetOverride.only(),  // Toshkent
     27: _TapTargetOverride(dx: 40, dy: -6, widthDelta: -20),  // Mashinasozlar
@@ -142,7 +142,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     // Line 3 – Yunusobod
     29: _TapTargetOverride(dx: 0, dy: -4, widthDelta: -20),  // Mingurik
     30: _TapTargetOverride(dx: 140, dy: 0, widthDelta: -50),  // Yunus Rajabiy
-    31: _TapTargetOverride(dx: 80, dy: 0, widthDelta: -50),  // Abdulla Qodiriy
+    31: _TapTargetOverride(dx: 100, dy: 0, widthDelta: -50),  // Abdulla Qodiriy
     32: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Minor
     33: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Bodomzor
     34: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Shahriston

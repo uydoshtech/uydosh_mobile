@@ -417,15 +417,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 4),
               ],
 
-              // My Listings section (above all others)
-              _buildMyListingsSection(context),
-              const SizedBox(height: 8),
-
-              // Messages section
-              _buildMessagesSection(context),
-              const SizedBox(height: 8),
-
-              // Merged Profile Information Card
+              // Merged Profile Information Card (first)
               Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(
@@ -972,6 +964,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ],
+
+              // My Listings section
+              const SizedBox(height: 8),
+              _buildMyListingsSection(context),
+              const SizedBox(height: 8),
+
+              // Messages section
+              _buildMessagesSection(context),
+              const SizedBox(height: 8),
 
               if (_userRole == "admin") ...[
                 const SizedBox(height: 8),
