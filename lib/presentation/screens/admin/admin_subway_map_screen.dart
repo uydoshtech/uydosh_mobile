@@ -121,7 +121,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     9: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Novza
     10: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),  // Milliy bog
     11: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),  // Xalqlar doʻstligi
-    12: _TapTargetOverride(dx: 70, dy: 0, widthDelta: -20),  // Paxtakor
+    12: _TapTargetOverride(dx: 70, dy: 0, widthDelta: -40),  // Paxtakor
     13: _TapTargetOverride(dx: 20, dy: 0, widthDelta: -70),  // Mustaqil. Maydoni
     14: _TapTargetOverride(dx: 20, dy: -8, widthDelta: -60),  // A. Temur Xiyoboni
     15: _TapTargetOverride(dx: 10, dy: -6, widthDelta: -50),  // Hamid Olimjon
@@ -134,15 +134,15 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     21: _TapTargetOverride(dx: 20, dy: -7, widthDelta: -50),  // Gafur Gulom
     22: _TapTargetOverride(dx: 120, dy: -10, widthDelta: -70),  // Alisher Navoiy
     23: _TapTargetOverride(dx: 80, dy: -5, widthDelta: -50),  // Oʻzbekiston
-    24: _TapTargetOverride(dx: -60, dy: -4, widthDelta: -30),  // Kosmonavtlar
-    25: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -10),  // Oybek
+    24: _TapTargetOverride(dx: -70, dy: -4, widthDelta: -20),  // Kosmonavtlar
+    25: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -20),  // Oybek
     26: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10),  // Toshkent
     27: _TapTargetOverride(dx: 70, dy: -6, widthDelta: -20),  // Mashinasozlar
     28: _TapTargetOverride(dx: 0, dy: -6, widthDelta: 0),  // Doʻstlik
     // Line 3 – Yunusobod
     29: _TapTargetOverride(dx: 20, dy: -8, widthDelta: -20),  // Mingurik
     30: _TapTargetOverride(dx: 160, dy: 0, widthDelta: -50),  // Yunus Rajabiy
-    31: _TapTargetOverride(dx: 130, dy: 0, widthDelta: -70),  // Abdulla Qodiriy
+    31: _TapTargetOverride(dx: 130, dy: -8, widthDelta: -70),  // Abdulla Qodiriy
     32: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20),  // Minor
     33: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20),  // Bodomzor
     34: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20),  // Shahriston
