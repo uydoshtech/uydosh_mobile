@@ -332,12 +332,13 @@ L10n.get("admin_user_detail_block_permanent"),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<String?>(
+              key: ValueKey(_currentUser.id),
               initialValue: _selectedRole,
               items:
                   _roleOptions(context)
                       .map(
-                        (item) => DropdownMenuItem(
+                        (item) => DropdownMenuItem<String?>(
                           value: item.value,
                           child: Text(item.label),
                         ),
@@ -422,6 +423,10 @@ labelText: L10n.get("admin_user_detail_role_label"),
 
   List<_RoleOption> _roleOptions(BuildContext context) {
     return [
+      _RoleOption(
+        value: null,
+        label: L10n.get("not_specified"),
+      ),
       _RoleOption(
         value: "tenant",
         label: L10n.get("role_tenant"),
@@ -514,6 +519,6 @@ labelText: L10n.get("admin_user_detail_role_label"),
 class _RoleOption {
   const _RoleOption({required this.value, required this.label});
 
-  final String value;
+  final String? value;
   final String label;
 }

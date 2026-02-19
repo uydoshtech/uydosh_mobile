@@ -558,10 +558,6 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
           child: Container(
             width: width,
             height: _tapTargetHeight,
-            decoration: BoxDecoration(
-              color: Colors.purple.withOpacity(0.4),
-              border: Border.all(color: Colors.purple, width: 1),
-            ),
           ),
         ),
       );

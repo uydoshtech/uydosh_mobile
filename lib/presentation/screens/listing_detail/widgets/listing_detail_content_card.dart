@@ -160,35 +160,82 @@ class ListingDetailContentCard extends StatelessWidget {
     return Icons.home;
   }
 
-  Widget _buildAmenityChip(Amenity amenity) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: ListingDetailThemeHelper.amenityChipBackgroundColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: ListingDetailThemeHelper.amenityChipBorderColor,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+  void _showAmenityBubble(
+    BuildContext context,
+    Amenity amenity,
+    Offset globalPosition,
+  ) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    overlayEntry = OverlayEntry(
+      builder: (context) => Stack(
         children: [
-          ThemeIconFactory.detail(
-            icon: _getAmenityIcon(amenity),
-            size: 18,
-            color: ListingDetailThemeHelper.amenityIconColor,
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => overlayEntry.remove(),
           ),
-          const SizedBox(width: 6),
-          Text(
-            _getAmenityLocalizedName(amenity),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: ListingDetailThemeHelper.amenityIconColor,
+          Positioned(
+            left: globalPosition.dx.clamp(12.0, MediaQuery.of(context).size.width - 150),
+            top: globalPosition.dy - 48,
+            child: GestureDetector(
+              onTap: () => overlayEntry.remove(),
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.inverseSurface,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    _getAmenityLocalizedName(amenity),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onInverseSurface,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
+      ),
+    );
+    overlay.insert(overlayEntry);
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
+  Widget _buildAmenityChip(BuildContext context, Amenity amenity) {
+    return GestureDetector(
+      onTapDown: (details) => _showAmenityBubble(
+        context,
+        amenity,
+        details.globalPosition,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: ListingDetailThemeHelper.amenityChipBackgroundColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: ListingDetailThemeHelper.amenityChipBorderColor,
+            width: 1,
+          ),
+        ),
+        child: ThemeIconFactory.detail(
+          icon: _getAmenityIcon(amenity),
+          size: 18,
+          color: ListingDetailThemeHelper.amenityIconColor,
+        ),
       ),
     );
   }
@@ -345,7 +392,7 @@ class ListingDetailContentCard extends StatelessWidget {
                 spacing: 12,
                 runSpacing: 12,
                 children: listingDetail.amenities!
-                    .map((amenity) => _buildAmenityChip(amenity))
+                    .map((amenity) => _buildAmenityChip(context, amenity))
                     .toList(),
               ),
               const SizedBox(height: 10),
