@@ -4,8 +4,6 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
-import "package:uy_dosh/base/cache/amenities_cache.dart";
-import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -14,8 +12,6 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/send_sound_utils.dart";
-import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -24,7 +20,8 @@ import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
-import "package:uy_dosh/presentation/widgets/common/amenity_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
@@ -35,7 +32,6 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 
 class CreateListingScreen extends StatefulWidget {
@@ -310,10 +306,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
   }
 
-  Color _getLineColor(int line) {
-    return AppColors.getMetroLineColor(line);
-  }
-
   Color _getLocationIconColor() {
     if (_selectedLocationIndex < 0) {
       return Colors.grey; // Grey when no location is selected
@@ -573,252 +565,30 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         ),
         const SizedBox(height: 10), // Space between gender and metro fields
         // Metro Line and Station Selection
-        Container(
-          child: Row(
-            children: [
-              // Metro Line Selection (50% width)
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: ThemeState().isBlueTheme
-                        ? BlueThemeColors.surface
-                        : Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  ),
-                  height: 80,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: CupertinoPicker(
-                          itemExtent: 40,
-                          scrollController: _metroLineScrollController,
-                          onSelectedItemChanged: (index) {
-                            _dismissKeyboard();
-                            HapticFeedbackUtils.impact();
-                            SendSoundUtils.playSelectionSound();
-                            setState(() {
-                              _selectedSubwayLine =
-                                  index; // 0 = unselected, 1-4 = line numbers
-                            });
-                            if (index > 0) {
-                              _loadStationsForLine(index);
-                            } else {
-                              setState(() {
-                                _currentStations = [];
-                                _selectedStationIndex = 0;
-                              });
-                            }
-                          },
-                          children: [
-                            // Unselected option
-                            Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const MLetterIcon(color: Colors.grey, size: 20),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: L10n.text(
-                                      "select_metro_line_optional",
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color:
-                                            ThemeState().isLightTheme
-                                                ? Colors.black.withOpacity(0.7)
-                                                : Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Metro line options - match Metro screen style
-                            ...([
-                              MetroCache.getLineName(
-                                1,
-                                L10n.currentLanguage,
-                              ),
-                              MetroCache.getLineName(
-                                2,
-                                L10n.currentLanguage,
-                              ),
-                              MetroCache.getLineName(
-                                3,
-                                L10n.currentLanguage,
-                              ),
-                              MetroCache.getLineName(
-                                4,
-                                L10n.currentLanguage,
-                              ),
-                            ].asMap().entries.map(
-                              (entry) => Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    MLetterIcon(
-                                      color: _getLineColor(entry.key + 1),
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: Text(
-                                        entry.value,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color:
-                                              ThemeState().isLightTheme
-                                                  ? Colors.black
-                                                  : Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurfaceVariant,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              // Metro Station Selection (50% width) - will show when line is selected
-              Expanded(
-                child:
-                    _selectedSubwayLine > 0 && _currentStations.isNotEmpty
-                        ? Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                            color: ThemeState().isBlueTheme
-                                ? BlueThemeColors.surface
-                                : Theme.of(context).colorScheme.surfaceContainerHighest,
-                          ),
-                          height: 80,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: CupertinoPicker(
-                                  itemExtent: 40,
-                                  scrollController: _metroStationScrollController,
-                                  onSelectedItemChanged: (index) {
-                                    _dismissKeyboard();
-                                    HapticFeedbackUtils.impact();
-                                    SendSoundUtils.playSelectionSound();
-                                    setState(() {
-                                      _selectedStationIndex = index;
-                                      // Sync location picker with selected station's location_id
-                                      _syncLocationWithStation();
-                                    });
-                                  },
-                                  children:
-                                      _currentStations.map((station) {
-                                        final transferInfo =
-                                            MetroCache.getTransferStationInfo(
-                                              station.id,
-                                            );
-                                        return Center(
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.train,
-                                                color: _getLineColor(
-                                                  station.line,
-                                                ),
-                                                size: 20,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Flexible(
-                                                child: Text(
-                                                  _getLocalizedName(
-                                                    nameUz: station.nameUz,
-                                                    nameRu: station.nameRu,
-                                                    nameEn: station.nameEn,
-                                                  ),
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w600,
-                                                    color:
-                                                        ThemeState()
-                                                                .isLightTheme
-                                                            ? Colors.black
-                                                            : Theme.of(
-                                                                  context,
-                                                                )
-                                                                .colorScheme
-                                                                .onSurfaceVariant,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                              // Add train icon for transfer stations with connected line color
-                                              if (transferInfo != null) ...[
-                                                const SizedBox(width: 4),
-                                                Icon(
-                                                  Icons.train,
-                                                  color: _getLineColor(
-                                                    transferInfo["connectedStationLine"],
-                                                  ), // Use connected station's line color
-                                                  size: 20,
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        );
-                                      }).toList(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                        : Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                            color: _getControlBackgroundColor().withValues(alpha: 0.5),
-                          ),
-                          height: 80,
-                          child: Center(
-                            child: Text(
-                              L10n.get("select_metro_line_title"),
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    ThemeState().isLightTheme
-                                        ? Colors.black.withOpacity(0.7)
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant
-                                            .withOpacity(0.7),
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-              ),
-            ],
-          ),
+        ListingFormMetroSection(
+          selectedSubwayLine: _selectedSubwayLine,
+          selectedStationIndex: _selectedStationIndex,
+          currentStations: _currentStations,
+          metroLineScrollController: _metroLineScrollController,
+          metroStationScrollController: _metroStationScrollController,
+          onLineChanged: (index) {
+            setState(() {
+              _selectedSubwayLine = index;
+              if (index > 0) {
+                _loadStationsForLine(index);
+              } else {
+                _currentStations = [];
+                _selectedStationIndex = 0;
+              }
+            });
+          },
+          onStationChanged: (index) {
+            setState(() {
+              _selectedStationIndex = index;
+              _syncLocationWithStation();
+            });
+          },
+          onDismissKeyboard: _dismissKeyboard,
         ),
         const SizedBox(height: 10), // Space between metro fields and location
         // Location Field - Full Row
@@ -974,48 +744,18 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               ),
         ),
         // Amenities Section
-        DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color:
-                  Theme.of(context).brightness == Brightness.dark
-                      ? Theme.of(context).colorScheme.outline
-                      : AppColors.borderGrey600,
-            ),
-            color: _getControlBackgroundColor(),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children:
-                      _getOrderedAmenities()
-                          .map(
-                            (amenity) => AmenityToggle(
-                              amenity: amenity,
-                              isSelected: _selectedAmenityIds.contains(amenity.id),
-                              onTap: () {
-                                _dismissKeyboard();
-                                setState(() {
-                                  if (_selectedAmenityIds.contains(amenity.id)) {
-                                    _selectedAmenityIds.remove(amenity.id);
-                                  } else {
-                                    _selectedAmenityIds.add(amenity.id);
-                                  }
-                                });
-                              },
-                            ),
-                          )
-                          .toList(),
-                ),
-              ],
-            ),
-          ),
+        ListingFormAmenitiesSection(
+          selectedAmenityIds: _selectedAmenityIds,
+          onAmenityToggled: (amenityId) {
+            setState(() {
+              if (_selectedAmenityIds.contains(amenityId)) {
+                _selectedAmenityIds.remove(amenityId);
+              } else {
+                _selectedAmenityIds.add(amenityId);
+              }
+            });
+          },
+          onDismissKeyboard: _dismissKeyboard,
         ),
 
         const SizedBox(height: 16),
@@ -1568,9 +1308,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
   }
 
-  List<Amenity> _getOrderedAmenities() {
-    return AmenitiesCache.getDefaultOrderedAmenities();
-  }
 }
 
 class _EmptyRequest implements IJsonEncodable {
