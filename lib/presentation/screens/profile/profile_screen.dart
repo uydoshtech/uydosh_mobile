@@ -24,6 +24,7 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
+import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -425,33 +426,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: ExpansionTile(
                   initiallyExpanded: false,
+                  dense: true,
+                  minTileHeight: 48,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   collapsedShape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  tilePadding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+                  tilePadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
                   childrenPadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-                  title: Row(
-                    children: [
-                      Icon(
-                        Icons.person,
-                        size: 24,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                      const SizedBox(width: 12),
-                      Flexible(
-                        child: Text(
-                          L10n.get("profile"),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                  title: SizedBox(
+                    height: 48,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.person,
+                            size: 24,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          Flexible(
+                            child: Text(
+                              L10n.get("profile"),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                   children: [
                     // Profile Name
@@ -770,7 +779,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               // New Profile Fields Section
               if (_hasNewProfileFields(profile)) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -778,33 +787,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   child: ExpansionTile(
                     initiallyExpanded: false,
+                    dense: true,
+                    minTileHeight: 48,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     collapsedShape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    tilePadding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+                    tilePadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
                     childrenPadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-                    title: Row(
-                      children: [
-                        Icon(
-                          Icons.spa,
-                          size: 24,
-                          color: _getLifestyleHeaderColor(),
-                        ),
-                        const SizedBox(width: 12),
-                        Flexible(
-                          child: Text(
-                            L10n.get("lifestyle_preferences"),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                    title: SizedBox(
+                      height: 48,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.spa,
+                              size: 24,
                               color: _getLifestyleHeaderColor(),
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            Flexible(
+                              child: Text(
+                                L10n.get("lifestyle_preferences"),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: _getLifestyleHeaderColor(),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                     children: [
                       // Wake-up Time field
@@ -972,6 +989,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               // Messages section
               _buildMessagesSection(context),
+              const SizedBox(height: 8),
+
+              // View History section
+              _buildViewHistorySection(context),
               const SizedBox(height: 8),
 
               if (_userRole == "admin") ...[
@@ -1327,7 +1348,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
               Icon(
@@ -1376,7 +1397,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
               Icon(
@@ -1425,7 +1446,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
               Icon(
@@ -1459,6 +1480,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildViewHistorySection(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const ViewHistoryScreen(),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            children: [
+              Icon(
+                Icons.history,
+                color:
+                    ThemeState().isBlueTheme
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  L10n.get("menu_history"),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildAdminPanelButton(BuildContext context) {
     return Card(
       elevation: 4,
@@ -1472,7 +1542,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
               Icon(
@@ -1525,7 +1595,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
               Icon(
@@ -1575,37 +1645,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildDeleteAccountButton(BuildContext context) {
+    final errorColor = Theme.of(context).colorScheme.error;
     return Card(
       elevation: 4,
-      color: Theme.of(context).colorScheme.error,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: errorColor, width: 2),
+      ),
       child: InkWell(
         onTap: () => _showDeleteAccountDialog(context),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
               Icon(
                 Icons.delete_forever,
-                color: Colors.white,
+                color: errorColor,
                 size: 24,
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   L10n.get("delete_account"),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: errorColor,
                   ),
                 ),
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.white,
+                color: errorColor,
                 size: 16,
               ),
             ],
