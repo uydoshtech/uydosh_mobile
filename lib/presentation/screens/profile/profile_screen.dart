@@ -373,6 +373,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                       ],
                     ),
+                    if (((_cachedGoogleDisplayName ?? profile.name) ?? "")
+                        .isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _cachedGoogleDisplayName ?? profile.name ?? "",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                     if (_userRoleLoaded) ...[
                       const SizedBox(height: 8),
                       _RoleBadge(
