@@ -155,70 +155,90 @@ class _AdminDistrictHeatmapScreenState
           final sortedLocations = _getSortedLocations();
           return RefreshIndicator(
             onRefresh: _loadCounts,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: ListingTypePicker(
-                        selectedListingTypeId:
-                            _searchFiltersState.selectedListingTypeId,
-                        onListingTypeChanged: (listingTypeId) {
-                          _searchFiltersState.setListingTypeId(listingTypeId);
-                          setState(() {});
-                          _loadCounts();
-                        },
-                        useThemeColors: true,
-                        showArrows: false,
-                        includeUnselected: true,
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ListingTypePicker(
+                              selectedListingTypeId:
+                                  _searchFiltersState.selectedListingTypeId,
+                              onListingTypeChanged: (listingTypeId) {
+                                _searchFiltersState.setListingTypeId(
+                                  listingTypeId,
+                                );
+                                setState(() {});
+                                _loadCounts();
+                              },
+                              useThemeColors: true,
+                              showArrows: false,
+                              includeUnselected: true,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: GenderPicker(
+                              selectedGender:
+                                  _searchFiltersState.selectedGender,
+                              onGenderChanged: (gender) {
+                                _searchFiltersState.setGender(gender);
+                                setState(() {});
+                                _loadCounts();
+                              },
+                              useThemeColors: true,
+                              showArrows: false,
+                              includeUnselected: true,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: GenderPicker(
-                        selectedGender: _searchFiltersState.selectedGender,
-                        onGenderChanged: (gender) {
-                          _searchFiltersState.setGender(gender);
-                          setState(() {});
-                          _loadCounts();
-                        },
-                        useThemeColors: true,
-                        showArrows: false,
-                        includeUnselected: true,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (_isLoading)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: CenteredHouseLoadingIndicator(
-                      text: L10n.get("admin_district_heatmap_loading"),
-                    ),
-                  )
-                else ...[
-                  _buildSummaryRow(context),
-                  const SizedBox(height: 16),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: sortedLocations.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
-                          childAspectRatio: 1.05,
-                        ),
-                    itemBuilder: (context, index) {
-                      final location = sortedLocations[index];
-                      final count = _districtCounts[location.id];
-                      return _buildDistrictTile(context, location, count);
-                    },
+                      const SizedBox(height: 16),
+                      if (_isLoading)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: CenteredHouseLoadingIndicator(
+                            text: L10n.get("admin_district_heatmap_loading"),
+                          ),
+                        )
+                      else ...[
+                        _buildSummaryRow(context),
+                        const SizedBox(height: 16),
+                      ],
+                    ]),
                   ),
-                ],
+                ),
+                if (!_isLoading)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            mainAxisSpacing: 10,
+                            crossAxisSpacing: 10,
+                            childAspectRatio: 1.05,
+                          ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final location = sortedLocations[index];
+                          final count = _districtCounts[location.id];
+                          return _buildDistrictTile(
+                            context,
+                            location,
+                            count,
+                          );
+                        },
+                        childCount: sortedLocations.length,
+                      ),
+                    ),
+                  ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 16),
+                ),
               ],
             ),
           );

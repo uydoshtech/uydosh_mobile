@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -55,12 +57,19 @@ class _ListingTileState extends State<ListingTile>
   bool _isTogglingFavorite = false;
   int? _viewCount;
   bool _isLoadingViewCount = false;
+  Timer? _viewCountDelayTimer;
+
+  static const _viewCountLoadDelay = Duration(milliseconds: 300);
 
   @override
   void initState() {
     super.initState();
     if (widget.showActiveStatus) {
-      _loadViewCount();
+      // Delay view count load so tiles that scroll off quickly don't fire requests
+      _viewCountDelayTimer = Timer(_viewCountLoadDelay, () {
+        _viewCountDelayTimer = null;
+        if (mounted) _loadViewCount();
+      });
     }
     _heartAnimationController = AnimationController(
       duration: const Duration(milliseconds: 150),
@@ -76,6 +85,8 @@ class _ListingTileState extends State<ListingTile>
 
   @override
   void dispose() {
+    _viewCountDelayTimer?.cancel();
+    _viewCountDelayTimer = null;
     _heartAnimationController.dispose();
     super.dispose();
   }

@@ -98,40 +98,73 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
           }
           return RefreshIndicator(
             onRefresh: _loadAnalytics,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildTimeRangeSelector(context),
-                const SizedBox(height: 20),
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _buildTimeRangeSelector(context),
+                      const SizedBox(height: 20),
+                      if (_analytics != null) ...[
+                        _buildSummaryCards(context),
+                        const SizedBox(height: 24),
+                        _buildSectionTitle(
+                          context,
+                          "admin_search_analytics_top_lines",
+                          Icons.subway,
+                        ),
+                        const SizedBox(height: 12),
+                      ] else
+                        const SizedBox.shrink(),
+                    ]),
+                  ),
+                ),
                 if (_analytics != null) ...[
-                  _buildSummaryCards(context),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle(
-                    context,
-                    "admin_search_analytics_top_lines",
-                    Icons.subway,
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: _buildLinesSliver(context),
                   ),
-                  const SizedBox(height: 12),
-                  _buildLinesList(context),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle(
-                    context,
-                    "admin_search_analytics_top_stations",
-                    Icons.train,
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        const SizedBox(height: 24),
+                        _buildSectionTitle(
+                          context,
+                          "admin_search_analytics_top_stations",
+                          Icons.train,
+                        ),
+                        const SizedBox(height: 12),
+                      ]),
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  _buildStationsList(context),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle(
-                    context,
-                    "admin_search_analytics_top_districts",
-                    Icons.location_city,
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: _buildStationsSliver(context),
                   ),
-                  const SizedBox(height: 12),
-                  _buildLocationsList(context),
-                  const SizedBox(height: 32),
-                ] else
-                  const SizedBox.shrink(),
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        const SizedBox(height: 24),
+                        _buildSectionTitle(
+                          context,
+                          "admin_search_analytics_top_districts",
+                          Icons.location_city,
+                        ),
+                        const SizedBox(height: 12),
+                      ]),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: _buildLocationsSliver(context),
+                  ),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 32),
+                  ),
+                ],
               ],
             ),
           );
@@ -259,187 +292,203 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     );
   }
 
-  Widget _buildStationsList(BuildContext context) {
-    final stations = _analytics!.topStations;
-    if (stations.isEmpty) {
-      return _buildEmptySection(
-        context,
-        L10n.get("admin_search_analytics_no_stations"),
-      );
-    }
-    final maxCount = stations.map((s) => s.count).reduce((a, b) => a > b ? a : b);
-    return Card(
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: stations.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final item = stations[index];
-          final station = MetroCache.getStationById(item.stationId);
-          final lineId = station?.line ?? 1;
-          final barColor = AppColors.getMetroLineColor(lineId);
-          return ListTile(
-            leading: Container(
-              width: 6,
-              height: 36,
-              decoration: BoxDecoration(
-                color: barColor,
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-            title: Text(
-              _getStationName(item.stationId),
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[800]
-                    : Colors.grey[300],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                "${item.count}",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          );
-        },
+  Widget _buildStationTile(BuildContext context, int index) {
+    final item = _analytics!.topStations[index];
+    final station = MetroCache.getStationById(item.stationId);
+    final lineId = station?.line ?? 1;
+    final barColor = AppColors.getMetroLineColor(lineId);
+    return ListTile(
+      leading: Container(
+        width: 6,
+        height: 36,
+        decoration: BoxDecoration(
+          color: barColor,
+          borderRadius: BorderRadius.circular(3),
+        ),
+      ),
+      title: Text(
+        _getStationName(item.stationId),
+        style: const TextStyle(fontWeight: FontWeight.w500),
+      ),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey[800]
+              : Colors.grey[300],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          "${item.count}",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildLocationsList(BuildContext context) {
-    final locations = _analytics!.topLocations;
-    if (locations.isEmpty) {
-      return _buildEmptySection(
-        context,
-        L10n.get("admin_search_analytics_no_districts"),
-      );
-    }
-    final maxCount = locations.map((l) => l.count).reduce((a, b) => a > b ? a : b);
-    return Card(
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: locations.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final item = locations[index];
-          final intensity = maxCount > 0 ? (item.count / maxCount).clamp(0.0, 1.0) : 0.0;
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          return ListTile(
-            leading: Icon(
-              Icons.location_on,
-              color: (isDark ? Colors.grey[500]! : Colors.grey[600]!).withValues(
-                alpha: 0.5 + intensity * 0.5,
-              ),
-            ),
-            title: Text(
-              _getLocationName(item.locationId),
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[800]
-                    : Colors.grey[300],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                "${item.count}",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          );
-        },
+  Widget _buildLocationTile(
+    BuildContext context,
+    int index,
+    int maxCount,
+  ) {
+    final item = _analytics!.topLocations[index];
+    final intensity = maxCount > 0
+        ? (item.count / maxCount).clamp(0.0, 1.0)
+        : 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return ListTile(
+      leading: Icon(
+        Icons.location_on,
+        color: (isDark ? Colors.grey[500]! : Colors.grey[600]!)
+            .withValues(alpha: 0.5 + intensity * 0.5),
+      ),
+      title: Text(
+        _getLocationName(item.locationId),
+        style: const TextStyle(fontWeight: FontWeight.w500),
+      ),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey[800]
+              : Colors.grey[300],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          "${item.count}",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildLinesList(BuildContext context) {
-    final lines = [..._analytics!.topLines]..sort((a, b) => b.count.compareTo(a.count));
+  Widget _buildLinesSliver(BuildContext context) {
+    final lines = [..._analytics!.topLines]
+      ..sort((a, b) => b.count.compareTo(a.count));
     if (lines.isEmpty) {
-      return _buildEmptySection(
-        context,
-        L10n.get("admin_search_analytics_no_lines"),
+      return SliverToBoxAdapter(
+        child: _buildEmptySection(
+          context,
+          L10n.get("admin_search_analytics_no_lines"),
+        ),
       );
     }
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+    return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
         childAspectRatio: 1.4,
       ),
-      itemCount: lines.length,
-        itemBuilder: (context, index) {
-        final item = lines[index];
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        return Card(
-          color: isDark ? Colors.grey[800] : Colors.grey[200],
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.train,
-                      color: AppColors.getMetroLineColor(item.lineId),
-                      size: 22,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        MetroCache.getLineName(
-                          item.lineId,
-                          LanguageState().currentLanguage,
-                        ),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final item = lines[index];
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return Card(
+            color: isDark ? Colors.grey[800] : Colors.grey[200],
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.train,
+                        color: AppColors.getMetroLineColor(item.lineId),
+                        size: 22,
                       ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          MetroCache.getLineName(
+                            item.lineId,
+                            LanguageState().currentLanguage,
+                          ),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "${item.count}",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "${item.count}",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
                   ),
-                ),
-                Text(
-                  L10n.get("admin_search_analytics_searches"),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  Text(
+                    L10n.get("admin_search_analytics_searches"),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+        childCount: lines.length,
+      ),
+    );
+  }
+
+  Widget _buildStationsSliver(BuildContext context) {
+    final stations = _analytics!.topStations;
+    if (stations.isEmpty) {
+      return SliverToBoxAdapter(
+        child: _buildEmptySection(
+          context,
+          L10n.get("admin_search_analytics_no_stations"),
+        ),
+      );
+    }
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          if (index.isOdd) return const Divider(height: 1);
+          return _buildStationTile(context, index ~/ 2);
+        },
+        childCount: stations.length * 2 - 1,
+      ),
+    );
+  }
+
+  Widget _buildLocationsSliver(BuildContext context) {
+    final locations = _analytics!.topLocations;
+    if (locations.isEmpty) {
+      return SliverToBoxAdapter(
+        child: _buildEmptySection(
+          context,
+          L10n.get("admin_search_analytics_no_districts"),
+        ),
+      );
+    }
+    final maxCount =
+        locations.map((l) => l.count).reduce((a, b) => a > b ? a : b);
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          if (index.isOdd) return const Divider(height: 1);
+          return _buildLocationTile(context, index ~/ 2, maxCount);
+        },
+        childCount: locations.length * 2 - 1,
+      ),
     );
   }
 

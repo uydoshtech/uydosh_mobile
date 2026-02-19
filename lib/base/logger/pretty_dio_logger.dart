@@ -9,5 +9,5 @@ final prettyDioLogger = PrettyDioLogger(
   compact: true,
   maxWidth: 120,
   logPrint: (e) => debugPrint(e.toString()),
-  enabled: true,
+  enabled: kDebugMode,
 );

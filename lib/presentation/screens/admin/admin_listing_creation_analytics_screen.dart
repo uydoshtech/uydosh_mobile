@@ -97,24 +97,37 @@ class _AdminListingCreationAnalyticsScreenState
           }
           return RefreshIndicator(
             onRefresh: _loadAnalytics,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildTimeRangeSelector(context),
-                const SizedBox(height: 20),
-                if (_analytics != null) ...[
-                  _buildSummaryCards(context),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle(
-                    context,
-                    "admin_listing_creation_analytics_by_day",
-                    Icons.calendar_view_day,
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _buildTimeRangeSelector(context),
+                      const SizedBox(height: 20),
+                      if (_analytics != null) ...[
+                        _buildSummaryCards(context),
+                        const SizedBox(height: 24),
+                        _buildSectionTitle(
+                          context,
+                          "admin_listing_creation_analytics_by_day",
+                          Icons.calendar_view_day,
+                        ),
+                        const SizedBox(height: 12),
+                      ] else
+                        const SizedBox.shrink(),
+                    ]),
                   ),
-                  const SizedBox(height: 12),
-                  _buildByDayList(context),
-                  const SizedBox(height: 32),
-                ] else
-                  const SizedBox.shrink(),
+                ),
+                if (_analytics != null) ...[
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: _buildByDaySliver(context),
+                  ),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 32),
+                  ),
+                ],
               ],
             ),
           );
@@ -254,127 +267,97 @@ class _AdminListingCreationAnalyticsScreenState
     );
   }
 
-  Widget _buildByDayList(BuildContext context) {
+  Widget _buildByDayItem(BuildContext context, int index, int maxCount) {
+    final item = _analytics!.byDay[index];
+    final intensity =
+        maxCount > 0 ? (item.count / maxCount).clamp(0.0, 1.0) : 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hasListingIds = item.listingIds.isNotEmpty;
+    final isSingleListing = hasListingIds && item.listingIds.length == 1;
+    final isMultiListing = hasListingIds && item.listingIds.length > 1;
+
+    final leadingIcon = Icon(
+      Icons.add_circle_outline,
+      color: (isDark ? Colors.grey[500]! : Colors.grey[600]!)
+          .withValues(alpha: 0.5 + intensity * 0.5),
+    );
+    final trailing = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        "${item.count}",
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
+    );
+
+    if (isSingleListing) {
+      return ListTile(
+        leading: leadingIcon,
+        title: Text(
+          _formatDate(item.date),
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        trailing: trailing,
+        onTap: () => _openListingDetail(item.listingIds.first),
+      );
+    }
+
+    if (isMultiListing) {
+      return ExpansionTile(
+        leading: leadingIcon,
+        title: Text(
+          _formatDate(item.date),
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        trailing: trailing,
+        children: item.listingIds
+            .map(
+              (id) => ListTile(
+                leading: const SizedBox(width: 24),
+                title: Text("Listing #$id"),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _openListingDetail(id),
+              ),
+            )
+            .toList(),
+      );
+    }
+
+    return ListTile(
+      leading: leadingIcon,
+      title: Text(
+        _formatDate(item.date),
+        style: const TextStyle(fontWeight: FontWeight.w500),
+      ),
+      trailing: trailing,
+    );
+  }
+
+  Widget _buildByDaySliver(BuildContext context) {
     final items = _analytics!.byDay;
     if (items.isEmpty) {
-      return _buildEmptySection(
-        context,
-        L10n.get("admin_listing_creation_analytics_no_data"),
+      return SliverToBoxAdapter(
+        child: _buildEmptySection(
+          context,
+          L10n.get("admin_listing_creation_analytics_no_data"),
+        ),
       );
     }
     final maxCount =
         items.map((d) => d.count).reduce((a, b) => a > b ? a : b);
-    return Card(
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: items.length,
-        separatorBuilder: (context, index) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          final intensity = maxCount > 0
-              ? (item.count / maxCount).clamp(0.0, 1.0)
-              : 0.0;
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          final hasListingIds = item.listingIds.isNotEmpty;
-          final isSingleListing = hasListingIds && item.listingIds.length == 1;
-          final isMultiListing = hasListingIds && item.listingIds.length > 1;
-
-          if (isSingleListing) {
-            return ListTile(
-              leading: Icon(
-                Icons.add_circle_outline,
-                color: (isDark ? Colors.grey[500]! : Colors.grey[600]!)
-                    .withValues(alpha: 0.5 + intensity * 0.5),
-              ),
-              title: Text(
-                _formatDate(item.date),
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              trailing: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "${item.count}",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              onTap: () => _openListingDetail(item.listingIds.first),
-            );
-          }
-
-          if (isMultiListing) {
-            return ExpansionTile(
-              leading: Icon(
-                Icons.add_circle_outline,
-                color: (isDark ? Colors.grey[500]! : Colors.grey[600]!)
-                    .withValues(alpha: 0.5 + intensity * 0.5),
-              ),
-              title: Text(
-                _formatDate(item.date),
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              trailing: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "${item.count}",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              children: item.listingIds
-                  .map(
-                    (id) => ListTile(
-                      leading: const SizedBox(width: 24),
-                      title: Text("Listing #$id"),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _openListingDetail(id),
-                    ),
-                  )
-                  .toList(),
-            );
-          }
-
-          return ListTile(
-            leading: Icon(
-              Icons.add_circle_outline,
-              color: (isDark ? Colors.grey[500]! : Colors.grey[600]!)
-                  .withValues(alpha: 0.5 + intensity * 0.5),
-            ),
-            title: Text(
-              _formatDate(item.date),
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                "${item.count}",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          );
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          if (index.isOdd) return const Divider(height: 1);
+          return _buildByDayItem(context, index ~/ 2, maxCount);
         },
+        childCount: items.length * 2 - 1,
       ),
     );
   }

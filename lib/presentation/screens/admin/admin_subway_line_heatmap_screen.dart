@@ -152,70 +152,86 @@ class _AdminSubwayLineHeatmapScreenState
           final sortedLines = _getSortedLines();
           return RefreshIndicator(
             onRefresh: _loadCounts,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: ListingTypePicker(
-                        selectedListingTypeId:
-                            _searchFiltersState.selectedListingTypeId,
-                        onListingTypeChanged: (listingTypeId) {
-                          _searchFiltersState.setListingTypeId(listingTypeId);
-                          setState(() {});
-                          _loadCounts();
-                        },
-                        useThemeColors: true,
-                        showArrows: false,
-                        includeUnselected: true,
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ListingTypePicker(
+                              selectedListingTypeId:
+                                  _searchFiltersState.selectedListingTypeId,
+                              onListingTypeChanged: (listingTypeId) {
+                                _searchFiltersState.setListingTypeId(
+                                  listingTypeId,
+                                );
+                                setState(() {});
+                                _loadCounts();
+                              },
+                              useThemeColors: true,
+                              showArrows: false,
+                              includeUnselected: true,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: GenderPicker(
+                              selectedGender:
+                                  _searchFiltersState.selectedGender,
+                              onGenderChanged: (gender) {
+                                _searchFiltersState.setGender(gender);
+                                setState(() {});
+                                _loadCounts();
+                              },
+                              useThemeColors: true,
+                              showArrows: false,
+                              includeUnselected: true,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: GenderPicker(
-                        selectedGender: _searchFiltersState.selectedGender,
-                        onGenderChanged: (gender) {
-                          _searchFiltersState.setGender(gender);
-                          setState(() {});
-                          _loadCounts();
-                        },
-                        useThemeColors: true,
-                        showArrows: false,
-                        includeUnselected: true,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (_isLoading)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: CenteredHouseLoadingIndicator(
-                      text: L10n.get("admin_subway_heatmap_loading"),
-                    ),
-                  )
-                else ...[
-                  _buildSummaryRow(context),
-                  const SizedBox(height: 16),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: sortedLines.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
-                          childAspectRatio: 1.2,
-                        ),
-                    itemBuilder: (context, index) {
-                      final lineId = sortedLines[index];
-                      final count = _lineCounts[lineId];
-                      return _buildLineTile(context, lineId, count);
-                    },
+                      const SizedBox(height: 16),
+                      if (_isLoading)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: CenteredHouseLoadingIndicator(
+                            text: L10n.get("admin_subway_heatmap_loading"),
+                          ),
+                        )
+                      else ...[
+                        _buildSummaryRow(context),
+                        const SizedBox(height: 16),
+                      ],
+                    ]),
                   ),
-                ],
+                ),
+                if (!_isLoading)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 10,
+                            crossAxisSpacing: 10,
+                            childAspectRatio: 1.2,
+                          ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final lineId = sortedLines[index];
+                          final count = _lineCounts[lineId];
+                          return _buildLineTile(context, lineId, count);
+                        },
+                        childCount: sortedLines.length,
+                      ),
+                    ),
+                  ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 16),
+                ),
               ],
             ),
           );
