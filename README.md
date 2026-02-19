@@ -36,7 +36,8 @@ A modern Flutter application for finding and connecting with property listings i
 ## 🏗️ Architecture
 
 ### **State Management**
-- **BLoC Pattern**: Clean separation of business logic and UI
+- **BLoC Pattern**: Feature-specific state (listings, messaging, profiles)
+- **ChangeNotifier**: Global state (theme, language, auth) — see [STATE_MANAGEMENT.md](STATE_MANAGEMENT.md)
 - **flutter_bloc**: Reactive state management
 - **bloc_concurrency**: Advanced event handling
 
