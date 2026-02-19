@@ -110,17 +110,17 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   /// Ordered by station ID (1–50). Tune dx, dy, widthDelta per station as needed.
   static const Map<int, _TapTargetOverride> _tapTargetOverrides = {
     // Line 1 – Chilanzar
-    1: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Chinor
-    2: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Yangikhayot
-    3: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Sergeli
-    4: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Uzgarish
-    5: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Chashtepa
-    6: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Almazar
-    7: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Chilanzar
-    8: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Mirzo Ulugbek
-    9: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Novza
-    10: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),  // Milliy bog
-    11: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),  // Xalqlar doʻstligi
+    1: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Chinor
+    2: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Yangikhayot
+    3: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Sergeli
+    4: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Uzgarish
+    5: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Chashtepa
+    6: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Almazar
+    7: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Chilanzar
+    8: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Mirzo Ulugbek
+    9: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Novza
+    10: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),  // Milliy bog
+    11: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),  // Xalqlar doʻstligi
     12: _TapTargetOverride(dx: 70, dy: 0, widthDelta: -40),  // Paxtakor
     13: _TapTargetOverride(dx: 20, dy: 0, widthDelta: -70),  // Mustaqil. Maydoni
     14: _TapTargetOverride(dx: 20, dy: -8, widthDelta: -60),  // A. Temur Xiyoboni
