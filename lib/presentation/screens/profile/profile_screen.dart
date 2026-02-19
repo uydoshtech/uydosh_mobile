@@ -73,17 +73,17 @@ class _RoleBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBlueTheme = ThemeState().currentTheme == AppTheme.blueTheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: isBlueTheme
             ? BlueThemeColors.buttonPrimary
             : Colors.black,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 15,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
@@ -387,7 +387,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                     if (_userRoleLoaded) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       _RoleBadge(
                         label: _getRoleLabel(_userRole, context),
                       ),
@@ -419,6 +419,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               // My Listings section (above all others)
               _buildMyListingsSection(context),
+              const SizedBox(height: 8),
+
+              // Messages section
+              _buildMessagesSection(context),
               const SizedBox(height: 8),
 
               // Merged Profile Information Card
@@ -1386,6 +1390,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Expanded(
                 child: Text(
                   L10n.get("menu_my_listings"),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessagesSection(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const MessagesInboxScreen(),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(
+                Icons.chat_bubble_outline,
+                color:
+                    ThemeState().isBlueTheme
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  L10n.get("menu_messages"),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
