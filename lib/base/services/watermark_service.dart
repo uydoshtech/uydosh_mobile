@@ -25,12 +25,8 @@ class WatermarkService {
         "🖼️ Original image dimensions: ${originalImage.width}x${originalImage.height}",
       );
 
-      // Create a copy of the image to work with
-      final watermarkedImage = img.copyResize(
-        originalImage,
-        width: originalImage.width,
-        height: originalImage.height,
-      );
+      // Clone image for modification (faster than copyResize when not resizing)
+      final watermarkedImage = img.Image.from(originalImage);
 
       // Calculate watermark position - center horizontally at the bottom
       const watermarkTextWidth =
@@ -73,40 +69,42 @@ class WatermarkService {
 
       selectedFont ??= img.arial24;
 
-      // Draw a solid black background rectangle behind the text for better visibility
-      const bgWidth = watermarkTextWidth + 100; // 5x larger: 20 * 5 = 100
-      const bgHeight = 200; // 5x larger: 40 * 5 = 200
-      final bgX = watermarkX - 50; // 5x larger: 10 * 5 = 50
-      final bgY = watermarkY - 50; // 5x larger: 10 * 5 = 50
+      // Draw a solid black background rectangle (fillRect is much faster than pixel loop)
+      const bgWidth = watermarkTextWidth + 100;
+      const bgHeight = 200;
+      final bgX = watermarkX - 50;
+      final bgY = watermarkY - 50;
+      img.fillRect(
+        watermarkedImage,
+        x1: bgX,
+        y1: bgY,
+        x2: bgX + bgWidth,
+        y2: bgY + bgHeight,
+        color: blackColor,
+        alphaBlend: false,
+      );
 
-      // Fill background rectangle
-      for (var x = bgX; x < bgX + bgWidth; x++) {
-        for (var y = bgY; y < bgY + bgHeight; y++) {
-          if (x >= 0 &&
-              x < watermarkedImage.width &&
-              y >= 0 &&
-              y < watermarkedImage.height) {
-            watermarkedImage.setPixel(x, y, blackColor);
-          }
-        }
-      }
-
-      // Draw thick black stroke first for better visibility
-      for (var dx = -10; dx <= 10; dx++) {
-        // 5x larger: -2 * 5 = -10, 2 * 5 = 10
-        for (var dy = -10; dy <= 10; dy++) {
-          // 5x larger: -2 * 5 = -10, 2 * 5 = 10
-          if (dx != 0 || dy != 0) {
-            img.drawString(
-              watermarkedImage,
-              _watermarkText,
-              font: selectedFont,
-              x: watermarkX + dx,
-              y: watermarkY + dy,
-              color: blackColor,
-            );
-          }
-        }
+      // Draw black stroke in 8 directions (much faster than 440 drawString calls)
+      const strokeOffset = 10;
+      const strokeOffsets = [
+        (strokeOffset, 0),
+        (-strokeOffset, 0),
+        (0, strokeOffset),
+        (0, -strokeOffset),
+        (7, 7),
+        (-7, 7),
+        (7, -7),
+        (-7, -7),
+      ];
+      for (final (dx, dy) in strokeOffsets) {
+        img.drawString(
+          watermarkedImage,
+          _watermarkText,
+          font: selectedFont,
+          x: watermarkX + dx,
+          y: watermarkY + dy,
+          color: blackColor,
+        );
       }
 
       // Draw white text on top

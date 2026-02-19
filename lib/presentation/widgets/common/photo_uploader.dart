@@ -289,21 +289,33 @@ class _PhotoUploaderState extends State<PhotoUploader>
     return "${EnvironmentUtil.basePath}$photoUrl";
   }
 
-  // Helper method to get existing photos in correct order (primary first)
-  List<Photo> _getOrderedExistingPhotos() {
-    final orderedPhotos = List<Photo>.from(widget.existingPhotos);
-
-    // Find the primary photo and move it to the front
-    final primaryPhotoIndex = orderedPhotos.indexWhere(
-      (photo) => photo.isPrimary,
-    );
-    if (primaryPhotoIndex != -1 && primaryPhotoIndex != 0) {
-      // Remove primary photo from current position and insert at beginning
-      final primaryPhoto = orderedPhotos.removeAt(primaryPhotoIndex);
-      orderedPhotos.insert(0, primaryPhoto);
+  /// Returns [orderedPhotos, orderedToOriginalIndex].
+  /// orderedPhotos: display order (primary first).
+  /// orderedToOriginalIndex[i]: original index for callbacks.
+  (List<Photo> orderedPhotos, List<int> orderedToOriginalIndex)
+      _getOrderedExistingPhotosWithIndices() {
+    final photos = widget.existingPhotos;
+    final primaryIndex = photos.indexWhere((p) => p.isPrimary);
+    if (primaryIndex == -1 || primaryIndex == 0) {
+      return (
+        List<Photo>.from(photos),
+        List.generate(photos.length, (i) => i),
+      );
     }
-
-    return orderedPhotos;
+    final ordered = [
+      photos[primaryIndex],
+      ...photos.sublist(0, primaryIndex),
+      ...photos.sublist(primaryIndex + 1),
+    ];
+    final indices = [
+      primaryIndex,
+      ...List.generate(primaryIndex, (i) => i),
+      ...List.generate(
+        photos.length - primaryIndex - 1,
+        (i) => i + primaryIndex + 1,
+      ),
+    ];
+    return (ordered, indices);
   }
 
   @override
@@ -313,6 +325,16 @@ class _PhotoUploaderState extends State<PhotoUploader>
     final controlBgColor = ThemeState().isBlueTheme
         ? BlueThemeColors.surface
         : theme.colorScheme.surfaceContainerHighest;
+
+    // Compute once per build instead of per item (avoids O(n²))
+    final (_, orderedToOriginalIndex) =
+        _getOrderedExistingPhotosWithIndices();
+    final existingCount = widget.existingPhotos.length;
+    final selectedCount = widget.selectedPhotos.length;
+    final primaryId = widget.existingPhotos
+        .where((p) => p.isPrimary)
+        .firstOrNull
+        ?.id ?? 0;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -377,11 +399,10 @@ class _PhotoUploaderState extends State<PhotoUploader>
             const SizedBox(height: 16),
 
             // Combined photos grid (existing + new photos)
-            if (widget.existingPhotos.isNotEmpty ||
-                widget.selectedPhotos.isNotEmpty) ...[
+            if (existingCount > 0 || selectedCount > 0) ...[
               GridView.builder(
                 key: ValueKey(
-                  "combined_photos_${widget.existingPhotos.length}_${widget.selectedPhotos.length}_${widget.existingPhotos.where((p) => p.isPrimary).firstOrNull?.id ?? 0}",
+                  "combined_photos_${existingCount}_${selectedCount}_$primaryId",
                 ),
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -391,20 +412,13 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   mainAxisSpacing: 8,
                   childAspectRatio: 1,
                 ),
-                itemCount:
-                    widget.existingPhotos.length + widget.selectedPhotos.length,
+                itemCount: existingCount + selectedCount,
                 itemBuilder: (context, index) {
-                  if (index < widget.existingPhotos.length) {
-                    // Existing photo
-                    final orderedPhotos = _getOrderedExistingPhotos();
-                    final photo = orderedPhotos[index];
-                    // Find the original index in the original list for callbacks
-                    final originalIndex = widget.existingPhotos.indexOf(photo);
+                  if (index < existingCount) {
+                    final originalIndex = orderedToOriginalIndex[index];
                     return _buildExistingPhotoItem(originalIndex);
                   } else {
-                    // New photo
-                    final newPhotoIndex = index - widget.existingPhotos.length;
-                    return _buildNewPhotoItem(newPhotoIndex);
+                    return _buildNewPhotoItem(index - existingCount);
                   }
                 },
               ),
@@ -626,6 +640,8 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 width: double.infinity,
                 height: double.infinity,
                 fit: BoxFit.cover,
+                cacheWidth: 400,
+                cacheHeight: 400,
                 errorBuilder: (context, error, stackTrace) {
                   return ColoredBox(
                     color: ThemeState().isBlueTheme

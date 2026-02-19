@@ -1,7 +1,7 @@
 import "dart:io";
 
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
-import "package:image/image.dart" as img;
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -60,84 +60,30 @@ class _PhotoPickerState extends State<PhotoPicker> {
             try {
               final newPhotos = List<String>.from(widget.selectedPhotos);
 
-              // Process each selected image
-              for (final image in imagesToProcess) {
-                try {
-                  // Add watermark to the image
-                  debugPrint(
-                    "🖼️ Starting watermark process for: ${image.path}",
-                  );
-                  final originalFile = File(image.path);
-                  debugPrint("📁 Original file path: ${originalFile.path}");
-                  debugPrint(
-                    "📁 Original file exists: ${originalFile.existsSync()}",
-                  );
-                  debugPrint(
-                    "📁 Original file size: ${originalFile.lengthSync()} bytes",
-                  );
-
-                  // Test: Let"s also verify the image can be read and processed
+              // Process images in parallel for faster gallery selection
+              final results = await Future.wait(
+                imagesToProcess.map((image) async {
                   try {
-                    final testBytes = await originalFile.readAsBytes();
-                    debugPrint(
-                      "🧪 Test: Image bytes read successfully: ${testBytes.length} bytes",
+                    final watermarkedFile = await WatermarkService.addWatermark(
+                      File(image.path),
                     );
-
-                    // Try to decode the image to verify it"s valid
-                    final testImage = img.decodeImage(testBytes);
-                    if (testImage != null) {
+                    return watermarkedFile.path;
+                  } catch (e) {
+                    if (kDebugMode) {
                       debugPrint(
-                        "🧪 Test: Image decoded successfully: ${testImage.width}x${testImage.height}",
+                        "Error adding watermark for ${image.path}: $e",
                       );
-                    } else {
-                      debugPrint("❌ Test: Image decoding failed");
                     }
-                  } catch (testError) {
-                    debugPrint(
-                      "❌ Test: Error reading/decoding image: $testError",
-                    );
+                    return image.path;
                   }
-
-                  final watermarkedFile = await WatermarkService.addWatermark(
-                    originalFile,
-                  );
-                  debugPrint(
-                    "✅ Watermark process completed for: ${image.path}",
-                  );
-                  debugPrint(
-                    "📁 Watermarked file path: ${watermarkedFile.path}",
-                  );
-                  debugPrint(
-                    "📁 Watermarked file exists: ${watermarkedFile.existsSync()}",
-                  );
-                  debugPrint(
-                    "📁 Watermarked file size: ${watermarkedFile.lengthSync()} bytes",
-                  );
-                  debugPrint(
-                    "📁 Original file size: ${originalFile.lengthSync()} bytes",
-                  );
-                  debugPrint(
-                    "📁 Files are different: ${watermarkedFile.path != originalFile.path}",
-                  );
-
-                  newPhotos.add(watermarkedFile.path);
-                  debugPrint("✅ Photo added to list: ${watermarkedFile.path}");
-                } catch (e) {
-                  debugPrint("❌ Error adding watermark for ${image.path}: $e");
-                  debugPrint("❌ Stack trace: ${StackTrace.current}");
-                  // If watermarking fails, add the original image
-                  newPhotos.add(image.path);
-                  debugPrint(
-                    "⚠️ Added original image due to watermark failure: ${image.path}",
-                  );
-                }
-              }
-
+                }),
+              );
+              newPhotos.addAll(results);
               widget.onPhotosChanged(newPhotos);
-              debugPrint("✅ All photos processed and added to list");
             } catch (e) {
-              debugPrint("❌ Error processing multiple images: $e");
-              debugPrint("❌ Stack trace: ${StackTrace.current}");
+              if (kDebugMode) {
+                debugPrint("Error processing multiple images: $e");
+              }
             } finally {
               // Hide loading indicator
               setState(() {
@@ -165,61 +111,19 @@ class _PhotoPickerState extends State<PhotoPicker> {
             });
 
             try {
-              // Add watermark to the image
-              debugPrint("🖼️ Starting watermark process...");
-              final originalFile = File(image.path);
-              debugPrint("📁 Original file path: ${originalFile.path}");
-              debugPrint(
-                "📁 Original file exists: ${originalFile.existsSync()}",
-              );
-              debugPrint(
-                "📁 Original file size: ${originalFile.lengthSync()} bytes",
-              );
-
-              // Test: Let"s also verify the image can be read and processed
-              try {
-                final testBytes = await originalFile.readAsBytes();
-                debugPrint(
-                  "🧪 Test: Image bytes read successfully: ${testBytes.length} bytes",
-                );
-
-                // Try to decode the image to verify it"s valid
-                final testImage = img.decodeImage(testBytes);
-                if (testImage != null) {
-                  debugPrint(
-                    "🧪 Test: Image decoded successfully: ${testImage.width}x${testImage.height}",
-                  );
-                } else {
-                  debugPrint("❌ Test: Image decoding failed");
-                }
-              } catch (testError) {
-                debugPrint("❌ Test: Error reading/decoding image: $testError");
-              }
-
               final watermarkedFile = await WatermarkService.addWatermark(
-                originalFile,
+                File(image.path),
               );
-              debugPrint("✅ Watermark process completed");
-              debugPrint("📁 Watermarked file path: ${watermarkedFile.path}");
-              debugPrint(
-                "📁 Watermarked file exists: ${watermarkedFile.existsSync()}",
-              );
-              debugPrint(
-                "📁 Watermarked file size: ${watermarkedFile.lengthSync()} bytes",
-              );
-
               final newPhotos = List<String>.from(widget.selectedPhotos);
               newPhotos.add(watermarkedFile.path);
               widget.onPhotosChanged(newPhotos);
-              debugPrint("✅ Photo added to list: ${watermarkedFile.path}");
             } catch (e) {
-              debugPrint("❌ Error adding watermark: $e");
-              debugPrint("❌ Stack trace: ${StackTrace.current}");
-              // If watermarking fails, add the original image
+              if (kDebugMode) {
+                debugPrint("Error adding watermark: $e");
+              }
               final newPhotos = List<String>.from(widget.selectedPhotos);
               newPhotos.add(image.path);
               widget.onPhotosChanged(newPhotos);
-              debugPrint("⚠️ Added original image due to watermark failure");
             } finally {
               // Hide loading indicator
               setState(() {
@@ -232,8 +136,9 @@ class _PhotoPickerState extends State<PhotoPicker> {
         }
       }
     } catch (e) {
-      // Handle error silently or show a snackbar
-      debugPrint("Error picking image: $e");
+      if (kDebugMode) {
+        debugPrint("Error picking image: $e");
+      }
     }
   }
 
@@ -577,6 +482,8 @@ class _PhotoPickerState extends State<PhotoPicker> {
                 width: double.infinity,
                 height: double.infinity,
                 fit: BoxFit.cover,
+                cacheWidth: 400,
+                cacheHeight: 400,
               ),
             ),
           ),
