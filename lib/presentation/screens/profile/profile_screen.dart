@@ -581,46 +581,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // University field
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.school,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  L10n.get("university"),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color:
-                                        Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                Text(
-                                  profile.university != null
-                                      ? _getLocalizedUniversityName(
-                                        profile.university!,
-                                      )
-                                      : L10n.get("not_specified"),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                      // University field (only show when person is a student)
+                      if (profile.university != null) ...[
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.school,
+                              size: 20,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    L10n.get("university"),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  Text(
+                                    _getLocalizedUniversityName(
+                                      profile.university!,
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                      ],
 
                       // About Me field
                       Row(

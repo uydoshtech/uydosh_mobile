@@ -334,6 +334,8 @@ class AppStrings {
       "other": "Other",
 
       "university": "University",
+      "same_university": "Same University",
+      "both_students": "Both students",
       "rating": "Rating",
       "about_me": "About Me",
       "telegram": "Telegram",
@@ -1045,6 +1047,8 @@ class AppStrings {
       "other": "Другой",
 
       "university": "Университет",
+      "same_university": "Один университет",
+      "both_students": "Оба студента",
       "rating": "Рейтинг",
       "about_me": "Обо мне",
       "telegram": "Telegram",
@@ -1769,6 +1773,8 @@ class AppStrings {
       "other": "Boshqa",
 
       "university": "Universitet",
+      "same_university": "Bir xil universitet",
+      "both_students": "Ikkalasi ham talaba",
       "rating": "Reyting",
       "about_me": "Men haqimda",
       "telegram": "Telegram",

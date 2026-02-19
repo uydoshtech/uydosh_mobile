@@ -616,6 +616,43 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       }
     }
 
+    // University - both users are students (shown first in matches)
+    if (currentProfile.universityId != null && ownerProfile.universityId != null) {
+      total += 1;
+      final labelKey = "university";
+      final label = L10n.get(labelKey);
+      final currentLang = LanguageState().currentLanguage;
+      final currentText = currentProfile.university != null
+          ? currentProfile.university!.getLocalizedNameCapitalized(currentLang)
+          : "";
+      final ownerText = ownerProfile.university != null
+          ? ownerProfile.university!.getLocalizedNameCapitalized(currentLang)
+          : "";
+
+      if (currentProfile.universityId == ownerProfile.universityId) {
+        matched += 1;
+        matches.insert(
+          0,
+          _CompatibilityMatch(
+            labelKey: "same_university",
+            label: L10n.get("same_university"),
+            value: currentText.isNotEmpty ? currentText : ownerText,
+          ),
+        );
+      } else {
+        // Both are students (different universities) - show as similarity
+        matched += 1;
+        matches.insert(
+          0,
+          _CompatibilityMatch(
+            labelKey: "both_students",
+            label: L10n.get("both_students"),
+            value: "$currentText ↔ $ownerText",
+          ),
+        );
+      }
+    }
+
     compare<int>(
       labelKey: "cleanliness",
       currentValue: currentProfile.cleanliness,

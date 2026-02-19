@@ -52,6 +52,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isAdmin = false;
   bool _isRoleLoaded = false;
 
+  // Student status: true = student, false = not student
+  bool _isStudent = false;
+
   // Scroll controllers for wheel pickers
   FixedExtentScrollController? _regionScrollController;
   FixedExtentScrollController? _universityScrollController;
@@ -84,6 +87,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _selectedRegionId =
         widget.profile.regionId; // Initialize with profile value
     _selectedUniversityId = widget.profile.universityId;
+    _isStudent = widget.profile.universityId != null;
 
     // Initialize new profile fields
     _employed = widget.profile.employed;
@@ -240,7 +244,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final name = _nameController.text.trim();
       final gender = _selectedGender;
       final regionId = _selectedRegionId;
-      final universityId = _selectedUniversityId;
+
+      // If user is a student, require university selection
+      if (_isStudent && _selectedUniversityId == null) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("please_select_university"),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final universityId = _isStudent ? _selectedUniversityId : null;
 
       // Handle about me text: if it's empty, send null to clear it; if it has content, send the content
       final aboutMe = _aboutMeController.text.trim();
@@ -395,8 +410,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             // Region Selector
             _buildRegionSelector(context),
 
-            // University Selector (only show when user is a student, i.e. universityId is set)
-            if (widget.profile.universityId != null) ...[
+            const SizedBox(height: 24),
+
+            // Student status (like onboarding wizard)
+            _buildStudentSelector(context),
+
+            // University Selector (only show when user selects "I'm a student")
+            if (_isStudent) ...[
               const SizedBox(height: 24),
               _buildUniversitySelector(context),
             ],
@@ -864,7 +884,6 @@ L10n.get(
   }
 
   Widget _buildGenderSelector(BuildContext context) {
-    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -887,6 +906,111 @@ L10n.get(
           showArrows: false,
         ),
       ],
+    );
+  }
+
+  Widget _buildStudentSelector(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          L10n.get("are_you_student"),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: _getLifestyleHeaderColor(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _buildStudentOption(
+                context,
+                isStudent: true,
+                label: L10n.get("yes_student"),
+                icon: Icons.school,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStudentOption(
+                context,
+                isStudent: false,
+                label: L10n.get("no_student"),
+                icon: Icons.work,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStudentOption(
+    BuildContext context, {
+    required bool isStudent,
+    required String label,
+    required IconData icon,
+  }) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final isSelected = _isStudent == isStudent;
+    final backgroundColor = isSelected
+        ? (theme.colorScheme.primary)
+        : (isBlueTheme
+            ? BlueThemeColors.surface
+            : theme.colorScheme.surfaceContainerHighest);
+    final borderColor = isSelected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.outline;
+    final textColor = isSelected
+        ? theme.colorScheme.onPrimary
+        : (isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedbackUtils.impact();
+        SendSoundUtils.playSelectionSound();
+        setState(() {
+          _isStudent = isStudent;
+          if (isStudent) {
+            // Auto-select first university if none selected
+            if (_universities.isNotEmpty && _selectedUniversityId == null) {
+              _selectedUniversityId = _universities.first.id;
+              _initializeUniversityScrollController();
+            }
+          } else {
+            _selectedUniversityId = null;
+          }
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: textColor, size: 20),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
