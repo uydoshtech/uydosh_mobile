@@ -110,18 +110,18 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   /// Ordered by station ID (1–50). Tune dx, dy, widthDelta per station as needed.
   static const Map<int, _TapTargetOverride> _tapTargetOverrides = {
     // Line 1 – Chilanzar
-    1: _TapTargetOverride.only(),   // Chinor
-    2: _TapTargetOverride.only(),   // Yangikhayot
-    3: _TapTargetOverride.only(),   // Sergeli
-    4: _TapTargetOverride.only(),   // Uzgarish
-    5: _TapTargetOverride.only(),   // Chashtepa
-    6: _TapTargetOverride.only(),   // Almazar
-    7: _TapTargetOverride.only(),   // Chilanzar
-    8: _TapTargetOverride.only(),   // Mirzo Ulugbek
-    9: _TapTargetOverride.only(),   // Novza
-    10: _TapTargetOverride.only(),  // Milliy bog
-    11: _TapTargetOverride.only(),  // Xalqlar doʻstligi
-    12: _TapTargetOverride.only(),  // Paxtakor
+    1: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Chinor
+    2: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Yangikhayot
+    3: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Sergeli
+    4: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Uzgarish
+    5: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Chashtepa
+    6: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Almazar
+    7: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Chilanzar
+    8: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Mirzo Ulugbek
+    9: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),   // Novza
+    10: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),  // Milliy bog
+    11: _TapTargetOverride(dx: 20, dy: 0, widthDelta: 0),  // Xalqlar doʻstligi
+    12: _TapTargetOverride(dx: 50, dy: 0, widthDelta: -60),  // Paxtakor
     13: _TapTargetOverride(dx: 0, dy: 0, widthDelta: -50),  // Mustaqil. Maydoni
     14: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -40),  // A. Temur Xiyoboni
     15: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -40),  // Hamid Olimjon
@@ -137,17 +137,17 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     24: _TapTargetOverride(dx: -60, dy: -4, widthDelta: -30),  // Kosmonavtlar
     25: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -10),  // Oybek
     26: _TapTargetOverride.only(),  // Toshkent
-    27: _TapTargetOverride(dx: 40, dy: -6, widthDelta: -20),  // Mashinasozlar
+    27: _TapTargetOverride(dx: 70, dy: -6, widthDelta: -20),  // Mashinasozlar
     28: _TapTargetOverride(dx: 0, dy: -6, widthDelta: 0),  // Doʻstlik
     // Line 3 – Yunusobod
     29: _TapTargetOverride(dx: 0, dy: -4, widthDelta: -20),  // Mingurik
     30: _TapTargetOverride(dx: 140, dy: 0, widthDelta: -50),  // Yunus Rajabiy
-    31: _TapTargetOverride(dx: 100, dy: 0, widthDelta: -50),  // Abdulla Qodiriy
-    32: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Minor
-    33: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Bodomzor
-    34: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Shahriston
-    35: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Yunusobod
-    36: _TapTargetOverride(dx: 0, dy: -6, widthDelta: -20),  // Turkiston
+    31: _TapTargetOverride(dx: 130, dy: 0, widthDelta: -70),  // Abdulla Qodiriy
+    32: _TapTargetOverride(dx: 10, dy: -6, widthDelta: -20),  // Minor
+    33: _TapTargetOverride(dx: 10, dy: -6, widthDelta: -20),  // Bodomzor
+    34: _TapTargetOverride(dx: 10, dy: -6, widthDelta: -20),  // Shahriston
+    35: _TapTargetOverride(dx: 10, dy: -6, widthDelta: -20),  // Yunusobod
+    36: _TapTargetOverride(dx: 10, dy: -6, widthDelta: -20),  // Turkiston
     // Line 4 – Halqa
     37: _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Texnopark
     38:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Yashnobod
@@ -156,13 +156,13 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     41:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Rohat
     42:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Yangiobod
     43:  _TapTargetOverride(dx: 0, dy: -5, widthDelta: 0),  // Quyliuq
-    44: _TapTargetOverride(dx: -10, dy: 0, widthDelta: -10),  // Matonat
-    45: _TapTargetOverride(dx: -5, dy: 0, widthDelta: -10),  // Qiyot
+    44: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10),  // Matonat
+    45: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10),  // Qiyot
     46: _TapTargetOverride(dx: -15, dy: 0, widthDelta: -20),  // Tolarik
-    47: _TapTargetOverride(dx: -20, dy: 0, widthDelta: -20),  // Xonabod
+    47: _TapTargetOverride(dx: 0, dy: 0, widthDelta: -20),  // Xonabod
     48: _TapTargetOverride(dx: -30, dy: 0, widthDelta: -30),  // Quruvchilar
-    49: _TapTargetOverride(dx: 0, dy: 0, widthDelta: -20),  // Turon
-    50: _TapTargetOverride(dx: 0, dy: 0, widthDelta: -20),  // Qipchoq
+    49: _TapTargetOverride(dx: 40, dy: 0, widthDelta: -20),  // Turon
+    50: _TapTargetOverride(dx:20, dy: 0, widthDelta: -20),  // Qipchoq
   };
 
   static const String _svgAssetPath =
