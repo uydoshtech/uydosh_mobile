@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/main.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
@@ -32,8 +33,7 @@ class MessagesInboxScreen extends StatefulWidget {
 }
 
 class _MessagesInboxScreenState extends State<MessagesInboxScreen>
-    with WidgetsBindingObserver {
-  bool _hasLoadedOnce = false;
+    with RouteAware, WidgetsBindingObserver {
   int? _currentUserId;
   int _selectedTabIndex = 0; // 0 = incoming, 1 = outgoing
 
@@ -81,9 +81,19 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     AuthenticationState().removeListener(_onAuthenticationStateChanged);
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
   }
 
   @override
@@ -95,13 +105,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Refresh conversations when screen becomes visible (but only after initial load)
-    if (_hasLoadedOnce) {
-      _loadConversations();
-    }
-    _hasLoadedOnce = true;
+  void didPopNext() {
+    // Called when returning to this screen from another screen (e.g. ChatScreen)
+    _loadConversations();
   }
 
   void _loadConversations() {
@@ -655,10 +661,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 ),
           ),
         );
-        // Refresh conversations when returning from chat screen
-        // Add a small delay to ensure server has processed mark as read
-        await Future.delayed(const Duration(milliseconds: 500));
-        _loadConversations();
+        // didPopNext handles refresh when returning from chat screen
       },
     );
   }
@@ -720,8 +723,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     ),
               ),
             );
-            // Refresh conversations when returning from chat screen
-            if (mounted) _loadConversations();
+            // didPopNext handles refresh when returning from chat screen
           },
         );
       },
