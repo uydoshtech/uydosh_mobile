@@ -11,7 +11,7 @@ class WatermarkService {
 
   /// Adds a watermark (app icon) to the given image file.
   /// [watermarkImageBytes] - PNG/JPEG bytes of the logo to overlay (e.g. from assets).
-  /// Position: right bottom corner.
+  /// Position: center (for testing visibility).
   static Future<File> addWatermark(
     File imageFile, {
     required Uint8List watermarkImageBytes,
@@ -50,9 +50,9 @@ class WatermarkService {
       final w = (watermarkImage.width * scale).round().clamp(1, 2000);
       final h = (watermarkImage.height * scale).round().clamp(1, 2000);
 
-      // Right bottom corner position
-      final dstX = watermarkedImage.width - w - _padding;
-      final dstY = watermarkedImage.height - h - _padding;
+      // Center position (for testing visibility)
+      final dstX = (watermarkedImage.width - w) ~/ 2;
+      final dstY = (watermarkedImage.height - h) ~/ 2;
 
       img.compositeImage(
         watermarkedImage,

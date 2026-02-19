@@ -377,6 +377,34 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                 // Always show divider after profile section (reserved space)
                 _buildThemeAwareDivider(),
 
+                // Profile menu item - Only show when user is logged in
+                ListenableBuilder(
+                  listenable: AuthenticationState(),
+                  builder: (context, child) {
+                    final isAuthenticated =
+                        AuthenticationState().isAuthenticated;
+
+                    if (!isAuthenticated) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return _buildMenuItem(
+                      icon: Icons.person_outline,
+                      titleKey: "menu_profile",
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (context.mounted) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const ProfileScreen(),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                ),
+
                 _buildMenuItem(
                   icon: Icons.home,
                   titleKey: "menu_home",
