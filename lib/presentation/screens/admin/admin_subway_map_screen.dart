@@ -134,9 +134,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     21: _TapTargetOverride(dx: 20, dy: -7, widthDelta: -50),  // Gafur Gulom
     22: _TapTargetOverride(dx: 120, dy: -10, widthDelta: -70),  // Alisher Navoiy
     23: _TapTargetOverride(dx: 80, dy: -5, widthDelta: -50),  // Oʻzbekiston
-    24: _TapTargetOverride(dx: -40, dy: -4, widthDelta: -30),  // Kosmonavtlar
+    24: _TapTargetOverride(dx: -60, dy: -4, widthDelta: -30),  // Kosmonavtlar
     25: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -10),  // Oybek
-    26: _TapTargetOverride.only(),  // Toshkent
+    26: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10),  // Toshkent
     27: _TapTargetOverride(dx: 70, dy: -6, widthDelta: -20),  // Mashinasozlar
     28: _TapTargetOverride(dx: 0, dy: -6, widthDelta: 0),  // Doʻstlik
     // Line 3 – Yunusobod
