@@ -1,22 +1,28 @@
 import "dart:io";
+import "dart:typed_data";
+
 import "package:image/image.dart" as img;
 import "package:uy_dosh/base/logger/logger.dart";
 
 class WatermarkService {
-  static const String _watermarkText = "UyDosh";
-  static const int _watermarkPadding = 50;
+  static const int _padding = 24;
+  /// Watermark takes ~40% of the shorter image dimension for high visibility on physical devices.
+  static const double _watermarkFraction = 0.40;
 
-  /// Adds a watermark to the given image file
-  static Future<File> addWatermark(File imageFile) async {
+  /// Adds a watermark (app icon) to the given image file.
+  /// [watermarkImageBytes] - PNG/JPEG bytes of the logo to overlay (e.g. from assets).
+  /// Position: right bottom corner.
+  static Future<File> addWatermark(
+    File imageFile, {
+    required Uint8List watermarkImageBytes,
+  }) async {
     try {
       logger.d("🖼️ Starting watermark process for: ${imageFile.path}");
 
-      // Read the image file
       final imageBytes = await imageFile.readAsBytes();
       logger.d("📁 Image file size: ${imageBytes.length} bytes");
 
       final originalImage = img.decodeImage(imageBytes);
-
       if (originalImage == null) {
         throw Exception("Failed to decode image");
       }
@@ -25,146 +31,77 @@ class WatermarkService {
         "🖼️ Original image dimensions: ${originalImage.width}x${originalImage.height}",
       );
 
-      // Clone image for modification (faster than copyResize when not resizing)
+      final watermarkImage = img.decodeImage(watermarkImageBytes);
+      if (watermarkImage == null) {
+        throw Exception("Failed to decode watermark image");
+      }
+
+      // Clone image for modification
       final watermarkedImage = img.Image.from(originalImage);
 
-      // Calculate watermark position - center horizontally at the bottom
-      const watermarkTextWidth =
-          _watermarkText.length * 100; // 5x larger: 20 * 5 = 100
-      final watermarkX =
-          (watermarkedImage.width - watermarkTextWidth) ~/
-          2; // Center horizontally
-      final watermarkY =
-          watermarkedImage.height -
-          _watermarkPadding -
-          150; // 5x larger: 30 * 5 = 150
+      // Resize watermark to ~40% of shorter image side (very visible on physical devices)
+      final targetSize = (watermarkedImage.width < watermarkedImage.height
+              ? watermarkedImage.width
+              : watermarkedImage.height) *
+          _watermarkFraction;
+      final scaleW = targetSize / watermarkImage.width;
+      final scaleH = targetSize / watermarkImage.height;
+      final scale = (scaleW < scaleH ? scaleW : scaleH).clamp(0.0, 2.0);
+      final w = (watermarkImage.width * scale).round().clamp(1, 2000);
+      final h = (watermarkImage.height * scale).round().clamp(1, 2000);
 
-      logger.d("📍 Watermark position: ($watermarkX, $watermarkY)");
-      logger.d(
-        "📍 Image dimensions: ${watermarkedImage.width}x${watermarkedImage.height}",
-      );
-      logger.d("📍 Watermark text width: $watermarkTextWidth");
-      logger.d("📍 Watermark text: $_watermarkText");
+      // Right bottom corner position
+      final dstX = watermarkedImage.width - w - _padding;
+      final dstY = watermarkedImage.height - h - _padding;
 
-      // Draw the watermark text with white color and black stroke for visibility
-      final whiteColor = img.ColorRgba8(
-        255,
-        255,
-        255,
-        255,
-      ); // Full opacity white
-      final blackColor = img.ColorRgba8(0, 0, 0, 255); // Full opacity black
-
-      logger.d("🎨 Colors - White: $whiteColor, Black: $blackColor");
-
-      // Try different available fonts
-      final availableFonts = [img.arial24, img.arial48];
-      img.BitmapFont? selectedFont;
-
-      for (final font in availableFonts) {
-        selectedFont = font;
-        logger.d("✅ Using font: ${font.runtimeType}");
-        break;
-      }
-
-      selectedFont ??= img.arial24;
-
-      // Draw a solid black background rectangle (fillRect is much faster than pixel loop)
-      const bgWidth = watermarkTextWidth + 100;
-      const bgHeight = 200;
-      final bgX = watermarkX - 50;
-      final bgY = watermarkY - 50;
-      img.fillRect(
+      img.compositeImage(
         watermarkedImage,
-        x1: bgX,
-        y1: bgY,
-        x2: bgX + bgWidth,
-        y2: bgY + bgHeight,
-        color: blackColor,
-        alphaBlend: false,
+        watermarkImage,
+        dstX: dstX.clamp(0, watermarkedImage.width - 1),
+        dstY: dstY.clamp(0, watermarkedImage.height - 1),
+        dstW: w,
+        dstH: h,
+        blend: img.BlendMode.alpha,
       );
 
-      // Draw black stroke in 8 directions (much faster than 440 drawString calls)
-      const strokeOffset = 10;
-      const strokeOffsets = [
-        (strokeOffset, 0),
-        (-strokeOffset, 0),
-        (0, strokeOffset),
-        (0, -strokeOffset),
-        (7, 7),
-        (-7, 7),
-        (7, -7),
-        (-7, -7),
-      ];
-      for (final (dx, dy) in strokeOffsets) {
-        img.drawString(
-          watermarkedImage,
-          _watermarkText,
-          font: selectedFont,
-          x: watermarkX + dx,
-          y: watermarkY + dy,
-          color: blackColor,
-        );
-      }
+      logger.d("✅ Watermark composited at ($dstX, $dstY) size ${w}x$h");
 
-      // Draw white text on top
-      img.drawString(
-        watermarkedImage,
-        _watermarkText,
-        font: selectedFont,
-        x: watermarkX,
-        y: watermarkY,
-        color: whiteColor,
-      );
-
-      logger.d("✅ Watermark text drawn successfully");
-
-      // Encode the watermarked image with higher compression for lighter files
       final watermarkedBytes = img.encodeJpg(
         watermarkedImage,
         quality: 80,
       );
       logger.d("💾 Watermarked image size: ${watermarkedBytes.length} bytes");
 
-      // Create a temporary file for the watermarked image
       final tempPath = "${imageFile.path}_watermarked.jpg";
       final watermarkedFile = File(tempPath);
       await watermarkedFile.writeAsBytes(watermarkedBytes);
 
       logger.d("💾 Watermarked file saved to: ${watermarkedFile.path}");
-      logger.d("💾 File exists: ${watermarkedFile.existsSync()}");
-      logger.d("💾 File size: ${watermarkedFile.lengthSync()} bytes");
-      logger.d("💾 Original file size: ${imageFile.lengthSync()} bytes");
-      logger.d(
-        "💾 Files are different: ${watermarkedFile.path != imageFile.path}",
-      );
-      logger.d(
-        "💾 Watermarked file is larger: ${watermarkedFile.lengthSync() > imageFile.lengthSync()}",
-      );
 
       return watermarkedFile;
     } catch (e) {
       logger.d("❌ Error adding watermark: $e");
       logger.d("❌ Stack trace: ${StackTrace.current}");
-
-      // If watermarking fails, return the original image
       return imageFile;
     }
   }
 
   /// Adds watermark to multiple images
   static Future<List<File>> addWatermarkToMultiple(
-    List<File> imageFiles,
-  ) async {
+    List<File> imageFiles, {
+    required Uint8List watermarkImageBytes,
+  }) async {
     final watermarkedFiles = <File>[];
 
     for (final imageFile in imageFiles) {
       try {
-        final watermarkedFile = await addWatermark(imageFile);
+        final watermarkedFile = await addWatermark(
+          imageFile,
+          watermarkImageBytes: watermarkImageBytes,
+        );
         watermarkedFiles.add(watermarkedFile);
       } catch (e) {
         logger.d("Error watermarking image ${imageFile.path}: $e");
-        // Add original file if watermarking fails
         watermarkedFiles.add(imageFile);
       }
     }

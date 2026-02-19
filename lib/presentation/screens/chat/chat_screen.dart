@@ -215,6 +215,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       ],
                       child: BlocBuilder<MessagingBloc, MessagingState>(
                         builder: (context, state) {
+                          // Once we have messages, always show them - the shared
+                          // MessagingBloc can be overwritten by MessagesInboxScreen
+                          // (e.g. RefreshConversations on messagesMarkedAsRead),
+                          // which would otherwise cause a blink and infinite loading.
+                          if (_messages.isNotEmpty) {
+                            return _buildMessagesList(_messages);
+                          }
                           return state.when(
                             initial: _buildLoadingState,
                             loading: _buildLoadingState,
@@ -232,15 +239,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             conversationCreated:
                                 (conversation) => _buildLoadingState(),
                             messageSent:
-                                (message) =>
-                                    _messages.isNotEmpty
-                                        ? _buildMessagesList(_messages)
-                                        : _buildEmptyState(),
+                                (message) => _buildEmptyState(),
                             messagesMarkedAsRead:
                                 (conversationId, markedCount) =>
-                                    _messages.isNotEmpty
-                                        ? _buildMessagesList(_messages)
-                                        : _buildEmptyState(),
+                                    _buildEmptyState(),
                             error: _buildErrorState,
                           );
                         },

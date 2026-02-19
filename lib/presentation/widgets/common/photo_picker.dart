@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -35,6 +36,17 @@ class _PhotoPickerState extends State<PhotoPicker> {
   final ImagePicker _picker = ImagePicker();
   bool _isProcessingImage = false;
 
+  static Uint8List? _cachedWatermarkBytes;
+
+  Future<Uint8List> _loadWatermarkBytes() async {
+    if (_cachedWatermarkBytes != null) return _cachedWatermarkBytes!;
+    final data = await rootBundle.load("assets/icon/app_logo.png");
+    _cachedWatermarkBytes = Uint8List.fromList(
+      data.buffer.asUint8List().toList(),
+    );
+    return _cachedWatermarkBytes!;
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       if (source == ImageSource.gallery) {
@@ -59,6 +71,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
 
             try {
               final newPhotos = List<String>.from(widget.selectedPhotos);
+              final watermarkBytes = await _loadWatermarkBytes();
 
               // Process images in parallel for faster gallery selection
               final results = await Future.wait(
@@ -66,6 +79,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                   try {
                     final watermarkedFile = await WatermarkService.addWatermark(
                       File(image.path),
+                      watermarkImageBytes: watermarkBytes,
                     );
                     return watermarkedFile.path;
                   } catch (e) {
@@ -111,8 +125,10 @@ class _PhotoPickerState extends State<PhotoPicker> {
             });
 
             try {
+              final watermarkBytes = await _loadWatermarkBytes();
               final watermarkedFile = await WatermarkService.addWatermark(
                 File(image.path),
+                watermarkImageBytes: watermarkBytes,
               );
               final newPhotos = List<String>.from(widget.selectedPhotos);
               newPhotos.add(watermarkedFile.path);
