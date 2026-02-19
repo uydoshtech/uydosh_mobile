@@ -173,13 +173,11 @@ class _MessageBubbleState extends State<MessageBubble>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
+                                  _buildMessageContent(
                                     widget.message.content,
-                                    style: TextStyle(
-                                      color: widget.isCurrentUser
-                                          ? ownMessageTextColor
-                                          : otherMessageTextColor,
-                                    ),
+                                    widget.isCurrentUser
+                                        ? ownMessageTextColor
+                                        : otherMessageTextColor,
                                   ),
                                   const SizedBox(height: 4),
                                   Row(
@@ -352,6 +350,58 @@ class _MessageBubbleState extends State<MessageBubble>
           .black; // Black icon on white avatar for other user in blue theme (inverted)
     }
     return Colors.black; // Default to black
+  }
+
+  /// Regex to match emoji characters (covers emoticons, symbols, etc.)
+  static final _emojiRegex = RegExp(
+    r"[\u{1F300}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]",
+    unicode: true,
+  );
+
+  static const _baseFontSize = 14.0;
+  static const _emojiFontSize = 28.0; // 2x base size for emojis
+
+  Widget _buildMessageContent(String text, Color color) {
+    final spans = <InlineSpan>[];
+    var lastEnd = 0;
+
+    for (final match in _emojiRegex.allMatches(text)) {
+      if (match.start > lastEnd) {
+        spans.add(
+          TextSpan(
+            text: text.substring(lastEnd, match.start),
+            style: TextStyle(color: color, fontSize: _baseFontSize),
+          ),
+        );
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: TextStyle(color: color, fontSize: _emojiFontSize),
+        ),
+      );
+      lastEnd = match.end;
+    }
+    if (lastEnd < text.length) {
+      spans.add(
+        TextSpan(
+          text: text.substring(lastEnd),
+          style: TextStyle(color: color, fontSize: _baseFontSize),
+        ),
+      );
+    }
+    if (spans.isEmpty) {
+      spans.add(
+        TextSpan(
+          text: text,
+          style: TextStyle(color: color, fontSize: _baseFontSize),
+        ),
+      );
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
+    );
   }
 
   String _formatTime(String dateTimeString) {
