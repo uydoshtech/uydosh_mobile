@@ -2,7 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class LanguageAwareDatePicker {
   static Future<DateTime?> showDatePicker({
@@ -63,60 +63,52 @@ class _LanguageAwareDatePickerDialogState
   }
 
   String _getMonthName(int month) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
-
     switch (month) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(context, "january");
+        return L10n.get("january");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "february");
+        return L10n.get("february");
       case 3:
-        return LanguageAwareStringHelper.getCurrent(context, "march");
+        return L10n.get("march");
       case 4:
-        return LanguageAwareStringHelper.getCurrent(context, "april");
+        return L10n.get("april");
       case 5:
-        return LanguageAwareStringHelper.getCurrent(context, "may");
+        return L10n.get("may");
       case 6:
-        return LanguageAwareStringHelper.getCurrent(context, "june");
+        return L10n.get("june");
       case 7:
-        return LanguageAwareStringHelper.getCurrent(context, "july");
+        return L10n.get("july");
       case 8:
-        return LanguageAwareStringHelper.getCurrent(context, "august");
+        return L10n.get("august");
       case 9:
-        return LanguageAwareStringHelper.getCurrent(context, "september");
+        return L10n.get("september");
       case 10:
-        return LanguageAwareStringHelper.getCurrent(context, "october");
+        return L10n.get("october");
       case 11:
-        return LanguageAwareStringHelper.getCurrent(context, "november");
+        return L10n.get("november");
       case 12:
-        return LanguageAwareStringHelper.getCurrent(context, "december");
+        return L10n.get("december");
       default:
         return "";
     }
   }
 
   String _getDayName(int weekday) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
-
     switch (weekday) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(context, "monday");
+        return L10n.get("monday");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "tuesday");
+        return L10n.get("tuesday");
       case 3:
-        return LanguageAwareStringHelper.getCurrent(context, "wednesday");
+        return L10n.get("wednesday");
       case 4:
-        return LanguageAwareStringHelper.getCurrent(context, "thursday");
+        return L10n.get("thursday");
       case 5:
-        return LanguageAwareStringHelper.getCurrent(context, "friday");
+        return L10n.get("friday");
       case 6:
-        return LanguageAwareStringHelper.getCurrent(context, "saturday");
+        return L10n.get("saturday");
       case 7:
-        return LanguageAwareStringHelper.getCurrent(context, "sunday");
+        return L10n.get("sunday");
       default:
         return "";
     }
@@ -418,10 +410,7 @@ class _LanguageAwareDatePickerDialogState
                     onPressed: _cancel,
                     child: Text(
                       widget.cancelText ??
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "cancel",
-                          ),
+                          L10n.get("cancel"),
                       style: TextStyle(
                         color:
                             themeState.isBlueTheme
@@ -437,7 +426,7 @@ class _LanguageAwareDatePickerDialogState
                     onPressed: _confirm,
                     child: Text(
                       widget.confirmText ??
-                          LanguageAwareStringHelper.getCurrent(context, "ok"),
+                          L10n.get("ok"),
                       style: TextStyle(
                         color:
                             themeState.isBlueTheme

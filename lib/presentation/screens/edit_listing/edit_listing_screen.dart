@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
@@ -302,9 +303,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     String? nameEn,
     String? shortName,
   }) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
+    final currentLanguage = L10n.currentLanguage;
 
     switch (currentLanguage) {
       case "uz":
@@ -387,9 +386,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: LanguageAwareStringHelper.getText(
+        title: L10n.text(
           "edit_listing",
-          context,
           style: theme.appBarTheme.titleTextStyle,
         ),
         backgroundColor:
@@ -417,7 +415,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
               iconColor:
                   theme.appBarTheme.foregroundColor ??
                   theme.colorScheme.onPrimary,
-              tooltip: LanguageAwareStringHelper.getCurrent(context, "actions"),
+              tooltip: L10n.get("actions"),
             ),
           ),
         ],
@@ -539,10 +537,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                               const SizedBox(width: 6),
                                               Flexible(
                                                 child: Text(
-                                                  LanguageAwareStringHelper.getCurrent(
-                                                    context,
-                                                    "select_metro_line",
-                                                  ),
+                                                  L10n.get("select_metro_line"),
                                                   style: TextStyle(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.w600,
@@ -566,27 +561,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                         ...([
                                           MetroCache.getLineName(
                                             1,
-                                            LanguageAwareStringHelper.getCurrentLanguage(
-                                              context,
-                                            ),
+                                            L10n.currentLanguage,
                                           ),
                                           MetroCache.getLineName(
                                             2,
-                                            LanguageAwareStringHelper.getCurrentLanguage(
-                                              context,
-                                            ),
+                                            L10n.currentLanguage,
                                           ),
                                           MetroCache.getLineName(
                                             3,
-                                            LanguageAwareStringHelper.getCurrentLanguage(
-                                              context,
-                                            ),
+                                            L10n.currentLanguage,
                                           ),
                                           MetroCache.getLineName(
                                             4,
-                                            LanguageAwareStringHelper.getCurrentLanguage(
-                                              context,
-                                            ),
+                                            L10n.currentLanguage,
                                           ),
                                         ].asMap().entries.map(
                                           (entry) => Center(
@@ -740,10 +727,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       height: 80,
                                       child: Center(
                                         child: Text(
-                                          LanguageAwareStringHelper.getCurrent(
-                                            context,
-                                            "select_metro_line_title",
-                                          ),
+                                          L10n.get("select_metro_line_title"),
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -822,10 +806,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           }
                         },
                         decoration: InputDecoration(
-                          hintText: LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "listing_description_hint",
-                          ),
+                          hintText: L10n.get("listing_description_hint"),
                           hintStyle: TextStyle(
                             color:
                                 Theme.of(context).brightness == Brightness.dark
@@ -935,9 +916,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                       children: [
                         // Move-in Date Field (50% width)
                         Expanded(
-                          child: LanguageAwareStringHelper.getInputField(
+                          child: L10n.inputField(
                             "quick_question_move_in_date",
-                            context,
                             builder:
                                 (hintText) => Container(
                                   child: ValueListenableBuilder<
@@ -947,15 +927,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     builder: (context, value, child) {
                                       final isEmpty = value.text.isEmpty;
                                       final moveInDateLabel =
-                                          LanguageAwareStringHelper.getCurrent(
-                                            context,
-                                            "move_in_date_label",
-                                          );
+                                          L10n.get("move_in_date_label");
                                       final anyDateText =
-                                          LanguageAwareStringHelper.getCurrent(
-                                            context,
-                                            "any_date",
-                                          ).replaceAll("\n", " ");
+                                          L10n.get("any_date").replaceAll("\n", " ");
                                       final displayValue =
                                           isEmpty ? anyDateText : value.text;
                                       final displayText =
@@ -1009,20 +983,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                             firstDate: firstDate,
                                             lastDate: lastDate,
                                             helpText:
-                                                LanguageAwareStringHelper.getCurrent(
-                                                  context,
-                                                  "select_date",
-                                                ),
-                                            cancelText:
-                                                LanguageAwareStringHelper.getCurrent(
-                                                  context,
-                                                  "cancel",
-                                                ),
-                                            confirmText:
-                                                LanguageAwareStringHelper.getCurrent(
-                                                  context,
-                                                  "ok",
-                                                ),
+                                                L10n.get("select_date"),
+                                                cancelText:
+                                                L10n.get("cancel"),
+                                                confirmText:
+                                                L10n.get("ok"),
                                           );
                                           if (picked != null) {
                                             _moveInDateValue =
@@ -1161,10 +1126,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          LanguageAwareStringHelper.getCurrent(
-                                            context,
-                                            "private_room",
-                                          ).replaceFirst(" ", "\n"),
+                                          L10n.get("private_room").replaceFirst(" ", "\n"),
                                           style: TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,
@@ -1300,8 +1262,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 ? null
                                 : _submitForm, // Disable when submitting
                         icon: Icons.save,
-                        text: LanguageAwareStringHelper.getCurrent(
-                          context,
+                        text: L10n.get(
                           _isSubmitting
                               ? "updating_listing"
                               : "update_listing_button",
@@ -1336,10 +1297,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     if (title.isEmpty) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "title_required",
-        ),
+        message: L10n.get("title_required"),
       );
       return;
     }
@@ -1347,10 +1305,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     if (title.length > 25) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "title_too_long",
-        ),
+        message: L10n.get("title_too_long"),
       );
       return;
     }
@@ -1359,10 +1314,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     if (description.isEmpty) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "description_required",
-        ),
+        message: L10n.get("description_required"),
       );
       setState(() {
         _showDescriptionError = true;
@@ -1377,10 +1329,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     if (description.length > 1000) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "description_too_long",
-        ),
+        message: L10n.get("description_too_long"),
       );
       return;
     }
@@ -1389,10 +1338,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     if (_selectedLocationIndex < 0) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "location_required",
-        ),
+        message: L10n.get("location_required"),
       );
       setState(() {
         _showLocationError = true;
@@ -1479,10 +1425,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
           logger.d("⚠️ Warning: New photos failed to upload: $photoError");
           ToastTheme.showError(
             context,
-            message: LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_uploading_photos",
-            ),
+            message: L10n.get("error_uploading_photos"),
           );
           // Don"t fail the entire listing update if photos fail
         }
@@ -1493,10 +1436,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Show success message
       ToastTheme.showSuccess(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "listing_updated_success",
-        ),
+        message: L10n.get("listing_updated_success"),
       );
 
       // Clear all error states on success
@@ -1514,17 +1454,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Navigate back to listing detail screen with updated flag
       Navigator.of(context).pop(true); // true indicates listing was updated
     } catch (e) {
-      var errorMessage = LanguageAwareStringHelper.getCurrent(
-        context,
-        "error_updating_listing",
-      );
+      var errorMessage = L10n.get("error_updating_listing");
 
       // Check if it"s an authentication error
       if (e.toString().contains("401")) {
-        errorMessage = LanguageAwareStringHelper.getCurrent(
-          context,
-          "authentication_required",
-        );
+        errorMessage = L10n.get("authentication_required");
       }
 
       ToastTheme.showError(context, message: errorMessage);
@@ -1559,10 +1493,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     if (_existingPhotos.length <= 1) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "cannot_delete_last_photo",
-        ),
+        message: L10n.get("cannot_delete_last_photo"),
       );
       return;
     }
@@ -1627,10 +1558,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ToastTheme.showSuccess(
                 context,
-                message: LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "new_primary_photo_selected",
-                ),
+                message: L10n.get("new_primary_photo_selected"),
               );
             });
           } else if (wasPrimaryPhoto && remainingPhotosCount == 0) {
@@ -1638,10 +1566,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ToastTheme.showSuccess(
                 context,
-                message: LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "last_photo_deleted",
-                ),
+                message: L10n.get("last_photo_deleted"),
               );
             });
           }
@@ -1655,10 +1580,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
         // Show success message
         ToastTheme.showSuccess(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "photo_deleted_success",
-          ),
+          message: L10n.get("photo_deleted_success"),
         );
       } catch (e) {
         // Hide loading state
@@ -1669,10 +1591,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
         // Show error message
         ToastTheme.showError(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "error_deleting_photo",
-          ),
+          message: L10n.get("error_deleting_photo"),
         );
       }
     }
@@ -1732,10 +1651,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Show success message
       ToastTheme.showSuccess(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "photo_made_primary",
-        ),
+        message: L10n.get("photo_made_primary"),
       );
     } catch (e) {
       // Remove from loading state on error
@@ -1746,7 +1662,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Show error message
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(context, "error_generic"),
+        message: L10n.get("error_generic"),
       );
     }
   }

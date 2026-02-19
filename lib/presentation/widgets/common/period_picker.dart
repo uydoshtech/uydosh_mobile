@@ -4,7 +4,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// A rotation spinner (CupertinoPicker wheel) for selecting a time period.
 /// Matches the metro/district picker style: vertical scrollable list in a
@@ -177,14 +177,8 @@ class _PeriodPickerState extends State<PeriodPicker> {
 
   String _getLabel(BuildContext context, int days) {
     if (days == 0) {
-      return LanguageAwareStringHelper.getCurrent(
-        context,
-        "admin_search_analytics_all_time",
-      );
+      return L10n.get("admin_search_analytics_all_time");
     }
-    return LanguageAwareStringHelper.getCurrent(
-      context,
-      "admin_search_analytics_days",
-    ).replaceAll("{days}", "$days");
+    return L10n.get("admin_search_analytics_days").replaceAll("{days}", "$days");
   }
 }

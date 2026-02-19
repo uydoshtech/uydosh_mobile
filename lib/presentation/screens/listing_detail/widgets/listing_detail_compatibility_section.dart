@@ -7,6 +7,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Data class for a compatibility match (same value).
@@ -191,10 +192,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "compatibility_title",
-                ),
+                L10n.get("compatibility_title"),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -216,10 +214,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
         children: [
           if (!isAuthenticated)
             Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "compatibility_sign_in",
-              ),
+              L10n.get("compatibility_sign_in"),
               style: TextStyle(
                 fontSize: 14,
                 color: _getDescriptionTextColor(),
@@ -238,10 +233,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "compatibility_calculating",
-                  ),
+                  L10n.get("compatibility_calculating"),
                   style: TextStyle(
                     fontSize: 14,
                     color: _getDescriptionTextColor(),
@@ -251,10 +243,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
             )
           else if (compatibilityError != null || percentText == null)
             Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "compatibility_unavailable",
-              ),
+              L10n.get("compatibility_unavailable"),
               style: TextStyle(
                 fontSize: 14,
                 color: _getDescriptionTextColor(),
@@ -266,10 +255,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
               children: [
                 if (matches.isNotEmpty) ...[
                   Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "compatibility_matches",
-                    ),
+                    L10n.get("compatibility_matches"),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -306,10 +292,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                 if (differences.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "compatibility_differences",
-                    ),
+                    L10n.get("compatibility_differences"),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -360,10 +343,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                 ],
                 if (matches.isEmpty && differences.isEmpty)
                   Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "compatibility_unavailable",
-                    ),
+                    L10n.get("compatibility_unavailable"),
                     style: TextStyle(
                       fontSize: 14,
                       color: _getDescriptionTextColor(),
@@ -384,10 +364,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                           color: _getIconColor(),
                         ),
                         label: Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "message",
-                          ),
+                          L10n.get("message"),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -416,10 +393,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                           color: _getIconColor(),
                         ),
                         label: Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "view_profile",
-                          ),
+                          L10n.get("view_profile"),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,

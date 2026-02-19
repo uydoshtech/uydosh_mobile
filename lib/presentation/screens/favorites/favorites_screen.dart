@@ -15,6 +15,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
@@ -222,10 +223,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           actionLabel = "Retry";
           action = () => _loadFavoriteListings(isRefresh: true);
         } else {
-          errorMessage = LanguageAwareStringHelper.getCurrent(
-            context,
-            "unable_to_load_favorites",
-          );
+          errorMessage = L10n.get("unable_to_load_favorites");
           actionLabel = "Retry";
           action = () => _loadFavoriteListings(isRefresh: true);
         }
@@ -299,7 +297,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     if (_isLoading) {
       return CenteredHouseLoadingIndicator(
-        text: LanguageAwareStringHelper.getCurrent(context, "loading"),
+        text: L10n.get("loading"),
       );
     }
 
@@ -372,10 +370,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               child: Center(
                 child: GhostButtonFactory.text(
                   onPressed: _loadMoreFavorites,
-                  text: LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "load_more",
-                  ),
+                  text: L10n.get("load_more"),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,
@@ -401,9 +396,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   ListenableBuilder(
                     listenable: LanguageState(),
                     builder: (context, child) {
-                      return LanguageAwareStringHelper.getText(
+                      return L10n.text(
                         "favorites_empty_title",
-                        context,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -571,10 +565,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return GhostButtonFactory.iconText(
       onPressed: onPressed,
       icon: Icons.home,
-      text: LanguageAwareStringHelper.getCurrent(
-        context,
-        "favorites_browse_button",
-      ),
+      text: L10n.get("favorites_browse_button"),
     );
   }
 

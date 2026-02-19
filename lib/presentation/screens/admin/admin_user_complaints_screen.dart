@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminUserComplaintsScreen extends StatefulWidget {
@@ -110,10 +111,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
       });
       ToastTheme.showSuccess(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_complaints_status_updated",
-        ),
+        message: L10n.get("admin_complaints_status_updated"),
       );
     } catch (e) {
       ToastTheme.showError(context, message: e.toString());
@@ -125,10 +123,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_user_complaints_title",
-          ),
+          L10n.get("admin_user_complaints_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
@@ -140,7 +135,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
               child: Row(
                 children: [
                   Text(
-                    "${LanguageAwareStringHelper.getCurrent(context, "admin_user_complaints_user")}: ",
+                    "${L10n.get("admin_user_complaints_user")}: ",
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -160,10 +155,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
             child:
                 _isLoading
                     ? CenteredHouseLoadingIndicator(
-                      text: LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "admin_complaints_loading",
-                      ),
+                      text: L10n.get("admin_complaints_loading"),
                     )
                     : _hasError
                     ? _buildErrorState(context)
@@ -186,10 +178,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_complaints_error",
-            ),
+            L10n.get("admin_complaints_error"),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -211,7 +200,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
           ElevatedButton(
             onPressed: _refresh,
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, "retry"),
+              L10n.get("retry"),
             ),
           ),
         ],
@@ -223,10 +212,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     if (_complaints.isEmpty) {
       return Center(
         child: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_user_complaints_empty",
-          ),
+          L10n.get("admin_user_complaints_empty"),
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -242,7 +228,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
       itemBuilder: (context, index) {
         final group = grouped[index];
           final listingLabel = group.listingId <= 0
-              ? LanguageAwareStringHelper.getCurrent(context, "not_specified")
+              ? L10n.get("not_specified")
               : group.listingId.toString();
           return Card(
             elevation: 3,
@@ -251,11 +237,11 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
             ),
             child: ExpansionTile(
               title: Text(
-                "${LanguageAwareStringHelper.getCurrent(context, "admin_complaints_listing_id")}: $listingLabel",
+                "${L10n.get("admin_complaints_listing_id")}: $listingLabel",
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                "${LanguageAwareStringHelper.getCurrent(context, "admin_user_complaints_group_count")}: ${group.complaints.length}",
+                "${L10n.get("admin_user_complaints_group_count")}: ${group.complaints.length}",
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -350,7 +336,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "${LanguageAwareStringHelper.getCurrent(context, "admin_complaints_text")}: ",
+            "${L10n.get("admin_complaints_text")}: ",
             style: TextStyle(
               fontSize: 12,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -378,7 +364,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
       child: Row(
         children: [
           Text(
-            "${LanguageAwareStringHelper.getCurrent(context, labelKey)}: ",
+            "${L10n.get(labelKey)}: ",
             style: TextStyle(
               fontSize: 12,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -426,31 +412,19 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
   String _getStatusLabel(BuildContext context, String status) {
     switch (status) {
       case "resolved":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_complaints_status_resolved",
-        );
+        return L10n.get("admin_complaints_status_resolved");
       case "dismissed":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_complaints_status_dismissed",
-        );
+        return L10n.get("admin_complaints_status_dismissed");
       case "pending":
       default:
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_complaints_status_pending",
-        );
+        return L10n.get("admin_complaints_status_pending");
     }
   }
 
   String _getCategoryLabel(Complaint complaint) {
     final category = complaint.category ?? _categoriesById[complaint.categoryId];
     if (category == null) {
-      return LanguageAwareStringHelper.getCurrent(
-        context,
-        "admin_complaints_category_unknown",
-      );
+      return L10n.get("admin_complaints_category_unknown");
     }
     final language = LanguageState().currentLanguage;
     switch (language) {
@@ -466,7 +440,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
 
   String _formatDate(String? value, BuildContext context) {
     if (value == null || value.isEmpty) {
-      return LanguageAwareStringHelper.getCurrent(context, "not_specified");
+      return L10n.get("not_specified");
     }
     final parsed = DateTime.tryParse(value);
     if (parsed == null) {
@@ -481,7 +455,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
 
   String _getListingLabel(BuildContext context, int? listingId) {
     if (listingId == null || listingId <= 0) {
-      return LanguageAwareStringHelper.getCurrent(context, "not_specified");
+      return L10n.get("not_specified");
     }
     return listingId.toString();
   }
@@ -498,7 +472,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
               UydoshActionSheetItem(
                 icon: Icons.open_in_new,
                 title: Text(
-                  LanguageAwareStringHelper.getCurrent(context, "view_listing"),
+                  L10n.get("view_listing"),
                 ),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -508,19 +482,13 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
               const Divider(height: 1),
               UydoshActionSheetItem(
                 title: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "admin_complaints_update_status",
-                  ),
+                  L10n.get("admin_complaints_update_status"),
                 ),
               ),
               UydoshActionSheetItem(
                 icon: Icons.pending_actions,
                 title: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "admin_complaints_status_pending",
-                  ),
+                  L10n.get("admin_complaints_status_pending"),
                 ),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -530,10 +498,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
               UydoshActionSheetItem(
                 icon: Icons.check_circle_outline,
                 title: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "admin_complaints_status_resolved",
-                  ),
+                  L10n.get("admin_complaints_status_resolved"),
                 ),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -543,10 +508,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
               UydoshActionSheetItem(
                 icon: Icons.block_outlined,
                 title: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "admin_complaints_status_dismissed",
-                  ),
+                  L10n.get("admin_complaints_status_dismissed"),
                 ),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -564,7 +526,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     if (listingId == null || listingId <= 0) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(context, "error_generic"),
+        message: L10n.get("error_generic"),
       );
       return;
     }

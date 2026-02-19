@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// A compact theme toggle for the app header with sun/moon icons.
 /// Matches the design: oval track with circular knob and theme icons.
@@ -32,10 +32,7 @@ class HeaderThemeToggle extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Tooltip(
-              message: LanguageAwareStringHelper.getCurrent(
-                context,
-                "switch_theme",
-              ),
+              message: L10n.get("switch_theme"),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,

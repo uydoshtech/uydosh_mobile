@@ -1,5 +1,4 @@
 import "dart:async";
-// HTTP imports for backend API calls
 import "dart:convert";
 
 // Firebase and Google Sign-In imports
@@ -10,19 +9,18 @@ import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:google_sign_in/google_sign_in.dart";
-import "package:http/http.dart" as http;
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/create_profile_request.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
+import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -30,6 +28,7 @@ import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 
@@ -71,6 +70,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   List<Region> _regions = [];
   bool _isLoadingRegions = false;
   late final IRegionService _regionService;
+  late final IAuthService _authService;
 
   // Firebase Auth
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -107,6 +107,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
     // Initialize region service
     _regionService = getIt<IRegionService>();
+
+    // Initialize auth service
+    _authService = getIt<IAuthService>();
 
     // Set the default language to Uzbek only for fresh onboarding
     if (widget.initialPage == 0) {
@@ -239,10 +242,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       if (mounted) {
         ToastTheme.showSuccess(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "successfully_signed_in_google",
-          ),
+          message: L10n.get("successfully_signed_in_google"),
           duration: const Duration(seconds: 3),
         );
       }
@@ -254,14 +254,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       if (mounted) {
         final errorStr = e.toString();
         final displayError = errorStr.contains("popup_closed")
-            ? LanguageAwareStringHelper.getCurrent(context, "popup_closed")
+            ? L10n.get("popup_closed")
             : errorStr;
         ToastTheme.showWarning(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "google_sign_in_failed",
-          ).replaceAll("{error}", displayError),
+          message: L10n.get("google_sign_in_failed").replaceAll("{error}", displayError),
         );
       }
     }
@@ -273,10 +270,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
         throw Exception(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "firebase_user_not_found",
-          ),
+          L10n.get("firebase_user_not_found"),
         );
       }
 
@@ -286,8 +280,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       logger.d("🔍 Current page: $_currentPage");
       logger.d("🔍 Is Google signed in: $_isGoogleSignedIn");
 
-      // Call your backend endpoint
-      final response = await _callBackendAuthEndpoint(
+      // Call backend via Dio (AuthService)
+      final response = await _authService.firebaseAuth(
         email: currentUser.email ?? "",
         firebaseUid: currentUser.uid,
       );
@@ -341,40 +335,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
   }
 
-  // Call your backend Firebase auth endpoint
-  Future<Map<String, dynamic>> _callBackendAuthEndpoint({
-    required String email,
-    required String firebaseUid,
-  }) async {
-    const url = "${EnvironmentUtil.basePath}/users/firebase-auth";
-    final body = {"email": email, "firebase_uid": firebaseUid};
-
-    logger.d("🌐 Calling backend: $url");
-    logger.d("📤 Request body: $body");
-
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(body),
-      );
-
-      logger.d("📥 Response status: ${response.statusCode}");
-      logger.d("📥 Response body: ${response.body}");
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception(
-          "Backend authentication failed: ${response.statusCode}",
-        );
-      }
-    } catch (e) {
-      logger.d("❌ HTTP request failed: $e");
-      rethrow;
-    }
-  }
-
   // Store backend session data
   Future<void> _storeBackendSession(Map<String, dynamic> response) async {
     // Store session token
@@ -404,23 +364,17 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "user_blocked_violation_title",
-          ),
+          L10n.get("user_blocked_violation_title"),
         ),
         content: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "user_blocked_violation_message",
-          ),
+          L10n.get("user_blocked_violation_message"),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, "close"),
+              L10n.get("close"),
             ),
           ),
         ],
@@ -434,10 +388,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       // Show error message if trying to proceed without Google Sign-In
       ToastTheme.showWarning(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "please_sign_in_google_first",
-        ),
+        message: L10n.get("please_sign_in_google_first"),
         duration: const Duration(seconds: 3),
       );
       return;
@@ -476,7 +427,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return;
       }
 
-      final response = await _callBackendAuthEndpoint(
+      final response = await _authService.firebaseAuth(
         email: currentUser.email ?? "",
         firebaseUid: currentUser.uid,
       );
@@ -641,10 +592,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       if (mounted) {
         ToastTheme.showWarning(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "error_loading_universities",
-          ).replaceAll("{error}", error.toString()),
+          message: L10n.get("error_loading_universities").replaceAll("{error}", error.toString()),
         );
       }
     }
@@ -691,10 +639,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       if (mounted) {
         ToastTheme.showWarning(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "error_loading_regions",
-          ).replaceAll("{error}", error.toString()),
+          message: L10n.get("error_loading_regions").replaceAll("{error}", error.toString()),
         );
       }
     }
@@ -709,10 +654,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         _isStudent == null) {
       ToastTheme.showWarning(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "please_complete_all_fields",
-        ),
+        message: L10n.get("please_complete_all_fields"),
       );
       return;
     }
@@ -734,10 +676,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
       ToastTheme.showWarning(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "please_select_university",
-        ),
+        message: L10n.get("please_select_university"),
       );
       return;
     }
@@ -947,10 +886,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   // Show success message
                   ToastTheme.showSuccess(
                     context,
-                    message: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "welcome_back_profile_exists",
-                    ),
+                    message: L10n.get("welcome_back_profile_exists"),
                   );
 
                   // Navigate to main app directly
@@ -987,10 +923,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         // Show success message
         ToastTheme.showSuccess(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "profile_completed_success",
-          ),
+          message: L10n.get("profile_completed_success"),
         );
 
         // Navigate to main app
@@ -1005,10 +938,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         // Show error message
         ToastTheme.showWarning(
           context,
-          message: LanguageAwareStringHelper.getCurrent(
-            context,
-            "error_creating_profile",
-          ).replaceAll("{error}", e.toString()),
+          message: L10n.get("error_creating_profile").replaceAll("{error}", e.toString()),
         );
       }
     }
@@ -1040,10 +970,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           Icons.close,
                           color: _getOnboardingTextColor(context),
                         ),
-                        tooltip: LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "close",
-                        ),
+                        tooltip: L10n.get("close"),
                         onPressed: () {
                           if (Navigator.of(context).canPop()) {
                             Navigator.of(context).pop();
@@ -1065,10 +992,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       const Spacer(),
                       // Theme toggle (sun = light, moon = dark/blue)
                       Tooltip(
-                        message: LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "switch_theme",
-                        ),
+                        message: L10n.get("switch_theme"),
                         child: ThemeToggleSunMoon(
                           iconColor: _getOnboardingTextColor(context),
                           size: 36,
@@ -1133,10 +1057,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             // Show error message
                             ToastTheme.showWarning(
                               context,
-                              message: LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "please_complete_previous_steps",
-                              ),
+                              message: L10n.get("please_complete_previous_steps"),
                               duration: const Duration(seconds: 3),
                             );
                             return;
@@ -1167,10 +1088,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         Expanded(
                           child: GhostButtonFactory.text(
                             onPressed: _previousPage,
-                            text: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "back",
-                            ),
+                            text: L10n.get("back"),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 32,
                               vertical: 16,
@@ -1185,10 +1103,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         Expanded(
                           child: GhostButtonFactory.text(
                             onPressed: _getNextButtonAction(),
-                            text: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              _getNextButtonTextKey(),
-                            ),
+                            text: L10n.get(_getNextButtonTextKey()),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 32,
                               vertical: 16,
@@ -1215,9 +1130,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LanguageAwareStringHelper.getText(
+            L10n.text(
               "select_language",
-              context,
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -1331,9 +1245,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LanguageAwareStringHelper.getText(
+          L10n.text(
             "sign_in_with_google",
-            context,
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -1341,9 +1254,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          LanguageAwareStringHelper.getText(
+          L10n.text(
             "sign_in_with_google_description",
-            context,
             style: TextStyle(
               fontSize: 16,
               color: _getOnboardingTextSecondaryColor(context),
@@ -1454,7 +1366,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           if (_isAuthenticating) ...[
             const SizedBox(height: 24),
             CenteredHouseLoadingIndicator(
-              text: LanguageAwareStringHelper.getCurrent(context, "signing_in"),
+              text: L10n.get("signing_in"),
               textStyle: TextStyle(
                 color: _getOnboardingTextSecondaryColor(context),
                 fontSize: 16,
@@ -1474,9 +1386,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LanguageAwareStringHelper.getText(
+            L10n.text(
               "complete_profile",
-              context,
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -1486,9 +1397,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             const SizedBox(height: 16),
 
             // Name input
-            LanguageAwareStringHelper.getText(
+            L10n.text(
               "full_name",
-              context,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -1509,10 +1419,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       _getInputTextColor(), // Use black text for better visibility in blue theme
                 ),
                 decoration: InputDecoration(
-                  hintText: LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "full_name_hint",
-                  ),
+                  hintText: L10n.get("full_name_hint"),
                   hintStyle: TextStyle(
                     color: _getOnboardingTextSecondaryColor(context).withOpacity(0.6),
                   ),
@@ -1549,9 +1456,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             const SizedBox(height: 16),
 
             // Gender selection
-            LanguageAwareStringHelper.getText(
+            L10n.text(
               "gender",
-              context,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -1564,7 +1470,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 Flexible(
                   child: _buildGenderOption(
                     1,
-                    LanguageAwareStringHelper.getCurrent(context, "male"),
+                    L10n.get("male"),
                     Icons.male,
                   ),
                 ),
@@ -1572,7 +1478,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 Flexible(
                   child: _buildGenderOption(
                     2,
-                    LanguageAwareStringHelper.getCurrent(context, "female"),
+                    L10n.get("female"),
                     Icons.female,
                   ),
                 ),
@@ -1582,9 +1488,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             const SizedBox(height: 32),
 
             // Region selection
-            LanguageAwareStringHelper.getText(
+            L10n.text(
               "select_region",
-              context,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -1600,10 +1505,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: CenteredHouseLoadingIndicator(
-                  text: LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "loading_regions",
-                  ),
+                  text: L10n.get("loading_regions"),
                   textStyle: TextStyle(
                     color: _getOnboardingTextColor(context),
                     fontSize: 16,
@@ -1621,10 +1523,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "no_regions_available",
-                  ),
+                  L10n.get("no_regions_available"),
                   style: TextStyle(
                     color: _getOnboardingTextSecondaryColor(context),
                     fontSize: 16,
@@ -1636,9 +1535,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             const SizedBox(height: 32),
 
             // Role selection (landlord or renter)
-            LanguageAwareStringHelper.getText(
+            L10n.text(
               "are_you_landlord_or_renter",
-              context,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -1651,7 +1549,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 Flexible(
                   child: _buildRoleOption(
                     "landlord",
-                    LanguageAwareStringHelper.getCurrent(context, "role_landlord"),
+                    L10n.get("role_landlord"),
                     Icons.home_work,
                   ),
                 ),
@@ -1659,7 +1557,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 Flexible(
                   child: _buildRoleOption(
                     "tenant",
-                    LanguageAwareStringHelper.getCurrent(context, "role_tenant"),
+                    L10n.get("role_tenant"),
                     Icons.key,
                   ),
                 ),
@@ -1669,9 +1567,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             const SizedBox(height: 32),
 
             // Student status
-            LanguageAwareStringHelper.getText(
+            L10n.text(
               "are_you_student",
-              context,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -1684,10 +1581,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 Flexible(
                   child: _buildStudentOption(
                     true,
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "yes_student",
-                    ),
+                    L10n.get("yes_student"),
                     Icons.school,
                   ),
                 ),
@@ -1695,7 +1589,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 Flexible(
                   child: _buildStudentOption(
                     false,
-                    LanguageAwareStringHelper.getCurrent(context, "no_student"),
+                    L10n.get("no_student"),
                     Icons.work,
                   ),
                 ),
@@ -1714,10 +1608,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: CenteredHouseLoadingIndicator(
-                    text: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "loading_universities",
-                    ),
+                    text: L10n.get("loading_universities"),
                     textStyle: TextStyle(
                       color: _getOnboardingTextColor(context),
                       fontSize: 16,
@@ -1735,10 +1626,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "no_universities_available",
-                    ),
+                    L10n.get("no_universities_available"),
                     style: TextStyle(
                       color: _getOnboardingTextSecondaryColor(context),
                       fontSize: 16,
@@ -1912,9 +1800,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      LanguageAwareStringHelper.getText(
+                      L10n.text(
                         "selected",
-                        context,
                         style: TextStyle(
                           color: _getSelectedButtonTextColor(),
                           fontSize: 12,
@@ -1923,10 +1810,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       ),
                     ] else ...[
                       Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "tap_to_select_region",
-                        ),
+                        L10n.get("tap_to_select_region"),
                         style: TextStyle(
                           color: _getOnboardingTextSecondaryColor(context),
                           fontSize: 16,
@@ -2007,7 +1891,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           Padding(
             padding: const EdgeInsets.all(20),
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, "select_region"),
+              L10n.get("select_region"),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -2072,7 +1956,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                text: LanguageAwareStringHelper.getCurrent(context, "confirm"),
+                text: L10n.get("confirm"),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 textColor: _getBottomSheetTextColor(),
                 borderColor: _getBottomSheetTextColor(),
@@ -2239,9 +2123,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      LanguageAwareStringHelper.getText(
+                      L10n.text(
                         "selected",
-                        context,
                         style: TextStyle(
                           color: _getSelectedButtonTextColor(),
                           fontSize: 12,
@@ -2250,10 +2133,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       ),
                     ] else ...[
                       Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "tap_to_select_university",
-                        ),
+                        L10n.get("tap_to_select_university"),
                         style: TextStyle(
                           color: _getOnboardingTextSecondaryColor(context),
                           fontSize: 16,
@@ -2336,10 +2216,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           Padding(
             padding: const EdgeInsets.all(20),
             child: Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "select_university",
-              ),
+              L10n.get("select_university"),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -2404,7 +2281,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                text: LanguageAwareStringHelper.getCurrent(context, "confirm"),
+                text: L10n.get("confirm"),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 textColor: _getBottomSheetTextColor(),
                 borderColor: _getBottomSheetTextColor(),

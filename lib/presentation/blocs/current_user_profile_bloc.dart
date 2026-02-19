@@ -21,6 +21,7 @@ class CurrentUserProfileBloc
     on<CurrentUserProfileEvent>((event, emit) async {
       await event.map(
         fetchProfile: (e) async => _onFetchProfile(e, emit),
+        reset: (_) async => emit(const CurrentUserProfileState.initial()),
       );
     });
   }

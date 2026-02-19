@@ -1,19 +1,16 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
-import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
-import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
@@ -21,8 +18,9 @@ import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
+import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_tile.dart";
 
 class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({super.key, this.showCustomHeader = true});
@@ -35,7 +33,6 @@ class MessagesInboxScreen extends StatefulWidget {
 
 class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     with WidgetsBindingObserver {
-  late MessagingBloc _messagingBloc;
   bool _hasLoadedOnce = false;
   int? _currentUserId;
   int _selectedTabIndex = 0; // 0 = incoming, 1 = outgoing
@@ -43,7 +40,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   @override
   void initState() {
     super.initState();
-    _messagingBloc = MessagingBloc(getIt<IMessagingService>());
     _initializeUser();
     _loadConversations();
     WidgetsBinding.instance.addObserver(this);
@@ -78,7 +74,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         logger.d(
           "🔍 [MessagesInboxScreen] User logged out, clearing conversations...",
         );
-        _messagingBloc.add(ClearConversations());
+        context.read<MessagingBloc>().add(ClearConversations());
       }
     }
   }
@@ -87,7 +83,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     AuthenticationState().removeListener(_onAuthenticationStateChanged);
-    _messagingBloc.close();
     super.dispose();
   }
 
@@ -111,7 +106,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   void _loadConversations() {
     logger.d("🔍 [MessagesInboxScreen] Loading conversations...");
-    _messagingBloc.add(RefreshConversations());
+    if (mounted) {
+      context.read<MessagingBloc>().add(RefreshConversations());
+    }
   }
 
   /// Calculate total unread count from all conversations
@@ -133,7 +130,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
-        final backgroundColor = _getThemeAwareBackgroundColor(themeState);
+        final backgroundColor = themeState.backgroundColor;
 
         return Scaffold(
           backgroundColor: backgroundColor,
@@ -156,9 +153,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   }
 
   Widget _buildContent() {
-    return BlocProvider.value(
-      value: _messagingBloc,
-      child: BlocListener<MessagingBloc, MessagingState>(
+    return BlocListener<MessagingBloc, MessagingState>(
         listener: (context, state) {
           // Handle unread count updates outside of build method
           state.when(
@@ -211,7 +206,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             );
           },
         ),
-      ),
     );
   }
 
@@ -247,7 +241,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           // Title
           Expanded(
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, "messages"),
+              L10n.get("messages"),
               style:
                   Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
                     fontSize: 20,
@@ -281,111 +275,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     );
   }
 
-  /// Get theme-aware background color
-  Color _getThemeAwareBackgroundColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.white; // White background for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.background; // Blue background for blue theme
-    }
-    return Colors.white; // Default to white
-  }
-
-  /// Get theme-aware text color
-  Color _getThemeAwareTextColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black text for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.textPrimary; // White text for blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  /// Get theme-aware primary color
-  Color _getThemeAwarePrimaryColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black primary for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.primary; // Blue primary for blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  /// Get theme-aware secondary text color
-  Color _getThemeAwareSecondaryTextColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.grey[600]!; // Grey text for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.textSecondary; // Light blue text for blue theme
-    }
-    return Colors.grey[600]!; // Default to grey
-  }
-
-  /// Get theme-aware button color
-  Color _getThemeAwareButtonColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black button for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.buttonPrimary; // Blue button for blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  /// Get theme-aware button text color
-  Color _getThemeAwareButtonTextColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.white; // White text on black button for light theme
-    } else if (themeState.isBlueTheme) {
-      return Colors.white; // White text on blue button for blue theme
-    }
-    return Colors.white; // Default to white
-  }
-
-  /// Get theme-aware card background color
-  Color _getThemeAwareCardColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.white; // White cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.card; // Blue cards for blue theme
-    }
-    return Colors.white; // Default to white
-  }
-
-  /// Get theme-aware border color for selected tab buttons
-  Color _getSelectedTabBorderColor() {
-    final themeState = ThemeState();
-    if (themeState.isLightTheme) {
-      return Colors
-          .black; // Black border for light theme (same as background for solid look)
-    } else if (themeState.isBlueTheme) {
-      return Colors
-          .white; // White border for blue theme (contrast against blue background)
-    }
-    return Colors.black; // Default to black
-  }
-
-  /// Get theme-aware text color for selected tab buttons
-  Color _getSelectedTabTextColor() {
-    final themeState = ThemeState();
-    if (themeState.isLightTheme) {
-      return Colors.white; // White text on black background for light theme
-    } else if (themeState.isBlueTheme) {
-      return Colors.white; // White text on blue background for blue theme
-    }
-    return Colors.white; // Default to white
-  }
-
-  /// Get theme-aware text color for unselected tab buttons
-  Color _getUnselectedTabTextColor() {
-    final themeState = ThemeState();
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black text on white background for light theme
-    } else if (themeState.isBlueTheme) {
-      return Colors.white; // White text on dark blue background for blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
   Widget _buildLoadingState() {
     return const Center(child: HouseLoadingIndicator());
   }
@@ -402,10 +291,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
-        final primaryColor = _getThemeAwarePrimaryColor(themeState);
-        final secondaryTextColor = _getThemeAwareSecondaryTextColor(themeState);
-        final buttonColor = _getThemeAwareButtonColor(themeState);
-        final buttonTextColor = _getThemeAwareButtonTextColor(themeState);
+        final primaryColor = themeState.primaryColor;
+        final secondaryTextColor = themeState.secondaryTextColor;
+        final buttonColor = themeState.buttonColor;
+        final buttonTextColor = themeState.buttonTextColor;
 
         return Center(
           child: Padding(
@@ -460,7 +349,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                       foregroundColor: buttonTextColor,
                     ),
                     child: Text(
-                      LanguageAwareStringHelper.getCurrent(context, "retry"),
+                      L10n.get("retry"),
                     ),
                   ),
                 ],
@@ -527,10 +416,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
-        final primaryColor = _getThemeAwarePrimaryColor(themeState);
-        final textColor = _getThemeAwareTextColor(themeState);
-        final secondaryTextColor = _getThemeAwareSecondaryTextColor(themeState);
-        final cardColor = _getThemeAwareCardColor(themeState);
+        final primaryColor = themeState.primaryColor;
+        final textColor = themeState.textColor;
+        final secondaryTextColor = themeState.secondaryTextColor;
+        final cardColor = themeState.cardColor;
 
         return Container(
           padding: const EdgeInsets.all(16),
@@ -555,9 +444,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     required Color secondaryTextColor,
     required Color cardColor,
   }) {
-    final selectedBorderColor = _getSelectedTabBorderColor();
-    final selectedTextColor = _getSelectedTabTextColor();
-    final unselectedTextColor = _getUnselectedTabTextColor();
+    final themeState = ThemeState();
+    final selectedBorderColor = themeState.selectedTabBorderColor;
+    final selectedTextColor = themeState.selectedTabTextColor;
+    final unselectedTextColor = themeState.unselectedTabTextColor;
 
     return Container(
       height: 48,
@@ -615,10 +505,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "incoming",
-                          ),
+                          L10n.get("incoming"),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -676,10 +563,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "outgoing",
-                          ),
+                          L10n.get("outgoing"),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -849,8 +733,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
-        final textColor = _getThemeAwareTextColor(themeState);
-        final secondaryTextColor = _getThemeAwareSecondaryTextColor(themeState);
+        final textColor = themeState.textColor;
+        final secondaryTextColor = themeState.secondaryTextColor;
 
         return Center(
           child: Column(
@@ -864,14 +748,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               const SizedBox(height: 16),
               Text(
                 type == "incoming"
-                    ? LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "no_incoming_conversations",
-                    )
-                    : LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "no_outgoing_conversations",
-                    ),
+                    ? L10n.get("no_incoming_conversations")
+                    : L10n.get("no_outgoing_conversations"),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -881,14 +759,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               const SizedBox(height: 8),
               Text(
                 type == "incoming"
-                    ? LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "no_incoming_conversations_description",
-                    )
-                    : LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "no_outgoing_conversations_description",
-                    ),
+                    ? L10n.get("no_incoming_conversations_description")
+                    : L10n.get("no_outgoing_conversations_description"),
                 style: TextStyle(fontSize: 16, color: secondaryTextColor),
                 textAlign: TextAlign.center,
               ),
@@ -904,8 +776,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
-        final textColor = _getThemeAwareTextColor(themeState);
-        final secondaryTextColor = _getThemeAwareSecondaryTextColor(themeState);
+        final textColor = themeState.textColor;
+        final secondaryTextColor = themeState.secondaryTextColor;
 
         return Center(
           child: Column(
@@ -918,7 +790,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                LanguageAwareStringHelper.getCurrent(context, "no_messages"),
+                L10n.get("no_messages"),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -927,10 +799,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "no_messages_description",
-                ),
+                L10n.get("no_messages_description"),
                 style: TextStyle(fontSize: 16, color: secondaryTextColor),
                 textAlign: TextAlign.center,
               ),
@@ -939,836 +808,5 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         );
       },
     );
-  }
-}
-
-class ConversationTile extends StatelessWidget {
-
-  const ConversationTile({
-    required this.conversation, required this.onTap, super.key,
-    this.currentUserId,
-    this.isGrouped = false,
-  });
-  final ConversationSummary conversation;
-  final VoidCallback onTap;
-  final int? currentUserId;
-  final bool isGrouped;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, child) {
-        final themeState = ThemeState();
-        final cardColor = _getThemeAwareCardColor(themeState);
-        final textColor = _getThemeAwareCardTextColor(themeState);
-        final secondaryTextColor = _getThemeAwareCardSecondaryTextColor(
-          themeState,
-        );
-        final iconColor = _getThemeAwareCardIconColor(themeState);
-        final avatarColor = _getThemeAwareAvatarColor(themeState);
-        final avatarIconColor = _getThemeAwareAvatarIconColor(themeState);
-
-        return Card(
-          margin:
-              isGrouped ? EdgeInsets.zero : const EdgeInsets.only(bottom: 16),
-          color: cardColor,
-          elevation: isGrouped ? 0 : 6,
-          shadowColor: Colors.black.withValues(alpha: 0.15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isGrouped ? 0 : 20),
-          ),
-          child: ListTile(
-            onTap: onTap,
-            leading: conversation.otherUserAvatar != null
-                ? ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: conversation.otherUserAvatar!,
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 80,
-                      memCacheHeight: 80,
-                      placeholder:
-                          (context, url) => Center(
-                            child: ConversationAvatarContent(
-                              conversation: conversation,
-                              iconColor: avatarIconColor,
-                            ),
-                          ),
-                      errorWidget:
-                          (context, url, error) => CircleAvatar(
-                            backgroundColor: avatarColor,
-                            child: ConversationAvatarContent(
-                              conversation: conversation,
-                              iconColor: avatarIconColor,
-                            ),
-                          ),
-                    ),
-                  )
-                : CircleAvatar(
-                    backgroundColor: avatarColor,
-                    child: ConversationAvatarContent(
-                      conversation: conversation,
-                      iconColor: avatarIconColor,
-                    ),
-                  ),
-            title:
-                isGrouped
-                    ? null // Hide title entirely for grouped conversations to remove empty space
-                    : Text(
-                      conversation.listingTitle ??
-                          "Listing #${conversation.listingId}",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (conversation.lastMessageContent != null) ...[
-                  Text(
-                    conversation.lastMessageContent!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: secondaryTextColor),
-                  ),
-                  const SizedBox(height: 4),
-                ],
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 12,
-                      color: secondaryTextColor,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatTime(
-                        context,
-                        conversation.lastMessageAt ?? conversation.updatedAt,
-                      ),
-                      style: TextStyle(fontSize: 12, color: secondaryTextColor),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Unread indicator - only show if there are unread messages AND current user is the addressee (not the sender)
-                if (conversation.unreadCount != null &&
-                    conversation.unreadCount! > 0 &&
-                    currentUserId != null &&
-                    conversation.lastMessageSenderId != currentUserId) ...[
-                  Container(
-                    width: conversation.unreadCount! > 1 ? 20 : 12,
-                    height: conversation.unreadCount! > 1 ? 20 : 12,
-                    decoration: const BoxDecoration(
-                      color:
-                          AppColors.success, // Keep green for unread indicator
-                      shape: BoxShape.circle,
-                    ),
-                    child:
-                        conversation.unreadCount! > 1
-                            ? Center(
-                              child: Text(
-                                "${conversation.unreadCount!}",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            )
-                            : null,
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                // Arrow icon
-                if (conversation.lastMessageAt != null)
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: iconColor.withValues(alpha: 0.5),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// Get theme-aware card background color
-  Color _getThemeAwareCardColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.white; // White cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.card; // Blue cards for blue theme
-    }
-    return Colors.white; // Default to white
-  }
-
-  /// Get theme-aware card text color
-  Color _getThemeAwareCardTextColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black text on white cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .textPrimary; // White text on blue cards for blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  /// Get theme-aware card secondary text color
-  Color _getThemeAwareCardSecondaryTextColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.grey[600]!; // Grey text on white cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .textSecondary; // Light blue text on blue cards for blue theme
-    }
-    return Colors.grey[600]!; // Default to grey
-  }
-
-  /// Get theme-aware card icon color
-  Color _getThemeAwareCardIconColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.grey[600]!; // Grey icons on white cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .iconPrimary; // White icons on blue cards for blue theme
-    }
-    return Colors.grey[600]!; // Default to grey
-  }
-
-  /// Get theme-aware avatar background color
-  Color _getThemeAwareAvatarColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.grey[300]!; // Light grey avatar for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.primary; // Blue avatar for blue theme
-    }
-    return Colors.grey[300]!; // Default to light grey
-  }
-
-  /// Get theme-aware avatar icon color
-  Color _getThemeAwareAvatarIconColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black icon on light grey avatar for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .textPrimary; // White icon on blue avatar for blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  String _formatTime(BuildContext context, String dateTimeString) {
-    try {
-      final dateTime = DateTime.parse(dateTimeString).toLocal();
-      final now = DateTime.now();
-      final difference = now.difference(dateTime);
-
-      if (difference.inDays > 0) {
-        return AppDateUtils.formatDateWithMonth(context, dateTime);
-      } else if (difference.inHours > 0) {
-        return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-      } else if (difference.inMinutes > 0) {
-        return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-      } else {
-        return LanguageAwareStringHelper.getCurrent(context, "now");
-      }
-    } catch (e) {
-      return "";
-    }
-  }
-
-}
-
-class GroupedConversationsList extends StatefulWidget {
-
-  const GroupedConversationsList({
-    required this.conversations, required this.onConversationTap, super.key,
-    this.currentUserId,
-  });
-  final List<ConversationSummary> conversations;
-  final int? currentUserId;
-  final Function(ConversationSummary) onConversationTap;
-
-  @override
-  State<GroupedConversationsList> createState() =>
-      _GroupedConversationsListState();
-}
-
-class _GroupedConversationsListState extends State<GroupedConversationsList> {
-  final Map<int, bool> _expandedGroups = {};
-
-  @override
-  Widget build(BuildContext context) {
-    // Group conversations by listing ID
-    final groupedConversations = <int, List<ConversationSummary>>{};
-    for (final conversation in widget.conversations) {
-      if (!groupedConversations.containsKey(conversation.listingId)) {
-        groupedConversations[conversation.listingId] = [];
-      }
-      groupedConversations[conversation.listingId]!.add(conversation);
-    }
-
-    // Sort conversations within each group: unread messages first, then by last message time
-    groupedConversations.forEach((listingId, conversations) {
-      conversations.sort((a, b) {
-        // Check if conversations have unread messages
-        final aHasUnread =
-            a.unreadCount != null &&
-            a.unreadCount! > 0 &&
-            widget.currentUserId != null &&
-            a.lastMessageSenderId != widget.currentUserId;
-        final bHasUnread =
-            b.unreadCount != null &&
-            b.unreadCount! > 0 &&
-            widget.currentUserId != null &&
-            b.lastMessageSenderId != widget.currentUserId;
-
-        // If one has unread and the other doesn't, prioritize the one with unread
-        if (aHasUnread && !bHasUnread) return -1;
-        if (!aHasUnread && bHasUnread) return 1;
-
-        // If both have same unread status, sort by last message time (most recent first)
-        final aTime = a.lastMessageAt ?? a.updatedAt;
-        final bTime = b.lastMessageAt ?? b.updatedAt;
-        return bTime.compareTo(aTime);
-      });
-    });
-
-    // Get sorted listing IDs: groups with unread messages first, then by most recent conversation
-    final sortedListingIds =
-        groupedConversations.keys.toList()..sort((a, b) {
-          final aConversations = groupedConversations[a]!;
-          final bConversations = groupedConversations[b]!;
-
-          // Check if groups have any unread messages
-          final aHasUnread = aConversations.any(
-            (conv) =>
-                conv.unreadCount != null &&
-                conv.unreadCount! > 0 &&
-                widget.currentUserId != null &&
-                conv.lastMessageSenderId != widget.currentUserId,
-          );
-          final bHasUnread = bConversations.any(
-            (conv) =>
-                conv.unreadCount != null &&
-                conv.unreadCount! > 0 &&
-                widget.currentUserId != null &&
-                conv.lastMessageSenderId != widget.currentUserId,
-          );
-
-          // If one group has unread and the other doesn't, prioritize the one with unread
-          if (aHasUnread && !bHasUnread) return -1;
-          if (!aHasUnread && bHasUnread) return 1;
-
-          // If both groups have same unread status, sort by most recent conversation
-          final aLatest =
-              aConversations.first.lastMessageAt ??
-              aConversations.first.updatedAt;
-          final bLatest =
-              bConversations.first.lastMessageAt ??
-              bConversations.first.updatedAt;
-          return bLatest.compareTo(aLatest);
-        });
-
-    // Auto-expand the first group with unread messages
-    if (sortedListingIds.isNotEmpty) {
-      final firstGroupId = sortedListingIds.first;
-      final firstGroupConversations = groupedConversations[firstGroupId]!;
-      final hasUnreadInFirstGroup = firstGroupConversations.any(
-        (conv) =>
-            conv.unreadCount != null &&
-            conv.unreadCount! > 0 &&
-            widget.currentUserId != null &&
-            conv.lastMessageSenderId != widget.currentUserId,
-      );
-
-      if (hasUnreadInFirstGroup && !_expandedGroups.containsKey(firstGroupId)) {
-        _expandedGroups[firstGroupId] = true;
-      }
-    }
-
-    return CommonListView(
-      padding: const EdgeInsets.all(16),
-      itemCount: sortedListingIds.length,
-      itemBuilder: (context, index) {
-        final listingId = sortedListingIds[index];
-        final conversations = groupedConversations[listingId]!;
-        final isExpanded =
-            _expandedGroups[listingId] ?? false; // Default to collapsed
-        final listingTitle =
-            conversations.first.listingTitle ?? "Listing #$listingId";
-
-        return _buildGroupCard(
-          listingId: listingId,
-          listingTitle: listingTitle,
-          conversations: conversations,
-          isExpanded: isExpanded,
-        );
-      },
-    );
-  }
-
-  Widget _buildGroupCard({
-    required int listingId,
-    required String listingTitle,
-    required List<ConversationSummary> conversations,
-    required bool isExpanded,
-  }) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, child) {
-        final themeState = ThemeState();
-        final cardColor = _getThemeAwareCardColor(themeState);
-        final textColor = _getThemeAwareCardTextColor(themeState);
-        final secondaryTextColor = _getThemeAwareCardSecondaryTextColor(
-          themeState,
-        );
-        final iconColor = _getThemeAwareCardIconColor(themeState);
-
-        // Get location and metro station info from the first conversation
-        final firstConversation = conversations.first;
-        final hasLocation =
-            firstConversation.locationNameUz != null ||
-            firstConversation.locationNameRu != null ||
-            firstConversation.locationNameEn != null;
-        final hasSubwayStation =
-            firstConversation.subwayStationNameUz != null ||
-            firstConversation.subwayStationNameRu != null ||
-            firstConversation.subwayStationNameEn != null;
-
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          color: cardColor,
-          elevation: 6,
-          shadowColor: Colors.black.withValues(alpha: 0.15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            children: [
-              // Group header
-              ListTile(
-                onTap: () {
-                  HapticFeedbackUtils.impact();
-                  setState(() {
-                    _expandedGroups[listingId] = !isExpanded;
-                  });
-                },
-                title: Text(
-                  listingTitle,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: textColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${conversations.length} ${conversations.length == 1 ? LanguageAwareStringHelper.getCurrent(context, "conversation_count") : LanguageAwareStringHelper.getCurrent(context, "conversations_count")}',
-                      style: TextStyle(fontSize: 12, color: secondaryTextColor),
-                    ),
-                    // Location and Metro Station Information
-                    if (hasLocation || hasSubwayStation) ...[
-                      const SizedBox(height: 8),
-                      ConversationLocationInfo(
-                        conversation: firstConversation,
-                        textColor: secondaryTextColor,
-                        showPrice: false,
-                      ),
-                    ],
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Unread count indicator for the group
-                    if (_getGroupUnreadCount(conversations) > 0) ...[
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: const BoxDecoration(
-                          color: AppColors.success,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            "${_getGroupUnreadCount(conversations)}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    AnimatedRotation(
-                      turns: isExpanded ? 0.0 : 0.5,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      child: Icon(Icons.expand_less, color: iconColor),
-                    ),
-                  ],
-                ),
-              ),
-              // Group content with animation
-              AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child:
-                    isExpanded
-                        ? Column(
-                          children: [
-                            const Divider(height: 1),
-                            ...conversations.map(
-                              (conversation) => ConversationTile(
-                                conversation: conversation,
-                                currentUserId: widget.currentUserId,
-                                onTap:
-                                    () =>
-                                        widget.onConversationTap(conversation),
-                                isGrouped:
-                                    true, // Add this parameter to style differently
-                              ),
-                            ),
-                          ],
-                        )
-                        : const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  int _getGroupUnreadCount(List<ConversationSummary> conversations) {
-    return conversations.fold(0, (sum, conversation) {
-      if (conversation.unreadCount != null &&
-          conversation.unreadCount! > 0 &&
-          widget.currentUserId != null &&
-          conversation.lastMessageSenderId != widget.currentUserId) {
-        return sum + conversation.unreadCount!;
-      }
-      return sum;
-    });
-  }
-
-  /// Get theme-aware card background color
-  Color _getThemeAwareCardColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.white; // White cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.card; // Blue cards for blue theme
-    }
-    return Colors.white; // Default to white
-  }
-
-  /// Get theme-aware card text color
-  Color _getThemeAwareCardTextColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black text on white cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .textPrimary; // White text on blue cards for blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  /// Get theme-aware card secondary text color
-  Color _getThemeAwareCardSecondaryTextColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.grey[600]!; // Grey text on white cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .textSecondary; // Light blue text on blue cards for blue theme
-    }
-    return Colors.grey[600]!; // Default to grey
-  }
-
-  /// Get theme-aware card icon color
-  Color _getThemeAwareCardIconColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.grey[600]!; // Grey icons on white cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .iconPrimary; // White icons on blue cards for blue theme
-    }
-    return Colors.grey[600]!; // Default to grey
-  }
-
-}
-
-class OutgoingConversationTile extends StatelessWidget {
-
-  const OutgoingConversationTile({
-    required this.conversation, required this.onTap, super.key,
-    this.currentUserId,
-  });
-  final ConversationSummary conversation;
-  final VoidCallback onTap;
-  final int? currentUserId;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, child) {
-        final themeState = ThemeState();
-        final cardColor = _getThemeAwareCardColor(themeState);
-        final textColor = _getThemeAwareCardTextColor(themeState);
-        final secondaryTextColor = _getThemeAwareCardSecondaryTextColor(
-          themeState,
-        );
-        final iconColor = _getThemeAwareCardIconColor(themeState);
-        final avatarColor = _getThemeAwareAvatarColor(themeState);
-        final avatarIconColor = _getThemeAwareAvatarIconColor(themeState);
-
-        // Check if we have location or metro station data
-        final hasLocation =
-            conversation.locationNameUz != null ||
-            conversation.locationNameRu != null ||
-            conversation.locationNameEn != null;
-        final hasSubwayStation =
-            conversation.subwayStationNameUz != null ||
-            conversation.subwayStationNameRu != null ||
-            conversation.subwayStationNameEn != null;
-
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          color: cardColor,
-          elevation: 6,
-          shadowColor: Colors.black.withValues(alpha: 0.15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: ListTile(
-            onTap: onTap,
-            leading: conversation.otherUserAvatar != null
-                ? ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: conversation.otherUserAvatar!,
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 80,
-                      memCacheHeight: 80,
-                      placeholder:
-                          (context, url) => Center(
-                            child: ConversationAvatarContent(
-                              conversation: conversation,
-                              iconColor: avatarIconColor,
-                            ),
-                          ),
-                      errorWidget:
-                          (context, url, error) => CircleAvatar(
-                            backgroundColor: avatarColor,
-                            child: ConversationAvatarContent(
-                              conversation: conversation,
-                              iconColor: avatarIconColor,
-                            ),
-                          ),
-                    ),
-                  )
-                : CircleAvatar(
-                    backgroundColor: avatarColor,
-                    child: ConversationAvatarContent(
-                      conversation: conversation,
-                      iconColor: avatarIconColor,
-                    ),
-                  ),
-            title: Text(
-              conversation.listingTitle ?? "Listing #${conversation.listingId}",
-              style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Location and Metro Station Information
-                if (hasLocation || hasSubwayStation) ...[
-                  ConversationLocationInfo(
-                    conversation: conversation,
-                    textColor: secondaryTextColor,
-                    showPrice: true,
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                // Last message content
-                if (conversation.lastMessageContent != null) ...[
-                  Text(
-                    conversation.lastMessageContent!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: secondaryTextColor),
-                  ),
-                  const SizedBox(height: 4),
-                ],
-                // Time and user info
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 12,
-                      color: secondaryTextColor,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatTime(
-                        context,
-                        conversation.lastMessageAt ?? conversation.updatedAt,
-                      ),
-                      style: TextStyle(fontSize: 12, color: secondaryTextColor),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Unread indicator - only show if there are unread messages AND current user is the addressee (not the sender)
-                if (conversation.unreadCount != null &&
-                    conversation.unreadCount! > 0 &&
-                    currentUserId != null &&
-                    conversation.lastMessageSenderId != currentUserId) ...[
-                  Container(
-                    width: conversation.unreadCount! > 1 ? 20 : 12,
-                    height: conversation.unreadCount! > 1 ? 20 : 12,
-                    decoration: const BoxDecoration(
-                      color:
-                          AppColors.success, // Keep green for unread indicator
-                      shape: BoxShape.circle,
-                    ),
-                    child:
-                        conversation.unreadCount! > 1
-                            ? Center(
-                              child: Text(
-                                "${conversation.unreadCount!}",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            )
-                            : null,
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                // Arrow icon
-                if (conversation.lastMessageAt != null)
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: iconColor.withValues(alpha: 0.5),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// Get theme-aware card background color
-  Color _getThemeAwareCardColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.white; // White cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.card; // Blue cards for blue theme
-    }
-    return Colors.white; // Default to white
-  }
-
-  /// Get theme-aware card text color
-  Color _getThemeAwareCardTextColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black text on white cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .textPrimary; // White text on blue cards for blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  /// Get theme-aware card secondary text color
-  Color _getThemeAwareCardSecondaryTextColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.grey[600]!; // Grey text on white cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .textSecondary; // Light blue text on blue cards for blue theme
-    }
-    return Colors.grey[600]!; // Default to grey
-  }
-
-  /// Get theme-aware card icon color
-  Color _getThemeAwareCardIconColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.grey[600]!; // Grey icons on white cards for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .iconPrimary; // White icons on blue cards for blue theme
-    }
-    return Colors.grey[600]!; // Default to grey
-  }
-
-  /// Get theme-aware avatar background color
-  Color _getThemeAwareAvatarColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.grey[300]!; // Light grey avatar for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors.primary; // Blue avatar for blue theme
-    }
-    return Colors.grey[300]!; // Default to light grey
-  }
-
-  /// Get theme-aware avatar icon color
-  Color _getThemeAwareAvatarIconColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black icon on light grey avatar for light theme
-    } else if (themeState.isBlueTheme) {
-      return BlueThemeColors
-          .textPrimary; // White icon on blue avatar for blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  String _formatTime(BuildContext context, String dateTimeString) {
-    try {
-      final dateTime = DateTime.parse(dateTimeString).toLocal();
-      final now = DateTime.now();
-      final difference = now.difference(dateTime);
-
-      if (difference.inDays > 0) {
-        return AppDateUtils.formatDateWithMonth(context, dateTime);
-      } else if (difference.inHours > 0) {
-        return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-      } else if (difference.inMinutes > 0) {
-        return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-      } else {
-        return LanguageAwareStringHelper.getCurrent(context, "now");
-      }
-    } catch (e) {
-      return "";
-    }
   }
 }

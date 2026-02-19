@@ -2,6 +2,7 @@
 import "package:firebase_core/firebase_core.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter/services.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
@@ -17,7 +18,11 @@ import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/firebase_options.dart";
+import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
+import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/onboarding/onboarding_screen.dart";
 import "package:uy_dosh/presentation/widgets/animated_svg_logo.dart";
@@ -176,10 +181,67 @@ class _MyAppState extends State<MyApp> {
           supportedLocales: supportedLocales,
           locale: Locale(LanguageState().currentLanguage, ""),
           home: kSkipSplashScreen ? _getInitialScreen() : const SplashScreen(),
+          builder: (context, child) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<MessagingBloc>(
+                  create: (_) => MessagingBloc(getIt<IMessagingService>()),
+                ),
+                BlocProvider<CurrentUserProfileBloc>(
+                  create: (_) =>
+                      CurrentUserProfileBloc(getIt<IUserProfileService>()),
+                ),
+              ],
+              child: _BlocAuthListener(
+                child: child ?? const SizedBox.shrink(),
+              ),
+            );
+          },
         );
       },
     );
   }
+}
+
+/// Listens to authentication state and resets shared blocs on logout.
+class _BlocAuthListener extends StatefulWidget {
+  const _BlocAuthListener({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_BlocAuthListener> createState() => _BlocAuthListenerState();
+}
+
+class _BlocAuthListenerState extends State<_BlocAuthListener> {
+  bool _wasAuthenticated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _wasAuthenticated = AuthenticationState().isAuthenticated;
+    AuthenticationState().addListener(_onAuthStateChanged);
+  }
+
+  @override
+  void dispose() {
+    AuthenticationState().removeListener(_onAuthStateChanged);
+    super.dispose();
+  }
+
+  void _onAuthStateChanged() {
+    final isAuthenticated = AuthenticationState().isAuthenticated;
+    if (_wasAuthenticated && !isAuthenticated && mounted) {
+      context.read<CurrentUserProfileBloc>().add(
+            const CurrentUserProfileEvent.reset(),
+          );
+      context.read<MessagingBloc>().add(ClearConversations());
+    }
+    _wasAuthenticated = isAuthenticated;
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class SplashScreen extends StatefulWidget {

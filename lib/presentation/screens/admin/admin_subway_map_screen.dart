@@ -11,6 +11,7 @@ import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class _MapData {
@@ -703,7 +704,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       child: Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(context, "admin_subway_map_title"),
+          L10n.get("admin_subway_map_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [

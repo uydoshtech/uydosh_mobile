@@ -2,7 +2,6 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:http/http.dart" as http;
 import "package:share_plus/share_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:url_launcher/url_launcher.dart";
@@ -290,53 +289,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       setState(() {
         _isToggling = true;
       });
-      logger.d("🔄 Loading state set, button should now show loading...");
 
-      // Show loading state on button (no toast)
-      logger.d("🔄 Toggling listing status...");
-
-      // Hardcoded direct API call to the working endpoint
-      final token = await SessionManager.getToken();
-      if (token == null) {
-        throw Exception("No authentication token");
-      }
-
-      logger.d("🔄 Making direct API call to toggle listing...");
-      logger.d(
-        "🔄 URL: ${EnvironmentUtil.basePath}/listings/$listingId/toggle-active",
-      );
-      logger.d("🔄 Method: PATCH (correct method for updating resources)");
-      logger.d("🔄 Token: ${token.substring(0, 20)}...");
-      logger.d(
-        "🔄 Headers: Authorization: Bearer ${token.substring(0, 20)}..., Content-Type: application/json",
-      );
-
-      logger.d("🔄 Sending HTTP PATCH request...");
-      final response = await http.patch(
-        Uri.parse(
-          "${EnvironmentUtil.basePath}/listings/$listingId/toggle-active",
-        ),
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-      );
-
-      logger.d("🔄 HTTP request completed!");
-      logger.d("🔄 Response status code: ${response.statusCode}");
-      logger.d("🔄 Response headers: ${response.headers}");
-      logger.d("🔄 Response body length: ${response.body.length}");
-      logger.d("🔄 Response body: \"${response.body}\"");
-
-      if (response.statusCode == 200) {
-        logger.d("✅ SUCCESS: HTTP 200 response received");
-        logger.d("✅ Response indicates successful toggle");
-      } else {
-        logger.d("❌ ERROR: HTTP ${response.statusCode} response received");
-        logger.d("❌ This indicates the request failed");
-      }
-
-      final success = response.statusCode == 200;
+      final listingService = getIt<IListingService>();
+      final success = await listingService.toggleListingActive(listingId);
 
       if (success) {
         logger.d("✅ Toggle successful");
@@ -389,12 +344,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           "✅ Loading state reset, button should now be interactive again",
         );
       } else {
-        logger.d("❌ Toggle failed - HTTP status was not 200");
-        logger.d("❌ HTTP status: ${response.statusCode}");
-        logger.d("❌ Response body: \"${response.body}\"");
-        throw Exception(
-          "Failed to toggle listing active status - HTTP ${response.statusCode}",
-        );
+        throw Exception("Failed to toggle listing active status");
       }
     } catch (e) {
       logger.d("❌ Error toggling listing active status: $e");
@@ -1910,9 +1860,8 @@ L10n.get("feature_listing_error",
             children: [
               // Title on the left
               Expanded(
-                child: LanguageAwareStringHelper.getText(
+                child: L10n.text(
                   "listing_details",
-                  context,
                   style: Theme.of(context).appBarTheme.titleTextStyle,
                 ),
               ),

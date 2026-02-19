@@ -6,6 +6,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ListingViewsStatsScreen extends StatefulWidget {
@@ -92,10 +93,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "listing_views_stats_title",
-          ),
+          L10n.get("listing_views_stats_title"),
           style: TextStyle(color: _getTextColor()),
         ),
         leading: IconButton(
@@ -115,10 +113,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
                   CircularProgressIndicator(color: _getIconColor()),
                   const SizedBox(height: 16),
                   Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "loading_listing_details",
-                    ),
+                    L10n.get("loading_listing_details"),
                     style: TextStyle(color: _getSecondaryTextColor()),
                   ),
                 ],
@@ -140,10 +135,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "error_loading_view_stats",
-                      ),
+                      L10n.get("error_loading_view_stats"),
                       textAlign: TextAlign.center,
                       style: TextStyle(color: _getTextColor()),
                     ),
@@ -151,10 +143,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
                     TextButton(
                       onPressed: _loadStats,
                       child: Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "retry",
-                        ),
+                        L10n.get("retry"),
                       ),
                     ),
                   ],
@@ -175,10 +164,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "listing_views_stats_empty",
-                    ),
+                    L10n.get("listing_views_stats_empty"),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: _getSecondaryTextColor(),
@@ -225,10 +211,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
                     ),
                   ),
                   trailing: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "listing_views_by_others",
-                    ).replaceAll("{count}", count.toString()),
+                    L10n.get("listing_views_by_others").replaceAll("{count}", count.toString()),
                     style: TextStyle(
                       color: _getSecondaryTextColor(),
                       fontSize: 14,

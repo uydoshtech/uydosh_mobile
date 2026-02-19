@@ -20,6 +20,7 @@ import "package:uy_dosh/presentation/blocs/listings_state.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
@@ -395,9 +396,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         children: [
           Icon(Icons.home, size: 64, color: _getHomeIconColor()),
           const SizedBox(height: 16),
-          LanguageAwareStringHelper.getText(
+          L10n.text(
             "welcome_title",
-            context,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -405,9 +405,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             ),
           ),
           const SizedBox(height: 8),
-          LanguageAwareStringHelper.getText(
+          L10n.text(
             "welcome_subtitle",
-            context,
             style: TextStyle(fontSize: 16, color: _getWelcomeSubtitleColor()),
           ),
         ],
@@ -422,9 +421,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         children: [
           Icon(Icons.search_off, size: 64, color: _getHomeIconColor()),
           const SizedBox(height: 16),
-          LanguageAwareStringHelper.getText(
+          L10n.text(
             "no_search_results",
-            context,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -432,9 +430,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             ),
           ),
           const SizedBox(height: 8),
-          LanguageAwareStringHelper.getText(
+          L10n.text(
             "try_refining_search",
-            context,
             style: TextStyle(fontSize: 16, color: _getWelcomeSubtitleColor()),
           ),
           const SizedBox(height: 24),
@@ -457,10 +454,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               });
             },
             icon: Icons.search,
-            text: LanguageAwareStringHelper.getCurrent(
-              context,
-              "refine_search",
-            ),
+            text: L10n.get("refine_search"),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             textStyle: const TextStyle(fontSize: 16),
           ),
@@ -484,14 +478,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         isLoading: false,
         hasError: false,
         isEmpty: true,
-        emptyMessage: LanguageAwareStringHelper.getCurrent(
-          context,
-          "no_listings_found",
-        ),
-        emptySubtitle: LanguageAwareStringHelper.getCurrent(
-          context,
-          "try_refreshing",
-        ),
+        emptyMessage: L10n.get("no_listings_found"),
+        emptySubtitle: L10n.get("try_refreshing"),
         emptyIcon: Icons.home_outlined,
         child: Container(), // This won"t be shown when empty
       );
@@ -540,7 +528,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Widget _buildLoadMoreIndicator() {
     return CenteredHouseLoadingIndicator(
-      text: LanguageAwareStringHelper.getCurrent(context, "loading_listings"),
+      text: L10n.get("loading_listings"),
     );
   }
 
@@ -600,10 +588,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               error: (_) => null,
             ),
         builder: (context, count) {
-          final baseTitle = LanguageAwareStringHelper.getCurrent(
-            context,
-            "search_results",
-          );
+          final baseTitle = L10n.get("search_results");
           final titleText =
               count == null ? baseTitle : "$baseTitle ($count)";
           return Text(

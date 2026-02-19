@@ -5,7 +5,7 @@ import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class PricePicker extends StatelessWidget {
 
@@ -130,7 +130,7 @@ class PricePicker extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        "/ ${LanguageAwareStringHelper.getCurrent(context, "month")}",
+                        "/ ${L10n.get("month")}",
                         style: TextStyle(
                           fontSize: 14,
                           color: textColor.withOpacity(0.7),

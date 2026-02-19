@@ -6,6 +6,7 @@ import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -16,7 +17,6 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
@@ -105,7 +105,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _userRoleLoaded = false;
   bool _refreshingRole = false;
   bool _userBlocked = false;
-  late final CurrentUserProfileBloc _currentUserProfileBloc;
   UserProfile? _cachedUserProfile;
   String? _cachedGoogleDisplayName;
   String? _cachedGooglePhotoUrl;
@@ -113,17 +112,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _currentUserProfileBloc = CurrentUserProfileBloc(
-      getIt<IUserProfileService>(),
-    );
     _loadUserRole();
     _loadCachedProfileData();
-  }
-
-  @override
-  void dispose() {
-    _currentUserProfileBloc.close();
-    super.dispose();
   }
 
   Future<void> _loadCachedProfileData() async {
@@ -144,10 +134,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     if (_cachedUserProfile == null &&
-        AuthenticationState().isAuthenticated) {
-      _currentUserProfileBloc.add(
-        const CurrentUserProfileEvent.fetchProfile(),
-      );
+        AuthenticationState().isAuthenticated &&
+        mounted) {
+      context.read<CurrentUserProfileBloc>().add(
+            const CurrentUserProfileEvent.fetchProfile(),
+          );
     }
   }
 
@@ -205,9 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => _currentUserProfileBloc,
-      child: BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
+    return BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
         listener: (context, state) {
           state.whenOrNull(
             loaded: (profile) {
@@ -287,10 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     (data.isLoading || data.hasError)) {
                   return Scaffold(
                     body: CenteredHouseLoadingIndicator(
-                      text: LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "loading",
-                      ),
+                      text: L10n.get("loading"),
                     ),
                   );
                 }
@@ -299,10 +285,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     data.errorMessage == profileNotFoundErrorCode) {
                   return Scaffold(
                     body: CenteredHouseLoadingIndicator(
-                      text: LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "loading",
-                      ),
+                      text: L10n.get("loading"),
                     ),
                   );
                 }
@@ -311,7 +294,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 return Scaffold(
                   appBar: AppBar(
                     title: Text(
-                      LanguageAwareStringHelper.getCurrent(context, "profile"),
+                      L10n.get("profile"),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -321,10 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ActionDropdownMenu(
                         items: _buildActionMenuItems(context),
                         icon: Icons.more_vert,
-                        tooltip: LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "menu_settings",
-                        ),
+                        tooltip: L10n.get("menu_settings"),
                         padding: const EdgeInsets.only(right: 16.0),
                       ),
                     ],
@@ -338,7 +318,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           },
         ),
-      ),
     );
   }
 
@@ -403,10 +382,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (_userBlocked) ...[
                       const SizedBox(height: 4),
                       Tooltip(
-                        message: LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "admin_user_detail_blocked",
-                        ),
+                        message: L10n.get("admin_user_detail_blocked"),
                         child: Icon(
                           Icons.block,
                           color: Theme.of(context).colorScheme.error,
@@ -458,10 +434,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(width: 12),
                       Flexible(
                         child: Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "profile",
-                          ),
+                          L10n.get("profile"),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -488,10 +461,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "name",
-                                    ),
+                                    L10n.get("name"),
                                     style: TextStyle(
                                       fontSize: 14,
                                       color:
@@ -530,10 +500,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "gender",
-                                    ),
+                                    L10n.get("gender"),
                                     style: TextStyle(
                                       fontSize: 14,
                                       color:
@@ -571,10 +538,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "im_from",
-                                  ),
+                                  L10n.get("im_from"),
                                   style: TextStyle(
                                     fontSize: 14,
                                     color:
@@ -586,10 +550,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Text(
                                   profile.region != null
                                       ? _getLocalizedRegionName(profile.region!)
-                                      : LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "not_specified",
-                                      ),
+                                      : L10n.get("not_specified"),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -616,10 +577,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "university",
-                                  ),
+                                  L10n.get("university"),
                                   style: TextStyle(
                                     fontSize: 14,
                                     color:
@@ -633,10 +591,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ? _getLocalizedUniversityName(
                                         profile.university!,
                                       )
-                                      : LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "not_specified",
-                                      ),
+                                      : L10n.get("not_specified"),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -663,10 +618,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "about_me",
-                                  ),
+                                  L10n.get("about_me"),
                                   style: TextStyle(
                                     fontSize: 14,
                                     color:
@@ -679,10 +631,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   profile.aboutMe != null &&
                                           profile.aboutMe!.isNotEmpty
                                       ? profile.aboutMe!
-                                      : LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "not_specified",
-                                      ),
+                                      : L10n.get("not_specified"),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -721,10 +670,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "telegram",
-                                      ),
+                                      L10n.get("telegram"),
                                       style: TextStyle(
                                         fontSize: 14,
                                         color:
@@ -737,10 +683,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       profile.telegram != null &&
                                               profile.telegram!.isNotEmpty
                                           ? "@${profile.telegram!}"
-                                          : LanguageAwareStringHelper.getCurrent(
-                                            context,
-                                            "not_specified",
-                                          ),
+                                      : L10n.get("not_specified"),
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -780,10 +723,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "rating",
-                                    ),
+                                    L10n.get("rating"),
                                     style: TextStyle(
                                       fontSize: 14,
                                       color:
@@ -847,10 +787,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(width: 12),
                         Flexible(
                           child: Text(
-                            LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "lifestyle_preferences",
-                            ),
+                            L10n.get("lifestyle_preferences"),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -865,10 +802,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.wakeupTime != null) ...[
                           _buildProfileField(
                             icon: Icons.wb_sunny,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "wakeup_time",
-                            ),
+                            label: L10n.get("wakeup_time"),
                             value: _getTimePreferenceText(
                               profile.wakeupTime!,
                               context,
@@ -882,10 +816,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.sleepTime != null) ...[
                           _buildProfileField(
                             icon: Icons.bedtime,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "sleep_time",
-                            ),
+                            label: L10n.get("sleep_time"),
                             value: _getTimePreferenceText(
                               profile.sleepTime!,
                               context,
@@ -899,20 +830,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.employed != null) ...[
                           _buildProfileField(
                             icon: Icons.work,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "employed",
-                            ),
+                            label: L10n.get("employed"),
                             value:
                                 profile.employed!
-                                    ? LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "yes",
-                                    )
-                                    : LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "no",
-                                    ),
+                                    ? L10n.get("yes")
+                                    : L10n.get("no"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -922,10 +844,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.cleanliness != null) ...[
                           _buildProfileField(
                             icon: Icons.cleaning_services,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "cleanliness",
-                            ),
+                            label: L10n.get("cleanliness"),
                             value: _getCleanlinessText(
                               profile.cleanliness!,
                               context,
@@ -939,10 +858,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.noiseLevel != null) ...[
                           _buildProfileField(
                             icon: Icons.volume_up,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "noise_level",
-                            ),
+                            label: L10n.get("noise_level"),
                             value: _getNoiseLevelText(
                               profile.noiseLevel!,
                               context,
@@ -956,10 +872,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.sociability != null) ...[
                           _buildProfileField(
                             icon: Icons.people,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "sociability",
-                            ),
+                            label: L10n.get("sociability"),
                             value: _getSociabilityText(
                               profile.sociability!,
                               context,
@@ -973,20 +886,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.guestsAllowed != null) ...[
                           _buildProfileField(
                             icon: Icons.group_add,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "guests_allowed",
-                            ),
+                            label: L10n.get("guests_allowed"),
                             value:
                                 profile.guestsAllowed!
-                                    ? LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "yes",
-                                    )
-                                    : LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "no",
-                                    ),
+                                    ? L10n.get("yes")
+                                    : L10n.get("no"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -996,10 +900,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.smokingPreference != null) ...[
                           _buildProfileField(
                             icon: Icons.smoking_rooms,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "smoking_preference",
-                            ),
+                            label: L10n.get("smoking_preference"),
                             value: _getSmokingPreferenceText(
                               profile.smokingPreference!,
                               context,
@@ -1013,10 +914,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.alcoholPreference != null) ...[
                           _buildProfileField(
                             icon: Icons.local_bar,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "alcohol_preference",
-                            ),
+                            label: L10n.get("alcohol_preference"),
                             value: _getAlcoholPreferenceText(
                               profile.alcoholPreference!,
                               context,
@@ -1030,20 +928,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (profile.cookingHabits != null) ...[
                           _buildProfileField(
                             icon: Icons.restaurant,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "cooking_habits",
-                            ),
+                            label: L10n.get("cooking_habits"),
                             value:
                                 profile.cookingHabits!
-                                    ? LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "cook",
-                                    )
-                                    : LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "dont_cook",
-                                    ),
+                                    ? L10n.get("cook")
+                                    : L10n.get("dont_cook"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -1053,20 +942,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       if (profile.petsPreference != null) ...[
                         _buildProfileField(
                           icon: Icons.pets,
-                          label: LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "pets_preference",
-                          ),
+                          label: L10n.get("pets_preference"),
                           value:
                               profile.petsPreference!
-                                  ? LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "pets_okay",
-                                  )
-                                  : LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "pets_not_okay",
-                                  ),
+                                  ? L10n.get("pets_okay")
+                                  : L10n.get("pets_not_okay"),
                           context: context,
                         ),
                         const SizedBox(height: 16),
@@ -1112,10 +992,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "error_loading_profile",
-            ),
+            L10n.get("error_loading_profile"),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -1124,7 +1001,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            LanguageAwareStringHelper.getCurrent(context, "error_generic"),
+            L10n.get("error_generic"),
             style: TextStyle(
               fontSize: 14,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -1138,7 +1015,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const CurrentUserProfileEvent.fetchProfile(),
               );
             },
-            child: Text(LanguageAwareStringHelper.getCurrent(context, "retry")),
+            child: Text(L10n.get("retry")),
           ),
         ],
       ),
@@ -1178,10 +1055,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
                 Expanded(
                   child: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "profile_completion",
-                    ),
+                    L10n.get("profile_completion"),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -1199,10 +1073,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "profile_completion_hint",
-              ),
+              L10n.get("profile_completion_hint"),
               style: TextStyle(
                 fontSize: 13,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -1248,7 +1119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   child: Text(
-                    LanguageAwareStringHelper.getCurrent(context, "complete_profile"),
+                    L10n.get("complete_profile"),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -1292,11 +1163,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getGenderText(int gender, BuildContext context) {
     switch (gender) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(context, "male");
+        return L10n.get("male");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "female");
+        return L10n.get("female");
       default:
-        return LanguageAwareStringHelper.getCurrent(context, "other");
+        return L10n.get("other");
     }
   }
 
@@ -1314,15 +1185,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getRoleLabel(String? role, BuildContext context) {
     switch (role) {
       case "tenant":
-        return LanguageAwareStringHelper.getCurrent(context, "role_tenant");
+        return L10n.get("role_tenant");
       case "landlord":
-        return LanguageAwareStringHelper.getCurrent(context, "role_landlord");
+        return L10n.get("role_landlord");
       case "manager":
-        return LanguageAwareStringHelper.getCurrent(context, "role_manager");
+        return L10n.get("role_manager");
       case "admin":
-        return LanguageAwareStringHelper.getCurrent(context, "role_admin");
+        return L10n.get("role_admin");
       default:
-        return LanguageAwareStringHelper.getCurrent(context, "not_specified");
+        return L10n.get("not_specified");
     }
   }
 
@@ -1449,7 +1320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  LanguageAwareStringHelper.getCurrent(context, "logout"),
+                  L10n.get("logout"),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1501,10 +1372,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "menu_my_listings",
-                  ),
+                  L10n.get("menu_my_listings"),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1551,10 +1419,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "menu_admin_panel",
-                  ),
+                  L10n.get("menu_admin_panel"),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1607,10 +1472,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "manage_property",
-                  ),
+                  L10n.get("manage_property"),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1636,10 +1498,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       onConfirm: () async {
         // Show success toast immediately before logout to avoid context issues
-        final message = LanguageAwareStringHelper.getCurrent(
-          context,
-          "logout_success",
-        );
+        final message = L10n.get("logout_success");
         ToastTheme.showSuccess(context, message: message);
 
         // Then perform logout
@@ -1669,10 +1528,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "delete_account",
-                  ),
+                  L10n.get("delete_account"),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1702,19 +1558,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (!context.mounted) return;
           ToastTheme.showError(
             context,
-            message: LanguageAwareStringHelper.getCurrent(
-              context,
-              "delete_account_blocked",
-            ),
+            message: L10n.get("delete_account_blocked"),
           );
         } catch (e) {
           if (!context.mounted) return;
           ToastTheme.showError(
             context,
-            message: LanguageAwareStringHelper.getCurrent(
-              context,
-              "delete_account_error",
-            ),
+            message: L10n.get("delete_account_error"),
           );
         }
       },
@@ -1776,15 +1626,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getCleanlinessText(int value, BuildContext context) {
     switch (value) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(context, "very_messy");
+        return L10n.get("very_messy");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "messy");
+        return L10n.get("messy");
       case 3:
-        return LanguageAwareStringHelper.getCurrent(context, "average");
+        return L10n.get("average");
       case 4:
-        return LanguageAwareStringHelper.getCurrent(context, "clean");
+        return L10n.get("clean");
       case 5:
-        return LanguageAwareStringHelper.getCurrent(context, "very_clean");
+        return L10n.get("very_clean");
       default:
         return value.toString();
     }
@@ -1793,15 +1643,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getNoiseLevelText(int value, BuildContext context) {
     switch (value) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(context, "very_quiet");
+        return L10n.get("very_quiet");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "quiet");
+        return L10n.get("quiet");
       case 3:
-        return LanguageAwareStringHelper.getCurrent(context, "average");
+        return L10n.get("average");
       case 4:
-        return LanguageAwareStringHelper.getCurrent(context, "loud");
+        return L10n.get("loud");
       case 5:
-        return LanguageAwareStringHelper.getCurrent(context, "very_loud");
+        return L10n.get("very_loud");
       default:
         return value.toString();
     }
@@ -1810,21 +1660,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getSociabilityText(int value, BuildContext context) {
     switch (value) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "very_introverted",
-        );
+        return L10n.get("very_introverted");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "introverted");
+        return L10n.get("introverted");
       case 3:
-        return LanguageAwareStringHelper.getCurrent(context, "balanced");
+        return L10n.get("balanced");
       case 4:
-        return LanguageAwareStringHelper.getCurrent(context, "extroverted");
+        return L10n.get("extroverted");
       case 5:
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "very_extroverted",
-        );
+        return L10n.get("very_extroverted");
       default:
         return value.toString();
     }
@@ -1833,14 +1677,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getSmokingPreferenceText(String value, BuildContext context) {
     switch (value) {
       case "non-smoker":
-        return LanguageAwareStringHelper.getCurrent(context, "non_smoker");
+        return L10n.get("non_smoker");
       case "occasional":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "occasional_smoker",
-        );
+        return L10n.get("occasional_smoker");
       case "regular":
-        return LanguageAwareStringHelper.getCurrent(context, "regular_smoker");
+        return L10n.get("regular_smoker");
       default:
         return value;
     }
@@ -1849,14 +1690,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getAlcoholPreferenceText(String value, BuildContext context) {
     switch (value) {
       case "non-drinker":
-        return LanguageAwareStringHelper.getCurrent(context, "non_drinker");
+        return L10n.get("non_drinker");
       case "occasional":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "occasional_drinker",
-        );
+        return L10n.get("occasional_drinker");
       case "regular":
-        return LanguageAwareStringHelper.getCurrent(context, "regular_drinker");
+        return L10n.get("regular_drinker");
       default:
         return value;
     }
@@ -1866,11 +1704,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getTimePreferenceText(String value, BuildContext context) {
     switch (value) {
       case "morning":
-        return LanguageAwareStringHelper.getCurrent(context, "morning");
+        return L10n.get("morning");
       case "evening":
-        return LanguageAwareStringHelper.getCurrent(context, "evening");
+        return L10n.get("evening");
       case "night":
-        return LanguageAwareStringHelper.getCurrent(context, "night");
+        return L10n.get("night");
       default:
         return value;
     }
@@ -1909,10 +1747,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           )
                           : ToastTheme.showInfo(
                             context,
-                            message: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "profile_not_loaded_yet",
-                            ),
+                            message: L10n.get("profile_not_loaded_yet"),
                           ),
               loading:
                   (_) =>
@@ -1923,10 +1758,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           )
                           : ToastTheme.showInfo(
                             context,
-                            message: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "profile_still_loading",
-                            ),
+                            message: L10n.get("profile_still_loading"),
                           ),
               loaded: (loadedState) async {
                 await _openEditProfileScreen(context, loadedState.profile);
@@ -1940,19 +1772,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           )
                           : ToastTheme.showError(
                             context,
-                            message: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "error_with_message",
-                            ).replaceAll("{message}", errorState.message),
+                            message: L10n.get("error_with_message").replaceAll("{message}", errorState.message),
                           ),
             );
           } catch (e) {
             ToastTheme.showError(
               context,
-              message: LanguageAwareStringHelper.getCurrent(
-                context,
-                "error_opening_edit_screen",
-              ).replaceAll("{error}", e.toString()),
+              message: L10n.get("error_opening_edit_screen").replaceAll("{error}", e.toString()),
             );
           }
         },

@@ -6,11 +6,9 @@
  */
 
 import "package:dio/dio.dart";
-import "package:injectable/injectable.dart";
 import "package:uy_dosh/base/api/auth_token_repository_i.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 
-@lazySingleton
 class CustomOAuthInterceptor extends Interceptor {
   const CustomOAuthInterceptor({required this.tokenRepo, required this.dio});
 

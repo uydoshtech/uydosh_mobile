@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
@@ -295,9 +296,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     String? nameEn,
     String? shortName,
   }) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
+    final currentLanguage = L10n.currentLanguage;
 
     switch (currentLanguage) {
       case "uz":
@@ -361,7 +360,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       }
     }
 
-    return LanguageAwareStringHelper.getCurrent(context, titleKey);
+    return L10n.get(titleKey);
   }
 
   /// Update title field with generated title
@@ -460,9 +459,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       appBar:
           widget.showAppBar
               ? AppBar(
-                title: LanguageAwareStringHelper.getText(
+                title: L10n.text(
                   "create_listing_title",
-                  context,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -623,9 +621,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                   const MLetterIcon(color: Colors.grey, size: 20),
                                   const SizedBox(width: 6),
                                   Flexible(
-                                    child: LanguageAwareStringHelper.getText(
+                                    child: L10n.text(
                                       "select_metro_line_optional",
-                                      context,
                                       style: TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
@@ -643,27 +640,19 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             ...([
                               MetroCache.getLineName(
                                 1,
-                                LanguageAwareStringHelper.getCurrentLanguage(
-                                  context,
-                                ),
+                                L10n.currentLanguage,
                               ),
                               MetroCache.getLineName(
                                 2,
-                                LanguageAwareStringHelper.getCurrentLanguage(
-                                  context,
-                                ),
+                                L10n.currentLanguage,
                               ),
                               MetroCache.getLineName(
                                 3,
-                                LanguageAwareStringHelper.getCurrentLanguage(
-                                  context,
-                                ),
+                                L10n.currentLanguage,
                               ),
                               MetroCache.getLineName(
                                 4,
-                                LanguageAwareStringHelper.getCurrentLanguage(
-                                  context,
-                                ),
+                                L10n.currentLanguage,
                               ),
                             ].asMap().entries.map(
                               (entry) => Center(
@@ -809,10 +798,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                           height: 80,
                           child: Center(
                             child: Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "select_metro_line_title",
-                              ),
+                              L10n.get("select_metro_line_title"),
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -874,9 +860,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         const SizedBox(height: 10), // Space between price range and description
 
         // Description Field
-        LanguageAwareStringHelper.getInputField(
+        L10n.inputField(
           "listing_description_hint",
-          context,
           builder:
               (hintText) => Container(
                 child: TextFormField(
@@ -1040,9 +1025,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           children: [
             // Move-in Date Field (50% width)
             Expanded(
-              child: LanguageAwareStringHelper.getInputField(
+              child: L10n.inputField(
                 "quick_question_move_in_date",
-                context,
                 builder:
                     (hintText) => Container(
                       child: ValueListenableBuilder<TextEditingValue>(
@@ -1050,14 +1034,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                         builder: (context, value, child) {
                           final isEmpty = value.text.isEmpty;
                           final moveInDateLabel =
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "move_in_date_label",
-                              );
-                          final anyDateText = LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "any_date",
-                          ).replaceAll("\n", " ");
+                              L10n.get("move_in_date_label");
+                          final anyDateText = L10n.get("any_date").replaceAll("\n", " ");
                           final displayValue = isEmpty ? anyDateText : value.text;
                           final displayText = "$moveInDateLabel\n$displayValue";
                           final displayStyle = TextStyle(
@@ -1105,20 +1083,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                     firstDate: firstDate,
                                     lastDate: lastDate,
                                     helpText:
-                                        LanguageAwareStringHelper.getCurrent(
-                                          context,
-                                          "select_date",
-                                        ),
-                                    cancelText:
-                                        LanguageAwareStringHelper.getCurrent(
-                                          context,
-                                          "cancel",
-                                        ),
-                                    confirmText:
-                                        LanguageAwareStringHelper.getCurrent(
-                                          context,
-                                          "ok",
-                                        ),
+                                        L10n.get("select_date"),
+                                        cancelText:
+                                        L10n.get("cancel"),
+                                        confirmText:
+                                        L10n.get("ok"),
                                   );
                               if (picked != null) {
                                 _moveInDateValue =
@@ -1238,10 +1207,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "private_room",
-                              ).replaceFirst(" ", "\n"),
+                              L10n.get("private_room").replaceFirst(" ", "\n"),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
@@ -1323,8 +1289,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             onPressed:
                 _isSubmitting ? null : _submitForm, // Disable when submitting
             icon: _isSubmitting ? Icons.hourglass_empty : Icons.add,
-            text: LanguageAwareStringHelper.getCurrent(
-              context,
+            text: L10n.get(
               _isSubmitting ? "creating_listing" : "create_listing_button",
             ),
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1343,10 +1308,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "unauthenticated_listing_prompt",
-            ),
+            L10n.get("unauthenticated_listing_prompt"),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,
@@ -1363,10 +1325,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               );
             },
             icon: Icons.login,
-            text: LanguageAwareStringHelper.getCurrent(
-              context,
-              "authenticate_to_post_listing",
-            ),
+            text: L10n.get("authenticate_to_post_listing"),
             padding: const EdgeInsets.symmetric(vertical: 24),
             textStyle: const TextStyle(fontSize: 18),
             iconSize: 24,
@@ -1390,10 +1349,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (title.isEmpty) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "title_required",
-        ),
+        message: L10n.get("title_required"),
       );
       return;
     }
@@ -1401,10 +1357,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (title.length > 50) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "title_too_long",
-        ),
+        message: L10n.get("title_too_long"),
       );
       return;
     }
@@ -1413,10 +1366,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (description.isEmpty) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "description_required",
-        ),
+        message: L10n.get("description_required"),
       );
       setState(() {
         _showDescriptionError = true;
@@ -1431,10 +1381,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (description.length > 1000) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "description_too_long",
-        ),
+        message: L10n.get("description_too_long"),
       );
       return;
     }
@@ -1443,10 +1390,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (_selectedLocationIndex < 0) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "location_required",
-        ),
+        message: L10n.get("location_required"),
       );
       setState(() {
         _showLocationError = true;
@@ -1549,10 +1493,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       // Show success message
       ToastTheme.showSuccess(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "listing_created_success",
-        ),
+        message: L10n.get("listing_created_success"),
       );
 
       // Clear form
@@ -1611,17 +1552,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       }
     } catch (e) {
       logger.d("Error creating listing: $e");
-      var errorMessage = LanguageAwareStringHelper.getCurrent(
-        context,
-        "error_creating_listing",
-      );
+      var errorMessage = L10n.get("error_creating_listing");
 
       // Check if it"s an authentication error
       if (e.toString().contains("401")) {
-        errorMessage = LanguageAwareStringHelper.getCurrent(
-          context,
-          "authentication_required",
-        );
+        errorMessage = L10n.get("authentication_required");
       }
 
       ToastTheme.showError(context, message: errorMessage);

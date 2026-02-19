@@ -4,7 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// Gender picker - same pattern as LocationPicker: uses persistent scroll
 /// controller (from parent or own) so the wheel scrolls smoothly with sound.
@@ -135,9 +135,8 @@ class _GenderPickerState extends State<GenderPicker> {
                       Icon(Icons.male, color: _getGenderColor(1), size: 22),
                       const SizedBox(width: 6),
                       Flexible(
-                        child: LanguageAwareStringHelper.getText(
+                        child: L10n.text(
                           "male",
-                          context,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -155,9 +154,8 @@ class _GenderPickerState extends State<GenderPicker> {
                       Icon(Icons.female, color: _getGenderColor(2), size: 22),
                       const SizedBox(width: 6),
                       Flexible(
-                        child: LanguageAwareStringHelper.getText(
+                        child: L10n.text(
                           "female",
-                          context,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -180,9 +178,8 @@ class _GenderPickerState extends State<GenderPicker> {
                         ),
                         const SizedBox(width: 6),
                         Flexible(
-                          child: LanguageAwareStringHelper.getText(
+                          child: L10n.text(
                             "not_selected",
-                            context,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,

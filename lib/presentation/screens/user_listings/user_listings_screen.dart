@@ -20,7 +20,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -141,10 +141,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar(
-        title: LanguageAwareStringHelper.getCurrent(
-          context,
-          "menu_my_listings",
-        ),
+        title: L10n.get("menu_my_listings"),
         showBackButton: true,
       ),
       body: BlocListener<ListingsBloc, ListingsState>(
@@ -249,7 +246,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           ThemeIconFactory.display(icon: Icons.home_outlined),
           const SizedBox(height: 16),
           Text(
-            LanguageAwareStringHelper.getCurrent(context, "no_listings_found"),
+            L10n.get("no_listings_found"),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -284,10 +281,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
               );
             },
             icon: Icons.add,
-            text: LanguageAwareStringHelper.getCurrent(
-              context,
-              "create_listing",
-            ),
+            text: L10n.get("create_listing"),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
         ],
@@ -307,7 +301,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            LanguageAwareStringHelper.getCurrent(context, "error"),
+            L10n.get("error"),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -323,7 +317,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           const SizedBox(height: 24),
           GhostButtonFactory.text(
             onPressed: _onRefresh,
-            text: LanguageAwareStringHelper.getCurrent(context, "retry"),
+            text: L10n.get("retry"),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
         ],

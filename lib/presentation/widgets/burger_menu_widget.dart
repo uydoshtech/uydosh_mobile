@@ -14,7 +14,6 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
@@ -29,6 +28,7 @@ import "package:uy_dosh/presentation/screens/view_history/view_history_screen.da
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -74,7 +74,6 @@ class BurgerMenuWidget extends StatefulWidget {
 class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   String? _cachedGoogleDisplayName;
   String? _cachedGooglePhotoUrl;
-  late final CurrentUserProfileBloc _currentUserProfileBloc;
   // Theme-aware color helper methods
   Color _getTextColor() {
     final currentTheme = ThemeState().currentTheme;
@@ -165,21 +164,12 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   @override
   void initState() {
     super.initState();
-    _currentUserProfileBloc = CurrentUserProfileBloc(
-      getIt<IUserProfileService>(),
-    );
     _loadCachedGoogleProfile();
     // Listen to centralized authentication state changes
     AuthenticationState().addListener(() {
       if (!mounted) return;
       _loadCachedGoogleProfile();
     });
-  }
-
-  @override
-  void dispose() {
-    _currentUserProfileBloc.close();
-    super.dispose();
   }
 
   Future<void> _loadCachedGoogleProfile() async {
@@ -201,9 +191,10 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   void _maybeFetchProfile() {
     if (!AuthenticationState().isAuthenticated) return;
     if ((_cachedGoogleDisplayName ?? "").trim().isNotEmpty) return;
-    _currentUserProfileBloc.add(
-      const CurrentUserProfileEvent.fetchProfile(),
-    );
+    if (!mounted) return;
+    context.read<CurrentUserProfileBloc>().add(
+          const CurrentUserProfileEvent.fetchProfile(),
+        );
   }
 
   @override
@@ -289,9 +280,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                             ),
                             const SizedBox(height: 12),
                             // Profile Name below the logo
-                            BlocProvider(
-                              create: (context) => _currentUserProfileBloc,
-                              child: BlocSelector<
+                            BlocSelector<
                                 CurrentUserProfileBloc,
                                 CurrentUserProfileState,
                                 _BurgerMenuProfileData
@@ -344,10 +333,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
 
                                   if (data.isLoading) {
                                     return Text(
-                                      LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "loading...",
-                                      ),
+                                      L10n.get("loading..."),
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -358,10 +344,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
 
                                   if (data.hasError || data.profile == null) {
                                     return Text(
-                                      LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "user",
-                                      ),
+                                      L10n.get("user"),
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -375,10 +358,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                                       data.profile!.name;
                                   return Text(
                                     displayName ??
-                                        LanguageAwareStringHelper.getCurrent(
-                                          context,
-                                          "user",
-                                        ),
+                                        L10n.get("user"),
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -387,7 +367,6 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                                   );
                                 },
                               ),
-                            ),
                           ],
                         ),
                       ),
@@ -776,9 +755,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   }) {
     return UydoshMenuItem(
       icon: icon,
-      title: LanguageAwareStringHelper.getText(
+      title: L10n.text(
         titleKey,
-        context,
         style: TextStyle(
           fontWeight: FontWeight.w500,
           color: textColor ?? _getTextColor(),
@@ -786,9 +764,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       ),
       subtitle:
           subtitleKey != null
-              ? LanguageAwareStringHelper.getText(
+              ? L10n.text(
                 subtitleKey,
-                context,
                 style: TextStyle(
                   color: textColor ?? _getSecondaryTextColor(),
                 ),
@@ -809,10 +786,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
         Navigator.pop(context);
 
         // Show success toast immediately before logout to avoid context issues
-        final message = LanguageAwareStringHelper.getCurrent(
-          context,
-          "logout_success",
-        );
+        final message = L10n.get("logout_success");
         ToastTheme.showSuccess(context, message: message);
 
         // Then perform logout

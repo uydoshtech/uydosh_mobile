@@ -4,7 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// Listing type picker - same pattern as LocationPicker: uses persistent scroll
 /// controller (from parent or own) so the wheel scrolls smoothly with sound.
@@ -140,9 +140,8 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
                       ),
                       const SizedBox(width: 6),
                       Flexible(
-                        child: LanguageAwareStringHelper.getText(
+                        child: L10n.text(
                           "listing_type_roommate_needed",
-                          context,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -164,9 +163,8 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
                       ),
                       const SizedBox(width: 6),
                       Flexible(
-                        child: LanguageAwareStringHelper.getText(
+                        child: L10n.text(
                           "listing_type_room_needed",
-                          context,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -189,9 +187,8 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
                         ),
                         const SizedBox(width: 6),
                         Flexible(
-                          child: LanguageAwareStringHelper.getText(
+                          child: L10n.text(
                             "not_selected",
-                            context,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,

@@ -6,6 +6,7 @@ import "package:uy_dosh/base/constants/app_colors.dart"
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class CustomCurvedNavigationBar extends StatefulWidget {
@@ -82,7 +83,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
             listenable: LanguageState(),
             builder: (context, child) {
               return Text(
-                LanguageAwareStringHelper.getCurrent(context, labelKey),
+                L10n.get(labelKey),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.normal,
@@ -157,7 +158,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
             listenable: LanguageState(),
             builder: (context, child) {
               return Text(
-                LanguageAwareStringHelper.getCurrent(context, "conversations"),
+                L10n.get("conversations"),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.normal,

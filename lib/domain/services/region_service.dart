@@ -1,4 +1,3 @@
-import "package:injectable/injectable.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/cache/region_cache.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -8,7 +7,6 @@ abstract class IRegionService {
   Future<List<Region>> getRegions();
 }
 
-@injectable
 class RegionService implements IRegionService {
 
   RegionService(this._publicApiClient);

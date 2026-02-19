@@ -13,14 +13,12 @@ import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/create_listing/create_listing_screen.dart";
@@ -32,6 +30,7 @@ import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AppRouter {
@@ -265,10 +264,7 @@ class _MainNavigationState extends State<MainNavigation>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      LanguageAwareStringHelper.getCurrent(
-                        sheetContext,
-                        "complete_profile_prompt_title",
-                      ),
+                      L10n.get("complete_profile_prompt_title"),
                       style: Theme.of(sheetContext)
                           .textTheme
                           .titleLarge
@@ -279,10 +275,7 @@ class _MainNavigationState extends State<MainNavigation>
               ),
               const SizedBox(height: 8),
               Text(
-                LanguageAwareStringHelper.getCurrent(
-                  sheetContext,
-                  "complete_profile_prompt_body",
-                ),
+                L10n.get("complete_profile_prompt_body"),
                 style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
                 ),
@@ -320,10 +313,7 @@ class _MainNavigationState extends State<MainNavigation>
                         Navigator.of(sheetContext).pop();
                       },
                       child: Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          sheetContext,
-                          "complete_profile_prompt_later",
-                        ),
+                        L10n.get("complete_profile_prompt_later"),
                       ),
                     ),
                   ),
@@ -347,10 +337,7 @@ class _MainNavigationState extends State<MainNavigation>
                         }
                       },
                       child: Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          sheetContext,
-                          "complete_profile_prompt_cta",
-                        ),
+                        L10n.get("complete_profile_prompt_cta"),
                       ),
                     ),
                   ),
@@ -390,15 +377,7 @@ class _MainNavigationState extends State<MainNavigation>
           bloc.add(const ListingsEvent.searchListings(isRefresh: true));
           return bloc;
         },
-        child: BlocProvider(
-          create: (context) {
-            final messagingBloc = MessagingBloc(getIt<IMessagingService>());
-            // Initialize conversations to get unread count
-            messagingBloc.add(RefreshConversations());
-            return messagingBloc;
-          },
-          child: const HomeScreen(),
-        ),
+        child: const HomeScreen(),
       ),
       const FavoritesScreen(),
       const MessagesInboxScreen(
@@ -442,9 +421,8 @@ class _MainNavigationState extends State<MainNavigation>
   Widget _getAppBarTitle() {
     switch (_currentIndex) {
       case 0:
-        return LanguageAwareStringHelper.getText(
+        return L10n.text(
           "home",
-          context,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -452,9 +430,8 @@ class _MainNavigationState extends State<MainNavigation>
           ),
         );
       case 1:
-        return LanguageAwareStringHelper.getText(
+        return L10n.text(
           "favorites_title",
-          context,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -462,9 +439,8 @@ class _MainNavigationState extends State<MainNavigation>
           ),
         );
       case 2:
-        return LanguageAwareStringHelper.getText(
+        return L10n.text(
           "conversations",
-          context,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -472,9 +448,8 @@ class _MainNavigationState extends State<MainNavigation>
           ),
         );
       case 3:
-        return LanguageAwareStringHelper.getText(
+        return L10n.text(
           "create_listing_title",
-          context,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -551,10 +526,7 @@ class _MainNavigationState extends State<MainNavigation>
                             color: borderColor, // Same color as border
                             size: 24,
                           ),
-                          tooltip: LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "profile",
-                          ),
+                          tooltip: L10n.get("profile"),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(
                             minWidth: 32,
@@ -599,10 +571,7 @@ class _MainNavigationState extends State<MainNavigation>
                             );
                           },
                           icon: Icon(Icons.person, color: iconColor, size: 28),
-                          tooltip: LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "profile",
-                          ),
+                          tooltip: L10n.get("profile"),
                         ),
                         if (needsCompletion)
                           Positioned(

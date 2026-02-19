@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 
@@ -115,9 +116,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _getLocalizedThemeName(String themeCode) {
     switch (themeCode) {
       case AppTheme.blueTheme:
-        return LanguageAwareStringHelper.getCurrent(context, "blue_theme");
+        return L10n.get("blue_theme");
       default:
-        return LanguageAwareStringHelper.getCurrent(context, "light_theme");
+        return L10n.get("light_theme");
     }
   }
 
@@ -134,9 +135,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: LanguageAwareStringHelper.getText(
+        title: L10n.text(
           "settings",
-          context,
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color:
@@ -242,16 +242,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildLanguageMenuItem(BuildContext context) {
     return ListTile(
       leading: Icon(Icons.language, color: _getIconColor()),
-      title: LanguageAwareStringHelper.getText(
+      title: L10n.text(
         "menu_language",
-        context,
         style: TextStyle(fontWeight: FontWeight.w500, color: _getTextColor()),
       ),
       subtitle: ListenableBuilder(
         listenable: LanguageState(),
         builder: (context, child) {
           return Text(
-            LanguageAwareStringHelper.getCurrent(context, "current_language"),
+            L10n.get("current_language"),
             style: TextStyle(color: _getSecondaryTextColor()),
           );
         },
@@ -274,9 +273,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, child) {
         return ListTile(
           leading: Icon(Icons.palette, color: _getIconColor()),
-          title: LanguageAwareStringHelper.getText(
+          title: L10n.text(
             "theme",
-            context,
             style: TextStyle(
               fontWeight: FontWeight.w500,
               color: _getTextColor(),
@@ -297,8 +295,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     "theme_changed_to",
                     LanguageState().currentLanguage,
                     params: {
-                      "theme": LanguageAwareStringHelper.getCurrent(
-                        context,
+                      "theme": L10n.get(
                         ThemeState().isBlueTheme ? "blue_theme" : "light_theme",
                       ),
                     },
@@ -319,17 +316,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return UydoshToggle(
           icon: Icons.school,
           iconColor: _getIconColor(),
-          title: LanguageAwareStringHelper.getText(
+          title: L10n.text(
             "onboarding_toggle",
-            context,
             style: TextStyle(
               fontWeight: FontWeight.w500,
               color: _getTextColor(),
             ),
           ),
-          subtitle: LanguageAwareStringHelper.getText(
+          subtitle: L10n.text(
             "onboarding_toggle_description",
-            context,
             style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
           ),
           value: OnboardingState().showOnboarding,
@@ -348,17 +343,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return UydoshToggle(
           icon: Icons.vibration,
           iconColor: _getIconColor(),
-          title: LanguageAwareStringHelper.getText(
+          title: L10n.text(
             "haptic_feedback",
-            context,
             style: TextStyle(
               fontWeight: FontWeight.w500,
               color: _getTextColor(),
             ),
           ),
-          subtitle: LanguageAwareStringHelper.getText(
+          subtitle: L10n.text(
             "haptic_feedback_description",
-            context,
             style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
           ),
           value: HapticFeedbackState().isEnabled,
@@ -378,16 +371,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return UydoshMenuItem(
       icon: icon,
-      title: LanguageAwareStringHelper.getText(
+      title: L10n.text(
         titleKey,
-        context,
         style: TextStyle(fontWeight: FontWeight.w500, color: _getTextColor()),
       ),
       subtitle:
           subtitleKey != null
-              ? LanguageAwareStringHelper.getText(
+              ? L10n.text(
                 subtitleKey,
-                context,
                 style: TextStyle(color: _getSecondaryTextColor()),
               )
               : null,
@@ -405,7 +396,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           (context) => AlertDialog(
             backgroundColor: _getLanguageDialogBackgroundColor(),
             title: Text(
-              LanguageAwareStringHelper.getCurrent(context, "select_language"),
+              L10n.get("select_language"),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18,
@@ -443,9 +434,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return ListTile(
       leading: Text(flag, style: const TextStyle(fontSize: 24)),
-      title: LanguageAwareStringHelper.getText(
+      title: L10n.text(
         nameKey,
-        context,
         style: TextStyle(
           fontWeight: isCurrentLanguage ? FontWeight.bold : FontWeight.normal,
           color:
@@ -475,10 +465,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             "language_changed_to",
             LanguageState().currentLanguage,
             params: {
-              "language": LanguageAwareStringHelper.getCurrent(
-                context,
-                nameKey,
-              ),
+              "language": L10n.get(nameKey),
             },
           ),
         );
@@ -493,9 +480,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           (context) => AlertDialog(
             backgroundColor: _getLanguageDialogBackgroundColor(),
             title: Center(
-              child: LanguageAwareStringHelper.getText(
+              child: L10n.text(
                 "about_uy_dosh",
-                context,
                 style: TextStyle(
                   fontSize: 24, // 1.5x larger
                   fontWeight: FontWeight.bold,
@@ -507,9 +493,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                LanguageAwareStringHelper.getText(
+                L10n.text(
                   "about_description",
-                  context,
                   style: TextStyle(
                     fontSize: 18, // 1.5x larger (16 -> 18)
                     color: _getAboutModalTextColor(),
@@ -531,7 +516,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.error,
                 ),
-                child: LanguageAwareStringHelper.getText("close", context),
+                child: L10n.text("close"),
               ),
             ],
           ),
@@ -549,9 +534,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           (context) => AlertDialog(
             backgroundColor: _getLanguageDialogBackgroundColor(),
             title: Center(
-              child: LanguageAwareStringHelper.getText(
+              child: L10n.text(
                 titleKey,
-                context,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -561,7 +545,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             content: SingleChildScrollView(
               child: Text(
-                LanguageAwareStringHelper.getCurrent(context, bodyKey),
+                L10n.get(bodyKey),
                 style: TextStyle(
                   fontSize: 16,
                   color: _getAboutModalTextColor(),
@@ -577,7 +561,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.error,
                 ),
-                child: LanguageAwareStringHelper.getText("close", context),
+                child: L10n.text("close"),
               ),
             ],
           ),
@@ -608,9 +592,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Icon(icon, size: 20, color: _getAboutModalTextColor()),
           const SizedBox(width: 12),
           Expanded(
-            child: LanguageAwareStringHelper.getText(
+            child: L10n.text(
               key,
-              context,
               style: TextStyle(
                 fontSize: 16, // 1.5x larger (14 -> 16)
                 color: _getAboutModalTextColor(),

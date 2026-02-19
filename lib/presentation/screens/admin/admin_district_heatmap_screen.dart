@@ -10,6 +10,7 @@ import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminDistrictHeatmapScreen extends StatefulWidget {
@@ -138,10 +139,7 @@ class _AdminDistrictHeatmapScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_district_heatmap_title",
-          ),
+          L10n.get("admin_district_heatmap_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
@@ -197,10 +195,7 @@ class _AdminDistrictHeatmapScreenState
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: CenteredHouseLoadingIndicator(
-                      text: LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "admin_district_heatmap_loading",
-                      ),
+                      text: L10n.get("admin_district_heatmap_loading"),
                     ),
                   )
                 else ...[
@@ -242,10 +237,7 @@ class _AdminDistrictHeatmapScreenState
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_district_heatmap_total",
-            ),
+            title: L10n.get("admin_district_heatmap_total"),
             value: _totalCount.toString(),
           ),
         ),
@@ -253,10 +245,7 @@ class _AdminDistrictHeatmapScreenState
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_district_heatmap_max",
-            ),
+            title: L10n.get("admin_district_heatmap_max"),
             value: _maxCount.toString(),
             valueStyle: summaryTextStyle.copyWith(
               fontSize: 16,
@@ -321,16 +310,10 @@ class _AdminDistrictHeatmapScreenState
     final textColor = _resolveTextColor(context, backgroundColor);
     final valueText =
         resolvedCount == null
-            ? LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_users_listings_count_loading",
-            )
+            ? L10n.get("admin_users_listings_count_loading")
             : resolvedCount >= 0
             ? resolvedCount.toString()
-            : LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_district_heatmap_unavailable",
-            );
+            : L10n.get("admin_district_heatmap_unavailable");
 
     return Material(
       color: Colors.transparent,
@@ -361,10 +344,7 @@ class _AdminDistrictHeatmapScreenState
               ),
               const Spacer(),
               Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "admin_district_heatmap_count_label",
-                ),
+                L10n.get("admin_district_heatmap_count_label"),
                 style: TextStyle(
                   fontSize: 10,
                   color: textColor.withOpacity(0.8),
@@ -465,10 +445,7 @@ class _AdminDistrictHeatmapScreenState
           ),
           const SizedBox(height: 12),
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_district_heatmap_error",
-            ),
+            L10n.get("admin_district_heatmap_error"),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -490,10 +467,7 @@ class _AdminDistrictHeatmapScreenState
           ElevatedButton(
             onPressed: _loadCounts,
             child: Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_district_heatmap_retry",
-              ),
+              L10n.get("admin_district_heatmap_retry"),
             ),
           ),
         ],
@@ -504,10 +478,7 @@ class _AdminDistrictHeatmapScreenState
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Text(
-        LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_district_heatmap_no_data",
-        ),
+        L10n.get("admin_district_heatmap_no_data"),
         style: TextStyle(
           fontSize: 14,
           color: Theme.of(context).colorScheme.onSurfaceVariant,

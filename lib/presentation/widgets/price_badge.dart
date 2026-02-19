@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// A reusable component for displaying price information
 /// Handles both badge display and utility functions for price formatting
@@ -35,15 +35,15 @@ class PriceBadge extends StatelessWidget {
     final themeState = ThemeState();
     final color =
         isActive
-            ? (activeColor ?? _getThemeAwareActiveColor(themeState))
-            : (inactiveColor ?? _getThemeAwareInactiveColor(themeState));
+            ? (activeColor ?? themeState.priceBadgeActiveColor)
+            : (inactiveColor ?? themeState.priceBadgeInactiveColor);
 
     final formattedPrice =
         currencySymbol == "y.e."
             ? PriceHelper.formatPriceWithYue(price)
             : PriceHelper.formatPrice(price);
     final currency = currencySymbol ?? "\$";
-    final backgroundColor = _getThemeAwareBackgroundColor(themeState);
+    final backgroundColor = themeState.priceBadgeBackgroundColor;
 
     return Container(
       padding:
@@ -89,35 +89,6 @@ class PriceBadge extends StatelessWidget {
     );
   }
 
-  /// Get theme-aware active color (green for light, inverted for blue)
-  Color _getThemeAwareActiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: white text on green background
-      return Colors.white;
-    }
-    // Light theme: use standard green
-    return AppColors.statusActive;
-  }
-
-  /// Get theme-aware inactive color (red for light, inverted for blue)
-  Color _getThemeAwareInactiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert red to light blue-gray
-      return const Color(0xFF7A8A9A);
-    }
-    // Light theme: use standard red
-    return AppColors.statusInactive;
-  }
-
-  /// Get theme-aware background color
-  Color _getThemeAwareBackgroundColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: use green background for price badges
-      return AppColors.statusActive; // Green background
-    }
-    // Light theme: use white background
-    return Colors.white;
-  }
 }
 
 /// Helper class for price utilities
@@ -168,9 +139,7 @@ class PriceHelper {
 
   /// Get localized price label
   static String getPriceLabel(BuildContext context) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
+    final currentLanguage = L10n.currentLanguage;
     return AppStrings.get("listing_price_label", currentLanguage);
   }
 }
@@ -202,8 +171,8 @@ class PriceText extends StatelessWidget {
     final themeState = ThemeState();
     final color =
         isActive
-            ? (activeColor ?? _getThemeAwareActiveColor(themeState))
-            : (inactiveColor ?? _getThemeAwareInactiveColor(themeState));
+            ? (activeColor ?? themeState.priceBadgeActiveColor)
+            : (inactiveColor ?? themeState.priceBadgeInactiveColor);
 
     final formattedPrice =
         currencySymbol == "y.e."
@@ -217,26 +186,6 @@ class PriceText extends StatelessWidget {
           : formattedPrice,
       style: style ?? TextStyle(color: color, fontWeight: FontWeight.w600),
     );
-  }
-
-  /// Get theme-aware active color (green for light, inverted for blue)
-  Color _getThemeAwareActiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert green to white
-      return Colors.white;
-    }
-    // Light theme: use standard green
-    return AppColors.statusActive;
-  }
-
-  /// Get theme-aware inactive color (red for light, inverted for blue)
-  Color _getThemeAwareInactiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert red to light blue-gray
-      return const Color(0xFF7A8A9A);
-    }
-    // Light theme: use standard red
-    return AppColors.statusInactive;
   }
 }
 
@@ -267,15 +216,15 @@ class CompactPriceBadge extends StatelessWidget {
     final themeState = ThemeState();
     final color =
         isActive
-            ? (activeColor ?? _getThemeAwareActiveColor(themeState))
-            : (inactiveColor ?? _getThemeAwareInactiveColor(themeState));
+            ? (activeColor ?? themeState.priceBadgeActiveColor)
+            : (inactiveColor ?? themeState.priceBadgeInactiveColor);
 
     final formattedPrice =
         currencySymbol == "y.e."
             ? PriceHelper.formatPriceWithYue(price)
             : PriceHelper.formatPrice(price);
     final currency = currencySymbol ?? "\$";
-    final backgroundColor = _getThemeAwareBackgroundColor(themeState);
+    final backgroundColor = themeState.priceBadgeBackgroundColor;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
@@ -295,35 +244,5 @@ class CompactPriceBadge extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Get theme-aware active color (green for light, inverted for blue)
-  Color _getThemeAwareActiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert green to white
-      return Colors.white;
-    }
-    // Purple and light themes: use standard green
-    return AppColors.statusActive;
-  }
-
-  /// Get theme-aware inactive color (red for light, inverted for blue)
-  Color _getThemeAwareInactiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert red to light blue-gray
-      return const Color(0xFF7A8A9A);
-    }
-    // Purple and light themes: use standard red
-    return AppColors.statusInactive;
-  }
-
-  /// Get theme-aware background color
-  Color _getThemeAwareBackgroundColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: use green background for price badges
-      return AppColors.statusActive; // Green background
-    }
-    // Light theme: use white background
-    return Colors.white;
   }
 }

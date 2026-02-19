@@ -4,7 +4,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 class AdminUserListingsScreen extends StatefulWidget {
@@ -114,10 +114,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
   @override
   Widget build(BuildContext context) {
     final headerCount = _listings.length;
-    final title = LanguageAwareStringHelper.getCurrent(
-      context,
-      "admin_user_listings_title",
-    );
+    final title = L10n.get("admin_user_listings_title");
     final titleWithCount = "$title ($headerCount)";
     return Scaffold(
       appBar: AppBar(
@@ -134,7 +131,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
               child: Row(
                 children: [
                   Text(
-                    "${LanguageAwareStringHelper.getCurrent(context, "admin_user_listings_user")}: ",
+                    "${L10n.get("admin_user_listings_user")}: ",
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -179,10 +176,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_user_listings_error",
-            ),
+            L10n.get("admin_user_listings_error"),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -204,7 +198,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
           ElevatedButton(
             onPressed: _refresh,
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, "retry"),
+              L10n.get("retry"),
             ),
           ),
         ],
@@ -216,10 +210,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
     if (_listings.isEmpty) {
       return Center(
         child: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_user_listings_empty",
-          ),
+          L10n.get("admin_user_listings_empty"),
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,

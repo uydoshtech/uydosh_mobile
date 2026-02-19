@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// A reusable component for displaying price range information
 /// Handles both badge display and utility functions for price range formatting
@@ -36,15 +36,15 @@ class PriceRangeBadge extends StatelessWidget {
     final themeState = ThemeState();
     final color =
         isActive
-            ? (activeColor ?? _getThemeAwareActiveColor(themeState))
-            : (inactiveColor ?? _getThemeAwareInactiveColor(themeState));
+            ? (activeColor ?? themeState.priceBadgeActiveColor)
+            : (inactiveColor ?? themeState.priceBadgeInactiveColor);
 
     final formattedPriceRange =
         currencySymbol == "y.e."
             ? PriceRangeHelper.formatPriceRangeWithYue(minPrice, maxPrice)
             : PriceRangeHelper.formatPriceRange(minPrice, maxPrice);
     final currency = currencySymbol ?? "\$";
-    final backgroundColor = _getThemeAwareBackgroundColor(themeState);
+    final backgroundColor = themeState.priceBadgeBackgroundColor;
 
     return Container(
       padding:
@@ -90,35 +90,6 @@ class PriceRangeBadge extends StatelessWidget {
     );
   }
 
-  /// Get theme-aware active color (green for light, inverted for blue)
-  Color _getThemeAwareActiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: white text on green background
-      return Colors.white;
-    }
-    // Light theme: use standard green
-    return AppColors.statusActive;
-  }
-
-  /// Get theme-aware inactive color (red for light, inverted for blue)
-  Color _getThemeAwareInactiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert red to light blue-gray
-      return const Color(0xFF7A8A9A);
-    }
-    // Light theme: use standard red
-    return AppColors.statusInactive;
-  }
-
-  /// Get theme-aware background color
-  Color _getThemeAwareBackgroundColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: use green background for price badges
-      return AppColors.statusActive; // Green background
-    }
-    // Light theme: use white background
-    return Colors.white;
-  }
 }
 
 /// Helper class for price range utilities
@@ -179,9 +150,7 @@ class PriceRangeHelper {
 
   /// Get localized price range label
   static String getPriceRangeLabel(BuildContext context) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
+    final currentLanguage = L10n.currentLanguage;
     return AppStrings.get("listing_price_range_label", currentLanguage);
   }
 }
@@ -214,8 +183,8 @@ class PriceRangeText extends StatelessWidget {
     final themeState = ThemeState();
     final color =
         isActive
-            ? (activeColor ?? _getThemeAwareActiveColor(themeState))
-            : (inactiveColor ?? _getThemeAwareInactiveColor(themeState));
+            ? (activeColor ?? themeState.priceBadgeActiveColor)
+            : (inactiveColor ?? themeState.priceBadgeInactiveColor);
 
     final formattedPriceRange =
         currencySymbol == "y.e."
@@ -229,26 +198,6 @@ class PriceRangeText extends StatelessWidget {
           : formattedPriceRange,
       style: style ?? TextStyle(color: color, fontWeight: FontWeight.w600),
     );
-  }
-
-  /// Get theme-aware active color (green for light, inverted for blue)
-  Color _getThemeAwareActiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert green to white
-      return Colors.white;
-    }
-    // Light theme: use standard green
-    return AppColors.statusActive;
-  }
-
-  /// Get theme-aware inactive color (red for light, inverted for blue)
-  Color _getThemeAwareInactiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert red to light blue-gray
-      return const Color(0xFF7A8A9A);
-    }
-    // Light theme: use standard red
-    return AppColors.statusInactive;
   }
 }
 
@@ -280,15 +229,15 @@ class CompactPriceRangeBadge extends StatelessWidget {
     final themeState = ThemeState();
     final color =
         isActive
-            ? (activeColor ?? _getThemeAwareActiveColor(themeState))
-            : (inactiveColor ?? _getThemeAwareInactiveColor(themeState));
+            ? (activeColor ?? themeState.priceBadgeActiveColor)
+            : (inactiveColor ?? themeState.priceBadgeInactiveColor);
 
     final formattedPriceRange =
         currencySymbol == "y.e."
             ? PriceRangeHelper.formatPriceRangeWithYue(minPrice, maxPrice)
             : PriceRangeHelper.formatPriceRange(minPrice, maxPrice);
     final currency = currencySymbol ?? "\$";
-    final backgroundColor = _getThemeAwareBackgroundColor(themeState);
+    final backgroundColor = themeState.priceBadgeBackgroundColor;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
@@ -308,35 +257,5 @@ class CompactPriceRangeBadge extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Get theme-aware active color (green for light, inverted for blue)
-  Color _getThemeAwareActiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert green to white
-      return Colors.white;
-    }
-    // Purple and light themes: use standard green
-    return AppColors.statusActive;
-  }
-
-  /// Get theme-aware inactive color (red for light, inverted for blue)
-  Color _getThemeAwareInactiveColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: invert red to light blue-gray
-      return const Color(0xFF7A8A9A);
-    }
-    // Purple and light themes: use standard red
-    return AppColors.statusInactive;
-  }
-
-  /// Get theme-aware background color
-  Color _getThemeAwareBackgroundColor(ThemeState themeState) {
-    if (themeState.isBlueTheme) {
-      // Blue theme: use green background for price badges
-      return AppColors.statusActive; // Green background
-    }
-    // Light theme: use white background
-    return Colors.white;
   }
 }

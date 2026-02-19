@@ -2,7 +2,6 @@ import "dart:io";
 import "dart:typed_data";
 
 import "package:dio/dio.dart";
-import "package:injectable/injectable.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -82,7 +81,6 @@ abstract class IMessagingService {
   Future<void> deleteAttachment(int attachmentId);
 }
 
-@LazySingleton(as: IMessagingService)
 class MessagingService implements IMessagingService {
 
   MessagingService(this._apiClient);

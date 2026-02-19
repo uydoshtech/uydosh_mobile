@@ -7,6 +7,7 @@ import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminListingCreationAnalyticsScreen extends StatefulWidget {
@@ -79,10 +80,7 @@ class _AdminListingCreationAnalyticsScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_listing_creation_analytics_title",
-          ),
+          L10n.get("admin_listing_creation_analytics_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
@@ -94,10 +92,7 @@ class _AdminListingCreationAnalyticsScreenState
           }
           if (_isLoading && _analytics == null) {
             return CenteredHouseLoadingIndicator(
-              text: LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_listing_creation_analytics_loading",
-              ),
+              text: L10n.get("admin_listing_creation_analytics_loading"),
             );
           }
           return RefreshIndicator(
@@ -130,10 +125,7 @@ class _AdminListingCreationAnalyticsScreenState
 
   Widget _buildTimeRangeSelector(BuildContext context) {
     return PeriodPicker(
-      title: LanguageAwareStringHelper.getCurrent(
-        context,
-        "admin_listing_creation_analytics_time_range",
-      ),
+      title: L10n.get("admin_listing_creation_analytics_time_range"),
       selectedDays: _selectedDays,
       onChanged: (days) {
         setState(() {
@@ -151,10 +143,7 @@ class _AdminListingCreationAnalyticsScreenState
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_listing_creation_analytics_total",
-            ),
+            title: L10n.get("admin_listing_creation_analytics_total"),
             value: s.total.toString(),
             icon: Icons.home_work_outlined,
           ),
@@ -163,10 +152,7 @@ class _AdminListingCreationAnalyticsScreenState
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_listing_creation_analytics_today",
-            ),
+            title: L10n.get("admin_listing_creation_analytics_today"),
             value: s.today.toString(),
             icon: Icons.today,
           ),
@@ -175,10 +161,7 @@ class _AdminListingCreationAnalyticsScreenState
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_listing_creation_analytics_week",
-            ),
+            title: L10n.get("admin_listing_creation_analytics_week"),
             value: s.thisWeek.toString(),
             icon: Icons.date_range,
           ),
@@ -248,7 +231,7 @@ class _AdminListingCreationAnalyticsScreenState
         Icon(icon, size: 22, color: Theme.of(context).colorScheme.onSurface),
         const SizedBox(width: 8),
         Text(
-          LanguageAwareStringHelper.getCurrent(context, titleKey),
+          L10n.get(titleKey),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -276,10 +259,7 @@ class _AdminListingCreationAnalyticsScreenState
     if (items.isEmpty) {
       return _buildEmptySection(
         context,
-        LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_listing_creation_analytics_no_data",
-        ),
+        L10n.get("admin_listing_creation_analytics_no_data"),
       );
     }
     final maxCount =
@@ -430,10 +410,7 @@ class _AdminListingCreationAnalyticsScreenState
             ),
             const SizedBox(height: 12),
             Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_listing_creation_analytics_error",
-              ),
+              L10n.get("admin_listing_creation_analytics_error"),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -459,10 +436,7 @@ class _AdminListingCreationAnalyticsScreenState
               onPressed: _loadAnalytics,
               icon: const Icon(Icons.refresh),
               label: Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "admin_listing_creation_analytics_retry",
-                ),
+                L10n.get("admin_listing_creation_analytics_retry"),
               ),
             ),
           ],

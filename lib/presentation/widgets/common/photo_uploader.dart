@@ -11,7 +11,7 @@ import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class PhotoUploader extends StatefulWidget {
 
@@ -147,10 +147,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
     } catch (e) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "error_picking_photo",
-        ),
+        message: L10n.get("error_picking_photo"),
       );
     }
   }
@@ -161,15 +158,15 @@ class _PhotoUploaderState extends State<PhotoUploader>
       builder: (context) {
         return AlertDialog(
           title: Text(
-            LanguageAwareStringHelper.getCurrent(context, "max_photos_reached"),
+            L10n.get("max_photos_reached"),
           ),
           content: Text(
-            LanguageAwareStringHelper.getCurrent(context, "max_photos_message"),
+            L10n.get("max_photos_message"),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(LanguageAwareStringHelper.getCurrent(context, "ok")),
+              child: Text(L10n.get("ok")),
             ),
           ],
         );
@@ -197,7 +194,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     size: 30, // Increased from 20 to 30 (1.5x)
                   ),
                   title: Text(
-                    LanguageAwareStringHelper.getCurrent(context, "take_photo"),
+                    L10n.get("take_photo"),
                     style: const TextStyle(
                       fontSize: 18, // Increased from 12 to 18 (1.5x)
                       fontWeight: FontWeight.w500,
@@ -219,10 +216,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     size: 30, // Increased from 20 to 30 (1.5x)
                   ),
                   title: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "choose_from_gallery",
-                    ),
+                    L10n.get("choose_from_gallery"),
                     style: const TextStyle(
                       fontSize: 18, // Increased from 12 to 18 (1.5x)
                       fontWeight: FontWeight.w500,
@@ -264,10 +258,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
     widget.onPhotosChanged(newPhotos);
     ToastTheme.showSuccess(
       context,
-      message: LanguageAwareStringHelper.getCurrent(
-        context,
-        "photo_deleted_success",
-      ),
+      message: L10n.get("photo_deleted_success"),
     );
   }
 
@@ -286,10 +277,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
     // Show success message
     ToastTheme.showSuccess(
       context,
-      message: LanguageAwareStringHelper.getCurrent(
-        context,
-        "photo_made_primary",
-      ),
+      message: L10n.get("photo_made_primary"),
     );
   }
 
@@ -343,10 +331,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
               children: [
                 Expanded(
                   child: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "listing_photos_label",
-                    ),
+                    L10n.get("listing_photos_label"),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -381,10 +366,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                               size: 20,
                             ),
                           ),
-                          tooltip: LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "add_photo",
-                          ),
+                          tooltip: L10n.get("add_photo"),
                         ),
                       );
                     },
@@ -432,10 +414,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "tap_photo_to_make_primary",
-                    ),
+                    L10n.get("tap_photo_to_make_primary"),
                     style: TextStyle(
                       fontSize: 14.0,
                       color: theme.colorScheme.onSurfaceVariant.withValues(
@@ -452,10 +431,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "tap_photo_to_make_primary",
-                    ),
+                    L10n.get("tap_photo_to_make_primary"),
                     style: TextStyle(
                       fontSize: 14.0,
                       color: theme.colorScheme.onSurfaceVariant.withValues(
@@ -551,10 +527,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "making_primary",
-                          ),
+                          L10n.get("making_primary"),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,

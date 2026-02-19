@@ -5,7 +5,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// Location picker - uses persistent scroll controller (from parent or own)
 /// so the wheel scrolls smoothly with sound. Same pattern as GenderPicker.
@@ -153,14 +153,8 @@ class _LocationPickerState extends State<LocationPicker> {
                         child: Text(
                           widget.placeholderText ??
                               (widget.isRequired
-                                  ? LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "select_location_required",
-                                  )
-                                  : LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "select_location",
-                                  )),
+                                  ? L10n.get("select_location_required")
+                                  : L10n.get("select_location")),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -183,10 +177,7 @@ class _LocationPickerState extends State<LocationPicker> {
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
-                            LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "no_locations_available",
-                            ),
+                            L10n.get("no_locations_available"),
                             style: TextStyle(fontSize: 16, color: textColor),
                             textAlign: TextAlign.center,
                           ),
@@ -278,9 +269,7 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   String _getLocalizedName(BuildContext context, Location location) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
+    final currentLanguage = L10n.currentLanguage;
 
     switch (currentLanguage) {
       case "ru":

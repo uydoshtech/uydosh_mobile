@@ -2,16 +2,14 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
-import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class ConversationsScreen extends StatefulWidget {
   const ConversationsScreen({super.key});
@@ -21,23 +19,19 @@ class ConversationsScreen extends StatefulWidget {
 }
 
 class _ConversationsScreenState extends State<ConversationsScreen> {
-  late MessagingBloc _messagingBloc;
   int? _currentUserId;
 
   @override
   void initState() {
     super.initState();
-    _messagingBloc = MessagingBloc(getIt<IMessagingService>());
-    _messagingBloc.add(FetchConversations());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<MessagingBloc>().add(FetchConversations());
+      }
+    });
     SessionManager.getUserId().then((id) {
       if (mounted) setState(() => _currentUserId = id);
     });
-  }
-
-  @override
-  void dispose() {
-    _messagingBloc.close();
-    super.dispose();
   }
 
   @override
@@ -50,9 +44,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             _buildCustomHeader(),
             // Content
             Expanded(
-              child: BlocProvider.value(
-                value: _messagingBloc,
-                child: BlocBuilder<MessagingBloc, MessagingState>(
+              child: BlocBuilder<MessagingBloc, MessagingState>(
                   builder: (context, state) {
                     return state.when(
                       initial: _buildLoadingState,
@@ -73,7 +65,6 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                   },
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -112,7 +103,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           // Title
           Expanded(
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, "conversations"),
+              L10n.get("conversations"),
               style:
                   Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
                     fontSize: 20,
@@ -129,7 +120,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           // Refresh button
           IconButton(
             onPressed: () {
-              _messagingBloc.add(RefreshConversations());
+              context.read<MessagingBloc>().add(RefreshConversations());
             },
             icon: Icon(
               Icons.refresh,
@@ -137,7 +128,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                   Theme.of(context).appBarTheme.foregroundColor ??
                   Theme.of(context).colorScheme.onSurface,
             ),
-            tooltip: LanguageAwareStringHelper.getCurrent(context, "refresh"),
+            tooltip: L10n.get("refresh"),
           ),
         ],
       ),
@@ -167,9 +158,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              _messagingBloc.add(RefreshConversations());
+              context.read<MessagingBloc>().add(RefreshConversations());
             },
-            child: Text(LanguageAwareStringHelper.getCurrent(context, "retry")),
+            child: Text(L10n.get("retry")),
           ),
         ],
       ),
@@ -197,7 +188,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       },
       showRefreshIndicator: true,
       onRefresh: () async {
-        _messagingBloc.add(RefreshConversations());
+        context.read<MessagingBloc>().add(RefreshConversations());
       },
       showLoadMoreIndicator: hasMore,
       hasMore: hasMore,
@@ -219,7 +210,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            LanguageAwareStringHelper.getCurrent(context, "no_conversations"),
+            L10n.get("no_conversations"),
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: Theme.of(
                 context,
@@ -228,10 +219,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "start_conversation_from_listing",
-            ),
+            L10n.get("start_conversation_from_listing"),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(
                 context,
@@ -251,12 +239,12 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         child: ElevatedButton(
           onPressed: () {
             // Load more conversations
-            _messagingBloc.add(
+            context.read<MessagingBloc>().add(
               FetchConversations(page: 2),
             ); // This should be dynamic
           },
           child: Text(
-            LanguageAwareStringHelper.getCurrent(context, "load_more"),
+            L10n.get("load_more"),
           ),
         ),
       ),
@@ -266,7 +254,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
   void _navigateToChat(int conversationId) {
     // Find the conversation to get the listing ID
     ConversationSummary? conversation;
-    _messagingBloc.state.maybeWhen(
+    context.read<MessagingBloc>().state.maybeWhen(
       conversationsLoaded: (conversations, hasMore, currentPage) {
         final match = conversations.where((c) => c.id == conversationId);
         conversation = match.isEmpty ? null : match.first;
@@ -441,7 +429,7 @@ class ConversationCard extends StatelessWidget {
       } else if (difference.inMinutes > 0) {
         return "${difference.inMinutes}m";
       } else {
-        return LanguageAwareStringHelper.getCurrent(context, "now");
+        return L10n.get("now");
       }
     } catch (e) {
       return "";

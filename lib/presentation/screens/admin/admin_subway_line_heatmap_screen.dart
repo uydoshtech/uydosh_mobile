@@ -10,6 +10,7 @@ import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminSubwayLineHeatmapScreen extends StatefulWidget {
@@ -135,10 +136,7 @@ class _AdminSubwayLineHeatmapScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_subway_heatmap_title",
-          ),
+          L10n.get("admin_subway_heatmap_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
@@ -194,10 +192,7 @@ class _AdminSubwayLineHeatmapScreenState
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: CenteredHouseLoadingIndicator(
-                      text: LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "admin_subway_heatmap_loading",
-                      ),
+                      text: L10n.get("admin_subway_heatmap_loading"),
                     ),
                   )
                 else ...[
@@ -239,10 +234,7 @@ class _AdminSubwayLineHeatmapScreenState
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_subway_heatmap_total",
-            ),
+            title: L10n.get("admin_subway_heatmap_total"),
             value: _totalCount.toString(),
           ),
         ),
@@ -250,10 +242,7 @@ class _AdminSubwayLineHeatmapScreenState
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_subway_heatmap_max",
-            ),
+            title: L10n.get("admin_subway_heatmap_max"),
             value: _maxCount.toString(),
             valueStyle: summaryTextStyle.copyWith(
               fontSize: 16,
@@ -310,16 +299,10 @@ class _AdminSubwayLineHeatmapScreenState
     final textColor = _resolveTextColor(context, backgroundColor);
     final valueText =
         resolvedCount == null
-            ? LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_users_listings_count_loading",
-            )
+            ? L10n.get("admin_users_listings_count_loading")
             : resolvedCount >= 0
             ? resolvedCount.toString()
-            : LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_subway_heatmap_unavailable",
-            );
+            : L10n.get("admin_subway_heatmap_unavailable");
 
     return Material(
       color: Colors.transparent,
@@ -362,10 +345,7 @@ class _AdminSubwayLineHeatmapScreenState
               ),
               const Spacer(),
               Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "admin_subway_heatmap_count_label",
-                ),
+L10n.get("admin_subway_heatmap_count_label"),
                 style: TextStyle(
                   fontSize: 10,
                   color: textColor.withOpacity(0.8),
@@ -449,10 +429,7 @@ class _AdminSubwayLineHeatmapScreenState
           ),
           const SizedBox(height: 12),
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_subway_heatmap_error",
-            ),
+L10n.get("admin_subway_heatmap_error"),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -474,10 +451,7 @@ class _AdminSubwayLineHeatmapScreenState
           ElevatedButton(
             onPressed: _loadCounts,
             child: Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_subway_heatmap_retry",
-              ),
+              L10n.get("admin_subway_heatmap_retry"),
             ),
           ),
         ],
@@ -488,10 +462,7 @@ class _AdminSubwayLineHeatmapScreenState
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Text(
-        LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_subway_heatmap_no_data",
-        ),
+L10n.get("admin_subway_heatmap_no_data"),
         style: TextStyle(
           fontSize: 14,
           color: Theme.of(context).colorScheme.onSurfaceVariant,

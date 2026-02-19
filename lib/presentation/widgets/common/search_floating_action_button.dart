@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 
 class SearchFloatingActionButton extends StatelessWidget {
@@ -34,7 +34,7 @@ class SearchFloatingActionButton extends StatelessWidget {
       foregroundColor: foregroundColor ?? Colors.white,
       elevation: elevation,
       tooltip:
-          tooltip ?? LanguageAwareStringHelper.getCurrent(context, "search"),
+          tooltip ?? L10n.get("search"),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28.0), // More roundish than default
       ),

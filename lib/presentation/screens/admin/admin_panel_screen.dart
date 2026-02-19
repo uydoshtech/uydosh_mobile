@@ -8,7 +8,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_scr
 import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_card_tile.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class AdminPanelScreen extends StatelessWidget {
   const AdminPanelScreen({super.key});
@@ -18,7 +18,7 @@ class AdminPanelScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(context, "admin_panel_title"),
+          L10n.get("admin_panel_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
@@ -26,10 +26,7 @@ class AdminPanelScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20.0),
         children: [
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_panel_description",
-            ),
+            L10n.get("admin_panel_description"),
             style: TextStyle(
               fontSize: 14,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -160,7 +157,7 @@ class AdminPanelScreen extends StatelessWidget {
   }) {
     return UydoshCardTile(
       icon: icon,
-      title: Text(LanguageAwareStringHelper.getCurrent(context, titleKey)),
+      title: Text(L10n.get(titleKey)),
       onTap: onTap,
     );
   }

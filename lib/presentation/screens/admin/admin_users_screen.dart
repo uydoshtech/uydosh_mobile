@@ -9,6 +9,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminUsersScreen extends StatefulWidget {
@@ -201,17 +202,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(context, "admin_users_title"),
+          L10n.get("admin_users_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
       body:
           _isLoading
               ? CenteredHouseLoadingIndicator(
-                text: LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "admin_users_loading",
-                ),
+                text: L10n.get("admin_users_loading"),
               )
               : _hasError
               ? _buildErrorState(context)
@@ -231,7 +229,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            LanguageAwareStringHelper.getCurrent(context, "admin_users_error"),
+            L10n.get("admin_users_error"),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -253,7 +251,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           ElevatedButton(
             onPressed: _refresh,
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, "retry"),
+              L10n.get("retry"),
             ),
           ),
         ],
@@ -265,7 +263,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     if (_users.isEmpty) {
       return Center(
         child: Text(
-          LanguageAwareStringHelper.getCurrent(context, "admin_users_empty"),
+          L10n.get("admin_users_empty"),
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -360,10 +358,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               Flexible(
                                 child: Text(
                                   user.email ??
-                                      LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "not_specified",
-                                      ),
+                                      L10n.get("not_specified"),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -404,32 +399,20 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       labelKey: "admin_users_listings_count",
                       value:
                           listingCount == null
-                              ? LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "admin_users_listings_count_loading",
-                              )
+                              ? L10n.get("admin_users_listings_count_loading")
                               : listingCount >= 0
                               ? listingCount.toString()
-                              : LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "admin_users_listings_count_error",
-                              ),
+                              : L10n.get("admin_users_listings_count_error"),
                     ),
                     _buildMetaRow(
                       context,
                       labelKey: "admin_user_complaints_group_count",
                       value:
                           complaintCount == null
-                              ? LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "admin_users_listings_count_loading",
-                              )
+                              ? L10n.get("admin_users_listings_count_loading")
                               : complaintCount >= 0
                               ? complaintCount.toString()
-                              : LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "admin_users_listings_count_error",
-                              ),
+                              : L10n.get("admin_users_listings_count_error"),
                       labelColor:
                           complaintCount != null && complaintCount > 0
                               ? Theme.of(context).colorScheme.error
@@ -451,10 +434,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "admin_user_detail_blocked",
-                              ),
+                              L10n.get("admin_user_detail_blocked"),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context).colorScheme.error,
@@ -493,7 +473,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       child: Row(
         children: [
           Text(
-            "${LanguageAwareStringHelper.getCurrent(context, labelKey)}: ",
+            "${L10n.get(labelKey)}: ",
             style: TextStyle(
               fontSize: 12,
               color:
@@ -516,21 +496,21 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   String _getRoleLabel(String? role, BuildContext context) {
     switch (role) {
       case "tenant":
-        return LanguageAwareStringHelper.getCurrent(context, "role_tenant");
+        return L10n.get("role_tenant");
       case "landlord":
-        return LanguageAwareStringHelper.getCurrent(context, "role_landlord");
+        return L10n.get("role_landlord");
       case "manager":
-        return LanguageAwareStringHelper.getCurrent(context, "role_manager");
+        return L10n.get("role_manager");
       case "admin":
-        return LanguageAwareStringHelper.getCurrent(context, "role_admin");
+        return L10n.get("role_admin");
       default:
-        return LanguageAwareStringHelper.getCurrent(context, "not_specified");
+        return L10n.get("not_specified");
     }
   }
 
   String _formatDate(DateTime? value, BuildContext context) {
     if (value == null) {
-      return LanguageAwareStringHelper.getCurrent(context, "not_specified");
+      return L10n.get("not_specified");
     }
     final local = value.toLocal();
     final locale = LanguageState().currentLanguage;

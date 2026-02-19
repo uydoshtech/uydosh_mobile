@@ -11,7 +11,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class ListingComplaintsScreen extends StatefulWidget {
 
@@ -41,10 +41,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
             return state.maybeMap(
               complaintsLoaded: (loadedState) {
                 final title =
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "listing_complaints_header",
-                    ).replaceAll(
+                    L10n.get("listing_complaints_header").replaceAll(
                       "{count}",
                       "${loadedState.complaints.length}",
                     );
@@ -52,10 +49,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
               },
               orElse:
                   () => Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "listing_complaints",
-                    ),
+                    L10n.get("listing_complaints"),
                   ),
             );
           },
@@ -112,10 +106,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
     if (complaints.isEmpty) {
       return Center(
         child: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "no_listing_complaints",
-          ),
+          L10n.get("no_listing_complaints"),
           style: Theme.of(context).textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
@@ -218,12 +209,10 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
   String _buildGroupTitle(_ComplaintGroup group) {
     final category = group.category;
     if (category == null) {
-      return LanguageAwareStringHelper.getCurrent(context, "unknown");
+      return L10n.get("unknown");
     }
 
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
+    final currentLanguage = L10n.currentLanguage;
     switch (currentLanguage) {
       case "ru":
         return category.nameRu;
@@ -263,7 +252,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
 
   String _formatComplaintDate(Complaint? complaint) {
     if (complaint?.createdAt == null || complaint!.createdAt!.isEmpty) {
-      return LanguageAwareStringHelper.getCurrent(context, "unknown");
+      return L10n.get("unknown");
     }
     final date = DateTime.tryParse(complaint.createdAt!);
     if (date == null) {
@@ -275,10 +264,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
   Widget _buildCountChip(int count) {
     const color = AppColors.primary;
     final label =
-        LanguageAwareStringHelper.getCurrent(
-          context,
-          "complaints_count_short",
-        ).replaceAll("{count}", "$count");
+        L10n.get("complaints_count_short").replaceAll("{count}", "$count");
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -316,7 +302,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
               Navigator.of(context).pop();
             },
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, "back_to_listing"),
+              L10n.get("back_to_listing"),
             ),
           ),
         ],

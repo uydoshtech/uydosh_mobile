@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class PrimaryPhotoPill extends StatelessWidget {
   const PrimaryPhotoPill({
@@ -38,7 +38,7 @@ class PrimaryPhotoPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: Text(
-        LanguageAwareStringHelper.getCurrent(context, "primary"),
+        L10n.get("primary"),
         style: TextStyle(
           color: textColor,
           fontSize: fontSize,

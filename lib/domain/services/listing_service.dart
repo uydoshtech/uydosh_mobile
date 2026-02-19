@@ -1,7 +1,6 @@
 import "dart:convert";
 import "dart:io";
 
-import "package:injectable/injectable.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
@@ -184,7 +183,6 @@ abstract class IListingService {
   });
 }
 
-@injectable
 class ListingService implements IListingService {
   ListingService(this._apiClient, this._oauthApiClient);
 
@@ -1099,29 +1097,13 @@ class ListingService implements IListingService {
       logger.d("  • Auth: Bearer token (automatic)");
       logger.d("=====================================");
 
-      // Try PUT method first, then fallback to POST if needed
-      dynamic response;
-      try {
-        logger.d("📡 Trying PUT method for toggle-active endpoint...");
-        response = await _oauthApiClient.put<dynamic, _EmptyRequest>(
-          "/listings/$listingId/toggle-active",
-          (json) => json, // Don't force cast to Map<String, dynamic>
-          basePath: EnvironmentUtil.basePath,
-          data: _EmptyRequest(),
-        );
-        logger.d("✅ PUT method successful");
-      } catch (e) {
-        logger.d("⚠️ PUT method failed, trying POST method...");
-        logger.d("⚠️ PUT error: $e");
-
-        response = await _oauthApiClient.post<dynamic, _EmptyRequest>(
-          "/listings/$listingId/toggle-active",
-          (json) => json, // Don't force cast to Map<String, dynamic>
-          basePath: EnvironmentUtil.basePath,
-          data: _EmptyRequest(),
-        );
-        logger.d("✅ POST method successful");
-      }
+      // Backend expects PATCH for toggle-active
+      final response = await _oauthApiClient.patch<dynamic, _EmptyRequest>(
+        "/listings/$listingId/toggle-active",
+        (json) => json,
+        basePath: EnvironmentUtil.basePath,
+        data: _EmptyRequest(),
+      );
 
       logger.d("=== DEACTIVATION RESPONSE ===");
       logger.d("📥 Response Details:");

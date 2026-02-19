@@ -14,6 +14,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
@@ -105,10 +106,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
         } else {
           ToastTheme.showError(
             context,
-            message: LanguageAwareStringHelper.getCurrent(
-              context,
-              "unable_to_load_view_history",
-            ),
+            message: L10n.get("unable_to_load_view_history"),
           );
         }
       }
@@ -151,10 +149,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
       listenable: ThemeState(),
       builder: (context, _) => Scaffold(
         appBar: CommonAppBar(
-          title: LanguageAwareStringHelper.getCurrent(
-            context,
-            "view_history_title",
-          ),
+          title: L10n.get("view_history_title"),
           showBackButton: true,
         ),
         body: _buildBody(),
@@ -169,7 +164,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
 
     if (_isLoading && _viewedListings.isEmpty) {
       return CenteredHouseLoadingIndicator(
-        text: LanguageAwareStringHelper.getCurrent(context, "loading"),
+        text: L10n.get("loading"),
       );
     }
 
@@ -215,10 +210,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
               child: Center(
                 child: GhostButtonFactory.text(
                   onPressed: _loadMoreViewedListings,
-                  text: LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "load_more",
-                  ),
+                  text: L10n.get("load_more"),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,
@@ -243,9 +235,8 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
               ListenableBuilder(
                 listenable: LanguageState(),
                 builder: (context, child) {
-                  return LanguageAwareStringHelper.getText(
+                  return L10n.text(
                     "view_history_empty_title",
-                    context,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -271,10 +262,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
         );
       },
       icon: Icons.home,
-      text: LanguageAwareStringHelper.getCurrent(
-        context,
-        "view_history_browse_button",
-      ),
+      text: L10n.get("view_history_browse_button"),
     );
   }
 
@@ -294,10 +282,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "unable_to_load_view_history",
-                ),
+                L10n.get("unable_to_load_view_history"),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -308,10 +293,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
               GhostButtonFactory.iconText(
                 onPressed: () => _loadViewedListings(isRefresh: true),
                 icon: Icons.refresh,
-                text: LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "retry",
-                ),
+                text: L10n.get("retry"),
               ),
             ],
           ),
@@ -336,10 +318,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "auth_required_title",
-                ),
+                L10n.get("auth_required_title"),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -348,10 +327,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "view_history_auth_prompt",
-                ),
+                L10n.get("view_history_auth_prompt"),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -368,10 +344,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
                   );
                 },
                 icon: Icons.login,
-                text: LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "menu_registration",
-                ),
+                text: L10n.get("menu_registration"),
               ),
             ],
           ),

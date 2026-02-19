@@ -163,26 +163,3 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
   }
 }
 
-/// Localization helper. Prefer [L10n] for new code.
-@Deprecated("Use L10n instead")
-class LanguageAwareStringHelper {
-  static String getCurrentLanguage(BuildContext context) {
-    return L10n.currentLanguage;
-  }
-
-  static String getCurrent(BuildContext context, String key) {
-    return L10n.get(key);
-  }
-
-  static Widget getText(String key, BuildContext context, {TextStyle? style}) {
-    return L10n.text(key, style: style);
-  }
-
-  static Widget getInputField(
-    String key,
-    BuildContext context, {
-    required Widget Function(String hintText) builder,
-  }) {
-    return L10n.inputField(key, builder: builder);
-  }
-}

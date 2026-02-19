@@ -1,7 +1,7 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class FullScreenPhotoViewer extends StatefulWidget {
 
@@ -170,10 +170,7 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                               ),
                                               const SizedBox(height: 16),
                                               Text(
-                                                LanguageAwareStringHelper.getCurrent(
-                                                  context,
-                                                  "image_load_error",
-                                                ),
+                                                L10n.get("image_load_error"),
                                                 style: TextStyle(
                                                   color: Colors.grey[600],
                                                   fontSize: 16,

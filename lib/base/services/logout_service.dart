@@ -1,17 +1,15 @@
 import "package:dio/dio.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
-import "package:http/http.dart" as http;
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
-import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Thrown when account deletion is rejected because the account is blocked.
 class AccountBlockedException implements Exception {}
@@ -44,7 +42,7 @@ class LogoutService {
       if (token != null) {
         try {
           logger.d("🌐 Calling backend logout endpoint...");
-          await _callBackendLogout(token);
+          await _callBackendLogout();
           logger.d("✅ Backend logout completed");
         } catch (e) {
           logger.d("❌ Backend logout failed: $e");
@@ -76,19 +74,13 @@ class LogoutService {
     }
   }
 
-  /// Call backend logout endpoint
-  Future<void> _callBackendLogout(String token) async {
-    final response = await http.post(
-      Uri.parse("${EnvironmentUtil.basePath}/users/logout"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
+  /// Call backend logout endpoint via Dio (uses OAuth interceptor for token)
+  Future<void> _callBackendLogout() async {
+    await getIt<IOAuthApiClient>().post<Map<String, dynamic>, _EmptyDeleteRequest>(
+      "/users/logout",
+      (json) => json is Map ? Map<String, dynamic>.from(json) : <String, dynamic>{},
+      data: _EmptyDeleteRequest(),
     );
-
-    if (response.statusCode != 200) {
-      throw Exception("Backend logout failed: ${response.statusCode}");
-    }
   }
 
   /// Delete user account and then perform logout.
@@ -121,7 +113,7 @@ class LogoutService {
 
   static String _getDeleteAccountSuccessMessage(BuildContext context) {
     try {
-      return LanguageAwareStringHelper.getCurrent(context, "delete_account_success");
+      return L10n.get("delete_account_success");
     } catch (_) {
       return "Account deleted successfully";
     }

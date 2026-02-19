@@ -2,7 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// A reusable component for displaying listing type information
 /// Handles both badge display and utility functions for listing types
@@ -101,9 +101,7 @@ class ListingTypeHelper {
 
   /// Get the localized text for a listing type code
   static String getText(BuildContext context, String code) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
+    final currentLanguage = L10n.currentLanguage;
 
     switch (code) {
       case "room_needed":

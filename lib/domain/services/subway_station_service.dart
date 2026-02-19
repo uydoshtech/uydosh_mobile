@@ -1,4 +1,3 @@
-import "package:injectable/injectable.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
@@ -13,7 +12,6 @@ abstract class ISubwayStationService {
   });
 }
 
-@injectable
 class SubwayStationService implements ISubwayStationService {
   SubwayStationService(this._apiClient);
 

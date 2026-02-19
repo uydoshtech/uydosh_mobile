@@ -10,7 +10,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_scree
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class AdminListingsWithComplaintsScreen extends StatefulWidget {
   const AdminListingsWithComplaintsScreen({super.key});
@@ -204,10 +204,7 @@ class _AdminListingsWithComplaintsScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_listing_complaints_title",
-          ),
+          L10n.get("admin_listing_complaints_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
@@ -218,10 +215,7 @@ class _AdminListingsWithComplaintsScreenState
             child:
                 _isLoading
                     ? CenteredHouseLoadingIndicator(
-                      text: LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "admin_complaints_loading",
-                      ),
+                      text: L10n.get("admin_complaints_loading"),
                     )
                     : _hasError
                     ? _buildErrorState(context)
@@ -314,7 +308,7 @@ class _AdminListingsWithComplaintsScreenState
     String status,
     String labelKey,
   ) {
-    final label = LanguageAwareStringHelper.getCurrent(context, labelKey);
+    final label = L10n.get(labelKey);
     final count = _statusCounts[status];
     if (count == null) return label;
     return "$label ($count)";
@@ -332,10 +326,7 @@ class _AdminListingsWithComplaintsScreenState
           ),
           const SizedBox(height: 12),
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_listing_complaints_error",
-            ),
+            L10n.get("admin_listing_complaints_error"),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -357,7 +348,7 @@ class _AdminListingsWithComplaintsScreenState
           ElevatedButton(
             onPressed: _refresh,
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, "retry"),
+              L10n.get("retry"),
             ),
           ),
         ],
@@ -369,10 +360,7 @@ class _AdminListingsWithComplaintsScreenState
     if (_groups.isEmpty) {
       return Center(
         child: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_listing_complaints_empty",
-          ),
+          L10n.get("admin_listing_complaints_empty"),
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -398,7 +386,7 @@ class _AdminListingsWithComplaintsScreenState
                 color: Theme.of(context).colorScheme.primary,
               ),
               title: Text(
-                "${LanguageAwareStringHelper.getCurrent(context, "admin_complaints_listing_id")}: ${_getListingLabel(context, group.listingId)}",
+                "${L10n.get("admin_complaints_listing_id")}: ${_getListingLabel(context, group.listingId)}",
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Column(
@@ -438,8 +426,7 @@ class _AdminListingsWithComplaintsScreenState
   }
 
   String _buildComplaintsCountLabel(BuildContext context, int count) {
-    return LanguageAwareStringHelper.getCurrent(context, "complaints_count_short")
-        .replaceAll("{count}", "$count");
+    return L10n.get("complaints_count_short").replaceAll("{count}", "$count");
   }
 
   List<Widget> _buildCategoryWidgets(
@@ -449,10 +436,7 @@ class _AdminListingsWithComplaintsScreenState
     if (group.categoryCounts.isEmpty) {
       return [
         Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_listing_complaints_categories_empty",
-          ),
+          L10n.get("admin_listing_complaints_categories_empty"),
           style: TextStyle(
             fontSize: 12,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -514,12 +498,9 @@ class _AdminListingsWithComplaintsScreenState
   ) {
     final category = group.categoryById[categoryId] ?? _categoriesById[categoryId];
     if (category == null) {
-      return LanguageAwareStringHelper.getCurrent(
-        context,
-        "admin_complaints_category_unknown",
-      );
+      return L10n.get("admin_complaints_category_unknown");
     }
-    final language = LanguageAwareStringHelper.getCurrentLanguage(context);
+    final language = L10n.currentLanguage;
     switch (language) {
       case "ru":
         return category.nameRu;
@@ -533,7 +514,7 @@ class _AdminListingsWithComplaintsScreenState
 
   String _getListingLabel(BuildContext context, int listingId) {
     if (listingId <= 0) {
-      return LanguageAwareStringHelper.getCurrent(context, "not_specified");
+      return L10n.get("not_specified");
     }
     return listingId.toString();
   }
@@ -542,7 +523,7 @@ class _AdminListingsWithComplaintsScreenState
     if (listingId <= 0) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(context, "error_generic"),
+        message: L10n.get("error_generic"),
       );
       return;
     }

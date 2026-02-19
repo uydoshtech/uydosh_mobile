@@ -6,6 +6,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminSearchAnalyticsScreen extends StatefulWidget {
@@ -80,10 +81,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(
-            context,
-            "admin_search_analytics_title",
-          ),
+          L10n.get("admin_search_analytics_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
@@ -95,10 +93,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
           }
           if (_isLoading && _analytics == null) {
             return CenteredHouseLoadingIndicator(
-              text: LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_search_analytics_loading",
-              ),
+              text: L10n.get("admin_search_analytics_loading"),
             );
           }
           return RefreshIndicator(
@@ -147,10 +142,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
 
   Widget _buildTimeRangeSelector(BuildContext context) {
     return PeriodPicker(
-      title: LanguageAwareStringHelper.getCurrent(
-        context,
-        "admin_search_analytics_time_range",
-      ),
+      title: L10n.get("admin_search_analytics_time_range"),
       selectedDays: _selectedDays,
       onChanged: (days) {
         setState(() {
@@ -168,10 +160,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_search_analytics_total",
-            ),
+            title: L10n.get("admin_search_analytics_total"),
             value: s.totalSearches.toString(),
             icon: Icons.search,
           ),
@@ -180,10 +169,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_search_analytics_today",
-            ),
+            title: L10n.get("admin_search_analytics_today"),
             value: s.searchesToday.toString(),
             icon: Icons.today,
           ),
@@ -192,10 +178,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         Expanded(
           child: _buildSummaryCard(
             context,
-            title: LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_search_analytics_week",
-            ),
+            title: L10n.get("admin_search_analytics_week"),
             value: s.searchesThisWeek.toString(),
             icon: Icons.date_range,
           ),
@@ -265,7 +248,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         Icon(icon, size: 22, color: Theme.of(context).colorScheme.onSurface),
         const SizedBox(width: 8),
         Text(
-          LanguageAwareStringHelper.getCurrent(context, titleKey),
+          L10n.get(titleKey),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -281,10 +264,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     if (stations.isEmpty) {
       return _buildEmptySection(
         context,
-        LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_search_analytics_no_stations",
-        ),
+        L10n.get("admin_search_analytics_no_stations"),
       );
     }
     final maxCount = stations.map((s) => s.count).reduce((a, b) => a > b ? a : b);
@@ -339,10 +319,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     if (locations.isEmpty) {
       return _buildEmptySection(
         context,
-        LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_search_analytics_no_districts",
-        ),
+        L10n.get("admin_search_analytics_no_districts"),
       );
     }
     final maxCount = locations.map((l) => l.count).reduce((a, b) => a > b ? a : b);
@@ -394,10 +371,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     if (lines.isEmpty) {
       return _buildEmptySection(
         context,
-        LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_search_analytics_no_lines",
-        ),
+        L10n.get("admin_search_analytics_no_lines"),
       );
     }
     return GridView.builder(
@@ -455,10 +429,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                   ),
                 ),
                 Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "admin_search_analytics_searches",
-                  ),
+                  L10n.get("admin_search_analytics_searches"),
                   style: TextStyle(
                     fontSize: 11,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -503,10 +474,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
             ),
             const SizedBox(height: 12),
             Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_search_analytics_error",
-              ),
+              L10n.get("admin_search_analytics_error"),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -532,10 +500,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
               onPressed: _loadAnalytics,
               icon: const Icon(Icons.refresh),
               label: Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "admin_search_analytics_retry",
-                ),
+L10n.get("admin_search_analytics_retry"),
               ),
             ),
           ],

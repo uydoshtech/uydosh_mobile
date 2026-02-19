@@ -5,7 +5,7 @@ import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
   const AdminUserDetailScreen({required this.user, super.key});
@@ -44,10 +44,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     return Scaffold(
         appBar: AppBar(
           title: Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "admin_user_detail_title",
-            ),
+            L10n.get("admin_user_detail_title"),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           leading: IconButton(
@@ -81,10 +78,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           children: [
             Text(
               _currentUser.email ??
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "not_specified",
-                  ),
+                  L10n.get("not_specified"),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -115,10 +109,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_user_detail_block_title",
-              ),
+              L10n.get("admin_user_detail_block_title"),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
@@ -132,10 +123,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "admin_user_detail_blocked",
-                    ),
+                    L10n.get("admin_user_detail_blocked"),
                     style: TextStyle(
                       fontSize: 16,
                       color: Theme.of(context).colorScheme.error,
@@ -148,14 +136,14 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   _currentUser.blockedReason!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  "${LanguageAwareStringHelper.getCurrent(context, "admin_user_detail_block_reason")}: ${_currentUser.blockedReason}",
+                  "${L10n.get("admin_user_detail_block_reason")}: ${_currentUser.blockedReason}",
                   style: const TextStyle(fontSize: 13),
                 ),
               ],
               if (_currentUser.blockedUntil != null) ...[
                 const SizedBox(height: 4),
                 Text(
-                  "${LanguageAwareStringHelper.getCurrent(context, "admin_user_detail_block_until")}: ${_currentUser.blockedUntil!.toIso8601String().split("T")[0]}",
+                  "${L10n.get("admin_user_detail_block_until")}: ${_currentUser.blockedUntil!.toIso8601String().split("T")[0]}",
                   style: const TextStyle(fontSize: 13),
                 ),
               ],
@@ -172,10 +160,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                         )
                       : const Icon(Icons.lock_open),
                   label: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "admin_user_detail_unblock",
-                    ),
+                    L10n.get("admin_user_detail_unblock"),
                   ),
                 ),
               ),
@@ -192,10 +177,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                         )
                       : const Icon(Icons.block),
                   label: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "admin_user_detail_block",
-                    ),
+                    L10n.get("admin_user_detail_block"),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Theme.of(context).colorScheme.error,
@@ -219,7 +201,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           title: Text(
-            LanguageAwareStringHelper.getCurrent(context, "admin_user_detail_block"),
+            L10n.get("admin_user_detail_block"),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -229,28 +211,19 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                 TextField(
                   controller: reasonController,
                   decoration: InputDecoration(
-                    labelText: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "admin_user_detail_block_reason",
-                    ),
+                    labelText: L10n.get("admin_user_detail_block_reason"),
                   ),
                   maxLines: 2,
                 ),
                 const SizedBox(height: 16),
                 ListTile(
                   title: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "admin_user_detail_block_until",
-                    ),
+L10n.get("admin_user_detail_block_until"),
                   ),
                   subtitle: Text(
                     blockedUntil != null
                         ? blockedUntil!.toIso8601String().split("T")[0]
-                        : LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "admin_user_detail_block_permanent",
-                          ),
+: L10n.get("admin_user_detail_block_permanent"),
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.calendar_today),
@@ -270,10 +243,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                 TextButton(
                   onPressed: () => setDialogState(() => blockedUntil = null),
                   child: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "admin_user_detail_block_permanent",
-                    ),
+L10n.get("admin_user_detail_block_permanent"),
                   ),
                 ),
               ],
@@ -282,7 +252,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(LanguageAwareStringHelper.getCurrent(context, "cancel")),
+              child: Text(L10n.get("cancel")),
             ),
             ElevatedButton(
               onPressed: () {
@@ -294,7 +264,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   blockedUntil: blockedUntil,
                 );
               },
-              child: Text(LanguageAwareStringHelper.getCurrent(context, "admin_user_detail_block_confirm")),
+              child: Text(L10n.get("admin_user_detail_block_confirm")),
             ),
           ],
         ),
@@ -317,10 +287,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
       });
       ToastTheme.showSuccess(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_user_detail_blocked_success",
-        ),
+        message: L10n.get("admin_user_detail_blocked_success"),
       );
     } catch (e) {
       if (!mounted) return;
@@ -342,10 +309,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
       });
       ToastTheme.showSuccess(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_user_detail_unblocked_success",
-        ),
+        message: L10n.get("admin_user_detail_unblocked_success"),
       );
     } catch (e) {
       if (!mounted) return;
@@ -364,10 +328,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_user_detail_role_title",
-              ),
+              L10n.get("admin_user_detail_role_title"),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
@@ -384,10 +345,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                       .toList(),
               onChanged: _saving ? null : (value) => setState(() => _selectedRole = value),
               decoration: InputDecoration(
-                labelText: LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "admin_user_detail_role_label",
-                ),
+labelText: L10n.get("admin_user_detail_role_label"),
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -404,10 +362,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                         : Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "admin_user_detail_role_save",
-                          ),
+                          L10n.get("admin_user_detail_role_save"),
                         ),
               ),
             ),
@@ -426,10 +381,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           ListTile(
             leading: const Icon(Icons.list_alt),
             title: Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_user_detail_view_listings",
-              ),
+              L10n.get("admin_user_detail_view_listings"),
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
@@ -448,10 +400,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           ListTile(
             leading: const Icon(Icons.report_problem),
             title: Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "admin_user_detail_view_complaints",
-              ),
+              L10n.get("admin_user_detail_view_complaints"),
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
@@ -475,19 +424,19 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     return [
       _RoleOption(
         value: "tenant",
-        label: LanguageAwareStringHelper.getCurrent(context, "role_tenant"),
+        label: L10n.get("role_tenant"),
       ),
       _RoleOption(
         value: "landlord",
-        label: LanguageAwareStringHelper.getCurrent(context, "role_landlord"),
+        label: L10n.get("role_landlord"),
       ),
       _RoleOption(
         value: "manager",
-        label: LanguageAwareStringHelper.getCurrent(context, "role_manager"),
+        label: L10n.get("role_manager"),
       ),
       _RoleOption(
         value: "admin",
-        label: LanguageAwareStringHelper.getCurrent(context, "role_admin"),
+        label: L10n.get("role_admin"),
       ),
     ];
   }
@@ -495,15 +444,15 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   String _getRoleLabel(String? role, BuildContext context) {
     switch (role) {
       case "tenant":
-        return LanguageAwareStringHelper.getCurrent(context, "role_tenant");
+        return L10n.get("role_tenant");
       case "landlord":
-        return LanguageAwareStringHelper.getCurrent(context, "role_landlord");
+        return L10n.get("role_landlord");
       case "manager":
-        return LanguageAwareStringHelper.getCurrent(context, "role_manager");
+        return L10n.get("role_manager");
       case "admin":
-        return LanguageAwareStringHelper.getCurrent(context, "role_admin");
+        return L10n.get("role_admin");
       default:
-        return LanguageAwareStringHelper.getCurrent(context, "not_specified");
+        return L10n.get("not_specified");
     }
   }
 
@@ -524,10 +473,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
       });
       ToastTheme.showSuccess(
         context,
-        message: LanguageAwareStringHelper.getCurrent(
-          context,
-          "admin_user_detail_role_updated",
-        ),
+        message: L10n.get("admin_user_detail_role_updated"),
       );
     } catch (e) {
       if (!mounted) return;
@@ -546,7 +492,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
       child: Row(
         children: [
           Text(
-            "${LanguageAwareStringHelper.getCurrent(context, labelKey)}: ",
+            "${L10n.get(labelKey)}: ",
             style: TextStyle(
               fontSize: 12,
               color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class AppDateUtils {
   /// Format date with month name in the format: "hh:mm • dd MMMM YYYY"
@@ -18,10 +18,7 @@ class AppDateUtils {
       "november",
       "december",
     ];
-    final localizedMonth = LanguageAwareStringHelper.getCurrent(
-      context,
-      monthKeys[dateTime.month - 1],
-    );
+    final localizedMonth = L10n.get(monthKeys[dateTime.month - 1]);
 
     return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} • ${dateTime.day.toString().padLeft(2, '0')} $localizedMonth ${dateTime.year}";
   }
@@ -42,10 +39,7 @@ class AppDateUtils {
       "november",
       "december",
     ];
-    final localizedMonth = LanguageAwareStringHelper.getCurrent(
-      context,
-      monthKeys[dateTime.month - 1],
-    );
+    final localizedMonth = L10n.get(monthKeys[dateTime.month - 1]);
 
     return "${dateTime.day.toString().padLeft(2, '0')} $localizedMonth ${dateTime.year} • ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
   }
@@ -66,10 +60,7 @@ class AppDateUtils {
       "november",
       "december",
     ];
-    final localizedMonth = LanguageAwareStringHelper.getCurrent(
-      context,
-      monthKeys[dateTime.month - 1],
-    );
+    final localizedMonth = L10n.get(monthKeys[dateTime.month - 1]);
 
     return "${dateTime.day.toString().padLeft(2, '0')} $localizedMonth ${dateTime.year}";
   }

@@ -6,7 +6,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// Map section with Yandex Maps for listing detail.
 class ListingDetailMapSection extends StatelessWidget {
@@ -36,10 +36,7 @@ class ListingDetailMapSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "location_on_map",
-                  ),
+                  L10n.get("location_on_map"),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -67,10 +64,7 @@ class ListingDetailMapSection extends StatelessWidget {
                   color: ListingDetailThemeHelper.yandexButtonColor,
                 ),
                 label: Text(
-                  LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "open_in_yandex_maps",
-                  ),
+                  L10n.get("open_in_yandex_maps"),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,

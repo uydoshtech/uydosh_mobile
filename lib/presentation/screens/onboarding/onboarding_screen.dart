@@ -10,7 +10,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -189,10 +189,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       padding: const EdgeInsets.all(16.0),
                       child: TextButtonThemedFactory.text(
                         onPressed: _navigateToMainApp,
-                        text: LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "onboarding_skip",
-                        ),
+                        text: L10n.get("onboarding_skip"),
                       ),
                     ),
                   ),
@@ -245,10 +242,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 curve: Curves.easeInOut,
                               );
                             },
-                            text: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "onboarding_back",
-                            ),
+                            text: L10n.get("onboarding_back"),
                           )
                         else
                           const SizedBox(width: 60),
@@ -269,8 +263,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             horizontal: 32,
                             vertical: 16,
                           ),
-                          text: LanguageAwareStringHelper.getCurrent(
-                            context,
+                          text: L10n.get(
                             _currentPage < 3
                                 ? "onboarding_next"
                                 : "onboarding_get_started",
@@ -346,7 +339,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 48.0),
               child: Text(
-                LanguageAwareStringHelper.getCurrent(context, page.titleKey),
+                L10n.get(page.titleKey),
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -365,10 +358,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 48.0),
               child: Text(
-                LanguageAwareStringHelper.getCurrent(
-                  context,
-                  page.descriptionKey,
-                ),
+                L10n.get(page.descriptionKey),
                 style: TextStyle(
                   fontSize: 18,
                   color: onboardingColors.textSecondary,

@@ -12,7 +12,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class CreateComplaintScreen extends StatefulWidget {
 
@@ -47,7 +47,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(context, "create_complaint"),
+          L10n.get("create_complaint"),
         ),
         leading: IconButton(
           icon: const ThemeIcon(icon: Icons.arrow_back),
@@ -79,10 +79,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
               });
               ToastTheme.showSuccess(
                 context,
-                message: LanguageAwareStringHelper.getCurrent(
-                  context,
-                  "complaint_created_success",
-                ),
+                message: L10n.get("complaint_created_success"),
               );
               Navigator.of(context).pop(true);
             },
@@ -165,10 +162,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
                             Navigator.of(context).pop();
                           },
                           child: Text(
-                            LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "back_to_listing",
-                            ),
+                            L10n.get("back_to_listing"),
                           ),
                         ),
                       ],
@@ -188,10 +182,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "select_complaint_category",
-            ),
+            L10n.get("select_complaint_category"),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
@@ -221,10 +212,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
             controller: _descriptionController,
             maxLines: 4,
             decoration: InputDecoration(
-              hintText: LanguageAwareStringHelper.getCurrent(
-                context,
-                "complaint_description_hint",
-              ),
+              hintText: L10n.get("complaint_description_hint"),
               border: const OutlineInputBorder(),
               alignLabelWithHint: true,
             ),
@@ -245,10 +233,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                       : Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "submit_complaint",
-                        ),
+L10n.get("submit_complaint"),
                       ),
             ),
           ),
@@ -275,9 +260,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
     BuildContext context,
     ComplaintCategory category,
   ) {
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(
-      context,
-    );
+    final currentLanguage = L10n.currentLanguage;
 
     switch (currentLanguage) {
       case "ru":

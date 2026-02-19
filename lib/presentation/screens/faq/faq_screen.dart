@@ -3,7 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class FaqScreen extends StatefulWidget {
   const FaqScreen({super.key});
@@ -90,7 +90,7 @@ class _FaqScreenState extends State<FaqScreen> {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: Text(
-          LanguageAwareStringHelper.getCurrent(context, "menu_faq"),
+          L10n.get("menu_faq"),
           style: TextStyle(
             color: _getTextColor(),
             fontWeight: FontWeight.w600,
@@ -108,32 +108,32 @@ class _FaqScreenState extends State<FaqScreen> {
             // FAQ Items
             _buildFaqItem(
               index: 0,
-              question: LanguageAwareStringHelper.getCurrent(context, "faq_question_4"),
-              answer: LanguageAwareStringHelper.getCurrent(context, "faq_answer_4"),
+              question: L10n.get("faq_question_4"),
+              answer: L10n.get("faq_answer_4"),
             ),
 
             _buildFaqItem(
               index: 1,
-              question: LanguageAwareStringHelper.getCurrent(context, "faq_question"),
-              answer: LanguageAwareStringHelper.getCurrent(context, "faq_answer"),
+              question: L10n.get("faq_question"),
+              answer: L10n.get("faq_answer"),
             ),
 
             _buildFaqItem(
               index: 2,
-              question: LanguageAwareStringHelper.getCurrent(context, "faq_question_5"),
-              answer: LanguageAwareStringHelper.getCurrent(context, "faq_answer_5"),
+              question: L10n.get("faq_question_5"),
+              answer: L10n.get("faq_answer_5"),
             ),
             
             _buildFaqItem(
               index: 3,
-              question: LanguageAwareStringHelper.getCurrent(context, "faq_question_2"),
-              answer: LanguageAwareStringHelper.getCurrent(context, "faq_answer_2"),
+              question: L10n.get("faq_question_2"),
+              answer: L10n.get("faq_answer_2"),
             ),
             
             _buildFaqItem(
               index: 4,
-              question: LanguageAwareStringHelper.getCurrent(context, "faq_question_3"),
-              answer: LanguageAwareStringHelper.getCurrent(context, "faq_answer_3"),
+              question: L10n.get("faq_question_3"),
+              answer: L10n.get("faq_answer_3"),
             ),
 
             const SizedBox(height: 32),
@@ -148,7 +148,7 @@ class _FaqScreenState extends State<FaqScreen> {
     final lines = text.split("\n");
     
     // Get current language to determine which keywords to use
-    final currentLanguage = LanguageAwareStringHelper.getCurrentLanguage(context);
+    final currentLanguage = L10n.currentLanguage;
     
     // Define bold keywords for each language
     final boldKeywordsByLanguage = <String, List<String>>{

@@ -3,12 +3,19 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/domain/models/auth/auth_request.dart";
 import "package:uy_dosh/domain/models/auth/auth_response.dart";
+import "package:uy_dosh/domain/models/auth/firebase_auth_request.dart";
 
 abstract class IAuthService {
   Future<AuthResponse> register(String email);
   Future<AuthResponse> login(String email);
+  /// Authenticate with backend using Firebase credentials.
+  /// Returns raw response with sessionToken, user, profileExists.
+  Future<Map<String, dynamic>> firebaseAuth({
+    required String email,
+    required String firebaseUid,
+  });
   Future<bool> refreshToken();
-  Future<void> logout(); // Add logout method
+  Future<void> logout();
 }
 
 class AuthService implements IAuthService {
@@ -61,6 +68,27 @@ class AuthService implements IAuthService {
       return response;
     } catch (e) {
       throw Exception("Failed to login user: $e");
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> firebaseAuth({
+    required String email,
+    required String firebaseUid,
+  }) async {
+    try {
+      final request = FirebaseAuthRequest(
+        email: email,
+        firebaseUid: firebaseUid,
+      );
+      final response = await _apiClient.post<Map<String, dynamic>, FirebaseAuthRequest>(
+        "/users/firebase-auth",
+        (json) => json as Map<String, dynamic>,
+        data: request,
+      );
+      return response;
+    } catch (e) {
+      throw Exception("Firebase auth failed: $e");
     }
   }
 

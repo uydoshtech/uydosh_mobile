@@ -25,6 +25,7 @@ import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
@@ -638,10 +639,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "search_listings",
-                      ),
+                      L10n.get("search_listings"),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -787,10 +785,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                           const SizedBox(height: 8),
                           Center(
                             child: Text(
-                              LanguageAwareStringHelper.getCurrent(
-                                context,
-                                "search_location_or_metro_hint",
-                              ),
+                              L10n.get("search_location_or_metro_hint"),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurfaceVariant,
@@ -869,10 +864,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                                   const SizedBox(width: 6),
                                                   Flexible(
                                                     child: Text(
-                                                      LanguageAwareStringHelper.getCurrent(
-                                                        context,
-                                                        "select_metro_line",
-                                                      ),
+                                                      L10n.get("select_metro_line"),
                                                       style: TextStyle(
                                                         fontSize: 15,
                                                         fontWeight:
@@ -1048,10 +1040,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                                           ),
                                                           Flexible(
                                                             child: Text(
-                                                              LanguageAwareStringHelper.getCurrent(
-                                                                context,
-                                                                "all_stations_count",
-                                                              ).replaceAll(
+                                                              L10n.get("all_stations_count").replaceAll(
                                                                 "{count}",
                                                                 "${_currentStations.length}",
                                                               ),
@@ -1181,10 +1170,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                           height: 80,
                                           child: Center(
                                             child: Text(
-                                              LanguageAwareStringHelper.getCurrent(
-                                                context,
-                                                "select_metro_line_title",
-                                              ),
+                                              L10n.get("select_metro_line_title"),
                                               style: TextStyle(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w600,
@@ -1266,10 +1252,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                             child: UydoshToggle(
                               icon: Icons.lock_outline,
                               title: Text(
-                                LanguageAwareStringHelper.getCurrent(
-                                  context,
-                                  "private_room_only",
-                                ),
+                                L10n.get("private_room_only"),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight:
@@ -1305,10 +1288,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                   const Icon(Icons.search, size: 20),
                                   const SizedBox(width: 8),
                                   Text(
-                                    LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "search",
-                                    ),
+                                    L10n.get("search"),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -1357,7 +1337,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              LanguageAwareStringHelper.getCurrent(context, key),
+              L10n.get(key),
               style: TextStyle(
                 color: theme.colorScheme.onSurfaceVariant,
                 fontSize: 14,
@@ -1448,10 +1428,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "select_location",
-                        ),
+                        L10n.get("select_location"),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -1563,11 +1540,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                         size: 18,
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "select_metro_line",
-                        ),
+                        Text(
+                          L10n.get("select_metro_line"),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -1768,10 +1742,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   Expanded(
                     child: Center(
                       child: Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "select_location",
-                        ),
+                        L10n.get("select_location"),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -1851,10 +1822,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "select_location",
-                        ),
+                        L10n.get("select_location"),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -1987,10 +1955,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
   /// Builds a RichText widget that supports bold formatting for the explanation text
   Widget _buildRichTextExplanation(BuildContext context, ThemeData theme) {
-    final explanationText = LanguageAwareStringHelper.getCurrent(
-          context,
-          "all_stations_explanation",
-        )
+    final explanationText = L10n.get("all_stations_explanation")
         .replaceAll("{count}", "${_currentStations.length}")
         .replaceAll(
           "{line}",

@@ -782,7 +782,7 @@ packages:
     source: hosted
     version: "4.3.0"
   http:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: http
       sha256: bb2ce4590bc2667c96f318d68cac1b5a7987ec819351d32b1c987239a815e007
@@ -885,22 +885,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
-  injectable:
-    dependency: "direct main"
-    description:
-      name: injectable
-      sha256: "1b86fab6a98c11a97e5c718afb00e628d47d183c2a2256392e995a4c561141c1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.5.1"
-  injectable_generator:
-    dependency: "direct dev"
-    description:
-      name: injectable_generator
-      sha256: b04673a4c88b3a848c0c77bf58b8309f9b9e064d9fe1df5450c8ee1675eaea1a
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.7.0"
   intl:
     dependency: "direct main"
     description:
@@ -1213,14 +1197,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.3"
-  recase:
-    dependency: transitive
-    description:
-      name: recase
-      sha256: e4eb4ec2dcdee52dcf99cb4ceabaffc631d7424ee55e56f280bc039737f89213
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.0"
   rxdart:
     dependency: transitive
     description:

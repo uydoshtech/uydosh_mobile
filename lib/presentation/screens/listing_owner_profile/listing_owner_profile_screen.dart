@@ -10,6 +10,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -77,9 +78,8 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
       builder: (context, child) {
         return Scaffold(
           appBar: AppBar(
-            title: LanguageAwareStringHelper.getText(
+            title: L10n.text(
               "profile",
-              context,
               style:
                   Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
                     fontSize: 20,
@@ -141,10 +141,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
 
               if (data.isLoading) {
                 return CenteredHouseLoadingIndicator(
-                  text: LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "loading",
-                  ),
+                  text: L10n.get("loading"),
                 );
               }
 
@@ -232,10 +229,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "name",
-                                  ),
+                                  L10n.get("name"),
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey,
@@ -270,10 +264,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "gender",
-                                    ),
+                                    L10n.get("gender"),
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey,
@@ -308,10 +299,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "location",
-                                  ),
+                                  L10n.get("location"),
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey,
@@ -320,10 +308,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                 Text(
                                   profile.region != null
                                       ? _getLocalizedRegionName(profile.region!)
-                                      : LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "not_specified",
-                                      ),
+                                      : L10n.get("not_specified"),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -347,10 +332,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "university",
-                                  ),
+                                  L10n.get("university"),
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey,
@@ -361,10 +343,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                       ? _getLocalizedUniversityName(
                                         profile.university!,
                                       )
-                                      : LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "not_specified",
-                                      ),
+                                      : L10n.get("not_specified"),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -388,10 +367,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  LanguageAwareStringHelper.getCurrent(
-                                    context,
-                                    "about_me",
-                                  ),
+                                  L10n.get("about_me"),
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey,
@@ -401,10 +377,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                   profile.aboutMe != null &&
                                           profile.aboutMe!.isNotEmpty
                                       ? profile.aboutMe!
-                                      : LanguageAwareStringHelper.getCurrent(
-                                        context,
-                                        "not_specified",
-                                      ),
+                                      : L10n.get("not_specified"),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -433,10 +406,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "rating",
-                                    ),
+L10n.get("rating"),
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey,
@@ -481,10 +451,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "lifestyle_preferences",
-                          ),
+                          L10n.get("lifestyle_preferences"),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -497,10 +464,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.wakeupTime != null) ...[
                           _buildProfileField(
                             icon: Icons.wb_sunny,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "wakeup_time",
-                            ),
+                            label: L10n.get("wakeup_time"),
                             value: _getTimePreferenceText(
                               profile.wakeupTime!,
                               context,
@@ -514,10 +478,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.sleepTime != null) ...[
                           _buildProfileField(
                             icon: Icons.bedtime,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "sleep_time",
-                            ),
+                            label: L10n.get("sleep_time"),
                             value: _getTimePreferenceText(
                               profile.sleepTime!,
                               context,
@@ -531,20 +492,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.employed != null) ...[
                           _buildProfileField(
                             icon: Icons.work,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "employed",
-                            ),
+                            label: L10n.get("employed"),
                             value:
                                 profile.employed!
-                                    ? LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "yes",
-                                    )
-                                    : LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "no",
-                                    ),
+                                    ? L10n.get("yes")
+                                    : L10n.get("no"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -554,10 +506,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.cleanliness != null) ...[
                           _buildProfileField(
                             icon: Icons.cleaning_services,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "cleanliness",
-                            ),
+                            label: L10n.get("cleanliness"),
                             value: _getCleanlinessText(
                               profile.cleanliness!,
                               context,
@@ -571,10 +520,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.noiseLevel != null) ...[
                           _buildProfileField(
                             icon: Icons.volume_up,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "noise_level",
-                            ),
+                            label: L10n.get("noise_level"),
                             value: _getNoiseLevelText(
                               profile.noiseLevel!,
                               context,
@@ -588,10 +534,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.sociability != null) ...[
                           _buildProfileField(
                             icon: Icons.people,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "sociability",
-                            ),
+                            label: L10n.get("sociability"),
                             value: _getSociabilityText(
                               profile.sociability!,
                               context,
@@ -605,20 +548,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.guestsAllowed != null) ...[
                           _buildProfileField(
                             icon: Icons.group_add,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "guests_allowed",
-                            ),
+                            label: L10n.get("guests_allowed"),
                             value:
                                 profile.guestsAllowed!
-                                    ? LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "yes",
-                                    )
-                                    : LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "no",
-                                    ),
+                                    ? L10n.get("yes")
+                                    : L10n.get("no"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -628,10 +562,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.smokingPreference != null) ...[
                           _buildProfileField(
                             icon: Icons.smoking_rooms,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "smoking_preference",
-                            ),
+                            label: L10n.get("smoking_preference"),
                             value: _getSmokingPreferenceText(
                               profile.smokingPreference!,
                               context,
@@ -645,10 +576,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.alcoholPreference != null) ...[
                           _buildProfileField(
                             icon: Icons.local_bar,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "alcohol_preference",
-                            ),
+                            label: L10n.get("alcohol_preference"),
                             value: _getAlcoholPreferenceText(
                               profile.alcoholPreference!,
                               context,
@@ -662,20 +590,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.cookingHabits != null) ...[
                           _buildProfileField(
                             icon: Icons.restaurant,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "cooking_habits",
-                            ),
+                            label: L10n.get("cooking_habits"),
                             value:
                                 profile.cookingHabits!
-                                    ? LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "cook",
-                                    )
-                                    : LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "dont_cook",
-                                    ),
+                                    ? L10n.get("cook")
+                                    : L10n.get("dont_cook"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -685,20 +604,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         if (profile.petsPreference != null) ...[
                           _buildProfileField(
                             icon: Icons.pets,
-                            label: LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "pets_preference",
-                            ),
+                            label: L10n.get("pets_preference"),
                             value:
                                 profile.petsPreference!
-                                    ? LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "pets_okay",
-                                    )
-                                    : LanguageAwareStringHelper.getCurrent(
-                                      context,
-                                      "pets_not_okay",
-                                    ),
+                                    ? L10n.get("pets_okay")
+                                    : L10n.get("pets_not_okay"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -713,10 +623,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
               if (profile.telegram != null) ...[
                 _buildTappableDetailCard(
                   icon: Icons.telegram,
-                  title: LanguageAwareStringHelper.getCurrent(
-                    context,
-                    "telegram",
-                  ),
+                  title: L10n.get("telegram"),
                   value: profile.telegram!,
                   onTap: () => _openTelegram(profile.telegram!, context),
                 ),
@@ -733,10 +640,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                   child: GhostButtonFactory.iconText(
                     onPressed: () => _makePhoneCall(widget.phoneNumber!),
                     icon: Icons.phone,
-                    text: LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "contact_user",
-                    ),
+                    text: L10n.get("contact_user"),
                     padding: const EdgeInsets.symmetric(
                       vertical: 16,
                       horizontal: 24,
@@ -814,10 +718,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              LanguageAwareStringHelper.getCurrent(
-                context,
-                "error_loading_profile",
-              ),
+              L10n.get("error_loading_profile"),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -826,7 +727,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              LanguageAwareStringHelper.getCurrent(context, "error_generic"),
+              L10n.get("error_generic"),
               style: TextStyle(fontSize: 16, color: _getTextSecondaryColor()),
               textAlign: TextAlign.center,
             ),
@@ -837,7 +738,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                   ListingOwnerProfileEvent.fetchProfile(userId: widget.userId),
                 );
               },
-              text: LanguageAwareStringHelper.getCurrent(context, "retry"),
+              text: L10n.get("retry"),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ],
@@ -948,11 +849,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   String _getGenderText(int gender, BuildContext context) {
     switch (gender) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(context, "male");
+        return L10n.get("male");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "female");
+        return L10n.get("female");
       default:
-        return LanguageAwareStringHelper.getCurrent(context, "other");
+        return L10n.get("other");
     }
   }
 
@@ -1028,13 +929,13 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
       } else {
         ToastTheme.showError(
           context,
-          message: LanguageAwareStringHelper.getCurrent(context, "error"),
+          message: L10n.get("error"),
         );
       }
     } catch (e) {
       ToastTheme.showError(
         context,
-        message: LanguageAwareStringHelper.getCurrent(context, "error"),
+        message: L10n.get("error"),
       );
     }
   }
@@ -1103,15 +1004,15 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   String _getCleanlinessText(int value, BuildContext context) {
     switch (value) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(context, "very_messy");
+        return L10n.get("very_messy");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "messy");
+        return L10n.get("messy");
       case 3:
-        return LanguageAwareStringHelper.getCurrent(context, "average");
+        return L10n.get("average");
       case 4:
-        return LanguageAwareStringHelper.getCurrent(context, "clean");
+        return L10n.get("clean");
       case 5:
-        return LanguageAwareStringHelper.getCurrent(context, "very_clean");
+        return L10n.get("very_clean");
       default:
         return value.toString();
     }
@@ -1120,15 +1021,15 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   String _getNoiseLevelText(int value, BuildContext context) {
     switch (value) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(context, "very_quiet");
+        return L10n.get("very_quiet");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "quiet");
+        return L10n.get("quiet");
       case 3:
-        return LanguageAwareStringHelper.getCurrent(context, "average");
+        return L10n.get("average");
       case 4:
-        return LanguageAwareStringHelper.getCurrent(context, "loud");
+        return L10n.get("loud");
       case 5:
-        return LanguageAwareStringHelper.getCurrent(context, "very_loud");
+        return L10n.get("very_loud");
       default:
         return value.toString();
     }
@@ -1137,21 +1038,15 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   String _getSociabilityText(int value, BuildContext context) {
     switch (value) {
       case 1:
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "very_introverted",
-        );
+        return L10n.get("very_introverted");
       case 2:
-        return LanguageAwareStringHelper.getCurrent(context, "introverted");
+        return L10n.get("introverted");
       case 3:
-        return LanguageAwareStringHelper.getCurrent(context, "balanced");
+        return L10n.get("balanced");
       case 4:
-        return LanguageAwareStringHelper.getCurrent(context, "extroverted");
+        return L10n.get("extroverted");
       case 5:
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "very_extroverted",
-        );
+        return L10n.get("very_extroverted");
       default:
         return value.toString();
     }
@@ -1160,14 +1055,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   String _getSmokingPreferenceText(String value, BuildContext context) {
     switch (value) {
       case "non-smoker":
-        return LanguageAwareStringHelper.getCurrent(context, "non_smoker");
+        return L10n.get("non_smoker");
       case "occasional":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "occasional_smoker",
-        );
+        return L10n.get("occasional_smoker");
       case "regular":
-        return LanguageAwareStringHelper.getCurrent(context, "regular_smoker");
+        return L10n.get("regular_smoker");
       default:
         return value;
     }
@@ -1176,14 +1068,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   String _getAlcoholPreferenceText(String value, BuildContext context) {
     switch (value) {
       case "non-drinker":
-        return LanguageAwareStringHelper.getCurrent(context, "non_drinker");
+        return L10n.get("non_drinker");
       case "occasional":
-        return LanguageAwareStringHelper.getCurrent(
-          context,
-          "occasional_drinker",
-        );
+        return L10n.get("occasional_drinker");
       case "regular":
-        return LanguageAwareStringHelper.getCurrent(context, "regular_drinker");
+        return L10n.get("regular_drinker");
       default:
         return value;
     }
@@ -1193,11 +1082,11 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   String _getTimePreferenceText(String value, BuildContext context) {
     switch (value) {
       case "morning":
-        return LanguageAwareStringHelper.getCurrent(context, "morning");
+        return L10n.get("morning");
       case "evening":
-        return LanguageAwareStringHelper.getCurrent(context, "evening");
+        return L10n.get("evening");
       case "night":
-        return LanguageAwareStringHelper.getCurrent(context, "night");
+        return L10n.get("night");
       default:
         return value;
     }

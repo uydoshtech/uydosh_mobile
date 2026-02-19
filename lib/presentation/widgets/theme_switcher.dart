@@ -1,8 +1,7 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// Theme switcher widget for selecting app themes
 class ThemeSwitcher extends StatefulWidget {
@@ -26,7 +25,7 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          LanguageAwareStringHelper.getCurrent(context, "select_theme"),
+          L10n.get("select_theme"),
           style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
         backgroundColor:
@@ -54,10 +53,7 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "light_theme",
-                          ),
+                          L10n.get("light_theme"),
                           style: Theme.of(context).popupMenuTheme.textStyle,
                         ),
                       ],
@@ -78,10 +74,7 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          LanguageAwareStringHelper.getCurrent(
-                            context,
-                            "blue_theme",
-                          ),
+                          L10n.get("blue_theme"),
                           style: Theme.of(context).popupMenuTheme.textStyle,
                         ),
                       ],
@@ -109,13 +102,5 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
       ),
       body: widget.child,
     );
-  }
-}
-
-/// Helper class for theme-aware string retrieval
-class ThemeAwareStringHelper {
-  static String getCurrent(BuildContext context, String key) {
-    final currentLanguage = LanguageState().currentLanguage;
-    return AppStrings.get(key, currentLanguage);
   }
 }

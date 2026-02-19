@@ -1,7 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class MessagesIconWithDot extends StatelessWidget {
   const MessagesIconWithDot({
@@ -47,7 +47,7 @@ class MessagesIconWithDot extends StatelessWidget {
             onPressed: onPressed,
             tooltip:
                 tooltip ??
-                LanguageAwareStringHelper.getCurrent(context, "messages"),
+                L10n.get("messages"),
           ),
           // Blinking red dot indicator for unread messages
           if (hasUnreadMessages)

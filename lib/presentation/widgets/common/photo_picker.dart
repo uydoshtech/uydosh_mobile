@@ -8,7 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class PhotoPicker extends StatefulWidget {
   const PhotoPicker({
@@ -268,21 +268,18 @@ class _PhotoPickerState extends State<PhotoPicker> {
       builder: (context) {
         return AlertDialog(
           title: Text(
-            LanguageAwareStringHelper.getCurrent(
-              context,
-              "photo_limit_reached",
-            ),
+            L10n.get("photo_limit_reached"),
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           content: Text(
-            "${LanguageAwareStringHelper.getCurrent(context, "photo_limit_reached")} (${widget.maxPhotos})",
+            "${L10n.get("photo_limit_reached")} (${widget.maxPhotos})",
             style: const TextStyle(fontSize: 16),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                LanguageAwareStringHelper.getCurrent(context, "close"),
+                L10n.get("close"),
                 style: const TextStyle(fontSize: 16),
               ),
             ),
@@ -308,7 +305,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                 ListTile(
                   leading: const Icon(Icons.camera_alt, size: 28),
                   title: Text(
-                    LanguageAwareStringHelper.getCurrent(context, "take_photo"),
+                    L10n.get("take_photo"),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -323,10 +320,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                 ListTile(
                   leading: const Icon(Icons.photo_library, size: 28),
                   title: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "choose_from_gallery",
-                    ),
+                    L10n.get("choose_from_gallery"),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -375,10 +369,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
               children: [
                 Expanded(
                   child: Text(
-                    LanguageAwareStringHelper.getCurrent(
-                      context,
-                      "listing_photos_label",
-                    ),
+                    L10n.get("listing_photos_label"),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -428,10 +419,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                     tooltip:
                         _isProcessingImage
                             ? "Processing..."
-                            : LanguageAwareStringHelper.getCurrent(
-                              context,
-                              "add_photo",
-                            ),
+                            : L10n.get("add_photo"),
                   ),
               ],
             ),
@@ -462,10 +450,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      LanguageAwareStringHelper.getCurrent(
-                        context,
-                        "tap_photo_to_make_primary",
-                      ),
+                      L10n.get("tap_photo_to_make_primary"),
                       style: TextStyle(
                         fontSize: 14.0,
                         color:
@@ -522,10 +507,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        LanguageAwareStringHelper.getCurrent(
-                          context,
-                          "add_photo",
-                        ),
+                        L10n.get("add_photo"),
                         style: TextStyle(
                           fontSize: 14,
                           color:

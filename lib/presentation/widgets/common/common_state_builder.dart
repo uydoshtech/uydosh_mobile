@@ -4,7 +4,7 @@ import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class CommonStateBuilder extends StatelessWidget {
   const CommonStateBuilder({
@@ -91,7 +91,7 @@ class CommonStateBuilder extends StatelessWidget {
   String _getDefaultLoadingText(BuildContext context) {
     // Try to determine context from the widget tree
     // For now, use generic loading text
-    return LanguageAwareStringHelper.getCurrent(context, "loading");
+    return L10n.get("loading");
   }
 
   Widget _buildDefaultErrorState(BuildContext context, String message) {

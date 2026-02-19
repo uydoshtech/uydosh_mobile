@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 /// A reusable confirmation dialog that follows the app's theme guidelines
 /// and provides consistent styling across all confirmation dialogs
@@ -59,7 +59,7 @@ class ConfirmationDialog extends StatelessWidget {
     return AlertDialog(
       backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
       title: Text(
-        LanguageAwareStringHelper.getCurrent(context, titleKey),
+        L10n.get(titleKey),
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
@@ -67,7 +67,7 @@ class ConfirmationDialog extends StatelessWidget {
         ),
       ),
       content: Text(
-        LanguageAwareStringHelper.getCurrent(context, messageKey),
+        L10n.get(messageKey),
         style: TextStyle(
           fontSize: 16,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -82,7 +82,7 @@ class ConfirmationDialog extends StatelessWidget {
           },
           style: TextButton.styleFrom(foregroundColor: cancelTextColor),
           child: Text(
-            LanguageAwareStringHelper.getCurrent(context, cancelButtonKey),
+            L10n.get(cancelButtonKey),
             style: const TextStyle(fontSize: 16),
           ),
         ),
@@ -94,7 +94,7 @@ class ConfirmationDialog extends StatelessWidget {
           },
           style: TextButton.styleFrom(foregroundColor: confirmTextColor),
           child: Text(
-            LanguageAwareStringHelper.getCurrent(context, confirmButtonKey),
+            L10n.get(confirmButtonKey),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
