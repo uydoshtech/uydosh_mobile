@@ -1,6 +1,5 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
@@ -42,93 +41,6 @@ class ListingDetailContentCard extends StatefulWidget {
 
 class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
   bool _detailsExpanded = true;
-
-  Widget _buildSubwayStationDisplay(SubwayStationDetail station) {
-    final transferInfo = MetroCache.getTransferStationInfo(station.id);
-
-    if (transferInfo != null) {
-      final connectedStation = SubwayStationDetail(
-        id: transferInfo["connectedStationId"] as int,
-        nameUz: transferInfo["connectedStationName"] as String,
-        nameRu: transferInfo["connectedStationNameRu"] as String,
-        nameEn: transferInfo["connectedStationNameEn"] as String,
-        line: transferInfo["connectedStationLine"] as int,
-      );
-
-      return Row(
-        children: [
-          Icon(
-            Icons.train,
-            color: ListingDetailThemeHelper.lineColor(station.line),
-            size: 20,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            widget.getLocalizedName(
-              nameUz: station.nameUz,
-              nameRu: station.nameRu,
-              nameEn: station.nameEn,
-              language: widget.currentLanguage,
-            ),
-            style: TextStyle(
-              fontSize: 15,
-              color: ListingDetailThemeHelper.locationTextColor,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Icon(
-            Icons.swap_horiz,
-            color: ListingDetailThemeHelper.locationTextColor,
-            size: 16,
-          ),
-          const SizedBox(width: 4),
-          Icon(
-            Icons.train,
-            color: ListingDetailThemeHelper.lineColor(connectedStation.line),
-            size: 20,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            widget.getLocalizedName(
-              nameUz: connectedStation.nameUz,
-              nameRu: connectedStation.nameRu,
-              nameEn: connectedStation.nameEn,
-              language: widget.currentLanguage,
-            ),
-            style: TextStyle(
-              fontSize: 15,
-              color: ListingDetailThemeHelper.locationTextColor,
-            ),
-          ),
-        ],
-      );
-    } else {
-      return Row(
-        children: [
-          Icon(
-            Icons.train,
-            color: ListingDetailThemeHelper.lineColor(station.line),
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              widget.getLocalizedName(
-                nameUz: station.nameUz,
-                nameRu: station.nameRu,
-                nameEn: station.nameEn,
-                language: widget.currentLanguage,
-              ),
-              style: TextStyle(
-                fontSize: 15,
-                color: ListingDetailThemeHelper.locationTextColor,
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-  }
 
   String _getGenderText(int gender) {
     switch (gender) {
@@ -363,43 +275,6 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                   ),
                 ],
               ),
-            ],
-            const SizedBox(height: 10),
-            if (widget.listingDetail.location != null || widget.listingDetail.subwayStation != null) ...[
-              if (widget.listingDetail.location != null)
-                Row(
-                  children: [
-                    ThemeIconFactory.detail(
-                      icon: Icons.location_on,
-                      color: Colors.red,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        widget.getLocalizedName(
-                          nameUz: widget.listingDetail.location!.nameUz,
-                          nameRu: widget.listingDetail.location!.nameRu,
-                          nameEn: widget.listingDetail.location!.nameEn,
-                          language: widget.currentLanguage,
-                        ),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: ListingDetailThemeHelper.locationTextColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              if (widget.listingDetail.subwayStation != null)
-                widget.listingDetail.location != null
-                    ? const SizedBox(height: 8)
-                    : const SizedBox(height: 20),
-              if (widget.listingDetail.subwayStation != null) ...[
-                _buildSubwayStationDisplay(widget.listingDetail.subwayStation!),
-                const SizedBox(height: 8),
-              ] else if (widget.listingDetail.location != null)
-                const SizedBox(height: 20),
             ],
             const SizedBox(height: 4),
             Padding(

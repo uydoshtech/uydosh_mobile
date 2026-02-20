@@ -2091,10 +2091,20 @@ L10n.get("feature_listing_error",
     );
   }
 
-  List<Widget> _buildMapAndCompatibilitySections(ListingDetail listingDetail) {
+  List<Widget> _buildMapAndCompatibilitySections(
+    ListingDetail listingDetail, {
+    required String currentLanguage,
+    required String Function({
+      String? nameUz,
+      String? nameRu,
+      String? nameEn,
+      required String language,
+    }) getLocalizedName,
+  }) {
     final isOwner = UserListingState().isOwner(listingDetail.user.id);
     final isProfileComplete = ProfileCompletionState().isProfileComplete;
-    final hasMap = listingDetail.location != null;
+    final hasMap = listingDetail.location != null ||
+        listingDetail.subwayStation != null;
 
     final compatibilitySection = isOwner
         ? null
@@ -2132,6 +2142,8 @@ L10n.get("feature_listing_error",
     final mapSection = hasMap
         ? ListingDetailMapSection(
             listingDetail: listingDetail,
+            currentLanguage: currentLanguage,
+            getLocalizedName: getLocalizedName,
             onOpenInYandexMaps: () =>
                 _confirmOpenInYandexMaps(listingDetail),
           )
@@ -2194,7 +2206,11 @@ L10n.get("feature_listing_error",
 
               // Map and Compatibility sections: when profile is incomplete,
               // show compatibility (Complete profile) below the map.
-              ..._buildMapAndCompatibilitySections(listingDetail),
+              ..._buildMapAndCompatibilitySections(
+                listingDetail,
+                currentLanguage: currentLanguage,
+                getLocalizedName: _getLocalizedName,
+              ),
               if (_complaintsCount != null && _complaintsCount! > 0)
                 ListingDetailComplaintsCard(
                   complaintsLabel: _buildComplaintsButtonLabel(),
