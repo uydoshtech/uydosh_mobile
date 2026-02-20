@@ -160,12 +160,15 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
           if (!isExpanded) return;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Future.delayed(const Duration(milliseconds: 250), () {
-              if (!scrollController.hasClients) return;
-              scrollController.animateTo(
-                scrollController.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
+              final context = sectionKey.currentContext;
+              if (context != null) {
+                Scrollable.ensureVisible(
+                  context,
+                  alignment: 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              }
             });
           });
         },

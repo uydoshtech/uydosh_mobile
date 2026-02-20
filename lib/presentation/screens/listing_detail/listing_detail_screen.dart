@@ -2087,13 +2087,7 @@ L10n.get("feature_listing_error",
                 getLocalizedName: _getLocalizedName,
               ),
 
-              // Map Section - moved to bottom
-              if (listingDetail.location != null)
-                ListingDetailMapSection(
-                  listingDetail: listingDetail,
-                  onOpenInYandexMaps: () =>
-                      _confirmOpenInYandexMaps(listingDetail),
-                ),
+              // Compatibility Section (above map)
               if (!UserListingState().isOwner(listingDetail.user.id))
                 ListingDetailCompatibilitySection(
                   listingDetail: listingDetail,
@@ -2124,6 +2118,13 @@ L10n.get("feature_listing_error",
                   onMessage: () => _startConversation(listingDetail),
                   onViewProfile: () =>
                       _navigateToProfile(listingDetail.user.id),
+                ),
+              // Map Section
+              if (listingDetail.location != null)
+                ListingDetailMapSection(
+                  listingDetail: listingDetail,
+                  onOpenInYandexMaps: () =>
+                      _confirmOpenInYandexMaps(listingDetail),
                 ),
               if (_complaintsCount != null && _complaintsCount! > 0)
                 ListingDetailComplaintsCard(

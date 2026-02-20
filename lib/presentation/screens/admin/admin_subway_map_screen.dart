@@ -41,6 +41,28 @@ class _StationLabel {
   final String textAnchor;
 }
 
+/// Configuration for a single map overlay (POI icon).
+class _OverlayConfig {
+  const _OverlayConfig(
+    this.assetName,
+    this.mapX,
+    this.mapY,
+    this.width,
+    this.height, {
+    this.useColorFilter = false,
+    this.sizeScale = 1.0,
+  });
+
+  final String assetName;
+  final double mapX;
+  final double mapY;
+  final double width;
+  final double height;
+  final bool useColorFilter;
+  /// Multiplier for displayed width/height (e.g. 2.0 for bazaar_chorsu, monument2)
+  final double sizeScale;
+}
+
 /// Per-station overrides for tappable area position and size.
 /// dx, dy are in SVG coordinates (scaled with map).
 /// widthDelta is added to the computed width.
@@ -168,27 +190,21 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   static const String _svgAssetPath =
       "assets/map_elements/tashkent_metro_map.svg";
 
-  static const List<String> _overlayAssetPaths = [
-    "assets/map_elements/bazaar_chorsu.svg",
-    "assets/map_elements/tv_tower.svg",
-    "assets/map_elements/monument2.svg",
-    "assets/map_elements/airport.svg",
-    "assets/map_elements/city_park.svg",
-    "assets/map_elements/bus_hub.svg",
-    "assets/map_elements/circus.svg",
+  static const List<_OverlayConfig> _overlayConfigs = [
+    _OverlayConfig("bazaar_chorsu.svg", 110, 205, 45, 15, sizeScale: 2.0),
+    _OverlayConfig("tv_tower.svg", 240, 120, 56, 60, useColorFilter: true),
+    _OverlayConfig("monument2.svg", 180, 330, 20, 20, sizeScale: 2.0),
+    _OverlayConfig("airport.svg", 200, 625, 50, 27, useColorFilter: true),
+    _OverlayConfig("city_park.svg", 30, 335, 25, 40, useColorFilter: true),
+    _OverlayConfig("bus_hub.svg", 25, 580, 22, 22),
+    _OverlayConfig("circus.svg", 10, 240, 30, 30, useColorFilter: true),
   ];
 
   static Future<_MapData>? _mapDataFuture;
 
   static Future<_MapData> _loadMapData() {
     _mapDataFuture ??= () async {
-      final results = await Future.wait([
-        rootBundle.loadString(_svgAssetPath),
-        Future.wait(
-          _overlayAssetPaths.map((p) => rootBundle.loadString(p)),
-        ),
-      ]);
-      final rawSvg = results[0] as String;
+      final rawSvg = await rootBundle.loadString(_svgAssetPath);
       return _MapData(
         stationLabels: _extractStationLabels(rawSvg),
         rawSvg: rawSvg,
@@ -346,171 +362,35 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     );
   }
 
-  static const double _bazaarChorsuMapX = 110;
-  static const double _bazaarChorsuMapY = 205;
-  static const double _bazaarChorsuWidth = 45;
-  static const double _bazaarChorsuHeight = 15;
-
-  static const double _tvTowerMapX = 240;
-  static const double _tvTowerMapY = 120;
-  static const double _tvTowerWidth = 56;
-  static const double _tvTowerHeight = 60;
-
-  static const double _monumentMapX = 180;
-  static const double _monumentMapY = 330;
-  static const double _monumentWidth = 20;
-  static const double _monumentHeight = 20;
-
-  static const double _airportMapX = 200;
-  static const double _airportMapY = 625;
-  static const double _airportWidth = 50;
-  static const double _airportHeight = 27;
-
-  static const double _cityParkMapX = 30;
-  static const double _cityParkMapY = 335;
-  static const double _cityParkWidth = 25;
-  static const double _cityParkHeight = 40;
-
-  static const double _busHubMapX = 25;
-  static const double _busHubMapY = 580;
-  static const double _busHubWidth = 22;
-  static const double _busHubHeight = 22;
-
-  static const double _circusMapX = 10;
-  static const double _circusMapY = 240;
-  static const double _circusWidth = 30;
-  static const double _circusHeight = 30;
-
   List<Widget> _buildMapOverlays(
     double scale,
     double offsetX,
     double offsetY, {
     required bool isBlueTheme,
   }) {
-    final bazaarX =
-        offsetX + (_mapOffset.dx + _bazaarChorsuMapX - _viewBoxMinX) * scale;
-    final bazaarY =
-        offsetY + (_mapOffset.dy + _bazaarChorsuMapY) * scale;
-    final tvTowerX =
-        offsetX + (_mapOffset.dx + _tvTowerMapX - _viewBoxMinX) * scale;
-    final tvTowerY =
-        offsetY + (_mapOffset.dy + _tvTowerMapY) * scale;
-    final monumentX =
-        offsetX + (_mapOffset.dx + _monumentMapX - _viewBoxMinX) * scale;
-    final monumentY =
-        offsetY + (_mapOffset.dy + _monumentMapY) * scale;
-    final airportX =
-        offsetX + (_mapOffset.dx + _airportMapX - _viewBoxMinX) * scale;
-    final airportY =
-        offsetY + (_mapOffset.dy + _airportMapY) * scale;
-    final cityParkX =
-        offsetX + (_mapOffset.dx + _cityParkMapX - _viewBoxMinX) * scale;
-    final cityParkY =
-        offsetY + (_mapOffset.dy + _cityParkMapY) * scale;
-    final busHubX =
-        offsetX + (_mapOffset.dx + _busHubMapX - _viewBoxMinX) * scale;
-    final busHubY =
-        offsetY + (_mapOffset.dy + _busHubMapY) * scale;
-    final circusX =
-        offsetX + (_mapOffset.dx + _circusMapX - _viewBoxMinX) * scale;
-    final circusY =
-        offsetY + (_mapOffset.dy + _circusMapY) * scale;
-    return [
-      Positioned(
-        left: bazaarX - _bazaarChorsuWidth / 2,
-        top: bazaarY - _bazaarChorsuHeight / 2,
+    return _overlayConfigs.map((c) {
+      final screenX =
+          offsetX + (_mapOffset.dx + c.mapX - _viewBoxMinX) * scale;
+      final screenY = offsetY + (_mapOffset.dy + c.mapY) * scale;
+      final w = c.width * c.sizeScale;
+      final h = c.height * c.sizeScale;
+      return Positioned(
+        left: screenX - w / 2,
+        top: screenY - h / 2,
         child: SvgPicture.asset(
-          "assets/map_elements/bazaar_chorsu.svg",
-          width: _bazaarChorsuWidth * 2,
-          height: _bazaarChorsuHeight * 2,
+          "assets/map_elements/${c.assetName}",
+          width: w,
+          height: h,
           fit: BoxFit.contain,
-        ),
-      ),
-      Positioned(
-        left: tvTowerX - _tvTowerWidth / 2,
-        top: tvTowerY - _tvTowerHeight / 2,
-        child: SvgPicture.asset(
-          "assets/map_elements/tv_tower.svg",
-          width: _tvTowerWidth,
-          height: _tvTowerHeight,
-          fit: BoxFit.contain,
-          colorFilter: isBlueTheme
+          colorFilter: c.useColorFilter && isBlueTheme
               ? const ColorFilter.mode(
                   Colors.white,
                   BlendMode.srcIn,
                 )
               : null,
         ),
-      ),
-      Positioned(
-        left: monumentX - _monumentWidth / 2,
-        top: monumentY - _monumentHeight / 2,
-        child: SvgPicture.asset(
-          "assets/map_elements/monument2.svg",
-          width: _monumentWidth * 2,
-          height: _monumentHeight * 2,
-          fit: BoxFit.contain,
-        ),
-      ),
-      Positioned(
-        left: airportX - _airportWidth / 2,
-        top: airportY - _airportHeight / 2,
-        child: SvgPicture.asset(
-          "assets/map_elements/airport.svg",
-          width: _airportWidth,
-          height: _airportHeight,
-          fit: BoxFit.contain,
-          colorFilter: isBlueTheme
-              ? const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                )
-              : null,
-        ),
-      ),
-      Positioned(
-        left: cityParkX - _cityParkWidth / 2,
-        top: cityParkY - _cityParkHeight / 2,
-        child: SvgPicture.asset(
-          "assets/map_elements/city_park.svg",
-          width: _cityParkWidth,
-          height: _cityParkHeight,
-          fit: BoxFit.contain,
-          colorFilter: isBlueTheme
-              ? const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                )
-              : null,
-        ),
-      ),
-      Positioned(
-        left: busHubX - _busHubWidth / 2,
-        top: busHubY - _busHubHeight / 2,
-        child: SvgPicture.asset(
-          "assets/map_elements/bus_hub.svg",
-          width: _busHubWidth,
-          height: _busHubHeight,
-          fit: BoxFit.contain,
-        ),
-      ),
-      Positioned(
-        left: circusX - _circusWidth / 2,
-        top: circusY - _circusHeight / 2,
-        child: SvgPicture.asset(
-          "assets/map_elements/circus.svg",
-          width: _circusWidth,
-          height: _circusHeight,
-          fit: BoxFit.contain,
-          colorFilter: isBlueTheme
-              ? const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                )
-              : null,
-        ),
-      ),
-    ];
+      );
+    }).toList();
   }
 
   List<Widget> _buildStationTapTargets(
@@ -552,12 +432,14 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       return Positioned(
         left: left,
         top: posY - _tapTargetHeight / 2,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => _openStationListings(context, label.stationId),
-          child: Container(
-            width: width,
-            height: _tapTargetHeight,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _openStationListings(context, label.stationId),
+            child: Container(
+              width: width,
+              height: _tapTargetHeight,
+            ),
           ),
         ),
       );
