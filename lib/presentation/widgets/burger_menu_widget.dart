@@ -24,6 +24,7 @@ import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
+import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
 import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -582,6 +583,35 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                             MaterialPageRoute(
                               builder:
                                   (context) => const ViewHistoryScreen(),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                ),
+
+                // Achievements menu item - Only show when user is logged in
+                ListenableBuilder(
+                  listenable: AuthenticationState(),
+                  builder: (context, child) {
+                    final isAuthenticated =
+                        AuthenticationState().isAuthenticated;
+
+                    if (!isAuthenticated) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return _buildMenuItem(
+                      icon: Icons.emoji_events,
+                      titleKey: "menu_achievements",
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (context.mounted) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => const AchievementsScreen(),
                             ),
                           );
                         }

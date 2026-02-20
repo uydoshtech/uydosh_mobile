@@ -1,4 +1,6 @@
 PODS:
+  - app_links (6.4.1):
+    - FlutterMacOS
   - AppAuth (1.7.6):
     - AppAuth/Core (= 1.7.6)
     - AppAuth/ExternalUserAgent (= 1.7.6)
@@ -9,6 +11,9 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
+  - audioplayers_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - file_selector_macos (0.0.1):
     - FlutterMacOS
   - Firebase/Analytics (11.15.0):
@@ -165,6 +170,8 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - app_links (from `Flutter/ephemeral/.symlinks/plugins/app_links/macos`)
+  - audioplayers_darwin (from `Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin`)
   - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
   - firebase_analytics (from `Flutter/ephemeral/.symlinks/plugins/firebase_analytics/macos`)
   - firebase_auth (from `Flutter/ephemeral/.symlinks/plugins/firebase_auth/macos`)
@@ -199,6 +206,10 @@ SPEC REPOS:
     - PromisesObjC
 
 EXTERNAL SOURCES:
+  app_links:
+    :path: Flutter/ephemeral/.symlinks/plugins/app_links/macos
+  audioplayers_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin
   file_selector_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
   firebase_analytics:
@@ -223,8 +234,10 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
 
 SPEC CHECKSUMS:
+  app_links: c3185399a5cabc2e610ee5ad52fb7269b84ff869
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
+  audioplayers_darwin: 4027b33a8f471d996c13f71cb77f0b1583b5d923
   file_selector_macos: cc3858c981fe6889f364731200d6232dac1d812d
   Firebase: d99ac19b909cd2c548339c2241ecd0d1599ab02e
   firebase_analytics: c6a3f80cf2e8681b4e6b3402162acf116c4d3a57
@@ -238,7 +251,7 @@ SPEC CHECKSUMS:
   FirebaseCoreExtension: edbd30474b5ccf04e5f001470bdf6ea616af2435
   FirebaseCoreInternal: 9afa45b1159304c963da48addb78275ef701c6b4
   FirebaseInstallations: 317270fec08a5d418fdbc8429282238cab3ac843
-  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   google_sign_in_ios: 7411fab6948df90490dc4620ecbcabdc3ca04017
   GoogleAppMeasurement: 700dce7541804bec33db590a5c496b663fbe2539
   GoogleSignIn: ce8c89bb9b37fb624b92e7514cc67335d1e277e4

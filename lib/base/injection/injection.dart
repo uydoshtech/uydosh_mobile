@@ -8,7 +8,9 @@ import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/domain/services/amenity_service.dart";
 import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
+import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
@@ -98,5 +100,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IListingCreationAnalyticsService>(
     () => ListingCreationAnalyticsService(getIt<IOAuthApiClient>()),
+  );
+
+  final prefs = await SharedPreferences.getInstance();
+  getIt.registerLazySingleton<IGamificationService>(
+    () => GamificationService(prefs),
   );
 }

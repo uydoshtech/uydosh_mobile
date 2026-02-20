@@ -2035,12 +2035,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         decoration: BoxDecoration(
           color:
               isSelected
-                  ? _getSelectedButtonBackgroundColor()
+                  ? Colors.white
                   : _getOnboardingTextColor(context).withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color:
-                isSelected ? _getSelectedButtonTextColor() : Colors.transparent,
+                isSelected ? Colors.black : Colors.transparent,
             width: 2,
           ),
         ),
@@ -2052,7 +2052,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               style: TextStyle(
                 color:
                     isSelected
-                        ? _getSelectedButtonTextColor()
+                        ? Colors.black
                         : _getOnboardingTextColor(context),
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -2064,7 +2064,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               icon,
               color:
                   isSelected
-                      ? _getSelectedButtonTextColor()
+                      ? Colors.black
                       : _getOnboardingTextColor(context),
               size: 20,
             ),

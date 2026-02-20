@@ -957,15 +957,15 @@ L10n.get(
     final isBlueTheme = ThemeState().isBlueTheme;
     final isSelected = _isStudent == isStudent;
     final backgroundColor = isSelected
-        ? (theme.colorScheme.primary)
+        ? Colors.white
         : (isBlueTheme
             ? BlueThemeColors.surface
             : theme.colorScheme.surfaceContainerHighest);
     final borderColor = isSelected
-        ? theme.colorScheme.primary
+        ? Colors.black
         : theme.colorScheme.outline;
     final textColor = isSelected
-        ? theme.colorScheme.onPrimary
+        ? Colors.black
         : (isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
 
     return GestureDetector(

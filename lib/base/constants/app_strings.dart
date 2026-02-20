@@ -617,6 +617,28 @@ class AppStrings {
       "unable_to_load_view_history":
           "Unable to load view history. Please try again later.",
 
+      // ===== ACHIEVEMENTS =====
+      "menu_achievements": "Achievements",
+      "achievements_title": "Achievements",
+      "achievement_unlocked": "Achievement unlocked!",
+      "achievement_first_steps": "First Steps",
+      "achievement_first_steps_desc": "Create your account",
+      "achievement_profile_complete": "Profile Complete",
+      "achievement_profile_complete_desc": "Complete your profile 100%",
+      "achievement_first_look": "First Look",
+      "achievement_first_look_desc": "View your first listing",
+      "achievement_bookmarker": "Bookmarker",
+      "achievement_bookmarker_desc": "Add your first favorite",
+      "achievement_ice_breaker": "Ice Breaker",
+      "achievement_ice_breaker_desc": "Send your first message",
+      "achievement_first_listing": "First Listing",
+      "achievement_first_listing_desc": "Create your first listing",
+      "achievement_returning_user": "Returning User",
+      "achievement_returning_user_desc": "Use the app 7 days in a row",
+      "achievements_empty": "No achievements yet",
+      "achievements_empty_desc": "Complete actions to unlock achievements",
+      "achievements_auth_prompt": "Log in to view your achievements",
+
       "favorite_toggle_error": "Failed to update favorite status",
       "favorite_toggle_network_error": "Network error updating favorite status",
 
@@ -1335,6 +1357,28 @@ class AppStrings {
       "view_history_auth_prompt": "Войдите, чтобы просмотреть историю.",
       "unable_to_load_view_history":
           "Не удалось загрузить историю. Попробуйте позже.",
+
+      // ===== ACHIEVEMENTS =====
+      "menu_achievements": "Достижения",
+      "achievements_title": "Достижения",
+      "achievement_unlocked": "Достижение разблокировано!",
+      "achievement_first_steps": "Первые шаги",
+      "achievement_first_steps_desc": "Создайте аккаунт",
+      "achievement_profile_complete": "Профиль заполнен",
+      "achievement_profile_complete_desc": "Заполните профиль на 100%",
+      "achievement_first_look": "Первый взгляд",
+      "achievement_first_look_desc": "Просмотрите первое объявление",
+      "achievement_bookmarker": "В закладках",
+      "achievement_bookmarker_desc": "Добавьте первое избранное",
+      "achievement_ice_breaker": "Разговор начат",
+      "achievement_ice_breaker_desc": "Отправьте первое сообщение",
+      "achievement_first_listing": "Первое объявление",
+      "achievement_first_listing_desc": "Создайте первое объявление",
+      "achievement_returning_user": "Постоянный пользователь",
+      "achievement_returning_user_desc": "Используйте приложение 7 дней подряд",
+      "achievements_empty": "Пока нет достижений",
+      "achievements_empty_desc": "Выполняйте действия, чтобы разблокировать достижения",
+      "achievements_auth_prompt": "Войдите, чтобы просмотреть достижения",
 
       "favorite_toggle_error": "Не удалось обновить статус избранного",
       "favorite_toggle_network_error":
@@ -2061,6 +2105,28 @@ class AppStrings {
       "view_history_auth_prompt": "Tarixni ko'rish uchun tizimga kiring.",
       "unable_to_load_view_history":
           "Tarixni yuklash imkoni yo'q. Keyinroq urinib ko'ring.",
+
+      // ===== ACHIEVEMENTS =====
+      "menu_achievements": "Yutuqlar",
+      "achievements_title": "Yutuqlar",
+      "achievement_unlocked": "Yutuq ochildi!",
+      "achievement_first_steps": "Birinchi qadamlar",
+      "achievement_first_steps_desc": "Hisob yarating",
+      "achievement_profile_complete": "Profil to'liq",
+      "achievement_profile_complete_desc": "Profilni 100% to'ldiring",
+      "achievement_first_look": "Birinchi qarash",
+      "achievement_first_look_desc": "Birinchi e'loningizni ko'ring",
+      "achievement_bookmarker": "Sevimlilar",
+      "achievement_bookmarker_desc": "Birinchi sevimlini qo'shing",
+      "achievement_ice_breaker": "Suhbat boshlovchi",
+      "achievement_ice_breaker_desc": "Birinchi xabaringizni yuboring",
+      "achievement_first_listing": "Birinchi e'lon",
+      "achievement_first_listing_desc": "Birinchi e'loningizni yarating",
+      "achievement_returning_user": "Doimiy foydalanuvchi",
+      "achievement_returning_user_desc": "Ilovani 7 kun ketma-ket ishlating",
+      "achievements_empty": "Hali yutuqlar yo'q",
+      "achievements_empty_desc": "Yutuqlarni ochish uchun harakatlarni bajaring",
+      "achievements_auth_prompt": "Yutuqlaringizni ko'rish uchun tizimga kiring",
 
       "favorite_toggle_error": "Sevimli holatini yangilashda xatolik",
       "favorite_toggle_network_error":

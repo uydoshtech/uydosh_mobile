@@ -24,6 +24,7 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
+import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
 import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
@@ -982,17 +983,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
 
-              // My Listings section
+              // My Listings, Messages, View History - grouped with separators
               const SizedBox(height: 8),
-              _buildMyListingsSection(context),
-              const SizedBox(height: 8),
-
-              // Messages section
-              _buildMessagesSection(context),
+              _buildGroupedMenuSection(context),
               const SizedBox(height: 8),
 
-              // View History section
-              _buildViewHistorySection(context),
+              // Achievements section
+              _buildAchievementsSection(context),
               const SizedBox(height: 8),
 
               if (_userRole == "admin") ...[
@@ -1379,59 +1376,102 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildMyListingsSection(BuildContext context) {
+  Widget _buildGroupedMenuSection(BuildContext context) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => BlocProvider(
-                create: (context) => ListingsBloc(getIt<IListingService>()),
-                child: const UserListingsScreen(),
-              ),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            children: [
-              Icon(
-                Icons.list_alt,
-                color:
-                    ThemeState().isBlueTheme
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.primary,
-                size: 24,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  L10n.get("menu_my_listings"),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildGroupedMenuItem(
+            context: context,
+            icon: Icons.list_alt,
+            title: L10n.get("menu_my_listings"),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider(
+                    create: (context) => ListingsBloc(getIt<IListingService>()),
+                    child: const UserListingsScreen(),
                   ),
                 ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                size: 16,
-              ),
-            ],
+              );
+            },
           ),
+          _buildGroupedMenuItem(
+            context: context,
+            icon: Icons.chat_bubble_outline,
+            title: L10n.get("menu_messages"),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const MessagesInboxScreen(),
+                ),
+              );
+            },
+          ),
+          _buildGroupedMenuItem(
+            context: context,
+            icon: Icons.history,
+            title: L10n.get("menu_history"),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ViewHistoryScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupedMenuItem({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color:
+                  ThemeState().isBlueTheme
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.primary,
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              size: 16,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildMessagesSection(BuildContext context) {
+  Widget _buildAchievementsSection(BuildContext context) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1439,7 +1479,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => const MessagesInboxScreen(),
+              builder: (context) => const AchievementsScreen(),
             ),
           );
         },
@@ -1450,7 +1490,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Row(
             children: [
               Icon(
-                Icons.chat_bubble_outline,
+                Icons.emoji_events,
                 color:
                     ThemeState().isBlueTheme
                         ? Colors.white
@@ -1460,56 +1500,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  L10n.get("menu_messages"),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                size: 16,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildViewHistorySection(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const ViewHistoryScreen(),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            children: [
-              Icon(
-                Icons.history,
-                color:
-                    ThemeState().isBlueTheme
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.primary,
-                size: 24,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  L10n.get("menu_history"),
+                  L10n.get("menu_achievements"),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
