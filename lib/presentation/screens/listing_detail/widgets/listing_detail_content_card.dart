@@ -294,6 +294,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                         color: ListingDetailThemeHelper.dateTextColor,
                         fontSize: 15,
                         alignment: Alignment.centerLeft,
+                        dashed: true,
                       ),
                     ),
                   ),

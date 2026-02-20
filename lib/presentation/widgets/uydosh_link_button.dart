@@ -2,6 +2,34 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
+class _DashedLinePainter extends CustomPainter {
+  _DashedLinePainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    const dashWidth = 4.0;
+    const dashSpace = 3.0;
+    double startX = 0;
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, size.height / 2),
+        Offset((startX + dashWidth).clamp(0, size.width), size.height / 2),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 /// A reusable link-style button with underlined text.
 /// Supports both plain link and outlined variants.
 class UydoshLinkButton extends StatelessWidget {
@@ -12,6 +40,7 @@ class UydoshLinkButton extends StatelessWidget {
     this.fontSize = 14,
     this.fontWeight = FontWeight.w600,
     this.outlined = false,
+    this.dashed = false,
     this.padding,
     this.alignment = Alignment.center,
     super.key,
@@ -23,6 +52,7 @@ class UydoshLinkButton extends StatelessWidget {
   final double fontSize;
   final FontWeight fontWeight;
   final bool outlined;
+  final bool dashed;
   final EdgeInsetsGeometry? padding;
   final AlignmentGeometry alignment;
 
@@ -46,10 +76,19 @@ class UydoshLinkButton extends StatelessWidget {
               children: [
                 Text(text, style: textStyle),
                 const SizedBox(height: 1),
-                Container(
-                  height: 1,
-                  color: effectiveColor,
-                ),
+                if (dashed)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 1,
+                    child: CustomPaint(
+                      painter: _DashedLinePainter(color: effectiveColor),
+                    ),
+                  )
+                else
+                  Container(
+                    height: 1,
+                    color: effectiveColor,
+                  ),
               ],
             ),
           );

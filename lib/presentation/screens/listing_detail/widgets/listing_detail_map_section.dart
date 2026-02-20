@@ -127,36 +127,34 @@ class ListingDetailMapSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (hasLocation || hasSubway) ...[
-              if (hasLocation)
-                Row(
-                  children: [
-                    ThemeIconFactory.detail(
-                      icon: Icons.location_on,
-                      color: Colors.red,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        getLocalizedName(
-                          nameUz: listingDetail.location!.nameUz,
-                          nameRu: listingDetail.location!.nameRu,
-                          nameEn: listingDetail.location!.nameEn,
-                          language: currentLanguage,
-                        ),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: ListingDetailThemeHelper.locationTextColor,
-                        ),
+            if (hasSubway) _buildSubwayStationDisplay(listingDetail.subwayStation!),
+            if (hasSubway && hasLocation) const SizedBox(height: 8),
+            if (hasLocation)
+              Row(
+                children: [
+                  ThemeIconFactory.detail(
+                    icon: Icons.location_on,
+                    color: Colors.red,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      getLocalizedName(
+                        nameUz: listingDetail.location!.nameUz,
+                        nameRu: listingDetail.location!.nameRu,
+                        nameEn: listingDetail.location!.nameEn,
+                        language: currentLanguage,
+                      ),
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: ListingDetailThemeHelper.locationTextColor,
                       ),
                     ),
-                  ],
-                ),
-              if (hasLocation && hasSubway) const SizedBox(height: 8),
-              if (hasSubway) _buildSubwayStationDisplay(listingDetail.subwayStation!),
-            ],
-            const SizedBox(height: 16),
+                  ),
+                ],
+              ),
+            if (hasLocation || hasSubway) const SizedBox(height: 16),
             YandexMapWidget(
               apiKey: AppConfig.yandexMapsApiKey,
               height: 250,
