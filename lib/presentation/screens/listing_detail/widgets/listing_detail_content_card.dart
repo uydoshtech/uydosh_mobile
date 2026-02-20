@@ -9,6 +9,7 @@ import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 
@@ -19,11 +20,13 @@ class ListingDetailContentCard extends StatefulWidget {
     required this.currentLanguage,
     required this.formatMoveInDate,
     required this.getLocalizedName,
+    this.ownerName,
     super.key,
   });
 
   final ListingDetail listingDetail;
   final String currentLanguage;
+  final String? ownerName;
   final String Function(BuildContext context, String moveInDate) formatMoveInDate;
   final String Function({
     String? nameUz,
@@ -394,38 +397,44 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                     : const SizedBox(height: 20),
               if (widget.listingDetail.subwayStation != null) ...[
                 _buildSubwayStationDisplay(widget.listingDetail.subwayStation!),
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
               ] else if (widget.listingDetail.location != null)
                 const SizedBox(height: 20),
             ],
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: () => setState(() => _detailsExpanded = !_detailsExpanded),
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _detailsExpanded
-                          ? L10n.get("hide_details")
-                          : L10n.get("show_details"),
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: UydoshLinkButton(
+                        text: _detailsExpanded
+                            ? L10n.get("hide_details")
+                            : L10n.get("show_details"),
+                        onPressed: () =>
+                            setState(() => _detailsExpanded = !_detailsExpanded),
                         color: ListingDetailThemeHelper.dateTextColor,
+                        fontSize: 15,
+                        alignment: Alignment.centerLeft,
                       ),
                     ),
-                    Icon(
+                  ),
+                  GestureDetector(
+                    onTap: () =>
+                        setState(() => _detailsExpanded = !_detailsExpanded),
+                    behavior: HitTestBehavior.opaque,
+                    child: Icon(
                       _detailsExpanded
                           ? Icons.keyboard_arrow_up
                           : Icons.keyboard_arrow_down,
                       color: ListingDetailThemeHelper.dateIconColor,
                       size: 24,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             AnimatedSize(
@@ -497,6 +506,51 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                           ),
                           const SizedBox(height: 8),
                         ],
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Center(
+                                child: ThemeIconFactory.detail(
+                                  icon: Icons.person_outline,
+                                  color:
+                                      ListingDetailThemeHelper.dateIconColor,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text:
+                                          "${L10n.get("author")}: ",
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: ListingDetailThemeHelper
+                                            .dateTextColor,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: widget.ownerName ??
+                                          L10n.get("na"),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: ListingDetailThemeHelper
+                                            .dateTextColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                         Row(
                           children: [
                             SizedBox(

@@ -21,6 +21,7 @@ import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
@@ -213,6 +214,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   List<_CompatibilityMatch> _compatibilityMatches = [];
   List<_CompatibilityDifference> _compatibilityDifferences = [];
   String? _compatibilityError;
+
+  // Owner name for Author label
+  String? _ownerName;
+  int? _ownerNameListingUserId;
 
   // View count state (for owner)
   bool _isLoadingViewCount = false;
@@ -505,6 +510,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final isOwner = UserListingState().isOwner(listingDetail.user.id);
     if (isOwner) {
       _loadViewCount(listingDetail.id);
+      _loadOwnerName(listingDetail.user.id);
     } else {
       if (AuthenticationState().isAuthenticated) {
         _recordView(listingDetail.id);
@@ -519,6 +525,28 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       await listingService.recordListingView(listingId);
     } catch (e) {
       logger.d("Error recording listing view: $e");
+    }
+  }
+
+  Future<void> _loadOwnerName(int listingUserId) async {
+    if (_ownerNameListingUserId == listingUserId && _ownerName != null) {
+      return;
+    }
+    if (!AuthenticationState().isAuthenticated) {
+      return;
+    }
+    try {
+      final profile =
+          await getIt<IUserProfileService>().getUserProfile(listingUserId);
+      if (!mounted) return;
+      setState(() {
+        _ownerName = profile.name?.trim().isNotEmpty == true
+            ? profile.name
+            : null;
+        _ownerNameListingUserId = listingUserId;
+      });
+    } catch (e) {
+      logger.d("Error loading owner name: $e");
     }
   }
 
@@ -559,6 +587,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         _compatibilityMatches = result.matches;
         _compatibilityDifferences = result.differences;
         _isLoadingCompatibility = false;
+        _ownerName = ownerProfile.name?.trim().isNotEmpty == true
+            ? ownerProfile.name
+            : null;
+        _ownerNameListingUserId = listingUserId;
       });
     } catch (e) {
       logger.d("Error loading compatibility: $e");
@@ -2059,6 +2091,63 @@ L10n.get("feature_listing_error",
     );
   }
 
+  List<Widget> _buildMapAndCompatibilitySections(ListingDetail listingDetail) {
+    final isOwner = UserListingState().isOwner(listingDetail.user.id);
+    final isProfileComplete = ProfileCompletionState().isProfileComplete;
+    final hasMap = listingDetail.location != null;
+
+    final compatibilitySection = isOwner
+        ? null
+        : ListingDetailCompatibilitySection(
+            listingDetail: listingDetail,
+            scrollController: _scrollController,
+            sectionKey: _compatibilitySectionKey,
+            compatibilityPercent: _compatibilityPercent,
+            isLoadingCompatibility: _isLoadingCompatibility,
+            compatibilityError: _compatibilityError,
+            matches: _compatibilityMatches
+                .map(
+                  (m) => CompatibilityMatch(
+                    labelKey: m.labelKey,
+                    label: m.label,
+                    value: m.value,
+                  ),
+                )
+                .toList(),
+            differences: _compatibilityDifferences
+                .map(
+                  (d) => CompatibilityDifference(
+                    labelKey: d.labelKey,
+                    label: d.label,
+                    currentText: d.currentText,
+                    ownerText: d.ownerText,
+                  ),
+                )
+                .toList(),
+            onMessage: () => _startConversation(listingDetail),
+            onViewProfile: () => _navigateToProfile(listingDetail.user.id),
+            onCompleteProfile: _navigateToOwnProfile,
+          );
+
+    final mapSection = hasMap
+        ? ListingDetailMapSection(
+            listingDetail: listingDetail,
+            onOpenInYandexMaps: () =>
+                _confirmOpenInYandexMaps(listingDetail),
+          )
+        : null;
+
+    // When profile is incomplete, show map first, then compatibility.
+    if (!isProfileComplete && hasMap && compatibilitySection != null) {
+      return [mapSection!, compatibilitySection];
+    }
+    // Default: compatibility above map.
+    return [
+      if (compatibilitySection != null) compatibilitySection,
+      if (mapSection != null) mapSection,
+    ];
+  }
+
   Widget _buildLoadedState(ListingDetail listingDetail) {
     return ListenableBuilder(
       listenable: LanguageState(),
@@ -2100,48 +2189,12 @@ L10n.get("feature_listing_error",
                 currentLanguage: currentLanguage,
                 formatMoveInDate: _formatMoveInDate,
                 getLocalizedName: _getLocalizedName,
+                ownerName: _ownerName,
               ),
 
-              // Compatibility Section (above map)
-              if (!UserListingState().isOwner(listingDetail.user.id))
-                ListingDetailCompatibilitySection(
-                  listingDetail: listingDetail,
-                  scrollController: _scrollController,
-                  sectionKey: _compatibilitySectionKey,
-                  compatibilityPercent: _compatibilityPercent,
-                  isLoadingCompatibility: _isLoadingCompatibility,
-                  compatibilityError: _compatibilityError,
-                  matches: _compatibilityMatches
-                      .map(
-                        (m) => CompatibilityMatch(
-                          labelKey: m.labelKey,
-                          label: m.label,
-                          value: m.value,
-                        ),
-                      )
-                      .toList(),
-                  differences: _compatibilityDifferences
-                      .map(
-                        (d) => CompatibilityDifference(
-                          labelKey: d.labelKey,
-                          label: d.label,
-                          currentText: d.currentText,
-                          ownerText: d.ownerText,
-                        ),
-                      )
-                      .toList(),
-                  onMessage: () => _startConversation(listingDetail),
-                  onViewProfile: () =>
-                      _navigateToProfile(listingDetail.user.id),
-                  onCompleteProfile: _navigateToOwnProfile,
-                ),
-              // Map Section
-              if (listingDetail.location != null)
-                ListingDetailMapSection(
-                  listingDetail: listingDetail,
-                  onOpenInYandexMaps: () =>
-                      _confirmOpenInYandexMaps(listingDetail),
-                ),
+              // Map and Compatibility sections: when profile is incomplete,
+              // show compatibility (Complete profile) below the map.
+              ..._buildMapAndCompatibilitySections(listingDetail),
               if (_complaintsCount != null && _complaintsCount! > 0)
                 ListingDetailComplaintsCard(
                   complaintsLabel: _buildComplaintsButtonLabel(),

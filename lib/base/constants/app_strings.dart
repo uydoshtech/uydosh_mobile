@@ -248,6 +248,7 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Details",
+      "author": "Author",
       "show_details": "Show details",
       "hide_details": "Hide details",
       "listing_views_by_others": "{count} views",
@@ -705,7 +706,7 @@ class AppStrings {
       "december": "December",
       "select_date": "Move in date",
       "move_in_date_label": "Move-in date:",
-      "publication_date": "Publication date:",
+      "publication_date": "Published on:",
 
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Sign In with Google",
@@ -987,6 +988,7 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Детали",
+      "author": "Автор",
       "show_details": "Показать детали",
       "hide_details": "Скрыть детали",
       "listing_views_by_others": "{count} просмотров",
@@ -1450,7 +1452,7 @@ class AppStrings {
       "december": "Декабрь",
       "select_date": "Дата вселения",
       "move_in_date_label": "Дата вселения:",
-      "publication_date": "Дата публикации:",
+      "publication_date": "Опубликовано:",
 
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Войти через Google",
@@ -1735,6 +1737,7 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Tafsilotlar",
+      "author": "Muallif",
       "show_details": "Tafsilotlarni ko'rsatish",
       "hide_details": "Tafsilotlarni yashirish",
       "listing_views_by_others": "{count} ko'rilgan",
