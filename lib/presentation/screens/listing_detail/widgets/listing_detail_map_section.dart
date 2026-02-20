@@ -123,30 +123,11 @@ class ListingDetailMapSection extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                ThemeIconFactory.detail(
-                  icon: CupertinoIcons.placemark_fill,
-                  color: ListingDetailThemeHelper.iconColor,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  L10n.get("location_on_map"),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: ListingDetailThemeHelper.descriptionTextColor,
-                  ),
-                ),
-              ],
-            ),
             if (hasLocation || hasSubway) ...[
-              const SizedBox(height: 12),
               if (hasLocation)
                 Row(
                   children: [

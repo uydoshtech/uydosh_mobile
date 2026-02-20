@@ -1620,13 +1620,15 @@ L10n.get("feature_listing_error",
             "🧭 [Frontend] Conversation ID for navigation: ${conversation.id}",
           );
           try {
+            final displayName =
+                (_ownerName != null && _ownerName!.trim().isNotEmpty)
+                    ? _ownerName!
+                    : listingDetail.user.email ?? '';
             final chatScreen = ChatScreen(
               conversationId: conversation.id,
               listingId: widget.listingId,
-              otherUserInitials: StringUtils.extractInitials(
-                listingDetail.user.email,
-              ),
-              otherUserName: listingDetail.user.email,
+              otherUserInitials: StringUtils.extractInitials(displayName),
+              otherUserName: displayName.isNotEmpty ? displayName : null,
               otherUserId: listingDetail.user.id,
             );
             logger.d("🧭 [Frontend] ChatScreen created successfully");
