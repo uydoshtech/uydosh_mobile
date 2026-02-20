@@ -30,6 +30,7 @@ import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
+import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
@@ -168,7 +169,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> _checkAndUnlockAchievements(UserProfile profile) async {
+  Future<void> _checkAndUnlockAchievements(
+    UserProfile profile,
+    BuildContext context,
+  ) async {
     if (!AuthenticationState().isAuthenticated) return;
     try {
       final profileCompletionPercent =
@@ -216,7 +220,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         conversationsStartedCount: 0,
       );
       if (mounted && newlyUnlocked.isNotEmpty) {
-        AchievementUnlockState().setPendingAchievement(newlyUnlocked.first);
+        AchievementUnlockBottomSheet.show(
+          context,
+          achievement: newlyUnlocked.first,
+          onDismiss: () =>
+              AchievementUnlockState().clearPendingAchievement(),
+        );
       }
       if (mounted) setState(() {});
     } catch (_) {}
@@ -362,7 +371,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (shouldCheck) {
                   _achievementCheckScheduled = true;
                   _lastAchievementCheckTime = now;
-                  Future.microtask(() => _checkAndUnlockAchievements(profile));
+                  Future.microtask(
+                    () => _checkAndUnlockAchievements(profile, context),
+                  );
                 }
                 return Scaffold(
                   appBar: AppBar(
