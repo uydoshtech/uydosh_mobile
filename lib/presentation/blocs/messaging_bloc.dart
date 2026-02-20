@@ -1,8 +1,10 @@
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/message.dart";
+import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 
 part "messaging_bloc.freezed.dart";
@@ -102,7 +104,8 @@ class MessagingState with _$MessagingState {
 // BLoC
 class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
 
-  MessagingBloc(this._messagingService) : super(const MessagingInitial()) {
+  MessagingBloc(this._messagingService, this._gamificationService)
+      : super(const MessagingInitial()) {
     on<FetchConversations>(_onFetchConversations);
     on<FetchParticipantConversations>(_onFetchParticipantConversations);
     on<CreateConversation>(_onCreateConversation);
@@ -114,6 +117,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     on<ClearConversations>(_onClearConversations);
   }
   final IMessagingService _messagingService;
+  final IGamificationService _gamificationService;
 
   // Local cache for conversations to implement frontend workaround
   List<ConversationSummary> _cachedConversations = [];
@@ -266,6 +270,16 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         messageType: event.messageType,
         replyToMessageId: event.replyToMessageId,
       );
+
+      // Record first message for achievement (runs at source - guaranteed)
+      try {
+        final achievement = await _gamificationService.recordFirstMessage();
+        if (achievement != null) {
+          AchievementUnlockState().setPendingAchievement(achievement);
+        }
+      } catch (e) {
+        logger.d("❌ [MessagingBloc] Error recording first message achievement: $e");
+      }
 
       emit(MessageSent(message: message));
     } catch (e) {

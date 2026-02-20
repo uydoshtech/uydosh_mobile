@@ -63,6 +63,7 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _currentUserId;
   List<Message> _messages = [];
   bool _isSendingMessage = false;
+  bool _hasLoadedMessagesForConversation = false; // Track if we've completed initial fetch (avoids loading when bloc is overwritten by RefreshConversations)
   final Set<int> _newMessageIds = {}; // Track which messages are new in this session
   UserProfile? _currentUserProfile; // Store the current user's profile
 
@@ -158,6 +159,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 // Store messages in widget state
                                 setState(() {
                                   _messages = messages;
+                                  _hasLoadedMessagesForConversation = true;
                                   // Don't mark any messages as new when initially loading
                                   // _newMessageIds remains empty for initial load
                                 });
@@ -227,7 +229,9 @@ class _ChatScreenState extends State<ChatScreen> {
                             loading: _buildLoadingState,
                             conversationsLoaded:
                                 (conversations, hasMore, currentPage) =>
-                                    _buildLoadingState(),
+                                    _hasLoadedMessagesForConversation
+                                        ? _buildMessagesList(_messages)
+                                        : _buildLoadingState(),
                             conversationsCleared: _buildEmptyState,
                             messagesLoaded:
                                 (
@@ -237,7 +241,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                   conversationId,
                                 ) => _buildMessagesList(messages),
                             conversationCreated:
-                                (conversation) => _buildLoadingState(),
+                                (conversation) =>
+                                    _hasLoadedMessagesForConversation
+                                        ? _buildMessagesList(_messages)
+                                        : _buildLoadingState(),
                             messageSent:
                                 (message) => _buildEmptyState(),
                             messagesMarkedAsRead:

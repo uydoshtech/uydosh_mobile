@@ -18,8 +18,11 @@ import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/state/achievement_unlock_state.dart";
+import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/firebase_options.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
@@ -185,19 +188,54 @@ class _MyAppState extends State<MyApp> {
             return MultiBlocProvider(
               providers: [
                 BlocProvider<MessagingBloc>(
-                  create: (_) => MessagingBloc(getIt<IMessagingService>()),
+                  create: (_) => MessagingBloc(
+                    getIt<IMessagingService>(),
+                    getIt<IGamificationService>(),
+                  ),
                 ),
                 BlocProvider<CurrentUserProfileBloc>(
                   create: (_) =>
                       CurrentUserProfileBloc(getIt<IUserProfileService>()),
                 ),
               ],
-              child: _BlocAuthListener(
-                child: child ?? const SizedBox.shrink(),
+              child: _AchievementUnlockListener(
+                child: _BlocAuthListener(
+                  child: child ?? const SizedBox.shrink(),
+                ),
               ),
             );
           },
         );
+      },
+    );
+  }
+}
+
+/// Shows achievement unlock popup when set from anywhere (e.g. MessagingBloc).
+class _AchievementUnlockListener extends StatelessWidget {
+  const _AchievementUnlockListener({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: AchievementUnlockState(),
+      builder: (context, _) {
+        final pending = AchievementUnlockState().pendingAchievement;
+        if (pending != null) {
+          // Clear immediately so we don't trigger duplicate shows from other listeners
+          AchievementUnlockState().clearPendingAchievement();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            AchievementUnlockBottomSheet.show(
+              context,
+              achievement: pending,
+              onDismiss: () =>
+                  AchievementUnlockState().clearPendingAchievement(),
+            );
+          });
+        }
+        return child;
       },
     );
   }

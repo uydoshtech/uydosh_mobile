@@ -5,9 +5,14 @@ import "package:uy_dosh/domain/models/achievement.dart";
 abstract class IGamificationService {
   Future<List<Achievement>> getAllAchievements();
   Future<Set<String>> getUnlockedAchievementIds();
+  Future<bool> hasNewAchievements();
+  Future<void> markAchievementsAsSeen();
   Future<bool> isAchievementUnlocked(String achievementId);
   Future<Achievement?> unlockAchievement(String achievementId);
   Future<void> recordAppOpen();
+  Future<Achievement?> recordShare();
+  Future<Achievement?> recordFirstMessage();
+  Future<bool> hasSentFirstMessage();
   Future<List<Achievement>> checkAndUnlockAchievements({
     required bool hasAccount,
     required int profileCompletionPercent,
@@ -21,6 +26,9 @@ abstract class IGamificationService {
 
 /// Storage key for unlocked achievement IDs (JSON array of strings).
 const String _unlockedAchievementsKey = "gamification_unlocked_achievements";
+
+/// Storage key for last seen unlocked IDs (when user viewed achievements screen).
+const String _lastSeenAchievementsKey = "gamification_last_seen_achievements";
 
 /// MVP achievements - client-side only. Backend can be added later.
 class GamificationService implements IGamificationService {
@@ -73,6 +81,12 @@ class GamificationService implements IGamificationService {
       category: AchievementCategory.engagement,
       isMajor: true,
     ),
+    Achievement(
+      id: "sharer",
+      key: "achievement_sharer",
+      icon: Icons.ios_share,
+      category: AchievementCategory.engagement,
+    ),
   ];
 
   @override
@@ -117,6 +131,27 @@ class GamificationService implements IGamificationService {
   }
 
   @override
+  Future<bool> hasNewAchievements() async {
+    final unlocked = await getUnlockedAchievementIds();
+    if (unlocked.isEmpty) return false;
+    final lastSeenJson = _prefs.getString(_lastSeenAchievementsKey);
+    if (lastSeenJson == null || lastSeenJson.isEmpty) return true;
+    try {
+      final lastSeen = _parseJsonList(lastSeenJson).toSet();
+      return unlocked.any((id) => !lastSeen.contains(id));
+    } catch (_) {
+      return true;
+    }
+  }
+
+  @override
+  Future<void> markAchievementsAsSeen() async {
+    final unlocked = await getUnlockedAchievementIds();
+    final json = "[${unlocked.map((s) => '"$s"').join(",")}]";
+    await _prefs.setString(_lastSeenAchievementsKey, json);
+  }
+
+  @override
   Future<Achievement?> unlockAchievement(String achievementId) async {
     final alreadyUnlocked = await isAchievementUnlocked(achievementId);
     if (alreadyUnlocked) return null;
@@ -153,6 +188,7 @@ class GamificationService implements IGamificationService {
     if (messagesSentCount >= 1) toUnlock.add("ice_breaker");
     if (listingsCreatedCount >= 1) toUnlock.add("first_listing");
     if (await _getStreakDays() >= 7) toUnlock.add("returning_user");
+    if (_prefs.getBool(_hasSharedKey) ?? false) toUnlock.add("sharer");
 
     final newlyUnlocked = <Achievement>[];
     for (final id in toUnlock) {
@@ -164,6 +200,25 @@ class GamificationService implements IGamificationService {
 
   static const String _streakCountKey = "gamification_streak_count";
   static const String _lastOpenDateKey = "gamification_last_open_date";
+  static const String _hasSharedKey = "gamification_has_shared";
+  static const String _hasSentFirstMessageKey = "gamification_has_sent_first_message";
+
+  @override
+  Future<Achievement?> recordShare() async {
+    await _prefs.setBool(_hasSharedKey, true);
+    return unlockAchievement("sharer");
+  }
+
+  @override
+  Future<Achievement?> recordFirstMessage() async {
+    await _prefs.setBool(_hasSentFirstMessageKey, true);
+    return unlockAchievement("ice_breaker");
+  }
+
+  @override
+  Future<bool> hasSentFirstMessage() async {
+    return _prefs.getBool(_hasSentFirstMessageKey) ?? false;
+  }
 
   String _dateKey(DateTime d) =>
       "${d.year}-${d.month.toString().padLeft(2, "0")}-${d.day.toString().padLeft(2, "0")}";

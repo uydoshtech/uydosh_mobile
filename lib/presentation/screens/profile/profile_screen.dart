@@ -12,11 +12,14 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/logout_service.dart" show AccountBlockedException, LogoutService;
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
@@ -24,6 +27,8 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
+import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
 import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
@@ -111,6 +116,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserProfile? _cachedUserProfile;
   String? _cachedGoogleDisplayName;
   String? _cachedGooglePhotoUrl;
+  bool _achievementCheckScheduled = false;
+  DateTime? _lastAchievementCheckTime;
 
   @override
   void initState() {
@@ -159,6 +166,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_userRole == null) {
       await _refreshUserRoleFromServer();
     }
+  }
+
+  Future<void> _checkAndUnlockAchievements(UserProfile profile) async {
+    if (!AuthenticationState().isAuthenticated) return;
+    try {
+      final profileCompletionPercent =
+          ProfileCompletionState.completionPercent(profile);
+      var viewedListingsCount = 0;
+      var favoritesCount = 0;
+      var listingsCreatedCount = 0;
+      var messagesSentCount = 0;
+
+      try {
+        final viewed =
+            await getIt<IListingService>().getViewedListings(page: 1, limit: 1);
+        viewedListingsCount = viewed.total;
+      } catch (_) {}
+
+      try {
+        final favorites =
+            await getIt<IFavoriteService>().getUserFavorites(page: 1, limit: 100);
+        favoritesCount = favorites.length;
+      } catch (_) {}
+
+      final userId = await SessionManager.getUserId();
+      if (userId != null) {
+        try {
+          final myListings = await getIt<IListingService>()
+              .getListingsByUserId(userId: userId, page: 1, limit: 1);
+          listingsCreatedCount = myListings.total;
+        } catch (_) {}
+      }
+
+      try {
+        if (await getIt<IGamificationService>().hasSentFirstMessage()) {
+          messagesSentCount = 1;
+        }
+      } catch (_) {}
+
+      final newlyUnlocked =
+          await getIt<IGamificationService>().checkAndUnlockAchievements(
+        hasAccount: true,
+        profileCompletionPercent: profileCompletionPercent,
+        viewedListingsCount: viewedListingsCount,
+        favoritesCount: favoritesCount,
+        messagesSentCount: messagesSentCount,
+        listingsCreatedCount: listingsCreatedCount,
+        conversationsStartedCount: 0,
+      );
+      if (mounted && newlyUnlocked.isNotEmpty) {
+        AchievementUnlockState().setPendingAchievement(newlyUnlocked.first);
+      }
+      if (mounted) setState(() {});
+    } catch (_) {}
   }
 
   Future<void> _refreshUserRoleFromServer() async {
@@ -294,6 +355,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
 
                 final profile = effectiveProfile!;
+                final now = DateTime.now();
+                final shouldCheck = !_achievementCheckScheduled ||
+                    (_lastAchievementCheckTime != null &&
+                        now.difference(_lastAchievementCheckTime!).inSeconds > 30);
+                if (shouldCheck) {
+                  _achievementCheckScheduled = true;
+                  _lastAchievementCheckTime = now;
+                  Future.microtask(() => _checkAndUnlockAchievements(profile));
+                }
                 return Scaffold(
                   appBar: AppBar(
                     title: Text(
@@ -800,19 +870,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             : const SizedBox.shrink(),
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              // New Profile Fields Section
-              if (_hasNewProfileFields(profile)) ...[
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
+                    // Lifestyle Preferences section (inside same card)
+                    if (_hasNewProfileFields(profile)) ...[
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurfaceVariant
+                            .withValues(alpha: 0.3),
+                      ),
                       InkWell(
                         onTap: () {
                           setState(() {
@@ -1029,9 +1096,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
-              ],
+              ),
 
               // My Listings, Messages, View History - grouped with separators
               const SizedBox(height: 8),
@@ -1192,27 +1259,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             if (!_userBlocked) ...[
               const SizedBox(height: 8),
-              Center(
-                child: OutlinedButton(
-                  onPressed: () => _openEditProfileScreen(context, profile),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    side: BorderSide(
-                      color: ThemeState().isBlueTheme ? Colors.white : Colors.black,
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    L10n.get("complete_profile"),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: ThemeState().isBlueTheme ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ),
+              UydoshLinkButton(
+                text: L10n.get("complete_profile"),
+                onPressed: () => _openEditProfileScreen(context, profile),
+                outlined: true,
               ),
             ],
           ],
@@ -1526,12 +1576,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
+        onTap: () async {
+          await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => const AchievementsScreen(),
             ),
           );
+          if (mounted) setState(() {});
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(
@@ -1539,13 +1590,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
-              Icon(
-                Icons.emoji_events,
-                color:
-                    ThemeState().isBlueTheme
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.primary,
-                size: 24,
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    Icons.emoji_events,
+                    color:
+                        ThemeState().isBlueTheme
+                            ? Colors.white
+                            : Theme.of(context).colorScheme.primary,
+                    size: 24,
+                  ),
+                  FutureBuilder<bool>(
+                    future: getIt<IGamificationService>().hasNewAchievements(),
+                    builder: (context, snapshot) {
+                      if (snapshot.data != true) return const SizedBox.shrink();
+                      return Positioned(
+                        top: -4,
+                        right: -4,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.surface,
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 2,
+                                spreadRadius: 0,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
               const SizedBox(width: 16),
               Expanded(

@@ -3,12 +3,14 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 /// Data class for a compatibility match (same value).
 class CompatibilityMatch {
@@ -50,10 +52,11 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
     required this.compatibilityError,
     required this.matches,
     required this.differences,
-    required this.onMessage,
-    required this.onViewProfile,
-    super.key,
-  });
+  required this.onMessage,
+  required this.onViewProfile,
+  required this.onCompleteProfile,
+  super.key,
+});
 
   final ListingDetail listingDetail;
   final ScrollController scrollController;
@@ -65,6 +68,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
   final List<CompatibilityDifference> differences;
   final VoidCallback onMessage;
   final VoidCallback onViewProfile;
+  final VoidCallback onCompleteProfile;
 
   static IconData _getLifestyleIcon(String labelKey) {
     switch (labelKey) {
@@ -150,11 +154,14 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
               params: {"percent": compatibilityPercent!.toString()},
             );
     final headerPercentText =
-        compatibilityPercent == null ? "—" : "$compatibilityPercent%";
+        compatibilityPercent == null ? L10n.get("na") : "$compatibilityPercent%";
+
+    final isProfileComplete = ProfileCompletionState().isProfileComplete;
 
     return Card(
       key: sectionKey,
       child: ExpansionTile(
+        initiallyExpanded: !isAuthenticated || !isProfileComplete,
         onExpansionChanged: (isExpanded) {
           HapticFeedbackUtils.impact();
           if (!isExpanded) return;
@@ -249,12 +256,16 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
               ],
             )
           else if (compatibilityError != null || percentText == null)
-            Text(
-              L10n.get("compatibility_unavailable"),
-              style: TextStyle(
-                fontSize: 14,
-                color: _getDescriptionTextColor(),
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                UydoshLinkButton(
+                  text: L10n.get("complete_profile"),
+                  onPressed: onCompleteProfile,
+                  color: _getIconColor(),
+                  outlined: true,
+                ),
+              ],
             )
           else
             Column(
@@ -349,12 +360,16 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                   ),
                 ],
                 if (matches.isEmpty && differences.isEmpty)
-                  Text(
-                    L10n.get("compatibility_unavailable"),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: _getDescriptionTextColor(),
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      UydoshLinkButton(
+                        text: L10n.get("complete_profile"),
+                        onPressed: onCompleteProfile,
+                        color: _getIconColor(),
+                        outlined: true,
+                      ),
+                    ],
                   ),
                 const SizedBox(height: 16),
                 Row(

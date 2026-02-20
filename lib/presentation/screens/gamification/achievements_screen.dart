@@ -14,7 +14,6 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/gamification_bloc.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
-import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 
 class AchievementsScreen extends StatefulWidget {
@@ -60,6 +59,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       bloc.add(const GamificationEvent.loadAchievements());
       AchievementUnlockState().setPendingAchievement(newlyUnlocked.first);
     }
+
+    await service.markAchievementsAsSeen();
   }
 
   Future<_GamificationStats> _gatherStats() async {
@@ -96,12 +97,19 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       } catch (_) {}
     }
 
+    var messagesSentCount = 0;
+    try {
+      final hasSentFirst =
+          await getIt<IGamificationService>().hasSentFirstMessage();
+      if (hasSentFirst) messagesSentCount = 1;
+    } catch (_) {}
+
     return _GamificationStats(
       hasAccount: hasAccount,
       profileCompletionPercent: profileCompletionPercent,
       viewedListingsCount: viewedListingsCount,
       favoritesCount: favoritesCount,
-      messagesSentCount: 0,
+      messagesSentCount: messagesSentCount,
       listingsCreatedCount: listingsCreatedCount,
       conversationsStartedCount: 0,
     );
@@ -109,26 +117,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: AchievementUnlockState(),
-      builder: (context, _) {
-        final pending = AchievementUnlockState().pendingAchievement;
-        if (pending != null) {
-          final ctx = context;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            AchievementUnlockState().clearPendingAchievement();
-            // ignore: use_build_context_synchronously
-            AchievementUnlockBottomSheet.show(
-              ctx,
-              achievement: pending,
-              onDismiss: () => AchievementUnlockState().clearPendingAchievement(),
-            );
-          });
-        }
-        return _buildContent(context);
-      },
-    );
+    return _buildContent(context);
   }
 
   Widget _buildContent(BuildContext context) {

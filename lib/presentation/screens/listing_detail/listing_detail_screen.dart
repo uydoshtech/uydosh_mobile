@@ -37,6 +37,7 @@ import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
@@ -58,6 +59,8 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
+import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
@@ -896,7 +899,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             L10n.get("error_listing_still_loading",
             ),
           ),
-      loaded: (loadedState) => _performShare(loadedState.listingDetail),
+      loaded: (loadedState) => _performShare(loadedState.listingDetail, context),
       error:
           (errorState) => _showShareError(
             L10n.get("error_loading_listing_details",
@@ -905,14 +908,26 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     );
   }
 
-  void _performShare(ListingDetail listingDetail) {
+  Future<void> _performShare(
+    ListingDetail listingDetail,
+    BuildContext context,
+  ) async {
     final currentLanguage = LanguageState().currentLanguage;
 
     // Build share text based on current language
     final shareText = _buildShareText(listingDetail, currentLanguage);
 
     // Share the text
-    Share.share(shareText, subject: _getShareSubject(currentLanguage));
+    await Share.share(shareText, subject: _getShareSubject(currentLanguage));
+
+    if (!context.mounted) return;
+    final achievement = await getIt<IGamificationService>().recordShare();
+    if (context.mounted && achievement != null) {
+      AchievementUnlockBottomSheet.show(
+        context,
+        achievement: achievement,
+      );
+    }
   }
 
   String _buildShareText(ListingDetail listingDetail, String language) {
@@ -2118,6 +2133,7 @@ L10n.get("feature_listing_error",
                   onMessage: () => _startConversation(listingDetail),
                   onViewProfile: () =>
                       _navigateToProfile(listingDetail.user.id),
+                  onCompleteProfile: _navigateToOwnProfile,
                 ),
               // Map Section
               if (listingDetail.location != null)
@@ -2192,6 +2208,12 @@ L10n.get("error_internet_connection",
           ),
         ],
       ),
+    );
+  }
+
+  void _navigateToOwnProfile() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const ProfileScreen()),
     );
   }
 
