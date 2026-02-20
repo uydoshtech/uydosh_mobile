@@ -235,12 +235,16 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
               ListenableBuilder(
                 listenable: LanguageState(),
                 builder: (context, child) {
-                  return L10n.text(
-                    "view_history_empty_title",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: _getEmptyStateTextColor(),
+                  return SizedBox(
+                    width: double.infinity,
+                    child: L10n.text(
+                      "view_history_empty_title",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: _getEmptyStateTextColor(),
+                      ),
                     ),
                   );
                 },

@@ -957,11 +957,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           body: SafeArea(
             child: Column(
               children: [
-                // Header with logo
+                // Header with page title
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
+                  padding: const EdgeInsets.only(
+                    left: 32,
+                    right: 32,
+                    top: 16,
+                    bottom: 12,
                   ),
                   child: Row(
                     children: [
@@ -982,9 +984,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "UyDosh",
+                        _currentPage == 0
+                            ? L10n.get("select_language")
+                            : _currentPage == 1
+                                ? L10n.get("sign_in_with_google")
+                                : _currentPage == 2
+                                    ? L10n.get("complete_profile")
+                                    : "UyDosh",
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: _getOnboardingTextColor(context),
                         ),
@@ -1124,37 +1132,33 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   Widget _buildLanguageSelectionPage() {
-    return SingleChildScrollView(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            L10n.text(
-              "select_language",
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: _getOnboardingTextColor(context),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Language options with flags
+                  Column(
+                    children: [
+                      _buildLanguageOption("uz", "🇺🇿", "O'zbekcha", "Uzbek"),
+                      const SizedBox(height: 20),
+                      _buildLanguageOption("ru", "🇷🇺", "Русский", "Russian"),
+                      const SizedBox(height: 20),
+                      _buildLanguageOption("en", "🇺🇸", "English", "English"),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 40),
-
-            // Language options with flags
-            Column(
-              children: [
-                _buildLanguageOption("uz", "🇺🇿", "O'zbekcha", "Uzbek"),
-                const SizedBox(height: 20),
-                _buildLanguageOption("ru", "🇷🇺", "Русский", "Russian"),
-                const SizedBox(height: 20),
-                _buildLanguageOption("en", "🇺🇸", "English", "English"),
-              ],
-            ),
-
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -1240,141 +1244,144 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   Widget _buildGoogleSignInPage() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          L10n.text(
-            "sign_in_with_google",
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: _getOnboardingTextColor(context),
-            ),
-          ),
-          const SizedBox(height: 16),
-          L10n.text(
-            "sign_in_with_google_description",
-            style: TextStyle(
-              fontSize: 16,
-              color: _getOnboardingTextSecondaryColor(context),
-            ),
-          ),
-          const SizedBox(height: 40),
-
-          // Google Sign-In button
-          if (!_isGoogleSignedIn) ...[
-            Center(
-              child: SizedBox(
-                width: 199,
-                height: 44,
-                child: InkWell(
-                  onTap: _isAuthenticating ? null : _signInWithGoogle,
-                  borderRadius: BorderRadius.circular(22),
-                  child: ListenableBuilder(
-                    listenable: ThemeState(),
-                    builder: (context, child) {
-                      final currentTheme = ThemeState().currentTheme;
-                      final svgAsset =
-                          currentTheme == AppTheme.lightTheme
-                              ? "assets/images/ios_dark_rd_ctn.svg" // Black for light theme
-                              : "assets/images/ios_neutral_rd_ctn.svg"; // Neutral for blue theme
-
-                      return SvgPicture.asset(svgAsset, width: 199, height: 44);
-                    },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: L10n.text(
+                      "sign_in_with_google_description",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: _getOnboardingTextSecondaryColor(context),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-          ],
+                  const SizedBox(height: 40),
 
-          // User info display when signed in
-          if (_isGoogleSignedIn) ...[
-            if (_currentUser != null) ...[
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: _getOnboardingTextColor(context).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    _currentUser!.photoURL != null
-                        ? ClipOval(
-                            child: CachedNetworkImage(
-                              imageUrl: _currentUser!.photoURL!,
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                              memCacheWidth: 120,
-                              memCacheHeight: 120,
-                              placeholder:
-                                  (context, url) => Icon(
-                                    Icons.person,
-                                    size: 30,
-                                    color: _getOnboardingTextColor(context),
-                                  ),
-                              errorWidget:
-                                  (context, url, error) => Icon(
-                                    Icons.person,
-                                    size: 30,
-                                    color: _getOnboardingTextColor(context),
-                                  ),
-                            ),
-                          )
-                        : CircleAvatar(
-                            radius: 30,
-                            child: Icon(
-                              Icons.person,
-                              size: 30,
-                              color: _getOnboardingTextColor(context),
-                            ),
+                  // Google Sign-In button
+                  if (!_isGoogleSignedIn) ...[
+                    Center(
+                      child: SizedBox(
+                        width: 199,
+                        height: 44,
+                        child: InkWell(
+                          onTap: _isAuthenticating ? null : _signInWithGoogle,
+                          borderRadius: BorderRadius.circular(22),
+                          child: ListenableBuilder(
+                            listenable: ThemeState(),
+                            builder: (context, child) {
+                              final currentTheme = ThemeState().currentTheme;
+                              final svgAsset =
+                                  currentTheme == AppTheme.lightTheme
+                                      ? "assets/images/ios_dark_rd_ctn.svg" // Black for light theme
+                                      : "assets/images/ios_neutral_rd_ctn.svg"; // Neutral for blue theme
+
+                              return SvgPicture.asset(svgAsset, width: 199, height: 44);
+                            },
                           ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _currentUser!.displayName ?? "User",
-                            style: TextStyle(
-                              color: _getOnboardingTextColor(context),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            _currentUser!.email ?? "",
-                            style: TextStyle(
-                              color: _getOnboardingTextSecondaryColor(context),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ],
-                ),
-              ),
-            ],
 
-            //const SizedBox(height: 100),
-          ],
+                  // User info display when signed in
+                  if (_isGoogleSignedIn) ...[
+                    if (_currentUser != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: _getOnboardingTextColor(context).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            _currentUser!.photoURL != null
+                                ? ClipOval(
+                                    child: CachedNetworkImage(
+                                      imageUrl: _currentUser!.photoURL!,
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                      memCacheWidth: 120,
+                                      memCacheHeight: 120,
+                                      placeholder:
+                                          (context, url) => Icon(
+                                            Icons.person,
+                                            size: 30,
+                                            color: _getOnboardingTextColor(context),
+                                          ),
+                                      errorWidget:
+                                          (context, url, error) => Icon(
+                                            Icons.person,
+                                            size: 30,
+                                            color: _getOnboardingTextColor(context),
+                                          ),
+                                    ),
+                                  )
+                                : CircleAvatar(
+                                    radius: 30,
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 30,
+                                      color: _getOnboardingTextColor(context),
+                                    ),
+                                  ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _currentUser!.displayName ?? "User",
+                                    style: TextStyle(
+                                      color: _getOnboardingTextColor(context),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    _currentUser!.email ?? "",
+                                    style: TextStyle(
+                                      color: _getOnboardingTextSecondaryColor(context),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
 
-          // Loading indicator
-          if (_isAuthenticating) ...[
-            const SizedBox(height: 24),
-            CenteredHouseLoadingIndicator(
-              text: L10n.get("signing_in"),
-              textStyle: TextStyle(
-                color: _getOnboardingTextSecondaryColor(context),
-                fontSize: 16,
+                  // Loading indicator
+                  if (_isAuthenticating) ...[
+                    const SizedBox(height: 24),
+                    CenteredHouseLoadingIndicator(
+                      text: L10n.get("signing_in"),
+                      textStyle: TextStyle(
+                        color: _getOnboardingTextSecondaryColor(context),
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-          ],
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -1386,15 +1393,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            L10n.text(
-              "complete_profile",
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: _getOnboardingTextColor(context),
-              ),
-            ),
-            const SizedBox(height: 8),
             L10n.text(
               "complete_profile_subheader",
               style: TextStyle(
