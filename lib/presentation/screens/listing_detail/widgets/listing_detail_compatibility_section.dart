@@ -94,6 +94,9 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
         return Icons.restaurant;
       case "pets_preference":
         return Icons.pets;
+      case "same_region":
+      case "region":
+        return Icons.location_on;
       case "same_university":
       case "both_students":
       case "university":

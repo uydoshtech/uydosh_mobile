@@ -961,7 +961,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
-                    vertical: 24,
+                    vertical: 12,
                   ),
                   child: Row(
                     children: [
@@ -1026,7 +1026,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // Page content
                 Expanded(
@@ -1394,6 +1394,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 color: _getOnboardingTextColor(context),
               ),
             ),
+            const SizedBox(height: 8),
+            L10n.text(
+              "complete_profile_subheader",
+              style: TextStyle(
+                fontSize: 16,
+                color: _getOnboardingTextSecondaryColor(context),
+              ),
+            ),
             const SizedBox(height: 16),
 
             // Name input
@@ -1455,16 +1463,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
             const SizedBox(height: 16),
 
-            // Gender selection
-            L10n.text(
-              "gender",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(context),
-              ),
-            ),
-            const SizedBox(height: 16),
+            // Gender selection (no label)
             Row(
               children: [
                 Flexible(
@@ -1489,7 +1488,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
             // Region selection
             L10n.text(
-              "select_region",
+              "select_region_profile_creation",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

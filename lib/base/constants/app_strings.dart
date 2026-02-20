@@ -188,6 +188,8 @@ class AppStrings {
       "all_stations_explanation":
           "Search along the entire line <b>{line}</b> through <b>{count}</b> stations",
       "select_region": "Choose region:",
+      "select_region_profile_creation":
+          "Where are you from? We'll help you find people from your hometown.",
       "select_university": "Select university",
 
       "select_language": "Select Language",
@@ -338,6 +340,8 @@ class AppStrings {
       "university": "University",
       "same_university": "Same University",
       "both_students": "Both students",
+      "region": "Region",
+      "same_region": "Same Region",
       "rating": "Rating",
       "about_me": "About Me",
       "telegram": "Telegram",
@@ -395,6 +399,8 @@ class AppStrings {
 
       // ===== AUTHENTICATION =====
       "complete_profile": "Complete Your Profile",
+      "complete_profile_subheader":
+          "We use this information to find the perfect roommates and matches for you.",
 
       "full_name": "Full Name",
 
@@ -927,6 +933,8 @@ class AppStrings {
       "all_stations_explanation":
           "Поиск вдоль ВСЕЙ линии <b>{line}</b> по <b>{count}</b> станциям",
       "select_region": "Выберите область",
+      "select_region_profile_creation":
+          "Откуда вы? Мы поможем вам найти людей из вашего родного города.",
       "select_university": "Выберите университет",
 
       "select_language": "Выбрать язык",
@@ -1077,6 +1085,8 @@ class AppStrings {
       "university": "Университет",
       "same_university": "Один университет",
       "both_students": "Оба студента",
+      "region": "Область",
+      "same_region": "Один регион",
       "rating": "Рейтинг",
       "about_me": "Обо мне",
       "telegram": "Telegram",
@@ -1134,6 +1144,8 @@ class AppStrings {
 
       // ===== AUTHENTICATION =====
       "complete_profile": "Завершите профиль",
+      "complete_profile_subheader":
+          "Мы используем эту информацию, чтобы подобрать идеальных соседей и совпадения для вас.",
 
       "full_name": "Полное имя",
 
@@ -1676,6 +1688,8 @@ class AppStrings {
       "all_stations_explanation":
           "Liniya <b>{line}</b> bo'ylab <b>{count}</b> bekat orqali qidiruv",
       "select_region": "Tumanni tanlang",
+      "select_region_profile_creation":
+          "Qayerdansiz? Vataningizdagi odamlarni topishga yordam beramiz.",
       "select_university": "Universitetni tanlang",
 
       "select_language": "Tilni tanlang",
@@ -1829,6 +1843,8 @@ class AppStrings {
       "university": "Universitet",
       "same_university": "Bir xil universitet",
       "both_students": "Ikkalasi ham talaba",
+      "region": "Tuman",
+      "same_region": "Bir xil tuman",
       "rating": "Reyting",
       "about_me": "Men haqimda",
       "telegram": "Telegram",
@@ -1886,6 +1902,8 @@ class AppStrings {
 
       // ===== AUTHENTICATION =====
       "complete_profile": "Profilni to'ldiring",
+      "complete_profile_subheader":
+          "Biz ushbu ma'lumotlardan sizga eng mos yotoqdoshlar va mos keluvchilarni topish uchun foydalanamiz.",
 
       "full_name": "To'liq ism",
 

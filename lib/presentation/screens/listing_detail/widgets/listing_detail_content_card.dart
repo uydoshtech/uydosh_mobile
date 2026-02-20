@@ -9,6 +9,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 
 /// Main content card for listing detail (header, title, description, location, amenities, dates).
@@ -19,12 +20,14 @@ class ListingDetailContentCard extends StatefulWidget {
     required this.formatMoveInDate,
     required this.getLocalizedName,
     this.ownerName,
+    this.onAuthorTap,
     super.key,
   });
 
   final ListingDetail listingDetail;
   final String currentLanguage;
   final String? ownerName;
+  final VoidCallback? onAuthorTap;
   final String Function(BuildContext context, String moveInDate) formatMoveInDate;
   final String Function({
     String? nameUz,
@@ -291,7 +294,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                                     _buildAmenityChip(context, amenity))
                                 .toList(),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 24),
                         ],
                         if (widget.listingDetail.moveInDate != null &&
                             widget.listingDetail.moveInDate!.isNotEmpty) ...[
@@ -359,21 +362,32 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text.rich(
-                                TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text:
-                                          "${L10n.get("author")}: ",
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: ListingDetailThemeHelper
-                                            .dateTextColor,
-                                      ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "${L10n.get("author")}: ",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: ListingDetailThemeHelper
+                                          .dateTextColor,
                                     ),
-                                    TextSpan(
-                                      text: widget.ownerName ??
-                                          L10n.get("na"),
+                                  ),
+                                  if (widget.onAuthorTap != null)
+                                    UydoshLinkButton(
+                                      text: (widget.ownerName ?? "").trim().isNotEmpty
+                                          ? widget.ownerName!
+                                          : L10n.get("na"),
+                                      onPressed: widget.onAuthorTap!,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: ListingDetailThemeHelper
+                                          .dateTextColor,
+                                      padding: EdgeInsets.zero,
+                                      alignment: Alignment.centerLeft,
+                                    )
+                                  else
+                                    Text(
+                                      widget.ownerName ?? L10n.get("na"),
                                       style: TextStyle(
                                         fontSize: 15,
                                         color: ListingDetailThemeHelper
@@ -381,8 +395,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ],
-                                ),
+                                ],
                               ),
                             ),
                           ],

@@ -457,11 +457,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                       ],
                     ),
-                    if (((_cachedGoogleDisplayName ?? profile.name) ?? "")
+                    if (((profile.name ?? _cachedGoogleDisplayName) ?? "")
                         .isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
-                        _cachedGoogleDisplayName ?? profile.name ?? "",
+                        profile.name ?? _cachedGoogleDisplayName ?? "",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -566,7 +566,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                     // Profile Name
-                      if (((_cachedGoogleDisplayName ?? profile.name) ?? "")
+                      if (((profile.name ?? _cachedGoogleDisplayName) ?? "")
                           .isNotEmpty) ...[
                         Row(
                           children: [
@@ -591,7 +591,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   ),
                                   Text(
-                                    _cachedGoogleDisplayName ?? profile.name!,
+                                    profile.name ?? _cachedGoogleDisplayName ?? "",
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,

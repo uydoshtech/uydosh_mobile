@@ -688,6 +688,40 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       }
     }
 
+    // Region - both users have region set
+    if (currentProfile.regionId != null && ownerProfile.regionId != null) {
+      total += 1;
+      final labelKey = "region";
+      final label = L10n.get(labelKey);
+      final currentLang = LanguageState().currentLanguage;
+      final currentText = currentProfile.region != null
+          ? _getLocalizedRegionName(currentProfile.region!)
+          : "";
+      final ownerText = ownerProfile.region != null
+          ? _getLocalizedRegionName(ownerProfile.region!)
+          : "";
+
+      if (currentProfile.regionId == ownerProfile.regionId) {
+        matched += 1;
+        matches.add(
+          _CompatibilityMatch(
+            labelKey: "same_region",
+            label: L10n.get("same_region"),
+            value: currentText.isNotEmpty ? currentText : ownerText,
+          ),
+        );
+      } else {
+        differences.add(
+          _CompatibilityDifference(
+            labelKey: labelKey,
+            label: label,
+            currentText: currentText.isNotEmpty ? currentText : L10n.get("unknown"),
+            ownerText: ownerText.isNotEmpty ? ownerText : L10n.get("unknown"),
+          ),
+        );
+      }
+    }
+
     compare<int>(
       labelKey: "cleanliness",
       currentValue: currentProfile.cleanliness,
@@ -913,6 +947,19 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             nameUz ??
             nameEn ??
             L10n.get( "unknown");
+    }
+  }
+
+  String _getLocalizedRegionName(UserProfileRegion region) {
+    final currentLanguage = LanguageState().currentLanguage;
+    switch (currentLanguage) {
+      case "ru":
+        return region.shortNameRu ?? region.nameRu ?? "Unknown";
+      case "uz":
+        return region.shortNameUz ?? region.nameUz ?? "Unknown";
+      case "en":
+      default:
+        return region.shortNameEn ?? region.nameEn ?? "Unknown";
     }
   }
 
@@ -2204,6 +2251,10 @@ L10n.get("feature_listing_error",
                 formatMoveInDate: _formatMoveInDate,
                 getLocalizedName: _getLocalizedName,
                 ownerName: _ownerName,
+                onAuthorTap: () => _navigateToProfile(
+                  listingDetail.user.id,
+                  phoneNumber: listingDetail.user.phone,
+                ),
               ),
 
               // Map and Compatibility sections: when profile is incomplete,

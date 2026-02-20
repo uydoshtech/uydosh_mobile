@@ -190,7 +190,6 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
 
   void _maybeFetchProfile() {
     if (!AuthenticationState().isAuthenticated) return;
-    if ((_cachedGoogleDisplayName ?? "").trim().isNotEmpty) return;
     if (!mounted) return;
     context.read<CurrentUserProfileBloc>().add(
           const CurrentUserProfileEvent.fetchProfile(),
@@ -318,19 +317,6 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                                           ),
                                     ),
                                 builder: (context, data) {
-                                  final cachedName =
-                                      (_cachedGoogleDisplayName ?? "").trim();
-                                  if (cachedName.isNotEmpty) {
-                                    return Text(
-                                      cachedName,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: _getTextColor(),
-                                      ),
-                                    );
-                                  }
-
                                   if (data.isLoading) {
                                     return Text(
                                       L10n.get("loading..."),
@@ -343,22 +329,32 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                                   }
 
                                   if (data.hasError || data.profile == null) {
+                                    // Fallback to Google name when profile unavailable
+                                    final fallbackName =
+                                        (_cachedGoogleDisplayName ?? "").trim();
                                     return Text(
-                                      L10n.get("user"),
+                                      fallbackName.isNotEmpty
+                                          ? fallbackName
+                                          : L10n.get("user"),
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
-                                        color: _getSecondaryTextColor(),
+                                        color: fallbackName.isNotEmpty
+                                            ? _getTextColor()
+                                            : _getSecondaryTextColor(),
                                       ),
                                     );
                                   }
 
+                                  // Prefer profile name (populated on account creation) over Google name
                                   final displayName =
+                                      (data.profile!.name?.trim().isNotEmpty == true
+                                              ? data.profile!.name
+                                              : null) ??
                                       _cachedGoogleDisplayName ??
-                                      data.profile!.name;
+                                      L10n.get("user");
                                   return Text(
-                                    displayName ??
-                                        L10n.get("user"),
+                                    displayName,
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
