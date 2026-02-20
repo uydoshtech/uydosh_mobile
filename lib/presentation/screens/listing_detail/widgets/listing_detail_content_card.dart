@@ -184,7 +184,9 @@ class ListingDetailContentCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.inverseSurface,
+                    color: ThemeState().isBlueTheme
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.inverseSurface,
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
@@ -198,7 +200,9 @@ class ListingDetailContentCard extends StatelessWidget {
                     _getAmenityLocalizedName(amenity),
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(context).colorScheme.onInverseSurface,
+                      color: ThemeState().isBlueTheme
+                          ? Colors.black
+                          : Theme.of(context).colorScheme.onInverseSurface,
                     ),
                   ),
                 ),
