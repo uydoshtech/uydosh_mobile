@@ -1,5 +1,9 @@
+import "package:dio/dio.dart";
 import "package:flutter/material.dart";
-import "package:shared_preferences/shared_preferences.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
 
 abstract class IGamificationService {
@@ -24,70 +28,108 @@ abstract class IGamificationService {
   });
 }
 
-/// Storage key for unlocked achievement IDs (JSON array of strings).
-const String _unlockedAchievementsKey = "gamification_unlocked_achievements";
+class _EmptyRequest implements IJsonEncodable {
+  @override
+  Map<String, dynamic> toJson() => {};
+}
 
-/// Storage key for last seen unlocked IDs (when user viewed achievements screen).
-const String _lastSeenAchievementsKey = "gamification_last_seen_achievements";
+class _CheckAchievementsRequest implements IJsonEncodable {
+  _CheckAchievementsRequest({
+    required this.profileCompletionPercent,
+    required this.viewedListingsCount,
+    required this.favoritesCount,
+    required this.listingsCreatedCount,
+    required this.conversationsStartedCount,
+  });
 
-/// MVP achievements - client-side only. Backend can be added later.
+  final int profileCompletionPercent;
+  final int viewedListingsCount;
+  final int favoritesCount;
+  final int listingsCreatedCount;
+  final int conversationsStartedCount;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "profileCompletionPercent": profileCompletionPercent,
+        "viewedListingsCount": viewedListingsCount,
+        "favoritesCount": favoritesCount,
+        "listingsCreatedCount": listingsCreatedCount,
+        "conversationsStartedCount": conversationsStartedCount,
+      };
+}
+
+/// Achievement definitions - same as backend. Used for display.
+const List<Achievement> _allAchievements = [
+  Achievement(
+    id: "first_steps",
+    key: "achievement_first_steps",
+    icon: Icons.login,
+    category: AchievementCategory.onboarding,
+  ),
+  Achievement(
+    id: "profile_complete",
+    key: "achievement_profile_complete",
+    icon: Icons.check_circle,
+    category: AchievementCategory.profile,
+    isMajor: true,
+  ),
+  Achievement(
+    id: "first_look",
+    key: "achievement_first_look",
+    icon: Icons.visibility,
+    category: AchievementCategory.browsing,
+  ),
+  Achievement(
+    id: "bookmarker",
+    key: "achievement_bookmarker",
+    icon: Icons.favorite,
+    category: AchievementCategory.browsing,
+  ),
+  Achievement(
+    id: "ice_breaker",
+    key: "achievement_ice_breaker",
+    icon: Icons.chat_bubble,
+    category: AchievementCategory.messaging,
+  ),
+  Achievement(
+    id: "first_listing",
+    key: "achievement_first_listing",
+    icon: Icons.add_home,
+    category: AchievementCategory.listings,
+    isMajor: true,
+  ),
+  Achievement(
+    id: "returning_user",
+    key: "achievement_returning_user",
+    icon: Icons.celebration,
+    category: AchievementCategory.engagement,
+    isMajor: true,
+  ),
+  Achievement(
+    id: "sharer",
+    key: "achievement_sharer",
+    icon: Icons.ios_share,
+    category: AchievementCategory.engagement,
+  ),
+];
+
+/// Gamification service backed by backend API (database).
 class GamificationService implements IGamificationService {
-  GamificationService(this._prefs);
-  final SharedPreferences _prefs;
+  GamificationService(this._oauthApiClient);
+  final IOAuthApiClient _oauthApiClient;
 
-  static const List<Achievement> _allAchievements = [
-    Achievement(
-      id: "first_steps",
-      key: "achievement_first_steps",
-      icon: Icons.login,
-      category: AchievementCategory.onboarding,
-    ),
-    Achievement(
-      id: "profile_complete",
-      key: "achievement_profile_complete",
-      icon: Icons.check_circle,
-      category: AchievementCategory.profile,
-      isMajor: true,
-    ),
-    Achievement(
-      id: "first_look",
-      key: "achievement_first_look",
-      icon: Icons.visibility,
-      category: AchievementCategory.browsing,
-    ),
-    Achievement(
-      id: "bookmarker",
-      key: "achievement_bookmarker",
-      icon: Icons.favorite,
-      category: AchievementCategory.browsing,
-    ),
-    Achievement(
-      id: "ice_breaker",
-      key: "achievement_ice_breaker",
-      icon: Icons.chat_bubble,
-      category: AchievementCategory.messaging,
-    ),
-    Achievement(
-      id: "first_listing",
-      key: "achievement_first_listing",
-      icon: Icons.add_home,
-      category: AchievementCategory.listings,
-      isMajor: true,
-    ),
-    Achievement(
-      id: "returning_user",
-      key: "achievement_returning_user",
-      icon: Icons.celebration,
-      category: AchievementCategory.engagement,
-      isMajor: true,
-    ),
-    Achievement(
-      id: "sharer",
-      key: "achievement_sharer",
-      icon: Icons.ios_share,
-      category: AchievementCategory.engagement,
-    ),
-  ];
+  Future<void> _handleUnauthorized() async {
+    logger.d("🚨 GamificationService: Session expired, clearing local session...");
+    await SessionManager.clearSession();
+  }
+
+  Achievement? _achievementById(String id) {
+    try {
+      return _allAchievements.firstWhere((a) => a.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<List<Achievement>> getAllAchievements() async {
@@ -96,32 +138,62 @@ class GamificationService implements IGamificationService {
 
   @override
   Future<Set<String>> getUnlockedAchievementIds() async {
-    final json = _prefs.getString(_unlockedAchievementsKey);
-    if (json == null || json.isEmpty) return {};
     try {
-      final list = _parseJsonList(json);
-      return list.toSet();
-    } catch (_) {
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        "/achievements",
+        (data) => data as Map<String, dynamic>,
+      );
+      final list = response["unlockedIds"];
+      if (list is List) {
+        return list.map((e) => e.toString()).toSet();
+      }
+      return {};
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      logger.d("❌ GamificationService: getUnlockedAchievementIds: ${e.message}");
+      return {};
+    } catch (e) {
+      logger.d("❌ GamificationService: getUnlockedAchievementIds: $e");
       return {};
     }
   }
 
-  List<String> _parseJsonList(String json) {
-    final trimmed = json.trim();
-    if (trimmed.isEmpty || trimmed == "[]") return [];
-    final inner = trimmed
-        .replaceFirst("[", "")
-        .replaceFirst("]", "")
-        .split(",")
-        .map((s) => s.trim().replaceAll('"', ""))
-        .where((s) => s.isNotEmpty)
-        .toList();
-    return inner;
+  @override
+  Future<bool> hasNewAchievements() async {
+    try {
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        "/achievements",
+        (data) => data as Map<String, dynamic>,
+      );
+      return response["hasNew"] as bool? ?? false;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
 
-  Future<void> _saveUnlockedIds(Set<String> ids) async {
-    final json = "[${ids.map((s) => '"$s"').join(",")}]";
-    await _prefs.setString(_unlockedAchievementsKey, json);
+  @override
+  Future<void> markAchievementsAsSeen() async {
+    try {
+      await _oauthApiClient.post<Map<String, dynamic>, _EmptyRequest>(
+        "/achievements/mark-seen",
+        (data) => data as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      logger.d("❌ GamificationService: markAchievementsAsSeen: ${e.message}");
+    } catch (e) {
+      logger.d("❌ GamificationService: markAchievementsAsSeen: $e");
+    }
   }
 
   @override
@@ -131,42 +203,99 @@ class GamificationService implements IGamificationService {
   }
 
   @override
-  Future<bool> hasNewAchievements() async {
-    final unlocked = await getUnlockedAchievementIds();
-    if (unlocked.isEmpty) return false;
-    final lastSeenJson = _prefs.getString(_lastSeenAchievementsKey);
-    if (lastSeenJson == null || lastSeenJson.isEmpty) return true;
+  Future<Achievement?> unlockAchievement(String achievementId) async {
+    final a = _achievementById(achievementId);
+    return a;
+  }
+
+  @override
+  Future<void> recordAppOpen() async {
     try {
-      final lastSeen = _parseJsonList(lastSeenJson).toSet();
-      return unlocked.any((id) => !lastSeen.contains(id));
-    } catch (_) {
-      return true;
+      await _oauthApiClient.post<Map<String, dynamic>, _EmptyRequest>(
+        "/achievements/record-app-open",
+        (data) => data as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      logger.d("❌ GamificationService: recordAppOpen: ${e.message}");
+    } catch (e) {
+      logger.d("❌ GamificationService: recordAppOpen: $e");
     }
   }
 
   @override
-  Future<void> markAchievementsAsSeen() async {
-    final unlocked = await getUnlockedAchievementIds();
-    final json = "[${unlocked.map((s) => '"$s"').join(",")}]";
-    await _prefs.setString(_lastSeenAchievementsKey, json);
+  Future<Achievement?> recordShare() async {
+    try {
+      final response = await _oauthApiClient.post<Map<String, dynamic>, _EmptyRequest>(
+        "/achievements/record-share",
+        (data) => data as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
+      final newlyUnlocked = response["newlyUnlocked"] as List<dynamic>?;
+      if (newlyUnlocked != null &&
+          newlyUnlocked.isNotEmpty &&
+          newlyUnlocked.first is String) {
+        return _achievementById(newlyUnlocked.first as String);
+      }
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      logger.d("❌ GamificationService: recordShare: ${e.message}");
+      return null;
+    } catch (e) {
+      logger.d("❌ GamificationService: recordShare: $e");
+      return null;
+    }
   }
 
   @override
-  Future<Achievement?> unlockAchievement(String achievementId) async {
-    final alreadyUnlocked = await isAchievementUnlocked(achievementId);
-    if (alreadyUnlocked) return null;
+  Future<Achievement?> recordFirstMessage() async {
+    try {
+      final response = await _oauthApiClient.post<Map<String, dynamic>, _EmptyRequest>(
+        "/achievements/record-first-message",
+        (data) => data as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
+      final newlyUnlocked = response["newlyUnlocked"] as List<dynamic>?;
+      if (newlyUnlocked != null &&
+          newlyUnlocked.isNotEmpty &&
+          newlyUnlocked.first is String) {
+        return _achievementById(newlyUnlocked.first as String);
+      }
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      logger.d("❌ GamificationService: recordFirstMessage: ${e.message}");
+      return null;
+    } catch (e) {
+      logger.d("❌ GamificationService: recordFirstMessage: $e");
+      return null;
+    }
+  }
 
-    final achievement =
-        _allAchievements.cast<Achievement?>().firstWhere(
-              (a) => a?.id == achievementId,
-              orElse: () => null,
-            );
-    if (achievement == null) return null;
-
-    final unlocked = await getUnlockedAchievementIds();
-    unlocked.add(achievementId);
-    await _saveUnlockedIds(unlocked);
-    return achievement;
+  @override
+  Future<bool> hasSentFirstMessage() async {
+    try {
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        "/achievements/has-sent-first-message",
+        (data) => data as Map<String, dynamic>,
+      );
+      return response["hasSentFirstMessage"] as bool? ?? false;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override
@@ -179,82 +308,36 @@ class GamificationService implements IGamificationService {
     required int listingsCreatedCount,
     required int conversationsStartedCount,
   }) async {
-    final toUnlock = <String>[];
+    try {
+      final response = await _oauthApiClient.post<Map<String, dynamic>, _CheckAchievementsRequest>(
+        "/achievements/check",
+        (data) => data as Map<String, dynamic>,
+        data: _CheckAchievementsRequest(
+          profileCompletionPercent: profileCompletionPercent,
+          viewedListingsCount: viewedListingsCount,
+          favoritesCount: favoritesCount,
+          listingsCreatedCount: listingsCreatedCount,
+          conversationsStartedCount: conversationsStartedCount,
+        ),
+      );
+      final newlyUnlocked = response["newlyUnlocked"] as List<dynamic>?;
+      if (newlyUnlocked == null) return [];
 
-    if (hasAccount) toUnlock.add("first_steps");
-    if (profileCompletionPercent >= 100) toUnlock.add("profile_complete");
-    if (viewedListingsCount >= 1) toUnlock.add("first_look");
-    if (favoritesCount >= 1) toUnlock.add("bookmarker");
-    if (messagesSentCount >= 1) toUnlock.add("ice_breaker");
-    if (listingsCreatedCount >= 1) toUnlock.add("first_listing");
-    if (await _getStreakDays() >= 7) toUnlock.add("returning_user");
-    if (_prefs.getBool(_hasSharedKey) ?? false) toUnlock.add("sharer");
-
-    final newlyUnlocked = <Achievement>[];
-    for (final id in toUnlock) {
-      final a = await unlockAchievement(id);
-      if (a != null) newlyUnlocked.add(a);
-    }
-    return newlyUnlocked;
-  }
-
-  static const String _streakCountKey = "gamification_streak_count";
-  static const String _lastOpenDateKey = "gamification_last_open_date";
-  static const String _hasSharedKey = "gamification_has_shared";
-  static const String _hasSentFirstMessageKey = "gamification_has_sent_first_message";
-
-  @override
-  Future<Achievement?> recordShare() async {
-    await _prefs.setBool(_hasSharedKey, true);
-    return unlockAchievement("sharer");
-  }
-
-  @override
-  Future<Achievement?> recordFirstMessage() async {
-    await _prefs.setBool(_hasSentFirstMessageKey, true);
-    return unlockAchievement("ice_breaker");
-  }
-
-  @override
-  Future<bool> hasSentFirstMessage() async {
-    return _prefs.getBool(_hasSentFirstMessageKey) ?? false;
-  }
-
-  String _dateKey(DateTime d) =>
-      "${d.year}-${d.month.toString().padLeft(2, "0")}-${d.day.toString().padLeft(2, "0")}";
-
-  Future<int> _getStreakDays() async {
-    return _prefs.getInt(_streakCountKey) ?? 0;
-  }
-
-  /// Call this when the app is opened to update streak.
-  @override
-  Future<void> recordAppOpen() async {
-    final today = DateTime.now();
-    final todayStr = _dateKey(today);
-    final lastOpenStr = _prefs.getString(_lastOpenDateKey);
-    var streak = _prefs.getInt(_streakCountKey) ?? 0;
-
-    if (lastOpenStr == null) {
-      streak = 1;
-    } else {
-      final lastOpen = DateTime.tryParse(lastOpenStr);
-      if (lastOpen != null) {
-        final diff = today.difference(DateTime(lastOpen.year, lastOpen.month, lastOpen.day)).inDays;
-        if (diff == 0) {
-          return;
-        }
-        if (diff == 1) {
-          streak += 1;
-        } else {
-          streak = 1;
-        }
-      } else {
-        streak = 1;
+      final result = <Achievement>[];
+      for (final id in newlyUnlocked) {
+        final a = _achievementById(id.toString());
+        if (a != null) result.add(a);
       }
+      return result;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      logger.d("❌ GamificationService: checkAndUnlockAchievements: ${e.message}");
+      return [];
+    } catch (e) {
+      logger.d("❌ GamificationService: checkAndUnlockAchievements: $e");
+      return [];
     }
-
-    await _prefs.setString(_lastOpenDateKey, todayStr);
-    await _prefs.setInt(_streakCountKey, streak);
   }
 }

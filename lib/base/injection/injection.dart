@@ -8,16 +8,15 @@ import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/domain/services/amenity_service.dart";
 import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
-import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
+import "package:uy_dosh/domain/services/listing_creation_analytics_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/otp_service.dart";
 import "package:uy_dosh/domain/services/otp_service_impl.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
-import "package:uy_dosh/domain/services/listing_creation_analytics_service.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
@@ -102,8 +101,7 @@ Future<void> configureDependencies() async {
     () => ListingCreationAnalyticsService(getIt<IOAuthApiClient>()),
   );
 
-  final prefs = await SharedPreferences.getInstance();
   getIt.registerLazySingleton<IGamificationService>(
-    () => GamificationService(prefs),
+    () => GamificationService(getIt<IOAuthApiClient>()),
   );
 }
