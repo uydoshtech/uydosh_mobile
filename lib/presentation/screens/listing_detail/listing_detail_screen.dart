@@ -1446,8 +1446,8 @@ L10n.get("feature_listing_error",
       );
     }
 
-    // Edit option - only show for listing owner
-    if (isOwner) {
+    // Edit option - show for listing owner or admin
+    if (isOwner || isAdmin) {
       items.add(
         ActionMenuItem(
           value: "edit",

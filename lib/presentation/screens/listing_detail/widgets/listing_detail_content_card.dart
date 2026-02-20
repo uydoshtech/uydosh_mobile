@@ -8,7 +8,6 @@ import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
-import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 
@@ -40,8 +39,6 @@ class ListingDetailContentCard extends StatefulWidget {
 }
 
 class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
-  bool _detailsExpanded = true;
-
   String _getGenderText(int gender) {
     switch (gender) {
       case 1:
@@ -107,9 +104,11 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: ThemeState().isBlueTheme
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.inverseSurface,
+                    color: ThemeState().isLightTheme
+                        ? Colors.black
+                        : (ThemeState().isBlueTheme
+                            ? Colors.white
+                            : Theme.of(context).colorScheme.inverseSurface),
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
@@ -123,9 +122,11 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                     _getAmenityLocalizedName(amenity),
                     style: TextStyle(
                       fontSize: 14,
-                      color: ThemeState().isBlueTheme
-                          ? Colors.black
-                          : Theme.of(context).colorScheme.onInverseSurface,
+                      color: ThemeState().isLightTheme
+                          ? Colors.white
+                          : (ThemeState().isBlueTheme
+                              ? Colors.black
+                              : Theme.of(context).colorScheme.onInverseSurface),
                     ),
                   ),
                 ),
@@ -149,7 +150,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
         details.globalPosition,
       ),
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: ListingDetailThemeHelper.amenityChipBackgroundColor,
           borderRadius: BorderRadius.circular(16),
@@ -276,55 +277,15 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 ],
               ),
             ],
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: UydoshLinkButton(
-                        text: _detailsExpanded
-                            ? L10n.get("hide_details")
-                            : L10n.get("show_details"),
-                        onPressed: () =>
-                            setState(() => _detailsExpanded = !_detailsExpanded),
-                        color: ListingDetailThemeHelper.dateTextColor,
-                        fontSize: 15,
-                        alignment: Alignment.centerLeft,
-                        dashed: true,
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () =>
-                        setState(() => _detailsExpanded = !_detailsExpanded),
-                    behavior: HitTestBehavior.opaque,
-                    child: Icon(
-                      _detailsExpanded
-                          ? Icons.keyboard_arrow_up
-                          : Icons.keyboard_arrow_down,
-                      color: ListingDetailThemeHelper.dateIconColor,
-                      size: 24,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              child: _detailsExpanded
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+            const SizedBox(height: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                         if (widget.listingDetail.amenities != null &&
                             widget.listingDetail.amenities!.isNotEmpty) ...[
                           Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
+                            spacing: 8,
+                            runSpacing: 8,
                             children: widget.listingDetail.amenities!
                                 .map((amenity) =>
                                     _buildAmenityChip(context, amenity))
@@ -458,8 +419,6 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                           ],
                         ),
                       ],
-                    )
-                  : const SizedBox.shrink(),
             ),
           ],
         ),
