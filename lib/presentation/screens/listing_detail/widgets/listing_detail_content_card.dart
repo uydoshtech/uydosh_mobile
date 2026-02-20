@@ -13,7 +13,7 @@ import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 
 /// Main content card for listing detail (header, title, description, location, amenities, dates).
-class ListingDetailContentCard extends StatelessWidget {
+class ListingDetailContentCard extends StatefulWidget {
   const ListingDetailContentCard({
     required this.listingDetail,
     required this.currentLanguage,
@@ -31,6 +31,14 @@ class ListingDetailContentCard extends StatelessWidget {
     String? nameEn,
     required String language,
   }) getLocalizedName;
+
+  @override
+  State<ListingDetailContentCard> createState() =>
+      _ListingDetailContentCardState();
+}
+
+class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
+  bool _detailsExpanded = true;
 
   Widget _buildSubwayStationDisplay(SubwayStationDetail station) {
     final transferInfo = MetroCache.getTransferStationInfo(station.id);
@@ -53,11 +61,11 @@ class ListingDetailContentCard extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            getLocalizedName(
+            widget.getLocalizedName(
               nameUz: station.nameUz,
               nameRu: station.nameRu,
               nameEn: station.nameEn,
-              language: currentLanguage,
+              language: widget.currentLanguage,
             ),
             style: TextStyle(
               fontSize: 15,
@@ -78,11 +86,11 @@ class ListingDetailContentCard extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            getLocalizedName(
+            widget.getLocalizedName(
               nameUz: connectedStation.nameUz,
               nameRu: connectedStation.nameRu,
               nameEn: connectedStation.nameEn,
-              language: currentLanguage,
+              language: widget.currentLanguage,
             ),
             style: TextStyle(
               fontSize: 15,
@@ -102,11 +110,11 @@ class ListingDetailContentCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              getLocalizedName(
+              widget.getLocalizedName(
                 nameUz: station.nameUz,
                 nameRu: station.nameRu,
                 nameEn: station.nameEn,
-                language: currentLanguage,
+                language: widget.currentLanguage,
               ),
               style: TextStyle(
                 fontSize: 15,
@@ -142,7 +150,7 @@ class ListingDetailContentCard extends StatelessWidget {
   }
 
   String _getAmenityLocalizedName(Amenity amenity) {
-    switch (currentLanguage) {
+    switch (widget.currentLanguage) {
       case "ru":
         return amenity.nameRu;
       case "uz":
@@ -258,23 +266,23 @@ class ListingDetailContentCard extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 ListingTypeBadge(
-                  listingTypeCode: listingDetail.listingType.code,
+                  listingTypeCode: widget.listingDetail.listingType.code,
                   fontSize: 14,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 ),
-                if (listingDetail.gender != null)
+                if (widget.listingDetail.gender != null)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: ThemeState().isLightTheme
                           ? null
                           : ListingDetailThemeHelper.genderColor(
-                              listingDetail.gender!,
+                              widget.listingDetail.gender!,
                             ).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: ListingDetailThemeHelper.genderColor(
-                          listingDetail.gender!,
+                          widget.listingDetail.gender!,
                         ),
                         width: 1.0,
                       ),
@@ -283,20 +291,20 @@ class ListingDetailContentCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ThemeIconFactory.detail(
-                          icon: _getGenderIcon(listingDetail.gender!),
+                          icon: _getGenderIcon(widget.listingDetail.gender!),
                           color: ListingDetailThemeHelper.genderColor(
-                            listingDetail.gender!,
+                            widget.listingDetail.gender!,
                           ),
                           size: 18,
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          _getGenderText(listingDetail.gender!),
+                          _getGenderText(widget.listingDetail.gender!),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: ListingDetailThemeHelper.genderColor(
-                              listingDetail.gender!,
+                              widget.listingDetail.gender!,
                             ),
                           ),
                         ),
@@ -304,9 +312,9 @@ class ListingDetailContentCard extends StatelessWidget {
                     ),
                   ),
                 PriceRangeBadge(
-                  minPrice: listingDetail.minPrice,
-                  maxPrice: listingDetail.maxPrice,
-                  isActive: listingDetail.isActive,
+                  minPrice: widget.listingDetail.minPrice,
+                  maxPrice: widget.listingDetail.maxPrice,
+                  isActive: widget.listingDetail.isActive,
                   fontSize: 13,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   currencySymbol: "y.e.",
@@ -315,24 +323,24 @@ class ListingDetailContentCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              listingDetail.title,
+              widget.listingDetail.title,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            if (listingDetail.description != null &&
-                listingDetail.description!.isNotEmpty) ...[
+            if (widget.listingDetail.description != null &&
+                widget.listingDetail.description!.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
-                listingDetail.description!,
+                widget.listingDetail.description!,
                 style: TextStyle(
                   fontSize: 16,
                   color: ListingDetailThemeHelper.descriptionTextColor,
                 ),
               ),
             ],
-            if (listingDetail.privateRoom != null) ...[
+            if (widget.listingDetail.privateRoom != null) ...[
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -354,8 +362,8 @@ class ListingDetailContentCard extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 10),
-            if (listingDetail.location != null || listingDetail.subwayStation != null) ...[
-              if (listingDetail.location != null)
+            if (widget.listingDetail.location != null || widget.listingDetail.subwayStation != null) ...[
+              if (widget.listingDetail.location != null)
                 Row(
                   children: [
                     ThemeIconFactory.detail(
@@ -366,11 +374,11 @@ class ListingDetailContentCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        getLocalizedName(
-                          nameUz: listingDetail.location!.nameUz,
-                          nameRu: listingDetail.location!.nameRu,
-                          nameEn: listingDetail.location!.nameEn,
-                          language: currentLanguage,
+                        widget.getLocalizedName(
+                          nameUz: widget.listingDetail.location!.nameUz,
+                          nameRu: widget.listingDetail.location!.nameRu,
+                          nameEn: widget.listingDetail.location!.nameEn,
+                          language: widget.currentLanguage,
                         ),
                         style: TextStyle(
                           fontSize: 15,
@@ -380,100 +388,148 @@ class ListingDetailContentCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              if (listingDetail.subwayStation != null)
-                listingDetail.location != null
+              if (widget.listingDetail.subwayStation != null)
+                widget.listingDetail.location != null
                     ? const SizedBox(height: 8)
                     : const SizedBox(height: 20),
-              if (listingDetail.subwayStation != null) ...[
-                _buildSubwayStationDisplay(listingDetail.subwayStation!),
+              if (widget.listingDetail.subwayStation != null) ...[
+                _buildSubwayStationDisplay(widget.listingDetail.subwayStation!),
                 const SizedBox(height: 20),
-              ] else if (listingDetail.location != null)
+              ] else if (widget.listingDetail.location != null)
                 const SizedBox(height: 20),
             ],
-            if (listingDetail.amenities != null &&
-                listingDetail.amenities!.isNotEmpty) ...[
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: listingDetail.amenities!
-                    .map((amenity) => _buildAmenityChip(context, amenity))
-                    .toList(),
-              ),
-              const SizedBox(height: 10),
-            ],
-            if (listingDetail.moveInDate != null &&
-                listingDetail.moveInDate!.isNotEmpty) ...[
-              Row(
-                children: [
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: Center(
-                      child: ThemeIconFactory.detail(
-                        icon: CupertinoIcons.square_arrow_right,
-                        color: ListingDetailThemeHelper.dateIconColor,
-                        size: 20,
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: () => setState(() => _detailsExpanded = !_detailsExpanded),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _detailsExpanded
+                          ? L10n.get("hide_details")
+                          : L10n.get("show_details"),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: ListingDetailThemeHelper.dateTextColor,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "${L10n.get("move_in_date_label")} ",
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: ListingDetailThemeHelper.dateTextColor,
-                            ),
-                          ),
-                          TextSpan(
-                            text: formatMoveInDate(
-                              context,
-                              listingDetail.moveInDate!,
-                            ),
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: ListingDetailThemeHelper.dateTextColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-            ],
-            Row(
-              children: [
-                SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: Center(
-                    child: ThemeIconFactory.detail(
-                      icon: Icons.schedule,
+                    Icon(
+                      _detailsExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
                       color: ListingDetailThemeHelper.dateIconColor,
-                      size: 20,
+                      size: 24,
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    "${L10n.get("publication_date")} ${AppDateUtils.formatDateWithShortMonth(
-                      context,
-                      DateTime.parse(listingDetail.createdAt),
-                    )}",
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: ListingDetailThemeHelper.dateTextColor,
-                    ),
-                  ),
-                ),
-              ],
+              ),
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: _detailsExpanded
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (widget.listingDetail.amenities != null &&
+                            widget.listingDetail.amenities!.isNotEmpty) ...[
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: widget.listingDetail.amenities!
+                                .map((amenity) =>
+                                    _buildAmenityChip(context, amenity))
+                                .toList(),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                        if (widget.listingDetail.moveInDate != null &&
+                            widget.listingDetail.moveInDate!.isNotEmpty) ...[
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Center(
+                                  child: ThemeIconFactory.detail(
+                                    icon: CupertinoIcons.square_arrow_right,
+                                    color:
+                                        ListingDetailThemeHelper.dateIconColor,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text:
+                                            "${L10n.get("move_in_date_label")} ",
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: ListingDetailThemeHelper
+                                              .dateTextColor,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: widget.formatMoveInDate(
+                                          context,
+                                          widget.listingDetail.moveInDate!,
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: ListingDetailThemeHelper
+                                              .dateTextColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Center(
+                                child: ThemeIconFactory.detail(
+                                  icon: Icons.schedule,
+                                  color:
+                                      ListingDetailThemeHelper.dateIconColor,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                "${L10n.get("publication_date")} ${AppDateUtils.formatDateWithShortMonth(
+                                  context,
+                                  DateTime.parse(widget.listingDetail.createdAt),
+                                )}",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color:
+                                      ListingDetailThemeHelper.dateTextColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
             ),
           ],
         ),

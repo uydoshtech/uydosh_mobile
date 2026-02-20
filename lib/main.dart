@@ -199,6 +199,7 @@ class _MyAppState extends State<MyApp> {
                 ),
               ],
               child: _AchievementUnlockListener(
+                navigatorKey: widget.navigatorKey,
                 child: _BlocAuthListener(
                   child: child ?? const SizedBox.shrink(),
                 ),
@@ -213,9 +214,13 @@ class _MyAppState extends State<MyApp> {
 
 /// Shows achievement unlock popup when set from anywhere (e.g. MessagingBloc).
 class _AchievementUnlockListener extends StatelessWidget {
-  const _AchievementUnlockListener({required this.child});
+  const _AchievementUnlockListener({
+    required this.child,
+    this.navigatorKey,
+  });
 
   final Widget child;
+  final GlobalKey<NavigatorState>? navigatorKey;
 
   @override
   Widget build(BuildContext context) {
@@ -227,8 +232,13 @@ class _AchievementUnlockListener extends StatelessWidget {
           // Clear immediately so we don't trigger duplicate shows from other listeners
           AchievementUnlockState().clearPendingAchievement();
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            // Use overlay context from root Navigator - the builder's context is
+            // an ancestor of Navigator, so showModalBottomSheet needs a context
+            // that is a descendant of Navigator (e.g. when ProfileScreen is pushed).
+            final overlayContext = navigatorKey?.currentState?.overlay?.context;
+            final contextToUse = overlayContext ?? context;
             AchievementUnlockBottomSheet.show(
-              context,
+              contextToUse,
               achievement: pending,
               onDismiss: () =>
                   AchievementUnlockState().clearPendingAchievement(),

@@ -248,6 +248,8 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Details",
+      "show_details": "Show details",
+      "hide_details": "Hide details",
       "listing_views_by_others": "{count} views",
       "listing_views_stats_title": "View statistics",
       "listing_views_stats_empty": "No views yet",
@@ -985,6 +987,8 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Детали",
+      "show_details": "Показать детали",
+      "hide_details": "Скрыть детали",
       "listing_views_by_others": "{count} просмотров",
       "listing_views_stats_title": "Статистика просмотров",
       "listing_views_stats_empty": "Пока нет просмотров",
@@ -1731,6 +1735,8 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Tafsilotlar",
+      "show_details": "Tafsilotlarni ko'rsatish",
+      "hide_details": "Tafsilotlarni yashirish",
       "listing_views_by_others": "{count} ko'rilgan",
       "listing_views_stats_title": "Ko'rish statistikasi",
       "listing_views_stats_empty": "Hali ko'rishlar yo'q",
