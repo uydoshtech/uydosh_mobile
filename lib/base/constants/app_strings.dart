@@ -44,7 +44,7 @@ class AppStrings {
       "compatibility_matches": "Matched preferences:",
       "compatibility_differences": "Potential differences:",
       "vs": "vs",
-      "name": "Name",
+      "name": "Name or nickname",
       "im_from": "I'm from:",
 
       // ===== APP CORE =====
@@ -402,7 +402,7 @@ class AppStrings {
       "complete_profile_subheader":
           "We use this information to find the perfect roommates and matches for you.",
 
-      "full_name": "Full Name",
+      "full_name": "Name or nickname",
 
       "are_you_student": "Are you a student?",
       "yes_student": "Yes, I'm a student",
@@ -412,8 +412,8 @@ class AppStrings {
 
       "selected": "Selected",
 
-      "full_name_hint": "Enter your full name",
-      "name_required": "Name is required",
+      "full_name_hint": "Enter your name or nickname",
+      "name_required": "Name or nickname is required",
       "saving": "Saving...",
       "firebase_user_not_found": "Firebase user not found",
       "user_blocked_violation_title": "Account restricted",
@@ -789,7 +789,7 @@ class AppStrings {
       "compatibility_matches": "Совпадающие предпочтения:",
       "compatibility_differences": "Возможные различия:",
       "vs": "vs",
-      "name": "Имя",
+      "name": "Имя или никнейм",
       "im_from": "Я из:",
 
       // ===== APP CORE =====
@@ -1147,7 +1147,7 @@ class AppStrings {
       "complete_profile_subheader":
           "Мы используем эту информацию, чтобы подобрать идеальных соседей и совпадения для вас.",
 
-      "full_name": "Полное имя",
+      "full_name": "Имя или никнейм",
 
       "are_you_student": "Вы студент?",
       "yes_student": "Студент",
@@ -1157,8 +1157,8 @@ class AppStrings {
 
       "selected": "Выбрано",
 
-      "full_name_hint": "Введите ваше полное имя",
-      "name_required": "Имя обязательно",
+      "full_name_hint": "Введите ваше имя или никнейм",
+      "name_required": "Имя или никнейм обязательно",
       "saving": "Сохранение...",
       "firebase_user_not_found": "Пользователь Firebase не найден",
       "user_blocked_violation_title": "Аккаунт ограничен",
@@ -1540,7 +1540,7 @@ class AppStrings {
       "compatibility_matches": "Mos keladigan xususiyatlar:",
       "compatibility_differences": "Ehtimoliy farqlar:",
       "vs": "vs",
-      "name": "Ism",
+      "name": "Ism yoki taxallus",
       "im_from": "Men:",
 
       // ===== APP CORE =====
@@ -1905,7 +1905,7 @@ class AppStrings {
       "complete_profile_subheader":
           "Biz ushbu ma'lumotlardan sizga eng mos yotoqdoshlar va mos keluvchilarni topish uchun foydalanamiz.",
 
-      "full_name": "To'liq ism",
+      "full_name": "Ism yoki taxallus",
 
       "are_you_student": "Siz talabamisiz?",
       "yes_student": "Men talabaman",
@@ -1915,8 +1915,8 @@ class AppStrings {
 
       "selected": "Tanlangan",
 
-      "full_name_hint": "To'liq ismingizni kiriting",
-      "name_required": "Ism talab qilinadi",
+      "full_name_hint": "Ismingiz yoki taxallusingizni kiriting",
+      "name_required": "Ism yoki taxallus talab qilinadi",
       "saving": "Saqlanmoqda...",
       "firebase_user_not_found": "Firebase foydalanuvchisi topilmadi",
       "user_blocked_violation_title": "Hisob cheklangan",
