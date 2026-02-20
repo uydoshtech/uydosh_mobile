@@ -104,6 +104,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _redirectedToProfileSetup = false;
   String? _userRole;
+  int? _expandedSectionIndex; // 0 = Profile, 1 = Lifestyle Preferences (mutually exclusive)
   bool _userRoleLoaded = false;
   bool _refreshingRole = false;
   bool _userBlocked = false;
@@ -425,45 +426,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: ExpansionTile(
-                  initiallyExpanded: false,
-                  dense: true,
-                  minTileHeight: 48,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  collapsedShape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  tilePadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-                  childrenPadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-                  title: SizedBox(
-                    height: 48,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.person,
-                            size: 24,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                          const SizedBox(width: 12),
-                          Flexible(
-                            child: Text(
-                              L10n.get("profile"),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                child: Column(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _expandedSectionIndex =
+                              _expandedSectionIndex == 0 ? null : 0;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16.0, 12, 16.0, 12),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.person,
+                              size: 24,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                L10n.get("profile"),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                            AnimatedRotation(
+                              turns: _expandedSectionIndex == 0 ? 0.5 : 0.0,
+                              duration: const Duration(milliseconds: 200),
+                              child: Icon(
+                                Icons.keyboard_arrow_down,
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  children: [
+                    ClipRect(
+                      child: AnimatedSize(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                        alignment: Alignment.topCenter,
+                        child: _expandedSectionIndex == 0
+                            ? Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                16.0,
+                                0,
+                                16.0,
+                                16.0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                     // Profile Name
                       if (((_cachedGoogleDisplayName ?? profile.name) ?? "")
                           .isNotEmpty) ...[
@@ -774,57 +794,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ],
-                    ],
-                  ),
+                                ],
+                              ),
+                            )
+                            : const SizedBox.shrink(),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
 
               // New Profile Fields Section
               if (_hasNewProfileFields(profile)) ...[
-                const SizedBox(height: 4),
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: ExpansionTile(
-                    initiallyExpanded: false,
-                    dense: true,
-                    minTileHeight: 48,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    collapsedShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    tilePadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-                    childrenPadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-                    title: SizedBox(
-                      height: 48,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.spa,
-                              size: 24,
-                              color: _getLifestyleHeaderColor(),
-                            ),
-                            const SizedBox(width: 12),
-                            Flexible(
-                              child: Text(
-                                L10n.get("lifestyle_preferences"),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                  child: Column(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _expandedSectionIndex =
+                                _expandedSectionIndex == 1 ? null : 1;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16.0, 12, 16.0, 12),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.spa,
+                                size: 24,
+                                color: _getLifestyleHeaderColor(),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  L10n.get("lifestyle_preferences"),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: _getLifestyleHeaderColor(),
+                                  ),
+                                ),
+                              ),
+                              AnimatedRotation(
+                                turns: _expandedSectionIndex == 1 ? 0.5 : 0.0,
+                                duration: const Duration(milliseconds: 200),
+                                child: Icon(
+                                  Icons.keyboard_arrow_down,
                                   color: _getLifestyleHeaderColor(),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    children: [
+                      ClipRect(
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOut,
+                          alignment: Alignment.topCenter,
+                          child: _expandedSectionIndex == 1
+                              ? Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16.0,
+                                  0,
+                                  16.0,
+                                  16.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                       // Wake-up Time field
                         if (profile.wakeupTime != null) ...[
                           _buildProfileField(
@@ -978,6 +1022,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
+                                  ],
+                                ),
+                              )
+                              : const SizedBox.shrink(),
+                        ),
+                      ),
                     ],
                   ),
                 ),
