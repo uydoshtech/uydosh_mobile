@@ -24,6 +24,8 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -145,6 +147,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     // Listen to home refresh state for immediate refresh commands
     HomeRefreshState().addListener(_onHomeRefreshStateChanged);
+
+    getIt<AppAnalyticsService>().logScreenView(screenName: "home");
   }
 
   void _onHomeRefreshStateChanged() {

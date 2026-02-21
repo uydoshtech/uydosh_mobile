@@ -4,6 +4,7 @@ import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/university_cache.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
@@ -57,7 +58,12 @@ class LanguageState extends ChangeNotifier {
 
   Future<void> setLanguage(String language) async {
     if (_currentLanguage != language) {
+      final fromLanguage = _currentLanguage;
       _currentLanguage = language;
+      getIt<AppAnalyticsService>().logLanguageChanged(
+        fromLanguage: fromLanguage,
+        toLanguage: language,
+      );
 
       // Invalidate university cache so next fetch uses new language
       UniversityCache.clearCache();

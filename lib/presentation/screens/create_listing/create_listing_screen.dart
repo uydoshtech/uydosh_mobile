@@ -6,6 +6,7 @@ import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
@@ -84,6 +85,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "create_listing");
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
     _genderScrollController = FixedExtentScrollController(initialItem: 0);
     _listingTypeScrollController = FixedExtentScrollController(initialItem: 0);
@@ -1228,6 +1230,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             orderedPhotos.isNotEmpty
                 ? orderedPhotos
                 : null, // Upload photos with primary first (only for roommate needed)
+      );
+
+      getIt<AppAnalyticsService>().logListingCreated(
+        listingTypeId: listingTypeId,
+        locationId: selectedLocation.id,
+        success: true,
       );
 
       // Show success message

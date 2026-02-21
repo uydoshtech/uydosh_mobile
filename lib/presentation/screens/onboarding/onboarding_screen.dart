@@ -5,6 +5,8 @@ import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
@@ -38,6 +40,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logOnboardingStarted();
     _setupRotateAnimation();
     _setupTrainAnimation();
     _setupLocationAnimation();
@@ -146,7 +149,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _startAutoSwitchTimer();
   }
 
-  Future<void> _navigateToMainApp() async {
+  Future<void> _navigateToMainApp({bool skipped = false}) async {
+    if (skipped) {
+      getIt<AppAnalyticsService>().logOnboardingSkipped(pageIndex: _currentPage);
+    } else {
+      getIt<AppAnalyticsService>().logOnboardingCompleted(pageCount: 4);
+    }
     // Automatically turn off onboarding after it's shown once
     await OnboardingState().turnOffOnboarding();
 
@@ -188,7 +196,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: TextButtonThemedFactory.text(
-                        onPressed: _navigateToMainApp,
+                        onPressed: () => _navigateToMainApp(skipped: true),
                         text: L10n.get("onboarding_skip"),
                       ),
                     ),

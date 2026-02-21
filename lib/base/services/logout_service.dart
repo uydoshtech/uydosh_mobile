@@ -4,6 +4,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -28,6 +29,8 @@ class LogoutService {
   /// Note: Success toast should be shown by the calling UI before calling this method
   Future<void> performLogout(BuildContext context) async {
     logger.d("🚪 Starting centralized logout process...");
+    getIt<AppAnalyticsService>().logSignOut();
+    await getIt<AppAnalyticsService>().setUserId(null);
 
     try {
       // 1. Sign out from Firebase (Google Sign-In)

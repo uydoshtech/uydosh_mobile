@@ -12,6 +12,7 @@ import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -95,6 +96,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "auth_wizard");
     _pageController = PageController(initialPage: widget.initialPage);
     _currentPage = widget.initialPage;
     _nameController.addListener(_onNameChanged);
@@ -188,6 +190,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   // Google Sign-In method
   Future<void> _signInWithGoogle() async {
+    getIt<AppAnalyticsService>().logSignInStarted(method: "google");
     setState(() {
       _isAuthenticating = true;
     });
@@ -240,6 +243,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       });
 
       if (mounted) {
+        getIt<AppAnalyticsService>().logSignInSuccess(method: "google");
         ToastTheme.showSuccess(
           context,
           message: L10n.get("successfully_signed_in_google"),
@@ -247,6 +251,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
       }
     } catch (e) {
+      getIt<AppAnalyticsService>().logSignInFailure(
+        method: "google",
+        errorType: e.toString().length > 100 ? e.toString().substring(0, 100) : e.toString(),
+      );
       setState(() {
         _isAuthenticating = false;
       });
@@ -348,6 +356,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     if (user != null && user["id"] != null) {
       final userId = user["id"];
       await SessionManager.storeBackendUserId(userId);
+      await getIt<AppAnalyticsService>().setUserId(userId.toString());
     }
     if (user != null) {
       await SessionManager.storeUserRole(user["role"]);
@@ -916,6 +925,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
 
       if (mounted) {
+        getIt<AppAnalyticsService>().logProfileCreated();
         // Store user role in session for immediate use
         if (_selectedRole != null) {
           await SessionManager.storeUserRole(_selectedRole);

@@ -9,6 +9,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/logout_service.dart" show AccountBlockedException, LogoutService;
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -123,6 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "profile");
     _loadUserRole();
     _loadCachedProfileData();
   }

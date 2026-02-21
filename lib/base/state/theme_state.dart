@@ -1,4 +1,6 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
@@ -65,6 +67,7 @@ class ThemeState extends ChangeNotifier {
   /// Change the current theme
   Future<void> changeTheme(String themeName) async {
     if (_currentTheme != themeName) {
+      getIt<AppAnalyticsService>().logThemeChanged(theme: themeName);
       _currentTheme = themeName;
 
       // Save to local storage

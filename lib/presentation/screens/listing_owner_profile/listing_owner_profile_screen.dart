@@ -1,5 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -65,6 +67,8 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "listing_owner_profile");
+    getIt<AppAnalyticsService>().logOwnerProfileViewed(ownerId: widget.userId);
     context.read<ListingOwnerProfileBloc>().add(
       ListingOwnerProfileEvent.fetchProfile(userId: widget.userId),
     );
@@ -958,6 +962,7 @@ L10n.get("rating"),
   }
 
   Future<void> _makePhoneCall(String phoneNumber) async {
+    getIt<AppAnalyticsService>().logContactUserTapped(ownerId: widget.userId);
     final url = "tel:$phoneNumber";
 
     try {

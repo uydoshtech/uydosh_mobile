@@ -3,7 +3,9 @@ import "dart:math";
 import "package:confetti/confetti.dart";
 import "package:flutter/material.dart";
 import "package:flutter_fireworks/flutter_fireworks.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
@@ -24,6 +26,11 @@ class AchievementUnlockBottomSheet extends StatefulWidget {
     required Achievement achievement,
     VoidCallback? onDismiss,
   }) {
+    getIt<AppAnalyticsService>().logAchievementUnlocked(
+      achievementId: achievement.id,
+      achievementKey: achievement.key,
+      category: achievement.category.name,
+    );
     HapticFeedbackUtils.impact();
     return showModalBottomSheet<void>(
       context: context,

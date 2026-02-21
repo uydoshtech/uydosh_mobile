@@ -4,6 +4,7 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -70,6 +71,11 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "chat");
+    getIt<AppAnalyticsService>().logChatOpened(
+      conversationId: widget.conversationId,
+      listingId: widget.listingId,
+    );
     _messageController = TextEditingController();
     _scrollController = ScrollController();
 
@@ -474,6 +480,9 @@ class _ChatScreenState extends State<ChatScreen> {
     HapticFeedback.mediumImpact();
     SendSoundUtils.playSendSound();
 
+    getIt<AppAnalyticsService>().logMessageSent(
+      conversationId: widget.conversationId,
+    );
     context.read<MessagingBloc>().add(
           SendMessage(conversationId: widget.conversationId, content: content),
         );

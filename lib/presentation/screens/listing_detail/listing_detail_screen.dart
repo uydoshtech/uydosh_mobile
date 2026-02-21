@@ -16,6 +16,7 @@ import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -264,6 +265,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     // Initialize page controller for photo carousel
     _pageController = PageController();
     _scrollController = ScrollController();
+
+    getIt<AppAnalyticsService>().logScreenView(screenName: "listing_detail");
+    getIt<AppAnalyticsService>().logListingViewed(listingId: widget.listingId);
 
     // Fetch listing details
     context.read<ListingDetailBloc>().add(
@@ -973,6 +977,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   }
 
   void _shareListing() {
+    getIt<AppAnalyticsService>().logShareInitiated(listingId: widget.listingId);
     // Get the current listing detail from the bloc state
     final currentState = context.read<ListingDetailBloc>().state;
 
@@ -1007,6 +1012,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     // Share the text
     await Share.share(shareText, subject: _getShareSubject(currentLanguage));
+
+    getIt<AppAnalyticsService>().logShareCompleted(listingId: widget.listingId);
 
     if (!context.mounted) return;
     final achievement = await getIt<IGamificationService>().recordShare();
@@ -1399,6 +1406,12 @@ L10n.get("feature_listing_error",
         // Update global state to keep it in sync
         await favoritesState.toggleFavorite(widget.listingId);
 
+        if (wasFavorite) {
+          getIt<AppAnalyticsService>().logFavoriteRemoved(listingId: widget.listingId);
+        } else {
+          getIt<AppAnalyticsService>().logFavoriteAdded(listingId: widget.listingId);
+        }
+
         // Show success message
         ToastTheme.showSuccess(
           context,
@@ -1703,6 +1716,11 @@ L10n.get("feature_listing_error",
             );
           }
         }
+
+        getIt<AppAnalyticsService>().logConversationStarted(
+          listingId: widget.listingId,
+          ownerId: listingDetail.user.id,
+        );
 
         // Show success message
         ToastTheme.showSuccess(

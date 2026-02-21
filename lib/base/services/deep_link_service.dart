@@ -5,6 +5,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
@@ -49,6 +50,10 @@ class DeepLinkService {
     _linkSubscription = appLinks.uriLinkStream.listen((uri) {
       final id = parseListingId(uri);
       if (id != null) {
+        getIt<AppAnalyticsService>().logDeepLinkOpened(
+          listingId: id,
+          source: "background",
+        );
         _navigateToListing(id);
       }
     });
@@ -84,6 +89,10 @@ class DeepLinkService {
   void handlePendingLink() {
     final id = consumePendingListingId();
     if (id != null) {
+      getIt<AppAnalyticsService>().logDeepLinkOpened(
+        listingId: id,
+        source: "cold_start",
+      );
       _navigateToListing(id);
     }
   }

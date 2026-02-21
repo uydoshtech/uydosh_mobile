@@ -2,6 +2,8 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 
@@ -14,6 +16,13 @@ class FaqScreen extends StatefulWidget {
 
 class _FaqScreenState extends State<FaqScreen> {
   int? _expandedIndex; // Track which FAQ item is currently expanded
+
+  @override
+  void initState() {
+    super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "faq");
+    getIt<AppAnalyticsService>().logFaqOpened();
+  }
 
   // Theme-aware color helper methods
   Color _getTextColor() {

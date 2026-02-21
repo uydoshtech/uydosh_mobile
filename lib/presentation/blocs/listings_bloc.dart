@@ -1,5 +1,7 @@
 import "package:bloc/bloc.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -271,6 +273,22 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       fetchUserListings: (_) {},
     );
 
+    if (isRefresh) {
+      final subwayStationId = event.map(
+        fetchListings: (e) => 0,
+        loadMore: (e) => 0,
+        fetchListingsBySubwayStation: (e) => e.subwayStationId,
+        fetchListingsByLocation: (e) => 0,
+        searchListings: (e) => 0,
+        fetchUserListings: (e) => 0,
+      );
+      if (subwayStationId > 0) {
+        getIt<AppAnalyticsService>().logSearchPerformed(
+          subwayStationId: subwayStationId,
+        );
+      }
+    }
+
     emit(const ListingsState.loading());
 
     try {
@@ -380,6 +398,10 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       );
 
       // Service now automatically uses current app language
+      if (isRefresh) {
+        getIt<AppAnalyticsService>().logSearchPerformed(locationId: locationId);
+      }
+
       final listings = await _listingService.getListingsByLocation(
         locationId,
         page: page,
@@ -458,6 +480,18 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _lastMinPrice = searchParams["minPrice"] as double?;
       _lastMaxPrice = searchParams["maxPrice"] as double?;
       _lastPrivateRoom = searchParams["privateRoom"] as bool?;
+
+      if (isRefresh) {
+        getIt<AppAnalyticsService>().logSearchPerformed(
+          listingTypeId: _lastListingTypeId,
+          locationId: _lastLocationId,
+          subwayStationId: _lastSubwayStationId,
+          subwayLineId: _lastSubwayLineId,
+          gender: _lastGender,
+          hasPriceFilter: _lastMinPrice != null || _lastMaxPrice != null,
+          hasGenderFilter: _lastGender != null,
+        );
+      }
     }
 
     emit(const ListingsState.loading());

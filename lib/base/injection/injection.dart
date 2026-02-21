@@ -1,5 +1,6 @@
 import "package:get_it/get_it.dart";
 import "package:uy_dosh/base/api/auth_token_repository.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
@@ -25,6 +26,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 final getIt = GetIt.instance;
 
 Future<void> configureDependencies() async {
+  getIt.registerLazySingleton<AppAnalyticsService>(AppAnalyticsService.new);
   // Register services with meaningful names
   getIt.registerLazySingleton<IPublicDioConfigurator>(
     PublicDioConfigurator.new,

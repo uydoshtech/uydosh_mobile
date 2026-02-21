@@ -8,10 +8,12 @@ import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/log_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
@@ -112,6 +114,16 @@ void main() async {
 
     await configureDependencies();
     // Bloc.observer = AppBlocObserver.instance(); // Disabled to reduce logging
+
+    getIt<AppAnalyticsService>().logAppOpened(source: "cold_start");
+
+    // Set analytics user ID if already authenticated
+    if (AuthenticationState().isAuthenticated) {
+      final userId = await SessionManager.getBackendUserId();
+      if (userId != null) {
+        await getIt<AppAnalyticsService>().setUserId(userId.toString());
+      }
+    }
 
     final navigatorKey = GlobalKey<NavigatorState>();
     final deepLinkService = DeepLinkService(navigatorKey: navigatorKey);

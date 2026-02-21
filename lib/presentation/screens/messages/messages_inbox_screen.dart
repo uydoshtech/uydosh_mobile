@@ -10,6 +10,8 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
@@ -40,6 +42,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "messages_inbox");
     _initializeUser();
     _loadConversations();
     WidgetsBinding.instance.addObserver(this);

@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
@@ -26,6 +27,12 @@ class AchievementsScreen extends StatefulWidget {
 }
 
 class _AchievementsScreenState extends State<AchievementsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "achievements");
+  }
+
   Future<void> _loadAndCheck(BuildContext ctx) async {
     if (!AuthenticationState().isAuthenticated) return;
     if (!mounted) return;
