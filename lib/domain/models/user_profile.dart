@@ -34,6 +34,7 @@ class UserProfile with _$UserProfile {
     @JsonKey(name: "pets_preference") bool? petsPreference,
     @JsonKey(name: "wakeup_time") String? wakeupTime,
     @JsonKey(name: "sleep_time") String? sleepTime,
+    @JsonKey(name: "preferred_language") String? preferredLanguage,
     @JsonKey(name: "created_at") String? createdAt,
     @JsonKey(name: "updated_at") String? updatedAt,
     UserProfileRegion? region,

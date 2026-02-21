@@ -97,6 +97,8 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
       case "same_region":
       case "region":
         return Icons.location_on;
+      case "language":
+        return CupertinoIcons.globe;
       case "same_university":
       case "both_students":
       case "university":

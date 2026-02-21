@@ -1,3 +1,4 @@
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:url_launcher/url_launcher.dart";
@@ -356,6 +357,42 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
+
+                      // Language field (what language the user speaks)
+                      if (profile.preferredLanguage != null &&
+                          profile.preferredLanguage!.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            const Icon(CupertinoIcons.globe, size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    L10n.get("language"),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Text(
+                                    LanguageDisplayHelper.getLanguageDisplayName(
+                                      profile.preferredLanguage!,
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: _getPrimaryColor(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                      ],
 
                       // About Me field
                       Row(

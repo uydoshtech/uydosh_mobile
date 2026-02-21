@@ -1,8 +1,13 @@
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/university_cache.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 
 // Utility class for language display names
 class LanguageDisplayHelper {
@@ -63,6 +68,18 @@ class LanguageState extends ChangeNotifier {
         await prefs.setString(StorageKeys.selectedLanguage, language);
       } catch (e) {
         // Handle error silently
+      }
+
+      // Sync to user profile so other users can see what language they speak
+      try {
+        if (await SessionManager.isAuthenticated()) {
+          final profileService = getIt<IUserProfileService>();
+          await profileService.updateProfile(
+            UpdateProfileRequest(preferredLanguage: language),
+          );
+        }
+      } catch (e) {
+        // Handle error silently - profile sync is best-effort
       }
 
       notifyListeners();
@@ -140,7 +157,7 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.language),
+                  const Icon(CupertinoIcons.globe),
                   const SizedBox(width: 8),
                   ListenableBuilder(
                     listenable: _languageState,

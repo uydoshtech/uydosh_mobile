@@ -29,6 +29,7 @@ UpdateProfileRequest _$UpdateProfileRequestFromJson(
   petsPreference: json['pets_preference'] as bool?,
   wakeupTime: json['wakeup_time'] as String?,
   sleepTime: json['sleep_time'] as String?,
+  preferredLanguage: json['preferred_language'] as String?,
 );
 
 Map<String, dynamic> _$UpdateProfileRequestToJson(
@@ -54,4 +55,5 @@ Map<String, dynamic> _$UpdateProfileRequestToJson(
   'pets_preference': instance.petsPreference,
   'wakeup_time': instance.wakeupTime,
   'sleep_time': instance.sleepTime,
+  'preferred_language': instance.preferredLanguage,
 };

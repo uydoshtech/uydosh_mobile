@@ -722,6 +722,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       }
     }
 
+    // Language - both users have preferred language set
+    compare<String>(
+      labelKey: "language",
+      currentValue: currentProfile.preferredLanguage,
+      ownerValue: ownerProfile.preferredLanguage,
+      isMatch: (a, b) => a == b,
+      formatValue: LanguageDisplayHelper.getLanguageDisplayName,
+    );
+
     compare<int>(
       labelKey: "cleanliness",
       currentValue: currentProfile.cleanliness,

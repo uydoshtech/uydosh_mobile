@@ -1,3 +1,4 @@
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
@@ -241,7 +242,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildLanguageMenuItem(BuildContext context) {
     return ListTile(
-      leading: Icon(Icons.language, color: _getIconColor()),
+      leading: Icon(CupertinoIcons.globe, color: _getIconColor()),
       title: L10n.text(
         "menu_language",
         style: TextStyle(fontWeight: FontWeight.w500, color: _getTextColor()),

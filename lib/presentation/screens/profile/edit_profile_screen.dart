@@ -71,6 +71,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool? _petsPreference;
   String? _wakeupTime;
   String? _sleepTime;
+  String _selectedLanguage = "uz";
 
   @override
   void initState() {
@@ -101,6 +102,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _petsPreference = widget.profile.petsPreference;
     _wakeupTime = widget.profile.wakeupTime;
     _sleepTime = widget.profile.sleepTime;
+    _selectedLanguage = widget.profile.preferredLanguage ??
+        LanguageState().currentLanguage;
 
     _loadRegions();
     _loadUniversities();
@@ -289,6 +292,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         petsPreference: _petsPreference,
         wakeupTime: _wakeupTime,
         sleepTime: _sleepTime,
+        preferredLanguage: _selectedLanguage,
       );
 
       // Debug logging to see what values are being sent
@@ -438,6 +442,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               label: L10n.get( "telegram"),
               controller: _telegramController,
               icon: Icons.telegram,
+            ),
+
+            const SizedBox(height: 24),
+
+            // Language (visible to other users - what language you speak)
+            ProfileDropdownControl(
+              label: L10n.get("language"),
+              value: _selectedLanguage,
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _selectedLanguage = value);
+                  LanguageState().setLanguage(value);
+                }
+              },
+              icon: CupertinoIcons.globe,
+              options: const [
+                DropdownOption(value: "uz", label: "🇺🇿 O'zbekcha"),
+                DropdownOption(value: "ru", label: "🇷🇺 Русский"),
+                DropdownOption(value: "en", label: "🇺🇸 English"),
+              ],
             ),
 
             const SizedBox(height: 24),

@@ -804,6 +804,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         universityId: _isStudent! ? _selectedUniversity!.id : null,
         regionId: _selectedRegionId,
         role: _selectedRole,
+        preferredLanguage: _selectedLanguage,
       );
 
       // CRITICAL: Verify the request object has the correct data

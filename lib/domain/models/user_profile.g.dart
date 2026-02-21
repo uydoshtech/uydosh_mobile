@@ -30,6 +30,7 @@ _$UserProfileImpl _$$UserProfileImplFromJson(Map<String, dynamic> json) =>
       petsPreference: json['pets_preference'] as bool?,
       wakeupTime: json['wakeup_time'] as String?,
       sleepTime: json['sleep_time'] as String?,
+      preferredLanguage: json['preferred_language'] as String?,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
       region:
@@ -70,6 +71,7 @@ Map<String, dynamic> _$$UserProfileImplToJson(_$UserProfileImpl instance) =>
       'pets_preference': instance.petsPreference,
       'wakeup_time': instance.wakeupTime,
       'sleep_time': instance.sleepTime,
+      'preferred_language': instance.preferredLanguage,
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,
       'region': instance.region,

@@ -26,6 +26,7 @@ class UpdateProfileRequest implements IJsonEncodable {
     this.petsPreference,
     this.wakeupTime,
     this.sleepTime,
+    this.preferredLanguage,
   });
 
   factory UpdateProfileRequest.fromJson(Map<String, dynamic> json) =>
@@ -63,6 +64,8 @@ class UpdateProfileRequest implements IJsonEncodable {
   final String? wakeupTime;
   @JsonKey(name: "sleep_time")
   final String? sleepTime;
+  @JsonKey(name: "preferred_language")
+  final String? preferredLanguage;
 
   @override
   Map<String, dynamic> toJson() {
