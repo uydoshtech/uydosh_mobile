@@ -14,7 +14,9 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/gamification_bloc.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -246,8 +248,14 @@ class _AchievementsBodyState extends State<_AchievementsBody> {
       body: BlocBuilder<GamificationBloc, GamificationState>(
         builder: (context, state) {
           return state.map(
-            initial: (_) => const Center(child: CircularProgressIndicator()),
-            loading: (_) => const Center(child: CircularProgressIndicator()),
+            initial: (_) => CenteredHouseLoadingIndicator(
+              text: L10n.get("loading"),
+              rotationDuration: AppConfig.defaultHouseRotationDuration,
+            ),
+            loading: (_) => CenteredHouseLoadingIndicator(
+              text: L10n.get("loading"),
+              rotationDuration: AppConfig.defaultHouseRotationDuration,
+            ),
             loaded: (s) => widget.buildAchievementsList(
               context,
               s.achievements,
