@@ -1,11 +1,15 @@
+import "dart:math";
+
+import "package:confetti/confetti.dart";
 import "package:flutter/material.dart";
+import "package:flutter_fireworks/flutter_fireworks.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
 
 /// Bottom sheet shown when user unlocks an achievement.
-class AchievementUnlockBottomSheet extends StatelessWidget {
+class AchievementUnlockBottomSheet extends StatefulWidget {
   const AchievementUnlockBottomSheet({
     required this.achievement,
     this.onDismiss,
@@ -34,15 +38,162 @@ class AchievementUnlockBottomSheet extends StatelessWidget {
     ).then((_) => onDismiss?.call());
   }
 
+  @override
+  State<AchievementUnlockBottomSheet> createState() =>
+      _AchievementUnlockBottomSheetState();
+}
+
+class _AchievementUnlockBottomSheetState
+    extends State<AchievementUnlockBottomSheet> {
+  late final FireworksController _fireworksController;
+  late final ConfettiController _confettiController;
+
+  static const _celebrationColors = [
+    Color(0xFFFF4C40), // Coral
+    Color(0xFF6347A6), // Purple
+    Color(0xFF7FB13B), // Green
+    Color(0xFF82A0D1), // Blue
+    Color(0xFFF7B3B2), // Rose
+    Color(0xFFFFD033), // Yellow
+    Color(0xFFFF6F7C), // Pink
+    Color(0xFF008F6C), // Sea Green
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fireworksController = FireworksController(
+      colors: _celebrationColors,
+      minExplosionDuration: 1.0,
+      maxExplosionDuration: 2.5,
+      minParticleCount: 80,
+      maxParticleCount: 180,
+      fadeOutDuration: 0.4,
+    );
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startCelebration());
+  }
+
+  void _startCelebration() {
+    if (!mounted) return;
+    _fireworksController.fireMultipleRockets(
+      minRockets: 4,
+      maxRockets: 8,
+      launchWindow: const Duration(milliseconds: 800),
+    );
+    _confettiController.play();
+  }
+
+  @override
+  void dispose() {
+    _fireworksController.dispose();
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  Path _createStarOrRibbonPath(Size size) {
+    final random = Random();
+    if (random.nextBool()) {
+      return _drawStar(size);
+    }
+    return _drawRibbon(size);
+  }
+
+  Path _drawStar(Size size) {
+    double degToRad(double deg) => deg * (pi / 180);
+    const numberOfPoints = 5;
+    final halfWidth = size.width / 2;
+    final externalRadius = halfWidth;
+    final internalRadius = halfWidth / 2.5;
+    final degreesPerStep = degToRad(360 / numberOfPoints);
+    final halfDegreesPerStep = degreesPerStep / 2;
+    final path = Path();
+    final fullAngle = degToRad(360);
+    path.moveTo(size.width, halfWidth);
+
+    for (double step = 0; step < fullAngle; step += degreesPerStep) {
+      path.lineTo(
+        halfWidth + externalRadius * cos(step),
+        halfWidth + externalRadius * sin(step),
+      );
+      path.lineTo(
+        halfWidth + internalRadius * cos(step + halfDegreesPerStep),
+        halfWidth + internalRadius * sin(step + halfDegreesPerStep),
+      );
+    }
+    path.close();
+    return path;
+  }
+
+  Path _drawRibbon(Size size) {
+    final path = Path();
+    final w = size.width;
+    final h = size.height;
+    path.moveTo(0, 0);
+    path.lineTo(w, 0);
+    path.lineTo(w * 0.9, h);
+    path.lineTo(w * 0.1, h);
+    path.close();
+    return path;
+  }
+
   String _getDescriptionKey(String achievementKey) =>
       "${achievementKey}_desc";
 
   @override
   Widget build(BuildContext context) {
-    final descKey = _getDescriptionKey(achievement.key);
+    final size = MediaQuery.sizeOf(context);
+    final descKey = _getDescriptionKey(widget.achievement.key);
     final description = L10n.get(descKey);
-    final title = L10n.get(achievement.key);
+    final title = L10n.get(widget.achievement.key);
 
+    return SizedBox(
+      width: size.width,
+      height: size.height,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: FireworksDisplay(controller: _fireworksController),
+            ),
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                canvas: size,
+                blastDirectionality: BlastDirectionality.explosive,
+                numberOfParticles: 30,
+                maxBlastForce: 30,
+                minBlastForce: 15,
+                emissionFrequency: 0.05,
+                gravity: 0.15,
+                colors: _celebrationColors,
+                createParticlePath: _createStarOrRibbonPath,
+                minimumSize: const Size(8, 8),
+                maximumSize: const Size(20, 20),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildContent(context, title, description),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    String title,
+    String description,
+  ) {
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, _) {
@@ -56,12 +207,15 @@ class AchievementUnlockBottomSheet extends StatelessWidget {
             : null;
         final iconColor = isLight
             ? Colors.black
-            : (isBlueTheme ? Colors.white : Theme.of(context).colorScheme.primary);
+            : (isBlueTheme
+                ? Colors.white
+                : Theme.of(context).colorScheme.primary);
 
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           child: Column(
@@ -86,7 +240,7 @@ class AchievementUnlockBottomSheet extends StatelessWidget {
                   border: badgeBorder,
                 ),
                 child: Icon(
-                  achievement.icon,
+                  widget.achievement.icon,
                   size: 36,
                   color: iconColor,
                 ),

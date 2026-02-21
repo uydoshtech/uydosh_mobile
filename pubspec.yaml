@@ -83,6 +83,10 @@ dependencies:
   # Audio
   audioplayers: ^6.0.0
 
+  # Celebrations
+  flutter_fireworks: ^1.0.8
+  confetti: ^0.8.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
