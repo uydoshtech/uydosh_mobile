@@ -287,6 +287,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       metroLineKey: _metroLineTutorialKey,
       metroStationKey: _metroStationTutorialKey,
       onCycleToLine: _animateToMetroLine,
+      onCycleToStation: _animateToStation,
+      getStationCount: () =>
+          _searchFiltersState.selectedSubwayLine == 4 && _currentStations.isNotEmpty
+              ? _currentStations.length + 1
+              : 0,
       onComplete: () {
         _animateToMetroLine(0);
         TutorialState().markMetroTutorialCompleted();
@@ -312,6 +317,32 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
     );
+  }
+
+  void _animateToStation(int stationIndex) {
+    if (!mounted) return;
+    final maxIndex = _currentStations.isEmpty ? 0 : _currentStations.length;
+    final clampedIndex = stationIndex.clamp(0, maxIndex);
+    setState(() {
+      if (clampedIndex == 0) {
+        _searchFiltersState.setStationIndex(0);
+        _searchFiltersState.setStationId(0);
+      } else {
+        final index = clampedIndex - 1;
+        if (index < _currentStations.length) {
+          final station = _currentStations[index];
+          _searchFiltersState.setStationIndex(index);
+          _searchFiltersState.setStationId(station.id);
+        }
+      }
+    });
+    if (_stationPickerController?.hasClients ?? false) {
+      _stationPickerController!.animateToItem(
+        clampedIndex,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override

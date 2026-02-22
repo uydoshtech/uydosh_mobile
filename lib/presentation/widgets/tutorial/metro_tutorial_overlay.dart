@@ -20,6 +20,8 @@ class MetroTutorialOverlay {
     required GlobalKey<TutorialTargetWrapperState> metroLineKey,
     required GlobalKey<TutorialTargetWrapperState> metroStationKey,
     required void Function(int lineIndex) onCycleToLine,
+    void Function(int stationIndex)? onCycleToStation,
+    int Function()? getStationCount,
     VoidCallback? onComplete,
   }) {
     _cycleTimer?.cancel();
@@ -45,12 +47,33 @@ class MetroTutorialOverlay {
     );
     overlay.insert(_overlayEntry!);
 
-    // Cycle through metro lines 1, 2, 3, 4 to demonstrate the feature
+    // Cycle through metro lines 1, 2, 3 every 2 seconds; when we hit line 4,
+    // switch to cycling metro stations every 1 second
     var currentLine = 1;
-    _cycleTimer = Timer.periodic(const Duration(milliseconds: 1000), (_) {
+    var currentStationIndex = 0;
+    const lineCycleDuration = Duration(milliseconds: 2000);
+    const stationCycleDuration = Duration(milliseconds: 1000);
+
+    void onLineCycleTick(Timer timer) {
       onCycleToLine(currentLine);
-      currentLine = currentLine >= 4 ? 1 : currentLine + 1;
-    });
+      if (currentLine >= 4) {
+        timer.cancel();
+        _cycleTimer = null;
+        if (onCycleToStation != null && getStationCount != null) {
+          _cycleTimer = Timer.periodic(stationCycleDuration, (_) {
+            final count = getStationCount();
+            if (count > 0) {
+              onCycleToStation!(currentStationIndex);
+              currentStationIndex = (currentStationIndex + 1) % count;
+            }
+          });
+        }
+      } else {
+        currentLine++;
+      }
+    }
+
+    _cycleTimer = Timer.periodic(lineCycleDuration, onLineCycleTick);
   }
 
   /// Stops the metro line cycling and removes the overlay.
