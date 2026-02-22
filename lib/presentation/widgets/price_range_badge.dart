@@ -96,13 +96,20 @@ class PriceRangeBadge extends StatelessWidget {
 /// Centralizes all price range formatting logic
 class PriceRangeHelper {
   /// Format price range for display
-  /// Returns the price range as a string (e.g., "50-250")
+  /// Returns the price range as a string (e.g., "50-250" or "50" when equal)
   static String formatPriceRange(int minPrice, int maxPrice) {
+    if (minPrice == maxPrice) {
+      return "$minPrice";
+    }
     return "$minPrice-$maxPrice";
   }
 
   /// Format price range with "y.e." suffix
+  /// When min and max are equal, shows single price (e.g. "50 y.e.")
   static String formatPriceRangeWithYue(int minPrice, int maxPrice) {
+    if (minPrice == maxPrice) {
+      return "$minPrice y.e.";
+    }
     return "$minPrice - $maxPrice y.e.";
   }
 

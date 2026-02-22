@@ -244,6 +244,8 @@ class AppStrings {
 
       // ===== METRO SYSTEM =====
       "location_on_map": "Location",
+      "show_map": "Show map",
+      "hide_map": "Hide map",
       "open_in_yandex_maps": "Open in Yandex Maps",
       "open_in_yandex_maps_confirmation":
           "A browser with Yandex Maps will be opened.",
@@ -990,6 +992,8 @@ class AppStrings {
 
       // ===== METRO SYSTEM =====
       "location_on_map": "Локация",
+      "show_map": "Показать карту",
+      "hide_map": "Скрыть карту",
       "open_in_yandex_maps": "Открыть в Яндекс Картах",
       "open_in_yandex_maps_confirmation":
           "Браузер с Яндекс Картами будет открыт.",
@@ -1745,6 +1749,8 @@ class AppStrings {
 
       // ===== METRO SYSTEM =====
       "location_on_map": "Xaritadagi joylashuv",
+      "show_map": "Xaritani ko'rsatish",
+      "hide_map": "Xaritani yashirish",
       "open_in_yandex_maps": "Yandex Xaritalarida ochish",
       "open_in_yandex_maps_confirmation":
           "Brauzerda Yandex Xaritalari ochiladi.",

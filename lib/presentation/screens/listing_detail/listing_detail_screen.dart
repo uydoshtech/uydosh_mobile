@@ -1075,7 +1075,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     return """$title$typeInfo$locationInfo$subwayInfo
 
-${description.isNotEmpty ? "$description\n" : ""}💰 $minPrice-$maxPrice y.e.
+${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatPriceRangeWithYue(minPrice, maxPrice)}
 
 📱 ${L10n.get( "check_out_listing_on_uydosh")}
 
@@ -2167,7 +2167,7 @@ L10n.get("feature_listing_error",
     );
   }
 
-  List<Widget> _buildMapAndCompatibilitySections(
+  List<Widget> _buildMapSection(
     ListingDetail listingDetail, {
     required String currentLanguage,
     required String Function({
@@ -2177,63 +2177,56 @@ L10n.get("feature_listing_error",
       required String language,
     }) getLocalizedName,
   }) {
-    final isOwner = UserListingState().isOwner(listingDetail.user.id);
-    final isProfileComplete = ProfileCompletionState().isProfileComplete;
     final hasMap = listingDetail.location != null ||
         listingDetail.subwayStation != null;
 
-    final compatibilitySection = isOwner
-        ? null
-        : ListingDetailCompatibilitySection(
-            listingDetail: listingDetail,
-            scrollController: _scrollController,
-            sectionKey: _compatibilitySectionKey,
-            compatibilityPercent: _compatibilityPercent,
-            isLoadingCompatibility: _isLoadingCompatibility,
-            compatibilityError: _compatibilityError,
-            matches: _compatibilityMatches
-                .map(
-                  (m) => CompatibilityMatch(
-                    labelKey: m.labelKey,
-                    label: m.label,
-                    value: m.value,
-                  ),
-                )
-                .toList(),
-            differences: _compatibilityDifferences
-                .map(
-                  (d) => CompatibilityDifference(
-                    labelKey: d.labelKey,
-                    label: d.label,
-                    currentText: d.currentText,
-                    ownerText: d.ownerText,
-                  ),
-                )
-                .toList(),
-            onMessage: () => _startConversation(listingDetail),
-            onViewProfile: () => _navigateToProfile(listingDetail.user.id),
-            onCompleteProfile: _navigateToOwnProfile,
-          );
+    if (!hasMap) return [];
 
-    final mapSection = hasMap
-        ? ListingDetailMapSection(
-            listingDetail: listingDetail,
-            currentLanguage: currentLanguage,
-            getLocalizedName: getLocalizedName,
-            onOpenInYandexMaps: () =>
-                _confirmOpenInYandexMaps(listingDetail),
-          )
-        : null;
-
-    // When profile is incomplete, show map first, then compatibility.
-    if (!isProfileComplete && hasMap && compatibilitySection != null) {
-      return [mapSection!, compatibilitySection];
-    }
-    // Default: compatibility above map.
     return [
-      if (compatibilitySection != null) compatibilitySection,
-      if (mapSection != null) mapSection,
+      ListingDetailMapSection(
+        listingDetail: listingDetail,
+        currentLanguage: currentLanguage,
+        getLocalizedName: getLocalizedName,
+        onOpenInYandexMaps: () =>
+            _confirmOpenInYandexMaps(listingDetail),
+      ),
     ];
+  }
+
+  Widget? _buildCompatibilitySection(ListingDetail listingDetail) {
+    final isOwner = UserListingState().isOwner(listingDetail.user.id);
+    if (isOwner) return null;
+
+    return ListingDetailCompatibilitySection(
+      listingDetail: listingDetail,
+      scrollController: _scrollController,
+      sectionKey: _compatibilitySectionKey,
+      compatibilityPercent: _compatibilityPercent,
+      isLoadingCompatibility: _isLoadingCompatibility,
+      compatibilityError: _compatibilityError,
+      matches: _compatibilityMatches
+          .map(
+            (m) => CompatibilityMatch(
+              labelKey: m.labelKey,
+              label: m.label,
+              value: m.value,
+            ),
+          )
+          .toList(),
+      differences: _compatibilityDifferences
+          .map(
+            (d) => CompatibilityDifference(
+              labelKey: d.labelKey,
+              label: d.label,
+              currentText: d.currentText,
+              ownerText: d.ownerText,
+            ),
+          )
+          .toList(),
+      onMessage: () => _startConversation(listingDetail),
+      onViewProfile: () => _navigateToProfile(listingDetail.user.id),
+      onCompleteProfile: _navigateToOwnProfile,
+    );
   }
 
   Widget _buildLoadedState(ListingDetail listingDetail) {
@@ -2241,64 +2234,81 @@ L10n.get("feature_listing_error",
       listenable: LanguageState(),
       builder: (context, child) {
         final currentLanguage = LanguageState().currentLanguage;
+        final compatibilitySection =
+            _buildCompatibilitySection(listingDetail);
 
-        return SingleChildScrollView(
-          controller: _scrollController,
-          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 36.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // View count and promote button for owner - at the top
-              if (UserListingState().isOwner(listingDetail.user.id)) ...[
-                ListingDetailOwnerToolbar(
-                  listingDetail: listingDetail,
-                  viewCount: _viewCount,
-                  isLoadingViewCount: _isLoadingViewCount,
-                  isToggling: _isToggling,
-                  onToggleFeature: _toggleFeatureListing,
-                ),
-                const SizedBox(height: 4),
-              ],
-              // Photos Section - moved to very top
-              if (listingDetail.photos != null &&
-                  listingDetail.photos!.isNotEmpty)
-                ListingDetailPhotoSection(
-                  photos: listingDetail.photos!,
-                  orderedPhotos: _getOrderedPhotos(listingDetail.photos!)
-                      .cast<Photo>(),
-                  pageController: _pageController,
-                  buildPhotoUrl: _buildPhotoUrl,
-                  onPhotoTap: _openFullScreenPhotoViewer,
-                ),
+        return Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 36.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // View count and promote button for owner - at the top
+                    if (UserListingState().isOwner(listingDetail.user.id)) ...[
+                      ListingDetailOwnerToolbar(
+                        listingDetail: listingDetail,
+                        viewCount: _viewCount,
+                        isLoadingViewCount: _isLoadingViewCount,
+                        isToggling: _isToggling,
+                        onToggleFeature: _toggleFeatureListing,
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                    // Photos Section - moved to very top
+                    if (listingDetail.photos != null &&
+                        listingDetail.photos!.isNotEmpty)
+                      ListingDetailPhotoSection(
+                        photos: listingDetail.photos!,
+                        orderedPhotos: _getOrderedPhotos(listingDetail.photos!)
+                            .cast<Photo>(),
+                        pageController: _pageController,
+                        buildPhotoUrl: _buildPhotoUrl,
+                        onPhotoTap: _openFullScreenPhotoViewer,
+                      ),
 
-              // Unified Listing Detail Card
-              ListingDetailContentCard(
-                listingDetail: listingDetail,
-                currentLanguage: currentLanguage,
-                formatMoveInDate: _formatMoveInDate,
-                getLocalizedName: _getLocalizedName,
-                ownerName: _ownerName,
-                onAuthorTap: () => _navigateToProfile(
-                  listingDetail.user.id,
-                  phoneNumber: listingDetail.user.phone,
+                    // Unified Listing Detail Card
+                    ListingDetailContentCard(
+                      listingDetail: listingDetail,
+                      currentLanguage: currentLanguage,
+                      formatMoveInDate: _formatMoveInDate,
+                      getLocalizedName: _getLocalizedName,
+                      ownerName: _ownerName,
+                      onAuthorTap: () => _navigateToProfile(
+                        listingDetail.user.id,
+                        phoneNumber: listingDetail.user.phone,
+                      ),
+                    ),
+
+                    // Map section
+                    ..._buildMapSection(
+                      listingDetail,
+                      currentLanguage: currentLanguage,
+                      getLocalizedName: _getLocalizedName,
+                    ),
+                    if (_complaintsCount != null && _complaintsCount! > 0)
+                      ListingDetailComplaintsCard(
+                        complaintsLabel: _buildComplaintsButtonLabel(),
+                        onPressed: () =>
+                            _viewListingComplaints(listingDetail.id),
+                        warningBlinkAnimation: _warningBlinkAnimation,
+                      ),
+                  ],
                 ),
               ),
-
-              // Map and Compatibility sections: when profile is incomplete,
-              // show compatibility (Complete profile) below the map.
-              ..._buildMapAndCompatibilitySections(
-                listingDetail,
-                currentLanguage: currentLanguage,
-                getLocalizedName: _getLocalizedName,
-              ),
-              if (_complaintsCount != null && _complaintsCount! > 0)
-                ListingDetailComplaintsCard(
-                  complaintsLabel: _buildComplaintsButtonLabel(),
-                  onPressed: () => _viewListingComplaints(listingDetail.id),
-                  warningBlinkAnimation: _warningBlinkAnimation,
+            ),
+            // Matching section always at the bottom of the screen
+            if (compatibilitySection != null)
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 8.0),
+                  child: compatibilitySection,
                 ),
-            ],
-          ),
+              ),
+          ],
         );
       },
     );

@@ -52,8 +52,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
   FixedExtentScrollController? _metroStationScrollController;
   int _selectedListingTypeId = 2; // 2 = roommate needed, 1 = room needed
   int _selectedGender = 1; // Default to male (1 = male, 2 = female)
-  double _minPrice = 50.0;
-  double _maxPrice = 250.0;
+  double _price = 50.0;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -129,9 +128,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _selectedListingTypeId =
         widget.listingDetail.listingType.code == "roommate_needed" ? 2 : 1;
   
-    // Set price range
-    _minPrice = widget.listingDetail.minPrice.toDouble();
-    _maxPrice = widget.listingDetail.maxPrice.toDouble();
+    // Set price (single value, stored as both min and max)
+    _price = widget.listingDetail.minPrice.toDouble();
 
     // Set gender
     if (widget.listingDetail.gender != null) {
@@ -530,17 +528,17 @@ class _EditListingScreenState extends State<EditListingScreen> {
                     const SizedBox(
                       height: 10,
                     ), // Space between location and price range
-                    // Price Range Field - Full Row
+                    // Price Field - Single handle, stored as both min and max
                     PriceRangePicker(
                       minPrice: 10.0,
                       maxPrice: 500.0,
-                      initialMinPrice: _minPrice,
-                      initialMaxPrice: _maxPrice,
+                      initialMinPrice: _price,
+                      initialMaxPrice: _price,
+                      useSinglePrice: true,
                       onPriceRangeChanged: (minPrice, maxPrice) {
                         _dismissKeyboard();
                         setState(() {
-                          _minPrice = minPrice;
-                          _maxPrice = maxPrice;
+                          _price = minPrice; // Same value for both in single mode
                         });
                       },
                     ),
@@ -1093,8 +1091,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
         listingId: widget.listingDetail.id,
         title: _titleController.text.trim(),
         listingTypeId: listingTypeId,
-        minPrice: _minPrice.round(),
-        maxPrice: _maxPrice.round(),
+        minPrice: _price.round(),
+        maxPrice: _price.round(),
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
         locationId: selectedLocation.id,

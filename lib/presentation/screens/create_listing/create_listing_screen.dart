@@ -61,8 +61,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   int _defaultListingTypeFromProfile = 2; // Profile-based default for reset
   int _selectedGender = 1;
   int _defaultGenderFromProfile = 1; // Profile-based default for reset
-  double _minPrice = 50.0;
-  double _maxPrice = 200.0;
+  double _price = 50.0;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -615,17 +614,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           showArrows: false,
         ),
         const SizedBox(height: 10), // Space between location and price range
-        // Price Range Field - Full Row
+        // Price Field - Single handle, stored as both min and max
         PriceRangePicker(
           minPrice: 10.0,
           maxPrice: 500.0,
-          initialMinPrice: _minPrice,
-          initialMaxPrice: _maxPrice,
+          initialMinPrice: _price,
+          initialMaxPrice: _price,
+          useSinglePrice: true,
           onPriceRangeChanged: (minPrice, maxPrice) {
             _dismissKeyboard();
             setState(() {
-              _minPrice = minPrice;
-              _maxPrice = maxPrice;
+              _price = minPrice; // Same value for both in single mode
             });
           },
         ),
@@ -1172,8 +1171,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       logger.d("Request Body:");
       logger.d("  title: \"${_titleController.text.trim()}\"");
       logger.d("  listingTypeId: $listingTypeId");
-      logger.d("  minPrice: $_minPrice");
-      logger.d("  maxPrice: $_maxPrice");
+      logger.d("  minPrice: $_price");
+      logger.d("  maxPrice: $_price");
       logger.d("  description: \"${_descriptionController.text.trim()}\"");
       logger.d(
         "  subwayStationId: ${selectedStation?.id ?? "null (optional)"}",
@@ -1211,8 +1210,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       final createdListing = await listingService.createListing(
         title: _titleController.text.trim(),
         listingTypeId: listingTypeId,
-        minPrice: _minPrice.round(),
-        maxPrice: _maxPrice.round(),
+        minPrice: _price.round(),
+        maxPrice: _price.round(),
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
         locationId: selectedLocation.id,
@@ -1250,8 +1249,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       setState(() {
         _selectedListingTypeId = _defaultListingTypeFromProfile;
         _selectedGender = _defaultGenderFromProfile;
-        _minPrice = 50.0;
-        _maxPrice = 200.0;
+        _price = 50.0;
         _selectedSubwayLine = 0;
         _selectedStationIndex = 0;
         _selectedLocationIndex = -1;

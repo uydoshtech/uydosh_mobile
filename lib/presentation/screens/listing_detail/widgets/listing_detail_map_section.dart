@@ -10,7 +10,8 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 
 /// Map section with Yandex Maps for listing detail.
-class ListingDetailMapSection extends StatelessWidget {
+/// Collapsed by default: shows only location and metro. Tap to expand and show map.
+class ListingDetailMapSection extends StatefulWidget {
   const ListingDetailMapSection({
     required this.listingDetail,
     required this.currentLanguage,
@@ -28,6 +29,13 @@ class ListingDetailMapSection extends StatelessWidget {
     required String language,
   }) getLocalizedName;
   final VoidCallback onOpenInYandexMaps;
+
+  @override
+  State<ListingDetailMapSection> createState() => _ListingDetailMapSectionState();
+}
+
+class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
+  bool _isMapExpanded = false;
 
   Widget _buildSubwayStationDisplay(SubwayStationDetail station) {
     final transferInfo = MetroCache.getTransferStationInfo(station.id);
@@ -50,11 +58,11 @@ class ListingDetailMapSection extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            getLocalizedName(
+            widget.getLocalizedName(
               nameUz: station.nameUz,
               nameRu: station.nameRu,
               nameEn: station.nameEn,
-              language: currentLanguage,
+              language: widget.currentLanguage,
             ),
             style: TextStyle(
               fontSize: 15,
@@ -75,11 +83,11 @@ class ListingDetailMapSection extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            getLocalizedName(
+            widget.getLocalizedName(
               nameUz: connectedStation.nameUz,
               nameRu: connectedStation.nameRu,
               nameEn: connectedStation.nameEn,
-              language: currentLanguage,
+              language: widget.currentLanguage,
             ),
             style: TextStyle(
               fontSize: 15,
@@ -99,11 +107,11 @@ class ListingDetailMapSection extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              getLocalizedName(
+              widget.getLocalizedName(
                 nameUz: station.nameUz,
                 nameRu: station.nameRu,
                 nameEn: station.nameEn,
-                language: currentLanguage,
+                language: widget.currentLanguage,
               ),
               style: TextStyle(
                 fontSize: 15,
@@ -118,8 +126,9 @@ class ListingDetailMapSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasLocation = listingDetail.location != null;
-    final hasSubway = listingDetail.subwayStation != null;
+    final hasLocation = widget.listingDetail.location != null;
+    final hasSubway = widget.listingDetail.subwayStation != null;
+    final hasMapContent = hasLocation || hasSubway;
 
     return Card(
       child: Padding(
@@ -127,73 +136,122 @@ class ListingDetailMapSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (hasSubway) _buildSubwayStationDisplay(listingDetail.subwayStation!),
-            if (hasSubway && hasLocation) const SizedBox(height: 8),
-            if (hasLocation)
-              Row(
-                children: [
-                  ThemeIconFactory.detail(
-                    icon: Icons.location_on,
-                    color: Colors.red,
-                    size: 20,
+            Stack(
+              alignment: Alignment.topRight,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(right: hasMapContent ? 32.0 : 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (hasSubway)
+                        _buildSubwayStationDisplay(
+                            widget.listingDetail.subwayStation!),
+                      if (hasSubway && hasLocation) const SizedBox(height: 8),
+                      if (hasLocation)
+                        Row(
+                          children: [
+                            ThemeIconFactory.detail(
+                              icon: Icons.location_on,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                widget.getLocalizedName(
+                                  nameUz: widget.listingDetail.location!.nameUz,
+                                  nameRu: widget.listingDetail.location!.nameRu,
+                                  nameEn: widget.listingDetail.location!.nameEn,
+                                  language: widget.currentLanguage,
+                                ),
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: ListingDetailThemeHelper.locationTextColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      getLocalizedName(
-                        nameUz: listingDetail.location!.nameUz,
-                        nameRu: listingDetail.location!.nameRu,
-                        nameEn: listingDetail.location!.nameEn,
-                        language: currentLanguage,
-                      ),
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: ListingDetailThemeHelper.locationTextColor,
+                ),
+                if (hasMapContent)
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedbackUtils.impact();
+                      setState(() => _isMapExpanded = !_isMapExpanded);
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: AnimatedRotation(
+                        turns: _isMapExpanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 24,
+                          color: ListingDetailThemeHelper.locationTextColor,
+                        ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            if (hasLocation || hasSubway) const SizedBox(height: 16),
-            YandexMapWidget(
-              apiKey: AppConfig.yandexMapsApiKey,
-              height: 250,
-              listingDetail: listingDetail,
+              ],
             ),
-            const SizedBox(height: 16),
-            Center(
-              child: TextButton.icon(
-                onPressed: () {
-                  HapticFeedbackUtils.impact();
-                  onOpenInYandexMaps();
-                },
-                icon: Icon(
-                  Icons.link,
-                  size: 18,
-                  color: ListingDetailThemeHelper.yandexButtonColor,
-                ),
-                label: Text(
-                  L10n.get("open_in_yandex_maps"),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: ListingDetailThemeHelper.yandexButtonColor,
-                  ),
-                ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(
-                      color: ListingDetailThemeHelper.yandexButtonColor,
-                      width: 1,
-                    ),
-                  ),
-                ),
-              ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: _isMapExpanded && hasMapContent
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        YandexMapWidget(
+                          apiKey: AppConfig.yandexMapsApiKey,
+                          height: 250,
+                          listingDetail: widget.listingDetail,
+                        ),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: TextButton.icon(
+                            onPressed: () {
+                              HapticFeedbackUtils.impact();
+                              widget.onOpenInYandexMaps();
+                            },
+                            icon: Icon(
+                              Icons.link,
+                              size: 18,
+                              color: ListingDetailThemeHelper.yandexButtonColor,
+                            ),
+                            label: Text(
+                              L10n.get("open_in_yandex_maps"),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: ListingDetailThemeHelper.yandexButtonColor,
+                              ),
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(
+                                  color: ListingDetailThemeHelper.yandexButtonColor,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
             ),
           ],
         ),

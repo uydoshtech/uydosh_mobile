@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 
 class PriceRangePicker extends StatefulWidget {
   const PriceRangePicker({
@@ -11,6 +12,7 @@ class PriceRangePicker extends StatefulWidget {
     this.maxPrice = 500.0,
     this.initialMinPrice = 50.0,
     this.initialMaxPrice = 250.0,
+    this.useSinglePrice = false,
   });
 
   final Function(double minPrice, double maxPrice) onPriceRangeChanged;
@@ -18,6 +20,8 @@ class PriceRangePicker extends StatefulWidget {
   final double maxPrice;
   final double initialMinPrice;
   final double initialMaxPrice;
+  /// When true, shows a single handle and passes the same price for both min and max.
+  final bool useSinglePrice;
 
   @override
   State<PriceRangePicker> createState() => _PriceRangePickerState();
@@ -30,30 +34,39 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
   @override
   void initState() {
     super.initState();
-    // Use the initial values passed from SearchFiltersState
-    _minPrice = widget.initialMinPrice;
-    _maxPrice = widget.initialMaxPrice;
-
-    // Ensure values are within the allowed range
-    _minPrice = _minPrice.clamp(widget.minPrice, widget.maxPrice);
-    _maxPrice = _maxPrice.clamp(widget.minPrice, widget.maxPrice);
+    if (widget.useSinglePrice) {
+      final initialPrice = widget.initialMinPrice;
+      _minPrice = initialPrice.clamp(widget.minPrice, widget.maxPrice);
+      _maxPrice = _minPrice;
+    } else {
+      _minPrice = widget.initialMinPrice.clamp(widget.minPrice, widget.maxPrice);
+      _maxPrice = widget.initialMaxPrice.clamp(widget.minPrice, widget.maxPrice);
+    }
   }
 
   @override
   void didUpdateWidget(PriceRangePicker oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update local state if initial values change (e.g., when restoring from saved state)
     if (oldWidget.initialMinPrice != widget.initialMinPrice ||
         oldWidget.initialMaxPrice != widget.initialMaxPrice) {
       setState(() {
-        _minPrice = widget.initialMinPrice.clamp(
-          widget.minPrice,
-          widget.maxPrice,
-        );
-        _maxPrice = widget.initialMaxPrice.clamp(
-          widget.minPrice,
-          widget.maxPrice,
-        );
+        if (widget.useSinglePrice) {
+          final price = widget.initialMinPrice.clamp(
+            widget.minPrice,
+            widget.maxPrice,
+          );
+          _minPrice = price;
+          _maxPrice = price;
+        } else {
+          _minPrice = widget.initialMinPrice.clamp(
+            widget.minPrice,
+            widget.maxPrice,
+          );
+          _maxPrice = widget.initialMaxPrice.clamp(
+            widget.minPrice,
+            widget.maxPrice,
+          );
+        }
       });
     }
   }
@@ -108,34 +121,31 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
       ),
       child: Row(
         children: [
-          // Min price label on the left
-          Container(
-            width: 50, // Fixed width for consistent sizing
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: "${_minPrice.round()}",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: textColor,
-                      //fontWeight: FontWeight.bold,
+          if (!widget.useSinglePrice)
+            // Min price label on the left (range mode only)
+            Container(
+              width: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "${_minPrice.round()}",
+                      style: TextStyle(fontSize: 13, color: textColor),
                     ),
-                  ),
-                  TextSpan(
-                    text: "\ny.e.",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: textColor,
-                      fontWeight: FontWeight.w400,
+                    TextSpan(
+                      text: "\ny.e.",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: textColor,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
 
           // Slider in the center
           Expanded(
@@ -143,78 +153,85 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
               data: SliderTheme.of(context).copyWith(
                 trackHeight: 2.0,
                 thumbShape: const RoundSliderThumbShape(
-                  enabledThumbRadius: 18.0,
+                  enabledThumbRadius: 8.0,
                 ),
                 overlayShape: const RoundSliderOverlayShape(
-                  overlayRadius: 32.0,
+                  overlayRadius: 16.0,
                 ),
                 activeTrackColor: sliderColor,
                 inactiveTrackColor: getInactiveTrackColor(),
                 thumbColor: sliderColor,
                 overlayColor: sliderColor.withValues(alpha: 0.1),
               ),
-              child: Transform.translate(
-                offset: const Offset(
-                  0.0,
-                  0.0,
-                ), // Move slider left by 8px to extend beyond container
-                child: RangeSlider(
-                  values: RangeValues(_minPrice, _maxPrice),
-                  min: widget.minPrice,
-                  max: widget.maxPrice,
-                  // Removed divisions to eliminate visual tick marks
-                  activeColor: sliderColor,
-                  inactiveColor: getInactiveTrackColor(),
-                  labels: RangeLabels(
-                    "${_minPrice.round()} y.e.",
-                    "${_maxPrice.round()} y.e.",
-                  ),
-                  onChanged: (values) {
-                    // Round to nearest 10-unit increment
-                    final newMin = (values.start / 10).round() * 10.0;
-                    final newMax = (values.end / 10).round() * 10.0;
-
-                    // Check if we crossed a 10-unit threshold for haptic feedback
-                    final oldMin = _minPrice;
-                    final oldMax = _maxPrice;
-
-                    // Haptic feedback for every 10-unit step change
-                    if ((newMin ~/ 10) != (oldMin ~/ 10) ||
-                        (newMax ~/ 10) != (oldMax ~/ 10)) {
-                      HapticFeedbackUtils.selection();
-                    }
-
-                    setState(() {
-                      _minPrice = newMin;
-                      _maxPrice = newMax;
-                    });
-
-                    // Call the callback to save the changes
-                    widget.onPriceRangeChanged(
-                      _minPrice.roundToDouble(),
-                      _maxPrice.roundToDouble(),
-                    );
-                  },
-                ),
-              ),
+              child: widget.useSinglePrice
+                  ? Slider(
+                      value: _minPrice,
+                      min: widget.minPrice,
+                      max: widget.maxPrice,
+                      activeColor: sliderColor,
+                      inactiveColor: getInactiveTrackColor(),
+                      label: "${_minPrice.round()} y.e.",
+                      onChanged: (value) {
+                        final newPrice = (value / 10).round() * 10.0;
+                        if ((newPrice ~/ 10) != (_minPrice ~/ 10)) {
+                          HapticFeedbackUtils.impact();
+                          SendSoundUtils.playSelectionSound();
+                        }
+                        setState(() {
+                          _minPrice = newPrice;
+                          _maxPrice = newPrice;
+                        });
+                        widget.onPriceRangeChanged(
+                          _minPrice.roundToDouble(),
+                          _maxPrice.roundToDouble(),
+                        );
+                      },
+                    )
+                  : Transform.translate(
+                      offset: const Offset(0.0, 0.0),
+                      child: RangeSlider(
+                        values: RangeValues(_minPrice, _maxPrice),
+                        min: widget.minPrice,
+                        max: widget.maxPrice,
+                        activeColor: sliderColor,
+                        inactiveColor: getInactiveTrackColor(),
+                        labels: RangeLabels(
+                          "${_minPrice.round()} y.e.",
+                          "${_maxPrice.round()} y.e.",
+                        ),
+                        onChanged: (values) {
+                          final newMin = (values.start / 10).round() * 10.0;
+                          final newMax = (values.end / 10).round() * 10.0;
+                          if ((newMin ~/ 10) != (_minPrice ~/ 10) ||
+                              (newMax ~/ 10) != (_maxPrice ~/ 10)) {
+                            HapticFeedbackUtils.impact();
+                            SendSoundUtils.playSelectionSound();
+                          }
+                          setState(() {
+                            _minPrice = newMin;
+                            _maxPrice = newMax;
+                          });
+                          widget.onPriceRangeChanged(
+                            _minPrice.roundToDouble(),
+                            _maxPrice.roundToDouble(),
+                          );
+                        },
+                      ),
+                    ),
             ),
           ),
 
-          // Max price label on the right
+          // Price label on the right
           Container(
-            width: 50, // Fixed width for consistent sizing
+            width: 50,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
                 children: [
                   TextSpan(
-                    text: "${_maxPrice.round()}",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: textColor,
-                      //fontWeight: FontWeight.bold,
-                    ),
+                    text: "${(widget.useSinglePrice ? _minPrice : _maxPrice).round()}",
+                    style: TextStyle(fontSize: 13, color: textColor),
                   ),
                   TextSpan(
                     text: "\ny.e.",
