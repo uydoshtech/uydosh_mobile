@@ -733,6 +733,8 @@ class AppStrings {
       "tutorial_search_title": "Search for listings",
       "tutorial_search_description":
           "Tap here to filter listings by location, price, room type, and more.",
+      "tutorial_profile_description":
+          "Your profile and account settings are here.",
       "tutorial_got_it": "Got it",
       "tutorial_metro_description":
           "Choose a metro line, then pick a station to filter by location.",
@@ -1523,6 +1525,8 @@ class AppStrings {
       "tutorial_search_title": "Поиск объявлений",
       "tutorial_search_description":
           "Нажмите здесь, чтобы фильтровать объявления по району, цене, типу комнаты и другим параметрам.",
+      "tutorial_profile_description":
+          "Здесь находятся ваш профиль и настройки аккаунта.",
       "tutorial_got_it": "Понятно",
       "tutorial_metro_description":
           "Выберите линию метро, затем станцию для фильтрации по местоположению.",
@@ -2320,6 +2324,8 @@ class AppStrings {
       "tutorial_search_title": "E'lonlarni qidirish",
       "tutorial_search_description":
           "E'lonlarni tuman, narx, xona turi va boshqa parametrlar bo'yicha filtrlash uchun bosing.",
+      "tutorial_profile_description":
+          "Profilingiz va hisob sozlamalari shu yerda.",
       "tutorial_got_it": "Tushundim",
       "tutorial_metro_description":
           "Metro liniyasini tanlang, keyin joylashuv bo'yicha filtrlash uchun stansiyani tanlang.",

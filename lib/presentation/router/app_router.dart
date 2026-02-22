@@ -29,11 +29,16 @@ import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AppRouter {
+  /// Global key for the profile icon in the app bar, used by the search tutorial.
+  static final GlobalKey<TutorialTargetWrapperState> profileIconTutorialKey =
+      GlobalKey<TutorialTargetWrapperState>();
+
   static Widget buildMainNavigation({bool attachKey = false}) => BlocProvider(
     create: (context) {
       final bloc = ListingsBloc(getIt<IListingService>());
@@ -472,7 +477,9 @@ class _MainNavigationState extends State<MainNavigation>
           // Profile button on the right side with proper margin
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: ListenableBuilder(
+            child: TutorialTargetWrapper(
+              key: AppRouter.profileIconTutorialKey,
+              child: ListenableBuilder(
               listenable: AuthenticationState(),
               builder: (context, child) {
                 final isAuthenticated = AuthenticationState().isAuthenticated;
@@ -593,6 +600,7 @@ class _MainNavigationState extends State<MainNavigation>
                   },
                 );
               },
+            ),
             ),
           ),
         ],

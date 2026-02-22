@@ -28,6 +28,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
+import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
@@ -190,6 +191,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     SearchTutorialOverlay.show(
       context,
       searchButtonKey: _searchButtonTutorialKey,
+      profileIconKey: AppRouter.profileIconTutorialKey,
       onComplete: TutorialState().markSearchTutorialCompleted,
     );
   }
