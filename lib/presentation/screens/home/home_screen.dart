@@ -26,7 +26,9 @@ import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _HomeScreenData {
@@ -106,6 +108,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
+  final GlobalKey<TutorialTargetWrapperState> _searchButtonTutorialKey =
+      GlobalKey<TutorialTargetWrapperState>();
 
   @override
   void initState() {
@@ -149,6 +153,27 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     HomeRefreshState().addListener(_onHomeRefreshStateChanged);
 
     getIt<AppAnalyticsService>().logScreenView(screenName: "home");
+
+    // Show search button tutorial on first visit to browse screen (with delay)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
+    });
+  }
+
+  void _maybeShowSearchTutorial() {
+    if (!mounted) return;
+    if (widget.isSearchMode) return;
+    // TODO: Re-enable check for production: if (!TutorialState().hasCompletedSearchTutorial)
+    _showSearchTutorial();
+  }
+
+  void _showSearchTutorial() {
+    if (!mounted) return;
+    SearchTutorialOverlay.show(
+      context,
+      searchButtonKey: _searchButtonTutorialKey,
+      onComplete: TutorialState().markSearchTutorialCompleted,
+    );
   }
 
   void _onHomeRefreshStateChanged() {
@@ -379,13 +404,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               },
             ),
           ),
-          // Positioned floating action button
+          // Positioned floating action button (wrapped for tutorial targeting)
           Positioned(
             right: 16,
             bottom: 30, // Moved down a bit from 100
-            child: SearchFloatingActionButton(
-              searchFiltersState: _searchFiltersState,
-              replaceCurrentRoute: widget.isSearchMode,
+            child: TutorialTargetWrapper(
+              key: _searchButtonTutorialKey,
+              child: SearchFloatingActionButton(
+                searchFiltersState: _searchFiltersState,
+                replaceCurrentRoute: widget.isSearchMode,
+              ),
             ),
           ),
         ],

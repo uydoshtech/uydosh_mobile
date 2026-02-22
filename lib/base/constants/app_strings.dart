@@ -728,6 +728,10 @@ class AppStrings {
       "search_listings": "Search Listings",
 
       "search": "Search",
+      "tutorial_search_title": "Search for listings",
+      "tutorial_search_description":
+          "Tap here to filter listings by location, price, room type, and more.",
+      "tutorial_got_it": "Got it",
 
       // ===== TIME & DATES =====
       "january": "January",
@@ -1510,6 +1514,10 @@ class AppStrings {
       "search_listings": "Поиск объявлений",
 
       "search": "Поиск",
+      "tutorial_search_title": "Поиск объявлений",
+      "tutorial_search_description":
+          "Нажмите здесь, чтобы фильтровать объявления по району, цене, типу комнаты и другим параметрам.",
+      "tutorial_got_it": "Понятно",
 
       // ===== TIME & DATES =====
       "january": "Январь",
@@ -2299,6 +2307,10 @@ class AppStrings {
       "search_listings": "E'lonlarni qidirish",
 
       "search": "Qidirish",
+      "tutorial_search_title": "E'lonlarni qidirish",
+      "tutorial_search_description":
+          "E'lonlarni tuman, narx, xona turi va boshqa parametrlar bo'yicha filtrlash uchun bosing.",
+      "tutorial_got_it": "Tushundim",
 
       // ===== TIME & DATES =====
       "january": "Yanvar",

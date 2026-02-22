@@ -426,7 +426,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Stack(
                       alignment: Alignment.bottomRight,
                       children: [
-                        if (isComplete)
+                        if (isComplete && !_userBlocked)
                           Container(
                             padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
@@ -440,7 +440,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           )
                         else
                           _buildProfileAvatar(),
-                        if (isComplete)
+                        if (_userBlocked)
+                          Tooltip(
+                            message: L10n.get("admin_user_detail_blocked"),
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.error,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.block,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        else if (isComplete)
                           Container(
                             width: 22,
                             height: 22,
@@ -475,24 +496,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                     if (_userRoleLoaded) ...[
                       const SizedBox(height: 4),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _RoleBadge(
-                            label: _getRoleLabel(_userRole, context),
-                          ),
-                          if (_userBlocked) ...[
-                            const SizedBox(width: 8),
-                            Tooltip(
-                              message: L10n.get("admin_user_detail_blocked"),
-                              child: Icon(
-                                Icons.block,
-                                color: Theme.of(context).colorScheme.error,
-                                size: 20,
-                              ),
-                            ),
-                          ],
-                        ],
+                      _RoleBadge(
+                        label: _getRoleLabel(_userRole, context),
                       ),
                     ],
                   ],
@@ -1119,13 +1124,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              // My Listings, Messages, View History - grouped with separators
+              // My Listings, Messages, History, Achievements, Contact Support - grouped
               const SizedBox(height: 8),
               _buildGroupedMenuSection(context),
-              const SizedBox(height: 8),
-
-              // Achievements section
-              _buildAchievementsSection(context),
               const SizedBox(height: 8),
 
               if (_userRole == "admin") ...[
@@ -1543,6 +1544,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildGroupedMenuItem(
             context: context,
+            icon: Icons.emoji_events,
+            title: L10n.get("menu_achievements"),
+            onTap: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AchievementsScreen(),
+                ),
+              );
+              if (mounted) setState(() {});
+            },
+          ),
+          _buildGroupedMenuItem(
+            context: context,
             icon: Icons.support_agent,
             title: L10n.get("menu_contact_support"),
             onTap: () {
@@ -1597,90 +1611,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               size: 16,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAchievementsSection(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () async {
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AchievementsScreen(),
-            ),
-          );
-          if (mounted) setState(() {});
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Icon(
-                    Icons.emoji_events,
-                    color:
-                        ThemeState().isBlueTheme
-                            ? Colors.white
-                            : Theme.of(context).colorScheme.primary,
-                    size: 24,
-                  ),
-                  FutureBuilder<bool>(
-                    future: getIt<IGamificationService>().hasNewAchievements(),
-                    builder: (context, snapshot) {
-                      if (snapshot.data != true) return const SizedBox.shrink();
-                      return Positioned(
-                        top: -4,
-                        right: -4,
-                        child: Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: AppColors.success,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.surface,
-                              width: 2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 2,
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  L10n.get("menu_achievements"),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                size: 16,
-              ),
-            ],
-          ),
         ),
       ),
     );

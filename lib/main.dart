@@ -17,6 +17,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
+import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -75,6 +76,7 @@ void main() async {
       LanguageState().initialize(),
       AuthenticationState().initialize(),
       OnboardingState().initialize(),
+      TutorialState().initialize(),
       HapticFeedbackState().initialize(),
       SearchFiltersState().initialize(),
       ThemeState().initialize(),
