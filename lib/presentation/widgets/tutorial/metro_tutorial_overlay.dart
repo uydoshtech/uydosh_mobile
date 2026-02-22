@@ -51,8 +51,8 @@ class MetroTutorialOverlay {
     // switch to cycling metro stations every 1 second
     var currentLine = 1;
     var currentStationIndex = 0;
-    const lineCycleDuration = Duration(milliseconds: 2000);
-    const stationCycleDuration = Duration(milliseconds: 1000);
+    const lineCycleDuration = Duration(milliseconds: 1000);
+    const stationCycleDuration = Duration(milliseconds: 750);
 
     void onLineCycleTick(Timer timer) {
       onCycleToLine(currentLine);

@@ -166,8 +166,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   void _onOnboardingStateChanged() {
     if (mounted && OnboardingState().showOnboarding) {
-      // Delay 2s when user toggles ON from settings so tutorial doesn't pop up immediately
-      Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
+      // Only schedule tutorial when home screen is visible (not when user is on settings etc.)
+      if (ModalRoute.of(context)?.isCurrent ?? false) {
+        Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
+      }
     }
   }
 
@@ -175,6 +177,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// browse view. Skipped when in search results (isSearchMode) or other screens.
   void _maybeShowSearchTutorial() {
     if (!mounted) return;
+    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return; // Only when home is visible
     if (widget.isSearchMode) return; // Only on home browse, not search results
     if (OnboardingState().showOnboarding &&
         !TutorialState().hasCompletedSearchTutorial) {

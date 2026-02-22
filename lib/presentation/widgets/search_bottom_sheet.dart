@@ -273,7 +273,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     // Show metro tutorial only when onboarding toggle is ON (and not yet completed)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 500), () {
+      Future.delayed(const Duration(milliseconds: 1000), () {
         if (!mounted) return;
         if (OnboardingState().showOnboarding &&
             !TutorialState().hasCompletedMetroTutorial) {
