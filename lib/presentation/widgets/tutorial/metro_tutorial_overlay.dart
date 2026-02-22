@@ -47,7 +47,7 @@ class MetroTutorialOverlay {
 
     // Cycle through metro lines 1, 2, 3, 4 to demonstrate the feature
     var currentLine = 1;
-    _cycleTimer = Timer.periodic(const Duration(milliseconds: 2000), (_) {
+    _cycleTimer = Timer.periodic(const Duration(milliseconds: 1000), (_) {
       onCycleToLine(currentLine);
       currentLine = currentLine >= 4 ? 1 : currentLine + 1;
     });
@@ -81,16 +81,39 @@ class _MetroTutorialOverlayContent extends StatefulWidget {
 class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayContent> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: widget.onDismiss,
       behavior: HitTestBehavior.opaque,
       child: SizedBox.expand(
-        child: CustomPaint(
-          painter: _TwoRectanglesMaskPainter(
-            metroLineKey: widget.metroLineKey,
-            metroStationKey: widget.metroStationKey,
-            dimColor: Colors.black.withValues(alpha: 0.75),
-          ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _TwoRectanglesMaskPainter(
+                  metroLineKey: widget.metroLineKey,
+                  metroStationKey: widget.metroStationKey,
+                  dimColor: Colors.black.withValues(alpha: 0.75),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Text(
+                    L10n.get("metro_tutorial_search_hint"),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
