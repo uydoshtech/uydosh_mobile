@@ -1034,8 +1034,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     );
 
     final description = listingDetail.description ?? "";
-    final minPrice = listingDetail.minPrice;
-    final maxPrice = listingDetail.maxPrice;
+    final price = listingDetail.price;
 
     // Build location info
     var locationInfo = "";
@@ -1075,7 +1074,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     return """$title$typeInfo$locationInfo$subwayInfo
 
-${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatPriceRangeWithYue(minPrice, maxPrice)}
+${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatPriceRangeWithYue(price, price)}
 
 📱 ${L10n.get( "check_out_listing_on_uydosh")}
 

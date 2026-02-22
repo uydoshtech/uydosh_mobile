@@ -231,8 +231,8 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                     ),
                   ),
                 PriceRangeBadge(
-                  minPrice: widget.listingDetail.minPrice,
-                  maxPrice: widget.listingDetail.maxPrice,
+                  minPrice: widget.listingDetail.price,
+                  maxPrice: widget.listingDetail.price,
                   isActive: widget.listingDetail.isActive,
                   fontSize: 13,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

@@ -129,7 +129,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
         widget.listingDetail.listingType.code == "roommate_needed" ? 2 : 1;
   
     // Set price (single value, stored as both min and max)
-    _price = widget.listingDetail.minPrice.toDouble();
+    _price = widget.listingDetail.price.toDouble();
 
     // Set gender
     if (widget.listingDetail.gender != null) {
@@ -1091,8 +1091,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
         listingId: widget.listingDetail.id,
         title: _titleController.text.trim(),
         listingTypeId: listingTypeId,
-        minPrice: _price.round(),
-        maxPrice: _price.round(),
+        price: _price.round(),
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
         locationId: selectedLocation.id,

@@ -69,8 +69,7 @@ abstract class IListingService {
   Future<ListingDetail> createListing({
     required String title,
     required int listingTypeId,
-    required int minPrice,
-    required int maxPrice,
+    required int price,
     required String description,
     required int gender,
     required int locationId,
@@ -86,8 +85,7 @@ abstract class IListingService {
     required int listingId,
     required String title,
     required int listingTypeId,
-    required int minPrice,
-    required int maxPrice,
+    required int price,
     required String description,
     required int gender,
     required int locationId,
@@ -451,8 +449,7 @@ class ListingService implements IListingService {
   Future<ListingDetail> createListing({
     required String title,
     required int listingTypeId,
-    required int minPrice,
-    required int maxPrice,
+    required int price,
     required String description,
     required int gender,
     required int locationId,
@@ -473,8 +470,7 @@ class ListingService implements IListingService {
       final request = CreateListingRequest(
         title: title,
         listingTypeId: listingTypeId,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
+        price: price,
         description: description,
         gender: gender,
         subwayStationId: subwayStationId,
@@ -505,8 +501,7 @@ class ListingService implements IListingService {
       );
       logger.d('Title: "$title" (length: ${title.length})');
       logger.d("Listing Type ID: $listingTypeId");
-      logger.d("Min Price: $minPrice");
-      logger.d("Max Price: $maxPrice");
+      logger.d("Price: $price");
       logger.d('Description: "$description" (length: ${description.length})');
       logger.d("Gender: $gender");
       logger.d("Location ID: $locationId");
@@ -629,8 +624,7 @@ class ListingService implements IListingService {
     required int listingId,
     required String title,
     required int listingTypeId,
-    required int minPrice,
-    required int maxPrice,
+    required int price,
     required String description,
     required int gender,
     required int locationId,
@@ -651,8 +645,7 @@ class ListingService implements IListingService {
       final request = CreateListingRequest(
         title: title,
         listingTypeId: listingTypeId,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
+        price: price,
         description: description,
         gender: gender,
         subwayStationId: subwayStationId,
@@ -674,8 +667,7 @@ class ListingService implements IListingService {
       logger.d(
         "  listingTypeId: $listingTypeId (type: ${listingTypeId.runtimeType})",
       );
-      logger.d("  minPrice: $minPrice (type: ${minPrice.runtimeType})");
-      logger.d("  maxPrice: $maxPrice (type: ${maxPrice.runtimeType})");
+      logger.d("  price: $price (type: ${price.runtimeType})");
       logger.d(
         '  description: "$description" (type: ${description.runtimeType})',
       );

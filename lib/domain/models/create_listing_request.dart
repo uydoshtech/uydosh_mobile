@@ -5,8 +5,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
   CreateListingRequest({
     required this.title,
     required this.listingTypeId,
-    required this.minPrice,
-    required this.maxPrice,
+    required this.price,
     required this.description,
     required this.gender,
     required this.locationId,
@@ -19,8 +18,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
   });
   final String title;
   final int listingTypeId;
-  final int minPrice;
-  final int maxPrice;
+  final int price;
   final String description;
   final int gender;
   final int locationId;
@@ -36,8 +34,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
     final json = <String, dynamic>{
       "title": title,
       "listingTypeId": listingTypeId,
-      "minPrice": minPrice,
-      "maxPrice": maxPrice,
+      "price": price,
       "description": description,
       "gender": gender,
       "locationId": locationId,

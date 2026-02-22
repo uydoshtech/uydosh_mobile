@@ -581,9 +581,8 @@ class _ListingTileState extends State<ListingTile>
                                             .toList(),
                                   ),
                                 ],
-                                // Price range display
-                                if (widget.listing.minPrice != null ||
-                                    widget.listing.maxPrice != null) ...[
+                                // Price display
+                                ...[
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
@@ -712,15 +711,7 @@ class _ListingTileState extends State<ListingTile>
   }
 
   String _formatPriceRange() {
-    final minPrice = widget.listing.minPrice;
-    final maxPrice = widget.listing.maxPrice;
-
-    if (minPrice == maxPrice) {
-      return minPrice.toString();
-    } else {
-      return "$minPrice - $maxPrice";
-    }
-    
+    return "${widget.listing.price} y.e.";
   }
 
   String _formatMoveInDate() {

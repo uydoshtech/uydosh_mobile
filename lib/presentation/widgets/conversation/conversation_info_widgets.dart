@@ -115,9 +115,7 @@ class ConversationLocationInfo extends StatelessWidget {
                 textColor: textColor,
               ),
             ],
-            if (showPrice &&
-                (conversation.listingMinPrice != null ||
-                    conversation.listingMaxPrice != null)) ...[
+            if (showPrice && conversation.listingPrice != null) ...[
               const SizedBox(height: 4),
               ConversationPriceDisplay(
                 conversation: conversation,
@@ -212,22 +210,11 @@ class ConversationPriceDisplay extends StatelessWidget {
   final Color textColor;
 
   static String _formatPriceRange(ConversationSummary conversation) {
-    final minPrice = conversation.listingMinPrice;
-    final maxPrice = conversation.listingMaxPrice;
-
-    if (minPrice != null && maxPrice != null) {
-      if (minPrice == maxPrice) {
-        return minPrice.toString();
-      } else {
-        return "$minPrice - $maxPrice";
-      }
-    } else if (minPrice != null) {
-      return "от $minPrice";
-    } else if (maxPrice != null) {
-      return "до $maxPrice";
-    } else {
-      return "";
+    final price = conversation.listingPrice;
+    if (price != null) {
+      return "$price y.e.";
     }
+    return "";
   }
 
   @override

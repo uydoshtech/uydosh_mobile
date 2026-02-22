@@ -1171,8 +1171,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       logger.d("Request Body:");
       logger.d("  title: \"${_titleController.text.trim()}\"");
       logger.d("  listingTypeId: $listingTypeId");
-      logger.d("  minPrice: $_price");
-      logger.d("  maxPrice: $_price");
+      logger.d("  price: $_price");
       logger.d("  description: \"${_descriptionController.text.trim()}\"");
       logger.d(
         "  subwayStationId: ${selectedStation?.id ?? "null (optional)"}",
@@ -1210,8 +1209,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       final createdListing = await listingService.createListing(
         title: _titleController.text.trim(),
         listingTypeId: listingTypeId,
-        minPrice: _price.round(),
-        maxPrice: _price.round(),
+        price: _price.round(),
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
         locationId: selectedLocation.id,
