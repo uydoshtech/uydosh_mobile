@@ -522,7 +522,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Widget _buildLoadingState() {
     return CommonListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
       itemSpacing: 16.0,
       itemCount: 6,
       itemBuilder: (context, index) => const ListingTileSkeleton(),
@@ -572,7 +572,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           );
         },
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
         showRefreshIndicator:
             false, // Already handled by RefreshIndicator wrapper
         showLoadMoreIndicator: hasMore,
