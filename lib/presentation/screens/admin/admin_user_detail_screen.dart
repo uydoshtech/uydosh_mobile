@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
@@ -345,8 +346,16 @@ L10n.get("admin_user_detail_block_permanent"),
                       )
                       .toList(),
               onChanged: _saving ? null : (value) => setState(() => _selectedRole = value),
+              style: ThemeState().isBlueTheme
+                  ? Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.black87,
+                      )
+                  : null,
+              dropdownColor: ThemeState().isBlueTheme
+                  ? Colors.blue[600]
+                  : null,
               decoration: InputDecoration(
-labelText: L10n.get("admin_user_detail_role_label"),
+                labelText: L10n.get("admin_user_detail_role_label"),
                 border: const OutlineInputBorder(),
               ),
             ),

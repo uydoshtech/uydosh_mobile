@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/support_chat_message.dart";
 import "package:uy_dosh/domain/models/support_chat_thread.dart";
 import "package:uy_dosh/domain/services/support_chat_service.dart";
@@ -168,7 +170,17 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
     String labelKey,
   ) {
     final isSelected = _statusFilter == status;
+    final isBlueTheme = ThemeState().isBlueTheme;
     final selectedColor = Theme.of(context).colorScheme.primary;
+    final backgroundColor = isSelected
+        ? selectedColor
+        : (isBlueTheme ? BlueThemeColors.card : Colors.grey[200]);
+    final borderColor = isSelected
+        ? selectedColor
+        : (isBlueTheme ? BlueThemeColors.cardBorder : Colors.grey[400]!);
+    final textColor = isSelected
+        ? Colors.white
+        : (isBlueTheme ? BlueThemeColors.textPrimary : Colors.grey[700]!);
     return InkWell(
       onTap: () => _onStatusFilterChanged(status),
       borderRadius: BorderRadius.circular(10),
@@ -176,9 +188,9 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: isSelected ? selectedColor : Colors.grey[200],
+          color: backgroundColor,
           border: Border.all(
-            color: isSelected ? selectedColor : Colors.grey[400]!,
+            color: borderColor,
             width: 1,
           ),
         ),
@@ -187,7 +199,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.white : Colors.grey[700],
+            color: textColor,
           ),
         ),
       ),

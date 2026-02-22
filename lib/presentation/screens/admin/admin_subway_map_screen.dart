@@ -191,7 +191,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
       "assets/map_elements/tashkent_metro_map.svg";
 
   static const List<_OverlayConfig> _overlayConfigs = [
-    _OverlayConfig("bazaar_chorsu.svg", 30, 220, 30, 30, sizeScale: 1.2),
+    _OverlayConfig("bazaar_chorsu.svg", 0, 220, 30, 30, sizeScale: 1.1),
     _OverlayConfig("tv_tower.svg", 240, 120, 56, 60, useColorFilter: true),
     _OverlayConfig("monument2.svg", 200, 340, 20, 20, sizeScale: 2.0),
     _OverlayConfig("airport.svg", 200, 625, 50, 27, useColorFilter: true),
