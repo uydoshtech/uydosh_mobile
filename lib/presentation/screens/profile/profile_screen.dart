@@ -222,10 +222,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         conversationsStartedCount: 0,
       );
       if (mounted && newlyUnlocked.isNotEmpty) {
-        AchievementUnlockBottomSheet.show(
+        AchievementUnlockBottomSheet.showMultiple(
           context,
-          achievement: newlyUnlocked.first,
-          onDismiss: () =>
+          achievements: newlyUnlocked,
+          onAllDismissed: () =>
               AchievementUnlockState().clearPendingAchievement(),
         );
       }

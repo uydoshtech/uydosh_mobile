@@ -15,6 +15,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/gamification_bloc.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -66,7 +67,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
     if (mounted && newlyUnlocked.isNotEmpty) {
       bloc.add(const GamificationEvent.loadAchievements());
-      AchievementUnlockState().setPendingAchievement(newlyUnlocked.first);
+      AchievementUnlockBottomSheet.showMultiple(
+        ctx,
+        achievements: newlyUnlocked,
+        onAllDismissed: () =>
+            AchievementUnlockState().clearPendingAchievement(),
+      );
     }
 
     await service.markAchievementsAsSeen();

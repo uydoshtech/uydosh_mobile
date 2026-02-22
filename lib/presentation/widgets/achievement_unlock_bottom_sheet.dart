@@ -45,6 +45,36 @@ class AchievementUnlockBottomSheet extends StatefulWidget {
     ).then((_) => onDismiss?.call());
   }
 
+  /// Shows multiple achievements sequentially. Each sheet is displayed after
+  /// the user dismisses the previous one. [onAllDismissed] is called when
+  /// all achievements have been shown and dismissed.
+  static Future<void> showMultiple(
+    BuildContext context, {
+    required List<Achievement> achievements,
+    VoidCallback? onAllDismissed,
+  }) async {
+    if (achievements.isEmpty) {
+      onAllDismissed?.call();
+      return;
+    }
+    await show(
+      context,
+      achievement: achievements.first,
+      onDismiss: null,
+    );
+    if (!context.mounted) return;
+    final rest = achievements.sublist(1);
+    if (rest.isEmpty) {
+      onAllDismissed?.call();
+      return;
+    }
+    await showMultiple(
+      context,
+      achievements: rest,
+      onAllDismissed: onAllDismissed,
+    );
+  }
+
   @override
   State<AchievementUnlockBottomSheet> createState() =>
       _AchievementUnlockBottomSheetState();
@@ -91,6 +121,21 @@ class _AchievementUnlockBottomSheetState
       launchWindow: const Duration(milliseconds: 800),
     );
     _confettiController.play();
+    _playFireworksHaptics();
+  }
+
+  void _playFireworksHaptics() {
+    const delays = [
+      Duration.zero,
+      Duration(milliseconds: 200),
+      Duration(milliseconds: 400),
+      Duration(milliseconds: 600),
+    ];
+    for (var i = 0; i < delays.length; i++) {
+      Future.delayed(delays[i], () {
+        if (mounted) HapticFeedbackUtils.lightImpact();
+      });
+    }
   }
 
   @override
