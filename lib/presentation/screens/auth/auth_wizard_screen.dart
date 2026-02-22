@@ -26,6 +26,7 @@ import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -302,8 +303,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
       // Show violation message if user is blocked
       final isBlocked = response["user"]?["is_blocked"] == true;
+      String? violationDialogResult;
       if (mounted && isBlocked) {
-        await _showViolationDialog();
+        violationDialogResult = await _showViolationDialog();
       }
 
       // Check if user already has a profile
@@ -317,7 +319,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
         // Skip profile creation and go directly to main app
         if (mounted) {
+          final nav = Navigator.of(context);
           _navigateToMainNavigation();
+          if (violationDialogResult == "contact_support") {
+            nav.push(
+              MaterialPageRoute<void>(
+                builder: (context) => const SupportChatScreen(),
+              ),
+            );
+          }
         }
       } else {
         logger.d("🆕 New user - proceeding to profile creation");
@@ -366,9 +376,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
   }
 
-  Future<void> _showViolationDialog() async {
-    if (!mounted) return;
-    await showDialog<void>(
+  /// Returns "contact_support" if user chose to contact support, null otherwise.
+  Future<String?> _showViolationDialog() async {
+    if (!mounted) return null;
+    return showDialog<String?>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
@@ -379,6 +390,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           L10n.get("user_blocked_violation_message"),
         ),
         actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop("contact_support"),
+            child: Text(L10n.get("menu_contact_support")),
+          ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -446,8 +461,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
       // Show violation message if user is blocked
       final isBlocked = response["user"]?["is_blocked"] == true;
+      String? violationDialogResult;
       if (mounted && isBlocked) {
-        await _showViolationDialog();
+        violationDialogResult = await _showViolationDialog();
       }
 
       final hasProfile = response["profileExists"] ?? false;
@@ -460,7 +476,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
         // Go directly to main app
         if (mounted) {
+          final nav = Navigator.of(context);
           _navigateToMainNavigation();
+          if (violationDialogResult == "contact_support") {
+            nav.push(
+              MaterialPageRoute<void>(
+                builder: (context) => const SupportChatScreen(),
+              ),
+            );
+          }
         }
       } else {
         logger.d("🆕 New user - proceeding to profile creation");

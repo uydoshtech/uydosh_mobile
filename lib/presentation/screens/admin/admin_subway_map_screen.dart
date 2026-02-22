@@ -197,7 +197,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     _OverlayConfig("airport.svg", 200, 625, 50, 27, useColorFilter: true),
     _OverlayConfig("city_park.svg", 30, 335, 25, 40, useColorFilter: true),
     _OverlayConfig("bus_hub.svg", 25, 580, 22, 22),
-    _OverlayConfig("circus.svg", 140, 205, 45, 15, sizeScale: 2.0),
+    _OverlayConfig("circus.svg", 160, 205, 45, 15, sizeScale: 2.0),
   ];
 
   static Future<_MapData>? _mapDataFuture;

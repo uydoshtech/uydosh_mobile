@@ -475,19 +475,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                     if (_userRoleLoaded) ...[
                       const SizedBox(height: 4),
-                      _RoleBadge(
-                        label: _getRoleLabel(_userRole, context),
-                      ),
-                    ],
-                    if (_userBlocked) ...[
-                      const SizedBox(height: 4),
-                      Tooltip(
-                        message: L10n.get("admin_user_detail_blocked"),
-                        child: Icon(
-                          Icons.block,
-                          color: Theme.of(context).colorScheme.error,
-                          size: 20,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _RoleBadge(
+                            label: _getRoleLabel(_userRole, context),
+                          ),
+                          if (_userBlocked) ...[
+                            const SizedBox(width: 8),
+                            Tooltip(
+                              message: L10n.get("admin_user_detail_blocked"),
+                              child: Icon(
+                                Icons.block,
+                                color: Theme.of(context).colorScheme.error,
+                                size: 20,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ],
