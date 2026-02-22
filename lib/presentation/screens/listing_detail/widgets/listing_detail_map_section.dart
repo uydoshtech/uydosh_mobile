@@ -132,7 +132,7 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 20.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -186,7 +186,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
               children: [
                 ListingTypeBadge(
                   listingTypeCode: widget.listingDetail.listingType.code,
-                  fontSize: 14,
+                  fontSize: 12,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 ),
                 if (widget.listingDetail.gender != null)
