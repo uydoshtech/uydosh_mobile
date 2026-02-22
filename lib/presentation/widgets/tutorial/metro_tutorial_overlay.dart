@@ -31,12 +31,15 @@ class MetroTutorialOverlay {
     // Ensure line 1 is selected so station picker is visible
     onCycleToLine(1);
 
+    final finishRequested = ValueNotifier<bool>(false);
     final overlay = Overlay.of(context);
     _overlayEntry = OverlayEntry(
       builder: (overlayContext) => _MetroTutorialOverlayContent(
         metroLineKey: metroLineKey,
         metroStationKey: metroStationKey,
+        finishRequested: finishRequested,
         onDismiss: () {
+          finishRequested.dispose();
           _cycleTimer?.cancel();
           _cycleTimer = null;
           _overlayEntry?.remove();
@@ -70,9 +73,7 @@ class MetroTutorialOverlay {
               if (stationsShown >= count) {
                 stationTimer.cancel();
                 _cycleTimer = null;
-                _overlayEntry?.remove();
-                _overlayEntry = null;
-                onComplete?.call();
+                finishRequested.value = true;
               }
             }
           });
@@ -98,11 +99,13 @@ class _MetroTutorialOverlayContent extends StatefulWidget {
   const _MetroTutorialOverlayContent({
     required this.metroLineKey,
     required this.metroStationKey,
+    required this.finishRequested,
     required this.onDismiss,
   });
 
   final GlobalKey<TutorialTargetWrapperState> metroLineKey;
   final GlobalKey<TutorialTargetWrapperState> metroStationKey;
+  final ValueNotifier<bool> finishRequested;
   final VoidCallback onDismiss;
 
   @override
@@ -114,23 +117,38 @@ class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayConte
     with SingleTickerProviderStateMixin {
   late final AnimationController _animationController;
   late final Animation<double> _animation;
+  static const _expandOutDuration = Duration(milliseconds: 600);
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: _expandOutDuration,
     );
     _animation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeOutCubic,
     );
     _animationController.forward();
+
+    widget.finishRequested.addListener(_onFinishRequested);
+  }
+
+  void _onFinishRequested() {
+    if (widget.finishRequested.value && mounted) {
+      widget.finishRequested.removeListener(_onFinishRequested);
+      _animationController.reverse().then((_) {
+        if (mounted) {
+          widget.onDismiss();
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
+    widget.finishRequested.removeListener(_onFinishRequested);
     _animationController.dispose();
     super.dispose();
   }
@@ -139,7 +157,7 @@ class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayConte
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return GestureDetector(
-      onTap: widget.onDismiss,
+      onTap: () => widget.finishRequested.value = true,
       behavior: HitTestBehavior.opaque,
       child: AnimatedBuilder(
         animation: _animation,
@@ -161,14 +179,17 @@ class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayConte
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                   child: Align(
                     alignment: Alignment.topCenter,
-                    child: Text(
-                      L10n.get("metro_tutorial_search_hint"),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontSize: 20,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                    child: Opacity(
+                      opacity: _animation.value,
+                      child: Text(
+                        L10n.get("metro_tutorial_search_hint"),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
