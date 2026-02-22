@@ -25,6 +25,7 @@ import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
@@ -1531,6 +1532,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const ViewHistoryScreen(),
+                ),
+              );
+            },
+          ),
+          _buildGroupedMenuItem(
+            context: context,
+            icon: Icons.support_agent,
+            title: L10n.get("menu_contact_support"),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SupportChatScreen(),
                 ),
               );
             },

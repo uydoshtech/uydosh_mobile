@@ -6,6 +6,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_listing_creation_analyt
 import "package:uy_dosh/presentation/screens/admin/admin_search_analytics_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_card_tile.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -40,6 +41,18 @@ class AdminPanelScreen extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const AdminUsersScreen()),
+              );
+            },
+          ),
+          _buildAdminSection(
+            context,
+            icon: Icons.support_agent,
+            titleKey: "admin_panel_section_support_chat",
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AdminSupportChatScreen(),
+                ),
               );
             },
           ),
