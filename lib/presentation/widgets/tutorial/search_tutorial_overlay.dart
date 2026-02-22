@@ -25,7 +25,7 @@ class TutorialTargetWrapperState extends State<TutorialTargetWrapper> {
 }
 
 /// Displays an overlay tutorial that highlights the search button and explains
-/// its purpose. Tapping anywhere on the overlay dismisses it.
+/// its purpose. Finishes automatically (no user interaction required).
 class SearchTutorialOverlay {
   SearchTutorialOverlay._();
 
@@ -36,10 +36,13 @@ class SearchTutorialOverlay {
   ///   that wraps the search FAB.
   /// [profileIconKey] - Optional. When provided, after 5 seconds the spotlight
   ///   automatically moves to the profile icon in the top right corner.
-  /// [onComplete] - Called when the tutorial is dismissed (tap anywhere).
+  /// [fullScreenKey] - Key for the main content area; used for the expand-out
+  ///   animation before finishing.
+  /// [onComplete] - Called when the tutorial finishes (auto or tap).
   static void show(
     BuildContext context, {
     required GlobalKey<TutorialTargetWrapperState> searchButtonKey,
+    required GlobalKey<TutorialTargetWrapperState> fullScreenKey,
     GlobalKey<TutorialTargetWrapperState>? profileIconKey,
     VoidCallback? onComplete,
   }) {
@@ -97,10 +100,30 @@ class SearchTutorialOverlay {
       );
     }
 
+    // Final target: expand spotlight to full screen for smooth exit animation
+    targets.add(
+      TargetFocus(
+        identify: "expand_out",
+        keyTarget: fullScreenKey,
+        alignSkip: Alignment.topRight,
+        enableOverlayTab: true,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) => const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+
     Timer? profileTransitionTimer;
+    Timer? autoFinishTimer;
+    Timer? finishAfterExpandTimer;
 
     void finishTutorial() {
       profileTransitionTimer?.cancel();
+      autoFinishTimer?.cancel();
+      finishAfterExpandTimer?.cancel();
       onComplete?.call();
     }
 
@@ -118,10 +141,36 @@ class SearchTutorialOverlay {
 
     tutorial.show(context: context);
 
+    const expandAnimationDuration = Duration(milliseconds: 600);
+
+    // Auto-advance to profile icon after 5 seconds (if present)
     if (profileIconKey != null) {
       profileTransitionTimer = Timer(const Duration(seconds: 5), () {
         if (tutorial.isShowing) {
           tutorial.next();
+        }
+      });
+      // Expand spotlight to full screen at 7.5 sec, then finish after animation
+      autoFinishTimer = Timer(const Duration(milliseconds: 7500), () {
+        if (tutorial.isShowing) {
+          tutorial.next(); // Transition to expand-out target
+          finishAfterExpandTimer = Timer(expandAnimationDuration, () {
+            if (tutorial.isShowing) {
+              tutorial.finish();
+            }
+          });
+        }
+      });
+    } else {
+      // Expand spotlight at 4.5 sec, then finish after animation
+      autoFinishTimer = Timer(const Duration(milliseconds: 4500), () {
+        if (tutorial.isShowing) {
+          tutorial.next(); // Transition to expand-out target
+          finishAfterExpandTimer = Timer(expandAnimationDuration, () {
+            if (tutorial.isShowing) {
+              tutorial.finish();
+            }
+          });
         }
       });
     }

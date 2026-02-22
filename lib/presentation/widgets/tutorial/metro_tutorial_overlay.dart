@@ -60,11 +60,20 @@ class MetroTutorialOverlay {
         timer.cancel();
         _cycleTimer = null;
         if (onCycleToStation != null && getStationCount != null) {
-          _cycleTimer = Timer.periodic(stationCycleDuration, (_) {
+          var stationsShown = 0;
+          _cycleTimer = Timer.periodic(stationCycleDuration, (stationTimer) {
             final count = getStationCount();
             if (count > 0) {
               onCycleToStation(currentStationIndex);
               currentStationIndex = (currentStationIndex + 1) % count;
+              stationsShown++;
+              if (stationsShown >= count) {
+                stationTimer.cancel();
+                _cycleTimer = null;
+                _overlayEntry?.remove();
+                _overlayEntry = null;
+                onComplete?.call();
+              }
             }
           });
         }
