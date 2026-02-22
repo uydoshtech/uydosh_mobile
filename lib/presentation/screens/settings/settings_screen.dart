@@ -339,6 +339,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           value: OnboardingState().showOnboarding,
           onChanged: (value) async {
             await OnboardingState().setShowOnboarding(value);
+            // When turned ON, onboarding will show on next app start (no immediate navigation)
           },
         );
       },

@@ -155,7 +155,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     } else {
       getIt<AppAnalyticsService>().logOnboardingCompleted(pageCount: 4);
     }
-    // Mark onboarding screens as seen (don't show again) but keep toggle ON for tutorials
+    // Mark onboarding screens as seen (toggle is turned OFF after search tutorial)
     await OnboardingState().markOnboardingScreensSeen();
 
     Navigator.of(context).pushReplacement(

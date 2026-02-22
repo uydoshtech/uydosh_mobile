@@ -298,6 +298,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       onComplete: () {
         _animateToMetroLine(0);
         TutorialState().markMetroTutorialCompleted();
+        // Turn toggle OFF after both tutorials shown so it won't show on next app start
+        OnboardingState().setShowOnboarding(false);
       },
     );
   }

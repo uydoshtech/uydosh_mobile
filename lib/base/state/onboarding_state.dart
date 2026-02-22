@@ -40,6 +40,21 @@ class OnboardingState extends ChangeNotifier {
     }
   }
 
+  /// Reset hasSeenOnboardingScreens so onboarding slides show again (e.g. when
+  /// user turns the "Show greeting" toggle ON in settings).
+  Future<void> resetOnboardingScreensSeen() async {
+    if (!_hasSeenOnboardingScreens) return;
+    _hasSeenOnboardingScreens = false;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyHasSeenOnboardingScreens, false);
+      logger.d("Reset hasSeenOnboardingScreens - onboarding slides will show again");
+    } catch (e) {
+      logger.d("Error resetting hasSeenOnboardingScreens: $e");
+    }
+  }
+
   /// Call when user completes or skips onboarding screens. Keeps toggle ON so
   /// in-app tutorials still show; just prevents showing onboarding screens again.
   Future<void> markOnboardingScreensSeen() async {
@@ -63,6 +78,8 @@ class OnboardingState extends ChangeNotifier {
 
     if (show) {
       await TutorialState().resetTutorial();
+      // Reset so onboarding slides (welcome/greeting) show again when user turns toggle ON
+      await resetOnboardingScreensSeen();
     }
 
     try {
