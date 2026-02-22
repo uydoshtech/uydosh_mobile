@@ -10,13 +10,17 @@ class TutorialState extends ChangeNotifier {
   static final TutorialState _instance = TutorialState._internal();
 
   bool _hasCompletedSearchTutorial = false;
+  bool _hasCompletedMetroTutorial = false;
   bool _isInitialized = false;
 
   bool get hasCompletedSearchTutorial => _hasCompletedSearchTutorial;
+  bool get hasCompletedMetroTutorial => _hasCompletedMetroTutorial;
   bool get isInitialized => _isInitialized;
 
   static const String _keySearchTutorialCompleted =
       "tutorial_search_completed";
+  static const String _keyMetroTutorialCompleted =
+      "tutorial_metro_completed";
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -25,7 +29,11 @@ class TutorialState extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       _hasCompletedSearchTutorial =
           prefs.getBool(_keySearchTutorialCompleted) ?? false;
-      logger.d("Loaded tutorial state: search=$_hasCompletedSearchTutorial");
+      _hasCompletedMetroTutorial =
+          prefs.getBool(_keyMetroTutorialCompleted) ?? false;
+      logger.d(
+        "Loaded tutorial state: search=$_hasCompletedSearchTutorial, metro=$_hasCompletedMetroTutorial",
+      );
       _isInitialized = true;
       notifyListeners();
     } catch (e) {
@@ -51,14 +59,31 @@ class TutorialState extends ChangeNotifier {
     }
   }
 
+  Future<void> markMetroTutorialCompleted() async {
+    if (_hasCompletedMetroTutorial) return;
+
+    _hasCompletedMetroTutorial = true;
+    logger.d("Tutorial: metro step completed");
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyMetroTutorialCompleted, true);
+    } catch (e) {
+      logger.d("Error saving metro tutorial state: $e");
+    }
+  }
+
   /// Reset tutorial (e.g. for testing or from settings).
   Future<void> resetTutorial() async {
     _hasCompletedSearchTutorial = false;
+    _hasCompletedMetroTutorial = false;
     notifyListeners();
 
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_keySearchTutorialCompleted, false);
+      await prefs.setBool(_keyMetroTutorialCompleted, false);
       logger.d("Tutorial state reset");
     } catch (e) {
       logger.d("Error resetting tutorial state: $e");

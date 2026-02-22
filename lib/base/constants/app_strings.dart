@@ -187,6 +187,8 @@ class AppStrings {
       "all_stations_count": "All {count} stations",
       "all_stations_explanation":
           "Search along the entire line <b>{line}</b> through <b>{count}</b> stations",
+      "metro_tutorial_search_hint":
+          "Search along metro line or by individual stations.",
       "select_region": "Choose region:",
       "select_region_profile_creation":
           "Where are you from? We'll help you find people from your hometown.",
@@ -732,6 +734,8 @@ class AppStrings {
       "tutorial_search_description":
           "Tap here to filter listings by location, price, room type, and more.",
       "tutorial_got_it": "Got it",
+      "tutorial_metro_description":
+          "Choose a metro line, then pick a station to filter by location.",
 
       // ===== TIME & DATES =====
       "january": "January",
@@ -968,6 +972,8 @@ class AppStrings {
       "all_stations_count": "Все {count} станций",
       "all_stations_explanation":
           "Поиск вдоль ВСЕЙ линии <b>{line}</b> по <b>{count}</b> станциям",
+      "metro_tutorial_search_hint":
+          "Поиск по линии метро или по отдельным станциям.",
       "select_region": "Выберите область",
       "select_region_profile_creation":
           "Откуда вы? Мы поможем вам найти людей из вашего родного города.",
@@ -1518,6 +1524,8 @@ class AppStrings {
       "tutorial_search_description":
           "Нажмите здесь, чтобы фильтровать объявления по району, цене, типу комнаты и другим параметрам.",
       "tutorial_got_it": "Понятно",
+      "tutorial_metro_description":
+          "Выберите линию метро, затем станцию для фильтрации по местоположению.",
 
       // ===== TIME & DATES =====
       "january": "Январь",
@@ -1757,6 +1765,8 @@ class AppStrings {
       "all_stations_count": "Barcha {count} bekatlar",
       "all_stations_explanation":
           "Liniya <b>{line}</b> bo'ylab <b>{count}</b> bekat orqali qidiruv",
+      "metro_tutorial_search_hint":
+          "Metro liniyasi bo'ylab yoki alohida bekatlar bo'yicha qidiruv.",
       "select_region": "Tumanni tanlang",
       "select_region_profile_creation":
           "Qayerdansiz? Vataningizdagi odamlarni topishga yordam beramiz.",
@@ -2311,6 +2321,8 @@ class AppStrings {
       "tutorial_search_description":
           "E'lonlarni tuman, narx, xona turi va boshqa parametrlar bo'yicha filtrlash uchun bosing.",
       "tutorial_got_it": "Tushundim",
+      "tutorial_metro_description":
+          "Metro liniyasini tanlang, keyin joylashuv bo'yicha filtrlash uchun stansiyani tanlang.",
 
       // ===== TIME & DATES =====
       "january": "Yanvar",

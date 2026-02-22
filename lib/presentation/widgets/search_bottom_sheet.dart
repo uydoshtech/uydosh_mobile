@@ -28,7 +28,10 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
+import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/metro_tutorial_overlay.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _LocationPickerData {
@@ -174,6 +177,10 @@ class _SearchBottomSheetContent extends StatefulWidget {
 
 class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
+  final GlobalKey<TutorialTargetWrapperState> _metroLineTutorialKey =
+      GlobalKey<TutorialTargetWrapperState>();
+  final GlobalKey<TutorialTargetWrapperState> _metroStationTutorialKey =
+      GlobalKey<TutorialTargetWrapperState>();
   List<SubwayStation> _currentStations = [];
   List<Location> _currentLocations = [];
   bool _isLoadingStations = false;
@@ -262,10 +269,54 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       _searchFiltersState.setStationIndex(0);
       _searchFiltersState.setStationId(0);
     }
+
+    // Show metro tutorial on first open (with delay for sheet to render)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!mounted) return;
+        // TODO: Re-enable for production: if (!TutorialState().hasCompletedMetroTutorial)
+        _showMetroTutorial();
+      });
+    });
+  }
+
+  void _showMetroTutorial() {
+    if (!mounted) return;
+    MetroTutorialOverlay.show(
+      context,
+      metroLineKey: _metroLineTutorialKey,
+      metroStationKey: _metroStationTutorialKey,
+      onCycleToLine: _animateToMetroLine,
+      onComplete: () {
+        _animateToMetroLine(0);
+        TutorialState().markMetroTutorialCompleted();
+      },
+    );
+  }
+
+  void _animateToMetroLine(int lineIndex) {
+    if (!mounted) return;
+    setState(() {
+      _searchFiltersState.setSubwayLine(lineIndex);
+      if (lineIndex > 0) {
+        _resetLocationPicker();
+        _loadStationsForLine(lineIndex);
+      } else {
+        _currentStations = [];
+        _searchFiltersState.setStationIndex(0);
+        _searchFiltersState.setStationId(0);
+      }
+    });
+    _metroLineScrollController?.animateToItem(
+      lineIndex,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   void dispose() {
+    MetroTutorialOverlay.stopCycling();
     _stationPickerController?.dispose();
     _metroLineScrollController?.dispose();
     _locationScrollController?.dispose();
@@ -801,7 +852,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                             children: [
                               // Metro Line Selection (50% width)
                               Expanded(
-                                child: Container(
+                                child: TutorialTargetWrapper(
+                                  key: _metroLineTutorialKey,
+                                  child: Container(
                                   key: ValueKey(
                                     "metro_line_picker_${_searchFiltersState.selectedLocationIndex}",
                                   ),
@@ -945,10 +998,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                   ),
                                 ),
                               ),
+                            ),
                               const SizedBox(width: 12),
                               // Metro Station Selection (50% width) - will show when line is selected
                               Expanded(
-                                child:
+                                child: TutorialTargetWrapper(
+                                  key: _metroStationTutorialKey,
+                                  child:
                                     _searchFiltersState.selectedSubwayLine >
                                                 0 &&
                                             _currentStations.isNotEmpty
@@ -1185,6 +1241,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                             ),
                                           ),
                                         ),
+                                ),
                               ),
                             ],
                           ),
