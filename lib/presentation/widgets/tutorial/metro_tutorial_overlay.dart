@@ -155,7 +155,6 @@ class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayConte
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () => widget.finishRequested.value = true,
       behavior: HitTestBehavior.opaque,
@@ -174,27 +173,55 @@ class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayConte
                   ),
                 ),
               ),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: Opacity(
-                      opacity: _animation.value,
-                      child: Text(
-                        L10n.get("metro_tutorial_search_hint"),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontSize: 20,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
+              _TutorialHintText(
+                animationValue: _animation.value,
+                hintText: L10n.get("metro_tutorial_search_hint"),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Rect? _getRectForKey(GlobalKey<TutorialTargetWrapperState> key) {
+  final renderObject = key.currentContext?.findRenderObject();
+  if (renderObject == null || renderObject is! RenderBox) return null;
+  return renderObject.localToGlobal(Offset.zero) & renderObject.size;
+}
+
+class _TutorialHintText extends StatelessWidget {
+  const _TutorialHintText({
+    required this.animationValue,
+    required this.hintText,
+  });
+
+  final double animationValue;
+  final String hintText;
+
+  /// Alignment y: -0.5 = ~25% from top - above bottom sheet, not at very top
+  static const _verticalPosition = -0.2;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Align(
+          alignment: Alignment(0, _verticalPosition),
+          child: Opacity(
+            opacity: animationValue,
+            child: Text(
+              hintText,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       ),
@@ -262,12 +289,6 @@ class _TwoRectanglesMaskPainter extends CustomPainter {
     );
 
     canvas.drawPath(path, Paint()..color = dimColor);
-  }
-
-  Rect? _getRectForKey(GlobalKey<TutorialTargetWrapperState> key) {
-    final renderObject = key.currentContext?.findRenderObject();
-    if (renderObject == null || renderObject is! RenderBox) return null;
-    return renderObject.localToGlobal(Offset.zero) & renderObject.size;
   }
 
   @override

@@ -4,6 +4,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -271,11 +272,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       _searchFiltersState.setStationId(0);
     }
 
-    // Show metro tutorial only when onboarding toggle is ON (and not yet completed)
+    // Show metro tutorial only when onboarding toggle is ON, user is logged in,
+    // and not yet completed
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (!mounted) return;
-        if (OnboardingState().showOnboarding &&
+        if (AuthenticationState().isAuthenticated &&
+            OnboardingState().showOnboarding &&
             !TutorialState().hasCompletedMetroTutorial) {
           _showMetroTutorial();
         }

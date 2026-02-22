@@ -180,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (!mounted) return;
     if (!(ModalRoute.of(context)?.isCurrent ?? false)) return; // Only when home is visible
     if (widget.isSearchMode) return; // Only on home browse, not search results
+    if (!AuthenticationState().isAuthenticated) return; // Only when user is logged in
     if (OnboardingState().showOnboarding &&
         !TutorialState().hasCompletedSearchTutorial) {
       _showSearchTutorial();

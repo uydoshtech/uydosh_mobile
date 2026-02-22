@@ -143,15 +143,17 @@ class SearchTutorialOverlay {
 
     const expandAnimationDuration = Duration(milliseconds: 600);
 
-    // Auto-advance to profile icon after 5 seconds (if present)
+    const targetDuration = Duration(seconds: 4);
+
+    // Auto-advance to profile icon after 4 seconds (if present)
     if (profileIconKey != null) {
-      profileTransitionTimer = Timer(const Duration(seconds: 5), () {
+      profileTransitionTimer = Timer(targetDuration, () {
         if (tutorial.isShowing) {
           tutorial.next();
         }
       });
-      // Expand spotlight to full screen at 7.5 sec, then finish after animation
-      autoFinishTimer = Timer(const Duration(milliseconds: 7500), () {
+      // Expand spotlight to full screen at 8 sec (4 + 4), then finish after animation
+      autoFinishTimer = Timer(const Duration(seconds: 8), () {
         if (tutorial.isShowing) {
           tutorial.next(); // Transition to expand-out target
           finishAfterExpandTimer = Timer(expandAnimationDuration, () {
@@ -162,8 +164,8 @@ class SearchTutorialOverlay {
         }
       });
     } else {
-      // Expand spotlight at 4.5 sec, then finish after animation
-      autoFinishTimer = Timer(const Duration(milliseconds: 4500), () {
+      // Expand spotlight at 4 sec, then finish after animation
+      autoFinishTimer = Timer(targetDuration, () {
         if (tutorial.isShowing) {
           tutorial.next(); // Transition to expand-out target
           finishAfterExpandTimer = Timer(expandAnimationDuration, () {

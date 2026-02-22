@@ -230,6 +230,12 @@ class _AchievementUnlockBottomSheetState
               ),
             ),
           ),
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              behavior: HitTestBehavior.opaque,
+            ),
+          ),
           Positioned(
             left: 0,
             right: 0,
@@ -318,6 +324,11 @@ class _AchievementUnlockBottomSheetState
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () => Navigator.of(context).pop(),
+                  style: isBlueTheme
+                      ? FilledButton.styleFrom(
+                          side: const BorderSide(color: Colors.white, width: 2),
+                        )
+                      : null,
                   child: Text(L10n.get("close")),
                 ),
               ),
