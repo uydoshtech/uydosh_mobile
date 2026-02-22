@@ -26,6 +26,7 @@ import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
@@ -152,6 +153,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // Listen to home refresh state for immediate refresh commands
     HomeRefreshState().addListener(_onHomeRefreshStateChanged);
 
+    // Re-check tutorial when onboarding toggle changes (e.g. user turns it ON in settings)
+    OnboardingState().addListener(_onOnboardingStateChanged);
+
     getIt<AppAnalyticsService>().logScreenView(screenName: "home");
 
     // Show search button tutorial on first visit to browse screen (with delay)
@@ -160,11 +164,19 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     });
   }
 
+  void _onOnboardingStateChanged() {
+    if (mounted && OnboardingState().showOnboarding) {
+      Future.delayed(const Duration(milliseconds: 300), _maybeShowSearchTutorial);
+    }
+  }
+
   void _maybeShowSearchTutorial() {
     if (!mounted) return;
     if (widget.isSearchMode) return;
-    // TODO: Re-enable check for production: if (!TutorialState().hasCompletedSearchTutorial)
-    _showSearchTutorial();
+    if (OnboardingState().showOnboarding &&
+        !TutorialState().hasCompletedSearchTutorial) {
+      _showSearchTutorial();
+    }
   }
 
   void _showSearchTutorial() {
@@ -234,6 +246,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   @override
   void dispose() {
     routeObserver.unsubscribe(this);
+    OnboardingState().removeListener(_onOnboardingStateChanged);
     HomeRefreshState().removeListener(_onHomeRefreshStateChanged);
     ScrollUtils.disposeScrollController(_scrollController);
     super.dispose();
@@ -245,6 +258,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // Called when returning to this screen from another screen
     debugPrint("🏠 HomeScreen: Returning from another screen");
     _checkAndRefreshIfNeeded();
+    // Re-check tutorial when returning (e.g. user may have turned onboarding ON in settings)
+    Future.delayed(const Duration(milliseconds: 300), _maybeShowSearchTutorial);
   }
 
   @override

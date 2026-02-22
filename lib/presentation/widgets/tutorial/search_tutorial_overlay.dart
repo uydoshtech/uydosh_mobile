@@ -53,7 +53,7 @@ class SearchTutorialOverlay {
                 L10n.get("tutorial_search_description"),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.w400,
                   color: Colors.white,
                 ),

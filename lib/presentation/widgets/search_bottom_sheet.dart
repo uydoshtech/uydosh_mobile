@@ -28,6 +28,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
+import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/metro_tutorial_overlay.dart";
@@ -270,12 +271,14 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       _searchFiltersState.setStationId(0);
     }
 
-    // Show metro tutorial on first open (with delay for sheet to render)
+    // Show metro tutorial only when onboarding toggle is ON (and not yet completed)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!mounted) return;
-        // TODO: Re-enable for production: if (!TutorialState().hasCompletedMetroTutorial)
-        _showMetroTutorial();
+        if (OnboardingState().showOnboarding &&
+            !TutorialState().hasCompletedMetroTutorial) {
+          _showMetroTutorial();
+        }
       });
     });
   }

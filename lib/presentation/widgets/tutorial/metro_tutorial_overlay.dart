@@ -63,7 +63,7 @@ class MetroTutorialOverlay {
           _cycleTimer = Timer.periodic(stationCycleDuration, (_) {
             final count = getStationCount();
             if (count > 0) {
-              onCycleToStation!(currentStationIndex);
+              onCycleToStation(currentStationIndex);
               currentStationIndex = (currentStationIndex + 1) % count;
             }
           });
@@ -101,42 +101,71 @@ class _MetroTutorialOverlayContent extends StatefulWidget {
       _MetroTutorialOverlayContentState();
 }
 
-class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayContent> {
+class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayContent>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return GestureDetector(
       onTap: widget.onDismiss,
       behavior: HitTestBehavior.opaque,
-      child: SizedBox.expand(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _TwoRectanglesMaskPainter(
-                  metroLineKey: widget.metroLineKey,
-                  metroStationKey: widget.metroStationKey,
-                  dimColor: Colors.black.withValues(alpha: 0.75),
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Text(
-                    L10n.get("metro_tutorial_search_hint"),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, _) => SizedBox.expand(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _TwoRectanglesMaskPainter(
+                    metroLineKey: widget.metroLineKey,
+                    metroStationKey: widget.metroStationKey,
+                    dimColor: Colors.black.withValues(alpha: 0.75),
+                    animationValue: _animation.value,
                   ),
                 ),
               ),
-            ),
-          ],
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Text(
+                      L10n.get("metro_tutorial_search_hint"),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontSize: 20,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -145,16 +174,19 @@ class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayConte
 
 /// Paints a dimmed overlay with a single full-width rectangular cutout
 /// spanning both metro line and metro station controls.
+/// Animates from full-screen cutout to final size when [animationValue] goes 0→1.
 class _TwoRectanglesMaskPainter extends CustomPainter {
   _TwoRectanglesMaskPainter({
     required this.metroLineKey,
     required this.metroStationKey,
     required this.dimColor,
+    this.animationValue = 1.0,
   });
 
   final GlobalKey<TutorialTargetWrapperState> metroLineKey;
   final GlobalKey<TutorialTargetWrapperState> metroStationKey;
   final Color dimColor;
+  final double animationValue;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -176,21 +208,26 @@ class _TwoRectanglesMaskPainter extends CustomPainter {
 
     const topPadding = 4.0;
     const bottomPadding = 30.0;
-    combinedRect = Rect.fromLTRB(
+    final endRect = Rect.fromLTRB(
       combinedRect.left,
       combinedRect.top - topPadding,
       combinedRect.right,
       combinedRect.bottom + bottomPadding,
     );
 
-    const cornerRadius = 12.0;
+    final fullScreenRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final animatedRect = Rect.lerp(fullScreenRect, endRect, animationValue)!;
+    final cornerRadius = 12.0 * animationValue;
     final cutoutPath = Path()
       ..addRRect(
-        RRect.fromRectAndRadius(combinedRect, const Radius.circular(cornerRadius)),
+        RRect.fromRectAndRadius(
+          animatedRect,
+          Radius.circular(cornerRadius.clamp(0.0, 12.0)),
+        ),
       );
     final path = Path.combine(
       ui.PathOperation.difference,
-      Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height)),
+      Path()..addRect(fullScreenRect),
       cutoutPath,
     );
 
@@ -204,5 +241,6 @@ class _TwoRectanglesMaskPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _TwoRectanglesMaskPainter oldDelegate) =>
+      oldDelegate.animationValue != animationValue;
 }

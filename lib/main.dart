@@ -172,7 +172,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Widget _getInitialScreen() {
     final onboardingState = OnboardingState();
-    if (onboardingState.showOnboarding) {
+    if (onboardingState.showOnboarding && !onboardingState.hasSeenOnboardingScreens) {
       return const OnboardingScreen();
     } else {
       return AppRouter.initialRoute;
@@ -396,7 +396,7 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 2500));
     if (mounted) {
       final onboardingState = OnboardingState();
-      if (onboardingState.showOnboarding) {
+      if (onboardingState.showOnboarding && !onboardingState.hasSeenOnboardingScreens) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const OnboardingScreen()),
         );

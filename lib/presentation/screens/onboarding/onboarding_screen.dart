@@ -155,8 +155,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     } else {
       getIt<AppAnalyticsService>().logOnboardingCompleted(pageCount: 4);
     }
-    // Automatically turn off onboarding after it's shown once
-    await OnboardingState().turnOffOnboarding();
+    // Mark onboarding screens as seen (don't show again) but keep toggle ON for tutorials
+    await OnboardingState().markOnboardingScreensSeen();
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
