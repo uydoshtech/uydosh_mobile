@@ -41,6 +41,7 @@ class SearchBottomSheetWidget {
   static void show(
     BuildContext context, {
     bool replaceCurrentRoute = false,
+    bool openedFromHomeScreen = false,
     int? currentListingTypeId,
     int? currentLocationId,
     int? currentSubwayStationId,
@@ -99,6 +100,7 @@ class SearchBottomSheetWidget {
             ],
             child: _SearchBottomSheetContent(
               replaceCurrentRoute: replaceCurrentRoute,
+              openedFromHomeScreen: openedFromHomeScreen,
               currentListingTypeId: currentListingTypeId,
               currentLocationId: currentLocationId,
               currentSubwayStationId: currentSubwayStationId,
@@ -116,6 +118,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
 
   const _SearchBottomSheetContent({
     this.replaceCurrentRoute = false,
+    this.openedFromHomeScreen = false,
     this.currentListingTypeId,
     this.currentLocationId,
     this.currentSubwayStationId,
@@ -125,6 +128,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
     this.currentMaxPrice,
   });
   final bool replaceCurrentRoute;
+  final bool openedFromHomeScreen;
   final int? currentListingTypeId;
   final int? currentLocationId;
   final int? currentSubwayStationId;

@@ -15,6 +15,7 @@ class SearchFloatingActionButton extends StatelessWidget {
     this.iconSize = 25.0,
     this.elevation,
     this.replaceCurrentRoute = false,
+    this.openedFromHomeScreen = false,
   });
 
   final SearchFiltersState searchFiltersState;
@@ -25,6 +26,7 @@ class SearchFloatingActionButton extends StatelessWidget {
   final double? iconSize;
   final double? elevation;
   final bool replaceCurrentRoute;
+  final bool openedFromHomeScreen;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,7 @@ class SearchFloatingActionButton extends StatelessWidget {
       SearchBottomSheetWidget.show(
         context,
         replaceCurrentRoute: replaceCurrentRoute,
+        openedFromHomeScreen: openedFromHomeScreen,
         currentListingTypeId: searchFiltersState.selectedListingTypeId,
         currentLocationId: searchFiltersState.selectedLocationIndex,
         currentSubwayStationId: searchFiltersState.selectedStationId,

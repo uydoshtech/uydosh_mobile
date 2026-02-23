@@ -92,12 +92,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       _searchFiltersState.setStationId(0);
     }
 
-    // Show metro tutorial only when onboarding toggle is ON, user is logged in,
-    // and not yet completed
+    // Show metro tutorial only when opened from home screen, onboarding toggle is ON,
+    // user is logged in, and not yet completed
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (!mounted) return;
-        if (AuthenticationState().isAuthenticated &&
+        if (widget.openedFromHomeScreen &&
+            AuthenticationState().isAuthenticated &&
             OnboardingState().showOnboarding &&
             !TutorialState().hasCompletedMetroTutorial) {
           _showMetroTutorial();

@@ -381,7 +381,7 @@ class _MainNavigationState extends State<MainNavigation>
           bloc.add(const ListingsEvent.searchListings(isRefresh: true));
           return bloc;
         },
-        child: const HomeScreen(),
+        child: HomeScreen(isHomeTabActive: _currentIndex == 0),
       ),
       const FavoritesScreen(),
       const MessagesInboxScreen(

@@ -88,6 +88,7 @@ class HomeScreen extends StatefulWidget {
     this.privateRoom,
     this.isSearchMode = false,
     this.useExplicitFiltersOnly = false,
+    this.isHomeTabActive = true,
   });
   final int? listingTypeId;
   final int? locationId;
@@ -99,6 +100,9 @@ class HomeScreen extends StatefulWidget {
   final bool? privateRoom;
   final bool isSearchMode;
   final bool useExplicitFiltersOnly;
+  /// True when this HomeScreen is the active tab in main navigation (index 0).
+  /// Used to ensure tutorials run only when user is on home screen.
+  final bool isHomeTabActive;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -167,18 +171,19 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   void _onOnboardingStateChanged() {
     if (mounted && OnboardingState().showOnboarding) {
-      // Only schedule tutorial when home screen is visible (not when user is on settings etc.)
-      if (ModalRoute.of(context)?.isCurrent ?? false) {
+      // Only schedule tutorial when home tab is active and screen is visible
+      if (widget.isHomeTabActive && (ModalRoute.of(context)?.isCurrent ?? false)) {
         Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
       }
     }
   }
 
   /// Shows the first tutorial (search button) only on the home screen's main
-  /// browse view. Skipped when in search results (isSearchMode) or other screens.
+  /// browse view. Skipped when in search results (isSearchMode), other tabs, or other screens.
   void _maybeShowSearchTutorial() {
     if (!mounted) return;
-    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return; // Only when home is visible
+    if (!widget.isHomeTabActive) return; // Only when home tab is active
+    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return; // Only when home route is visible
     if (widget.isSearchMode) return; // Only on home browse, not search results
     if (!AuthenticationState().isAuthenticated) return; // Only when user is logged in
     if (OnboardingState().showOnboarding &&
@@ -438,6 +443,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               child: SearchFloatingActionButton(
                 searchFiltersState: _searchFiltersState,
                 replaceCurrentRoute: widget.isSearchMode,
+                openedFromHomeScreen: widget.isHomeTabActive,
               ),
             ),
           ),
@@ -499,6 +505,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 SearchBottomSheetWidget.show(
                   context,
                   replaceCurrentRoute: true,
+                  openedFromHomeScreen: widget.isHomeTabActive,
                   currentListingTypeId:
                       _searchFiltersState.selectedListingTypeId,
                   currentLocationId: _searchFiltersState.selectedLocationIndex,
