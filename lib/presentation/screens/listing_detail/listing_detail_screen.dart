@@ -2251,11 +2251,11 @@ L10n.get("feature_listing_error",
                         isToggling: _isToggling,
                         onToggleFeature: _toggleFeatureListing,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 16),
                     ],
                     // Photos Section - moved to very top
                     if (listingDetail.photos != null &&
-                        listingDetail.photos!.isNotEmpty)
+                        listingDetail.photos!.isNotEmpty) ...[
                       ListingDetailPhotoSection(
                         photos: listingDetail.photos!,
                         orderedPhotos: _getOrderedPhotos(listingDetail.photos!)
@@ -2264,7 +2264,8 @@ L10n.get("feature_listing_error",
                         buildPhotoUrl: _buildPhotoUrl,
                         onPhotoTap: _openFullScreenPhotoViewer,
                       ),
-
+                      const SizedBox(height: 16),
+                    ],
                     // Unified Listing Detail Card
                     ListingDetailContentCard(
                       listingDetail: listingDetail,
@@ -2277,33 +2278,31 @@ L10n.get("feature_listing_error",
                         phoneNumber: listingDetail.user.phone,
                       ),
                     ),
-
+                    const SizedBox(height: 16),
                     // Map section
                     ..._buildMapSection(
                       listingDetail,
                       currentLanguage: currentLanguage,
                       getLocalizedName: _getLocalizedName,
                     ),
-                    if (_complaintsCount != null && _complaintsCount! > 0)
+                    // Compatibility section (below map, in scroll flow)
+                    if (compatibilitySection != null) ...[
+                      const SizedBox(height: 16),
+                      compatibilitySection!,
+                    ],
+                    if (_complaintsCount != null && _complaintsCount! > 0) ...[
+                      const SizedBox(height: 16),
                       ListingDetailComplaintsCard(
                         complaintsLabel: _buildComplaintsButtonLabel(),
                         onPressed: () =>
                             _viewListingComplaints(listingDetail.id),
                         warningBlinkAnimation: _warningBlinkAnimation,
                       ),
+                    ],
                   ],
                 ),
               ),
             ),
-            // Matching section always at the bottom of the screen
-            if (compatibilitySection != null)
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 8.0),
-                  child: compatibilitySection,
-                ),
-              ),
           ],
         );
       },
