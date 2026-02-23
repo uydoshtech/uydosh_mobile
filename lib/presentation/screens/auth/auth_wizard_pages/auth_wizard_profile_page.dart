@@ -62,7 +62,7 @@ class AuthWizardProfilePage extends StatelessWidget {
     return SingleChildScrollView(
       controller: profileScrollController,
       child: Container(
-        padding: const EdgeInsets.only(left: 32, right: 32, top: 0, bottom: 0),
+        padding: const EdgeInsets.only(left: 36, right: 36, top: 16, bottom: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

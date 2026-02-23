@@ -469,6 +469,9 @@ class AppLocalizationsRu extends AppLocalizations {
       'Поиск по линии метро или по отдельным станциям.';
 
   @override
+  String get metro_tutorial_tap_to_continue => 'Нажмите, чтобы продолжить';
+
+  @override
   String get select_region => 'Выберите область';
 
   @override

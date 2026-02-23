@@ -471,6 +471,9 @@ class AppLocalizationsUz extends AppLocalizations {
       'Metro liniyasi bo\'ylab yoki alohida bekatlar bo\'yicha qidiruv.';
 
   @override
+  String get metro_tutorial_tap_to_continue => 'Davom etish uchun bosing';
+
+  @override
   String get select_region => 'Tumanni tanlang';
 
   @override

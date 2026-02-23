@@ -224,6 +224,7 @@
     }
   },
   "metro_tutorial_search_hint": "Поиск по линии метро или по отдельным станциям.",
+  "metro_tutorial_tap_to_continue": "Нажмите, чтобы продолжить",
   "select_region": "Выберите область",
   "select_region_profile_creation_title": "Откуда вы?",
   "select_region_profile_creation_description": "Мы поможем вам найти людей из вашего родного города.",

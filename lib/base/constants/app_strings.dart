@@ -189,6 +189,7 @@ class AppStrings {
           "Search along the entire line <b>{line}</b> through <b>{count}</b> stations",
       "metro_tutorial_search_hint":
           "Search along metro line or by individual stations.",
+      "metro_tutorial_tap_to_continue": "Tap anywhere to continue",
       "select_region": "Choose region:",
       "select_region_profile_creation_title": "Where are you from?",
       "select_region_profile_creation_description":
@@ -977,6 +978,7 @@ class AppStrings {
           "Поиск вдоль ВСЕЙ линии <b>{line}</b> по <b>{count}</b> станциям",
       "metro_tutorial_search_hint":
           "Поиск по линии метро или по отдельным станциям.",
+      "metro_tutorial_tap_to_continue": "Нажмите, чтобы продолжить",
       "select_region": "Выберите область",
       "select_region_profile_creation_title": "Откуда вы?",
       "select_region_profile_creation_description":
@@ -1774,6 +1776,7 @@ class AppStrings {
           "Liniya <b>{line}</b> bo'ylab <b>{count}</b> bekat orqali qidiruv",
       "metro_tutorial_search_hint":
           "Metro liniyasi bo'ylab yoki alohida bekatlar bo'yicha qidiruv.",
+      "metro_tutorial_tap_to_continue": "Davom etish uchun bosing",
       "select_region": "Tumanni tanlang",
       "select_region_profile_creation_title": "Qayerdansiz?",
       "select_region_profile_creation_description":

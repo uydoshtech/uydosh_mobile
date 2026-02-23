@@ -940,6 +940,12 @@ abstract class AppLocalizations {
   /// **'Search along metro line or by individual stations.'**
   String get metro_tutorial_search_hint;
 
+  /// No description provided for @metro_tutorial_tap_to_continue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap anywhere to continue'**
+  String get metro_tutorial_tap_to_continue;
+
   /// No description provided for @select_region.
   ///
   /// In en, this message translates to:

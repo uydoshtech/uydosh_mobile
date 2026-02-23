@@ -232,6 +232,7 @@
     }
   },
   "metro_tutorial_search_hint": "Search along metro line or by individual stations.",
+  "metro_tutorial_tap_to_continue": "Tap anywhere to continue",
   "select_region": "Choose region:",
   "select_region_profile_creation_title": "Where are you from?",
   "select_region_profile_creation_description": "We'll help you find people from your hometown.",

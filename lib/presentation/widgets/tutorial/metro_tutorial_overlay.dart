@@ -64,9 +64,12 @@ class MetroTutorialOverlay {
         _cycleTimer = null;
         if (onCycleToStation != null && getStationCount != null) {
           var stationsShown = 0;
+          var ticksWithZeroCount = 0;
+          const maxTicksWithZeroCount = 8; // ~6s timeout if stations never load
           _cycleTimer = Timer.periodic(stationCycleDuration, (stationTimer) {
             final count = getStationCount();
             if (count > 0) {
+              ticksWithZeroCount = 0;
               onCycleToStation(currentStationIndex);
               currentStationIndex = (currentStationIndex + 1) % count;
               stationsShown++;
@@ -75,8 +78,17 @@ class MetroTutorialOverlay {
                 _cycleTimer = null;
                 finishRequested.value = true;
               }
+            } else {
+              ticksWithZeroCount++;
+              if (ticksWithZeroCount >= maxTicksWithZeroCount) {
+                stationTimer.cancel();
+                _cycleTimer = null;
+                finishRequested.value = true;
+              }
             }
           });
+        } else {
+          finishRequested.value = true;
         }
       } else {
         currentLine++;
@@ -176,6 +188,7 @@ class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayConte
               _TutorialHintText(
                 animationValue: _animation.value,
                 hintText: L10n.get("metro_tutorial_search_hint"),
+                tapHintText: L10n.get("metro_tutorial_tap_to_continue"),
               ),
             ],
           ),
@@ -195,10 +208,12 @@ class _TutorialHintText extends StatelessWidget {
   const _TutorialHintText({
     required this.animationValue,
     required this.hintText,
+    required this.tapHintText,
   });
 
   final double animationValue;
   final String hintText;
+  final String tapHintText;
 
   /// Alignment y: -0.5 = ~25% from top - above bottom sheet, not at very top
   static const _verticalPosition = -0.2;
@@ -213,14 +228,29 @@ class _TutorialHintText extends StatelessWidget {
           alignment: Alignment(0, _verticalPosition),
           child: Opacity(
             opacity: animationValue,
-            child: Text(
-              hintText,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  hintText,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontSize: 20,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  tapHintText,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 14,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
         ),
