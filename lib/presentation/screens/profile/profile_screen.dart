@@ -417,6 +417,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onLogout: () => _showLogoutDialog(context),
                 onDeleteAccount: () => _showDeleteAccountDialog(context),
               ),
+              const SizedBox(height: 32),
             ],
           ),
         );

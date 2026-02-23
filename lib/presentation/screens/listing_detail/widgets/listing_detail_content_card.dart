@@ -90,18 +90,25 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
   ) {
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
+    var removed = false;
+    void removeOnce() {
+      if (!removed) {
+        removed = true;
+        overlayEntry.remove();
+      }
+    }
     overlayEntry = OverlayEntry(
       builder: (context) => Stack(
         children: [
           GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => overlayEntry.remove(),
+            onTap: removeOnce,
           ),
           Positioned(
             left: globalPosition.dx.clamp(12.0, MediaQuery.of(context).size.width - 150),
             top: globalPosition.dy - 48,
             child: GestureDetector(
-              onTap: () => overlayEntry.remove(),
+              onTap: removeOnce,
               child: Material(
                 color: Colors.transparent,
                 child: Container(
@@ -140,9 +147,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
       ),
     );
     overlay.insert(overlayEntry);
-    Future.delayed(const Duration(seconds: 2), () {
-      overlayEntry.remove();
-    });
+    Future.delayed(const Duration(seconds: 2), removeOnce);
   }
 
   Widget _buildAmenityChip(BuildContext context, Amenity amenity) {

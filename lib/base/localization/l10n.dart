@@ -3,6 +3,21 @@ import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Supported app locales (uz, ru, en).
+///
+/// ## Migration to ARB-based localization
+///
+/// This app is migrating from hardcoded [AppStrings] to Flutter's ARB-based
+/// localization. ARB files live in `l10n/app_*.arb`; run `flutter gen-l10n`
+/// to regenerate `lib/l10n/app_localizations.dart`.
+///
+/// **When you have [BuildContext]**: Prefer `context.l10n` (see
+/// [l10n_extension.dart]) for type-safe, ARB-backed strings.
+///
+/// **When you don't have context** (e.g. blocs, callbacks): Continue using
+/// [L10n.get] / [L10n.getWithParams] which read from [AppStrings].
+///
+/// Gradually migrate call sites from [L10n] to `context.l10n` as you touch files.
+/// Import [l10n_extension.dart] for `context.l10n` when you have [BuildContext].
 const List<Locale> supportedLocales = [
   Locale("uz"),
   Locale("ru"),

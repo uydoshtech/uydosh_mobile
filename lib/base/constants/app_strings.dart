@@ -1574,6 +1574,7 @@ class AppStrings {
           "Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.",
       "delete_listing_success": "Объявление успешно удалено",
       "delete_listing_error": "Ошибка удаления объявления",
+      "unknown": "Неизвестно",
 
       // ===== COMPLAINTS =====
       "create_complaint": "Создать жалобу",
@@ -2374,6 +2375,7 @@ class AppStrings {
           "Bu e'loni o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.",
       "delete_listing_success": "E'lon muvaffaqiyatli o'chirildi",
       "delete_listing_error": "E'loni o'chirishda xatolik",
+      "unknown": "Noma'lum",
 
       // ===== COMPLAINTS =====
       "create_complaint": "Shikoyat yaratish",

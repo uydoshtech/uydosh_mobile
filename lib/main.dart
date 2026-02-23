@@ -10,6 +10,7 @@ import "package:uy_dosh/base/constants/app_colors.dart"
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/l10n/app_localizations.dart";
 import "package:uy_dosh/base/logger/log_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
@@ -201,6 +202,7 @@ class _MyAppState extends State<MyApp> {
           navigatorKey: widget.navigatorKey,
           navigatorObservers: [routeObserver],
           localizationsDelegates: const [
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,

@@ -275,7 +275,7 @@ class _AchievementUnlockBottomSheetState
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -288,7 +288,7 @@ class _AchievementUnlockBottomSheetState
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 6),
               Container(
                 width: 72,
                 height: 72,

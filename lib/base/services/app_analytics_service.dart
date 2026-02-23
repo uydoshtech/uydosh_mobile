@@ -129,7 +129,7 @@ class AppAnalyticsService {
     await _analytics.logEvent(
       name: "listing_created",
       parameters: {
-        "success": success,
+        "success": success.toString(),
         if (listingTypeId != null) "listing_type_id": listingTypeId,
         if (locationId != null) "location_id": locationId,
       },
@@ -160,8 +160,8 @@ class AppAnalyticsService {
         if (subwayStationId != null) "subway_station_id": subwayStationId,
         if (subwayLineId != null) "subway_line_id": subwayLineId,
         if (gender != null) "gender": gender,
-        if (hasPriceFilter != null) "has_price_filter": hasPriceFilter,
-        if (hasGenderFilter != null) "has_gender_filter": hasGenderFilter,
+        if (hasPriceFilter != null) "has_price_filter": hasPriceFilter.toString(),
+        if (hasGenderFilter != null) "has_gender_filter": hasGenderFilter.toString(),
       },
     );
   }
