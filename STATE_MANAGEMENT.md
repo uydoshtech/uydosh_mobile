@@ -2,6 +2,17 @@
 
 This document clarifies when to use **Bloc** vs **ChangeNotifier** in the UyDosh app and provides guidance for new features.
 
+## Decision Guide (Quick Reference)
+
+| Use | When | Examples |
+|-----|------|----------|
+| **BLoC** | Complex flows, multiple events, async chains | Listings, messaging, complaints, profile loading |
+| **ChangeNotifier** | Simple global UI state | Theme, favorites, onboarding, tutorial, language |
+
+**Rule of thumb:** If it grows in complexity (multiple events, async chains, error handling), consider moving from ChangeNotifier to BLoC.
+
+---
+
 ## Overview
 
 The app uses two state management approaches:
@@ -72,6 +83,9 @@ Use **ChangeNotifier** when:
 | `ProfileCompletionState` | Profile completion % | Profile screen, prompts |
 | `UnreadMessagesState` | Unread count badge | Navigation bar, messages icon |
 | `SearchFiltersState` | Search filter values | Search flow |
+| `FavoritesState` | Favorite listing IDs | Listing cards, profile |
+| `OnboardingState` | Onboarding completion | Splash, auth wizard |
+| `TutorialState` | Tutorial overlay visibility | Metro/search overlays |
 
 ### ChangeNotifier Pattern
 
@@ -121,6 +135,8 @@ If you want to **unify on Bloc** for consistency:
 2. **LanguageState → LanguageBloc**: Medium effort, L10n depends on it
 3. **AuthenticationState → AuthBloc**: Medium effort, many listeners
 4. **ProfileCompletionState, UnreadMessagesState**: Lower priority, fewer usages
+
+**Consider moving to BLoC if they grow:** `FavoritesState`, `TutorialState`—if they gain multiple events, async persistence, or complex flows, migrate them to BLoCs.
 
 Migration would improve consistency but is **optional**—the current split is intentional and works well.
 
