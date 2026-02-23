@@ -22,6 +22,7 @@ import "package:uy_dosh/domain/models/auth/create_profile_request.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/services/auth_service.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -373,6 +374,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       await SessionManager.storeUserBlockedStatus(
         user["is_blocked"] as bool? ?? false,
       );
+    }
+
+    // Register FCM token for push notifications
+    if (!kIsWeb) {
+      getIt<IPushNotificationService>().registerTokenWithBackend();
     }
   }
 

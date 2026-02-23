@@ -24,6 +24,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/firebase_options.dart";
@@ -118,6 +119,14 @@ void main() async {
     // Bloc.observer = AppBlocObserver.instance(); // Disabled to reduce logging
 
     getIt<AppAnalyticsService>().logAppOpened(source: "cold_start");
+
+    // Initialize push notifications and register token if authenticated
+    if (!kIsWeb) {
+      await getIt<IPushNotificationService>().initialize();
+      if (AuthenticationState().isAuthenticated) {
+        getIt<IPushNotificationService>().registerTokenWithBackend();
+      }
+    }
 
     // Set analytics user ID if already authenticated
     if (AuthenticationState().isAuthenticated) {

@@ -22,6 +22,7 @@ import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/support_chat_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 
 final getIt = GetIt.instance;
@@ -110,5 +111,9 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<ISupportChatService>(
     () => SupportChatService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IPushNotificationService>(
+    () => PushNotificationService(getIt<IOAuthApiClient>()),
   );
 }
