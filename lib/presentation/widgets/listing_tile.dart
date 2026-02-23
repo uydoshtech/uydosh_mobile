@@ -2,12 +2,12 @@ import "dart:async";
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
@@ -17,8 +17,6 @@ import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
-import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
@@ -151,21 +149,7 @@ class _ListingTileState extends State<ListingTile>
           final cardWidget = Card(
           margin: EdgeInsets.zero,
           child: InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder:
-                      (context) => BlocProvider(
-                        create:
-                            (context) =>
-                                ListingDetailBloc(getIt<IListingService>()),
-                        child: ListingDetailScreen(
-                          listingId: widget.listing.id,
-                        ),
-                      ),
-                ),
-              );
-            },
+            onTap: () => context.pushListingDetail(widget.listing.id),
             borderRadius: BorderRadius.circular(12),
             child: Stack(
               children: [

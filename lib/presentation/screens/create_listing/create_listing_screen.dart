@@ -13,6 +13,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -20,7 +21,6 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
@@ -1059,12 +1059,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           ),
           const SizedBox(height: 20),
           GhostButtonFactory.iconText(
-            onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const AuthWizardScreen()),
-                (route) => false,
-              );
-            },
+            onPressed: () => context.pushAuthWizardAndRemoveUntil(),
             icon: Icons.login,
             text: L10n.get("authenticate_to_post_listing"),
             padding: const EdgeInsets.symmetric(vertical: 24),
@@ -1276,10 +1271,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           if (mainNavigationKey.currentState != null) {
             mainNavigationKey.currentState!.navigateToIndex(0);
           } else {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
-              (route) => false,
-            );
+            context.pushMainNavigationAndRemoveUntil();
           }
         });
       } else {
@@ -1288,10 +1280,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           mainNavigationKey.currentState!.navigateToIndex(0);
         } else {
           // Fallback: use pushAndRemoveUntil if navigation key is not available
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
-            (route) => false,
-          );
+          context.pushMainNavigationAndRemoveUntil();
         }
       }
     } catch (e) {

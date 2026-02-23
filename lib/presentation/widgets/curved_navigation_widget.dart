@@ -4,7 +4,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors;
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -220,10 +220,8 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
 
   // Launch authentication wizard
   void _launchAuthWizard(BuildContext context) {
-    Navigator.of(context)
-        .pushReplacement(
-          MaterialPageRoute(builder: (context) => const AuthWizardScreen()),
-        )
+    context
+        .pushReplaceAuthWizard()
         .then((_) {
           // After successful authentication, redirect to home screen
           // This ensures users go to home instead of their original destination

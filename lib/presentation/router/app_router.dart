@@ -11,6 +11,7 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
@@ -26,13 +27,11 @@ import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
-import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AppRouter {
   /// Global key for the profile icon in the app bar, used by the search tutorial.
@@ -362,11 +361,7 @@ class _MainNavigationState extends State<MainNavigation>
   // Redirect to auth wizard
   void _redirectToAuthWizard() {
     if (mounted) {
-      Navigator.of(context)
-          .pushReplacement(
-            MaterialPageRoute(builder: (context) => const AuthWizardScreen()),
-          )
-          .then((_) {
+      context.pushReplaceAuthWizard().then((_) {
             // After successful authentication, ensure we're on home screen
             if (mounted) {
               setState(() {
@@ -515,13 +510,7 @@ class _MainNavigationState extends State<MainNavigation>
                         child: IconButton(
                           onPressed: () {
                             HapticFeedbackUtils.impact();
-                            Navigator.of(context)
-                                .pushReplacement(
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => const AuthWizardScreen(),
-                                  ),
-                                )
+                            context.pushReplaceAuthWizard()
                                 .then((_) {
                                   // After successful authentication, redirect to home screen
                                   if (mounted) {
@@ -575,11 +564,7 @@ class _MainNavigationState extends State<MainNavigation>
                         IconButton(
                           onPressed: () {
                             HapticFeedbackUtils.impact();
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const ProfileScreen(),
-                              ),
-                            );
+                            context.pushProfile();
                           },
                           icon: Icon(Icons.person, color: iconColor, size: 28),
                           tooltip: L10n.get("profile"),

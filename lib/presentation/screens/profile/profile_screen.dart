@@ -13,6 +13,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/logout_service.dart" show AccountBlockedException, LogoutService;
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -291,14 +292,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _redirectedToProfileSetup = true;
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (!mounted) return;
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder:
-                        (context) => const AuthWizardScreen(
-                          initialPage: 2,
-                          skipExistingSessionCheck: true,
-                        ),
-                  ),
+                context.pushReplaceAuthWizard(
+                  initialPage: 2,
+                  skipExistingSessionCheck: true,
                 );
               });
             },

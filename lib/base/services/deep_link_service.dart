@@ -2,13 +2,10 @@ import "dart:async";
 
 import "package:app_links/app_links.dart";
 import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
 
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 
 /// Handles deep links (uydosh://listing/123) for sharing listings.
 class DeepLinkService {
@@ -74,15 +71,7 @@ class DeepLinkService {
   void _navigateToListing(int listingId) {
     final context = navigatorKey.currentContext;
     if (context == null) return;
-
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => BlocProvider(
-          create: (context) => ListingDetailBloc(getIt<IListingService>()),
-          child: ListingDetailScreen(listingId: listingId),
-        ),
-      ),
-    );
+    context.pushListingDetail(listingId);
   }
 
   /// Handle pending link (call from MainNavigation when mounted).

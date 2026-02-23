@@ -9,7 +9,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -158,9 +158,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     // Mark onboarding screens as seen (toggle is turned OFF after search tutorial)
     await OnboardingState().markOnboardingScreensSeen();
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
-    );
+    context.pushReplaceMainNavigation();
   }
 
   @override

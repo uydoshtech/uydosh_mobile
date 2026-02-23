@@ -1,16 +1,15 @@
 import "dart:async";
 import "dart:convert";
 
-// Firebase and Google Sign-In imports
-import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
-import "package:flutter_svg/flutter_svg.dart";
 import "package:google_sign_in/google_sign_in.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_google_sign_in_page.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_language_page.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_profile_page.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -29,7 +28,6 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -575,16 +573,36 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     LanguageState().setLanguage(languageCode);
   }
 
-  String _getLanguageDisplayName(String languageCode) {
-    switch (languageCode) {
-      case "en":
-        return "English";
-      case "ru":
-        return "Русский";
-      case "uz":
-        return "O'zbekcha";
-      default:
-        return "English";
+  void _onStudentSelected(bool? value) {
+    setState(() {
+      _isStudent = value;
+      if (value == true) {
+        _loadUniversities();
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted &&
+              _universities.isNotEmpty &&
+              _selectedUniversity == null) {
+            setState(() {
+              _selectedUniversity = _universities.first;
+            });
+          }
+        });
+      } else {
+        _selectedUniversity = null;
+      }
+    });
+
+    if (value == true) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_profileScrollController.hasClients) {
+          return;
+        }
+        _profileScrollController.animateTo(
+          _profileScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      });
     }
   }
 
@@ -1116,9 +1134,36 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       physics:
                           const NeverScrollableScrollPhysics(), // Disable swiping completely
                       children: [
-                        _buildLanguageSelectionPage(),
-                        _buildGoogleSignInPage(),
-                        _buildProfileSetupPage(),
+                        AuthWizardLanguagePage(
+                          selectedLanguage: _selectedLanguage,
+                          onLanguageSelected: _selectLanguage,
+                        ),
+                        AuthWizardGoogleSignInPage(
+                          isAuthenticating: _isAuthenticating,
+                          isGoogleSignedIn: _isGoogleSignedIn,
+                          currentUser: _currentUser,
+                          onSignInWithGoogle: _signInWithGoogle,
+                        ),
+                        AuthWizardProfilePage(
+                          profileScrollController: _profileScrollController,
+                          nameController: _nameController,
+                          selectedGender: _selectedGender,
+                          onGenderSelected: (v) => setState(() => _selectedGender = v),
+                          selectedRegionId: _selectedRegionId,
+                          regions: _regions,
+                          onShowRegionPicker: _showRegionPicker,
+                          selectedRole: _selectedRole,
+                          onRoleSelected: (v) => setState(() => _selectedRole = v),
+                          isStudent: _isStudent,
+                          onStudentSelected: _onStudentSelected,
+                          selectedUniversity: _selectedUniversity,
+                          universities: _universities,
+                          onShowUniversityPicker: _showUniversityPicker,
+                          isLoadingRegions: _isLoadingRegions,
+                          isLoadingUniversities: _isLoadingUniversities,
+                          getRegionName: _getRegionName,
+                          getUniversityName: _getUniversityName,
+                        ),
                       ],
                     ),
                   ),
@@ -1172,713 +1217,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     );
   }
 
-  Widget _buildLanguageSelectionPage() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Language options with flags
-                  Column(
-                    children: [
-                      _buildLanguageOption("uz", "🇺🇿", "O'zbekcha", "Uzbek"),
-                      const SizedBox(height: 20),
-                      _buildLanguageOption("ru", "🇷🇺", "Русский", "Russian"),
-                      const SizedBox(height: 20),
-                      _buildLanguageOption("en", "🇺🇸", "English", "English"),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLanguageOption(
-    String languageCode,
-    String flag,
-    String nativeName,
-    String englishName,
-  ) {
-    final isSelected = _selectedLanguage == languageCode;
-    return GestureDetector(
-      onTap: () => _selectLanguage(languageCode),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color:
-              isSelected
-                  ? _getSelectedButtonBackgroundColor()
-                  : _getUnselectedButtonBackgroundColor(),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color:
-                isSelected
-                    ? _getSelectedButtonBorderColor()
-                    : _getUnselectedButtonBorderColor(),
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Text(
-              flag,
-              style: TextStyle(
-                fontSize: 32,
-                color:
-                    isSelected
-                        ? _getOnboardingTextColor(context)
-                        : _getUnselectedButtonTextColor(),
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    nativeName,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color:
-                          isSelected
-                              ? _getOnboardingTextColor(context)
-                              : _getUnselectedButtonTextColor(),
-                    ),
-                  ),
-                  Text(
-                    englishName,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color:
-                          isSelected
-                              ? _getOnboardingTextSecondaryColor(context)
-                              : _getUnselectedButtonTextColor().withOpacity(
-                                0.7,
-                              ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: _getOnboardingTextColor(context),
-                size: 28,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoogleSignInPage() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: L10n.text(
-                      "sign_in_with_google_description",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: _getOnboardingTextSecondaryColor(context),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-
-                  // Google Sign-In button
-                  if (!_isGoogleSignedIn) ...[
-                    Center(
-                      child: SizedBox(
-                        width: 199,
-                        height: 44,
-                        child: InkWell(
-                          onTap: _isAuthenticating ? null : _signInWithGoogle,
-                          borderRadius: BorderRadius.circular(22),
-                          child: ListenableBuilder(
-                            listenable: ThemeState(),
-                            builder: (context, child) {
-                              final currentTheme = ThemeState().currentTheme;
-                              final svgAsset =
-                                  currentTheme == AppTheme.lightTheme
-                                      ? "assets/images/ios_dark_rd_ctn.svg" // Black for light theme
-                                      : "assets/images/ios_neutral_rd_ctn.svg"; // Neutral for blue theme
-
-                              return SvgPicture.asset(svgAsset, width: 199, height: 44);
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  // User info display when signed in
-                  if (_isGoogleSignedIn) ...[
-                    if (_currentUser != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: _getOnboardingTextColor(context).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            _currentUser!.photoURL != null
-                                ? ClipOval(
-                                    child: CachedNetworkImage(
-                                      imageUrl: _currentUser!.photoURL!,
-                                      width: 60,
-                                      height: 60,
-                                      fit: BoxFit.cover,
-                                      memCacheWidth: 120,
-                                      memCacheHeight: 120,
-                                      placeholder:
-                                          (context, url) => Icon(
-                                            Icons.person,
-                                            size: 30,
-                                            color: _getOnboardingTextColor(context),
-                                          ),
-                                      errorWidget:
-                                          (context, url, error) => Icon(
-                                            Icons.person,
-                                            size: 30,
-                                            color: _getOnboardingTextColor(context),
-                                          ),
-                                    ),
-                                  )
-                                : CircleAvatar(
-                                    radius: 30,
-                                    child: Icon(
-                                      Icons.person,
-                                      size: 30,
-                                      color: _getOnboardingTextColor(context),
-                                    ),
-                                  ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _currentUser!.displayName ?? "User",
-                                    style: TextStyle(
-                                      color: _getOnboardingTextColor(context),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    _currentUser!.email ?? "",
-                                    style: TextStyle(
-                                      color: _getOnboardingTextSecondaryColor(context),
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-
-                  // Loading indicator
-                  if (_isAuthenticating) ...[
-                    const SizedBox(height: 24),
-                    CenteredHouseLoadingIndicator(
-                      text: L10n.get("signing_in"),
-                      textStyle: TextStyle(
-                        color: _getOnboardingTextSecondaryColor(context),
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildProfileSetupPage() {
-    return SingleChildScrollView(
-      controller: _profileScrollController,
-      child: Container(
-        padding: const EdgeInsets.only(left: 32, right: 32, top: 0, bottom: 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            L10n.text(
-              "complete_profile_subheader",
-              style: TextStyle(
-                fontSize: 16,
-                color: _getOnboardingTextSecondaryColor(context),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Name input
-            L10n.text(
-              "full_name",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(context),
-              ),
-            ),
-            const SizedBox(height: 16),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: _getOnboardingCardColor(context),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextField(
-                controller: _nameController,
-                keyboardType: TextInputType.text,
-                style: TextStyle(
-                  color:
-                      _getInputTextColor(), // Use black text for better visibility in blue theme
-                ),
-                decoration: InputDecoration(
-                  hintText: L10n.get("full_name_hint"),
-                  hintStyle: TextStyle(
-                    color: _getOnboardingTextSecondaryColor(context).withOpacity(0.6),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.cardBorder,
-                      width: 1.5,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.cardBorder,
-                      width: 1.5,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppColors.cardBorder.withOpacity(0.8),
-                      width: 2,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.all(16),
-                  prefixIcon: Icon(
-                    Icons.person,
-                    color: _getOnboardingTextSecondaryColor(context),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Gender selection (no label)
-            Row(
-              children: [
-                Flexible(
-                  child: _buildGenderOption(
-                    1,
-                    L10n.get("male"),
-                    Icons.male,
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Flexible(
-                  child: _buildGenderOption(
-                    2,
-                    L10n.get("female"),
-                    Icons.female,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            // Region selection
-            L10n.text(
-              "select_region_profile_creation",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(context),
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (_isLoadingRegions)
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: _getOnboardingTextColor(context).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: CenteredHouseLoadingIndicator(
-                  text: L10n.get("loading_regions"),
-                  textStyle: TextStyle(
-                    color: _getOnboardingTextColor(context),
-                    fontSize: 16,
-                  ),
-                  size: 20,
-                ),
-              )
-            else if (_regions.isNotEmpty)
-              _buildRegionSelector()
-            else if (!_isLoadingRegions)
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: _getOnboardingTextColor(context).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  L10n.get("no_regions_available"),
-                  style: TextStyle(
-                    color: _getOnboardingTextSecondaryColor(context),
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-
-            const SizedBox(height: 32),
-
-            // Role selection (landlord or renter)
-            L10n.text(
-              "are_you_landlord_or_renter",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(context),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Flexible(
-                  child: _buildRoleOption(
-                    "landlord",
-                    L10n.get("role_landlord"),
-                    Icons.home_work,
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Flexible(
-                  child: _buildRoleOption(
-                    "tenant",
-                    L10n.get("role_tenant"),
-                    Icons.key,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            // Student status
-            L10n.text(
-              "are_you_student",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(context),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Flexible(
-                  child: _buildStudentOption(
-                    true,
-                    L10n.get("yes_student"),
-                    Icons.school,
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Flexible(
-                  child: _buildStudentOption(
-                    false,
-                    L10n.get("no_student"),
-                    Icons.work,
-                  ),
-                ),
-              ],
-            ),
-
-            // University selection (only shown when user is a student)
-            if (_isStudent ?? false) ...[
-              const SizedBox(height: 32),
-
-              if (_isLoadingUniversities)
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: _getOnboardingTextColor(context).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: CenteredHouseLoadingIndicator(
-                    text: L10n.get("loading_universities"),
-                    textStyle: TextStyle(
-                      color: _getOnboardingTextColor(context),
-                      fontSize: 16,
-                    ),
-                    size: 20,
-                  ),
-                )
-              else if (_universities.isNotEmpty)
-                _buildUniversitySelector()
-              else if (!_isLoadingUniversities)
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: _getOnboardingTextColor(context).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    L10n.get("no_universities_available"),
-                    style: TextStyle(
-                      color: _getOnboardingTextSecondaryColor(context),
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-              const SizedBox(height: 100),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGenderOption(int gender, String label, IconData icon) {
-    final isSelected = _selectedGender == gender;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedGender = gender;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color:
-              isSelected
-                  ? _getSelectedButtonBackgroundColor()
-                  : _getOnboardingTextColor(context).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color:
-                isSelected ? _getSelectedButtonTextColor() : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color:
-                    isSelected
-                        ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextColor(context),
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(width: 12),
-            Icon(
-              icon,
-              color:
-                  isSelected
-                      ? _getSelectedButtonTextColor()
-                      : _getOnboardingTextColor(context),
-              size: 20,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRoleOption(String role, String label, IconData icon) {
-    final isSelected = _selectedRole == role;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedRole = role;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color:
-              isSelected
-                  ? _getSelectedButtonBackgroundColor()
-                  : _getOnboardingTextColor(context).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color:
-                isSelected ? _getSelectedButtonTextColor() : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color:
-                    isSelected
-                        ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextColor(context),
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(width: 12),
-            Icon(
-              icon,
-              color:
-                  isSelected
-                      ? _getSelectedButtonTextColor()
-                      : _getOnboardingTextColor(context),
-              size: 20,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRegionSelector() {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color:
-            _selectedRegionId != null
-                ? _getSelectedButtonBackgroundColor()
-                : _getOnboardingCardColor(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color:
-              _selectedRegionId != null
-                  ? _getSelectedButtonBorderColor()
-                  : Colors.transparent,
-          width: 2,
-        ),
-      ),
-      child: InkWell(
-        onTap: _showRegionPicker,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Row(
-            children: [
-              Icon(
-                Icons.public,
-                color:
-                    _selectedRegionId != null
-                        ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextSecondaryColor(context),
-                size: 24,
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_selectedRegionId != null) ...[
-                      Text(
-                        _getRegionName(
-                          _regions.firstWhere(
-                            (r) => r.id == _selectedRegionId,
-                          ),
-                        ),
-                        style: TextStyle(
-                          color: _getSelectedButtonTextColor(),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      L10n.text(
-                        "selected",
-                        style: TextStyle(
-                          color: _getSelectedButtonTextColor(),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ] else ...[
-                      Text(
-                        L10n.get("tap_to_select_region"),
-                        style: TextStyle(
-                          color: _getOnboardingTextSecondaryColor(context),
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              Icon(
-                _selectedRegionId != null
-                    ? Icons.check_circle
-                    : Icons.arrow_drop_down,
-                color:
-                    _selectedRegionId != null
-                        ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextSecondaryColor(context),
-                size: 24,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showRegionPicker() {
     logger.d("=== SHOWING REGION PICKER ===");
     logger.d("Current _selectedRegionId: $_selectedRegionId");
@@ -1908,7 +1246,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   Widget _buildRegionPicker(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: _getBottomSheetBackgroundColor(),
+        color: AuthWizardTheme.getBottomSheetBackgroundColor(),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -1920,7 +1258,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: _getBottomSheetHandleColor(context),
+              color: AuthWizardTheme.getBottomSheetHandleColor(context),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1934,7 +1272,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color:
-                    _getBottomSheetTextColor(), // Use black text for better visibility in blue theme
+                    AuthWizardTheme.getBottomSheetTextColor(), // Use black text for better visibility in blue theme
               ),
             ),
           ),
@@ -1972,7 +1310,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color:
-                                _getBottomSheetTextColor(), // Use black text for better visibility in blue theme
+                                AuthWizardTheme.getBottomSheetTextColor(), // Use black text for better visibility in blue theme
                             height: 1.2,
                           ),
                           textAlign: TextAlign.center,
@@ -1996,208 +1334,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 },
                 text: L10n.get("confirm"),
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                textColor: _getBottomSheetTextColor(),
-                borderColor: _getBottomSheetTextColor(),
+                textColor: AuthWizardTheme.getBottomSheetTextColor(),
+                borderColor: AuthWizardTheme.getBottomSheetTextColor(),
                 isOnboardingButton: true,
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStudentOption(bool isStudent, String label, IconData icon) {
-    final isSelected = _isStudent == isStudent;
-    return GestureDetector(
-      onTap: () {
-        logger.d("=== STUDENT OPTION SELECTED ===");
-        logger.d("Selected isStudent: $isStudent");
-        logger.d("Previous _isStudent: $_isStudent");
-        logger.d(
-          "Previous _selectedUniversity: ${_selectedUniversity != null ? _getUniversityName(_selectedUniversity!) : "None"} (ID: ${_selectedUniversity?.id})",
-        );
-
-        setState(() {
-          _isStudent = isStudent;
-          if (isStudent) {
-            // Load universities when user selects "I"m a student"
-            logger.d("Loading universities for student...");
-            _loadUniversities();
-
-            // Ensure university selection is maintained after loading
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (mounted &&
-                  _universities.isNotEmpty &&
-                  _selectedUniversity == null) {
-                logger.d(
-                  "🔄 Delayed check: Setting university selection after loading",
-                );
-                setState(() {
-                  _selectedUniversity = _universities.first;
-                });
-                logger.d(
-                  "✅ Delayed university selection set to: ${_selectedUniversity != null ? _getUniversityName(_selectedUniversity!) : "None"} (ID: ${_selectedUniversity?.id})",
-                );
-              }
-            });
-          } else {
-            // Clear university selection when user selects "I"m not a student"
-            logger.d("Clearing university selection for non-student");
-            _selectedUniversity = null;
-          }
-        });
-
-        if (isStudent) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted || !_profileScrollController.hasClients) {
-              return;
-            }
-
-            _profileScrollController.animateTo(
-              _profileScrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
-          });
-        }
-
-        logger.d("After setState:");
-        logger.d("_isStudent: $_isStudent");
-        logger.d(
-          "_selectedUniversity: ${_selectedUniversity != null ? _getUniversityName(_selectedUniversity!) : "None"} (ID: ${_selectedUniversity?.id})",
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color:
-              isSelected
-                  ? Colors.white
-                  : _getOnboardingTextColor(context).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color:
-                isSelected ? Colors.black : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color:
-                    isSelected
-                        ? Colors.black
-                        : _getOnboardingTextColor(context),
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(width: 12),
-            Icon(
-              icon,
-              color:
-                  isSelected
-                      ? Colors.black
-                      : _getOnboardingTextColor(context),
-              size: 20,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUniversitySelector() {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color:
-            _selectedUniversity != null
-                ? _getSelectedButtonBackgroundColor()
-                : _getOnboardingCardColor(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color:
-              _selectedUniversity != null
-                  ? _getSelectedButtonBorderColor()
-                  : Colors.transparent,
-          width: 2,
-        ),
-      ),
-      child: InkWell(
-        onTap: _showUniversityPicker,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Row(
-            children: [
-              Icon(
-                Icons.school,
-                color:
-                    _selectedUniversity != null
-                        ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextSecondaryColor(context),
-                size: 24,
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_selectedUniversity != null) ...[
-                      Text(
-                        _getUniversityName(_selectedUniversity!),
-                        style: TextStyle(
-                          color: _getSelectedButtonTextColor(),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      L10n.text(
-                        "selected",
-                        style: TextStyle(
-                          color: _getSelectedButtonTextColor(),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ] else ...[
-                      Text(
-                        L10n.get("tap_to_select_university"),
-                        style: TextStyle(
-                          color: _getOnboardingTextSecondaryColor(context),
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              Icon(
-                _selectedUniversity != null
-                    ? Icons.check_circle
-                    : Icons.arrow_drop_down,
-                color:
-                    _selectedUniversity != null
-                        ? _getSelectedButtonTextColor()
-                        : _getOnboardingTextSecondaryColor(context),
-                size: 24,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -2233,7 +1376,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   Widget _buildUniversityPicker(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: _getBottomSheetBackgroundColor(),
+        color: AuthWizardTheme.getBottomSheetBackgroundColor(),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -2245,7 +1388,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: _getBottomSheetHandleColor(context),
+              color: AuthWizardTheme.getBottomSheetHandleColor(context),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -2259,7 +1402,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color:
-                    _getBottomSheetTextColor(), // Use black text for better visibility in blue theme
+                    AuthWizardTheme.getBottomSheetTextColor(), // Use black text for better visibility in blue theme
               ),
             ),
           ),
@@ -2297,7 +1440,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color:
-                                _getBottomSheetTextColor(), // Use black text for better visibility in blue theme
+                                AuthWizardTheme.getBottomSheetTextColor(), // Use black text for better visibility in blue theme
                             height: 1.2,
                           ),
                           textAlign: TextAlign.center,
@@ -2321,8 +1464,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 },
                 text: L10n.get("confirm"),
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                textColor: _getBottomSheetTextColor(),
-                borderColor: _getBottomSheetTextColor(),
+                textColor: AuthWizardTheme.getBottomSheetTextColor(),
+                borderColor: AuthWizardTheme.getBottomSheetTextColor(),
                 isOnboardingButton: true,
               ),
             ),
@@ -2415,133 +1558,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
   }
 
-  // Theme-dependent color helper methods
-  Color _getPrimaryColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.primary;
-    } else if (ThemeState().isLightTheme) {
-      return LightThemeColors.primary;
-    } else {
-      return AppColors.primary;
-    }
-  }
-
   /// Get theme-aware onboarding text color (uses theme from MaterialApp)
   Color _getOnboardingTextColor(BuildContext context) =>
       Theme.of(context).colorScheme.onSurface;
-
-  /// Get theme-aware onboarding secondary text color (uses theme from MaterialApp)
-  Color _getOnboardingTextSecondaryColor(BuildContext context) =>
-      Theme.of(context).colorScheme.onSurfaceVariant;
-
-  /// Get theme-aware onboarding card color (uses theme from MaterialApp)
-  Color _getOnboardingCardColor(BuildContext context) =>
-      Theme.of(context).colorScheme.surfaceContainerHighest;
-
-  /// Get theme-aware success color
-  Color _getSuccessColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.success;
-    } else if (ThemeState().isLightTheme) {
-      return LightThemeColors.success;
-    } else {
-      return AppColors.success;
-    }
-  }
-
-  /// Get theme-aware onboarding background color
-  Color _getOnboardingBackgroundColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.onboardingBackground;
-    }
-    return LightThemeColors.onboardingBackground;
-  }
-
-  /// Get theme-aware selected button background color with proper contrast
-  Color _getSelectedButtonBackgroundColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.primary; // Blue background
-    }
-    return Colors.transparent; // Transparent background for light theme
-  }
-
-  /// Get theme-aware selected button text color with proper contrast
-  Color _getSelectedButtonTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return Colors.white; // White text on blue
-    }
-    return Colors.black; // Black text on transparent background
-  }
-
-  /// Get theme-aware selected button border color
-  Color _getSelectedButtonBorderColor() {
-    if (ThemeState().isBlueTheme) {
-      return Colors.white; // White border for blue theme
-    }
-    return Colors.black; // Black border for light theme
-  }
-
-  /// Get theme-aware unselected button background color
-  Color _getUnselectedButtonBackgroundColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.primary; // Blue background for blue theme
-    }
-    return Colors.transparent; // Transparent background for light theme
-  }
-
-  /// Get theme-aware unselected button border color
-  Color _getUnselectedButtonBorderColor() {
-    if (ThemeState().isBlueTheme) {
-      return Colors.white; // White border for blue theme
-    }
-    return Colors.grey.shade300; // Light grey border for light theme
-  }
-
-  /// Get theme-aware unselected button text color
-  Color _getUnselectedButtonTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return Colors.white; // White text on blue
-    }
-    return Colors.black; // Black text on transparent background
-  }
-
-  /// Get theme-aware input text color for better visibility
-  Color _getInputTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return Colors
-          .black; // Black text on white/light blue background for better visibility
-    }
-    return Colors.black; // Black text on white background
-  }
-
-  /// Get theme-aware bottom sheet background color
-  Color _getBottomSheetBackgroundColor() {
-    if (ThemeState().isBlueTheme) {
-      return Colors.white; // White background for blue theme
-    }
-    return LightThemeColors.onboardingCard;
-  }
-
-  /// Get theme-aware bottom sheet text color
-  Color _getBottomSheetTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return Colors.black; // Black text on white background for blue theme
-    }
-    return Colors.black; // Black text on white background
-  }
-
-  /// Get theme-aware bottom sheet handle bar color
-  Color _getBottomSheetHandleColor(BuildContext context) {
-    if (ThemeState().isBlueTheme) {
-      return Colors
-          .grey
-          .shade400; // Light grey handle on white background for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return _getOnboardingTextSecondaryColor(context).withValues(alpha: 0.3);
-    } else {
-      return _getOnboardingTextSecondaryColor(context).withValues(alpha: 0.3);
-    }
-  }
 
   /// Get language-aware region name
   String _getRegionName(Region region) {
@@ -2565,23 +1584,4 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     );
   }
 
-  /// Get language-aware region short name
-  String _getRegionShortName(Region region) {
-    final currentLanguage = LanguageState().currentLanguage;
-    switch (currentLanguage) {
-      case "en":
-        return region.shortNameEn ?? region.shortName ?? "";
-      case "ru":
-        return region.shortNameRu ?? region.shortName ?? "";
-      case "uz":
-        return region.shortNameUz ?? region.shortName ?? "";
-      default:
-        return region.shortName ?? "";
-    }
-  }
-
-  /// Get language-aware university short name
-  String _getUniversityShortName(University university) {
-    return university.getLocalizedShortName(LanguageState().currentLanguage);
-  }
 }

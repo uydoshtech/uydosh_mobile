@@ -13,9 +13,9 @@ import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
@@ -266,12 +266,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           ),
           // Profile button (matching the original design)
           IconButton(
-            onPressed: () {
-              // Navigate to profile or show profile menu
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              );
-            },
+            onPressed: () => context.pushProfile(),
             icon: Icon(
               Icons.person,
               color:
@@ -341,11 +336,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                       // Use centralized logout service
                       await LogoutService().performLogout(context);
                       // Navigate to auth wizard
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const AuthWizardScreen(),
-                        ),
-                      );
+                      context.pushReplaceAuthWizard();
                     },
                     icon: Icons.login,
                     text: "Log In Again",

@@ -6,11 +6,11 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -214,9 +214,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             // Use centralized logout service
             await LogoutService().performLogout(context);
             // Navigate to auth wizard
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const AuthWizardScreen()),
-            );
+            context.pushReplaceAuthWizard();
           };
         } else if (e.toString().contains("network") ||
             e.toString().contains("connection")) {
@@ -456,11 +454,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       // Use centralized logout service
                       await LogoutService().performLogout(context);
                       // Navigate to auth wizard
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const AuthWizardScreen(),
-                        ),
-                      );
+                      context.pushReplaceAuthWizard();
                     },
                     icon: Icons.login,
                     text: "Log In Again",
@@ -507,14 +501,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   ),
                   const SizedBox(height: 24),
                   GhostButtonFactory.iconText(
-                    onPressed: () {
-                      // Navigate to auth wizard
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const AuthWizardScreen(),
-                        ),
-                      );
-                    },
+                    onPressed: () => context.pushReplaceAuthWizard(),
                     icon: Icons.login,
                     text: "Log In",
                   ),
@@ -558,9 +545,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget _buildThemeAwareButton() {
     void onPressed() {
       // Navigate to home screen to browse listings
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MainNavigation()),
-      );
+      context.pushReplaceMainNavigation();
     }
 
     // Use GhostButton for all themes - it"s already theme-aware

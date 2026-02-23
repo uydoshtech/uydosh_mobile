@@ -30,6 +30,7 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/photo.dart";
@@ -1170,11 +1171,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
     ToastTheme.showError(context, message: message);
   }
 
-  void _navigateToSignIn() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const AuthWizardScreen()),
-    );
-  }
+  void _navigateToSignIn() => context.pushAuthWizard();
 
   void _editListing() {
     // Get the current listing detail from the bloc state
@@ -2369,11 +2366,7 @@ L10n.get("error_internet_connection",
     );
   }
 
-  void _navigateToOwnProfile() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const ProfileScreen()),
-    );
-  }
+  void _navigateToOwnProfile() => context.pushProfile();
 
   void _navigateToProfile(int userId, {String? phoneNumber}) {
     Navigator.of(context).push(

@@ -190,8 +190,9 @@ class AppStrings {
       "metro_tutorial_search_hint":
           "Search along metro line or by individual stations.",
       "select_region": "Choose region:",
-      "select_region_profile_creation":
-          "Where are you from? We'll help you find people from your hometown.",
+      "select_region_profile_creation_title": "Where are you from?",
+      "select_region_profile_creation_description":
+          "We'll help you find people from your hometown.",
       "select_university": "Select university",
 
       "select_language": "Select Language",
@@ -977,8 +978,9 @@ class AppStrings {
       "metro_tutorial_search_hint":
           "Поиск по линии метро или по отдельным станциям.",
       "select_region": "Выберите область",
-      "select_region_profile_creation":
-          "Откуда вы? Мы поможем вам найти людей из вашего родного города.",
+      "select_region_profile_creation_title": "Откуда вы?",
+      "select_region_profile_creation_description":
+          "Мы поможем вам найти людей из вашего родного города.",
       "select_university": "Выберите университет",
 
       "select_language": "Выбрать язык",
@@ -1772,8 +1774,9 @@ class AppStrings {
       "metro_tutorial_search_hint":
           "Metro liniyasi bo'ylab yoki alohida bekatlar bo'yicha qidiruv.",
       "select_region": "Tumanni tanlang",
-      "select_region_profile_creation":
-          "Qayerdansiz? Vataningizdagi odamlarni topishga yordam beramiz.",
+      "select_region_profile_creation_title": "Qayerdansiz?",
+      "select_region_profile_creation_description":
+          "Vataningizdagi odamlarni topishga yordam beramiz.",
       "select_university": "Universitetni tanlang",
 
       "select_language": "Tilni tanlang",

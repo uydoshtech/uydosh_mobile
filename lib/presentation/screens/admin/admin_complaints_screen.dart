@@ -2,13 +2,11 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -647,14 +645,6 @@ L10n.get("admin_complaints_empty"),
       return;
     }
     if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (context) => BlocProvider(
-              create: (context) => ListingDetailBloc(getIt<IListingService>()),
-              child: ListingDetailScreen(listingId: listingId),
-            ),
-      ),
-    );
+    context.pushListingDetail(listingId!);
   }
 }

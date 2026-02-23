@@ -1,13 +1,13 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -260,11 +260,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
 
   Widget _buildBrowseButton() {
     return GhostButtonFactory.iconText(
-      onPressed: () {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainNavigation()),
-        );
-      },
+      onPressed: () => context.pushReplaceMainNavigation(),
       icon: Icons.home,
       text: L10n.get("view_history_browse_button"),
     );
@@ -340,13 +336,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
               ),
               const SizedBox(height: 24),
               GhostButtonFactory.iconText(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const AuthWizardScreen(),
-                    ),
-                  );
-                },
+                onPressed: () => context.pushReplaceAuthWizard(),
                 icon: Icons.login,
                 text: L10n.get("menu_registration"),
               ),
