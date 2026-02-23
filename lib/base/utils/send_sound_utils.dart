@@ -22,6 +22,10 @@ class SendSoundUtils {
   /// Shared future so concurrent calls wait for init to complete.
   static Future<void>? _sendPlayerInitFuture;
 
+  /// Serializes send-player operations to avoid play() interrupted by pause()
+  /// (AbortError on web when stop/play race).
+  static Future<void> _sendPlayerOperationFuture = Future<void>.value();
+
   static void _ensureSelectionPlayerReady() {
     if (_selectionPlayerInitialized) return;
     _selectionPlayerInitialized = true;
@@ -61,14 +65,20 @@ class SendSoundUtils {
       } catch (_) {}
     }
 
-    // Custom asset via audioplayers (iOS, desktop, or Android fallback)
-    try {
-      await _ensureSendPlayerReady();
+    // Custom asset via audioplayers (iOS, desktop, or Android fallback).
+    // Serialize operations to avoid AbortError on web (play interrupted by pause).
+    _sendPlayerOperationFuture = _sendPlayerOperationFuture.then((_) async {
       try {
-        await _player.stop();
-      } catch (_) {}
-      await _player.play(AssetSource(_clickAsset));
-    } catch (_) {}
+        await _ensureSendPlayerReady();
+        try {
+          await _player.stop();
+        } catch (_) {}
+        await _player.play(AssetSource(_clickAsset));
+      } catch (_) {
+        // Ignore AbortError and similar (e.g. play interrupted by pause on web).
+      }
+    });
+    await _sendPlayerOperationFuture;
   }
 
   /// Plays the click sound for spinner/picker selection feedback.
@@ -81,6 +91,10 @@ class SendSoundUtils {
     }
     _lastSelectionSoundAt = now;
     _ensureSelectionPlayerReady();
-    _selectionPlayer.play(AssetSource(_clickAsset));
+    unawaited(
+      _selectionPlayer
+          .play(AssetSource(_clickAsset))
+          .catchError((_) { /* Ignore AbortError on web */ }),
+    );
   }
 }

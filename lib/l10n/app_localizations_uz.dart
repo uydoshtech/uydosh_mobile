@@ -471,6 +471,14 @@ class AppLocalizationsUz extends AppLocalizations {
       'Metro liniyasi bo\'ylab yoki alohida bekatlar bo\'yicha qidiruv.';
 
   @override
+  String get metro_tutorial_line_hint =>
+      'Barcha metro liniyasi stansiyalarida e\'lonlarni qidiring';
+
+  @override
+  String get metro_tutorial_station_hint =>
+      'Muayyan metro stansiyalari bo\'yicha qidiruv';
+
+  @override
   String get metro_tutorial_tap_to_continue => 'Davom etish uchun bosing';
 
   @override

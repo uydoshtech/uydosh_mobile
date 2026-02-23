@@ -32,14 +32,17 @@ class MetroTutorialOverlay {
     onCycleToLine(1);
 
     final finishRequested = ValueNotifier<bool>(false);
+    final isStationPhase = ValueNotifier<bool>(false);
     final overlay = Overlay.of(context);
     _overlayEntry = OverlayEntry(
       builder: (overlayContext) => _MetroTutorialOverlayContent(
         metroLineKey: metroLineKey,
         metroStationKey: metroStationKey,
         finishRequested: finishRequested,
+        isStationPhase: isStationPhase,
         onDismiss: () {
           finishRequested.dispose();
+          isStationPhase.dispose();
           _cycleTimer?.cancel();
           _cycleTimer = null;
           _overlayEntry?.remove();
@@ -63,6 +66,7 @@ class MetroTutorialOverlay {
         timer.cancel();
         _cycleTimer = null;
         if (onCycleToStation != null && getStationCount != null) {
+          isStationPhase.value = true;
           var stationsShown = 0;
           var ticksWithZeroCount = 0;
           const maxTicksWithZeroCount = 8; // ~6s timeout if stations never load
@@ -112,12 +116,14 @@ class _MetroTutorialOverlayContent extends StatefulWidget {
     required this.metroLineKey,
     required this.metroStationKey,
     required this.finishRequested,
+    required this.isStationPhase,
     required this.onDismiss,
   });
 
   final GlobalKey<TutorialTargetWrapperState> metroLineKey;
   final GlobalKey<TutorialTargetWrapperState> metroStationKey;
   final ValueNotifier<bool> finishRequested;
+  final ValueNotifier<bool> isStationPhase;
   final VoidCallback onDismiss;
 
   @override
@@ -180,15 +186,19 @@ class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayConte
                   painter: _TwoRectanglesMaskPainter(
                     metroLineKey: widget.metroLineKey,
                     metroStationKey: widget.metroStationKey,
-                    dimColor: Colors.black.withValues(alpha: 0.75),
+                    dimColor: Colors.black.withValues(alpha: 0.88),
                     animationValue: _animation.value,
                   ),
                 ),
               ),
-              _TutorialHintText(
-                animationValue: _animation.value,
-                hintText: L10n.get("metro_tutorial_search_hint"),
-                tapHintText: L10n.get("metro_tutorial_tap_to_continue"),
+              ValueListenableBuilder<bool>(
+                valueListenable: widget.isStationPhase,
+                builder: (context, isStation, _) => _TutorialHintText(
+                  animationValue: _animation.value,
+                  hintText: isStation
+                      ? L10n.get("metro_tutorial_station_hint")
+                      : L10n.get("metro_tutorial_line_hint"),
+                ),
               ),
             ],
           ),
@@ -208,12 +218,10 @@ class _TutorialHintText extends StatelessWidget {
   const _TutorialHintText({
     required this.animationValue,
     required this.hintText,
-    required this.tapHintText,
   });
 
   final double animationValue;
   final String hintText;
-  final String tapHintText;
 
   /// Alignment y: -0.5 = ~25% from top - above bottom sheet, not at very top
   static const _verticalPosition = -0.2;
@@ -225,32 +233,17 @@ class _TutorialHintText extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Align(
-          alignment: Alignment(0, _verticalPosition),
+          alignment: const Alignment(0, _verticalPosition),
           child: Opacity(
             opacity: animationValue,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  hintText,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  tapHintText,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontSize: 14,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            child: Text(
+              hintText,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ),

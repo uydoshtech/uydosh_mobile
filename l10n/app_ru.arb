@@ -224,6 +224,8 @@
     }
   },
   "metro_tutorial_search_hint": "Поиск по линии метро или по отдельным станциям.",
+  "metro_tutorial_line_hint": "Поиск объявлений на всех станциях линий метро",
+  "metro_tutorial_station_hint": "Поиск по конкретным станциям метро",
   "metro_tutorial_tap_to_continue": "Нажмите, чтобы продолжить",
   "select_region": "Выберите область",
   "select_region_profile_creation_title": "Откуда вы?",

@@ -232,6 +232,8 @@
     }
   },
   "metro_tutorial_search_hint": "Metro liniyasi bo'ylab yoki alohida bekatlar bo'yicha qidiruv.",
+  "metro_tutorial_line_hint": "Barcha metro liniyasi stansiyalarida e'lonlarni qidiring",
+  "metro_tutorial_station_hint": "Muayyan metro stansiyalari bo'yicha qidiruv",
   "metro_tutorial_tap_to_continue": "Davom etish uchun bosing",
   "select_region": "Tumanni tanlang",
   "select_region_profile_creation_title": "Qayerdansiz?",

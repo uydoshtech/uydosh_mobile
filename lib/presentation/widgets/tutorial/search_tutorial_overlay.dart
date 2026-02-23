@@ -130,8 +130,9 @@ class SearchTutorialOverlay {
     final tutorial = TutorialCoachMark(
       targets: targets,
       colorShadow: Colors.black,
-      opacityShadow: 0.85,
+      opacityShadow: 0.92,
       hideSkip: true,
+      unFocusAnimationDuration: const Duration(milliseconds: 900),
       onFinish: finishTutorial,
       onSkip: () {
         finishTutorial();
@@ -141,7 +142,7 @@ class SearchTutorialOverlay {
 
     tutorial.show(context: context);
 
-    const expandAnimationDuration = Duration(milliseconds: 600);
+    const expandAnimationDuration = Duration(milliseconds: 1600);
 
     const targetDuration = Duration(seconds: 4);
 

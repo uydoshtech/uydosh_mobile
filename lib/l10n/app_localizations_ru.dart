@@ -469,6 +469,14 @@ class AppLocalizationsRu extends AppLocalizations {
       'Поиск по линии метро или по отдельным станциям.';
 
   @override
+  String get metro_tutorial_line_hint =>
+      'Поиск объявлений на всех станциях линий метро';
+
+  @override
+  String get metro_tutorial_station_hint =>
+      'Поиск по конкретным станциям метро';
+
+  @override
   String get metro_tutorial_tap_to_continue => 'Нажмите, чтобы продолжить';
 
   @override

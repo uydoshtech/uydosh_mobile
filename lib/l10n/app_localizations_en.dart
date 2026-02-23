@@ -466,6 +466,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Search along metro line or by individual stations.';
 
   @override
+  String get metro_tutorial_line_hint =>
+      'Search listings on all metro line stations';
+
+  @override
+  String get metro_tutorial_station_hint =>
+      'Search by particular metro stations';
+
+  @override
   String get metro_tutorial_tap_to_continue => 'Tap anywhere to continue';
 
   @override
