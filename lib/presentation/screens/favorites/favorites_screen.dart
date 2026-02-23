@@ -544,8 +544,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   // Build theme-aware button - use GhostButton for all themes
   Widget _buildThemeAwareButton() {
     void onPressed() {
-      // Navigate to home screen to browse listings
-      context.pushReplaceMainNavigation();
+      // Switch to home tab (listings) - we're already inside MainNavigation
+      if (mainNavigationKey.currentState != null) {
+        mainNavigationKey.currentState!.navigateToIndex(0);
+      } else {
+        context.pushReplaceMainNavigation();
+      }
     }
 
     // Use GhostButton for all themes - it"s already theme-aware
