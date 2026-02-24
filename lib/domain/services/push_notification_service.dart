@@ -1,5 +1,6 @@
 import "package:firebase_messaging/firebase_messaging.dart";
-import "package:flutter/foundation.dart" show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import "package:flutter/foundation.dart" show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -17,17 +18,56 @@ abstract class IPushNotificationService {
 
   /// Register the current FCM token with the backend (call after auth).
   Future<void> registerTokenWithBackend();
+
+  /// Check if push notifications are supported on this platform.
+  bool get isSupported;
+
+  /// Get current notification permission status. Returns null if not supported.
+  Future<AuthorizationStatus?> getNotificationStatus();
+
+  /// Request permission again (e.g. from settings menu). On iOS, if denied,
+  /// opens app settings. On Android, may show the permission dialog again.
+  /// Returns true if permission was granted and token registered.
+  Future<bool> requestPermissionAndRegister();
 }
 
 class PushNotificationService implements IPushNotificationService {
   PushNotificationService(this._oauthApiClient);
 
   final IOAuthApiClient _oauthApiClient;
+  bool _handlersSetup = false;
 
   static bool get _isSupported =>
       !kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
+
+  @override
+  bool get isSupported => _isSupported;
+
+  @override
+  Future<AuthorizationStatus?> getNotificationStatus() async {
+    if (!_isSupported) return null;
+    try {
+      final settings =
+          await FirebaseMessaging.instance.getNotificationSettings();
+      return settings.authorizationStatus;
+    } catch (e) {
+      logger.d("📲 Failed to get notification status: $e");
+      return null;
+    }
+  }
+
+  void _setupMessageHandlers() {
+    if (_handlersSetup) return;
+    _handlersSetup = true;
+    FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+    FirebaseMessaging.instance.onTokenRefresh.listen((_) {
+      logger.d("📲 FCM token refreshed");
+      registerTokenWithBackend();
+    });
+  }
 
   @override
   Future<void> initialize() async {
@@ -37,10 +77,8 @@ class PushNotificationService implements IPushNotificationService {
     }
 
     try {
-      // Set up background handler
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-      // Request permission (iOS shows dialog, Android 13+ shows dialog)
       final settings = await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,
@@ -56,27 +94,45 @@ class PushNotificationService implements IPushNotificationService {
         logger.d("📲 Push notification permission provisional");
       }
 
-      // Handle foreground messages
-      FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+      _setupMessageHandlers();
 
-      // Handle notification tap when app is in background/terminated
       final initialMessage =
           await FirebaseMessaging.instance.getInitialMessage();
       if (initialMessage != null) {
         _handleNotificationTap(initialMessage);
       }
 
-      FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
-
-      // Listen for token refresh
-      FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-        logger.d("📲 FCM token refreshed");
-        registerTokenWithBackend();
-      });
-
       logger.d("📲 FCM initialized successfully");
     } catch (e) {
       logger.d("📲 FCM initialization error: $e");
+    }
+  }
+
+  @override
+  Future<bool> requestPermissionAndRegister() async {
+    if (!_isSupported) return false;
+
+    try {
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        _setupMessageHandlers();
+        await registerTokenWithBackend();
+        logger.d("📲 Push notifications enabled");
+        return true;
+      }
+
+      // Permission denied. Open app settings so user can enable manually.
+      await openAppSettings();
+      return false;
+    } catch (e) {
+      logger.d("📲 requestPermissionAndRegister error: $e");
+      return false;
     }
   }
 

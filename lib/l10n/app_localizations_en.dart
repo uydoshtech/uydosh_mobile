@@ -1094,6 +1094,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menu_settings => 'Settings';
 
   @override
+  String get menu_enable_notifications => 'Enable Notifications';
+
+  @override
+  String get notifications_enabled => 'Notifications enabled';
+
+  @override
+  String get notifications_enable_in_settings =>
+      'Please enable notifications in Settings';
+
+  @override
   String get menu_registration => 'Sign in';
 
   @override

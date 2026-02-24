@@ -1108,6 +1108,16 @@ class AppLocalizationsUz extends AppLocalizations {
   String get menu_settings => 'Sozlamalar';
 
   @override
+  String get menu_enable_notifications => 'Bildirishnomalarni yoqish';
+
+  @override
+  String get notifications_enabled => 'Bildirishnomalar yoqildi';
+
+  @override
+  String get notifications_enable_in_settings =>
+      'Ilova sozlamalarida bildirishnomalarni yoqing';
+
+  @override
   String get menu_registration => 'Kirish';
 
   @override

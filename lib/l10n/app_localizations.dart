@@ -2146,6 +2146,24 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get menu_settings;
 
+  /// No description provided for @menu_enable_notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Notifications'**
+  String get menu_enable_notifications;
+
+  /// No description provided for @notifications_enabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications enabled'**
+  String get notifications_enabled;
+
+  /// No description provided for @notifications_enable_in_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enable notifications in Settings'**
+  String get notifications_enable_in_settings;
+
   /// No description provided for @menu_registration.
   ///
   /// In en, this message translates to:

@@ -1102,6 +1102,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get menu_settings => 'Настройки';
 
   @override
+  String get menu_enable_notifications => 'Включить уведомления';
+
+  @override
+  String get notifications_enabled => 'Уведомления включены';
+
+  @override
+  String get notifications_enable_in_settings =>
+      'Включите уведомления в настройках приложения';
+
+  @override
   String get menu_registration => 'Вход';
 
   @override
