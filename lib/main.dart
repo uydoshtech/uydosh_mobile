@@ -1,39 +1,42 @@
 // Firebase imports
+import "dart:ui" show PlatformDispatcher;
+
 import "package:firebase_core/firebase_core.dart";
-import "package:flutter/foundation.dart" show kIsWeb;
+import "package:firebase_crashlytics/firebase_crashlytics.dart";
+import "package:flutter/foundation.dart" show kDebugMode, kIsWeb;
 import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter/services.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/l10n/app_localizations.dart";
 import "package:uy_dosh/base/logger/log_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
-import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
-import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
-import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/firebase_options.dart";
+import "package:uy_dosh/l10n/app_localizations.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/onboarding/onboarding_screen.dart";
+import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/animated_svg_logo.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -69,6 +72,20 @@ void main() async {
         logger.d("Firebase initialization error: $e");
         rethrow;
       }
+    }
+
+    // Initialize Crashlytics (iOS/Android only; not supported on web)
+    if (!kIsWeb) {
+      FlutterError.onError = (errorDetails) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+        FlutterError.presentError(errorDetails);
+      };
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+      await FirebaseCrashlytics.instance
+          .setCrashlyticsCollectionEnabled(!kDebugMode);
     }
 
     // Configure logging based on environment
