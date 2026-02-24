@@ -1228,7 +1228,7 @@ L10n.get(
       Colors.purple,
       Colors.teal,
       Colors.indigo,
-      Colors.pink,
+      Colors.brown,
     ];
     return colors[(index - 1) % colors.length];
   }
@@ -1425,7 +1425,7 @@ L10n.get(
       Colors.purple,
       Colors.teal,
       Colors.indigo,
-      Colors.pink,
+      Colors.brown,
       Colors.red,
     ];
     return colors[(index - 1) % colors.length];

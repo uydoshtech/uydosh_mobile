@@ -314,7 +314,9 @@ class _AchievementTile extends StatelessWidget {
     final badgeColor = isLight && isUnlocked
         ? Colors.transparent
         : (isUnlocked
-            ? Theme.of(context).colorScheme.primaryContainer
+            ? (isBlueTheme
+                ? Colors.white.withValues(alpha: 0.2)
+                : Colors.grey[200]!)
             : Theme.of(context).colorScheme.surfaceContainerHighest);
     final badgeBorder = isLight && isUnlocked
         ? Border.all(color: Colors.black, width: 2)

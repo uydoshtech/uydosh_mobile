@@ -263,7 +263,7 @@ class _LocationPickerState extends State<LocationPicker> {
       Colors.purple,
       Colors.teal,
       Colors.indigo,
-      Colors.pink,
+      Colors.brown,
     ];
     return colors[(index - 1) % colors.length];
   }

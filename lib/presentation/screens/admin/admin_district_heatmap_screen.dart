@@ -440,7 +440,7 @@ class _AdminDistrictHeatmapScreenState
       Colors.purple,
       Colors.teal,
       Colors.indigo,
-      Colors.pink,
+      Colors.brown,
     ];
     return colors[locationId % colors.length];
   }

@@ -259,7 +259,9 @@ class _AchievementUnlockBottomSheetState
         final isBlueTheme = ThemeState().isBlueTheme;
         final badgeColor = isLight
             ? Colors.transparent
-            : Theme.of(context).colorScheme.primaryContainer;
+            : (isBlueTheme
+                ? Colors.white.withValues(alpha: 0.2)
+                : Colors.grey[200]!);
         final badgeBorder = isLight
             ? Border.all(color: Colors.black, width: 2)
             : null;

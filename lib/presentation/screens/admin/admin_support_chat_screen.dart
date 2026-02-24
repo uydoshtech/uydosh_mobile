@@ -3,7 +3,10 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/support_chat_message.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/domain/models/support_chat_thread.dart";
 import "package:uy_dosh/domain/services/support_chat_service.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
@@ -515,45 +518,39 @@ class _AdminSupportChatThreadScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) {
+        final themeState = ThemeState();
+        return Scaffold(
+          backgroundColor: themeState.backgroundColor,
+          appBar: AppBar(
+            title: Text(
               widget.thread.displayTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            if (widget.thread.user != null)
-              Text(
-                widget.thread.user!.name ??
-                    widget.thread.user!.email ??
-                    "User #${widget.thread.userId}",
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(
-                        alpha: 0.7,
-                      ),
-                ),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: themeState.textColor,
               ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              widget.thread.status == "open" ? Icons.check_circle_outline : Icons.lock_open,
             ),
-            onPressed: _toggleStatus,
-            tooltip: widget.thread.status == "open"
-                ? L10n.get("admin_support_chat_close_thread")
-                : L10n.get("admin_support_chat_reopen_thread"),
+            backgroundColor: themeState.appBarBackgroundColor,
+            foregroundColor: themeState.textColor,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  widget.thread.status == "open" ? Icons.check_circle_outline : Icons.lock_open,
+                  color: widget.thread.status == "open" ? Colors.green.shade700 : null,
+                ),
+                onPressed: _toggleStatus,
+                tooltip: widget.thread.status == "open"
+                    ? L10n.get("admin_support_chat_close_thread")
+                    : L10n.get("admin_support_chat_reopen_thread"),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
+          body: Column(
+            children: [
+              Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _messages.isEmpty
@@ -574,110 +571,130 @@ class _AdminSupportChatThreadScreenState
                           return _buildMessageBubble(context, msg);
                         },
                       ),
-          ),
-          if (widget.thread.status == "open")
-            _buildInputBar(context)
-          else
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                L10n.get("admin_support_chat_thread_closed"),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
               ),
-            ),
-        ],
-      ),
+              if (widget.thread.status == "open")
+                _buildInputBar(context)
+              else
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    L10n.get("admin_support_chat_thread_closed"),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildMessageBubble(BuildContext context, SupportChatMessage msg) {
     final isSupport = msg.isFromSupport;
-    return Align(
-      alignment: isSupport ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        decoration: BoxDecoration(
-          color: isSupport
-              ? Theme.of(context).colorScheme.primaryContainer
-              : Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (msg.sender != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  msg.sender!.displayName,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+    final themeState = ThemeState();
+    final textColor = isSupport
+        ? Colors.black
+        : (themeState.isBlueTheme ? Colors.white : Colors.black);
+    final senderInitials = msg.sender != null
+        ? StringUtils.extractInitials(msg.sender!.name)
+        : null;
+
+    return ChatMessageRow(
+      isFromCurrentUser: isSupport,
+      leftAvatarInitials: isSupport ? null : senderInitials,
+      rightAvatarInitials: isSupport ? senderInitials : null,
+      bubbleChild: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            msg.body,
+            style: TextStyle(fontSize: 14, color: textColor),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.access_time,
+                size: 10,
+                color: textColor.withValues(alpha: 0.7),
+              ),
+              const SizedBox(width: 2),
+              Text(
+                _formatTime(msg.createdAt),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: textColor.withValues(alpha: 0.7),
                 ),
               ),
-            Text(
-              msg.body,
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _formatTime(msg.createdAt),
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
+              if (isSupport) ...[
+                const SizedBox(width: 4),
+                Icon(Icons.check, size: 12, color: Colors.green.shade700),
+              ],
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildInputBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: InputDecoration(
-                hintText: L10n.get("admin_support_chat_reply_hint"),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) {
+        final themeState = ThemeState();
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          decoration: BoxDecoration(
+            color: themeState.inputBackgroundColor,
+            border: Border(top: BorderSide(color: themeState.borderColor)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  style: const TextStyle(color: Colors.black),
+                  decoration: InputDecoration(
+                    hintText: L10n.get("admin_support_chat_reply_hint"),
+                    hintStyle: TextStyle(color: Colors.grey[600]),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  maxLines: 3,
+                  minLines: 1,
+                  onSubmitted: (_) => _sendMessage(),
                 ),
               ),
-              maxLines: 3,
-              minLines: 1,
-              onSubmitted: (_) => _sendMessage(),
-            ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: _isSending ? null : _sendMessage,
+                icon: _isSending
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            themeState.sendButtonColor,
+                          ),
+                        ),
+                      )
+                    : Icon(Icons.send, color: themeState.sendButtonColor),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          IconButton.filled(
-            onPressed: _isSending ? null : _sendMessage,
-            icon: _isSending
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.send),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

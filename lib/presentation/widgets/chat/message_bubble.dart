@@ -4,7 +4,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/presentation/widgets/chat/bubble_with_tail_painter.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 
 class MessageBubble extends StatefulWidget {
 
@@ -99,18 +99,16 @@ class _MessageBubbleState extends State<MessageBubble>
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
-        final ownMessageColor = _getThemeAwareOwnMessageColor(themeState);
         final ownMessageTextColor = _getThemeAwareOwnMessageTextColor(
           themeState,
         );
-        final ownMessageBorderColor = _getThemeAwareOwnMessageBorderColor(
-          themeState,
-        );
-        final otherMessageColor = _getThemeAwareOtherMessageColor(themeState);
         final otherMessageTextColor = _getThemeAwareOtherMessageTextColor(
           themeState,
         );
-        final bubbleShadowColor = _getThemeAwareBubbleShadowColor(themeState);
+
+        final textColor = widget.isCurrentUser
+            ? ownMessageTextColor
+            : otherMessageTextColor;
 
         return AnimatedBuilder(
           animation: Listenable.merge([_scaleAnimation, _fadeAnimation]),
@@ -119,118 +117,41 @@ class _MessageBubbleState extends State<MessageBubble>
               scale: _scaleAnimation.value,
               child: Opacity(
                 opacity: _fadeAnimation.value,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    mainAxisAlignment:
-                        widget.isCurrentUser
-                            ? MainAxisAlignment.end
-                            : MainAxisAlignment.start,
+                child: ChatMessageRow(
+                  isFromCurrentUser: widget.isCurrentUser,
+                  leftAvatarInitials: _getOtherUserInitials(),
+                  rightAvatarInitials: _getCurrentUserInitials(),
+                  bubbleChild: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (!widget.isCurrentUser) ...[
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.black, width: 1.5),
-                          ),
-                          child: CircleAvatar(
-                            radius: 16,
-                            backgroundColor: _getThemeAwareOtherUserAvatarColor(
-                              themeState,
-                            ),
-                            child: _buildOtherUserAvatarContent(themeState),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      Flexible(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: widget.isCurrentUser ? 0 : 10,
-                            right: widget.isCurrentUser ? 10 : 0,
-                          ),
-                          child: CustomPaint(
-                            painter: BubbleWithTailPainter(
-                              color: widget.isCurrentUser
-                                  ? ownMessageColor
-                                  : otherMessageColor,
-                              borderColor: widget.isCurrentUser
-                                  ? ownMessageBorderColor
-                                  : Colors.transparent,
-                              shadowColor: bubbleShadowColor,
-                              tailPointsRight: widget.isCurrentUser,
-                              hasBorder: widget.isCurrentUser,
-                              radius: 18,
-                            ),
-                            child: Container(
-                              padding: EdgeInsets.only(
-                                left: widget.isCurrentUser ? 16 : 20,
-                                right: widget.isCurrentUser ? 20 : 16,
-                                top: 12,
-                                bottom: 12,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildMessageContent(
-                                    widget.message.content,
-                                    widget.isCurrentUser
-                                        ? ownMessageTextColor
-                                        : otherMessageTextColor,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.access_time,
-                                        size: 10,
-                                        color: (widget.isCurrentUser
-                                                ? ownMessageTextColor
-                                                : otherMessageTextColor)
-                                            .withValues(alpha: 0.7),
-                                      ),
-                                      const SizedBox(width: 2),
-                                      Text(
-                                        _formatTime(widget.message.createdAt),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: (widget.isCurrentUser
-                                                  ? ownMessageTextColor
-                                                  : otherMessageTextColor)
-                                              .withValues(alpha: 0.7),
-                                        ),
-                                      ),
-                                      if (widget.isCurrentUser) ...[
-                                        const SizedBox(width: 4),
-                                        _buildCheckmarks(),
-                                      ],
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                      _buildMessageContent(
+                        widget.message.content,
+                        textColor,
                       ),
-                      if (widget.isCurrentUser) ...[
-                        const SizedBox(width: 8),
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.5),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 10,
+                            color: textColor.withValues(alpha: 0.7),
                           ),
-                          child: CircleAvatar(
-                            radius: 16,
-                            backgroundColor:
-                                _getThemeAwareCurrentUserAvatarColor(
-                                  themeState,
-                                ),
-                            child: _buildCurrentUserAvatarContent(themeState),
+                          const SizedBox(width: 2),
+                          Text(
+                            _formatTime(widget.message.createdAt),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: textColor.withValues(alpha: 0.7),
+                            ),
                           ),
-                        ),
-                      ],
+                          if (widget.isCurrentUser) ...[
+                            const SizedBox(width: 4),
+                            _buildCheckmarks(),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -242,14 +163,24 @@ class _MessageBubbleState extends State<MessageBubble>
     );
   }
 
-  /// Get theme-aware own message background color
-  Color _getThemeAwareOwnMessageColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.white; // White background for own messages in light theme
-    } else if (themeState.isBlueTheme) {
-      return Colors.white; // White background for own messages in blue theme
+  String? _getOtherUserInitials() {
+    if (widget.otherUserInitials != null &&
+        widget.otherUserInitials!.isNotEmpty) {
+      return widget.otherUserInitials;
     }
-    return Colors.white; // Default to white
+    final sender = widget.message.sender;
+    var userName = sender?.profile?.name;
+    if (userName == null || userName.isEmpty) {
+      if (sender?.email != null && sender!.email.isNotEmpty) {
+        final emailParts = sender.email.split("@");
+        if (emailParts.isNotEmpty) userName = emailParts[0];
+      }
+    }
+    return StringUtils.extractInitials(userName);
+  }
+
+  String? _getCurrentUserInitials() {
+    return StringUtils.extractInitials(widget.currentUserProfile?.name);
   }
 
   /// Get theme-aware own message text color
@@ -262,92 +193,12 @@ class _MessageBubbleState extends State<MessageBubble>
     return Colors.black; // Default to black
   }
 
-  /// Get theme-aware own message border color
-  Color _getThemeAwareOwnMessageBorderColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors
-          .grey[300]!; // Light grey border for own messages in light theme
-    } else if (themeState.isBlueTheme) {
-      return Colors
-          .grey[300]!; // Light grey border for own messages in blue theme
-    }
-    return Colors.grey[300]!; // Default to light grey
-  }
-
-  /// Get theme-aware message bubble shadow color
-  Color _getThemeAwareBubbleShadowColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black.withValues(alpha: 0.12);
-    } else if (themeState.isBlueTheme) {
-      return Colors.black.withValues(alpha: 0.18);
-    }
-    return Colors.black.withValues(alpha: 0.12);
-  }
-
-  /// Get theme-aware other message background color
-  Color _getThemeAwareOtherMessageColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors
-          .grey[200]!; // Light grey background for other messages in light theme
-    } else if (themeState.isBlueTheme) {
-      return Colors
-          .grey[700]!; // Dark grey background for other messages in blue theme
-    }
-    return Colors.grey[200]!; // Default to light grey
-  }
-
   /// Get theme-aware other message text color
   Color _getThemeAwareOtherMessageTextColor(ThemeState themeState) {
     if (themeState.isLightTheme) {
       return Colors.black; // Black text for other messages in light theme
     } else if (themeState.isBlueTheme) {
       return Colors.white; // White text for other messages in blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  /// Get theme-aware current user avatar background color
-  Color _getThemeAwareCurrentUserAvatarColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black; // Black avatar for current user in light theme
-    } else if (themeState.isBlueTheme) {
-      return Colors.black; // Black avatar for current user in blue theme
-    }
-    return Colors.black; // Default to black
-  }
-
-  /// Get theme-aware current user avatar icon color
-  Color _getThemeAwareCurrentUserAvatarIconColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors
-          .white; // White icon on black avatar for current user in light theme
-    } else if (themeState.isBlueTheme) {
-      return Colors
-          .white; // White icon on black avatar for current user in blue theme
-    }
-    return Colors.white; // Default to white
-  }
-
-  /// Get theme-aware other user (listing owner) avatar background color
-  Color _getThemeAwareOtherUserAvatarColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors
-          .white; // White avatar for other user in light theme (inverted)
-    } else if (themeState.isBlueTheme) {
-      return Colors
-          .white; // White avatar for other user in blue theme (inverted)
-    }
-    return Colors.white; // Default to white
-  }
-
-  /// Get theme-aware other user (listing owner) avatar icon color
-  Color _getThemeAwareOtherUserAvatarIconColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors
-          .black; // Black icon on white avatar for other user in light theme (inverted)
-    } else if (themeState.isBlueTheme) {
-      return Colors
-          .black; // Black icon on white avatar for other user in blue theme (inverted)
     }
     return Colors.black; // Default to black
   }
@@ -421,94 +272,10 @@ class _MessageBubbleState extends State<MessageBubble>
     }
   }
 
-  /// Build avatar content for other user - first letter(s) of name or person icon
-  Widget _buildOtherUserAvatarContent(ThemeState themeState) {
-    // Use passed initials if available
-    if (widget.otherUserInitials != null &&
-        widget.otherUserInitials!.isNotEmpty) {
-      return Text(
-        widget.otherUserInitials!,
-        style: TextStyle(
-          color: _getThemeAwareOtherUserAvatarIconColor(themeState),
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-      );
-    }
-
-    // Fallback: Try to get the other user's name from message sender
-    final sender = widget.message.sender;
-    var userName = sender?.profile?.name;
-
-    // If still no name, try to extract from sender email as fallback
-    if (userName == null || userName.isEmpty) {
-      if (sender?.email != null && sender!.email.isNotEmpty) {
-        // Extract name from email (part before @)
-        final emailParts = sender.email.split("@");
-        if (emailParts.isNotEmpty) {
-          userName = emailParts[0];
-        }
-      }
-    }
-
-    final initials = StringUtils.extractInitials(userName);
-
-    // If we have initials, show them
-    if (initials.isNotEmpty) {
-      return Text(
-        initials,
-        style: TextStyle(
-          color: _getThemeAwareOtherUserAvatarIconColor(themeState),
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-      );
-    }
-
-    // Fallback to person icon
-    return Icon(
-      Icons.person,
-      size: 16,
-      color: _getThemeAwareOtherUserAvatarIconColor(themeState),
-    );
-  }
-
-  /// Build avatar content for current user - first letter(s) of name or person icon
-  Widget _buildCurrentUserAvatarContent(ThemeState themeState) {
-    // Get the current user's name from profile
-    final userName = widget.currentUserProfile?.name;
-
-    final initials = StringUtils.extractInitials(userName);
-
-    // If we have initials, show them
-    if (initials.isNotEmpty) {
-      return Text(
-        initials,
-        style: TextStyle(
-          color: _getThemeAwareCurrentUserAvatarIconColor(themeState),
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-      );
-    }
-
-    // Fallback to person icon
-    return Icon(
-      Icons.person,
-      size: 16,
-      color: _getThemeAwareCurrentUserAvatarIconColor(themeState),
-    );
-  }
-
   /// Build checkmarks for message status
   Widget _buildCheckmarks() {
-    final themeState = ThemeState();
-    final checkmarkColor = _getThemeAwareOwnMessageTextColor(
-      themeState,
-    ).withValues(alpha: 0.7);
-
     // For now, show single checkmark for sent messages
     // TODO: Add double checkmark when backend provides read status by other user
-    return Icon(Icons.check, size: 12, color: checkmarkColor);
+    return Icon(Icons.check, size: 12, color: Colors.green.shade700);
   }
 }

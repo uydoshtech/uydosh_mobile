@@ -234,8 +234,10 @@ class AppTheme {
         brightness: Brightness.light,
         inverseSurface: LightThemeColors.cardBackground,
         onInverseSurface: LightThemeColors.textPrimary,
-        // Override surface containers to neutral white/gray (Material 3 fromSeed
-        // auto-generates pinkish tints from purple seed - we want neutral instead)
+        // Override primaryContainer and surface containers to neutral (Material 3
+        // fromSeed auto-generates pinkish tints - we want neutral instead)
+        primaryContainer: LightThemeColors.card,
+        onPrimaryContainer: LightThemeColors.textPrimary,
         surfaceContainerHighest: LightThemeColors.card,
         surfaceContainerHigh: LightThemeColors.card,
         surfaceContainer: LightThemeColors.surface,

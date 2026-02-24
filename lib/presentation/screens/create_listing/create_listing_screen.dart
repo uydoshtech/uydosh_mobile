@@ -320,7 +320,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       Colors.purple,
       Colors.teal,
       Colors.indigo,
-      Colors.pink,
+      Colors.brown,
     ];
     return colors[_selectedLocationIndex % colors.length];
   }
