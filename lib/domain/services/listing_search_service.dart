@@ -73,9 +73,8 @@ abstract class IListingSearchService {
 }
 
 class ListingSearchService implements IListingSearchService {
-  ListingSearchService(this._apiClient, this._oauthApiClient);
+  ListingSearchService(IPublicApiClient apiClient, this._oauthApiClient);
 
-  final IPublicApiClient _apiClient;
   final IOAuthApiClient _oauthApiClient;
 
   List<dynamic> _extractListingsData(dynamic response) {
@@ -172,7 +171,8 @@ class ListingSearchService implements IListingSearchService {
       logger.d("Query Parameters: $queryParams");
       logger.d("=====================================\x1B[0m");
 
-      final response = await _apiClient.get<Map<String, dynamic>>(
+      // Use OAuth client so auth token is sent when logged in (enables saving user searches)
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
         "/listings",
         (json) => json,
         basePath: EnvironmentUtil.basePath,
@@ -202,7 +202,8 @@ class ListingSearchService implements IListingSearchService {
     final currentLanguage = language ?? LanguageState().currentLanguage;
 
     try {
-      final response = await _apiClient.get<Map<String, dynamic>>(
+      // Use OAuth client so auth token is sent when logged in (enables saving user searches)
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
         "/listings/search?subwayStationId=$subwayStationId&page=$page&limit=$limit&language=$currentLanguage&createdWithinDays=$createdWithinDays",
         (json) => json,
         basePath: EnvironmentUtil.basePath,
@@ -229,7 +230,8 @@ class ListingSearchService implements IListingSearchService {
     final currentLanguage = language ?? LanguageState().currentLanguage;
 
     try {
-      final response = await _apiClient.get<Map<String, dynamic>>(
+      // Use OAuth client so auth token is sent when logged in (enables saving user searches)
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
         "/listings?locationId=$locationId&page=$page&limit=$limit&language=$currentLanguage&createdWithinDays=$createdWithinDays",
         (json) => json,
         basePath: EnvironmentUtil.basePath,
@@ -312,7 +314,8 @@ class ListingSearchService implements IListingSearchService {
       logger.d("Query Parameters: $queryParams");
       logger.d("===============================================\x1B[0m");
 
-      final response = await _apiClient.get<Map<String, dynamic>>(
+      // Use OAuth client so auth token is sent when logged in (enables saving user searches)
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
         "/listings/search",
         (json) => json,
         basePath: EnvironmentUtil.basePath,
