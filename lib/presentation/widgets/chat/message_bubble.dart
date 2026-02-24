@@ -273,9 +273,13 @@ class _MessageBubbleState extends State<MessageBubble>
   }
 
   /// Build checkmarks for message status
+  /// Single checkmark = sent, double checkmark = read by recipient
   Widget _buildCheckmarks() {
-    // For now, show single checkmark for sent messages
-    // TODO: Add double checkmark when backend provides read status by other user
-    return Icon(Icons.check, size: 12, color: Colors.green.shade700);
+    final isReadByRecipient = widget.message.isReadByRecipient == true;
+    return Icon(
+      isReadByRecipient ? Icons.done_all : Icons.check,
+      size: 12,
+      color: Colors.green.shade700,
+    );
   }
 }

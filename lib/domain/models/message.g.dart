@@ -34,6 +34,7 @@ _$MessageImpl _$$MessageImplFromJson(
           ? null
           : Message.fromJson(json['replyToMessage'] as Map<String, dynamic>),
   isReadByCurrentUser: json['is_read_by_current_user'] as bool?,
+  isReadByRecipient: json['is_read_by_recipient'] as bool?,
 );
 
 Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
@@ -54,4 +55,5 @@ Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
       'attachments': instance.attachments,
       'replyToMessage': instance.replyToMessage,
       'is_read_by_current_user': instance.isReadByCurrentUser,
+      'is_read_by_recipient': instance.isReadByRecipient,
     };

@@ -49,6 +49,8 @@ mixin _$Message {
   Message? get replyToMessage => throw _privateConstructorUsedError;
   @JsonKey(name: "is_read_by_current_user")
   bool? get isReadByCurrentUser => throw _privateConstructorUsedError;
+  @JsonKey(name: "is_read_by_recipient")
+  bool? get isReadByRecipient => throw _privateConstructorUsedError;
 
   /// Serializes this Message to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -81,6 +83,7 @@ abstract class $MessageCopyWith<$Res> {
     List<MessageAttachment>? attachments,
     Message? replyToMessage,
     @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
+    @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
   });
 
   $MessageSenderCopyWith<$Res>? get sender;
@@ -118,6 +121,7 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
     Object? attachments = freezed,
     Object? replyToMessage = freezed,
     Object? isReadByCurrentUser = freezed,
+    Object? isReadByRecipient = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -201,6 +205,11 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
                     ? _value.isReadByCurrentUser
                     : isReadByCurrentUser // ignore: cast_nullable_to_non_nullable
                         as bool?,
+            isReadByRecipient:
+                freezed == isReadByRecipient
+                    ? _value.isReadByRecipient
+                    : isReadByRecipient // ignore: cast_nullable_to_non_nullable
+                        as bool?,
           )
           as $Val,
     );
@@ -260,6 +269,7 @@ abstract class _$$MessageImplCopyWith<$Res> implements $MessageCopyWith<$Res> {
     List<MessageAttachment>? attachments,
     Message? replyToMessage,
     @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
+    @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
   });
 
   @override
@@ -298,6 +308,7 @@ class __$$MessageImplCopyWithImpl<$Res>
     Object? attachments = freezed,
     Object? replyToMessage = freezed,
     Object? isReadByCurrentUser = freezed,
+    Object? isReadByRecipient = freezed,
   }) {
     return _then(
       _$MessageImpl(
@@ -381,6 +392,11 @@ class __$$MessageImplCopyWithImpl<$Res>
                 ? _value.isReadByCurrentUser
                 : isReadByCurrentUser // ignore: cast_nullable_to_non_nullable
                     as bool?,
+        isReadByRecipient:
+            freezed == isReadByRecipient
+                ? _value.isReadByRecipient
+                : isReadByRecipient // ignore: cast_nullable_to_non_nullable
+                    as bool?,
       ),
     );
   }
@@ -406,6 +422,7 @@ class _$MessageImpl implements _Message {
     final List<MessageAttachment>? attachments,
     this.replyToMessage,
     @JsonKey(name: "is_read_by_current_user") this.isReadByCurrentUser,
+    @JsonKey(name: "is_read_by_recipient") this.isReadByRecipient,
   }) : _attachments = attachments;
 
   factory _$MessageImpl.fromJson(Map<String, dynamic> json) =>
@@ -463,10 +480,13 @@ class _$MessageImpl implements _Message {
   @override
   @JsonKey(name: "is_read_by_current_user")
   final bool? isReadByCurrentUser;
+  @override
+  @JsonKey(name: "is_read_by_recipient")
+  final bool? isReadByRecipient;
 
   @override
   String toString() {
-    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, createdAt: $createdAt, updatedAt: $updatedAt, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser)';
+    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, createdAt: $createdAt, updatedAt: $updatedAt, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser, isReadByRecipient: $isReadByRecipient)';
   }
 
   @override
@@ -504,7 +524,9 @@ class _$MessageImpl implements _Message {
             (identical(other.replyToMessage, replyToMessage) ||
                 other.replyToMessage == replyToMessage) &&
             (identical(other.isReadByCurrentUser, isReadByCurrentUser) ||
-                other.isReadByCurrentUser == isReadByCurrentUser));
+                other.isReadByCurrentUser == isReadByCurrentUser) &&
+            (identical(other.isReadByRecipient, isReadByRecipient) ||
+                other.isReadByRecipient == isReadByRecipient));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -527,6 +549,7 @@ class _$MessageImpl implements _Message {
     const DeepCollectionEquality().hash(_attachments),
     replyToMessage,
     isReadByCurrentUser,
+    isReadByRecipient,
   );
 
   /// Create a copy of Message
@@ -561,6 +584,7 @@ abstract class _Message implements Message {
     final List<MessageAttachment>? attachments,
     final Message? replyToMessage,
     @JsonKey(name: "is_read_by_current_user") final bool? isReadByCurrentUser,
+    @JsonKey(name: "is_read_by_recipient") final bool? isReadByRecipient,
   }) = _$MessageImpl;
 
   factory _Message.fromJson(Map<String, dynamic> json) = _$MessageImpl.fromJson;
@@ -608,6 +632,9 @@ abstract class _Message implements Message {
   @override
   @JsonKey(name: "is_read_by_current_user")
   bool? get isReadByCurrentUser;
+  @override
+  @JsonKey(name: "is_read_by_recipient")
+  bool? get isReadByRecipient;
 
   /// Create a copy of Message
   /// with the given fields replaced by the non-null parameter values.

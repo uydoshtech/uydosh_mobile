@@ -23,6 +23,7 @@ class Message with _$Message {
     List<MessageAttachment>? attachments,
     Message? replyToMessage,
     @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
+    @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
   }) = _Message;
 
   factory Message.fromJson(Map<String, dynamic> json) =>
