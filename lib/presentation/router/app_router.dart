@@ -5,6 +5,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -21,7 +22,6 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/create_listing/create_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
@@ -83,10 +83,11 @@ class _MainNavigationState extends State<MainNavigation>
     super.initState();
     _currentIndex = widget.initialIndex;
 
-    // Handle deep link from cold start (app opened via uydosh://listing/123)
+    // Handle deep link and push notification tap from cold start
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         getIt<DeepLinkService>().handlePendingLink();
+        getIt<IPushNotificationService>().handlePendingNotificationTap();
       }
     });
 

@@ -1,10 +1,15 @@
 import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/foundation.dart" show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import "package:flutter/material.dart";
 import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/push/register_fcm_token_request.dart";
+import "package:uy_dosh/base/state/unread_messages_state.dart";
+import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 
 /// Background message handler - must be top-level function.
 @pragma("vm:entry-point")
@@ -18,6 +23,9 @@ abstract class IPushNotificationService {
 
   /// Register the current FCM token with the backend (call after auth).
   Future<void> registerTokenWithBackend();
+
+  /// Handle pending notification tap (call when app is ready, e.g. from MainNavigation).
+  void handlePendingNotificationTap();
 
   /// Check if push notifications are supported on this platform.
   bool get isSupported;
@@ -36,6 +44,7 @@ class PushNotificationService implements IPushNotificationService {
 
   final IOAuthApiClient _oauthApiClient;
   bool _handlersSetup = false;
+  RemoteMessage? _pendingNotificationTap;
 
   static bool get _isSupported =>
       !kIsWeb &&
@@ -99,7 +108,7 @@ class PushNotificationService implements IPushNotificationService {
       final initialMessage =
           await FirebaseMessaging.instance.getInitialMessage();
       if (initialMessage != null) {
-        _handleNotificationTap(initialMessage);
+        _pendingNotificationTap = initialMessage;
       }
 
       logger.d("📲 FCM initialized successfully");
@@ -138,13 +147,62 @@ class PushNotificationService implements IPushNotificationService {
 
   void _onForegroundMessage(RemoteMessage message) {
     logger.d("📲 FCM foreground message: ${message.notification?.title}");
-    // You can show an in-app banner or update UI here
+    // Refresh unread count; optionally show in-app banner
+    _handleNewMessageNotification(message);
   }
 
   void _handleNotificationTap(RemoteMessage message) {
     logger.d("📲 FCM notification tapped: ${message.data}");
-    // Navigate based on message.data (e.g. conversationId, listingId)
-    // Use a global navigator key or event bus
+    _navigateToMessageIfApplicable(message);
+  }
+
+  void _handleNewMessageNotification(RemoteMessage message) {
+    final data = message.data;
+    if (data["type"] != "new_message") return;
+    UnreadMessagesState().incrementUnreadCount();
+  }
+
+  void _navigateToMessageIfApplicable(RemoteMessage message) {
+    final data = message.data;
+    if (data["type"] != "new_message") return;
+
+    final conversationIdStr = data["conversationId"];
+    final listingIdStr = data["listingId"];
+    final senderIdStr = data["senderId"];
+    final senderName = data["senderName"] ?? "Someone";
+
+    final conversationId = int.tryParse(conversationIdStr ?? "");
+    if (conversationId == null || conversationId <= 0) return;
+
+    final listingId = int.tryParse(listingIdStr ?? "");
+    final senderId = int.tryParse(senderIdStr ?? "");
+
+    if (!getIt.isRegistered<GlobalKey<NavigatorState>>()) return;
+    final navigatorKey = getIt<GlobalKey<NavigatorState>>();
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChatScreen(
+          conversationId: conversationId,
+          listingId: (listingId != null && listingId > 0) ? listingId : null,
+          otherUserInitials: StringUtils.extractInitials(senderName),
+          otherUserName: senderName,
+          otherUserId: (senderId != null && senderId > 0) ? senderId : null,
+          otherUserAvatar: null,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void handlePendingNotificationTap() {
+    final pending = _pendingNotificationTap;
+    _pendingNotificationTap = null;
+    if (pending != null) {
+      _navigateToMessageIfApplicable(pending);
+    }
   }
 
   @override

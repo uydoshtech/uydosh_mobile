@@ -122,6 +122,9 @@ void main() async {
 
     getIt<AppAnalyticsService>().logAppOpened(source: "cold_start");
 
+    final navigatorKey = GlobalKey<NavigatorState>();
+    getIt.registerSingleton<GlobalKey<NavigatorState>>(navigatorKey);
+
     // Initialize push notifications and register token if authenticated
     if (!kIsWeb) {
       await getIt<IPushNotificationService>().initialize();
@@ -138,7 +141,6 @@ void main() async {
       }
     }
 
-    final navigatorKey = GlobalKey<NavigatorState>();
     final deepLinkService = DeepLinkService(navigatorKey: navigatorKey);
     getIt.registerSingleton<DeepLinkService>(deepLinkService);
     if (!kIsWeb) {

@@ -38,6 +38,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     with RouteAware, WidgetsBindingObserver {
   int? _currentUserId;
   int _selectedTabIndex = 0; // 0 = incoming, 1 = outgoing
+  /// Cached conversations to show during refresh - prevents blink when returning to screen
+  List<ConversationSummary>? _lastDisplayedConversations;
 
   @override
   void initState() {
@@ -120,6 +122,15 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     }
   }
 
+  /// Show cached conversations if available, otherwise loading - prevents blink during refresh
+  Widget _showCachedOrLoading() {
+    if (_lastDisplayedConversations != null &&
+        _lastDisplayedConversations!.isNotEmpty) {
+      return _buildTabbedConversationsList(_lastDisplayedConversations!);
+    }
+    return _buildLoadingState();
+  }
+
   /// Calculate total unread count from all conversations
   int _calculateTotalUnreadCount(List<ConversationSummary> conversations) {
     return conversations.fold(0, (sum, conversation) {
@@ -173,6 +184,16 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 "🔍 [MessagesInboxScreen] Conversations loaded: ${conversations.length} conversations",
               );
 
+              // Cache for smooth refresh (no blink when returning to screen)
+              if (mounted) {
+                setState(() {
+                  _lastDisplayedConversations =
+                      List<ConversationSummary>.from(
+                        conversations.cast<ConversationSummary>(),
+                      );
+                });
+              }
+
               // Calculate total unread count and update global state
               final totalUnreadCount = _calculateTotalUnreadCount(
                 conversations.cast<ConversationSummary>(),
@@ -180,6 +201,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               UnreadMessagesState().updateUnreadCount(totalUnreadCount);
             },
             conversationsCleared: () {
+              if (mounted) {
+                setState(() => _lastDisplayedConversations = null);
+              }
               // Clear unread count when conversations are cleared
               UnreadMessagesState().clearUnreadCount();
             },
@@ -197,7 +221,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           builder: (context, state) {
             return state.when(
               initial: _buildLoadingState,
-              loading: _buildLoadingState,
+              loading: _showCachedOrLoading,
               conversationsLoaded: (conversations, hasMore, currentPage) {
                 return _buildTabbedConversationsList(
                   conversations.cast<ConversationSummary>(),
@@ -206,11 +230,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               conversationsCleared: _buildEmptyState,
               messagesLoaded:
                   (messages, hasMore, currentPage, conversationId) =>
-                      _buildLoadingState(),
-              conversationCreated: (conversation) => _buildLoadingState(),
-              messageSent: (message) => _buildLoadingState(),
+                      _showCachedOrLoading(),
+              conversationCreated: (conversation) => _showCachedOrLoading(),
+              messageSent: (message) => _showCachedOrLoading(),
               messagesMarkedAsRead:
-                  (conversationId, markedCount) => _buildLoadingState(),
+                  (conversationId, markedCount) => _showCachedOrLoading(),
               error: _buildErrorState,
             );
           },
