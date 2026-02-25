@@ -9,6 +9,7 @@ import "package:uy_dosh/domain/models/support_chat_thread.dart";
 import "package:uy_dosh/domain/services/support_chat_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
@@ -171,13 +172,15 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   }
 
   Widget _buildContent(BuildContext context) {
+    final itemCount = _threads.isEmpty ? 1 : 1 + _threads.length;
     return RefreshIndicator(
       onRefresh: _fetchThreads,
-      child: ListView(
+      child: CommonListView(
         padding: const EdgeInsets.all(16),
-        children: [
-          if (_threads.isEmpty)
-            Padding(
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          if (_threads.isEmpty) {
+            return Padding(
               padding: const EdgeInsets.symmetric(vertical: 32),
               child: Column(
                 children: [
@@ -209,9 +212,10 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                   ),
                 ],
               ),
-            )
-          else ...[
-            FilledButton.icon(
+            );
+          }
+          if (index == 0) {
+            return FilledButton.icon(
               onPressed: _creatingThread ? null : _createNewThread,
               icon: _creatingThread
                   ? const SizedBox(
@@ -221,63 +225,65 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                     )
                   : const Icon(Icons.add),
               label: Text(L10n.get("contact_support_new")),
-            ),
-            const SizedBox(height: 16),
-            ..._threads.map(
-              (thread) => Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: InkWell(
-                  onTap: () => _openThread(thread),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                thread.displayTitle,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            _buildStatusChip(context, thread.status),
-                          ],
-                        ),
-                        if (thread.lastMessage != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            thread.lastMessage!.body,
-                            style: const TextStyle(fontSize: 13),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                        const SizedBox(height: 8),
-                        Text(
-                          _formatDate(thread.updatedAt),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+            );
+          }
+          final thread = _threads[index - 1];
+          return _buildThreadCard(context, thread);
+        },
+      ),
+    );
+  }
+
+  Widget _buildThreadCard(BuildContext context, SupportChatThread thread) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: () => _openThread(thread),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      thread.displayTitle,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  _buildStatusChip(context, thread.status),
+                ],
+              ),
+              if (thread.lastMessage != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  thread.lastMessage!.body,
+                  style: const TextStyle(fontSize: 13),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              const SizedBox(height: 8),
+              Text(
+                _formatDate(thread.updatedAt),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-            ),
-          ],
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

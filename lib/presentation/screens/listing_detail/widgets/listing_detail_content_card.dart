@@ -10,6 +10,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 
 /// Main content card for listing detail (header, title, description, location, amenities, dates).
@@ -17,8 +18,11 @@ class ListingDetailContentCard extends StatefulWidget {
   const ListingDetailContentCard({
     required this.listingDetail,
     required this.currentLanguage,
-    required this.formatMoveInDate,
     required this.getLocalizedName,
+    this.formatMoveInDate,
+    this.formattedMoveInDate,
+    this.formattedPublicationDate,
+    this.amenityChips,
     this.ownerName,
     this.onAuthorTap,
     super.key,
@@ -28,7 +32,13 @@ class ListingDetailContentCard extends StatefulWidget {
   final String currentLanguage;
   final String? ownerName;
   final VoidCallback? onAuthorTap;
-  final String Function(BuildContext context, String moveInDate) formatMoveInDate;
+  /// Pre-formatted move-in date (avoids DateTime.parse in build).
+  final String? formattedMoveInDate;
+  /// Pre-formatted publication date (avoids DateTime.parse in build).
+  final String? formattedPublicationDate;
+  /// Pre-built amenity chips (avoids .map().toList() in build).
+  final List<Widget>? amenityChips;
+  final String Function(BuildContext context, String moveInDate)? formatMoveInDate;
   final String Function({
     String? nameUz,
     String? nameRu,
@@ -81,6 +91,19 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
       return AmenityIconHelper.getIcon(amenity.code!);
     }
     return Icons.home;
+  }
+
+  String _getPublicationDateText(BuildContext context) {
+    if (widget.formattedPublicationDate != null) {
+      return widget.formattedPublicationDate!;
+    }
+    final date = ListingDetailDateUtils.parseCreatedAt(
+      widget.listingDetail.createdAt,
+    );
+    if (date != null) {
+      return AppDateUtils.formatDateWithShortMonth(context, date);
+    }
+    return widget.listingDetail.createdAt;
   }
 
   void _showAmenityBubble(
@@ -289,15 +312,18 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                        if (widget.listingDetail.amenities != null &&
-                            widget.listingDetail.amenities!.isNotEmpty) ...[
+                        if ((widget.amenityChips != null &&
+                                widget.amenityChips!.isNotEmpty) ||
+                            (widget.listingDetail.amenities != null &&
+                                widget.listingDetail.amenities!.isNotEmpty)) ...[
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: widget.listingDetail.amenities!
-                                .map((amenity) =>
-                                    _buildAmenityChip(context, amenity))
-                                .toList(),
+                            children: widget.amenityChips ??
+                                (widget.listingDetail.amenities ?? <Amenity>[])
+                                    .map((amenity) =>
+                                        _buildAmenityChip(context, amenity))
+                                    .toList(),
                           ),
                           const SizedBox(height: 24),
                         ],
@@ -332,10 +358,13 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                                         ),
                                       ),
                                       TextSpan(
-                                        text: widget.formatMoveInDate(
-                                          context,
-                                          widget.listingDetail.moveInDate!,
-                                        ),
+                                        text: widget.formattedMoveInDate ??
+                                            (widget.formatMoveInDate != null
+                                                ? widget.formatMoveInDate!(
+                                                    context,
+                                                    widget.listingDetail.moveInDate!,
+                                                  )
+                                                : widget.listingDetail.moveInDate!),
                                         style: TextStyle(
                                           fontSize: 15,
                                           color: ListingDetailThemeHelper
@@ -421,12 +450,9 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Expanded(
+                              Expanded(
                               child: Text(
-                                "${L10n.get("publication_date")} ${AppDateUtils.formatDateWithShortMonth(
-                                  context,
-                                  DateTime.parse(widget.listingDetail.createdAt),
-                                )}",
+                                "${L10n.get("publication_date")} ${_getPublicationDateText(context)}",
                                 style: TextStyle(
                                   fontSize: 15,
                                   color:

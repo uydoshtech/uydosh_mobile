@@ -37,41 +37,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _nameController;
   late TextEditingController _aboutMeController;
   late TextEditingController _telegramController;
-  late int _selectedGender;
-  late int? _selectedRegionId;
-  late int? _selectedUniversityId;
+
+  // Form state as ValueNotifiers - only the relevant widget rebuilds on change
+  late ValueNotifier<int> _selectedGender;
+  late ValueNotifier<int?> _selectedRegionId;
+  late ValueNotifier<int?> _selectedUniversityId;
+  late ValueNotifier<bool> _isStudent;
+  late ValueNotifier<String> _selectedLanguage;
+  late ValueNotifier<String> _selectedRole;
+  late ValueNotifier<bool?> _employed;
+  late ValueNotifier<int?> _cleanliness;
+  late ValueNotifier<int?> _noiseLevel;
+  late ValueNotifier<int?> _sociability;
+  late ValueNotifier<bool?> _guestsAllowed;
+  late ValueNotifier<String?> _smokingPreference;
+  late ValueNotifier<String?> _alcoholPreference;
+  late ValueNotifier<bool?> _cookingHabits;
+  late ValueNotifier<bool?> _petsPreference;
+  late ValueNotifier<String?> _wakeupTime;
+  late ValueNotifier<String?> _sleepTime;
+
   List<Region> _regions =
       []; // Initialize to empty list to avoid LateInitializationError
   List<University> _universities =
       []; // Initialize to empty list to avoid LateInitializationError
-  bool _isLoading = false;
-  bool _isLoadingRegions = true;
-  bool _isLoadingUniversities = true;
-
-  String _selectedRole = "tenant";
+  late ValueNotifier<bool> _isLoading;
+  late ValueNotifier<bool> _isLoadingRegions;
+  late ValueNotifier<bool> _isLoadingUniversities;
   bool _isAdmin = false;
-  bool _isRoleLoaded = false;
-
-  // Student status: true = student, false = not student
-  bool _isStudent = false;
+  late ValueNotifier<bool> _isRoleLoaded;
 
   // Scroll controllers for wheel pickers
   FixedExtentScrollController? _regionScrollController;
   FixedExtentScrollController? _universityScrollController;
-
-  // New profile fields
-  bool? _employed;
-  int? _cleanliness;
-  int? _noiseLevel;
-  int? _sociability;
-  bool? _guestsAllowed;
-  String? _smokingPreference;
-  String? _alcoholPreference;
-  bool? _cookingHabits;
-  bool? _petsPreference;
-  String? _wakeupTime;
-  String? _sleepTime;
-  String _selectedLanguage = "uz";
 
   @override
   void initState() {
@@ -84,26 +82,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _telegramController = TextEditingController(
       text: widget.profile.telegram ?? "",
     );
-    _selectedGender = widget.profile.gender ?? 1;
-    _selectedRegionId =
-        widget.profile.regionId; // Initialize with profile value
-    _selectedUniversityId = widget.profile.universityId;
-    _isStudent = widget.profile.universityId != null;
 
-    // Initialize new profile fields
-    _employed = widget.profile.employed;
-    _cleanliness = widget.profile.cleanliness;
-    _noiseLevel = widget.profile.noiseLevel;
-    _sociability = widget.profile.sociability;
-    _guestsAllowed = widget.profile.guestsAllowed;
-    _smokingPreference = widget.profile.smokingPreference;
-    _alcoholPreference = widget.profile.alcoholPreference;
-    _cookingHabits = widget.profile.cookingHabits;
-    _petsPreference = widget.profile.petsPreference;
-    _wakeupTime = widget.profile.wakeupTime;
-    _sleepTime = widget.profile.sleepTime;
-    _selectedLanguage = widget.profile.preferredLanguage ??
-        LanguageState().currentLanguage;
+    _selectedGender = ValueNotifier(widget.profile.gender ?? 1);
+    _selectedRegionId = ValueNotifier(widget.profile.regionId);
+    _selectedUniversityId = ValueNotifier(widget.profile.universityId);
+    _isStudent = ValueNotifier(widget.profile.universityId != null);
+    _selectedLanguage = ValueNotifier(
+      widget.profile.preferredLanguage ?? LanguageState().currentLanguage,
+    );
+    _selectedRole = ValueNotifier("tenant");
+    _employed = ValueNotifier(widget.profile.employed);
+    _cleanliness = ValueNotifier(widget.profile.cleanliness);
+    _noiseLevel = ValueNotifier(widget.profile.noiseLevel);
+    _sociability = ValueNotifier(widget.profile.sociability);
+    _guestsAllowed = ValueNotifier(widget.profile.guestsAllowed);
+    _smokingPreference = ValueNotifier(widget.profile.smokingPreference);
+    _alcoholPreference = ValueNotifier(widget.profile.alcoholPreference);
+    _cookingHabits = ValueNotifier(widget.profile.cookingHabits);
+    _petsPreference = ValueNotifier(widget.profile.petsPreference);
+    _wakeupTime = ValueNotifier(widget.profile.wakeupTime);
+    _sleepTime = ValueNotifier(widget.profile.sleepTime);
+    _isLoading = ValueNotifier(false);
+    _isLoadingRegions = ValueNotifier(true);
+    _isLoadingUniversities = ValueNotifier(true);
+    _isRoleLoaded = ValueNotifier(false);
 
     _loadRegions();
     _loadUniversities();
@@ -113,11 +115,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _loadUserRole() async {
     final role = await SessionManager.getUserRole();
     if (mounted) {
-      setState(() {
-        _isAdmin = role == "admin";
-        _selectedRole = (role == "admin" || role == "landlord") ? role! : "tenant";
-        _isRoleLoaded = true;
-      });
+      _isAdmin = role == "admin";
+      _selectedRole.value =
+          (role == "admin" || role == "landlord") ? role! : "tenant";
+      _isRoleLoaded.value = true;
     }
   }
 
@@ -126,6 +127,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _nameController.dispose();
     _aboutMeController.dispose();
     _telegramController.dispose();
+    _selectedGender.dispose();
+    _selectedRegionId.dispose();
+    _selectedUniversityId.dispose();
+    _isStudent.dispose();
+    _selectedLanguage.dispose();
+    _selectedRole.dispose();
+    _employed.dispose();
+    _cleanliness.dispose();
+    _noiseLevel.dispose();
+    _sociability.dispose();
+    _guestsAllowed.dispose();
+    _smokingPreference.dispose();
+    _alcoholPreference.dispose();
+    _cookingHabits.dispose();
+    _petsPreference.dispose();
+    _wakeupTime.dispose();
+    _sleepTime.dispose();
+    _isLoading.dispose();
+    _isLoadingRegions.dispose();
+    _isLoadingUniversities.dispose();
+    _isRoleLoaded.dispose();
     _regionScrollController?.dispose();
     _universityScrollController?.dispose();
     super.dispose();
@@ -144,32 +166,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return nameA.compareTo(nameB);
       });
 
-      setState(() {
-        _regions = regions;
-        _isLoadingRegions = false;
+      setState(() => _regions = regions);
+      _isLoadingRegions.value = false;
 
-        // Set the selected region based on the profile's regionId
-        if (widget.profile.regionId != null) {
-          final regionExists = regions.any(
-            (region) => region.id == widget.profile.regionId,
-          );
-
-          if (regionExists) {
-            _selectedRegionId = widget.profile.regionId;
-          } else {
-            _selectedRegionId = null;
-          }
-        } else {
-          _selectedRegionId = null;
-        }
-      });
+      // Set the selected region based on the profile's regionId
+      if (widget.profile.regionId != null) {
+        final regionExists = regions.any(
+          (region) => region.id == widget.profile.regionId,
+        );
+        _selectedRegionId.value =
+            regionExists ? widget.profile.regionId : null;
+      } else {
+        _selectedRegionId.value = null;
+      }
 
       // Initialize scroll controller after regions are loaded
       _initializeRegionScrollController();
     } catch (e) {
-      setState(() {
-        _isLoadingRegions = false;
-      });
+      _isLoadingRegions.value = false;
       if (mounted) {
         ToastTheme.showError(
           context,
@@ -196,17 +210,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final universityService = getIt<IUniversityService>();
       final universities = await universityService.getUniversities();
-      setState(() {
-        _universities = universities;
-        _isLoadingUniversities = false;
-      });
+      setState(() => _universities = universities);
+      _isLoadingUniversities.value = false;
 
       // Initialize scroll controller after universities are loaded
       _initializeUniversityScrollController();
     } catch (e) {
-      setState(() {
-        _isLoadingUniversities = false;
-      });
+      _isLoadingUniversities.value = false;
       if (mounted) {
         ToastTheme.showError(
           context,
@@ -238,27 +248,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    _isLoading.value = true;
 
     try {
       // Validate and prepare the data
       final name = _nameController.text.trim();
-      final gender = _selectedGender;
-      final regionId = _selectedRegionId;
+      final gender = _selectedGender.value;
+      final regionId = _selectedRegionId.value;
 
       // If user is a student, require university selection
-      if (_isStudent && _selectedUniversityId == null) {
+      if (_isStudent.value && _selectedUniversityId.value == null) {
         ToastTheme.showError(
           context,
           message: L10n.get("please_select_university"),
         );
-        setState(() => _isLoading = false);
+        _isLoading.value = false;
         return;
       }
 
-      final universityId = _isStudent ? _selectedUniversityId : null;
+      final universityId =
+          _isStudent.value ? _selectedUniversityId.value : null;
 
       // Handle about me text: if it's empty, send null to clear it; if it has content, send the content
       final aboutMe = _aboutMeController.text.trim();
@@ -271,7 +280,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // Preserve admin role: check actual role at save time to avoid overwriting
       // when dropdown wasn't loaded yet (race condition)
       final currentRole = await SessionManager.getUserRole();
-      final roleToSave = (currentRole == "admin") ? "admin" : _selectedRole;
+      final roleToSave = (currentRole == "admin") ? "admin" : _selectedRole.value;
 
       final updateRequest = UpdateProfileRequest(
         name: name,
@@ -281,34 +290,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         role: roleToSave,
         aboutMe: aboutMeToSend,
         telegram: telegramToSend,
-        employed: _employed,
-        cleanliness: _cleanliness,
-        noiseLevel: _noiseLevel,
-        sociability: _sociability,
-        guestsAllowed: _guestsAllowed,
-        smokingPreference: _smokingPreference,
-        alcoholPreference: _alcoholPreference,
-        cookingHabits: _cookingHabits,
-        petsPreference: _petsPreference,
-        wakeupTime: _wakeupTime,
-        sleepTime: _sleepTime,
-        preferredLanguage: _selectedLanguage,
+        employed: _employed.value,
+        cleanliness: _cleanliness.value,
+        noiseLevel: _noiseLevel.value,
+        sociability: _sociability.value,
+        guestsAllowed: _guestsAllowed.value,
+        smokingPreference: _smokingPreference.value,
+        alcoholPreference: _alcoholPreference.value,
+        cookingHabits: _cookingHabits.value,
+        petsPreference: _petsPreference.value,
+        wakeupTime: _wakeupTime.value,
+        sleepTime: _sleepTime.value,
+        preferredLanguage: _selectedLanguage.value,
       );
 
       // Debug logging to see what values are being sent
       logger.d("🔍 [EditProfileScreen] Update request values:");
       logger.d("  - telegram: $telegramToSend");
-      logger.d("  - smokingPreference: $_smokingPreference");
-      logger.d("  - alcoholPreference: $_alcoholPreference");
-      logger.d("  - wakeupTime: $_wakeupTime");
-      logger.d("  - sleepTime: $_sleepTime");
-      logger.d("  - employed: $_employed");
-      logger.d("  - cleanliness: $_cleanliness");
-      logger.d("  - noiseLevel: $_noiseLevel");
-      logger.d("  - sociability: $_sociability");
-      logger.d("  - guestsAllowed: $_guestsAllowed");
-      logger.d("  - cookingHabits: $_cookingHabits");
-      logger.d("  - petsPreference: $_petsPreference");
+      logger.d("  - smokingPreference: ${_smokingPreference.value}");
+      logger.d("  - alcoholPreference: ${_alcoholPreference.value}");
+      logger.d("  - wakeupTime: ${_wakeupTime.value}");
+      logger.d("  - sleepTime: ${_sleepTime.value}");
+      logger.d("  - employed: ${_employed.value}");
+      logger.d("  - cleanliness: ${_cleanliness.value}");
+      logger.d("  - noiseLevel: ${_noiseLevel.value}");
+      logger.d("  - sociability: ${_sociability.value}");
+      logger.d("  - guestsAllowed: ${_guestsAllowed.value}");
+      logger.d("  - cookingHabits: ${_cookingHabits.value}");
+      logger.d("  - petsPreference: ${_petsPreference.value}");
 
       // Also log the JSON that will be sent
       final requestJson = updateRequest.toJson();
@@ -345,9 +354,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        _isLoading.value = false;
       }
     }
   }
@@ -369,10 +376,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton(
-              onPressed: _isLoading ? null : _saveProfile,
-              icon:
-                  _isLoading
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isLoading,
+              builder: (context, isLoading, _) => IconButton(
+                onPressed: isLoading ? null : _saveProfile,
+                icon:
+                    isLoading
                       ? SizedBox(
                         width: 20,
                         height: 20,
@@ -385,8 +394,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                       )
                       : const Icon(Icons.save),
-              tooltip: L10n.get(
-                "save_changes",
+                tooltip: L10n.get(
+                  "save_changes",
+                ),
               ),
             ),
           ),
@@ -420,10 +430,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _buildStudentSelector(context),
 
             // University Selector (only show when user selects "I'm a student")
-            if (_isStudent) ...[
-              const SizedBox(height: 24),
-              _buildUniversitySelector(context),
-            ],
+            ValueListenableBuilder<bool>(
+              valueListenable: _isStudent,
+              builder: (context, isStudent, _) => isStudent
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 24),
+                        _buildUniversitySelector(context),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
 
             const SizedBox(height: 24),
 
@@ -447,58 +466,70 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 24),
 
             // Language (visible to other users - what language you speak)
-            ProfileDropdownControl(
-              label: L10n.get("language"),
-              value: _selectedLanguage,
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedLanguage = value);
-                  LanguageState().setLanguage(value);
-                }
-              },
+            ValueListenableBuilder<String>(
+              valueListenable: _selectedLanguage,
+              builder: (context, selectedLanguage, _) =>
+                  ProfileDropdownControl(
+                label: L10n.get("language"),
+                value: selectedLanguage,
+                onChanged: (value) {
+                  if (value != null) {
+                    _selectedLanguage.value = value;
+                    LanguageState().setLanguage(value);
+                  }
+                },
               icon: CupertinoIcons.globe,
-              options: const [
-                DropdownOption(value: "uz", label: "🇺🇿 O'zbekcha"),
-                DropdownOption(value: "ru", label: "🇷🇺 Русский"),
-                DropdownOption(value: "en", label: "🇺🇸 English"),
-              ],
+                options: const [
+                  DropdownOption(value: "uz", label: "🇺🇿 O'zbekcha"),
+                  DropdownOption(value: "ru", label: "🇷🇺 Русский"),
+                  DropdownOption(value: "en", label: "🇺🇸 English"),
+                ],
+              ),
             ),
 
             const SizedBox(height: 24),
 
             // Role Dropdown (landlord / tenant; admin option when user is admin)
-            if (!_isRoleLoaded)
-              _buildRoleLoadingPlaceholder(context)
-            else
-              ProfileDropdownControl(
-                label: L10n.get(
-                  "are_you_landlord_or_renter",
-                ),
-                value: _selectedRole,
-                onChanged: (value) => setState(() => _selectedRole = value ?? "tenant"),
-                icon: Icons.badge,
-                options: [
-                  if (_isAdmin)
-                    DropdownOption(
-                      value: "admin",
-                      label: L10n.get(
-                        "role_admin",
-                      ),
-                    ),
-                  DropdownOption(
-                    value: "landlord",
-                    label: L10n.get(
-                      "role_landlord",
-                    ),
-                  ),
-                  DropdownOption(
-                    value: "tenant",
-                    label: L10n.get(
-                      "role_tenant",
-                    ),
-                  ),
-                ],
-              ),
+            ValueListenableBuilder<bool>(
+              valueListenable: _isRoleLoaded,
+              builder: (context, isRoleLoaded, _) =>
+                  isRoleLoaded
+                      ? ValueListenableBuilder<String>(
+                          valueListenable: _selectedRole,
+                          builder: (context, selectedRole, _) =>
+                              ProfileDropdownControl(
+                            label: L10n.get(
+                              "are_you_landlord_or_renter",
+                            ),
+                            value: selectedRole,
+                            onChanged: (value) =>
+                                _selectedRole.value = value ?? "tenant",
+                            icon: Icons.badge,
+                            options: [
+                              if (_isAdmin)
+                                DropdownOption(
+                                  value: "admin",
+                                  label: L10n.get(
+                                    "role_admin",
+                                  ),
+                                ),
+                              DropdownOption(
+                                value: "landlord",
+                                label: L10n.get(
+                                  "role_landlord",
+                                ),
+                              ),
+                              DropdownOption(
+                                value: "tenant",
+                                label: L10n.get(
+                                  "role_tenant",
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _buildRoleLoadingPlaceholder(context),
+            ),
 
             const SizedBox(height: 24),
 
@@ -516,64 +547,75 @@ L10n.get(
             const SizedBox(height: 16),
 
             // Employed Toggle
-            ProfileToggleControl(
-              label: L10n.get( "employed"),
-              value: _employed,
-              onChanged: (value) => setState(() => _employed = value),
-              icon: Icons.work,
+            ValueListenableBuilder<bool?>(
+              valueListenable: _employed,
+              builder: (context, employed, _) => ProfileToggleControl(
+                label: L10n.get( "employed"),
+                value: employed,
+                onChanged: (value) => _employed.value = value,
+                icon: Icons.work,
+              ),
             ),
 
             const SizedBox(height: 16),
 
             // Cleanliness Slider
-            ProfileSliderControl(
-              label: L10n.get(
-                "cleanliness",
-              ),
-              value: _cleanliness,
-              onChanged: (value) => setState(() => _cleanliness = value),
+            ValueListenableBuilder<int?>(
+              valueListenable: _cleanliness,
+              builder: (context, cleanliness, _) => ProfileSliderControl(
+                label: L10n.get(
+                  "cleanliness",
+                ),
+                value: cleanliness,
+                onChanged: (value) => _cleanliness.value = value,
               min: 1,
               max: 5,
               icon: Icons.cleaning_services,
-              labels: [
-                L10n.get( "very_messy"),
-                L10n.get( "messy"),
-                L10n.get( "average"),
-                L10n.get( "clean"),
-                L10n.get( "very_clean"),
-              ],
+                labels: [
+                  L10n.get( "very_messy"),
+                  L10n.get( "messy"),
+                  L10n.get( "average"),
+                  L10n.get( "clean"),
+                  L10n.get( "very_clean"),
+                ],
+              ),
             ),
 
             const SizedBox(height: 16),
 
             // Noise Level Slider
-            ProfileSliderControl(
-              label: L10n.get(
-                "noise_level",
-              ),
-              value: _noiseLevel,
-              onChanged: (value) => setState(() => _noiseLevel = value),
+            ValueListenableBuilder<int?>(
+              valueListenable: _noiseLevel,
+              builder: (context, noiseLevel, _) => ProfileSliderControl(
+                label: L10n.get(
+                  "noise_level",
+                ),
+                value: noiseLevel,
+                onChanged: (value) => _noiseLevel.value = value,
               min: 1,
               max: 5,
               icon: Icons.volume_up,
-              labels: [
-                L10n.get( "very_quiet"),
-                L10n.get( "quiet"),
-                L10n.get( "average"),
-                L10n.get( "loud"),
-                L10n.get( "very_loud"),
-              ],
+                labels: [
+                  L10n.get( "very_quiet"),
+                  L10n.get( "quiet"),
+                  L10n.get( "average"),
+                  L10n.get( "loud"),
+                  L10n.get( "very_loud"),
+                ],
+              ),
             ),
 
             const SizedBox(height: 16),
 
             // Sociability Slider
-            ProfileSliderControl(
-              label: L10n.get(
-                "sociability",
-              ),
-              value: _sociability,
-              onChanged: (value) => setState(() => _sociability = value),
+            ValueListenableBuilder<int?>(
+              valueListenable: _sociability,
+              builder: (context, sociability, _) => ProfileSliderControl(
+                label: L10n.get(
+                  "sociability",
+                ),
+                value: sociability,
+                onChanged: (value) => _sociability.value = value,
               min: 1,
               max: 5,
               icon: Icons.people,
@@ -588,31 +630,38 @@ L10n.get(
                   "very_extroverted",
                 ),
               ],
+              ),
             ),
 
             const SizedBox(height: 16),
 
             // Guests Allowed Toggle
-            ProfileToggleControl(
-              label: L10n.get(
-                "guests_allowed",
+            ValueListenableBuilder<bool?>(
+              valueListenable: _guestsAllowed,
+              builder: (context, guestsAllowed, _) => ProfileToggleControl(
+                label: L10n.get(
+                  "guests_allowed",
+                ),
+                value: guestsAllowed,
+                onChanged: (value) => _guestsAllowed.value = value,
+                icon: Icons.group_add,
               ),
-              value: _guestsAllowed,
-              onChanged: (value) => setState(() => _guestsAllowed = value),
-              icon: Icons.group_add,
             ),
 
             const SizedBox(height: 16),
 
             // Smoking Preference Dropdown
-            ProfileDropdownControl(
-              label: L10n.get(
-                "smoking_preference",
-              ),
-              value: _smokingPreference,
-              onChanged: (value) => setState(() => _smokingPreference = value),
-              icon: Icons.smoking_rooms,
-              options: [
+            ValueListenableBuilder<String?>(
+              valueListenable: _smokingPreference,
+              builder: (context, smokingPreference, _) =>
+                  ProfileDropdownControl(
+                label: L10n.get(
+                  "smoking_preference",
+                ),
+                value: smokingPreference,
+                onChanged: (value) => _smokingPreference.value = value,
+                icon: Icons.smoking_rooms,
+                options: [
                 DropdownOption(
                   value: null,
                   label: L10n.get(
@@ -638,19 +687,23 @@ L10n.get(
                   ),
                 ),
               ],
+                  ),
             ),
 
             const SizedBox(height: 16),
 
             // Alcohol Preference Dropdown
-            ProfileDropdownControl(
-              label: L10n.get(
-                "alcohol_preference",
-              ),
-              value: _alcoholPreference,
-              onChanged: (value) => setState(() => _alcoholPreference = value),
-              icon: Icons.local_bar,
-              options: [
+            ValueListenableBuilder<String?>(
+              valueListenable: _alcoholPreference,
+              builder: (context, alcoholPreference, _) =>
+                  ProfileDropdownControl(
+                label: L10n.get(
+                  "alcohol_preference",
+                ),
+                value: alcoholPreference,
+                onChanged: (value) => _alcoholPreference.value = value,
+                icon: Icons.local_bar,
+                options: [
                 DropdownOption(
                   value: null,
                   label: L10n.get(
@@ -676,43 +729,52 @@ L10n.get(
                   ),
                 ),
               ],
+                  ),
             ),
 
             const SizedBox(height: 16),
 
             // Cooking Habits Toggle
-            ProfileToggleControl(
-              label: L10n.get(
-                "cooking_habits",
+            ValueListenableBuilder<bool?>(
+              valueListenable: _cookingHabits,
+              builder: (context, cookingHabits, _) => ProfileToggleControl(
+                label: L10n.get(
+                  "cooking_habits",
+                ),
+                value: cookingHabits,
+                onChanged: (value) => _cookingHabits.value = value,
+                icon: Icons.restaurant,
               ),
-              value: _cookingHabits,
-              onChanged: (value) => setState(() => _cookingHabits = value),
-              icon: Icons.restaurant,
             ),
 
             const SizedBox(height: 16),
 
             // Pets Preference Toggle
-            ProfileToggleControl(
-              label: L10n.get(
-                "pets_preference",
+            ValueListenableBuilder<bool?>(
+              valueListenable: _petsPreference,
+              builder: (context, petsPreference, _) => ProfileToggleControl(
+                label: L10n.get(
+                  "pets_preference",
+                ),
+                value: petsPreference,
+                onChanged: (value) => _petsPreference.value = value,
+                icon: Icons.pets,
               ),
-              value: _petsPreference,
-              onChanged: (value) => setState(() => _petsPreference = value),
-              icon: Icons.pets,
             ),
 
             const SizedBox(height: 16),
 
             // Wake-up Time Dropdown
-            ProfileDropdownControl(
-              label: L10n.get(
-                "wakeup_time",
-              ),
-              value: _wakeupTime,
-              onChanged: (value) => setState(() => _wakeupTime = value),
-              icon: Icons.wb_sunny,
-              options: [
+            ValueListenableBuilder<String?>(
+              valueListenable: _wakeupTime,
+              builder: (context, wakeupTime, _) => ProfileDropdownControl(
+                label: L10n.get(
+                  "wakeup_time",
+                ),
+                value: wakeupTime,
+                onChanged: (value) => _wakeupTime.value = value,
+                icon: Icons.wb_sunny,
+                options: [
                 DropdownOption(
                   value: null,
                   label: L10n.get(
@@ -736,19 +798,22 @@ L10n.get(
                   label: L10n.get( "night"),
                 ),
               ],
+              ),
             ),
 
             const SizedBox(height: 16),
 
             // Sleep Time Dropdown
-            ProfileDropdownControl(
-              label: L10n.get(
-                "sleep_time",
-              ),
-              value: _sleepTime,
-              onChanged: (value) => setState(() => _sleepTime = value),
-              icon: Icons.bedtime,
-              options: [
+            ValueListenableBuilder<String?>(
+              valueListenable: _sleepTime,
+              builder: (context, sleepTime, _) => ProfileDropdownControl(
+                label: L10n.get(
+                  "sleep_time",
+                ),
+                value: sleepTime,
+                onChanged: (value) => _sleepTime.value = value,
+                icon: Icons.bedtime,
+                options: [
                 DropdownOption(
                   value: null,
                   label: L10n.get(
@@ -772,26 +837,30 @@ L10n.get(
                   label: L10n.get( "night"),
                 ),
               ],
+              ),
             ),
 
             const SizedBox(height: 32),
 
             // Save Button
-            SizedBox(
-              width: double.infinity,
-              child: GhostButtonFactory.iconText(
-                onPressed: _isLoading ? null : _saveProfile,
-                icon: Icons.save,
-                text:
-                    _isLoading
-                        ? L10n.get(
-                          "saving",
-                        )
-                        : L10n.get(
-                          "save_changes",
-                        ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                isLoading: _isLoading,
+            ValueListenableBuilder<bool>(
+              valueListenable: _isLoading,
+              builder: (context, isLoading, _) => SizedBox(
+                width: double.infinity,
+                child: GhostButtonFactory.iconText(
+                  onPressed: isLoading ? null : _saveProfile,
+                  icon: Icons.save,
+                  text:
+                      isLoading
+                          ? L10n.get(
+                            "saving",
+                          )
+                          : L10n.get(
+                            "save_changes",
+                          ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  isLoading: isLoading,
+                ),
               ),
             ),
           ],
@@ -908,28 +977,27 @@ L10n.get(
   }
 
   Widget _buildGenderSelector(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          L10n.get( "gender"),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: _getLifestyleHeaderColor(),
+    return ValueListenableBuilder<int>(
+      valueListenable: _selectedGender,
+      builder: (context, selectedGender, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            L10n.get( "gender"),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: _getLifestyleHeaderColor(),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        GenderPicker(
-          selectedGender: _selectedGender,
-          onGenderChanged: (gender) {
-            setState(() {
-              _selectedGender = gender;
-            });
-          },
-          showArrows: false,
-        ),
-      ],
+          const SizedBox(height: 8),
+          GenderPicker(
+            selectedGender: selectedGender,
+            onGenderChanged: (gender) => _selectedGender.value = gender,
+            showArrows: false,
+          ),
+        ],
+      ),
     );
   }
 
@@ -977,9 +1045,12 @@ L10n.get(
     required String label,
     required IconData icon,
   }) {
-    final theme = Theme.of(context);
-    final isBlueTheme = ThemeState().isBlueTheme;
-    final isSelected = _isStudent == isStudent;
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isStudent,
+      builder: (context, currentIsStudent, _) {
+        final theme = Theme.of(context);
+        final isBlueTheme = ThemeState().isBlueTheme;
+        final isSelected = currentIsStudent == isStudent;
     final backgroundColor = isSelected
         ? Colors.white
         : (isBlueTheme
@@ -992,49 +1063,50 @@ L10n.get(
         ? Colors.black
         : (isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
 
-    return GestureDetector(
-      onTap: () {
-        HapticFeedbackUtils.impact();
-        SendSoundUtils.playSelectionSound();
-        setState(() {
-          _isStudent = isStudent;
-          if (isStudent) {
-            // Auto-select first university if none selected
-            if (_universities.isNotEmpty && _selectedUniversityId == null) {
-              _selectedUniversityId = _universities.first.id;
-              _initializeUniversityScrollController();
+        return GestureDetector(
+          onTap: () {
+            HapticFeedbackUtils.impact();
+            SendSoundUtils.playSelectionSound();
+            _isStudent.value = isStudent;
+            if (isStudent) {
+              // Auto-select first university if none selected
+              if (_universities.isNotEmpty &&
+                  _selectedUniversityId.value == null) {
+                _selectedUniversityId.value = _universities.first.id;
+                _initializeUniversityScrollController();
+              }
+            } else {
+              _selectedUniversityId.value = null;
             }
-          } else {
-            _selectedUniversityId = null;
-          }
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: textColor, size: 20),
-            const SizedBox(width: 10),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
             ),
-          ],
-        ),
-      ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: textColor, size: 20),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -1069,8 +1141,10 @@ L10n.get(
               child: Row(
                 children: [
                   Expanded(
-                    child:
-                        _isLoadingRegions
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _isLoadingRegions,
+                      builder: (context, isLoadingRegions, _) =>
+                          isLoadingRegions
                             ? Center(
                               child: Text(
 L10n.get(
@@ -1092,19 +1166,15 @@ L10n.get(
                               onSelectedItemChanged: (index) {
                                 HapticFeedbackUtils.impact();
                                 SendSoundUtils.playSelectionSound();
-                                setState(() {
-                                  if (index == 0) {
-                                    // "Select region" option
-                                    _selectedRegionId = null;
-                                  } else {
-                                    // Get the actual region ID from the selected index
-                                    final regionIndex = index - 1;
-                                    if (regionIndex < _regions.length) {
-                                      _selectedRegionId =
-                                          _regions[regionIndex].id;
-                                    }
+                                if (index == 0) {
+                                  _selectedRegionId.value = null;
+                                } else {
+                                  final regionIndex = index - 1;
+                                  if (regionIndex < _regions.length) {
+                                    _selectedRegionId.value =
+                                        _regions[regionIndex].id;
                                   }
-                                });
+                                }
                               },
                               children: [
                                 // Unselected option
@@ -1193,6 +1263,7 @@ L10n.get(
                                 ),
                               ),
                             ),
+                    ),
                   ),
                 ],
               ),
@@ -1205,13 +1276,13 @@ L10n.get(
 
   int _getInitialRegionItem() {
     // If no region is selected, return 0 (first item: "Select region")
-    if (_selectedRegionId == null) {
+    if (_selectedRegionId.value == null) {
       return 0;
     }
 
     // Find the index of the selected region ID in the wheel picker
     final regionIndex = _regions.indexWhere(
-      (region) => region.id == _selectedRegionId,
+      (region) => region.id == _selectedRegionId.value,
     );
 
     // Return the wheel picker index (0 = "Select region", 1 = first region, etc.)
@@ -1264,8 +1335,10 @@ L10n.get(
               child: Row(
                 children: [
                   Expanded(
-                    child:
-                        _isLoadingUniversities
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _isLoadingUniversities,
+                      builder: (context, isLoadingUniversities, _) =>
+                          isLoadingUniversities
                             ? Center(
                               child: Text(
 L10n.get(
@@ -1287,20 +1360,15 @@ L10n.get(
                               onSelectedItemChanged: (index) {
                                 HapticFeedbackUtils.impact();
                                 SendSoundUtils.playSelectionSound();
-                                setState(() {
-                                  if (index == 0) {
-                                    // "Select university" option
-                                    _selectedUniversityId = null;
-                                  } else {
-                                    // Get the actual university ID from the selected index
-                                    final universityIndex = index - 1;
-                                    if (universityIndex <
-                                        _universities.length) {
-                                      _selectedUniversityId =
-                                          _universities[universityIndex].id;
-                                    }
+                                if (index == 0) {
+                                  _selectedUniversityId.value = null;
+                                } else {
+                                  final universityIndex = index - 1;
+                                  if (universityIndex < _universities.length) {
+                                    _selectedUniversityId.value =
+                                        _universities[universityIndex].id;
                                   }
-                                });
+                                }
                               },
                               children: [
                                 // Unselected option
@@ -1391,6 +1459,7 @@ L10n.get(
                                 ),
                               ),
                             ),
+                    ),
                   ),
                 ],
               ),
@@ -1403,13 +1472,13 @@ L10n.get(
 
   int _getInitialUniversityItem() {
     // If no university is selected, return 0 (first item: "Select university")
-    if (_selectedUniversityId == null) {
+    if (_selectedUniversityId.value == null) {
       return 0;
     }
 
     // Find the index of the selected university ID in the wheel picker
     final universityIndex = _universities.indexWhere(
-      (university) => university.id == _selectedUniversityId,
+      (university) => university.id == _selectedUniversityId.value,
     );
 
     // Return the wheel picker index (0 = "Select university", 1 = first university, etc.)
@@ -1432,16 +1501,16 @@ L10n.get(
   }
 
   String _getSelectedRegionName() {
-    if (_isLoadingRegions) {
+    if (_isLoadingRegions.value) {
       return L10n.get( "loading_regions");
     }
 
-    if (_selectedRegionId == null) {
+    if (_selectedRegionId.value == null) {
       return L10n.get( "select_region");
     }
 
     final selectedRegion = _regions.firstWhere(
-      (region) => region.id == _selectedRegionId,
+      (region) => region.id == _selectedRegionId.value,
       orElse:
           () => Region(
             id: 0,

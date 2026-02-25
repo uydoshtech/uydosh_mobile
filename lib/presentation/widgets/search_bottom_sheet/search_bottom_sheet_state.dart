@@ -13,6 +13,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   FixedExtentScrollController? _locationScrollController;
   Timer? _blinkTimer;
   bool _isBlinking = true;
+  double? _cachedSheetHeight;
 
   @override
   void initState() {
@@ -469,14 +470,14 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     return BlocListener<SubwayStationsBloc, SubwayStationsState>(
       listener: (context, state) {
         state.map(
-          initial: (_) => setState(() {}),
-          loading: (_) => setState(() {}),
+          initial: (_) {},
+          loading: (_) {},
           loaded: (loadedState) => _onStationsLoaded(loadedState.stations),
-          error: (errorState) => setState(() {}),
+          error: (_) {},
         );
       },
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.7 + 30,
+        height: _cachedSheetHeight ??= MediaQuery.of(context).size.height * 0.7 + 30,
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: const BorderRadius.only(

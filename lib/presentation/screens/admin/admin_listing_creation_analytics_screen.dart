@@ -4,6 +4,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/listing_creation_analytics_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
@@ -259,8 +260,13 @@ class _AdminListingCreationAnalyticsScreenState
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => BlocProvider(
-          create: (context) => ListingDetailBloc(getIt<IListingService>()),
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => ListingDetailBloc(getIt<IListingService>()),
+            ),
+            BlocProvider(create: (_) => ListingDetailPageBloc()),
+          ],
           child: ListingDetailScreen(listingId: listingId),
         ),
       ),

@@ -23,6 +23,7 @@ import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_header.dart";
@@ -529,9 +530,14 @@ class _ChatScreenState extends State<ChatScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder:
-              (context) => BlocProvider(
-                create:
-                    (context) => ListingDetailBloc(getIt<IListingService>()),
+              (context) => MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                    create:
+                        (context) => ListingDetailBloc(getIt<IListingService>()),
+                  ),
+                  BlocProvider(create: (_) => ListingDetailPageBloc()),
+                ],
                 child: ListingDetailScreen(listingId: widget.listingId!),
               ),
         ),

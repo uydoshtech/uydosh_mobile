@@ -60,6 +60,9 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_map_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
@@ -141,44 +144,6 @@ class _ListingDetailBodyData {
   }
 }
 
-class _CompatibilityResult {
-
-  const _CompatibilityResult({
-    required this.percent,
-    required this.matches,
-    required this.differences,
-  });
-  final int? percent;
-  final List<_CompatibilityMatch> matches;
-  final List<_CompatibilityDifference> differences;
-}
-
-class _CompatibilityMatch {
-
-  const _CompatibilityMatch({
-    required this.labelKey,
-    required this.label,
-    required this.value,
-  });
-  final String labelKey;
-  final String label;
-  final String value;
-}
-
-class _CompatibilityDifference {
-
-  const _CompatibilityDifference({
-    required this.labelKey,
-    required this.label,
-    required this.currentText,
-    required this.ownerText,
-  });
-  final String labelKey;
-  final String label;
-  final String currentText;
-  final String ownerText;
-}
-
 class ListingDetailScreen extends StatefulWidget {
 
   const ListingDetailScreen({required this.listingId, super.key});
@@ -197,35 +162,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   late PageController _pageController;
   late ScrollController _scrollController;
   final GlobalKey _compatibilitySectionKey = GlobalKey();
-
-  // Loading state for toggle button
-  bool _isToggling = false;
-
-  // Loading state for delete button
-  bool _isDeleting = false;
-
-  // Loading state for complaints count
-  bool _isLoadingComplaintsCount = false;
-  int? _complaintsCount;
-  int? _complaintsCountListingId;
-
-  // Compatibility state
-  bool _isLoadingCompatibility = false;
-  int? _compatibilityListingUserId;
-  int? _compatibilityPercent;
-  List<_CompatibilityMatch> _compatibilityMatches = [];
-  List<_CompatibilityDifference> _compatibilityDifferences = [];
-  String? _compatibilityError;
-
-  // Owner name for Author label
-  String? _ownerName;
-  int? _ownerNameListingUserId;
-
-  // View count state (for owner)
-  bool _isLoadingViewCount = false;
-  int? _viewCount;
-  int? _viewCountListingId;
-
 
   @override
   void initState() {
@@ -298,10 +234,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         "🔄 Starting toggle listing active status for listing ID: $listingId",
       );
 
-      // Set loading state and update UI
-      setState(() {
-        _isToggling = true;
-      });
+      context.read<ListingDetailPageBloc>().setToggling(true);
 
       final listingService = getIt<IListingService>();
       final success = await listingService.toggleListingActive(listingId);
@@ -333,9 +266,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
                 isActive: !loadedState.listingDetail.isActive,
               );
 
-              // Emit the updated state
-              context.read<ListingDetailBloc>().emit(
-                ListingDetailState.loaded(listingDetail: updatedListing),
+              context.read<ListingDetailBloc>().add(
+                ListingDetailEvent.updateListingDetail(
+                  listingDetail: updatedListing,
+                ),
               );
 
               logger.d("✅ Listing status updated in BLoC state");
@@ -349,10 +283,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         // Mark home screen for refresh to reflect the status change
         HomeRefreshState().markForRefresh();
 
-        // Reset loading state
-        setState(() {
-          _isToggling = false;
-        });
+        context.read<ListingDetailPageBloc>().setToggling(false);
         logger.d(
           "✅ Loading state reset, button should now be interactive again",
         );
@@ -371,11 +302,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         ),
       );
     } finally {
-      // Always reset loading state, even if there was an error
       if (mounted) {
-        setState(() {
-          _isToggling = false;
-        });
+        context.read<ListingDetailPageBloc>().setToggling(false);
         logger.d("🔄 Loading state reset in finally block");
       }
     }
@@ -452,58 +380,46 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   }
 
   Future<void> _loadComplaintCount(int listingId) async {
-    if (_isLoadingComplaintsCount && _complaintsCountListingId == listingId) {
+    final pageBloc = context.read<ListingDetailPageBloc>();
+    if (pageBloc.state.isLoadingComplaintsCount &&
+        pageBloc.state.complaintsCountListingId == listingId) {
       return;
     }
 
-    setState(() {
-      _isLoadingComplaintsCount = true;
-      _complaintsCountListingId = listingId;
-    });
+    pageBloc.setLoadingComplaintsCount(listingId);
 
     try {
       final complaintService = getIt<IComplaintService>();
       final count = await complaintService.getListingComplaintsCount(listingId);
 
       if (!mounted) return;
-      setState(() {
-        _complaintsCount = count;
-        _isLoadingComplaintsCount = false;
-      });
+      pageBloc.setComplaintsCount(listingId, count);
     } catch (e) {
       logger.d("Error loading complaints count: $e");
       if (!mounted) return;
-      setState(() {
-        _isLoadingComplaintsCount = false;
-      });
+      pageBloc.setComplaintsCountError();
     }
   }
 
   Future<void> _loadViewCount(int listingId) async {
-    if (_isLoadingViewCount && _viewCountListingId == listingId) {
+    final pageBloc = context.read<ListingDetailPageBloc>();
+    if (pageBloc.state.isLoadingViewCount &&
+        pageBloc.state.viewCountListingId == listingId) {
       return;
     }
 
-    setState(() {
-      _isLoadingViewCount = true;
-      _viewCountListingId = listingId;
-    });
+    pageBloc.setLoadingViewCount(listingId);
 
     try {
       final listingService = getIt<IListingService>();
       final count = await listingService.getListingViewCount(listingId);
 
       if (!mounted) return;
-      setState(() {
-        _viewCount = count;
-        _isLoadingViewCount = false;
-      });
+      pageBloc.setViewCount(listingId, count);
     } catch (e) {
       logger.d("Error loading view count: $e");
       if (!mounted) return;
-      setState(() {
-        _isLoadingViewCount = false;
-      });
+      pageBloc.setViewCountError();
     }
   }
 
@@ -534,22 +450,18 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   }
 
   Future<void> _loadOwnerName(int listingUserId) async {
-    if (_ownerNameListingUserId == listingUserId && _ownerName != null) {
+    final pageBloc = context.read<ListingDetailPageBloc>();
+    if (pageBloc.state.ownerNameListingUserId == listingUserId &&
+        pageBloc.state.ownerName != null) {
       return;
     }
-    if (!AuthenticationState().isAuthenticated) {
-      return;
-    }
+    if (!AuthenticationState().isAuthenticated) return;
     try {
       final profile =
           await getIt<IUserProfileService>().getUserProfile(listingUserId);
       if (!mounted) return;
-      setState(() {
-        _ownerName = profile.name?.trim().isNotEmpty == true
-            ? profile.name
-            : null;
-        _ownerNameListingUserId = listingUserId;
-      });
+      final name = profile.name?.trim().isNotEmpty == true ? profile.name : null;
+      pageBloc.setOwnerName(listingUserId, name);
     } catch (e) {
       logger.d("Error loading owner name: $e");
     }
@@ -557,23 +469,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
   Future<void> _loadCompatibility(int listingUserId) async {
     final authState = AuthenticationState();
-    if (!authState.isAuthenticated) {
+    if (!authState.isAuthenticated) return;
+
+    final pageBloc = context.read<ListingDetailPageBloc>();
+    if (pageBloc.state.isLoadingCompatibility &&
+        pageBloc.state.compatibilityListingUserId == listingUserId) {
       return;
     }
 
-    if (_isLoadingCompatibility &&
-        _compatibilityListingUserId == listingUserId) {
-      return;
-    }
-
-    setState(() {
-      _isLoadingCompatibility = true;
-      _compatibilityListingUserId = listingUserId;
-      _compatibilityError = null;
-      _compatibilityPercent = null;
-      _compatibilityMatches = [];
-      _compatibilityDifferences = [];
-    });
+    pageBloc.setLoadingCompatibility(listingUserId);
 
     try {
       final userProfileService = getIt<IUserProfileService>();
@@ -584,351 +488,40 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
       final currentProfile = profiles[0];
       final ownerProfile = profiles[1];
-      final result = _calculateCompatibility(currentProfile, ownerProfile);
+      final result = ListingDetailCompatibilityHelper.calculate(
+        currentProfile,
+        ownerProfile,
+      );
 
       if (!mounted) return;
-      setState(() {
-        _compatibilityPercent = result.percent;
-        _compatibilityMatches = result.matches;
-        _compatibilityDifferences = result.differences;
-        _isLoadingCompatibility = false;
-        _ownerName = ownerProfile.name?.trim().isNotEmpty == true
+      pageBloc.setCompatibilityResult(
+        listingUserId: listingUserId,
+        percent: result.percent,
+        matches: result.matches,
+        differences: result.differences,
+        ownerName: ownerProfile.name?.trim().isNotEmpty == true
             ? ownerProfile.name
-            : null;
-        _ownerNameListingUserId = listingUserId;
-      });
+            : null,
+      );
     } catch (e) {
       logger.d("Error loading compatibility: $e");
       if (!mounted) return;
-      setState(() {
-        _isLoadingCompatibility = false;
-        _compatibilityPercent = null;
-        _compatibilityMatches = [];
-        _compatibilityDifferences = [];
-        _compatibilityError = e.toString();
-      });
+      pageBloc.setCompatibilityError(e.toString());
     }
   }
 
-  _CompatibilityResult _calculateCompatibility(
-    UserProfile currentProfile,
-    UserProfile ownerProfile,
+  String _buildComplaintsButtonLabel(
+    bool isLoadingComplaintsCount,
+    int? complaintsCount,
   ) {
-    var total = 0;
-    var matched = 0;
-    final matches = <_CompatibilityMatch>[];
-    final differences = <_CompatibilityDifference>[];
+    final base = L10n.get("view_listing_complaints");
 
-    void compare<T>({
-      required String labelKey,
-      required T? currentValue,
-      required T? ownerValue,
-      required bool Function(T a, T b) isMatch,
-      required String Function(T value) formatValue,
-    }) {
-      if (currentValue == null || ownerValue == null) {
-        return;
-      }
-
-      total += 1;
-      final label = L10n.get(labelKey);
-      final currentText = formatValue(currentValue);
-      final ownerText = formatValue(ownerValue);
-
-      if (isMatch(currentValue, ownerValue)) {
-        matched += 1;
-        matches.add(
-          _CompatibilityMatch(
-            labelKey: labelKey,
-            label: label,
-            value: currentText,
-          ),
-        );
-      } else {
-        differences.add(
-          _CompatibilityDifference(
-            labelKey: labelKey,
-            label: label,
-            currentText: currentText,
-            ownerText: ownerText,
-          ),
-        );
-      }
-    }
-
-    // University - both users are students (shown first in matches)
-    if (currentProfile.universityId != null && ownerProfile.universityId != null) {
-      total += 1;
-      final labelKey = "university";
-      final label = L10n.get(labelKey);
-      final currentLang = LanguageState().currentLanguage;
-      final currentText = currentProfile.university != null
-          ? currentProfile.university!.getLocalizedNameCapitalized(currentLang)
-          : "";
-      final ownerText = ownerProfile.university != null
-          ? ownerProfile.university!.getLocalizedNameCapitalized(currentLang)
-          : "";
-
-      if (currentProfile.universityId == ownerProfile.universityId) {
-        matched += 1;
-        matches.insert(
-          0,
-          _CompatibilityMatch(
-            labelKey: "same_university",
-            label: L10n.get("same_university"),
-            value: currentText.isNotEmpty ? currentText : ownerText,
-          ),
-        );
-      } else {
-        // Both are students (different universities) - show as similarity
-        matched += 1;
-        matches.insert(
-          0,
-          _CompatibilityMatch(
-            labelKey: "both_students",
-            label: L10n.get("both_students"),
-            value: "$currentText ↔ $ownerText",
-          ),
-        );
-      }
-    }
-
-    // Region - both users have region set
-    if (currentProfile.regionId != null && ownerProfile.regionId != null) {
-      total += 1;
-      final labelKey = "region";
-      final label = L10n.get(labelKey);
-      final currentLang = LanguageState().currentLanguage;
-      final currentText = currentProfile.region != null
-          ? _getLocalizedRegionName(currentProfile.region!)
-          : "";
-      final ownerText = ownerProfile.region != null
-          ? _getLocalizedRegionName(ownerProfile.region!)
-          : "";
-
-      if (currentProfile.regionId == ownerProfile.regionId) {
-        matched += 1;
-        matches.add(
-          _CompatibilityMatch(
-            labelKey: "same_region",
-            label: L10n.get("same_region"),
-            value: currentText.isNotEmpty ? currentText : ownerText,
-          ),
-        );
-      } else {
-        differences.add(
-          _CompatibilityDifference(
-            labelKey: labelKey,
-            label: label,
-            currentText: currentText.isNotEmpty ? currentText : L10n.get("unknown"),
-            ownerText: ownerText.isNotEmpty ? ownerText : L10n.get("unknown"),
-          ),
-        );
-      }
-    }
-
-    // Language - both users have preferred language set
-    compare<String>(
-      labelKey: "language",
-      currentValue: currentProfile.preferredLanguage,
-      ownerValue: ownerProfile.preferredLanguage,
-      isMatch: (a, b) => a == b,
-      formatValue: LanguageDisplayHelper.getLanguageDisplayName,
-    );
-
-    compare<int>(
-      labelKey: "cleanliness",
-      currentValue: currentProfile.cleanliness,
-      ownerValue: ownerProfile.cleanliness,
-      isMatch: (a, b) => (a - b).abs() <= 1,
-      formatValue: _formatCleanlinessLevel,
-    );
-
-    compare<int>(
-      labelKey: "noise_level",
-      currentValue: currentProfile.noiseLevel,
-      ownerValue: ownerProfile.noiseLevel,
-      isMatch: (a, b) => (a - b).abs() <= 1,
-      formatValue: _formatNoiseLevel,
-    );
-
-    compare<int>(
-      labelKey: "sociability",
-      currentValue: currentProfile.sociability,
-      ownerValue: ownerProfile.sociability,
-      isMatch: (a, b) => (a - b).abs() <= 1,
-      formatValue: _formatSociabilityLevel,
-    );
-
-    compare<bool>(
-      labelKey: "guests_allowed",
-      currentValue: currentProfile.guestsAllowed,
-      ownerValue: ownerProfile.guestsAllowed,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatBooleanPreference,
-    );
-
-    compare<String>(
-      labelKey: "smoking_preference",
-      currentValue: currentProfile.smokingPreference,
-      ownerValue: ownerProfile.smokingPreference,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatSmokingPreference,
-    );
-
-    compare<String>(
-      labelKey: "alcohol_preference",
-      currentValue: currentProfile.alcoholPreference,
-      ownerValue: ownerProfile.alcoholPreference,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatAlcoholPreference,
-    );
-
-    compare<bool>(
-      labelKey: "cooking_habits",
-      currentValue: currentProfile.cookingHabits,
-      ownerValue: ownerProfile.cookingHabits,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatCookingHabits,
-    );
-
-    compare<bool>(
-      labelKey: "pets_preference",
-      currentValue: currentProfile.petsPreference,
-      ownerValue: ownerProfile.petsPreference,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatPetsPreference,
-    );
-
-    compare<String>(
-      labelKey: "wakeup_time",
-      currentValue: currentProfile.wakeupTime,
-      ownerValue: ownerProfile.wakeupTime,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatDayPreference,
-    );
-
-    compare<String>(
-      labelKey: "sleep_time",
-      currentValue: currentProfile.sleepTime,
-      ownerValue: ownerProfile.sleepTime,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatDayPreference,
-    );
-
-    compare<bool>(
-      labelKey: "employed",
-      currentValue: currentProfile.employed,
-      ownerValue: ownerProfile.employed,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatBooleanPreference,
-    );
-
-    final percent = total > 0 ? ((matched / total) * 100).round() : null;
-    return _CompatibilityResult(
-      percent: percent,
-      matches: matches,
-      differences: differences,
-    );
-  }
-
-  String _formatBooleanPreference(bool value) {
-    return L10n.get(value ? "yes" : "no",
-    );
-  }
-
-  String _formatCookingHabits(bool value) {
-    return L10n.get(value ? "cook" : "dont_cook",
-    );
-  }
-
-  String _formatPetsPreference(bool value) {
-    return L10n.get(value ? "pets_okay" : "pets_not_okay",
-    );
-  }
-
-
-  String _formatDayPreference(String value) {
-    switch (value) {
-      case "morning":
-      case "evening":
-      case "night":
-        return L10n.get( value);
-      default:
-        return value;
-    }
-  }
-
-  String _formatSmokingPreference(String value) {
-    const map = {
-      "non-smoker": "non_smoker",
-      "occasional": "occasional_smoker",
-      "regular": "regular_smoker",
-    };
-    final key = map[value];
-    return key == null
-        ? value
-        : L10n.get( key);
-  }
-
-  String _formatAlcoholPreference(String value) {
-    const map = {
-      "non-drinker": "non_drinker",
-      "occasional": "occasional_drinker",
-      "regular": "regular_drinker",
-    };
-    final key = map[value];
-    return key == null
-        ? value
-        : L10n.get( key);
-  }
-
-  String _formatCleanlinessLevel(int value) {
-    const keys = [
-      "very_messy",
-      "messy",
-      "average",
-      "clean",
-      "very_clean",
-    ];
-    final index = (value - 1).clamp(0, keys.length - 1);
-    return L10n.get( keys[index]);
-  }
-
-  String _formatNoiseLevel(int value) {
-    const keys = [
-      "very_quiet",
-      "quiet",
-      "average",
-      "loud",
-      "very_loud",
-    ];
-    final index = (value - 1).clamp(0, keys.length - 1);
-    return L10n.get( keys[index]);
-  }
-
-  String _formatSociabilityLevel(int value) {
-    const keys = [
-      "very_introverted",
-      "introverted",
-      "balanced",
-      "extroverted",
-      "very_extroverted",
-    ];
-    final index = (value - 1).clamp(0, keys.length - 1);
-    return L10n.get( keys[index]);
-  }
-
-  String _buildComplaintsButtonLabel() {
-    final base = L10n.get("view_listing_complaints",
-    );
-
-    if (_isLoadingComplaintsCount && _complaintsCount == null) {
+    if (isLoadingComplaintsCount && complaintsCount == null) {
       return "$base ...";
     }
-    if (_complaintsCount != null) {
-      final countText = L10n.get("complaints_count_short",
-      ).replaceAll("{count}", _complaintsCount!.toString());
+    if (complaintsCount != null) {
+      final countText =
+          L10n.get("complaints_count_short").replaceAll("{count}", complaintsCount.toString());
       return "$base • $countText";
     }
     return base;
@@ -961,19 +554,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             nameUz ??
             nameEn ??
             L10n.get( "unknown");
-    }
-  }
-
-  String _getLocalizedRegionName(UserProfileRegion region) {
-    final currentLanguage = LanguageState().currentLanguage;
-    switch (currentLanguage) {
-      case "ru":
-        return region.shortNameRu ?? region.nameRu ?? "Unknown";
-      case "uz":
-        return region.shortNameUz ?? region.nameUz ?? "Unknown";
-      case "en":
-      default:
-        return region.shortNameEn ?? region.nameEn ?? "Unknown";
     }
   }
 
@@ -1234,23 +814,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
 
     // If the listing was updated, refresh the data
     if (result == true) {
-      // Mark home screen for refresh since listing was updated
       HomeRefreshState().markForRefresh();
 
-      // Force a complete refresh by clearing the state first
-      context.read<ListingDetailBloc>().emit(
-        const ListingDetailState.initial(),
-      );
-
-      // Then fetch fresh data from server
+      // Fetch fresh data from server (bloc emits loading then loaded)
       context.read<ListingDetailBloc>().add(
         ListingDetailEvent.fetchListingDetail(id: widget.listingId),
       );
-
-      // Force UI rebuild to ensure changes are visible
-      if (mounted) {
-        setState(() {});
-      }
     }
   }
 
@@ -1320,10 +889,7 @@ L10n.get("error_promotion_once_per_week",
         }
       }
 
-      // Show loading state
-      setState(() {
-        _isToggling = true;
-      });
+      context.read<ListingDetailPageBloc>().setToggling(true);
 
       // Call the toggle feature listing service
       final listingService = getIt<IListingService>();
@@ -1377,9 +943,7 @@ L10n.get("feature_listing_error",
       );
     } finally {
       if (mounted) {
-        setState(() {
-          _isToggling = false;
-        });
+        context.read<ListingDetailPageBloc>().setToggling(false);
       }
     }
   }
@@ -1700,9 +1264,10 @@ L10n.get("feature_listing_error",
             "🧭 [Frontend] Conversation ID for navigation: ${conversation.id}",
           );
           try {
+            final pageState = context.read<ListingDetailPageBloc>().state;
             final displayName =
-                (_ownerName != null && _ownerName!.trim().isNotEmpty)
-                    ? _ownerName!
+                (pageState.ownerName != null && pageState.ownerName!.trim().isNotEmpty)
+                    ? pageState.ownerName!
                     : listingDetail.user.email ?? '';
             final chatScreen = ChatScreen(
               conversationId: conversation.id,
@@ -2152,7 +1717,10 @@ L10n.get("feature_listing_error",
             if (data.hasError) {
               return _buildErrorState(data.errorMessage);
             }
-            return _buildLoadedState(data.listingDetail!);
+            return BlocBuilder<ListingDetailPageBloc, ListingDetailPageState>(
+              builder: (context, pageState) =>
+                  _buildLoadedState(data.listingDetail!, pageState),
+            );
           },
         ),
       ),
@@ -2204,7 +1772,10 @@ L10n.get("feature_listing_error",
     ];
   }
 
-  Widget? _buildCompatibilitySection(ListingDetail listingDetail) {
+  Widget? _buildCompatibilitySection(
+    ListingDetail listingDetail,
+    ListingDetailPageState pageState,
+  ) {
     final isOwner = UserListingState().isOwner(listingDetail.user.id);
     if (isOwner) return null;
 
@@ -2212,41 +1783,40 @@ L10n.get("feature_listing_error",
       listingDetail: listingDetail,
       scrollController: _scrollController,
       sectionKey: _compatibilitySectionKey,
-      compatibilityPercent: _compatibilityPercent,
-      isLoadingCompatibility: _isLoadingCompatibility,
-      compatibilityError: _compatibilityError,
-      matches: _compatibilityMatches
-          .map(
-            (m) => CompatibilityMatch(
-              labelKey: m.labelKey,
-              label: m.label,
-              value: m.value,
-            ),
-          )
-          .toList(),
-      differences: _compatibilityDifferences
-          .map(
-            (d) => CompatibilityDifference(
-              labelKey: d.labelKey,
-              label: d.label,
-              currentText: d.currentText,
-              ownerText: d.ownerText,
-            ),
-          )
-          .toList(),
+      compatibilityPercent: pageState.compatibilityPercent,
+      isLoadingCompatibility: pageState.isLoadingCompatibility,
+      compatibilityError: pageState.compatibilityError,
+      matches: pageState.compatibilityMatches,
+      differences: pageState.compatibilityDifferences,
       onMessage: () => _startConversation(listingDetail),
       onViewProfile: () => _navigateToProfile(listingDetail.user.id),
       onCompleteProfile: _navigateToOwnProfile,
     );
   }
 
-  Widget _buildLoadedState(ListingDetail listingDetail) {
+  Widget _buildLoadedState(
+    ListingDetail listingDetail,
+    ListingDetailPageState pageState,
+  ) {
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
         final currentLanguage = LanguageState().currentLanguage;
         final compatibilitySection =
-            _buildCompatibilitySection(listingDetail);
+            _buildCompatibilitySection(listingDetail, pageState);
+
+        // Pre-compute outside build: dates (avoids DateTime.parse in content card)
+        final formattedMoveIn = listingDetail.moveInDate != null &&
+                listingDetail.moveInDate!.isNotEmpty
+            ? ListingDetailDateUtils.formatMoveInDate(
+                listingDetail.moveInDate!,
+                currentLanguage,
+              )
+            : null;
+        final formattedPub = ListingDetailDateUtils.formatPublicationDate(
+          context,
+          listingDetail.createdAt,
+        );
 
         return Column(
           children: [
@@ -2261,9 +1831,9 @@ L10n.get("feature_listing_error",
                     if (UserListingState().isOwner(listingDetail.user.id)) ...[
                       ListingDetailOwnerToolbar(
                         listingDetail: listingDetail,
-                        viewCount: _viewCount,
-                        isLoadingViewCount: _isLoadingViewCount,
-                        isToggling: _isToggling,
+                        viewCount: pageState.viewCount,
+                        isLoadingViewCount: pageState.isLoadingViewCount,
+                        isToggling: pageState.isToggling,
                         onToggleFeature: _toggleFeatureListing,
                       ),
                       const SizedBox(height: 16),
@@ -2285,9 +1855,10 @@ L10n.get("feature_listing_error",
                     ListingDetailContentCard(
                       listingDetail: listingDetail,
                       currentLanguage: currentLanguage,
-                      formatMoveInDate: _formatMoveInDate,
+                      formattedMoveInDate: formattedMoveIn,
+                      formattedPublicationDate: formattedPub,
                       getLocalizedName: _getLocalizedName,
-                      ownerName: _ownerName,
+                      ownerName: pageState.ownerName,
                       onAuthorTap: () => _navigateToProfile(
                         listingDetail.user.id,
                         phoneNumber: listingDetail.user.phone,
@@ -2301,14 +1872,21 @@ L10n.get("feature_listing_error",
                       getLocalizedName: _getLocalizedName,
                     ),
                     // Compatibility section (below map, in scroll flow)
-                    if (compatibilitySection != null) ...[
-                      const SizedBox(height: 16),
-                      compatibilitySection!,
-                    ],
-                    if (_complaintsCount != null && _complaintsCount! > 0) ...[
+                    ...() {
+                      final section = compatibilitySection;
+                      if (section == null) return <Widget>[];
+                      return [
+                        const SizedBox(height: 16),
+                        section,
+                      ];
+                    }(),
+                    if ((pageState.complaintsCount ?? 0) > 0) ...[
                       const SizedBox(height: 16),
                       ListingDetailComplaintsCard(
-                        complaintsLabel: _buildComplaintsButtonLabel(),
+                        complaintsLabel: _buildComplaintsButtonLabel(
+                          pageState.isLoadingComplaintsCount,
+                          pageState.complaintsCount,
+                        ),
                         onPressed: () =>
                             _viewListingComplaints(listingDetail.id),
                         warningBlinkAnimation: _warningBlinkAnimation,
@@ -2399,48 +1977,6 @@ L10n.get("error_internet_connection",
     );
   }
 
-  // Move-in date helper method
-  String _formatMoveInDate(BuildContext context, String moveInDate) {
-    try {
-      final date = DateTime.parse(moveInDate);
-      final now = DateTime.now();
-      final difference = date.difference(now).inDays;
-
-      if (difference == 0) {
-        return L10n.get( "today");
-      } else if (difference == 1) {
-        return L10n.get( "tomorrow");
-      } else if (difference > 0 && difference <= 7) {
-        return AppStrings.getWithParams(
-          "in_days",
-          LanguageState().currentLanguage,
-          params: {"days": difference.toString()},
-        );
-      } else {
-        // Format as "MMM dd, yyyy" for dates more than a week away
-        final monthKeys = [
-          "january",
-          "february",
-          "march",
-          "april",
-          "may",
-          "june",
-          "july",
-          "august",
-          "september",
-          "october",
-          "november",
-          "december",
-        ];
-        final localizedMonth = L10n.get(monthKeys[date.month - 1]);
-        return "${localizedMonth.substring(0, 3)} ${date.day}, ${date.year}";
-      }
-    } catch (e) {
-      // If parsing fails, return the raw string
-      return moveInDate;
-    }
-  }
-
   // Theme-dependent color method for app bar background
   Color _getAppBarBackgroundColor() {
     // Use the theme"s AppBar background color instead of hardcoded colors
@@ -2504,9 +2040,7 @@ L10n.get("error_internet_connection",
 
   // Delete listing method
   Future<void> _deleteListing(int listingId) async {
-    setState(() {
-      _isDeleting = true;
-    });
+    context.read<ListingDetailPageBloc>().setDeleting(true);
 
     try {
       // Get the listing service from dependency injection
@@ -2541,9 +2075,9 @@ L10n.get("error_internet_connection",
         ),
       );
     } finally {
-      setState(() {
-        _isDeleting = false;
-      });
+      if (mounted) {
+        context.read<ListingDetailPageBloc>().setDeleting(false);
+      }
     }
   }
 }

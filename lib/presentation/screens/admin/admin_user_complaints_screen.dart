@@ -6,6 +6,7 @@ import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -534,8 +535,13 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (context) => BlocProvider(
-              create: (context) => ListingDetailBloc(getIt<IListingService>()),
+            (context) => MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (context) => ListingDetailBloc(getIt<IListingService>()),
+                ),
+                BlocProvider(create: (_) => ListingDetailPageBloc()),
+              ],
               child: ListingDetailScreen(listingId: listingId),
             ),
       ),

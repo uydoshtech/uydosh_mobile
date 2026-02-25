@@ -5,6 +5,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 
@@ -14,8 +15,13 @@ extension NavigatorExtensions on BuildContext {
   void pushListingDetail(int listingId) {
     Navigator.of(this).push(
       MaterialPageRoute<void>(
-        builder: (_) => BlocProvider(
-          create: (_) => ListingDetailBloc(getIt<IListingService>()),
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => ListingDetailBloc(getIt<IListingService>()),
+            ),
+            BlocProvider(create: (_) => ListingDetailPageBloc()),
+          ],
           child: ListingDetailScreen(listingId: listingId),
         ),
       ),
@@ -26,8 +32,13 @@ extension NavigatorExtensions on BuildContext {
   void pushReplaceListingDetail(int listingId) {
     Navigator.of(this).pushReplacement(
       MaterialPageRoute<void>(
-        builder: (_) => BlocProvider(
-          create: (_) => ListingDetailBloc(getIt<IListingService>()),
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => ListingDetailBloc(getIt<IListingService>()),
+            ),
+            BlocProvider(create: (_) => ListingDetailPageBloc()),
+          ],
           child: ListingDetailScreen(listingId: listingId),
         ),
       ),

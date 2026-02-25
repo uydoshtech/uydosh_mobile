@@ -56,12 +56,23 @@ class _ListingTileState extends State<ListingTile>
   int? _viewCount;
   bool _isLoadingViewCount = false;
   Timer? _viewCountDelayTimer;
+  String? _cachedFormattedMoveInDate;
+  List<Amenity>? _cachedSortedAmenities;
 
   static const _viewCountLoadDelay = Duration(milliseconds: 300);
+
+  void _updateCachedValues() {
+    _cachedFormattedMoveInDate = _computeFormattedMoveInDate();
+    _cachedSortedAmenities = widget.listing.amenities != null &&
+            widget.listing.amenities!.isNotEmpty
+        ? _computeSortedAmenities(widget.listing.amenities!)
+        : null;
+  }
 
   @override
   void initState() {
     super.initState();
+    _updateCachedValues();
     if (widget.showActiveStatus) {
       // Delay view count load so tiles that scroll off quickly don't fire requests
       _viewCountDelayTimer = Timer(_viewCountLoadDelay, () {
@@ -79,6 +90,16 @@ class _ListingTileState extends State<ListingTile>
         curve: Curves.easeInOut,
       ),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant ListingTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.listing.id != widget.listing.id ||
+        oldWidget.listing.moveInDate != widget.listing.moveInDate ||
+        oldWidget.listing.amenities != widget.listing.amenities) {
+      _updateCachedValues();
+    }
   }
 
   @override
@@ -546,9 +567,7 @@ class _ListingTileState extends State<ListingTile>
                                   const SizedBox(height: 8),
                                   Row(
                                     children:
-                                        _getSortedAmenities(
-                                              widget.listing.amenities!,
-                                            )
+                                        (_cachedSortedAmenities ?? [])
                                             .map(
                                               (amenity) => Padding(
                                                 padding: const EdgeInsets.only(
@@ -628,7 +647,7 @@ class _ListingTileState extends State<ListingTile>
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        "${L10n.get("move_in_date_label")} ${_formatMoveInDate()}",
+                                        "${L10n.get("move_in_date_label")} ${_cachedFormattedMoveInDate ?? ""}",
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: _getDateTextColor(),
@@ -698,7 +717,7 @@ class _ListingTileState extends State<ListingTile>
     return "${widget.listing.price} y.e.";
   }
 
-  String _formatMoveInDate() {
+  String _computeFormattedMoveInDate() {
     if (widget.listing.moveInDate == null ||
         widget.listing.moveInDate!.isEmpty) {
       return "";
@@ -797,7 +816,7 @@ class _ListingTileState extends State<ListingTile>
     }
   }
 
-  List<Amenity> _getSortedAmenities(List<Amenity> amenities) {
+  List<Amenity> _computeSortedAmenities(List<Amenity> amenities) {
     // Custom sorting: WiFi first, then air conditioning, then the rest
     final sortedAmenities = List<Amenity>.from(amenities);
 
