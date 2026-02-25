@@ -6,8 +6,11 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
 
-/// Handles deep links (uydosh://listing/123) for sharing listings.
+/// Handles deep links for sharing listings.
+/// Uses https:// URLs so messengers (Telegram, WhatsApp) make them clickable.
+/// Custom scheme uydosh:// is not recognized by most messengers.
 class DeepLinkService {
   DeepLinkService({required this.navigatorKey});
 
@@ -18,16 +21,28 @@ class DeepLinkService {
   static const String _scheme = "uydosh";
   static const String _host = "listing";
 
-  /// Builds a shareable deep link URL for a listing.
+  /// Builds a shareable URL for a listing. Uses https:// so messengers
+  /// (Telegram, WhatsApp) make it clickable. Falls back to custom scheme
+  /// if shareWebBase is not configured.
   static String buildListingDeepLink(int listingId) =>
-      "$_scheme://$_host/$listingId";
+      "${EnvironmentUtil.shareWebBase}/listing/$listingId";
 
   /// Parses a URI and returns the listing ID if valid.
+  /// Handles both uydosh://listing/123 and https://uydosh.app/listing/123.
   static int? parseListingId(Uri uri) {
-    if (uri.scheme != _scheme || uri.host != _host) return null;
-    final segments = uri.pathSegments;
-    if (segments.isEmpty) return null;
-    return int.tryParse(segments.first);
+    // Custom scheme: uydosh://listing/123
+    if (uri.scheme == _scheme && uri.host == _host) {
+      final segments = uri.pathSegments;
+      if (segments.isEmpty) return null;
+      return int.tryParse(segments.first);
+    }
+    // HTTPS: https://uydosh.app/listing/123
+    if (uri.scheme == "https" && uri.pathSegments.length >= 2) {
+      if (uri.pathSegments.first == _host) {
+        return int.tryParse(uri.pathSegments[1]);
+      }
+    }
+    return null;
   }
 
   /// Initialize listener. Call from main() after configureDependencies.

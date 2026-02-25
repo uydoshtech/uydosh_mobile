@@ -4,6 +4,13 @@ abstract class EnvironmentUtil {
     defaultValue: "http://3.140.249.173:3000",
   );
 
+  /// Web URL for shareable links (https). Messengers like Telegram only make
+  /// https:// links clickable, not custom schemes like uydosh://.
+  static const shareWebBase = String.fromEnvironment(
+    "SHARE_WEB_BASE",
+    defaultValue: "https://uydosh.app",
+  );
+
   static String? apiBasePath(String api) {
     return const bool.hasEnvironment("API_BASE_PATH")
         ? '${const String.fromEnvironment('API_BASE_PATH')}/$api'
