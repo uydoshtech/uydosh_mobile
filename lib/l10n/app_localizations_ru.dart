@@ -185,6 +185,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get error_listing_still_loading => 'Объявление все еще загружается';
 
   @override
+  String get error_sharing_listing =>
+      'Не удалось поделиться объявлением. Попробуйте еще раз.';
+
+  @override
   String get error_loading_profile => 'Не удалось загрузить профиль';
 
   @override

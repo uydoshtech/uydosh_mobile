@@ -185,6 +185,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get error_listing_still_loading => 'E\'lon hali yuklanmoqda';
 
   @override
+  String get error_sharing_listing =>
+      'E\'loni ulashib bo\'lmadi. Qayta urinib ko\'ring.';
+
+  @override
   String get error_loading_profile => 'Profildi yuklash imkoni yo\'q';
 
   @override

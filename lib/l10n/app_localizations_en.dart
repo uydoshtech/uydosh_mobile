@@ -183,6 +183,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get error_listing_still_loading => 'Listing is still loading';
 
   @override
+  String get error_sharing_listing =>
+      'Unable to share listing. Please try again.';
+
+  @override
   String get error_loading_profile => 'Unable to load profile';
 
   @override

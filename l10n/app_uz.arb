@@ -64,6 +64,7 @@
   "error_loading_listing_details": "E'lon tafsilotlarini yuklashda xatolik",
   "error_listing_not_loaded": "E'lon hali yuklanmagan",
   "error_listing_still_loading": "E'lon hali yuklanmoqda",
+  "error_sharing_listing": "E'loni ulashib bo'lmadi. Qayta urinib ko'ring.",
   "error_loading_profile": "Profildi yuklash imkoni yo'q",
   "error_internet_connection": "Internet aloqangizni tekshiring",
   "error_resource_conflict": "Siz bu e'lon haqida allaqachon shikoyat qilgansiz.",

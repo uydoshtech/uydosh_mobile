@@ -1009,10 +1009,25 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final currentLanguage = LanguageState().currentLanguage;
 
     // Build share text based on current language
-    final shareText = _buildShareText(listingDetail, currentLanguage);
+    var shareText = _buildShareText(listingDetail, currentLanguage);
+    if (shareText.trim().isEmpty) {
+      shareText = DeepLinkService.buildListingDeepLink(listingDetail.id);
+    }
 
-    // Share the text
-    await Share.share(shareText, subject: _getShareSubject(currentLanguage));
+    try {
+      // sharePositionOrigin prevents iOS crash (share_plus 12.0.1 fix for iOS 26)
+      await Share.share(
+        shareText,
+        subject: _getShareSubject(currentLanguage),
+        sharePositionOrigin: Rect.zero,
+      );
+    } catch (e, stackTrace) {
+      logger.e("Share failed", error: e, stackTrace: stackTrace);
+      if (context.mounted) {
+        _showShareError(L10n.get("error_sharing_listing"));
+      }
+      return;
+    }
 
     getIt<AppAnalyticsService>().logShareCompleted(listingId: widget.listingId);
 

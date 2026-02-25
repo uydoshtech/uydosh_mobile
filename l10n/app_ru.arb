@@ -64,6 +64,7 @@
   "error_loading_listing_details": "Ошибка загрузки деталей объявления",
   "error_listing_not_loaded": "Объявление еще не загружено",
   "error_listing_still_loading": "Объявление все еще загружается",
+  "error_sharing_listing": "Не удалось поделиться объявлением. Попробуйте еще раз.",
   "error_loading_profile": "Не удалось загрузить профиль",
   "error_internet_connection": "Проверьте подключение к интернету",
   "error_resource_conflict": "Вы уже пожаловались на это объявление.",

@@ -436,6 +436,12 @@ abstract class AppLocalizations {
   /// **'Listing is still loading'**
   String get error_listing_still_loading;
 
+  /// No description provided for @error_sharing_listing.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to share listing. Please try again.'**
+  String get error_sharing_listing;
+
   /// No description provided for @error_loading_profile.
   ///
   /// In en, this message translates to:

@@ -64,6 +64,7 @@
   "error_loading_listing_details": "Error loading listing details",
   "error_listing_not_loaded": "Listing not loaded yet",
   "error_listing_still_loading": "Listing is still loading",
+  "error_sharing_listing": "Unable to share listing. Please try again.",
   "error_loading_profile": "Unable to load profile",
   "error_internet_connection": "Check your internet connection",
   "error_resource_conflict": "You have already complained about this listing.",
