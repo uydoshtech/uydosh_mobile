@@ -69,6 +69,39 @@ class _ChatScreenState extends State<ChatScreen> {
   final Set<int> _newMessageIds = {}; // Track which messages are new in this session
   UserProfile? _currentUserProfile; // Store the current user's profile
 
+  /// Memoized output of [MessageGroupingUtils.groupMessagesAsItems] — invalidated when
+  /// [messages] reference, [_currentUserId], or [_newMessageIds] meaningfully change.
+  List<MessageGroupListItem>? _cachedGroupedItems;
+  List<Message>? _groupedCacheMessagesRef;
+  int? _groupedCacheCurrentUserId;
+  int _groupedCacheNewMessageIdsFingerprint = 0;
+
+  int _fingerprintNewMessageIds(Set<int> ids) {
+    if (ids.isEmpty) return 0;
+    final sorted = ids.toList()..sort();
+    return Object.hashAll(sorted);
+  }
+
+  List<MessageGroupListItem> _groupedItemsFor(List<Message> messages) {
+    final fp = _fingerprintNewMessageIds(_newMessageIds);
+    if (_cachedGroupedItems != null &&
+        identical(messages, _groupedCacheMessagesRef) &&
+        _currentUserId == _groupedCacheCurrentUserId &&
+        fp == _groupedCacheNewMessageIdsFingerprint) {
+      return _cachedGroupedItems!;
+    }
+    final items = MessageGroupingUtils.groupMessagesAsItems(
+      messages,
+      _currentUserId,
+      _newMessageIds,
+    );
+    _groupedCacheMessagesRef = messages;
+    _groupedCacheCurrentUserId = _currentUserId;
+    _groupedCacheNewMessageIdsFingerprint = fp;
+    _cachedGroupedItems = items;
+    return items;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -223,6 +256,12 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       ],
                       child: BlocBuilder<MessagingBloc, MessagingState>(
+                        buildWhen: (previous, current) {
+                          if (_messages.isNotEmpty) {
+                            return false;
+                          }
+                          return previous != current;
+                        },
                         builder: (context, state) {
                           // Once we have messages, always show them - the shared
                           // MessagingBloc can be overwritten by MessagesInboxScreen
@@ -371,12 +410,8 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
-    // Group messages by date for lazy building
-    final groupedItems = MessageGroupingUtils.groupMessagesAsItems(
-      messages,
-      _currentUserId,
-      _newMessageIds,
-    );
+    // Group messages by date for lazy building (memoized across rebuilds)
+    final groupedItems = _groupedItemsFor(messages);
 
     return CommonListView(
       controller: _scrollController,

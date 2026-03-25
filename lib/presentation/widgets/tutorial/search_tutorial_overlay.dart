@@ -1,7 +1,6 @@
 import "dart:async";
 
 import "package:flutter/material.dart";
-import "package:google_fonts/google_fonts.dart";
 import "package:tutorial_coach_mark/tutorial_coach_mark.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 
@@ -57,14 +56,20 @@ class SearchTutorialOverlay {
             align: ContentAlign.top,
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             builder: (context, controller) {
+              final base = Theme.of(context).textTheme.titleLarge;
               return Text(
                 L10n.get("tutorial_search_description"),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white,
-                ),
+                style: base?.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ) ??
+                    const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
               );
             },
           ),
@@ -84,14 +89,20 @@ class SearchTutorialOverlay {
               align: ContentAlign.bottom,
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               builder: (context, controller) {
+                final base = Theme.of(context).textTheme.titleLarge;
                 return Text(
                   L10n.get("tutorial_profile_description"),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white,
-                  ),
+                  style: base?.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white,
+                      ) ??
+                      const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white,
+                      ),
                 );
               },
             ),

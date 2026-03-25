@@ -1,4 +1,3 @@
-import "package:flutter/foundation.dart" show listEquals;
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -48,6 +47,22 @@ class _HomeScreenData {
   final List<Listing> listings;
   final bool hasMore;
 
+  static bool _listingsIdsEqual(List<Listing> a, List<Listing> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id) return false;
+    }
+    return true;
+  }
+
+  static int _listingsIdsHash(List<Listing> listings) {
+    var h = listings.length;
+    for (final l in listings) {
+      h = Object.hash(h, l.id);
+    }
+    return h;
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -55,22 +70,18 @@ class _HomeScreenData {
         other.isLoading == isLoading &&
         other.hasError == hasError &&
         other.errorMessage == errorMessage &&
-        listEquals(
-          other.listings.map((l) => l.id).toList(),
-          listings.map((l) => l.id).toList(),
-        ) &&
+        _listingsIdsEqual(other.listings, listings) &&
         other.hasMore == hasMore;
   }
 
   @override
   int get hashCode {
-    return Object.hashAll([
+    return Object.hash(
       isLoading,
-      hasError,
-      errorMessage,
-      Object.hashAll(listings.map((l) => l.id)),
+      Object.hash(hasError, errorMessage),
+      _listingsIdsHash(listings),
       hasMore,
-    ]);
+    );
   }
 }
 
