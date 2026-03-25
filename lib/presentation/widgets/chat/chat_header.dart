@@ -52,7 +52,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
               child: ActionDropdownMenu(
                 items: actionMenuItems,
                 icon: Icons.more_vert,
-                iconColor: Colors.green.shade700,
+                iconColor: textColor,
                 tooltip: L10n.get("actions"),
               ),
             ),

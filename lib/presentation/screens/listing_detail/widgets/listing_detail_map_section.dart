@@ -130,75 +130,81 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
     final hasSubway = widget.listingDetail.subwayStation != null;
     final hasMapContent = hasLocation || hasSubway;
 
+    final locationHeader = Stack(
+      alignment: Alignment.topRight,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(right: hasMapContent ? 32.0 : 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (hasSubway)
+                _buildSubwayStationDisplay(
+                  widget.listingDetail.subwayStation!,
+                ),
+              if (hasSubway && hasLocation) const SizedBox(height: 8),
+              if (hasLocation)
+                Row(
+                  children: [
+                    ThemeIconFactory.detail(
+                      icon: Icons.location_on,
+                      color: Colors.red,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        widget.getLocalizedName(
+                          nameUz: widget.listingDetail.location!.nameUz,
+                          nameRu: widget.listingDetail.location!.nameRu,
+                          nameEn: widget.listingDetail.location!.nameEn,
+                          language: widget.currentLanguage,
+                        ),
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: ListingDetailThemeHelper.locationTextColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+        if (hasMapContent)
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: AnimatedRotation(
+              turns: _isMapExpanded ? 0.5 : 0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: Icon(
+                Icons.keyboard_arrow_down,
+                size: 24,
+                color: ListingDetailThemeHelper.locationTextColor,
+              ),
+            ),
+          ),
+      ],
+    );
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              alignment: Alignment.topRight,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(right: hasMapContent ? 32.0 : 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (hasSubway)
-                        _buildSubwayStationDisplay(
-                            widget.listingDetail.subwayStation!),
-                      if (hasSubway && hasLocation) const SizedBox(height: 8),
-                      if (hasLocation)
-                        Row(
-                          children: [
-                            ThemeIconFactory.detail(
-                              icon: Icons.location_on,
-                              color: Colors.red,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                widget.getLocalizedName(
-                                  nameUz: widget.listingDetail.location!.nameUz,
-                                  nameRu: widget.listingDetail.location!.nameRu,
-                                  nameEn: widget.listingDetail.location!.nameEn,
-                                  language: widget.currentLanguage,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: ListingDetailThemeHelper.locationTextColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-                if (hasMapContent)
-                  GestureDetector(
-                    onTap: () {
-                      HapticFeedbackUtils.impact();
-                      setState(() => _isMapExpanded = !_isMapExpanded);
-                    },
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: AnimatedRotation(
-                        turns: _isMapExpanded ? 0.5 : 0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 24,
-                          color: ListingDetailThemeHelper.locationTextColor,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            if (hasMapContent)
+              GestureDetector(
+                onTap: () {
+                  HapticFeedbackUtils.impact();
+                  setState(() => _isMapExpanded = !_isMapExpanded);
+                },
+                behavior: HitTestBehavior.opaque,
+                child: locationHeader,
+              )
+            else
+              locationHeader,
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
