@@ -108,6 +108,7 @@ dev_dependencies:
   build_runner: ^2.5.4
   json_serializable: ^6.9.5
   flutter_gen_runner: ^5.10.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -158,3 +159,15 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Regenerate Android launcher mipmaps from the same source as iOS App Store icon:
+#   dart run flutter_launcher_icons
+# Adaptive icon background matches the icon edge (avoids Pixel's white "plate" ring).
+# Foreground inset keeps artwork inside the circular/squircle safe zone (Android masks clip the outer ~18%).
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png
+  adaptive_icon_background: "#01416D"
+  adaptive_icon_foreground: ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png
+  adaptive_icon_foreground_inset: 20
