@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ SplashScreen API: OS always shows this briefly before Flutter draws.
+         Match brand color so it blends into your in-app splash. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/ic_launcher_background</item>
+    </style>
+</resources>
