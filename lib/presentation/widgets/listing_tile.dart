@@ -292,7 +292,9 @@ class _ListingTileState extends State<ListingTile>
                             ListenableBuilder(
                               listenable: Listenable.merge([
                                 AuthenticationState(),
-                                FavoritesState(),
+                                FavoritesState().listenableFor(
+                                  widget.listing.id,
+                                ),
                               ]),
                               builder: (context, child) {
                                 final isAuthenticated =

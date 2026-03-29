@@ -161,6 +161,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   late Animation<double> _warningBlinkAnimation;
   late PageController _pageController;
   late ScrollController _scrollController;
+  /// Cached so [ListenableBuilder] around the app bar menu does not restart
+  /// [FutureBuilder] and re-invoke [SessionManager.getUserRole] on every rebuild.
+  late final Future<String?> _userRoleFuture = SessionManager.getUserRole();
   final GlobalKey _compatibilitySectionKey = GlobalKey();
 
   @override
@@ -1644,25 +1647,33 @@ L10n.get("feature_listing_error",
                   }
 
                   final listingDetail = data.listingDetail!;
-                  final isAuthenticated =
-                      AuthenticationState().isAuthenticated;
-                  if (!isAuthenticated) {
-                    return ActionDropdownMenu(
-                      items: _buildActionMenuItems(
-                        listingDetail,
-                        isAdmin: false,
-                      ),
-                    );
-                  }
-                  return FutureBuilder<String?>(
-                    future: SessionManager.getUserRole(),
-                    builder: (context, snapshot) {
-                      final isAdmin = snapshot.data == "admin";
-                      return ActionDropdownMenu(
-                        items: _buildActionMenuItems(
-                          listingDetail,
-                          isAdmin: isAdmin,
-                        ),
+                  return ListenableBuilder(
+                    listenable: Listenable.merge([
+                      AuthenticationState(),
+                      FavoritesState().listenableFor(widget.listingId),
+                    ]),
+                    builder: (context, _) {
+                      final isAuthenticated =
+                          AuthenticationState().isAuthenticated;
+                      if (!isAuthenticated) {
+                        return ActionDropdownMenu(
+                          items: _buildActionMenuItems(
+                            listingDetail,
+                            isAdmin: false,
+                          ),
+                        );
+                      }
+                      return FutureBuilder<String?>(
+                        future: _userRoleFuture,
+                        builder: (context, snapshot) {
+                          final isAdmin = snapshot.data == "admin";
+                          return ActionDropdownMenu(
+                            items: _buildActionMenuItems(
+                              listingDetail,
+                              isAdmin: isAdmin,
+                            ),
+                          );
+                        },
                       );
                     },
                   );
