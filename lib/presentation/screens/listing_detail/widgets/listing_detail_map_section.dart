@@ -17,9 +17,11 @@ class ListingDetailMapSection extends StatefulWidget {
     required this.currentLanguage,
     required this.getLocalizedName,
     required this.onOpenInYandexMaps,
+    required this.sectionKey,
     super.key,
   });
 
+  final GlobalKey sectionKey;
   final ListingDetail listingDetail;
   final String currentLanguage;
   final String Function({
@@ -36,6 +38,27 @@ class ListingDetailMapSection extends StatefulWidget {
 
 class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
   bool _isMapExpanded = false;
+
+  void _onToggleMapExpanded() {
+    HapticFeedbackUtils.impact();
+    final willExpand = !_isMapExpanded;
+    setState(() => _isMapExpanded = !_isMapExpanded);
+    if (!willExpand) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (!mounted) return;
+        final ctx = widget.sectionKey.currentContext;
+        if (ctx != null && ctx.mounted) {
+          Scrollable.ensureVisible(
+            ctx,
+            alignment: 1.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    });
+  }
 
   Widget _buildSubwayStationDisplay(SubwayStationDetail station) {
     final transferInfo = MetroCache.getTransferStationInfo(station.id);
@@ -188,80 +211,93 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
       ],
     );
 
+    final mapBody = AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      alignment: Alignment.topCenter,
+      child: _isMapExpanded && hasMapContent
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                YandexMapWidget(
+                  apiKey: AppConfig.yandexMapsApiKey,
+                  height: 250,
+                  listingDetail: widget.listingDetail,
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      HapticFeedbackUtils.impact();
+                      widget.onOpenInYandexMaps();
+                    },
+                    icon: Icon(
+                      Icons.link,
+                      size: 18,
+                      color: ListingDetailThemeHelper.yandexButtonColor,
+                    ),
+                    label: Text(
+                      L10n.get("open_in_yandex_maps"),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: ListingDetailThemeHelper.yandexButtonColor,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: ListingDetailThemeHelper.yandexButtonColor,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : const SizedBox.shrink(),
+    );
+
+    final paddedColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (hasMapContent && _isMapExpanded)
+          GestureDetector(
+            onTap: _onToggleMapExpanded,
+            behavior: HitTestBehavior.opaque,
+            child: SizedBox(width: double.infinity, child: locationHeader),
+          )
+        else if (hasMapContent)
+          SizedBox(width: double.infinity, child: locationHeader)
+        else
+          locationHeader,
+        mapBody,
+      ],
+    );
+
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (hasMapContent)
-              GestureDetector(
-                onTap: () {
-                  HapticFeedbackUtils.impact();
-                  setState(() => _isMapExpanded = !_isMapExpanded);
-                },
-                behavior: HitTestBehavior.opaque,
-                child: locationHeader,
-              )
-            else
-              locationHeader,
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child: _isMapExpanded && hasMapContent
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
-                        YandexMapWidget(
-                          apiKey: AppConfig.yandexMapsApiKey,
-                          height: 250,
-                          listingDetail: widget.listingDetail,
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: TextButton.icon(
-                            onPressed: () {
-                              HapticFeedbackUtils.impact();
-                              widget.onOpenInYandexMaps();
-                            },
-                            icon: Icon(
-                              Icons.link,
-                              size: 18,
-                              color: ListingDetailThemeHelper.yandexButtonColor,
-                            ),
-                            label: Text(
-                              L10n.get("open_in_yandex_maps"),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: ListingDetailThemeHelper.yandexButtonColor,
-                              ),
-                            ),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: BorderSide(
-                                  color: ListingDetailThemeHelper.yandexButtonColor,
-                                  width: 1,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
+      key: widget.sectionKey,
+      child: hasMapContent && !_isMapExpanded
+          ? GestureDetector(
+              onTap: _onToggleMapExpanded,
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: paddedColumn,
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: paddedColumn,
             ),
-          ],
-        ),
-      ),
     );
   }
 }

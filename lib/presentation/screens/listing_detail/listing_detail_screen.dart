@@ -165,6 +165,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   /// [FutureBuilder] and re-invoke [SessionManager.getUserRole] on every rebuild.
   late final Future<String?> _userRoleFuture = SessionManager.getUserRole();
   final GlobalKey _compatibilitySectionKey = GlobalKey();
+  final GlobalKey _mapSectionKey = GlobalKey();
 
   @override
   void initState() {
@@ -1777,6 +1778,7 @@ L10n.get("feature_listing_error",
         listingDetail: listingDetail,
         currentLanguage: currentLanguage,
         getLocalizedName: getLocalizedName,
+        sectionKey: _mapSectionKey,
         onOpenInYandexMaps: () =>
             _confirmOpenInYandexMaps(listingDetail),
       ),
