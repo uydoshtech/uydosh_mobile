@@ -1127,6 +1127,31 @@ class AppLocalizationsEn extends AppLocalizations {
       'Manage users, listings, and reports from one place.';
 
   @override
+  String get admin_panel_section_content_moderation => 'Photo moderation';
+
+  @override
+  String get admin_content_moderation_title => 'Photo moderation';
+
+  @override
+  String get admin_content_moderation_description =>
+      'When enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).';
+
+  @override
+  String get admin_content_moderation_blur_enabled =>
+      'Detect and blur offensive photos';
+
+  @override
+  String get admin_content_moderation_loading =>
+      'Loading moderation settings...';
+
+  @override
+  String get admin_content_moderation_error =>
+      'Could not load moderation settings';
+
+  @override
+  String get admin_content_moderation_save_error => 'Could not save setting';
+
+  @override
   String get admin_panel_section_users => 'Users';
 
   @override

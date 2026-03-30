@@ -1135,6 +1135,32 @@ class AppLocalizationsRu extends AppLocalizations {
       'Управляйте пользователями, объявлениями и жалобами в одном месте.';
 
   @override
+  String get admin_panel_section_content_moderation => 'Модерация фото';
+
+  @override
+  String get admin_content_moderation_title => 'Модерация фото';
+
+  @override
+  String get admin_content_moderation_description =>
+      'Если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).';
+
+  @override
+  String get admin_content_moderation_blur_enabled =>
+      'Проверять и размывать нежелательные фото';
+
+  @override
+  String get admin_content_moderation_loading =>
+      'Загрузка настроек модерации...';
+
+  @override
+  String get admin_content_moderation_error =>
+      'Не удалось загрузить настройки модерации';
+
+  @override
+  String get admin_content_moderation_save_error =>
+      'Не удалось сохранить настройку';
+
+  @override
   String get admin_panel_section_users => 'Пользователи';
 
   @override

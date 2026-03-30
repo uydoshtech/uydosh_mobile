@@ -5,6 +5,7 @@ import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
 import "package:uy_dosh/base/api/public_dio_configurator.dart";
+import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/domain/services/amenity_service.dart";
 import "package:uy_dosh/domain/services/auth_service.dart";
@@ -99,6 +100,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<ISearchAnalyticsService>(
     () => SearchAnalyticsService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IAdminContentModerationSettingsService>(
+    () => AdminContentModerationSettingsService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IListingCreationAnalyticsService>(

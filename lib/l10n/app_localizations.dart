@@ -2206,6 +2206,48 @@ abstract class AppLocalizations {
   /// **'Manage users, listings, and reports from one place.'**
   String get admin_panel_description;
 
+  /// No description provided for @admin_panel_section_content_moderation.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo moderation'**
+  String get admin_panel_section_content_moderation;
+
+  /// No description provided for @admin_content_moderation_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo moderation'**
+  String get admin_content_moderation_title;
+
+  /// No description provided for @admin_content_moderation_description.
+  ///
+  /// In en, this message translates to:
+  /// **'When enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).'**
+  String get admin_content_moderation_description;
+
+  /// No description provided for @admin_content_moderation_blur_enabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect and blur offensive photos'**
+  String get admin_content_moderation_blur_enabled;
+
+  /// No description provided for @admin_content_moderation_loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading moderation settings...'**
+  String get admin_content_moderation_loading;
+
+  /// No description provided for @admin_content_moderation_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load moderation settings'**
+  String get admin_content_moderation_error;
+
+  /// No description provided for @admin_content_moderation_save_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save setting'**
+  String get admin_content_moderation_save_error;
+
   /// No description provided for @admin_panel_section_users.
   ///
   /// In en, this message translates to:

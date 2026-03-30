@@ -456,6 +456,15 @@ class AppStrings {
       "admin_panel_title": "Admin Panel",
       "admin_panel_description":
           "Manage users, listings, and reports from one place.",
+      "admin_panel_section_content_moderation": "Photo moderation",
+      "admin_content_moderation_title": "Photo moderation",
+      "admin_content_moderation_description":
+          "When enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).",
+      "admin_content_moderation_blur_enabled": "Detect and blur offensive photos",
+      "admin_content_moderation_loading": "Loading moderation settings...",
+      "admin_content_moderation_error": "Could not load moderation settings",
+      "admin_content_moderation_save_error": "Could not save setting",
+
       "admin_panel_section_users": "Users",
       "admin_panel_section_support_chat": "Support chat",
       "admin_panel_section_complaints": "Complaints",
@@ -1248,6 +1257,15 @@ class AppStrings {
       "admin_panel_title": "Админ-панель",
       "admin_panel_description":
           "Управляйте пользователями, объявлениями и жалобами в одном месте.",
+      "admin_panel_section_content_moderation": "Модерация фото",
+      "admin_content_moderation_title": "Модерация фото",
+      "admin_content_moderation_description":
+          "Если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).",
+      "admin_content_moderation_blur_enabled": "Проверять и размывать нежелательные фото",
+      "admin_content_moderation_loading": "Загрузка настроек модерации...",
+      "admin_content_moderation_error": "Не удалось загрузить настройки модерации",
+      "admin_content_moderation_save_error": "Не удалось сохранить настройку",
+
       "admin_panel_section_users": "Пользователи",
       "admin_panel_section_support_chat": "Поддержка",
       "admin_panel_section_complaints": "Жалобы",
@@ -2050,6 +2068,15 @@ class AppStrings {
       "admin_panel_title": "Admin paneli",
       "admin_panel_description":
           "Foydalanuvchilar, e'lonlar va shikoyatlarni bir joyda boshqaring.",
+      "admin_panel_section_content_moderation": "Foto moderatsiyasi",
+      "admin_content_moderation_title": "Foto moderatsiyasi",
+      "admin_content_moderation_description":
+          "Yoqilganda, yuklangan fotolar nojo'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O'chirilganda tekshirish va xiralashtirish o'tkazilmaydi (AWS Rekognition chaqiruvlari yo'q).",
+      "admin_content_moderation_blur_enabled": "Nojo'ya fotolarni aniqla va xira qil",
+      "admin_content_moderation_loading": "Moderatsiya sozlamalari yuklanmoqda...",
+      "admin_content_moderation_error": "Moderatsiya sozlamalari yuklanmadi",
+      "admin_content_moderation_save_error": "Sozlama saqlanmadi",
+
       "admin_panel_section_users": "Foydalanuvchilar",
       "admin_panel_section_support_chat": "Qo'llab-quvvatlash",
       "admin_panel_section_complaints": "Shikoyatlar",

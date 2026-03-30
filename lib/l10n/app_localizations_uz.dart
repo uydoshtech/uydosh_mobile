@@ -1141,6 +1141,31 @@ class AppLocalizationsUz extends AppLocalizations {
       'Foydalanuvchilar, e\'lonlar va shikoyatlarni bir joyda boshqaring.';
 
   @override
+  String get admin_panel_section_content_moderation => 'Foto moderatsiyasi';
+
+  @override
+  String get admin_content_moderation_title => 'Foto moderatsiyasi';
+
+  @override
+  String get admin_content_moderation_description =>
+      'Yoqilganda, yuklangan fotolar nojo\'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O\'chirilganda tekshirish va xiralashtirish o\'tkazilmaydi (AWS Rekognition chaqiruvlari yo\'q).';
+
+  @override
+  String get admin_content_moderation_blur_enabled =>
+      'Nojo\'ya fotolarni aniqla va xira qil';
+
+  @override
+  String get admin_content_moderation_loading =>
+      'Moderatsiya sozlamalari yuklanmoqda...';
+
+  @override
+  String get admin_content_moderation_error =>
+      'Moderatsiya sozlamalari yuklanmadi';
+
+  @override
+  String get admin_content_moderation_save_error => 'Sozlama saqlanmadi';
+
+  @override
   String get admin_panel_section_users => 'Foydalanuvchilar';
 
   @override
