@@ -27,14 +27,6 @@ class AdminPanelScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-          Text(
-            L10n.get("admin_panel_description"),
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 16),
           _buildAdminSection(
             context,
             icon: Icons.photo_filter_outlined,

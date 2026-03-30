@@ -1137,10 +1137,6 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_panel_title => 'Admin paneli';
 
   @override
-  String get admin_panel_description =>
-      'Foydalanuvchilar, e\'lonlar va shikoyatlarni bir joyda boshqaring.';
-
-  @override
   String get admin_panel_section_content_moderation => 'Foto moderatsiyasi';
 
   @override

@@ -1123,10 +1123,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_panel_title => 'Admin Panel';
 
   @override
-  String get admin_panel_description =>
-      'Manage users, listings, and reports from one place.';
-
-  @override
   String get admin_panel_section_content_moderation => 'Photo moderation';
 
   @override

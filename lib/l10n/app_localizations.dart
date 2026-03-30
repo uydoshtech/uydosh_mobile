@@ -2200,12 +2200,6 @@ abstract class AppLocalizations {
   /// **'Admin Panel'**
   String get admin_panel_title;
 
-  /// No description provided for @admin_panel_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage users, listings, and reports from one place.'**
-  String get admin_panel_description;
-
   /// No description provided for @admin_panel_section_content_moderation.
   ///
   /// In en, this message translates to:

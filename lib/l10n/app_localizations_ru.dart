@@ -1131,10 +1131,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_panel_title => 'Админ-панель';
 
   @override
-  String get admin_panel_description =>
-      'Управляйте пользователями, объявлениями и жалобами в одном месте.';
-
-  @override
   String get admin_panel_section_content_moderation => 'Модерация фото';
 
   @override

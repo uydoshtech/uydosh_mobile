@@ -454,8 +454,6 @@ class AppStrings {
       "manage_property": "Manage Property",
 
       "admin_panel_title": "Admin Panel",
-      "admin_panel_description":
-          "Manage users, listings, and reports from one place.",
       "admin_panel_section_content_moderation": "Photo moderation",
       "admin_content_moderation_title": "Photo moderation",
       "admin_content_moderation_description":
@@ -1255,8 +1253,6 @@ class AppStrings {
       "manage_property": "Управление жильём",
 
       "admin_panel_title": "Админ-панель",
-      "admin_panel_description":
-          "Управляйте пользователями, объявлениями и жалобами в одном месте.",
       "admin_panel_section_content_moderation": "Модерация фото",
       "admin_content_moderation_title": "Модерация фото",
       "admin_content_moderation_description":
@@ -2066,8 +2062,6 @@ class AppStrings {
       "manage_property": "Uyni boshqarish",
 
       "admin_panel_title": "Admin paneli",
-      "admin_panel_description":
-          "Foydalanuvchilar, e'lonlar va shikoyatlarni bir joyda boshqaring.",
       "admin_panel_section_content_moderation": "Foto moderatsiyasi",
       "admin_content_moderation_title": "Foto moderatsiyasi",
       "admin_content_moderation_description":
