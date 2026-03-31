@@ -284,6 +284,10 @@ class AppStrings {
       "listing_translating_description": "Translating…",
       "listing_translation_error": "Couldn’t translate. Try again.",
       "listing_translation_unavailable": "Translation unavailable.",
+      "listing_ai_enhance": "AI enhance",
+      "listing_ai_enhance_empty": "Enter a description first.",
+      "listing_ai_enhance_unavailable": "AI enhancement isn’t available on this device.",
+      "listing_ai_enhance_error": "Couldn’t improve the text. Try again.",
 
       "listing_type_roommate_needed": "Need Roommate",
       "listing_type_room_needed": "Need Room",
@@ -1090,6 +1094,10 @@ class AppStrings {
       "listing_translating_description": "Перевод…",
       "listing_translation_error": "Не удалось перевести. Попробуйте снова.",
       "listing_translation_unavailable": "Перевод недоступен.",
+      "listing_ai_enhance": "Улучшить с AI",
+      "listing_ai_enhance_empty": "Сначала введите описание.",
+      "listing_ai_enhance_unavailable": "Улучшение с AI недоступно.",
+      "listing_ai_enhance_error": "Не удалось улучшить текст. Попробуйте снова.",
 
       "listing_type_roommate_needed": "Ищу соседа",
       "listing_type_room_needed": "Ищу жилье",
@@ -1904,6 +1912,10 @@ class AppStrings {
       "listing_translating_description": "Tarjima qilinmoqda…",
       "listing_translation_error": "Tarjima qilinmadi. Qayta urinib ko‘ring.",
       "listing_translation_unavailable": "Tarjima mavjud emas.",
+      "listing_ai_enhance": "AI bilan yaxshilash",
+      "listing_ai_enhance_empty": "Avval tavsif kiriting.",
+      "listing_ai_enhance_unavailable": "AI yaxshilash mavjud emas.",
+      "listing_ai_enhance_error": "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
 
       "listing_type_roommate_needed": "Xonadosh qidiraman",
       "listing_type_room_needed": "Xonadon kerak",

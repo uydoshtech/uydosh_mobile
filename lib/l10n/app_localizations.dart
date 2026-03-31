@@ -1390,6 +1390,30 @@ abstract class AppLocalizations {
   /// **'Translation unavailable.'**
   String get listing_translation_unavailable;
 
+  /// No description provided for @listing_ai_enhance.
+  ///
+  /// In en, this message translates to:
+  /// **'AI enhance'**
+  String get listing_ai_enhance;
+
+  /// No description provided for @listing_ai_enhance_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a description first.'**
+  String get listing_ai_enhance_empty;
+
+  /// No description provided for @listing_ai_enhance_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'AI enhancement isn’t available on this device.'**
+  String get listing_ai_enhance_unavailable;
+
+  /// No description provided for @listing_ai_enhance_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t improve the text. Try again.'**
+  String get listing_ai_enhance_error;
+
   /// No description provided for @listing_type_roommate_needed.
   ///
   /// In en, this message translates to:

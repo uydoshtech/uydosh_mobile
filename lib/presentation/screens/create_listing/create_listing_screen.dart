@@ -21,6 +21,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
@@ -720,24 +721,34 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     final max = maxLength ?? 0;
                     final isNearLimit =
                         max > 0 && (currentLength / max) >= 0.9;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Text(
-                        "$currentLength/$maxLength",
-                        style: TextStyle(
-                          color:
-                              isNearLimit
-                                  ? Colors.red
-                                  : Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant
-                                          .withOpacity(0.7)
-                                      : Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4, bottom: 18),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ListingDescriptionAiEnhanceButton(
+                            controller: _descriptionController,
+                            inlineWithCounter: true,
+                          ),
+                          const Spacer(),
+                          Text(
+                            "$currentLength/$maxLength",
+                            style: TextStyle(
+                              color:
+                                  isNearLimit
+                                      ? Colors.red
+                                      : Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant
+                                              .withOpacity(0.7)
+                                          : Colors.black,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },

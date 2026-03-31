@@ -715,6 +715,19 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_translation_unavailable => 'Tarjima mavjud emas.';
 
   @override
+  String get listing_ai_enhance => 'AI bilan yaxshilash';
+
+  @override
+  String get listing_ai_enhance_empty => 'Avval tavsif kiriting.';
+
+  @override
+  String get listing_ai_enhance_unavailable => 'AI yaxshilash mavjud emas.';
+
+  @override
+  String get listing_ai_enhance_error =>
+      'Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.';
+
+  @override
   String get listing_type_roommate_needed => 'Xonadosh qidiraman';
 
   @override

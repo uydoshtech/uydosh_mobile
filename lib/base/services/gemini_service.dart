@@ -30,6 +30,12 @@ class GeminiService {
     temperature: 0.2,
   );
 
+  /// Lower temperature so the model keeps the source language instead of translating.
+  static final GenerationConfig _enhanceGenerationConfig = GenerationConfig(
+    maxOutputTokens: 2048,
+    temperature: 0.12,
+  );
+
   static GenerativeModel _modelForKey(String apiKey) {
     return GenerativeModel(
       model: GeminiConfig.defaultModel,
@@ -39,8 +45,20 @@ class GeminiService {
     );
   }
 
+  static GenerativeModel _modelForEnhanceKey(String apiKey) {
+    return GenerativeModel(
+      model: GeminiConfig.defaultModel,
+      apiKey: apiKey,
+      safetySettings: _defaultSafetySettings,
+      generationConfig: _enhanceGenerationConfig,
+    );
+  }
+
   /// True when backend proxy or direct SDK can be used for translation.
   bool get isAvailable => _publicApiClient != null || GeminiConfig.isConfigured;
+
+  /// AI “enhance” uses the Google AI SDK only (no backend proxy yet).
+  bool get canEnhanceListingDescription => GeminiConfig.isConfigured;
 
   /// Returns model text, or null if the response had no text parts.
   Future<String?> generateText(String prompt) async {
@@ -120,7 +138,111 @@ class GeminiService {
 
   static const Duration _translateListingOverallTimeout = Duration(seconds: 150);
 
+  static const Duration _enhanceListingOverallTimeout = Duration(seconds: 90);
+
   static const Duration _directGenerateContentTimeout = Duration(seconds: 60);
+
+  /// Rewrites the listing description for clarity and grammar; same language as input.
+  Future<String?> enhanceListingDescription({required String text}) async {
+    try {
+      return await _enhanceListingDescriptionImpl(text: text).timeout(
+        _enhanceListingOverallTimeout,
+        onTimeout: () {
+          logger.w(
+            "Gemini enhance listing: timed out after ${_enhanceListingOverallTimeout.inSeconds}s",
+          );
+          return null;
+        },
+      );
+    } catch (e, st) {
+      logger.w("Gemini enhance listing: $e", error: e, stackTrace: st);
+      return null;
+    }
+  }
+
+  Future<String?> _enhanceListingDescriptionImpl({required String text}) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    if (!GeminiConfig.isConfigured) {
+      return null;
+    }
+    final prompt = _buildEnhancePrompt(trimmed);
+
+    for (var i = 0; i < GeminiConfig.apiKeys.length; i++) {
+      final key = GeminiConfig.apiKeys[i];
+      try {
+        final response = await _modelForEnhanceKey(key)
+            .generateContent([Content.text(prompt)])
+            .timeout(_directGenerateContentTimeout);
+        final out = _extractResponseText(response);
+        if (out != null && out.isNotEmpty) {
+          final s = out.trim();
+          return s.length > 1000 ? s.substring(0, 1000) : s;
+        }
+        logger.w("Gemini enhance: empty response (key index $i)");
+      } on TimeoutException catch (e, st) {
+        logger.w(
+          "Gemini enhance timed out (key index $i): $e",
+          error: e,
+          stackTrace: st,
+        );
+      } on GenerativeAIException catch (e, st) {
+        logger.w(
+          "Gemini enhance failed (key index $i): $e",
+          error: e,
+          stackTrace: st,
+        );
+      } catch (e, st) {
+        logger.w(
+          "Gemini enhance error (key index $i): $e",
+          error: e,
+          stackTrace: st,
+        );
+      }
+    }
+    return null;
+  }
+
+  /// Heuristic language hint + strict “no translation” instructions for enhance.
+  static String _buildEnhancePrompt(String trimmed) {
+    final langBlock = _languagePreserveInstruction(trimmed);
+    return "You edit housing or roommate listing descriptions for a mobile app.\n\n"
+        "$langBlock\n\n"
+        "TASK: Improve clarity, grammar, and punctuation only. Fix typos. "
+        "Do NOT translate, do NOT switch languages, and do NOT summarize.\n"
+        "Preserve meaning, numbers, prices, addresses, and tone.\n"
+        "Do not add a title, quotation marks, labels, or any text before or after the listing.\n"
+        "Maximum length 1000 characters.\n"
+        "Output ONLY the improved listing text, nothing else.\n\n"
+        "---\n"
+        "LISTING TEXT:\n"
+        "$trimmed";
+  }
+
+  /// Uses script heuristics so the model keeps Russian vs Latin-only text in the right language.
+  static String _languagePreserveInstruction(String trimmed) {
+    final hasCy = _hasCyrillic(trimmed);
+    final hasLat = _hasLatinLetter(trimmed);
+    if (hasCy && !hasLat) {
+      return "DETECTED: The text is Russian (Cyrillic).\n"
+          "RULE: Your entire response MUST be in Russian. Never use English or Uzbek. "
+          "This is an edit, not a translation.";
+    }
+    if (hasCy && hasLat) {
+      return "DETECTED: The text mixes Cyrillic (Russian) and Latin script.\n"
+          "RULE: Keep Russian parts in Russian and Latin parts in their original language. "
+          "Do not rewrite everything in English.";
+    }
+    if (!hasCy && hasLat) {
+      return "DETECTED: The text uses Latin letters (English and/or Uzbek Latin).\n"
+          "RULE: Decide from vocabulary whether it is English or Uzbek (O‘zbek lotin). "
+          "Rewrite ONLY in that same language — do not translate Russian-to-English or Uzbek-to-English.";
+    }
+    return "DETECTED: Script is ambiguous.\n"
+        "RULE: Rewrite in the same language as the input. Do not translate.";
+  }
 
   Future<String?> _translateListingDescriptionImpl({
     required String text,

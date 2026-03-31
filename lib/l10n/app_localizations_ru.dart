@@ -711,6 +711,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_translation_unavailable => 'Перевод недоступен.';
 
   @override
+  String get listing_ai_enhance => 'Улучшить с AI';
+
+  @override
+  String get listing_ai_enhance_empty => 'Сначала введите описание.';
+
+  @override
+  String get listing_ai_enhance_unavailable => 'Улучшение с AI недоступно.';
+
+  @override
+  String get listing_ai_enhance_error =>
+      'Не удалось улучшить текст. Попробуйте снова.';
+
+  @override
   String get listing_type_roommate_needed => 'Ищу соседа';
 
   @override

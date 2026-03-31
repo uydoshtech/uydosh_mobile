@@ -705,6 +705,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_translation_unavailable => 'Translation unavailable.';
 
   @override
+  String get listing_ai_enhance => 'AI enhance';
+
+  @override
+  String get listing_ai_enhance_empty => 'Enter a description first.';
+
+  @override
+  String get listing_ai_enhance_unavailable =>
+      'AI enhancement isn’t available on this device.';
+
+  @override
+  String get listing_ai_enhance_error =>
+      'Couldn’t improve the text. Try again.';
+
+  @override
   String get listing_type_roommate_needed => 'Need Roommate';
 
   @override
