@@ -1393,7 +1393,7 @@ abstract class AppLocalizations {
   /// No description provided for @listing_ai_enhance.
   ///
   /// In en, this message translates to:
-  /// **'AI enhance'**
+  /// **'Improve description with AI'**
   String get listing_ai_enhance;
 
   /// No description provided for @listing_ai_enhance_empty.
@@ -2269,20 +2269,38 @@ abstract class AppLocalizations {
   /// No description provided for @admin_panel_section_content_moderation.
   ///
   /// In en, this message translates to:
-  /// **'Photo moderation'**
+  /// **'Client configuration'**
   String get admin_panel_section_content_moderation;
 
   /// No description provided for @admin_content_moderation_title.
   ///
   /// In en, this message translates to:
-  /// **'Photo moderation'**
+  /// **'Client configuration'**
   String get admin_content_moderation_title;
 
   /// No description provided for @admin_content_moderation_description.
   ///
   /// In en, this message translates to:
-  /// **'When enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).'**
+  /// **'Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).'**
   String get admin_content_moderation_description;
+
+  /// No description provided for @admin_client_config_section_title.
+  ///
+  /// In en, this message translates to:
+  /// **'On this device'**
+  String get admin_client_config_section_title;
+
+  /// No description provided for @admin_client_config_hide_gemini_listing_ui.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide translation & AI improve'**
+  String get admin_client_config_hide_gemini_listing_ui;
+
+  /// No description provided for @admin_client_config_hide_gemini_listing_ui_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Hides description language buttons on listing details and the AI improve action when creating or editing listings. Stored only on this device.'**
+  String get admin_client_config_hide_gemini_listing_ui_description;
 
   /// No description provided for @admin_content_moderation_blur_enabled.
   ///

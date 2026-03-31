@@ -711,7 +711,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_translation_unavailable => 'Перевод недоступен.';
 
   @override
-  String get listing_ai_enhance => 'Улучшить с AI';
+  String get listing_ai_enhance => 'Улучшить описание с AI';
 
   @override
   String get listing_ai_enhance_empty => 'Сначала введите описание.';
@@ -1166,14 +1166,25 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_panel_title => 'Админ-панель';
 
   @override
-  String get admin_panel_section_content_moderation => 'Модерация фото';
+  String get admin_panel_section_content_moderation => 'Настройки клиента';
 
   @override
-  String get admin_content_moderation_title => 'Модерация фото';
+  String get admin_content_moderation_title => 'Настройки клиента';
 
   @override
   String get admin_content_moderation_description =>
-      'Если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).';
+      'Модерация фото (сервер): если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).';
+
+  @override
+  String get admin_client_config_section_title => 'На этом устройстве';
+
+  @override
+  String get admin_client_config_hide_gemini_listing_ui =>
+      'Скрыть перевод и улучшение ИИ';
+
+  @override
+  String get admin_client_config_hide_gemini_listing_ui_description =>
+      'Скрывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Сохраняется только на этом устройстве.';
 
   @override
   String get admin_content_moderation_blur_enabled =>

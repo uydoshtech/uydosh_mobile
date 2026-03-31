@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
@@ -50,6 +51,10 @@ class _AdminContentModerationScreenState
         _isLoading = false;
       });
     }
+  }
+
+  void _onGeminiHideChanged(bool value) {
+    ClientGeminiListingUiConfig.setHide(hide: value);
   }
 
   Future<void> _onChanged(bool value) async {
@@ -155,6 +160,34 @@ class _AdminContentModerationScreenState
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.blur_on_outlined),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          L10n.get("admin_client_config_section_title"),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ValueListenableBuilder<bool>(
+          valueListenable: ClientGeminiListingUiConfig.hideGeminiListingUi,
+          builder: (context, hide, _) {
+            return SwitchListTile(
+              title: Text(L10n.get("admin_client_config_hide_gemini_listing_ui")),
+              subtitle: Text(
+                L10n.get("admin_client_config_hide_gemini_listing_ui_description"),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              value: hide,
+              onChanged: _onGeminiHideChanged,
+              secondary: const Icon(Icons.auto_awesome_outlined),
+            );
+          },
         ),
       ],
     );

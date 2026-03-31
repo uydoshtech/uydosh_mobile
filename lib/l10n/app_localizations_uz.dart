@@ -715,7 +715,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_translation_unavailable => 'Tarjima mavjud emas.';
 
   @override
-  String get listing_ai_enhance => 'AI bilan yaxshilash';
+  String get listing_ai_enhance => 'Tavsifni AI bilan yaxshilash';
 
   @override
   String get listing_ai_enhance_empty => 'Avval tavsif kiriting.';
@@ -1172,14 +1172,25 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_panel_title => 'Admin paneli';
 
   @override
-  String get admin_panel_section_content_moderation => 'Foto moderatsiyasi';
+  String get admin_panel_section_content_moderation => 'Klient sozlamalari';
 
   @override
-  String get admin_content_moderation_title => 'Foto moderatsiyasi';
+  String get admin_content_moderation_title => 'Klient sozlamalari';
 
   @override
   String get admin_content_moderation_description =>
-      'Yoqilganda, yuklangan fotolar nojo\'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O\'chirilganda tekshirish va xiralashtirish o\'tkazilmaydi (AWS Rekognition chaqiruvlari yo\'q).';
+      'Foto moderatsiyasi (server): yoqilganda, yuklangan fotolar nojo\'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O\'chirilganda tekshirish va xiralashtirish o\'tkazilmaydi (AWS Rekognition chaqiruvlari yo\'q).';
+
+  @override
+  String get admin_client_config_section_title => 'Ushbu qurilmada';
+
+  @override
+  String get admin_client_config_hide_gemini_listing_ui =>
+      'Tarjima va AI yaxshilashni yashirish';
+
+  @override
+  String get admin_client_config_hide_gemini_listing_ui_description =>
+      'E\'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni yashiradi. Faqat ushbu qurilmada saqlanadi.';
 
   @override
   String get admin_content_moderation_blur_enabled =>

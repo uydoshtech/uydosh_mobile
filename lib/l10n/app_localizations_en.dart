@@ -705,7 +705,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_translation_unavailable => 'Translation unavailable.';
 
   @override
-  String get listing_ai_enhance => 'AI enhance';
+  String get listing_ai_enhance => 'Improve description with AI';
 
   @override
   String get listing_ai_enhance_empty => 'Enter a description first.';
@@ -1158,14 +1158,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_panel_title => 'Admin Panel';
 
   @override
-  String get admin_panel_section_content_moderation => 'Photo moderation';
+  String get admin_panel_section_content_moderation => 'Client configuration';
 
   @override
-  String get admin_content_moderation_title => 'Photo moderation';
+  String get admin_content_moderation_title => 'Client configuration';
 
   @override
   String get admin_content_moderation_description =>
-      'When enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).';
+      'Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).';
+
+  @override
+  String get admin_client_config_section_title => 'On this device';
+
+  @override
+  String get admin_client_config_hide_gemini_listing_ui =>
+      'Hide translation & AI improve';
+
+  @override
+  String get admin_client_config_hide_gemini_listing_ui_description =>
+      'Hides description language buttons on listing details and the AI improve action when creating or editing listings. Stored only on this device.';
 
   @override
   String get admin_content_moderation_blur_enabled =>

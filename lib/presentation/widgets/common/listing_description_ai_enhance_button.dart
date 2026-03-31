@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
@@ -22,8 +23,40 @@ class ListingDescriptionAiEnhanceButton extends StatefulWidget {
 }
 
 class _ListingDescriptionAiEnhanceButtonState
-    extends State<ListingDescriptionAiEnhanceButton> {
+    extends State<ListingDescriptionAiEnhanceButton>
+    with SingleTickerProviderStateMixin {
   bool _loading = false;
+
+  late final AnimationController _sparkleBlinkController;
+  late final Animation<double> _sparkleOpacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _sparkleBlinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+    _sparkleOpacity = Tween<double>(begin: 0.45, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _sparkleBlinkController,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _sparkleBlinkController.dispose();
+    super.dispose();
+  }
+
+  Widget _blinkingSparkleIcon(ColorScheme scheme) {
+    return FadeTransition(
+      opacity: _sparkleOpacity,
+      child: Icon(Icons.auto_awesome, size: 18, color: scheme.primary),
+    );
+  }
 
   Future<void> _onPressed() async {
     final raw = widget.controller.text.trim();
@@ -100,6 +133,18 @@ class _ListingDescriptionAiEnhanceButtonState
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: ClientGeminiListingUiConfig.hideGeminiListingUi,
+      builder: (context, hideGeminiUi, _) {
+        if (hideGeminiUi) {
+          return const SizedBox.shrink();
+        }
+        return _buildButton(context);
+      },
+    );
+  }
+
+  Widget _buildButton(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final inlineChild = Row(
       mainAxisSize: MainAxisSize.min,
@@ -120,7 +165,7 @@ class _ListingDescriptionAiEnhanceButtonState
         else
           Padding(
             padding: const EdgeInsets.only(top: 2),
-            child: Icon(Icons.auto_awesome, size: 18, color: scheme.primary),
+            child: _blinkingSparkleIcon(scheme),
           ),
         const SizedBox(width: 6),
         _buildEnhanceLabel(context),
@@ -151,7 +196,7 @@ class _ListingDescriptionAiEnhanceButtonState
                           color: scheme.primary,
                         ),
                       )
-                      : Icon(Icons.auto_awesome, size: 18, color: scheme.primary),
+                      : _blinkingSparkleIcon(scheme),
               label: _buildEnhanceLabel(context),
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

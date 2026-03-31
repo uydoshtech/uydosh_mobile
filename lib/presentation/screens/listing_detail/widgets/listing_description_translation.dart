@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -255,6 +256,18 @@ class _ListingDescriptionTranslationState
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: ClientGeminiListingUiConfig.hideGeminiListingUi,
+      builder: (context, hideGeminiUi, _) {
+        if (hideGeminiUi) {
+          return Text(widget.originalText, style: widget.textStyle);
+        }
+        return _buildTranslationContent(context);
+      },
+    );
+  }
+
+  Widget _buildTranslationContent(BuildContext context) {
     final code = _activeCode;
     final waitingForTranslation = code != null &&
         _loadingLang == code &&
