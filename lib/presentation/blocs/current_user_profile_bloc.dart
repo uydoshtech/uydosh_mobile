@@ -1,6 +1,7 @@
 import "package:dio/dio.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
+import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
@@ -37,7 +38,13 @@ class CurrentUserProfileBloc
       final profile = await _userProfileService.getCurrentUserProfile();
       await SessionManager.storeUserProfile(profile);
       ProfileCompletionState().updateFromProfile(profile);
-      emit(CurrentUserProfileState.loaded(profile: profile));
+      await syncGoogleAvatarToBackendIfMissing(existingProfile: profile);
+      final afterSync = await SessionManager.getCachedUserProfile();
+      emit(
+        CurrentUserProfileState.loaded(
+          profile: afterSync ?? profile,
+        ),
+      );
     } catch (error) {
       if (error is DioException && error.response?.statusCode == 404) {
         emit(

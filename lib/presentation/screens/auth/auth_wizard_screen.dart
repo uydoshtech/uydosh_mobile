@@ -292,6 +292,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       final response = await _authService.firebaseAuth(
         email: currentUser.email ?? "",
         firebaseUid: currentUser.uid,
+        avatarUrl: currentUser.photoURL,
       );
 
       logger.d("✅ Backend authentication successful!");
@@ -458,6 +459,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       final response = await _authService.firebaseAuth(
         email: currentUser.email ?? "",
         firebaseUid: currentUser.uid,
+        avatarUrl: currentUser.photoURL,
       );
 
       // Store session (includes blocked status)
@@ -853,7 +855,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         }
       }
 
-      // Create profile request
+      // Create profile request (include Google profile photo URL when available)
+      final googleAvatarUrl = await SessionManager.getGooglePhotoUrl();
       final request = CreateProfileRequest(
         userId: backendUserId,
         name: _nameController.text.trim(),
@@ -862,6 +865,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         regionId: _selectedRegionId,
         role: _selectedRole,
         preferredLanguage: _selectedLanguage,
+        avatarUrl:
+            googleAvatarUrl != null && googleAvatarUrl.trim().isNotEmpty
+                ? googleAvatarUrl.trim()
+                : null,
       );
 
       // CRITICAL: Verify the request object has the correct data

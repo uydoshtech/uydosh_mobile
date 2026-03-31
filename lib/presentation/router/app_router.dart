@@ -5,6 +5,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
+import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
@@ -117,6 +118,7 @@ class _MainNavigationState extends State<MainNavigation>
       if (mounted) {
         ProfileCompletionState().updateFromProfile(profile);
       }
+      await syncGoogleAvatarToBackendIfMissing(existingProfile: profile);
     } catch (_) {
       // Ignore - profile will be loaded when user opens profile/burger menu
     }

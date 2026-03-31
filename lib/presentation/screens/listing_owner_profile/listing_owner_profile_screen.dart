@@ -1,19 +1,21 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -204,7 +206,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                             ),
                           ],
                         ),
-                        child: _buildProfilePicture(),
+                        child: _buildProfilePicture(profile),
                       ),
                     ),
                   ],
@@ -883,8 +885,44 @@ L10n.get("rating"),
     }
   }
 
-  Widget _buildProfilePicture() {
-    return const Center(child: Icon(Icons.person, size: 50, color: Colors.white));
+  String _resolveAvatarUrl(String url) {
+    final trimmed = url.trim();
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
+    }
+    return "${EnvironmentUtil.basePath}$trimmed";
+  }
+
+  Widget _buildProfilePicture(UserProfile profile) {
+    final raw = profile.avatarUrl?.trim();
+    if (raw == null || raw.isEmpty) {
+      return const Center(
+        child: Icon(Icons.person, size: 50, color: Colors.white),
+      );
+    }
+    final imageUrl = _resolveAvatarUrl(raw);
+    return ClipOval(
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
+        width: 94,
+        height: 94,
+        fit: BoxFit.cover,
+        memCacheWidth: 188,
+        memCacheHeight: 188,
+        placeholder:
+            (context, url) => const Center(
+              child: SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+        errorWidget:
+            (context, url, error) => const Center(
+              child: Icon(Icons.person, size: 50, color: Colors.white),
+            ),
+      ),
+    );
   }
 
   String _getGenderText(int gender, BuildContext context) {

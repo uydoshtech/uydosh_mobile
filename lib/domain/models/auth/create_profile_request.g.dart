@@ -16,6 +16,7 @@ CreateProfileRequest _$CreateProfileRequestFromJson(
       regionId: (json['regionId'] as num?)?.toInt(),
       role: json['role'] as String?,
       preferredLanguage: json['preferredLanguage'] as String?,
+      avatarUrl: json['avatarUrl'] as String?,
     );
 
 Map<String, dynamic> _$CreateProfileRequestToJson(
@@ -28,4 +29,5 @@ Map<String, dynamic> _$CreateProfileRequestToJson(
       'regionId': instance.regionId,
       'role': instance.role,
       'preferredLanguage': instance.preferredLanguage,
+      if (instance.avatarUrl case final value?) 'avatarUrl': value,
     };

@@ -13,6 +13,7 @@ class CreateProfileRequest implements IJsonEncodable {
     @JsonKey(name: "regionId") this.regionId,
     this.role,
     @JsonKey(name: "preferredLanguage") this.preferredLanguage,
+    this.avatarUrl,
   });
 
   factory CreateProfileRequest.fromJson(Map<String, dynamic> json) =>
@@ -29,6 +30,8 @@ class CreateProfileRequest implements IJsonEncodable {
   final String? role;
   @JsonKey(name: "preferredLanguage")
   final String? preferredLanguage;
+  @JsonKey(name: "avatarUrl", includeIfNull: false)
+  final String? avatarUrl;
 
   @override
   Map<String, dynamic> toJson() => _$CreateProfileRequestToJson(this);

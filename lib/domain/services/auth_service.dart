@@ -13,6 +13,7 @@ abstract class IAuthService {
   Future<Map<String, dynamic>> firebaseAuth({
     required String email,
     required String firebaseUid,
+    String? avatarUrl,
   });
   Future<bool> refreshToken();
   Future<void> logout();
@@ -75,11 +76,13 @@ class AuthService implements IAuthService {
   Future<Map<String, dynamic>> firebaseAuth({
     required String email,
     required String firebaseUid,
+    String? avatarUrl,
   }) async {
     try {
       final request = FirebaseAuthRequest(
         email: email,
         firebaseUid: firebaseUid,
+        avatarUrl: avatarUrl,
       );
       final response = await _apiClient.post<Map<String, dynamic>, FirebaseAuthRequest>(
         "/users/firebase-auth",
