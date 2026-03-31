@@ -6,7 +6,8 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 
 enum _TranslationTarget { original, en, ru, uz }
 
-/// Description text with flag buttons (EN / RU / UZ) to translate via [GeminiService].
+/// Description text with compact flag actions (EN / RU / UZ) via [GeminiService].
+/// Controls sit **below** the text, start-aligned (left in LTR).
 class ListingDescriptionTranslation extends StatefulWidget {
   const ListingDescriptionTranslation({
     required this.originalText,
@@ -51,6 +52,12 @@ class _ListingDescriptionTranslationState
     });
 
     if (_cache.containsKey(code)) {
+      final t = _cache[code]!;
+      if (t.trim() == widget.originalText.trim()) {
+        setState(() {
+          _target = _TranslationTarget.original;
+        });
+      }
       return;
     }
 
@@ -76,25 +83,32 @@ class _ListingDescriptionTranslationState
       }
       if (translated == null || translated.trim().isEmpty) {
         setState(() {
-          _loadingLang = null;
           _target = _TranslationTarget.original;
           _error = L10n.get("listing_translation_error");
         });
         return;
       }
       setState(() {
-        _cache[code] = translated.trim();
-        _loadingLang = null;
+        final t = translated.trim();
+        _cache[code] = t;
+        if (t == widget.originalText.trim()) {
+          _target = _TranslationTarget.original;
+        }
       });
     } catch (_) {
       if (!mounted) {
         return;
       }
       setState(() {
-        _loadingLang = null;
         _target = _TranslationTarget.original;
         _error = L10n.get("listing_translation_error");
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingLang = null;
+        });
+      }
     }
   }
 
@@ -107,8 +121,12 @@ class _ListingDescriptionTranslationState
     final code = _codeForTarget(target);
     final isLoading = code.isNotEmpty && _loadingLang == code;
 
-    const pillHeight = 28.0;
-    const radius = 14.0;
+    const pillHeight = 22.0;
+    const radius = 11.0;
+
+    final borderColor = selected
+        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.85)
+        : ListingDetailThemeHelper.amenityChipBorderColor.withValues(alpha: 0.45);
 
     return Tooltip(
       message: L10n.get(tooltipKey),
@@ -119,35 +137,52 @@ class _ListingDescriptionTranslationState
           borderRadius: BorderRadius.circular(radius),
           child: Container(
             height: pillHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(radius),
               border: Border.all(
-                color: selected
-                    ? Theme.of(context).colorScheme.primary
-                    : ListingDetailThemeHelper.amenityChipBorderColor,
-                width: selected ? 2 : 1,
+                color: borderColor,
+                width: selected ? 1.5 : 1,
               ),
               color: Theme.of(context)
                   .colorScheme
                   .surfaceContainerHighest
-                  .withValues(alpha: 0.35),
+                  .withValues(alpha: 0.2),
             ),
             child: isLoading
                 ? SizedBox(
-                    width: 14,
-                    height: 14,
+                    width: 11,
+                    height: 11,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
+                      strokeWidth: 1.5,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   )
-                : Text(flagEmoji, style: const TextStyle(fontSize: 16)),
+                : Text(flagEmoji, style: const TextStyle(fontSize: 13)),
           ),
         ),
       ),
     );
+  }
+
+  /// "Original" only when the user is viewing a **different** string than the
+  /// listing’s source (or while a translation is still loading).
+  bool _shouldShowOriginalLink({
+    required bool waitingForTranslation,
+  }) {
+    if (_target == _TranslationTarget.original) {
+      return false;
+    }
+    if (waitingForTranslation) {
+      return true;
+    }
+    final code = _codeForTarget(_target);
+    final shown = _cache[code];
+    if (shown == null) {
+      return true;
+    }
+    return shown.trim() != widget.originalText.trim();
   }
 
   @override
@@ -157,59 +192,25 @@ class _ListingDescriptionTranslationState
         _loadingLang == code &&
         !_cache.containsKey(code);
 
+    final secondaryStyle = widget.textStyle.copyWith(
+      fontSize: (widget.textStyle.fontSize ?? 16) * 0.85,
+      color: ListingDetailThemeHelper.descriptionTextColor.withValues(
+        alpha: 0.85,
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            _flagButton(
-              flagEmoji: "🇬🇧",
-              target: _TranslationTarget.en,
-              tooltipKey: "listing_translate_tooltip_en",
-            ),
-            _flagButton(
-              flagEmoji: "🇷🇺",
-              target: _TranslationTarget.ru,
-              tooltipKey: "listing_translate_tooltip_ru",
-            ),
-            _flagButton(
-              flagEmoji: "🇺🇿",
-              target: _TranslationTarget.uz,
-              tooltipKey: "listing_translate_tooltip_uz",
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        if (_target != _TranslationTarget.original)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: TextButton(
-              onPressed: () {
-                setState(() {
-                  _target = _TranslationTarget.original;
-                  _error = null;
-                });
-              },
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(L10n.get("listing_show_original_description")),
-            ),
-          ),
-        if (waitingForTranslation) ...[
+        if (waitingForTranslation)
           Text(
             L10n.get("listing_translating_description"),
             style: widget.textStyle.copyWith(
               fontStyle: FontStyle.italic,
               color: ListingDetailThemeHelper.descriptionTextColor,
             ),
-          ),
-        ] else
+          )
+        else
           Text(
             _target == _TranslationTarget.original
                 ? widget.originalText
@@ -218,15 +219,64 @@ class _ListingDescriptionTranslationState
           ),
         if (_error != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 6),
             child: Text(
               _error!,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 color: Theme.of(context).colorScheme.error,
               ),
             ),
           ),
+        const SizedBox(height: 6),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _flagButton(
+                flagEmoji: "🇬🇧",
+                target: _TranslationTarget.en,
+                tooltipKey: "listing_translate_tooltip_en",
+              ),
+              const SizedBox(width: 4),
+              _flagButton(
+                flagEmoji: "🇷🇺",
+                target: _TranslationTarget.ru,
+                tooltipKey: "listing_translate_tooltip_ru",
+              ),
+              const SizedBox(width: 4),
+              _flagButton(
+                flagEmoji: "🇺🇿",
+                target: _TranslationTarget.uz,
+                tooltipKey: "listing_translate_tooltip_uz",
+              ),
+              if (_shouldShowOriginalLink(
+                waitingForTranslation: waitingForTranslation,
+              )) ...[
+                const SizedBox(width: 4),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _target = _TranslationTarget.original;
+                      _error = null;
+                    });
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  child: Text(
+                    L10n.get("listing_show_original_description"),
+                    style: secondaryStyle,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ],
     );
   }

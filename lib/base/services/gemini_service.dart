@@ -1,9 +1,13 @@
+import "dart:async";
+
 import "package:dio/dio.dart";
 import "package:google_generative_ai/google_generative_ai.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/config/gemini_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+
+typedef _BackendTranslateOutcome = ({String? text, bool skipDirectGemini});
 
 /// Listing translation: prefers **backend** `POST /app/gemini/translate-listing`
 /// (server logs `[Gemini] requestId=…` for debugging), then falls back to the
@@ -88,7 +92,37 @@ class GeminiService {
   }
 
   /// Translates listing description to [targetLanguageCode]: `en`, `ru`, or `uz`.
+  ///
+  /// Bounded by [_translateListingOverallTimeout] so the UI never waits forever
+  /// (e.g. hung SDK or long server-side 429 retry chains).
   Future<String?> translateListingDescription({
+    required String text,
+    required String targetLanguageCode,
+  }) async {
+    try {
+      return await _translateListingDescriptionImpl(
+        text: text,
+        targetLanguageCode: targetLanguageCode,
+      ).timeout(
+        _translateListingOverallTimeout,
+        onTimeout: () {
+          logger.w(
+            "Gemini translate listing: timed out after ${_translateListingOverallTimeout.inSeconds}s",
+          );
+          return null;
+        },
+      );
+    } catch (e, st) {
+      logger.w("Gemini translate listing: $e", error: e, stackTrace: st);
+      return null;
+    }
+  }
+
+  static const Duration _translateListingOverallTimeout = Duration(seconds: 150);
+
+  static const Duration _directGenerateContentTimeout = Duration(seconds: 60);
+
+  Future<String?> _translateListingDescriptionImpl({
     required String text,
     required String targetLanguageCode,
   }) async {
@@ -104,12 +138,15 @@ class GeminiService {
       return trimmed;
     }
 
-    final viaBackend = await _translateViaBackend(
+    final backend = await _translateViaBackend(
       text: trimmed,
       targetLanguageCode: targetLanguageCode,
     );
-    if (viaBackend != null) {
-      return viaBackend;
+    if (backend.text != null) {
+      return backend.text;
+    }
+    if (backend.skipDirectGemini) {
+      return null;
     }
 
     if (!GeminiConfig.isConfigured) {
@@ -133,12 +170,20 @@ class GeminiService {
     for (var i = 0; i < GeminiConfig.apiKeys.length; i++) {
       final key = GeminiConfig.apiKeys[i];
       try {
-        final response = await _modelForKey(key).generateContent([Content.text(prompt)]);
+        final response = await _modelForKey(key)
+            .generateContent([Content.text(prompt)])
+            .timeout(_directGenerateContentTimeout);
         final out = _extractResponseText(response);
         if (out != null && out.isNotEmpty) {
           return out;
         }
         logger.w("Gemini translate: empty response for $targetLanguageCode (key index $i)");
+      } on TimeoutException catch (e, st) {
+        logger.w(
+          "Gemini translate timed out (key index $i): $e",
+          error: e,
+          stackTrace: st,
+        );
       } on GenerativeAIException catch (e, st) {
         logger.w(
           "Gemini translate failed (key index $i): $e",
@@ -156,13 +201,13 @@ class GeminiService {
     return null;
   }
 
-  Future<String?> _translateViaBackend({
+  Future<_BackendTranslateOutcome> _translateViaBackend({
     required String text,
     required String targetLanguageCode,
   }) async {
     final client = _publicApiClient;
     if (client == null) {
-      return null;
+      return (text: null, skipDirectGemini: false);
     }
     const base = EnvironmentUtil.basePath;
     final uri = base.endsWith("/")
@@ -177,35 +222,69 @@ class GeminiService {
         },
         options: Options(
           headers: <String, dynamic>{"Content-Type": "application/json"},
-          receiveTimeout: const Duration(seconds: 90),
+          receiveTimeout: const Duration(seconds: 120),
+          // Avoid DioException on 502/429 — we fall back to direct Gemini; not an app fault.
+          validateStatus: (status) => status != null && status < 600,
         ),
       );
+      final status = response.statusCode ?? 0;
       final data = response.data;
+
+      if (status != 200) {
+        final skipDirect = _backendIndicatesRateLimitedBody(data);
+        if (skipDirect) {
+          logger.d("Gemini backend rate limited (HTTP $status); skipping direct SDK");
+        } else {
+          logger.d(
+            "Gemini backend HTTP $status — ${data is Map ? data['error'] : data} (trying direct Gemini)",
+          );
+        }
+        return (text: null, skipDirectGemini: skipDirect);
+      }
+
       if (data is! Map) {
         logger.w("Gemini backend: unexpected response shape");
-        return null;
+        return (text: null, skipDirectGemini: false);
       }
       final map = Map<String, dynamic>.from(data);
       if (map.containsKey("error")) {
-        logger.w("Gemini backend error: ${map['error']}");
-        return null;
+        logger.d("Gemini backend error: ${map['error']} (trying direct Gemini)");
+        return (
+          text: null,
+          skipDirectGemini: _backendIndicatesRateLimitedBody(map),
+        );
       }
       final t = map["translatedText"];
       if (t is String && t.trim().isNotEmpty) {
-        return t.trim();
+        return (text: t.trim(), skipDirectGemini: false);
       }
-      return null;
+      return (text: null, skipDirectGemini: false);
     } on DioException catch (e, st) {
-      logger.w(
-        "Gemini backend HTTP failed: ${e.message} status=${e.response?.statusCode}",
-        error: e,
-        stackTrace: st,
-      );
-      return null;
+      final skipDirect = _backendIndicatesRateLimitedBody(e.response?.data);
+      if (skipDirect) {
+        logger.d("Gemini backend rate limited; skipping direct SDK");
+      } else {
+        logger.w(
+          "Gemini backend request failed: ${e.message} status=${e.response?.statusCode}",
+          error: e,
+          stackTrace: st,
+        );
+      }
+      return (text: null, skipDirectGemini: skipDirect);
     } catch (e, st) {
       logger.w("Gemini backend: $e", error: e, stackTrace: st);
-      return null;
+      return (text: null, skipDirectGemini: false);
     }
+  }
+
+  static bool _backendIndicatesRateLimitedBody(Object? data) {
+    if (data is Map) {
+      final err = data["error"];
+      if (err == "gemini_rate_limited") {
+        return true;
+      }
+    }
+    return false;
   }
 
   static bool _hasCyrillic(String s) => RegExp("[\u0400-\u04FF]").hasMatch(s);
