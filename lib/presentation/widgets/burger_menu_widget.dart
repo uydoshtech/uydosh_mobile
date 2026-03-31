@@ -1,14 +1,15 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:firebase_messaging/firebase_messaging.dart";
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/constants/app_version.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
-import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/version_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
@@ -17,6 +18,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
@@ -30,7 +32,6 @@ import "package:uy_dosh/presentation/screens/view_history/view_history_screen.da
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _BurgerMenuProfileData {
@@ -503,7 +504,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                     }
 
                     return _buildMenuItem(
-                      icon: Icons.favorite,
+                      icon: CupertinoIcons.suit_heart,
                       titleKey: "menu_favorites",
                       onTap: () {
                         Navigator.pop(context);
