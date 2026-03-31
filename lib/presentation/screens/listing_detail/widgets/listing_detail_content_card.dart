@@ -1,17 +1,18 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_description_translation.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 
 /// Main content card for listing detail (header, title, description, location, amenities, dates).
 class ListingDetailContentCard extends StatefulWidget {
@@ -40,10 +41,10 @@ class ListingDetailContentCard extends StatefulWidget {
   final List<Widget>? amenityChips;
   final String Function(BuildContext context, String moveInDate)? formatMoveInDate;
   final String Function({
+    required String language,
     String? nameUz,
     String? nameRu,
     String? nameEn,
-    required String language,
   }) getLocalizedName;
 
   @override
@@ -279,9 +280,9 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
             if (widget.listingDetail.description != null &&
                 widget.listingDetail.description!.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Text(
-                widget.listingDetail.description!,
-                style: TextStyle(
+              ListingDescriptionTranslation(
+                originalText: widget.listingDetail.description!,
+                textStyle: TextStyle(
                   fontSize: 16,
                   color: ListingDetailThemeHelper.descriptionTextColor,
                 ),

@@ -693,6 +693,28 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_price_label => 'Narxi';
 
   @override
+  String get listing_translate_tooltip_en => 'Inglizchaga tarjima qilish';
+
+  @override
+  String get listing_translate_tooltip_ru => 'Rus tiliga tarjima qilish';
+
+  @override
+  String get listing_translate_tooltip_uz => 'O‘zbekchaga tarjima qilish';
+
+  @override
+  String get listing_show_original_description => 'Asl matn';
+
+  @override
+  String get listing_translating_description => 'Tarjima qilinmoqda…';
+
+  @override
+  String get listing_translation_error =>
+      'Tarjima qilinmadi. Qayta urinib ko‘ring.';
+
+  @override
+  String get listing_translation_unavailable => 'Tarjima mavjud emas.';
+
+  @override
   String get listing_type_roommate_needed => 'Xonadosh qidiraman';
 
   @override

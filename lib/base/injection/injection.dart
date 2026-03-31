@@ -31,7 +31,6 @@ final getIt = GetIt.instance;
 
 Future<void> configureDependencies() async {
   getIt.registerLazySingleton<AppAnalyticsService>(AppAnalyticsService.new);
-  getIt.registerLazySingleton<GeminiService>(GeminiService.new);
   // Register services with meaningful names
   getIt.registerLazySingleton<IPublicDioConfigurator>(
     PublicDioConfigurator.new,
@@ -39,6 +38,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IPublicApiClient>(
     () => PublicApiClient(configurator: getIt<IPublicDioConfigurator>()),
+  );
+
+  getIt.registerLazySingleton<GeminiService>(
+    () => GeminiService(publicApiClient: getIt<IPublicApiClient>()),
   );
 
   getIt.registerLazySingleton<ILocationService>(

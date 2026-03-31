@@ -684,6 +684,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_price_label => 'Price';
 
   @override
+  String get listing_translate_tooltip_en => 'Translate to English';
+
+  @override
+  String get listing_translate_tooltip_ru => 'Translate to Russian';
+
+  @override
+  String get listing_translate_tooltip_uz => 'Translate to Uzbek';
+
+  @override
+  String get listing_show_original_description => 'Original';
+
+  @override
+  String get listing_translating_description => 'Translating…';
+
+  @override
+  String get listing_translation_error => 'Couldn\'t translate. Try again.';
+
+  @override
+  String get listing_translation_unavailable => 'Translation unavailable.';
+
+  @override
   String get listing_type_roommate_needed => 'Need Roommate';
 
   @override

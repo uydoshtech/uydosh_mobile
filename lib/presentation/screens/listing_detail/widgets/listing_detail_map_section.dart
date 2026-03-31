@@ -283,21 +283,19 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
       ],
     );
 
+    // Keep Card → Padding → GestureDetector structure stable so AnimatedSize
+    // state is preserved when toggling; swapping GestureDetector vs Padding at
+    // the Card level was recreating the subtree and skipping collapse animation.
     return Card(
       key: widget.sectionKey,
-      child: hasMapContent && !_isMapExpanded
-          ? GestureDetector(
-              onTap: _onToggleMapExpanded,
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: paddedColumn,
-              ),
-            )
-          : Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: paddedColumn,
-            ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: GestureDetector(
+          onTap: hasMapContent && !_isMapExpanded ? _onToggleMapExpanded : null,
+          behavior: HitTestBehavior.opaque,
+          child: paddedColumn,
+        ),
+      ),
     );
   }
 }

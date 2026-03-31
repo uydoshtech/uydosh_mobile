@@ -689,6 +689,28 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_price_label => 'Цена';
 
   @override
+  String get listing_translate_tooltip_en => 'Перевести на английский';
+
+  @override
+  String get listing_translate_tooltip_ru => 'Перевести на русский';
+
+  @override
+  String get listing_translate_tooltip_uz => 'Перевести на узбекский';
+
+  @override
+  String get listing_show_original_description => 'Оригинал';
+
+  @override
+  String get listing_translating_description => 'Перевод…';
+
+  @override
+  String get listing_translation_error =>
+      'Не удалось перевести. Попробуйте снова.';
+
+  @override
+  String get listing_translation_unavailable => 'Перевод недоступен.';
+
+  @override
   String get listing_type_roommate_needed => 'Ищу соседа';
 
   @override

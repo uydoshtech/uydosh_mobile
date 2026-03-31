@@ -277,6 +277,13 @@ class AppStrings {
 
       "listing_description_hint": "Enter listing description",
       "listing_price_label": "Price",
+      "listing_translate_tooltip_en": "Translate to English",
+      "listing_translate_tooltip_ru": "Translate to Russian",
+      "listing_translate_tooltip_uz": "Translate to Uzbek",
+      "listing_show_original_description": "Original",
+      "listing_translating_description": "Translating…",
+      "listing_translation_error": "Couldn’t translate. Try again.",
+      "listing_translation_unavailable": "Translation unavailable.",
 
       "listing_type_roommate_needed": "Need Roommate",
       "listing_type_room_needed": "Need Room",
@@ -1076,6 +1083,13 @@ class AppStrings {
 
       "listing_description_hint": "Введите описание объявления",
       "listing_price_label": "Цена",
+      "listing_translate_tooltip_en": "Перевести на английский",
+      "listing_translate_tooltip_ru": "Перевести на русский",
+      "listing_translate_tooltip_uz": "Перевести на узбекский",
+      "listing_show_original_description": "Оригинал",
+      "listing_translating_description": "Перевод…",
+      "listing_translation_error": "Не удалось перевести. Попробуйте снова.",
+      "listing_translation_unavailable": "Перевод недоступен.",
 
       "listing_type_roommate_needed": "Ищу соседа",
       "listing_type_room_needed": "Ищу жилье",
@@ -1883,6 +1897,13 @@ class AppStrings {
 
       "listing_description_hint": "E'lon tavsifini kiriting",
       "listing_price_label": "Narxi",
+      "listing_translate_tooltip_en": "Inglizchaga tarjima qilish",
+      "listing_translate_tooltip_ru": "Rus tiliga tarjima qilish",
+      "listing_translate_tooltip_uz": "O‘zbekchaga tarjima qilish",
+      "listing_show_original_description": "Asl matn",
+      "listing_translating_description": "Tarjima qilinmoqda…",
+      "listing_translation_error": "Tarjima qilinmadi. Qayta urinib ko‘ring.",
+      "listing_translation_unavailable": "Tarjima mavjud emas.",
 
       "listing_type_roommate_needed": "Xonadosh qidiraman",
       "listing_type_room_needed": "Xonadon kerak",

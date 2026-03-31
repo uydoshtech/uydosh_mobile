@@ -1348,6 +1348,48 @@ abstract class AppLocalizations {
   /// **'Price'**
   String get listing_price_label;
 
+  /// No description provided for @listing_translate_tooltip_en.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate to English'**
+  String get listing_translate_tooltip_en;
+
+  /// No description provided for @listing_translate_tooltip_ru.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate to Russian'**
+  String get listing_translate_tooltip_ru;
+
+  /// No description provided for @listing_translate_tooltip_uz.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate to Uzbek'**
+  String get listing_translate_tooltip_uz;
+
+  /// No description provided for @listing_show_original_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Original'**
+  String get listing_show_original_description;
+
+  /// No description provided for @listing_translating_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating…'**
+  String get listing_translating_description;
+
+  /// No description provided for @listing_translation_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t translate. Try again.'**
+  String get listing_translation_error;
+
+  /// No description provided for @listing_translation_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation unavailable.'**
+  String get listing_translation_unavailable;
+
   /// No description provided for @listing_type_roommate_needed.
   ///
   /// In en, this message translates to:
