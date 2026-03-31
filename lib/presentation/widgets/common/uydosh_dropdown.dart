@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 
 /// A reusable dropdown option for [UydoshDropdown].
@@ -89,8 +90,16 @@ class UydoshDropdown extends StatelessWidget {
                 ),
                 dropdownColor:
                     isBlueTheme
-                        ? Colors.blue[600]
-                        : (isLightTheme ? Colors.white : Colors.grey[800]),
+                        ? Colors.blue.shade600.withValues(
+                          alpha: AppTheme.menuOverlaySurfaceOpacity,
+                        )
+                        : (isLightTheme
+                            ? Colors.white.withValues(
+                              alpha: AppTheme.menuOverlaySurfaceOpacity,
+                            )
+                            : Colors.grey.shade800.withValues(
+                              alpha: AppTheme.menuOverlaySurfaceOpacity,
+                            )),
                 items:
                     options.map((option) {
                       return DropdownMenuItem<String?>(

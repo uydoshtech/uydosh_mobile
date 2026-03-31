@@ -1,12 +1,13 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
   const AdminUserDetailScreen({required this.user, super.key});
@@ -352,8 +353,10 @@ L10n.get("admin_user_detail_block_permanent"),
                       )
                   : null,
               dropdownColor: ThemeState().isBlueTheme
-                  ? Colors.blue[600]
-                  : null,
+                  ? Colors.blue.shade600.withValues(
+                      alpha: AppTheme.menuOverlaySurfaceOpacity,
+                    )
+                  : Theme.of(context).popupMenuTheme.color,
               decoration: InputDecoration(
                 labelText: L10n.get("admin_user_detail_role_label"),
                 border: const OutlineInputBorder(),

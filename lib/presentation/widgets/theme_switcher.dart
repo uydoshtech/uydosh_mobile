@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 
 /// Theme switcher widget for selecting app themes
 class ThemeSwitcher extends StatefulWidget {
@@ -35,6 +35,7 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
             Theme.of(context).appBarTheme.foregroundColor ?? Colors.white,
         actions: [
           PopupMenuButton<String>(
+            popUpAnimationStyle: AppTheme.popupMenuAnimationStyle,
             onSelected: _changeTheme,
             itemBuilder:
                 (context) => [

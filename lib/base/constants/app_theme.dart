@@ -7,6 +7,18 @@ class AppTheme {
   static const String lightTheme = "light";
   static const String messagingTheme = "messaging";
 
+  /// Shared alpha for popup menus and [DropdownButton] panels so content behind shows slightly.
+  static const double menuOverlaySurfaceOpacity = 0.92;
+
+  /// [PopupMenuButton] open animation: settling bounces at the end ([Curves.bounceOut]).
+  /// Curves whose output exceeds 1.0 (e.g. [Curves.easeOutBack]) break the framework:
+  /// nested [Interval] curves assert when t > 1. [Curves.bounceOut] stays in range.
+  static const AnimationStyle popupMenuAnimationStyle = AnimationStyle(
+    duration: Duration(milliseconds: 480),
+    curve: Curves.bounceOut,
+    reverseCurve: Curves.easeInCubic,
+  );
+
   /// Get the current theme data based on theme name
   static ThemeData getTheme(String themeName) {
     switch (themeName) {
@@ -166,7 +178,7 @@ class AppTheme {
 
       // Popup menu theme - White background with blue text and icons
       popupMenuTheme: PopupMenuThemeData(
-        color: Colors.white, // White background
+        color: Colors.white.withValues(alpha: menuOverlaySurfaceOpacity),
         textStyle: const TextStyle(
           color: BlueThemeColors.primary, // Blue text
           fontSize: 16,
@@ -354,7 +366,7 @@ class AppTheme {
 
       // Popup menu theme - White background with light theme primary text and icons
       popupMenuTheme: PopupMenuThemeData(
-        color: Colors.white, // White background
+        color: Colors.white.withValues(alpha: menuOverlaySurfaceOpacity),
         textStyle: const TextStyle(
           color: LightThemeColors.primary, // Light theme primary text
           fontSize: 16,
@@ -513,7 +525,7 @@ class AppTheme {
 
       // Popup menu theme - White background with messaging theme primary text and icons
       popupMenuTheme: PopupMenuThemeData(
-        color: Colors.white, // White background
+        color: Colors.white.withValues(alpha: menuOverlaySurfaceOpacity),
         textStyle: const TextStyle(
           color: MessagingThemeColors.primary, // Messaging theme primary text
           fontSize: 16,
