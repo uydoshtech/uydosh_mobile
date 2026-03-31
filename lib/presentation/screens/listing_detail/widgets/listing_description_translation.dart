@@ -235,6 +235,44 @@ class _ListingDescriptionTranslationState
     );
   }
 
+  /// Same pill shape / border as [_flagButton] (unselected style).
+  Widget _originalPillButton(BuildContext context, TextStyle labelStyle) {
+    const pillHeight = 28.0;
+    const radius = 14.0;
+    final borderColor =
+        ListingDetailThemeHelper.amenityChipBorderColor.withValues(alpha: 0.45);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _target = _TranslationTarget.original;
+            _error = null;
+          });
+        },
+        borderRadius: BorderRadius.circular(radius),
+        child: Container(
+          height: pillHeight,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(color: borderColor, width: 1),
+            color: Theme.of(context)
+                .colorScheme
+                .surfaceContainerHighest
+                .withValues(alpha: 0.2),
+          ),
+          child: Text(
+            L10n.get("listing_show_original_description"),
+            style: labelStyle,
+          ),
+        ),
+      ),
+    );
+  }
+
   /// "Original" only when the user is viewing a **different** string than the
   /// listing’s source (or while a translation is still loading).
   bool _shouldShowOriginalLink({
@@ -309,24 +347,7 @@ class _ListingDescriptionTranslationState
                 waitingForTranslation: waitingForTranslation,
               )) ...[
                 const SizedBox(width: 4),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _target = _TranslationTarget.original;
-                      _error = null;
-                    });
-                  },
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  child: Text(
-                    L10n.get("listing_show_original_description"),
-                    style: secondaryStyle,
-                  ),
-                ),
+                _originalPillButton(context, secondaryStyle),
               ],
             ],
           ),
