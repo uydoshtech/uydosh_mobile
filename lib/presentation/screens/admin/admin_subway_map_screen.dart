@@ -108,32 +108,16 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   }
 
   Future<void> _loadListingStationIds() async {
-    final service = getIt<IListingService>();
-    final ids = MetroCache.getAllStations().map((s) => s.id).toList();
-    final withListings = <int>{};
-    const batchSize = 8;
-    for (var i = 0; i < ids.length; i += batchSize) {
-      final batch = ids.skip(i).take(batchSize).toList();
-      final results = await Future.wait(
-        batch.map((id) async {
-          try {
-            final r = await service.getListings(
-              subwayStationId: id,
-              limit: 1,
-              page: 1,
-            );
-            return r.total > 0 ? id : null;
-          } catch (_) {
-            return null;
-          }
-        }),
+    try {
+      final ids = await getIt<IListingService>().getSubwayStationIdsWithListings(
+        createdWithinDays: 30,
       );
-      for (final id in results) {
-        if (id != null) withListings.add(id);
-      }
+      if (!mounted) return;
+      setState(() => _stationIdsWithListings = ids.toSet());
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _stationIdsWithListings = {});
     }
-    if (!mounted) return;
-    setState(() => _stationIdsWithListings = withListings);
   }
 
   @override
@@ -593,7 +577,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
             boldStationIds.isNotEmpty &&
             boldStationIds.contains(stationId);
         final inner = useBold
-            ? '<g style="font-weight:bold">$textValue</g>'
+            ? '<g style="font-weight:bold;text-decoration:underline;text-underline-offset:3px">$textValue</g>'
             : textValue;
 
         return "<g ${transformMatch.group(0)}>$inner</g>";

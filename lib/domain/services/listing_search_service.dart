@@ -70,6 +70,11 @@ abstract class IListingSearchService {
     int limit = 10,
     String? language,
   });
+
+  /// Subway station IDs that have at least one active listing (single API round-trip).
+  Future<List<int>> getSubwayStationIdsWithListings({
+    int createdWithinDays = 30,
+  });
 }
 
 class ListingSearchService implements IListingSearchService {
@@ -437,6 +442,29 @@ class ListingSearchService implements IListingSearchService {
       );
     } catch (e) {
       logger.d("Error fetching listings for user $userId: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<int>> getSubwayStationIdsWithListings({
+    int createdWithinDays = 30,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        if (createdWithinDays > 0) "createdWithinDays": createdWithinDays,
+      };
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        "/listings/subway-stations-with-listings",
+        (json) => json,
+        basePath: EnvironmentUtil.basePath,
+        queryParameters: queryParams,
+      );
+      final raw = response["subwayStationIds"];
+      if (raw is! List<dynamic>) return [];
+      return raw.map((e) => (e as num).toInt()).toList();
+    } catch (e) {
+      logger.d("Error fetching subway stations with listings: $e");
       rethrow;
     }
   }

@@ -40,6 +40,11 @@ abstract class IListingService {
     int createdWithinDays = 30,
   });
 
+  /// Subway station IDs that have at least one active listing (single request).
+  Future<List<int>> getSubwayStationIdsWithListings({
+    int createdWithinDays = 30,
+  });
+
   Future<ListingDetail> getListingDetail(int listingId, {String? language});
 
   Future<void> saveDescriptionTranslation({
@@ -210,6 +215,14 @@ class ListingService implements IListingService {
         page: page,
         limit: limit,
         language: language,
+        createdWithinDays: createdWithinDays,
+      );
+
+  @override
+  Future<List<int>> getSubwayStationIdsWithListings({
+    int createdWithinDays = 30,
+  }) =>
+      _searchService.getSubwayStationIdsWithListings(
         createdWithinDays: createdWithinDays,
       );
 
