@@ -10,8 +10,6 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_description_translation.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
-import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 /// Main content card for listing detail (header, title, description, location, amenities, dates).
@@ -53,28 +51,6 @@ class ListingDetailContentCard extends StatefulWidget {
 }
 
 class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
-  String _getGenderText(int gender) {
-    switch (gender) {
-      case 1:
-        return L10n.get("male");
-      case 2:
-        return L10n.get("female");
-      default:
-        return L10n.get("other");
-    }
-  }
-
-  IconData _getGenderIcon(int gender) {
-    switch (gender) {
-      case 1:
-        return Icons.male;
-      case 2:
-        return Icons.female;
-      default:
-        return Icons.person;
-    }
-  }
-
   String _getAmenityLocalizedName(Amenity amenity) {
     switch (widget.currentLanguage) {
       case "ru":
@@ -208,68 +184,6 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Wrap(
-              spacing: 12,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                ListingTypeBadge(
-                  listingTypeCode: widget.listingDetail.listingType.code,
-                  fontSize: 12,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                ),
-                if (widget.listingDetail.gender != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: ThemeState().isLightTheme
-                          ? null
-                          : ListingDetailThemeHelper.genderColor(
-                              widget.listingDetail.gender!,
-                            ).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: ListingDetailThemeHelper.genderColor(
-                          widget.listingDetail.gender!,
-                        ),
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ThemeIconFactory.detail(
-                          icon: _getGenderIcon(widget.listingDetail.gender!),
-                          color: ListingDetailThemeHelper.genderColor(
-                            widget.listingDetail.gender!,
-                          ),
-                          size: 18,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          _getGenderText(widget.listingDetail.gender!),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: ListingDetailThemeHelper.genderColor(
-                              widget.listingDetail.gender!,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                PriceRangeBadge(
-                  minPrice: widget.listingDetail.price,
-                  maxPrice: widget.listingDetail.price,
-                  isActive: widget.listingDetail.isActive,
-                  fontSize: 13,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  currencySymbol: "y.e.",
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
             Text(
               widget.listingDetail.title,
               style: const TextStyle(

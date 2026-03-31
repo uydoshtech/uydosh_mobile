@@ -12,6 +12,7 @@ class ListingDetailPhotoSection extends StatelessWidget {
     required this.pageController,
     required this.buildPhotoUrl,
     required this.onPhotoTap,
+    required this.metaBadges,
     super.key,
   });
 
@@ -21,6 +22,9 @@ class ListingDetailPhotoSection extends StatelessWidget {
   final String Function(String photoUrl) buildPhotoUrl;
   final void Function(int originalIndex) onPhotoTap;
 
+  /// Listing type, gender, price — shown at the top inside the same [Card] as photos.
+  final Widget metaBadges;
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -29,6 +33,10 @@ class ListingDetailPhotoSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+              child: metaBadges,
+            ),
             SizedBox(
               height: 200,
               child: PageView.builder(

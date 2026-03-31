@@ -58,6 +58,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_map_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
@@ -76,7 +77,6 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
@@ -1851,7 +1851,7 @@ L10n.get("feature_listing_error",
                       ),
                       const SizedBox(height: 16),
                     ],
-                    // Photos Section - moved to very top
+                    // Photos + type / gender / price chips inside the same card (badges at top)
                     if (listingDetail.photos != null &&
                         listingDetail.photos!.isNotEmpty) ...[
                       ListingDetailPhotoSection(
@@ -1861,7 +1861,13 @@ L10n.get("feature_listing_error",
                         pageController: _pageController,
                         buildPhotoUrl: _buildPhotoUrl,
                         onPhotoTap: _openFullScreenPhotoViewer,
+                        metaBadges: ListingDetailMetaBadges(
+                          listingDetail: listingDetail,
+                        ),
                       ),
+                      const SizedBox(height: 16),
+                    ] else ...[
+                      ListingDetailMetaBadges(listingDetail: listingDetail),
                       const SizedBox(height: 16),
                     ],
                     // Unified Listing Detail Card
