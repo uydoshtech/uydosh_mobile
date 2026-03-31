@@ -21,12 +21,19 @@ class ListingDescriptionTranslation extends StatefulWidget {
     this.descriptionRu,
     this.descriptionEn,
     this.descriptionUz,
+    /// When set, title and translation controls share one row (controls at the end).
+    this.listingTitle,
+    this.listingTitleStyle,
     super.key,
   });
 
   /// Listing id for persisting new translations (server cache).
   final int listingId;
   final String originalText;
+
+  /// Shown on the same row as translation controls, start-aligned.
+  final String? listingTitle;
+  final TextStyle? listingTitleStyle;
   /// Optional DB-backed translations from [GET /listings/:id] (skip Gemini when set).
   final String? descriptionRu;
   final String? descriptionEn;
@@ -298,6 +305,24 @@ class _ListingDescriptionTranslationState
       valueListenable: ClientGeminiListingUiConfig.hideGeminiListingUi,
       builder: (context, hideGeminiUi, _) {
         if (hideGeminiUi) {
+          if (widget.listingTitle != null && widget.listingTitle!.isNotEmpty) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.listingTitle!,
+                  style:
+                      widget.listingTitleStyle ??
+                      const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                Text(widget.originalText, style: widget.textStyle),
+              ],
+            );
+          }
           return Text(widget.originalText, style: widget.textStyle);
         }
         return _buildTranslationContent(context);
@@ -318,41 +343,70 @@ class _ListingDescriptionTranslationState
       ),
     );
 
+    final controls = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _flagButton(
+          flagEmoji: "🇺🇿",
+          target: _TranslationTarget.uz,
+          tooltipKey: "listing_translate_tooltip_uz",
+        ),
+        const SizedBox(width: 6),
+        _flagButton(
+          flagEmoji: "🇷🇺",
+          target: _TranslationTarget.ru,
+          tooltipKey: "listing_translate_tooltip_ru",
+        ),
+        const SizedBox(width: 6),
+        _flagButton(
+          flagEmoji: "🇺🇸",
+          target: _TranslationTarget.en,
+          tooltipKey: "listing_translate_tooltip_en",
+        ),
+        if (_shouldShowOriginalLink(
+          waitingForTranslation: waitingForTranslation,
+        )) ...[
+          const SizedBox(width: 4),
+          _originalPillButton(context, secondaryStyle),
+        ],
+      ],
+    );
+
+    final titleStyle =
+        widget.listingTitleStyle ??
+        const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+        );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+        if (widget.listingTitle != null && widget.listingTitle!.isNotEmpty)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _flagButton(
-                flagEmoji: "🇺🇿",
-                target: _TranslationTarget.uz,
-                tooltipKey: "listing_translate_tooltip_uz",
+              Expanded(
+                child: Text(
+                  widget.listingTitle!,
+                  style: titleStyle,
+                ),
               ),
-              const SizedBox(width: 6),
-              _flagButton(
-                flagEmoji: "🇷🇺",
-                target: _TranslationTarget.ru,
-                tooltipKey: "listing_translate_tooltip_ru",
-              ),
-              const SizedBox(width: 6),
-              _flagButton(
-                flagEmoji: "🇺🇸",
-                target: _TranslationTarget.en,
-                tooltipKey: "listing_translate_tooltip_en",
-              ),
-              if (_shouldShowOriginalLink(
-                waitingForTranslation: waitingForTranslation,
-              )) ...[
-                const SizedBox(width: 4),
-                _originalPillButton(context, secondaryStyle),
-              ],
+              const SizedBox(width: 8),
+              controls,
             ],
+          )
+        else
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: controls,
           ),
+        SizedBox(
+          height:
+              widget.listingTitle != null && widget.listingTitle!.isNotEmpty
+                  ? 12
+                  : 8,
         ),
-        const SizedBox(height: 8),
         if (waitingForTranslation)
           Text(
             L10n.get("listing_translating_description"),

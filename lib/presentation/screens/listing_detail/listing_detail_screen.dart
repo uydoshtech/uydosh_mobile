@@ -1865,12 +1865,12 @@ L10n.get("feature_listing_error",
                           listingDetail: listingDetail,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                     ] else ...[
                       ListingDetailMetaBadges(listingDetail: listingDetail),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                     ],
-                    // Unified Listing Detail Card
+                    // Unified Listing Detail Card (gap above = space between photo tile and this card)
                     ListingDetailContentCard(
                       listingDetail: listingDetail,
                       currentLanguage: currentLanguage,

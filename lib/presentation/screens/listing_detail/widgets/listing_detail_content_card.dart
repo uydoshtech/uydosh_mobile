@@ -180,22 +180,29 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        // Tighter top: reduces gap between image tile and title/description row only.
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.listingDetail.title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+            if (widget.listingDetail.description == null ||
+                widget.listingDetail.description!.isEmpty)
+              Text(
+                widget.listingDetail.title,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
             if (widget.listingDetail.description != null &&
-                widget.listingDetail.description!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+                widget.listingDetail.description!.isNotEmpty)
               ListingDescriptionTranslation(
                 listingId: widget.listingDetail.id,
+                listingTitle: widget.listingDetail.title,
+                listingTitleStyle: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
                 descriptionRu: widget.listingDetail.descriptionRu,
                 descriptionEn: widget.listingDetail.descriptionEn,
                 descriptionUz: widget.listingDetail.descriptionUz,
@@ -205,7 +212,6 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                   color: ListingDetailThemeHelper.descriptionTextColor,
                 ),
               ),
-            ],
             if (widget.listingDetail.privateRoom != null) ...[
               const SizedBox(height: 8),
               Row(
