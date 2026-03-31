@@ -46,6 +46,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Local API keys (prefer --dart-define=GEMINI_API_KEY=... in CI)
+.env
+.env.local
+
 # Android signing - NEVER commit key.properties or keystore files
 /android/key.properties
 *.jks

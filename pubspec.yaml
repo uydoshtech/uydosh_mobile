@@ -92,6 +92,7 @@ dependencies:
 
   # In-app tutorial
   tutorial_coach_mark: ^1.3.3
+  google_generative_ai: ^0.4.7
 
 dev_dependencies:
   flutter_test:
