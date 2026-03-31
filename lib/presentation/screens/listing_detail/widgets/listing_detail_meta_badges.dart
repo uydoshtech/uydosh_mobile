@@ -7,7 +7,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
-/// Listing type, gender, and price chips (same row as previously in [ListingDetailContentCard]).
+/// Listing type, gender, and price chips (shown in a dedicated tile on listing detail).
 class ListingDetailMetaBadges extends StatelessWidget {
   const ListingDetailMetaBadges({required this.listingDetail, super.key});
 

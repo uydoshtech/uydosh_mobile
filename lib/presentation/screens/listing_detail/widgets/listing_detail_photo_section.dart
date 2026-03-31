@@ -12,7 +12,6 @@ class ListingDetailPhotoSection extends StatelessWidget {
     required this.pageController,
     required this.buildPhotoUrl,
     required this.onPhotoTap,
-    required this.metaBadges,
     super.key,
   });
 
@@ -22,136 +21,137 @@ class ListingDetailPhotoSection extends StatelessWidget {
   final String Function(String photoUrl) buildPhotoUrl;
   final void Function(int originalIndex) onPhotoTap;
 
-  /// Listing type, gender, price — shown at the top inside the same [Card] as photos.
-  final Widget metaBadges;
-
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 10, 5, 5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
-              child: metaBadges,
-            ),
-            SizedBox(
-              height: 200,
-              child: PageView.builder(
-                controller: pageController,
-                itemCount: orderedPhotos.length,
-                onPageChanged: (_) {},
-                itemBuilder: (context, index) {
-                  final photo = orderedPhotos[index];
-                  final originalIndex = photos.indexOf(photo);
-                  return GestureDetector(
-                    onTap: () => onPhotoTap(originalIndex >= 0 ? originalIndex : 0),
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Stack(
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: buildPhotoUrl(photo.photoUrl),
-                                width: double.infinity,
-                                height: 200,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 400,
-                                memCacheHeight: 400,
-                                fadeInDuration: const Duration(milliseconds: 300),
-                                fadeInCurve: Curves.easeOut,
-                                placeholder: (context, url) => Container(
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(5, 10, 5, 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 200,
+                child: PageView.builder(
+                  controller: pageController,
+                  itemCount: orderedPhotos.length,
+                  onPageChanged: (_) {},
+                  itemBuilder: (context, index) {
+                    final photo = orderedPhotos[index];
+                    final originalIndex = photos.indexOf(photo);
+                    return GestureDetector(
+                      onTap: () =>
+                          onPhotoTap(originalIndex >= 0 ? originalIndex : 0),
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Stack(
+                              children: [
+                                CachedNetworkImage(
+                                  imageUrl: buildPhotoUrl(photo.photoUrl),
                                   width: double.infinity,
                                   height: 200,
-                                  color: Colors.grey[200],
-                                  child: const Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  width: double.infinity,
-                                  height: 200,
-                                  color: Colors.grey[300],
-                                  child: Icon(
-                                    Icons.image_not_supported,
-                                    color: Colors.grey[600],
-                                    size: 48,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 12,
-                                right: 12,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.6),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.fullscreen,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
-                              if (orderedPhotos.length > 1)
-                                Positioned(
-                                  top: 12,
-                                  right: 12,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.6),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      "${index + 1}/${orderedPhotos.length}",
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 400,
+                                  memCacheHeight: 400,
+                                  fadeInDuration:
+                                      const Duration(milliseconds: 300),
+                                  fadeInCurve: Curves.easeOut,
+                                  placeholder: (context, url) => Container(
+                                    width: double.infinity,
+                                    height: 200,
+                                    color: Colors.grey[200],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
                                       ),
                                     ),
                                   ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                    width: double.infinity,
+                                    height: 200,
+                                    color: Colors.grey[300],
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey[600],
+                                      size: 48,
+                                    ),
+                                  ),
                                 ),
-                            ],
+                                Positioned(
+                                  bottom: 12,
+                                  right: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.6),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.fullscreen,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                                if (orderedPhotos.length > 1)
+                                  Positioned(
+                                    top: 12,
+                                    right: 12,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            Colors.black.withValues(alpha: 0.6),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        "${index + 1}/${orderedPhotos.length}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            if (orderedPhotos.length > 1) ...[
-              const SizedBox(height: 10),
-              Center(
-                child: SmoothPageIndicator(
-                  controller: pageController,
-                  count: orderedPhotos.length,
-                  effect: WormEffect(
-                    dotColor: Colors.grey[300]!,
-                    activeDotColor: ListingDetailThemeHelper.iconColor,
-                    dotHeight: 8,
-                    dotWidth: 8,
-                    spacing: 8,
-                  ),
+                    );
+                  },
                 ),
               ),
-              const SizedBox(height: 5),
+              if (orderedPhotos.length > 1) ...[
+                const SizedBox(height: 10),
+                Center(
+                  child: SmoothPageIndicator(
+                    controller: pageController,
+                    count: orderedPhotos.length,
+                    effect: WormEffect(
+                      dotColor: Colors.grey[300]!,
+                      activeDotColor: ListingDetailThemeHelper.iconColor,
+                      dotHeight: 8,
+                      dotWidth: 8,
+                      spacing: 8,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 5),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

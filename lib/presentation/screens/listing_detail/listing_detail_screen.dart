@@ -1807,6 +1807,20 @@ L10n.get("feature_listing_error",
     );
   }
 
+  Widget _metaBadgesTile(ListingDetail listingDetail) {
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
+          child: ListingDetailMetaBadges(
+            listingDetail: listingDetail,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLoadedState(
     ListingDetail listingDetail,
     ListingDetailPageState pageState,
@@ -1851,7 +1865,7 @@ L10n.get("feature_listing_error",
                       ),
                       const SizedBox(height: 16),
                     ],
-                    // Photos + type / gender / price chips inside the same card (badges at top)
+                    // Photo carousel (own tile); type / gender / price in a separate tile below
                     if (listingDetail.photos != null &&
                         listingDetail.photos!.isNotEmpty) ...[
                       ListingDetailPhotoSection(
@@ -1861,14 +1875,13 @@ L10n.get("feature_listing_error",
                         pageController: _pageController,
                         buildPhotoUrl: _buildPhotoUrl,
                         onPhotoTap: _openFullScreenPhotoViewer,
-                        metaBadges: ListingDetailMetaBadges(
-                          listingDetail: listingDetail,
-                        ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
+                      _metaBadgesTile(listingDetail),
+                      const SizedBox(height: 4),
                     ] else ...[
-                      ListingDetailMetaBadges(listingDetail: listingDetail),
-                      const SizedBox(height: 8),
+                      _metaBadgesTile(listingDetail),
+                      const SizedBox(height: 4),
                     ],
                     // Unified Listing Detail Card (gap above = space between photo tile and this card)
                     ListingDetailContentCard(
@@ -1883,7 +1896,7 @@ L10n.get("feature_listing_error",
                         phoneNumber: listingDetail.user.phone,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     // Map section
                     ..._buildMapSection(
                       listingDetail,
@@ -1895,7 +1908,7 @@ L10n.get("feature_listing_error",
                       final section = compatibilitySection;
                       if (section == null) return <Widget>[];
                       return [
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
                         section,
                       ];
                     }(),
