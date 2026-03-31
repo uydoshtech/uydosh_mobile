@@ -10,8 +10,8 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 
 enum _TranslationTarget { original, en, ru, uz }
 
-/// Description text with compact flag actions (EN / RU / UZ) via [GeminiService].
-/// Controls sit **below** the text, start-aligned (left in LTR).
+/// Description text with compact flag actions (UZ / RU / EN) via [GeminiService].
+/// Controls sit **above** the text, start-aligned (left in LTR).
 class ListingDescriptionTranslation extends StatefulWidget {
   const ListingDescriptionTranslation({
     required this.listingId,
@@ -189,8 +189,8 @@ class _ListingDescriptionTranslationState
     final code = _codeForTarget(target);
     final isLoading = code.isNotEmpty && _loadingLang == code;
 
-    const pillHeight = 22.0;
-    const radius = 11.0;
+    const pillHeight = 28.0;
+    const radius = 14.0;
 
     final borderColor = selected
         ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.85)
@@ -205,7 +205,7 @@ class _ListingDescriptionTranslationState
           borderRadius: BorderRadius.circular(radius),
           child: Container(
             height: pillHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 7),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(radius),
@@ -220,14 +220,14 @@ class _ListingDescriptionTranslationState
             ),
             child: isLoading
                 ? SizedBox(
-                    width: 11,
-                    height: 11,
+                    width: 14,
+                    height: 14,
                     child: CircularProgressIndicator(
-                      strokeWidth: 1.5,
+                      strokeWidth: 2,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   )
-                : Text(flagEmoji, style: const TextStyle(fontSize: 13)),
+                : Text(flagEmoji, style: const TextStyle(fontSize: 16)),
           ),
         ),
       ),
@@ -270,54 +270,27 @@ class _ListingDescriptionTranslationState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (waitingForTranslation)
-          Text(
-            L10n.get("listing_translating_description"),
-            style: widget.textStyle.copyWith(
-              fontStyle: FontStyle.italic,
-              color: ListingDetailThemeHelper.descriptionTextColor,
-            ),
-          )
-        else
-          Text(
-            _target == _TranslationTarget.original
-                ? widget.originalText
-                : (_cache[_codeForTarget(_target)] ?? widget.originalText),
-            style: widget.textStyle,
-          ),
-        if (_error != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Text(
-              _error!,
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
-          ),
-        const SizedBox(height: 6),
         Align(
           alignment: AlignmentDirectional.centerStart,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               _flagButton(
-                flagEmoji: "🇬🇧",
-                target: _TranslationTarget.en,
-                tooltipKey: "listing_translate_tooltip_en",
+                flagEmoji: "🇺🇿",
+                target: _TranslationTarget.uz,
+                tooltipKey: "listing_translate_tooltip_uz",
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
               _flagButton(
                 flagEmoji: "🇷🇺",
                 target: _TranslationTarget.ru,
                 tooltipKey: "listing_translate_tooltip_ru",
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
               _flagButton(
-                flagEmoji: "🇺🇿",
-                target: _TranslationTarget.uz,
-                tooltipKey: "listing_translate_tooltip_uz",
+                flagEmoji: "🇺🇸",
+                target: _TranslationTarget.en,
+                tooltipKey: "listing_translate_tooltip_en",
               ),
               if (_shouldShowOriginalLink(
                 waitingForTranslation: waitingForTranslation,
@@ -345,6 +318,33 @@ class _ListingDescriptionTranslationState
             ],
           ),
         ),
+        const SizedBox(height: 8),
+        if (waitingForTranslation)
+          Text(
+            L10n.get("listing_translating_description"),
+            style: widget.textStyle.copyWith(
+              fontStyle: FontStyle.italic,
+              color: ListingDetailThemeHelper.descriptionTextColor,
+            ),
+          )
+        else
+          Text(
+            _target == _TranslationTarget.original
+                ? widget.originalText
+                : (_cache[_codeForTarget(_target)] ?? widget.originalText),
+            style: widget.textStyle,
+          ),
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              _error!,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ),
       ],
     );
   }
