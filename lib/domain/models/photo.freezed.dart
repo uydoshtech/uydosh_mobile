@@ -12,8 +12,7 @@ part of 'photo.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 Photo _$PhotoFromJson(Map<String, dynamic> json) {
   return _Photo.fromJson(json);
@@ -45,13 +44,12 @@ abstract class $PhotoCopyWith<$Res> {
   factory $PhotoCopyWith(Photo value, $Res Function(Photo) then) =
       _$PhotoCopyWithImpl<$Res, Photo>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "photo_url") String photoUrl,
-    @JsonKey(name: "photo_order") int photoOrder,
-    @JsonKey(name: "is_primary") bool isPrimary,
-    @JsonKey(name: "created_at") String createdAt,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "photo_url") String photoUrl,
+      @JsonKey(name: "photo_order") int photoOrder,
+      @JsonKey(name: "is_primary") bool isPrimary,
+      @JsonKey(name: "created_at") String createdAt});
 }
 
 /// @nodoc
@@ -75,54 +73,44 @@ class _$PhotoCopyWithImpl<$Res, $Val extends Photo>
     Object? isPrimary = null,
     Object? createdAt = null,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            photoUrl:
-                null == photoUrl
-                    ? _value.photoUrl
-                    : photoUrl // ignore: cast_nullable_to_non_nullable
-                        as String,
-            photoOrder:
-                null == photoOrder
-                    ? _value.photoOrder
-                    : photoOrder // ignore: cast_nullable_to_non_nullable
-                        as int,
-            isPrimary:
-                null == isPrimary
-                    ? _value.isPrimary
-                    : isPrimary // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      photoUrl: null == photoUrl
+          ? _value.photoUrl
+          : photoUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      photoOrder: null == photoOrder
+          ? _value.photoOrder
+          : photoOrder // ignore: cast_nullable_to_non_nullable
+              as int,
+      isPrimary: null == isPrimary
+          ? _value.isPrimary
+          : isPrimary // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$PhotoImplCopyWith<$Res> implements $PhotoCopyWith<$Res> {
   factory _$$PhotoImplCopyWith(
-    _$PhotoImpl value,
-    $Res Function(_$PhotoImpl) then,
-  ) = __$$PhotoImplCopyWithImpl<$Res>;
+          _$PhotoImpl value, $Res Function(_$PhotoImpl) then) =
+      __$$PhotoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "photo_url") String photoUrl,
-    @JsonKey(name: "photo_order") int photoOrder,
-    @JsonKey(name: "is_primary") bool isPrimary,
-    @JsonKey(name: "created_at") String createdAt,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "photo_url") String photoUrl,
+      @JsonKey(name: "photo_order") int photoOrder,
+      @JsonKey(name: "is_primary") bool isPrimary,
+      @JsonKey(name: "created_at") String createdAt});
 }
 
 /// @nodoc
@@ -130,9 +118,8 @@ class __$$PhotoImplCopyWithImpl<$Res>
     extends _$PhotoCopyWithImpl<$Res, _$PhotoImpl>
     implements _$$PhotoImplCopyWith<$Res> {
   __$$PhotoImplCopyWithImpl(
-    _$PhotoImpl _value,
-    $Res Function(_$PhotoImpl) _then,
-  ) : super(_value, _then);
+      _$PhotoImpl _value, $Res Function(_$PhotoImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of Photo
   /// with the given fields replaced by the non-null parameter values.
@@ -145,48 +132,40 @@ class __$$PhotoImplCopyWithImpl<$Res>
     Object? isPrimary = null,
     Object? createdAt = null,
   }) {
-    return _then(
-      _$PhotoImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        photoUrl:
-            null == photoUrl
-                ? _value.photoUrl
-                : photoUrl // ignore: cast_nullable_to_non_nullable
-                    as String,
-        photoOrder:
-            null == photoOrder
-                ? _value.photoOrder
-                : photoOrder // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isPrimary:
-            null == isPrimary
-                ? _value.isPrimary
-                : isPrimary // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+    return _then(_$PhotoImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      photoUrl: null == photoUrl
+          ? _value.photoUrl
+          : photoUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      photoOrder: null == photoOrder
+          ? _value.photoOrder
+          : photoOrder // ignore: cast_nullable_to_non_nullable
+              as int,
+      isPrimary: null == isPrimary
+          ? _value.isPrimary
+          : isPrimary // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$PhotoImpl implements _Photo {
-  const _$PhotoImpl({
-    required this.id,
-    @JsonKey(name: "photo_url") required this.photoUrl,
-    @JsonKey(name: "photo_order") required this.photoOrder,
-    @JsonKey(name: "is_primary") required this.isPrimary,
-    @JsonKey(name: "created_at") required this.createdAt,
-  });
+  const _$PhotoImpl(
+      {required this.id,
+      @JsonKey(name: "photo_url") required this.photoUrl,
+      @JsonKey(name: "photo_order") required this.photoOrder,
+      @JsonKey(name: "is_primary") required this.isPrimary,
+      @JsonKey(name: "created_at") required this.createdAt});
 
   factory _$PhotoImpl.fromJson(Map<String, dynamic> json) =>
       _$$PhotoImplFromJson(json);
@@ -242,18 +221,20 @@ class _$PhotoImpl implements _Photo {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PhotoImplToJson(this);
+    return _$$PhotoImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _Photo implements Photo {
-  const factory _Photo({
-    required final int id,
-    @JsonKey(name: "photo_url") required final String photoUrl,
-    @JsonKey(name: "photo_order") required final int photoOrder,
-    @JsonKey(name: "is_primary") required final bool isPrimary,
-    @JsonKey(name: "created_at") required final String createdAt,
-  }) = _$PhotoImpl;
+  const factory _Photo(
+          {required final int id,
+          @JsonKey(name: "photo_url") required final String photoUrl,
+          @JsonKey(name: "photo_order") required final int photoOrder,
+          @JsonKey(name: "is_primary") required final bool isPrimary,
+          @JsonKey(name: "created_at") required final String createdAt}) =
+      _$PhotoImpl;
 
   factory _Photo.fromJson(Map<String, dynamic> json) = _$PhotoImpl.fromJson;
 

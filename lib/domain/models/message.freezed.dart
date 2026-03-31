@@ -12,8 +12,7 @@ part of 'message.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 Message _$MessageFromJson(Map<String, dynamic> json) {
   return _Message.fromJson(json);
@@ -66,25 +65,24 @@ abstract class $MessageCopyWith<$Res> {
   factory $MessageCopyWith(Message value, $Res Function(Message) then) =
       _$MessageCopyWithImpl<$Res, Message>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "conversation_id") int conversationId,
-    @JsonKey(name: "sender_id") int senderId,
-    String content,
-    @JsonKey(name: "message_type") String messageType,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    @JsonKey(name: "reply_to_message_id") int? replyToMessageId,
-    @JsonKey(name: "is_edited") bool? isEdited,
-    @JsonKey(name: "edited_at") String? editedAt,
-    @JsonKey(name: "is_deleted") bool? isDeleted,
-    @JsonKey(name: "deleted_at") String? deletedAt,
-    MessageSender? sender,
-    List<MessageAttachment>? attachments,
-    Message? replyToMessage,
-    @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
-    @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "conversation_id") int conversationId,
+      @JsonKey(name: "sender_id") int senderId,
+      String content,
+      @JsonKey(name: "message_type") String messageType,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      @JsonKey(name: "reply_to_message_id") int? replyToMessageId,
+      @JsonKey(name: "is_edited") bool? isEdited,
+      @JsonKey(name: "edited_at") String? editedAt,
+      @JsonKey(name: "is_deleted") bool? isDeleted,
+      @JsonKey(name: "deleted_at") String? deletedAt,
+      MessageSender? sender,
+      List<MessageAttachment>? attachments,
+      Message? replyToMessage,
+      @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
+      @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient});
 
   $MessageSenderCopyWith<$Res>? get sender;
   $MessageCopyWith<$Res>? get replyToMessage;
@@ -123,96 +121,76 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
     Object? isReadByCurrentUser = freezed,
     Object? isReadByRecipient = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            conversationId:
-                null == conversationId
-                    ? _value.conversationId
-                    : conversationId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            senderId:
-                null == senderId
-                    ? _value.senderId
-                    : senderId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            content:
-                null == content
-                    ? _value.content
-                    : content // ignore: cast_nullable_to_non_nullable
-                        as String,
-            messageType:
-                null == messageType
-                    ? _value.messageType
-                    : messageType // ignore: cast_nullable_to_non_nullable
-                        as String,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            updatedAt:
-                null == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            replyToMessageId:
-                freezed == replyToMessageId
-                    ? _value.replyToMessageId
-                    : replyToMessageId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            isEdited:
-                freezed == isEdited
-                    ? _value.isEdited
-                    : isEdited // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            editedAt:
-                freezed == editedAt
-                    ? _value.editedAt
-                    : editedAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            isDeleted:
-                freezed == isDeleted
-                    ? _value.isDeleted
-                    : isDeleted // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            deletedAt:
-                freezed == deletedAt
-                    ? _value.deletedAt
-                    : deletedAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            sender:
-                freezed == sender
-                    ? _value.sender
-                    : sender // ignore: cast_nullable_to_non_nullable
-                        as MessageSender?,
-            attachments:
-                freezed == attachments
-                    ? _value.attachments
-                    : attachments // ignore: cast_nullable_to_non_nullable
-                        as List<MessageAttachment>?,
-            replyToMessage:
-                freezed == replyToMessage
-                    ? _value.replyToMessage
-                    : replyToMessage // ignore: cast_nullable_to_non_nullable
-                        as Message?,
-            isReadByCurrentUser:
-                freezed == isReadByCurrentUser
-                    ? _value.isReadByCurrentUser
-                    : isReadByCurrentUser // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            isReadByRecipient:
-                freezed == isReadByRecipient
-                    ? _value.isReadByRecipient
-                    : isReadByRecipient // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      conversationId: null == conversationId
+          ? _value.conversationId
+          : conversationId // ignore: cast_nullable_to_non_nullable
+              as int,
+      senderId: null == senderId
+          ? _value.senderId
+          : senderId // ignore: cast_nullable_to_non_nullable
+              as int,
+      content: null == content
+          ? _value.content
+          : content // ignore: cast_nullable_to_non_nullable
+              as String,
+      messageType: null == messageType
+          ? _value.messageType
+          : messageType // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      replyToMessageId: freezed == replyToMessageId
+          ? _value.replyToMessageId
+          : replyToMessageId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      isEdited: freezed == isEdited
+          ? _value.isEdited
+          : isEdited // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      editedAt: freezed == editedAt
+          ? _value.editedAt
+          : editedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      isDeleted: freezed == isDeleted
+          ? _value.isDeleted
+          : isDeleted // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sender: freezed == sender
+          ? _value.sender
+          : sender // ignore: cast_nullable_to_non_nullable
+              as MessageSender?,
+      attachments: freezed == attachments
+          ? _value.attachments
+          : attachments // ignore: cast_nullable_to_non_nullable
+              as List<MessageAttachment>?,
+      replyToMessage: freezed == replyToMessage
+          ? _value.replyToMessage
+          : replyToMessage // ignore: cast_nullable_to_non_nullable
+              as Message?,
+      isReadByCurrentUser: freezed == isReadByCurrentUser
+          ? _value.isReadByCurrentUser
+          : isReadByCurrentUser // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      isReadByRecipient: freezed == isReadByRecipient
+          ? _value.isReadByRecipient
+          : isReadByRecipient // ignore: cast_nullable_to_non_nullable
+              as bool?,
+    ) as $Val);
   }
 
   /// Create a copy of Message
@@ -247,30 +225,28 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
 /// @nodoc
 abstract class _$$MessageImplCopyWith<$Res> implements $MessageCopyWith<$Res> {
   factory _$$MessageImplCopyWith(
-    _$MessageImpl value,
-    $Res Function(_$MessageImpl) then,
-  ) = __$$MessageImplCopyWithImpl<$Res>;
+          _$MessageImpl value, $Res Function(_$MessageImpl) then) =
+      __$$MessageImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "conversation_id") int conversationId,
-    @JsonKey(name: "sender_id") int senderId,
-    String content,
-    @JsonKey(name: "message_type") String messageType,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    @JsonKey(name: "reply_to_message_id") int? replyToMessageId,
-    @JsonKey(name: "is_edited") bool? isEdited,
-    @JsonKey(name: "edited_at") String? editedAt,
-    @JsonKey(name: "is_deleted") bool? isDeleted,
-    @JsonKey(name: "deleted_at") String? deletedAt,
-    MessageSender? sender,
-    List<MessageAttachment>? attachments,
-    Message? replyToMessage,
-    @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
-    @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "conversation_id") int conversationId,
+      @JsonKey(name: "sender_id") int senderId,
+      String content,
+      @JsonKey(name: "message_type") String messageType,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      @JsonKey(name: "reply_to_message_id") int? replyToMessageId,
+      @JsonKey(name: "is_edited") bool? isEdited,
+      @JsonKey(name: "edited_at") String? editedAt,
+      @JsonKey(name: "is_deleted") bool? isDeleted,
+      @JsonKey(name: "deleted_at") String? deletedAt,
+      MessageSender? sender,
+      List<MessageAttachment>? attachments,
+      Message? replyToMessage,
+      @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
+      @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient});
 
   @override
   $MessageSenderCopyWith<$Res>? get sender;
@@ -283,9 +259,8 @@ class __$$MessageImplCopyWithImpl<$Res>
     extends _$MessageCopyWithImpl<$Res, _$MessageImpl>
     implements _$$MessageImplCopyWith<$Res> {
   __$$MessageImplCopyWithImpl(
-    _$MessageImpl _value,
-    $Res Function(_$MessageImpl) _then,
-  ) : super(_value, _then);
+      _$MessageImpl _value, $Res Function(_$MessageImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of Message
   /// with the given fields replaced by the non-null parameter values.
@@ -310,120 +285,101 @@ class __$$MessageImplCopyWithImpl<$Res>
     Object? isReadByCurrentUser = freezed,
     Object? isReadByRecipient = freezed,
   }) {
-    return _then(
-      _$MessageImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        conversationId:
-            null == conversationId
-                ? _value.conversationId
-                : conversationId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        senderId:
-            null == senderId
-                ? _value.senderId
-                : senderId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        content:
-            null == content
-                ? _value.content
-                : content // ignore: cast_nullable_to_non_nullable
-                    as String,
-        messageType:
-            null == messageType
-                ? _value.messageType
-                : messageType // ignore: cast_nullable_to_non_nullable
-                    as String,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        updatedAt:
-            null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        replyToMessageId:
-            freezed == replyToMessageId
-                ? _value.replyToMessageId
-                : replyToMessageId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        isEdited:
-            freezed == isEdited
-                ? _value.isEdited
-                : isEdited // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        editedAt:
-            freezed == editedAt
-                ? _value.editedAt
-                : editedAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        isDeleted:
-            freezed == isDeleted
-                ? _value.isDeleted
-                : isDeleted // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        deletedAt:
-            freezed == deletedAt
-                ? _value.deletedAt
-                : deletedAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        sender:
-            freezed == sender
-                ? _value.sender
-                : sender // ignore: cast_nullable_to_non_nullable
-                    as MessageSender?,
-        attachments:
-            freezed == attachments
-                ? _value._attachments
-                : attachments // ignore: cast_nullable_to_non_nullable
-                    as List<MessageAttachment>?,
-        replyToMessage:
-            freezed == replyToMessage
-                ? _value.replyToMessage
-                : replyToMessage // ignore: cast_nullable_to_non_nullable
-                    as Message?,
-        isReadByCurrentUser:
-            freezed == isReadByCurrentUser
-                ? _value.isReadByCurrentUser
-                : isReadByCurrentUser // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        isReadByRecipient:
-            freezed == isReadByRecipient
-                ? _value.isReadByRecipient
-                : isReadByRecipient // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-      ),
-    );
+    return _then(_$MessageImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      conversationId: null == conversationId
+          ? _value.conversationId
+          : conversationId // ignore: cast_nullable_to_non_nullable
+              as int,
+      senderId: null == senderId
+          ? _value.senderId
+          : senderId // ignore: cast_nullable_to_non_nullable
+              as int,
+      content: null == content
+          ? _value.content
+          : content // ignore: cast_nullable_to_non_nullable
+              as String,
+      messageType: null == messageType
+          ? _value.messageType
+          : messageType // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      replyToMessageId: freezed == replyToMessageId
+          ? _value.replyToMessageId
+          : replyToMessageId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      isEdited: freezed == isEdited
+          ? _value.isEdited
+          : isEdited // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      editedAt: freezed == editedAt
+          ? _value.editedAt
+          : editedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      isDeleted: freezed == isDeleted
+          ? _value.isDeleted
+          : isDeleted // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sender: freezed == sender
+          ? _value.sender
+          : sender // ignore: cast_nullable_to_non_nullable
+              as MessageSender?,
+      attachments: freezed == attachments
+          ? _value._attachments
+          : attachments // ignore: cast_nullable_to_non_nullable
+              as List<MessageAttachment>?,
+      replyToMessage: freezed == replyToMessage
+          ? _value.replyToMessage
+          : replyToMessage // ignore: cast_nullable_to_non_nullable
+              as Message?,
+      isReadByCurrentUser: freezed == isReadByCurrentUser
+          ? _value.isReadByCurrentUser
+          : isReadByCurrentUser // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      isReadByRecipient: freezed == isReadByRecipient
+          ? _value.isReadByRecipient
+          : isReadByRecipient // ignore: cast_nullable_to_non_nullable
+              as bool?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MessageImpl implements _Message {
-  const _$MessageImpl({
-    required this.id,
-    @JsonKey(name: "conversation_id") required this.conversationId,
-    @JsonKey(name: "sender_id") required this.senderId,
-    required this.content,
-    @JsonKey(name: "message_type") required this.messageType,
-    @JsonKey(name: "created_at") required this.createdAt,
-    @JsonKey(name: "updated_at") required this.updatedAt,
-    @JsonKey(name: "reply_to_message_id") this.replyToMessageId,
-    @JsonKey(name: "is_edited") this.isEdited,
-    @JsonKey(name: "edited_at") this.editedAt,
-    @JsonKey(name: "is_deleted") this.isDeleted,
-    @JsonKey(name: "deleted_at") this.deletedAt,
-    this.sender,
-    final List<MessageAttachment>? attachments,
-    this.replyToMessage,
-    @JsonKey(name: "is_read_by_current_user") this.isReadByCurrentUser,
-    @JsonKey(name: "is_read_by_recipient") this.isReadByRecipient,
-  }) : _attachments = attachments;
+  const _$MessageImpl(
+      {required this.id,
+      @JsonKey(name: "conversation_id") required this.conversationId,
+      @JsonKey(name: "sender_id") required this.senderId,
+      required this.content,
+      @JsonKey(name: "message_type") required this.messageType,
+      @JsonKey(name: "created_at") required this.createdAt,
+      @JsonKey(name: "updated_at") required this.updatedAt,
+      @JsonKey(name: "reply_to_message_id") this.replyToMessageId,
+      @JsonKey(name: "is_edited") this.isEdited,
+      @JsonKey(name: "edited_at") this.editedAt,
+      @JsonKey(name: "is_deleted") this.isDeleted,
+      @JsonKey(name: "deleted_at") this.deletedAt,
+      this.sender,
+      final List<MessageAttachment>? attachments,
+      this.replyToMessage,
+      @JsonKey(name: "is_read_by_current_user") this.isReadByCurrentUser,
+      @JsonKey(name: "is_read_by_recipient") this.isReadByRecipient})
+      : _attachments = attachments;
 
   factory _$MessageImpl.fromJson(Map<String, dynamic> json) =>
       _$$MessageImplFromJson(json);
@@ -462,7 +418,7 @@ class _$MessageImpl implements _Message {
   @override
   @JsonKey(name: "deleted_at")
   final String? deletedAt;
-  // Related data
+// Related data
   @override
   final MessageSender? sender;
   final List<MessageAttachment>? _attachments;
@@ -517,10 +473,8 @@ class _$MessageImpl implements _Message {
             (identical(other.deletedAt, deletedAt) ||
                 other.deletedAt == deletedAt) &&
             (identical(other.sender, sender) || other.sender == sender) &&
-            const DeepCollectionEquality().equals(
-              other._attachments,
-              _attachments,
-            ) &&
+            const DeepCollectionEquality()
+                .equals(other._attachments, _attachments) &&
             (identical(other.replyToMessage, replyToMessage) ||
                 other.replyToMessage == replyToMessage) &&
             (identical(other.isReadByCurrentUser, isReadByCurrentUser) ||
@@ -532,25 +486,24 @@ class _$MessageImpl implements _Message {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    conversationId,
-    senderId,
-    content,
-    messageType,
-    createdAt,
-    updatedAt,
-    replyToMessageId,
-    isEdited,
-    editedAt,
-    isDeleted,
-    deletedAt,
-    sender,
-    const DeepCollectionEquality().hash(_attachments),
-    replyToMessage,
-    isReadByCurrentUser,
-    isReadByRecipient,
-  );
+      runtimeType,
+      id,
+      conversationId,
+      senderId,
+      content,
+      messageType,
+      createdAt,
+      updatedAt,
+      replyToMessageId,
+      isEdited,
+      editedAt,
+      isDeleted,
+      deletedAt,
+      sender,
+      const DeepCollectionEquality().hash(_attachments),
+      replyToMessage,
+      isReadByCurrentUser,
+      isReadByRecipient);
 
   /// Create a copy of Message
   /// with the given fields replaced by the non-null parameter values.
@@ -562,30 +515,32 @@ class _$MessageImpl implements _Message {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MessageImplToJson(this);
+    return _$$MessageImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _Message implements Message {
-  const factory _Message({
-    required final int id,
-    @JsonKey(name: "conversation_id") required final int conversationId,
-    @JsonKey(name: "sender_id") required final int senderId,
-    required final String content,
-    @JsonKey(name: "message_type") required final String messageType,
-    @JsonKey(name: "created_at") required final String createdAt,
-    @JsonKey(name: "updated_at") required final String updatedAt,
-    @JsonKey(name: "reply_to_message_id") final int? replyToMessageId,
-    @JsonKey(name: "is_edited") final bool? isEdited,
-    @JsonKey(name: "edited_at") final String? editedAt,
-    @JsonKey(name: "is_deleted") final bool? isDeleted,
-    @JsonKey(name: "deleted_at") final String? deletedAt,
-    final MessageSender? sender,
-    final List<MessageAttachment>? attachments,
-    final Message? replyToMessage,
-    @JsonKey(name: "is_read_by_current_user") final bool? isReadByCurrentUser,
-    @JsonKey(name: "is_read_by_recipient") final bool? isReadByRecipient,
-  }) = _$MessageImpl;
+  const factory _Message(
+      {required final int id,
+      @JsonKey(name: "conversation_id") required final int conversationId,
+      @JsonKey(name: "sender_id") required final int senderId,
+      required final String content,
+      @JsonKey(name: "message_type") required final String messageType,
+      @JsonKey(name: "created_at") required final String createdAt,
+      @JsonKey(name: "updated_at") required final String updatedAt,
+      @JsonKey(name: "reply_to_message_id") final int? replyToMessageId,
+      @JsonKey(name: "is_edited") final bool? isEdited,
+      @JsonKey(name: "edited_at") final String? editedAt,
+      @JsonKey(name: "is_deleted") final bool? isDeleted,
+      @JsonKey(name: "deleted_at") final String? deletedAt,
+      final MessageSender? sender,
+      final List<MessageAttachment>? attachments,
+      final Message? replyToMessage,
+      @JsonKey(name: "is_read_by_current_user") final bool? isReadByCurrentUser,
+      @JsonKey(name: "is_read_by_recipient")
+      final bool? isReadByRecipient}) = _$MessageImpl;
 
   factory _Message.fromJson(Map<String, dynamic> json) = _$MessageImpl.fromJson;
 
@@ -653,7 +608,8 @@ mixin _$MessageType {
     required TResult Function() file,
     required TResult Function() location,
     required TResult Function() system,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? text,
@@ -661,7 +617,8 @@ mixin _$MessageType {
     TResult? Function()? file,
     TResult? Function()? location,
     TResult? Function()? system,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? text,
@@ -670,7 +627,8 @@ mixin _$MessageType {
     TResult Function()? location,
     TResult Function()? system,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_Text value) text,
@@ -678,7 +636,8 @@ mixin _$MessageType {
     required TResult Function(_File value) file,
     required TResult Function(_Location value) location,
     required TResult Function(_System value) system,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Text value)? text,
@@ -686,7 +645,8 @@ mixin _$MessageType {
     TResult? Function(_File value)? file,
     TResult? Function(_Location value)? location,
     TResult? Function(_System value)? system,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Text value)? text,
@@ -695,15 +655,15 @@ mixin _$MessageType {
     TResult Function(_Location value)? location,
     TResult Function(_System value)? system,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $MessageTypeCopyWith<$Res> {
   factory $MessageTypeCopyWith(
-    MessageType value,
-    $Res Function(MessageType) then,
-  ) = _$MessageTypeCopyWithImpl<$Res, MessageType>;
+          MessageType value, $Res Function(MessageType) then) =
+      _$MessageTypeCopyWithImpl<$Res, MessageType>;
 }
 
 /// @nodoc
@@ -723,9 +683,8 @@ class _$MessageTypeCopyWithImpl<$Res, $Val extends MessageType>
 /// @nodoc
 abstract class _$$TextImplCopyWith<$Res> {
   factory _$$TextImplCopyWith(
-    _$TextImpl value,
-    $Res Function(_$TextImpl) then,
-  ) = __$$TextImplCopyWithImpl<$Res>;
+          _$TextImpl value, $Res Function(_$TextImpl) then) =
+      __$$TextImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -733,7 +692,7 @@ class __$$TextImplCopyWithImpl<$Res>
     extends _$MessageTypeCopyWithImpl<$Res, _$TextImpl>
     implements _$$TextImplCopyWith<$Res> {
   __$$TextImplCopyWithImpl(_$TextImpl _value, $Res Function(_$TextImpl) _then)
-    : super(_value, _then);
+      : super(_value, _then);
 
   /// Create a copy of MessageType
   /// with the given fields replaced by the non-null parameter values.
@@ -847,9 +806,8 @@ abstract class _Text extends MessageType {
 /// @nodoc
 abstract class _$$ImageImplCopyWith<$Res> {
   factory _$$ImageImplCopyWith(
-    _$ImageImpl value,
-    $Res Function(_$ImageImpl) then,
-  ) = __$$ImageImplCopyWithImpl<$Res>;
+          _$ImageImpl value, $Res Function(_$ImageImpl) then) =
+      __$$ImageImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -857,9 +815,8 @@ class __$$ImageImplCopyWithImpl<$Res>
     extends _$MessageTypeCopyWithImpl<$Res, _$ImageImpl>
     implements _$$ImageImplCopyWith<$Res> {
   __$$ImageImplCopyWithImpl(
-    _$ImageImpl _value,
-    $Res Function(_$ImageImpl) _then,
-  ) : super(_value, _then);
+      _$ImageImpl _value, $Res Function(_$ImageImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessageType
   /// with the given fields replaced by the non-null parameter values.
@@ -973,9 +930,8 @@ abstract class _Image extends MessageType {
 /// @nodoc
 abstract class _$$FileImplCopyWith<$Res> {
   factory _$$FileImplCopyWith(
-    _$FileImpl value,
-    $Res Function(_$FileImpl) then,
-  ) = __$$FileImplCopyWithImpl<$Res>;
+          _$FileImpl value, $Res Function(_$FileImpl) then) =
+      __$$FileImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -983,7 +939,7 @@ class __$$FileImplCopyWithImpl<$Res>
     extends _$MessageTypeCopyWithImpl<$Res, _$FileImpl>
     implements _$$FileImplCopyWith<$Res> {
   __$$FileImplCopyWithImpl(_$FileImpl _value, $Res Function(_$FileImpl) _then)
-    : super(_value, _then);
+      : super(_value, _then);
 
   /// Create a copy of MessageType
   /// with the given fields replaced by the non-null parameter values.
@@ -1097,9 +1053,8 @@ abstract class _File extends MessageType {
 /// @nodoc
 abstract class _$$LocationImplCopyWith<$Res> {
   factory _$$LocationImplCopyWith(
-    _$LocationImpl value,
-    $Res Function(_$LocationImpl) then,
-  ) = __$$LocationImplCopyWithImpl<$Res>;
+          _$LocationImpl value, $Res Function(_$LocationImpl) then) =
+      __$$LocationImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -1107,9 +1062,8 @@ class __$$LocationImplCopyWithImpl<$Res>
     extends _$MessageTypeCopyWithImpl<$Res, _$LocationImpl>
     implements _$$LocationImplCopyWith<$Res> {
   __$$LocationImplCopyWithImpl(
-    _$LocationImpl _value,
-    $Res Function(_$LocationImpl) _then,
-  ) : super(_value, _then);
+      _$LocationImpl _value, $Res Function(_$LocationImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessageType
   /// with the given fields replaced by the non-null parameter values.
@@ -1223,9 +1177,8 @@ abstract class _Location extends MessageType {
 /// @nodoc
 abstract class _$$SystemImplCopyWith<$Res> {
   factory _$$SystemImplCopyWith(
-    _$SystemImpl value,
-    $Res Function(_$SystemImpl) then,
-  ) = __$$SystemImplCopyWithImpl<$Res>;
+          _$SystemImpl value, $Res Function(_$SystemImpl) then) =
+      __$$SystemImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -1233,9 +1186,8 @@ class __$$SystemImplCopyWithImpl<$Res>
     extends _$MessageTypeCopyWithImpl<$Res, _$SystemImpl>
     implements _$$SystemImplCopyWith<$Res> {
   __$$SystemImplCopyWithImpl(
-    _$SystemImpl _value,
-    $Res Function(_$SystemImpl) _then,
-  ) : super(_value, _then);
+      _$SystemImpl _value, $Res Function(_$SystemImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessageType
   /// with the given fields replaced by the non-null parameter values.

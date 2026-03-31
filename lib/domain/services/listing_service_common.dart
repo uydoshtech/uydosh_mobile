@@ -6,6 +6,22 @@ class EmptyListingRequest implements IJsonEncodable {
   Map<String, dynamic> toJson() => {};
 }
 
+class DescriptionTranslationRequest implements IJsonEncodable {
+  DescriptionTranslationRequest({
+    required this.targetLanguageCode,
+    required this.translatedText,
+  });
+
+  final String targetLanguageCode;
+  final String translatedText;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "targetLanguageCode": targetLanguageCode,
+        "translatedText": translatedText,
+      };
+}
+
 /// Request for photo upload endpoints.
 class PhotoUploadRequest implements IJsonEncodable {
   PhotoUploadRequest({required this.imageData, required this.isPrimary});

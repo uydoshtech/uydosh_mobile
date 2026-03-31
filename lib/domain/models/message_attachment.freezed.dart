@@ -12,8 +12,7 @@ part of 'message_attachment.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 MessageAttachment _$MessageAttachmentFromJson(Map<String, dynamic> json) {
   return _MessageAttachment.fromJson(json);
@@ -52,21 +51,19 @@ mixin _$MessageAttachment {
 /// @nodoc
 abstract class $MessageAttachmentCopyWith<$Res> {
   factory $MessageAttachmentCopyWith(
-    MessageAttachment value,
-    $Res Function(MessageAttachment) then,
-  ) = _$MessageAttachmentCopyWithImpl<$Res, MessageAttachment>;
+          MessageAttachment value, $Res Function(MessageAttachment) then) =
+      _$MessageAttachmentCopyWithImpl<$Res, MessageAttachment>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "message_id") int messageId,
-    @JsonKey(name: "file_name") String fileName,
-    @JsonKey(name: "file_url") String fileUrl,
-    @JsonKey(name: "file_type") String fileType,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "file_size") int? fileSize,
-    @JsonKey(name: "mime_type") String? mimeType,
-    @JsonKey(name: "thumbnail_url") String? thumbnailUrl,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "message_id") int messageId,
+      @JsonKey(name: "file_name") String fileName,
+      @JsonKey(name: "file_url") String fileUrl,
+      @JsonKey(name: "file_type") String fileType,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "file_size") int? fileSize,
+      @JsonKey(name: "mime_type") String? mimeType,
+      @JsonKey(name: "thumbnail_url") String? thumbnailUrl});
 }
 
 /// @nodoc
@@ -94,89 +91,74 @@ class _$MessageAttachmentCopyWithImpl<$Res, $Val extends MessageAttachment>
     Object? mimeType = freezed,
     Object? thumbnailUrl = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            messageId:
-                null == messageId
-                    ? _value.messageId
-                    : messageId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            fileName:
-                null == fileName
-                    ? _value.fileName
-                    : fileName // ignore: cast_nullable_to_non_nullable
-                        as String,
-            fileUrl:
-                null == fileUrl
-                    ? _value.fileUrl
-                    : fileUrl // ignore: cast_nullable_to_non_nullable
-                        as String,
-            fileType:
-                null == fileType
-                    ? _value.fileType
-                    : fileType // ignore: cast_nullable_to_non_nullable
-                        as String,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            fileSize:
-                freezed == fileSize
-                    ? _value.fileSize
-                    : fileSize // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            mimeType:
-                freezed == mimeType
-                    ? _value.mimeType
-                    : mimeType // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            thumbnailUrl:
-                freezed == thumbnailUrl
-                    ? _value.thumbnailUrl
-                    : thumbnailUrl // ignore: cast_nullable_to_non_nullable
-                        as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      messageId: null == messageId
+          ? _value.messageId
+          : messageId // ignore: cast_nullable_to_non_nullable
+              as int,
+      fileName: null == fileName
+          ? _value.fileName
+          : fileName // ignore: cast_nullable_to_non_nullable
+              as String,
+      fileUrl: null == fileUrl
+          ? _value.fileUrl
+          : fileUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      fileType: null == fileType
+          ? _value.fileType
+          : fileType // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      fileSize: freezed == fileSize
+          ? _value.fileSize
+          : fileSize // ignore: cast_nullable_to_non_nullable
+              as int?,
+      mimeType: freezed == mimeType
+          ? _value.mimeType
+          : mimeType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      thumbnailUrl: freezed == thumbnailUrl
+          ? _value.thumbnailUrl
+          : thumbnailUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$MessageAttachmentImplCopyWith<$Res>
     implements $MessageAttachmentCopyWith<$Res> {
-  factory _$$MessageAttachmentImplCopyWith(
-    _$MessageAttachmentImpl value,
-    $Res Function(_$MessageAttachmentImpl) then,
-  ) = __$$MessageAttachmentImplCopyWithImpl<$Res>;
+  factory _$$MessageAttachmentImplCopyWith(_$MessageAttachmentImpl value,
+          $Res Function(_$MessageAttachmentImpl) then) =
+      __$$MessageAttachmentImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "message_id") int messageId,
-    @JsonKey(name: "file_name") String fileName,
-    @JsonKey(name: "file_url") String fileUrl,
-    @JsonKey(name: "file_type") String fileType,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "file_size") int? fileSize,
-    @JsonKey(name: "mime_type") String? mimeType,
-    @JsonKey(name: "thumbnail_url") String? thumbnailUrl,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "message_id") int messageId,
+      @JsonKey(name: "file_name") String fileName,
+      @JsonKey(name: "file_url") String fileUrl,
+      @JsonKey(name: "file_type") String fileType,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "file_size") int? fileSize,
+      @JsonKey(name: "mime_type") String? mimeType,
+      @JsonKey(name: "thumbnail_url") String? thumbnailUrl});
 }
 
 /// @nodoc
 class __$$MessageAttachmentImplCopyWithImpl<$Res>
     extends _$MessageAttachmentCopyWithImpl<$Res, _$MessageAttachmentImpl>
     implements _$$MessageAttachmentImplCopyWith<$Res> {
-  __$$MessageAttachmentImplCopyWithImpl(
-    _$MessageAttachmentImpl _value,
-    $Res Function(_$MessageAttachmentImpl) _then,
-  ) : super(_value, _then);
+  __$$MessageAttachmentImplCopyWithImpl(_$MessageAttachmentImpl _value,
+      $Res Function(_$MessageAttachmentImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessageAttachment
   /// with the given fields replaced by the non-null parameter values.
@@ -193,72 +175,60 @@ class __$$MessageAttachmentImplCopyWithImpl<$Res>
     Object? mimeType = freezed,
     Object? thumbnailUrl = freezed,
   }) {
-    return _then(
-      _$MessageAttachmentImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        messageId:
-            null == messageId
-                ? _value.messageId
-                : messageId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        fileName:
-            null == fileName
-                ? _value.fileName
-                : fileName // ignore: cast_nullable_to_non_nullable
-                    as String,
-        fileUrl:
-            null == fileUrl
-                ? _value.fileUrl
-                : fileUrl // ignore: cast_nullable_to_non_nullable
-                    as String,
-        fileType:
-            null == fileType
-                ? _value.fileType
-                : fileType // ignore: cast_nullable_to_non_nullable
-                    as String,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        fileSize:
-            freezed == fileSize
-                ? _value.fileSize
-                : fileSize // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        mimeType:
-            freezed == mimeType
-                ? _value.mimeType
-                : mimeType // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        thumbnailUrl:
-            freezed == thumbnailUrl
-                ? _value.thumbnailUrl
-                : thumbnailUrl // ignore: cast_nullable_to_non_nullable
-                    as String?,
-      ),
-    );
+    return _then(_$MessageAttachmentImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      messageId: null == messageId
+          ? _value.messageId
+          : messageId // ignore: cast_nullable_to_non_nullable
+              as int,
+      fileName: null == fileName
+          ? _value.fileName
+          : fileName // ignore: cast_nullable_to_non_nullable
+              as String,
+      fileUrl: null == fileUrl
+          ? _value.fileUrl
+          : fileUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      fileType: null == fileType
+          ? _value.fileType
+          : fileType // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      fileSize: freezed == fileSize
+          ? _value.fileSize
+          : fileSize // ignore: cast_nullable_to_non_nullable
+              as int?,
+      mimeType: freezed == mimeType
+          ? _value.mimeType
+          : mimeType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      thumbnailUrl: freezed == thumbnailUrl
+          ? _value.thumbnailUrl
+          : thumbnailUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MessageAttachmentImpl implements _MessageAttachment {
-  const _$MessageAttachmentImpl({
-    required this.id,
-    @JsonKey(name: "message_id") required this.messageId,
-    @JsonKey(name: "file_name") required this.fileName,
-    @JsonKey(name: "file_url") required this.fileUrl,
-    @JsonKey(name: "file_type") required this.fileType,
-    @JsonKey(name: "created_at") required this.createdAt,
-    @JsonKey(name: "file_size") this.fileSize,
-    @JsonKey(name: "mime_type") this.mimeType,
-    @JsonKey(name: "thumbnail_url") this.thumbnailUrl,
-  });
+  const _$MessageAttachmentImpl(
+      {required this.id,
+      @JsonKey(name: "message_id") required this.messageId,
+      @JsonKey(name: "file_name") required this.fileName,
+      @JsonKey(name: "file_url") required this.fileUrl,
+      @JsonKey(name: "file_type") required this.fileType,
+      @JsonKey(name: "created_at") required this.createdAt,
+      @JsonKey(name: "file_size") this.fileSize,
+      @JsonKey(name: "mime_type") this.mimeType,
+      @JsonKey(name: "thumbnail_url") this.thumbnailUrl});
 
   factory _$MessageAttachmentImpl.fromJson(Map<String, dynamic> json) =>
       _$$MessageAttachmentImplFromJson(json);
@@ -320,18 +290,8 @@ class _$MessageAttachmentImpl implements _MessageAttachment {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    messageId,
-    fileName,
-    fileUrl,
-    fileType,
-    createdAt,
-    fileSize,
-    mimeType,
-    thumbnailUrl,
-  );
+  int get hashCode => Object.hash(runtimeType, id, messageId, fileName, fileUrl,
+      fileType, createdAt, fileSize, mimeType, thumbnailUrl);
 
   /// Create a copy of MessageAttachment
   /// with the given fields replaced by the non-null parameter values.
@@ -340,28 +300,28 @@ class _$MessageAttachmentImpl implements _MessageAttachment {
   @pragma('vm:prefer-inline')
   _$$MessageAttachmentImplCopyWith<_$MessageAttachmentImpl> get copyWith =>
       __$$MessageAttachmentImplCopyWithImpl<_$MessageAttachmentImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MessageAttachmentImplToJson(this);
+    return _$$MessageAttachmentImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _MessageAttachment implements MessageAttachment {
-  const factory _MessageAttachment({
-    required final int id,
-    @JsonKey(name: "message_id") required final int messageId,
-    @JsonKey(name: "file_name") required final String fileName,
-    @JsonKey(name: "file_url") required final String fileUrl,
-    @JsonKey(name: "file_type") required final String fileType,
-    @JsonKey(name: "created_at") required final String createdAt,
-    @JsonKey(name: "file_size") final int? fileSize,
-    @JsonKey(name: "mime_type") final String? mimeType,
-    @JsonKey(name: "thumbnail_url") final String? thumbnailUrl,
-  }) = _$MessageAttachmentImpl;
+  const factory _MessageAttachment(
+          {required final int id,
+          @JsonKey(name: "message_id") required final int messageId,
+          @JsonKey(name: "file_name") required final String fileName,
+          @JsonKey(name: "file_url") required final String fileUrl,
+          @JsonKey(name: "file_type") required final String fileType,
+          @JsonKey(name: "created_at") required final String createdAt,
+          @JsonKey(name: "file_size") final int? fileSize,
+          @JsonKey(name: "mime_type") final String? mimeType,
+          @JsonKey(name: "thumbnail_url") final String? thumbnailUrl}) =
+      _$MessageAttachmentImpl;
 
   factory _MessageAttachment.fromJson(Map<String, dynamic> json) =
       _$MessageAttachmentImpl.fromJson;
@@ -410,7 +370,8 @@ mixin _$AttachmentType {
     required TResult Function() video,
     required TResult Function() audio,
     required TResult Function() other,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? image,
@@ -418,7 +379,8 @@ mixin _$AttachmentType {
     TResult? Function()? video,
     TResult? Function()? audio,
     TResult? Function()? other,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? image,
@@ -427,7 +389,8 @@ mixin _$AttachmentType {
     TResult Function()? audio,
     TResult Function()? other,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_Image value) image,
@@ -435,7 +398,8 @@ mixin _$AttachmentType {
     required TResult Function(_Video value) video,
     required TResult Function(_Audio value) audio,
     required TResult Function(_Other value) other,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Image value)? image,
@@ -443,7 +407,8 @@ mixin _$AttachmentType {
     TResult? Function(_Video value)? video,
     TResult? Function(_Audio value)? audio,
     TResult? Function(_Other value)? other,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Image value)? image,
@@ -452,15 +417,15 @@ mixin _$AttachmentType {
     TResult Function(_Audio value)? audio,
     TResult Function(_Other value)? other,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $AttachmentTypeCopyWith<$Res> {
   factory $AttachmentTypeCopyWith(
-    AttachmentType value,
-    $Res Function(AttachmentType) then,
-  ) = _$AttachmentTypeCopyWithImpl<$Res, AttachmentType>;
+          AttachmentType value, $Res Function(AttachmentType) then) =
+      _$AttachmentTypeCopyWithImpl<$Res, AttachmentType>;
 }
 
 /// @nodoc
@@ -480,9 +445,8 @@ class _$AttachmentTypeCopyWithImpl<$Res, $Val extends AttachmentType>
 /// @nodoc
 abstract class _$$ImageImplCopyWith<$Res> {
   factory _$$ImageImplCopyWith(
-    _$ImageImpl value,
-    $Res Function(_$ImageImpl) then,
-  ) = __$$ImageImplCopyWithImpl<$Res>;
+          _$ImageImpl value, $Res Function(_$ImageImpl) then) =
+      __$$ImageImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -490,9 +454,8 @@ class __$$ImageImplCopyWithImpl<$Res>
     extends _$AttachmentTypeCopyWithImpl<$Res, _$ImageImpl>
     implements _$$ImageImplCopyWith<$Res> {
   __$$ImageImplCopyWithImpl(
-    _$ImageImpl _value,
-    $Res Function(_$ImageImpl) _then,
-  ) : super(_value, _then);
+      _$ImageImpl _value, $Res Function(_$ImageImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of AttachmentType
   /// with the given fields replaced by the non-null parameter values.
@@ -606,9 +569,8 @@ abstract class _Image extends AttachmentType {
 /// @nodoc
 abstract class _$$DocumentImplCopyWith<$Res> {
   factory _$$DocumentImplCopyWith(
-    _$DocumentImpl value,
-    $Res Function(_$DocumentImpl) then,
-  ) = __$$DocumentImplCopyWithImpl<$Res>;
+          _$DocumentImpl value, $Res Function(_$DocumentImpl) then) =
+      __$$DocumentImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -616,9 +578,8 @@ class __$$DocumentImplCopyWithImpl<$Res>
     extends _$AttachmentTypeCopyWithImpl<$Res, _$DocumentImpl>
     implements _$$DocumentImplCopyWith<$Res> {
   __$$DocumentImplCopyWithImpl(
-    _$DocumentImpl _value,
-    $Res Function(_$DocumentImpl) _then,
-  ) : super(_value, _then);
+      _$DocumentImpl _value, $Res Function(_$DocumentImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of AttachmentType
   /// with the given fields replaced by the non-null parameter values.
@@ -732,9 +693,8 @@ abstract class _Document extends AttachmentType {
 /// @nodoc
 abstract class _$$VideoImplCopyWith<$Res> {
   factory _$$VideoImplCopyWith(
-    _$VideoImpl value,
-    $Res Function(_$VideoImpl) then,
-  ) = __$$VideoImplCopyWithImpl<$Res>;
+          _$VideoImpl value, $Res Function(_$VideoImpl) then) =
+      __$$VideoImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -742,9 +702,8 @@ class __$$VideoImplCopyWithImpl<$Res>
     extends _$AttachmentTypeCopyWithImpl<$Res, _$VideoImpl>
     implements _$$VideoImplCopyWith<$Res> {
   __$$VideoImplCopyWithImpl(
-    _$VideoImpl _value,
-    $Res Function(_$VideoImpl) _then,
-  ) : super(_value, _then);
+      _$VideoImpl _value, $Res Function(_$VideoImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of AttachmentType
   /// with the given fields replaced by the non-null parameter values.
@@ -858,9 +817,8 @@ abstract class _Video extends AttachmentType {
 /// @nodoc
 abstract class _$$AudioImplCopyWith<$Res> {
   factory _$$AudioImplCopyWith(
-    _$AudioImpl value,
-    $Res Function(_$AudioImpl) then,
-  ) = __$$AudioImplCopyWithImpl<$Res>;
+          _$AudioImpl value, $Res Function(_$AudioImpl) then) =
+      __$$AudioImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -868,9 +826,8 @@ class __$$AudioImplCopyWithImpl<$Res>
     extends _$AttachmentTypeCopyWithImpl<$Res, _$AudioImpl>
     implements _$$AudioImplCopyWith<$Res> {
   __$$AudioImplCopyWithImpl(
-    _$AudioImpl _value,
-    $Res Function(_$AudioImpl) _then,
-  ) : super(_value, _then);
+      _$AudioImpl _value, $Res Function(_$AudioImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of AttachmentType
   /// with the given fields replaced by the non-null parameter values.
@@ -984,9 +941,8 @@ abstract class _Audio extends AttachmentType {
 /// @nodoc
 abstract class _$$OtherImplCopyWith<$Res> {
   factory _$$OtherImplCopyWith(
-    _$OtherImpl value,
-    $Res Function(_$OtherImpl) then,
-  ) = __$$OtherImplCopyWithImpl<$Res>;
+          _$OtherImpl value, $Res Function(_$OtherImpl) then) =
+      __$$OtherImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -994,9 +950,8 @@ class __$$OtherImplCopyWithImpl<$Res>
     extends _$AttachmentTypeCopyWithImpl<$Res, _$OtherImpl>
     implements _$$OtherImplCopyWith<$Res> {
   __$$OtherImplCopyWithImpl(
-    _$OtherImpl _value,
-    $Res Function(_$OtherImpl) _then,
-  ) : super(_value, _then);
+      _$OtherImpl _value, $Res Function(_$OtherImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of AttachmentType
   /// with the given fields replaced by the non-null parameter values.

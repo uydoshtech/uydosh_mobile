@@ -12,8 +12,7 @@ part of 'conversation.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 Conversation _$ConversationFromJson(Map<String, dynamic> json) {
   return _Conversation.fromJson(json);
@@ -39,7 +38,8 @@ mixin _$Conversation {
   @JsonKey(name: "last_message_content")
   String? get lastMessageContent => throw _privateConstructorUsedError;
   @JsonKey(name: "last_message_sender_id")
-  int? get lastMessageSenderId => throw _privateConstructorUsedError; // Related data
+  int? get lastMessageSenderId =>
+      throw _privateConstructorUsedError; // Related data
   Listing? get listing => throw _privateConstructorUsedError;
   UserProfile? get otherUser => throw _privateConstructorUsedError;
   @JsonKey(name: "unread_count")
@@ -58,25 +58,23 @@ mixin _$Conversation {
 /// @nodoc
 abstract class $ConversationCopyWith<$Res> {
   factory $ConversationCopyWith(
-    Conversation value,
-    $Res Function(Conversation) then,
-  ) = _$ConversationCopyWithImpl<$Res, Conversation>;
+          Conversation value, $Res Function(Conversation) then) =
+      _$ConversationCopyWithImpl<$Res, Conversation>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "listing_id") int listingId,
-    @JsonKey(name: "initiator_id") int initiatorId,
-    @JsonKey(name: "participant_id") int participantId,
-    @JsonKey(name: "is_active") bool isActive,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    @JsonKey(name: "last_message_at") String? lastMessageAt,
-    @JsonKey(name: "last_message_content") String? lastMessageContent,
-    @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
-    Listing? listing,
-    UserProfile? otherUser,
-    @JsonKey(name: "unread_count") int? unreadCount,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "listing_id") int listingId,
+      @JsonKey(name: "initiator_id") int initiatorId,
+      @JsonKey(name: "participant_id") int participantId,
+      @JsonKey(name: "is_active") bool isActive,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      @JsonKey(name: "last_message_at") String? lastMessageAt,
+      @JsonKey(name: "last_message_content") String? lastMessageContent,
+      @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
+      Listing? listing,
+      UserProfile? otherUser,
+      @JsonKey(name: "unread_count") int? unreadCount});
 
   $ListingCopyWith<$Res>? get listing;
   $UserProfileCopyWith<$Res>? get otherUser;
@@ -111,76 +109,60 @@ class _$ConversationCopyWithImpl<$Res, $Val extends Conversation>
     Object? otherUser = freezed,
     Object? unreadCount = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            listingId:
-                null == listingId
-                    ? _value.listingId
-                    : listingId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            initiatorId:
-                null == initiatorId
-                    ? _value.initiatorId
-                    : initiatorId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            participantId:
-                null == participantId
-                    ? _value.participantId
-                    : participantId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            isActive:
-                null == isActive
-                    ? _value.isActive
-                    : isActive // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            updatedAt:
-                null == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            lastMessageAt:
-                freezed == lastMessageAt
-                    ? _value.lastMessageAt
-                    : lastMessageAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            lastMessageContent:
-                freezed == lastMessageContent
-                    ? _value.lastMessageContent
-                    : lastMessageContent // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            lastMessageSenderId:
-                freezed == lastMessageSenderId
-                    ? _value.lastMessageSenderId
-                    : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            listing:
-                freezed == listing
-                    ? _value.listing
-                    : listing // ignore: cast_nullable_to_non_nullable
-                        as Listing?,
-            otherUser:
-                freezed == otherUser
-                    ? _value.otherUser
-                    : otherUser // ignore: cast_nullable_to_non_nullable
-                        as UserProfile?,
-            unreadCount:
-                freezed == unreadCount
-                    ? _value.unreadCount
-                    : unreadCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      listingId: null == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as int,
+      initiatorId: null == initiatorId
+          ? _value.initiatorId
+          : initiatorId // ignore: cast_nullable_to_non_nullable
+              as int,
+      participantId: null == participantId
+          ? _value.participantId
+          : participantId // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      lastMessageAt: freezed == lastMessageAt
+          ? _value.lastMessageAt
+          : lastMessageAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastMessageContent: freezed == lastMessageContent
+          ? _value.lastMessageContent
+          : lastMessageContent // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastMessageSenderId: freezed == lastMessageSenderId
+          ? _value.lastMessageSenderId
+          : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listing: freezed == listing
+          ? _value.listing
+          : listing // ignore: cast_nullable_to_non_nullable
+              as Listing?,
+      otherUser: freezed == otherUser
+          ? _value.otherUser
+          : otherUser // ignore: cast_nullable_to_non_nullable
+              as UserProfile?,
+      unreadCount: freezed == unreadCount
+          ? _value.unreadCount
+          : unreadCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ) as $Val);
   }
 
   /// Create a copy of Conversation
@@ -216,26 +198,24 @@ class _$ConversationCopyWithImpl<$Res, $Val extends Conversation>
 abstract class _$$ConversationImplCopyWith<$Res>
     implements $ConversationCopyWith<$Res> {
   factory _$$ConversationImplCopyWith(
-    _$ConversationImpl value,
-    $Res Function(_$ConversationImpl) then,
-  ) = __$$ConversationImplCopyWithImpl<$Res>;
+          _$ConversationImpl value, $Res Function(_$ConversationImpl) then) =
+      __$$ConversationImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "listing_id") int listingId,
-    @JsonKey(name: "initiator_id") int initiatorId,
-    @JsonKey(name: "participant_id") int participantId,
-    @JsonKey(name: "is_active") bool isActive,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    @JsonKey(name: "last_message_at") String? lastMessageAt,
-    @JsonKey(name: "last_message_content") String? lastMessageContent,
-    @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
-    Listing? listing,
-    UserProfile? otherUser,
-    @JsonKey(name: "unread_count") int? unreadCount,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "listing_id") int listingId,
+      @JsonKey(name: "initiator_id") int initiatorId,
+      @JsonKey(name: "participant_id") int participantId,
+      @JsonKey(name: "is_active") bool isActive,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      @JsonKey(name: "last_message_at") String? lastMessageAt,
+      @JsonKey(name: "last_message_content") String? lastMessageContent,
+      @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
+      Listing? listing,
+      UserProfile? otherUser,
+      @JsonKey(name: "unread_count") int? unreadCount});
 
   @override
   $ListingCopyWith<$Res>? get listing;
@@ -248,9 +228,8 @@ class __$$ConversationImplCopyWithImpl<$Res>
     extends _$ConversationCopyWithImpl<$Res, _$ConversationImpl>
     implements _$$ConversationImplCopyWith<$Res> {
   __$$ConversationImplCopyWithImpl(
-    _$ConversationImpl _value,
-    $Res Function(_$ConversationImpl) _then,
-  ) : super(_value, _then);
+      _$ConversationImpl _value, $Res Function(_$ConversationImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of Conversation
   /// with the given fields replaced by the non-null parameter values.
@@ -271,96 +250,80 @@ class __$$ConversationImplCopyWithImpl<$Res>
     Object? otherUser = freezed,
     Object? unreadCount = freezed,
   }) {
-    return _then(
-      _$ConversationImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        listingId:
-            null == listingId
-                ? _value.listingId
-                : listingId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        initiatorId:
-            null == initiatorId
-                ? _value.initiatorId
-                : initiatorId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        participantId:
-            null == participantId
-                ? _value.participantId
-                : participantId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isActive:
-            null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        updatedAt:
-            null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        lastMessageAt:
-            freezed == lastMessageAt
-                ? _value.lastMessageAt
-                : lastMessageAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        lastMessageContent:
-            freezed == lastMessageContent
-                ? _value.lastMessageContent
-                : lastMessageContent // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        lastMessageSenderId:
-            freezed == lastMessageSenderId
-                ? _value.lastMessageSenderId
-                : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        listing:
-            freezed == listing
-                ? _value.listing
-                : listing // ignore: cast_nullable_to_non_nullable
-                    as Listing?,
-        otherUser:
-            freezed == otherUser
-                ? _value.otherUser
-                : otherUser // ignore: cast_nullable_to_non_nullable
-                    as UserProfile?,
-        unreadCount:
-            freezed == unreadCount
-                ? _value.unreadCount
-                : unreadCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-      ),
-    );
+    return _then(_$ConversationImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      listingId: null == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as int,
+      initiatorId: null == initiatorId
+          ? _value.initiatorId
+          : initiatorId // ignore: cast_nullable_to_non_nullable
+              as int,
+      participantId: null == participantId
+          ? _value.participantId
+          : participantId // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      lastMessageAt: freezed == lastMessageAt
+          ? _value.lastMessageAt
+          : lastMessageAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastMessageContent: freezed == lastMessageContent
+          ? _value.lastMessageContent
+          : lastMessageContent // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastMessageSenderId: freezed == lastMessageSenderId
+          ? _value.lastMessageSenderId
+          : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listing: freezed == listing
+          ? _value.listing
+          : listing // ignore: cast_nullable_to_non_nullable
+              as Listing?,
+      otherUser: freezed == otherUser
+          ? _value.otherUser
+          : otherUser // ignore: cast_nullable_to_non_nullable
+              as UserProfile?,
+      unreadCount: freezed == unreadCount
+          ? _value.unreadCount
+          : unreadCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ConversationImpl implements _Conversation {
-  const _$ConversationImpl({
-    required this.id,
-    @JsonKey(name: "listing_id") required this.listingId,
-    @JsonKey(name: "initiator_id") required this.initiatorId,
-    @JsonKey(name: "participant_id") required this.participantId,
-    @JsonKey(name: "is_active") required this.isActive,
-    @JsonKey(name: "created_at") required this.createdAt,
-    @JsonKey(name: "updated_at") required this.updatedAt,
-    @JsonKey(name: "last_message_at") this.lastMessageAt,
-    @JsonKey(name: "last_message_content") this.lastMessageContent,
-    @JsonKey(name: "last_message_sender_id") this.lastMessageSenderId,
-    this.listing,
-    this.otherUser,
-    @JsonKey(name: "unread_count") this.unreadCount,
-  });
+  const _$ConversationImpl(
+      {required this.id,
+      @JsonKey(name: "listing_id") required this.listingId,
+      @JsonKey(name: "initiator_id") required this.initiatorId,
+      @JsonKey(name: "participant_id") required this.participantId,
+      @JsonKey(name: "is_active") required this.isActive,
+      @JsonKey(name: "created_at") required this.createdAt,
+      @JsonKey(name: "updated_at") required this.updatedAt,
+      @JsonKey(name: "last_message_at") this.lastMessageAt,
+      @JsonKey(name: "last_message_content") this.lastMessageContent,
+      @JsonKey(name: "last_message_sender_id") this.lastMessageSenderId,
+      this.listing,
+      this.otherUser,
+      @JsonKey(name: "unread_count") this.unreadCount});
 
   factory _$ConversationImpl.fromJson(Map<String, dynamic> json) =>
       _$$ConversationImplFromJson(json);
@@ -394,7 +357,7 @@ class _$ConversationImpl implements _Conversation {
   @override
   @JsonKey(name: "last_message_sender_id")
   final int? lastMessageSenderId;
-  // Related data
+// Related data
   @override
   final Listing? listing;
   @override
@@ -442,21 +405,20 @@ class _$ConversationImpl implements _Conversation {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    listingId,
-    initiatorId,
-    participantId,
-    isActive,
-    createdAt,
-    updatedAt,
-    lastMessageAt,
-    lastMessageContent,
-    lastMessageSenderId,
-    listing,
-    otherUser,
-    unreadCount,
-  );
+      runtimeType,
+      id,
+      listingId,
+      initiatorId,
+      participantId,
+      isActive,
+      createdAt,
+      updatedAt,
+      lastMessageAt,
+      lastMessageContent,
+      lastMessageSenderId,
+      listing,
+      otherUser,
+      unreadCount);
 
   /// Create a copy of Conversation
   /// with the given fields replaced by the non-null parameter values.
@@ -468,26 +430,28 @@ class _$ConversationImpl implements _Conversation {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ConversationImplToJson(this);
+    return _$$ConversationImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _Conversation implements Conversation {
-  const factory _Conversation({
-    required final int id,
-    @JsonKey(name: "listing_id") required final int listingId,
-    @JsonKey(name: "initiator_id") required final int initiatorId,
-    @JsonKey(name: "participant_id") required final int participantId,
-    @JsonKey(name: "is_active") required final bool isActive,
-    @JsonKey(name: "created_at") required final String createdAt,
-    @JsonKey(name: "updated_at") required final String updatedAt,
-    @JsonKey(name: "last_message_at") final String? lastMessageAt,
-    @JsonKey(name: "last_message_content") final String? lastMessageContent,
-    @JsonKey(name: "last_message_sender_id") final int? lastMessageSenderId,
-    final Listing? listing,
-    final UserProfile? otherUser,
-    @JsonKey(name: "unread_count") final int? unreadCount,
-  }) = _$ConversationImpl;
+  const factory _Conversation(
+      {required final int id,
+      @JsonKey(name: "listing_id") required final int listingId,
+      @JsonKey(name: "initiator_id") required final int initiatorId,
+      @JsonKey(name: "participant_id") required final int participantId,
+      @JsonKey(name: "is_active") required final bool isActive,
+      @JsonKey(name: "created_at") required final String createdAt,
+      @JsonKey(name: "updated_at") required final String updatedAt,
+      @JsonKey(name: "last_message_at") final String? lastMessageAt,
+      @JsonKey(name: "last_message_content") final String? lastMessageContent,
+      @JsonKey(name: "last_message_sender_id") final int? lastMessageSenderId,
+      final Listing? listing,
+      final UserProfile? otherUser,
+      @JsonKey(name: "unread_count")
+      final int? unreadCount}) = _$ConversationImpl;
 
   factory _Conversation.fromJson(Map<String, dynamic> json) =
       _$ConversationImpl.fromJson;
@@ -561,7 +525,8 @@ mixin _$ConversationSummary {
   @JsonKey(name: "last_message_content")
   String? get lastMessageContent => throw _privateConstructorUsedError;
   @JsonKey(name: "last_message_sender_id")
-  int? get lastMessageSenderId => throw _privateConstructorUsedError; // Summary data
+  int? get lastMessageSenderId =>
+      throw _privateConstructorUsedError; // Summary data
   @JsonKey(name: "listing_title")
   String? get listingTitle => throw _privateConstructorUsedError;
   @JsonKey(name: "listing_price")
@@ -571,7 +536,8 @@ mixin _$ConversationSummary {
   @JsonKey(name: "other_user_avatar")
   String? get otherUserAvatar => throw _privateConstructorUsedError;
   @JsonKey(name: "unread_count")
-  int? get unreadCount => throw _privateConstructorUsedError; // Location and metro station data
+  int? get unreadCount =>
+      throw _privateConstructorUsedError; // Location and metro station data
   @JsonKey(name: "listing_subway_line_id")
   int? get listingSubwayLineId => throw _privateConstructorUsedError;
   @JsonKey(name: "listing_subway_station_id")
@@ -614,41 +580,39 @@ mixin _$ConversationSummary {
 /// @nodoc
 abstract class $ConversationSummaryCopyWith<$Res> {
   factory $ConversationSummaryCopyWith(
-    ConversationSummary value,
-    $Res Function(ConversationSummary) then,
-  ) = _$ConversationSummaryCopyWithImpl<$Res, ConversationSummary>;
+          ConversationSummary value, $Res Function(ConversationSummary) then) =
+      _$ConversationSummaryCopyWithImpl<$Res, ConversationSummary>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "listing_id") int listingId,
-    @JsonKey(name: "initiator_id") int initiatorId,
-    @JsonKey(name: "participant_id") int participantId,
-    @JsonKey(name: "is_active") bool isActive,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    @JsonKey(name: "last_message_at") String? lastMessageAt,
-    @JsonKey(name: "last_message_content") String? lastMessageContent,
-    @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
-    @JsonKey(name: "listing_title") String? listingTitle,
-    @JsonKey(name: "listing_price") int? listingPrice,
-    @JsonKey(name: "other_user_name") String? otherUserName,
-    @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
-    @JsonKey(name: "unread_count") int? unreadCount,
-    @JsonKey(name: "listing_subway_line_id") int? listingSubwayLineId,
-    @JsonKey(name: "listing_subway_station_id") int? listingSubwayStationId,
-    @JsonKey(name: "listing_location_id") int? listingLocationId,
-    @JsonKey(name: "subway_station_name_uz") String? subwayStationNameUz,
-    @JsonKey(name: "subway_station_name_ru") String? subwayStationNameRu,
-    @JsonKey(name: "subway_station_name_en") String? subwayStationNameEn,
-    @JsonKey(name: "subway_station_line") int? subwayStationLine,
-    @JsonKey(name: "subway_station_ordinal") int? subwayStationOrdinal,
-    @JsonKey(name: "location_name_uz") String? locationNameUz,
-    @JsonKey(name: "location_name_ru") String? locationNameRu,
-    @JsonKey(name: "location_name_en") String? locationNameEn,
-    @JsonKey(name: "location_short_name_uz") String? locationShortNameUz,
-    @JsonKey(name: "location_short_name_ru") String? locationShortNameRu,
-    @JsonKey(name: "location_short_name_en") String? locationShortNameEn,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "listing_id") int listingId,
+      @JsonKey(name: "initiator_id") int initiatorId,
+      @JsonKey(name: "participant_id") int participantId,
+      @JsonKey(name: "is_active") bool isActive,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      @JsonKey(name: "last_message_at") String? lastMessageAt,
+      @JsonKey(name: "last_message_content") String? lastMessageContent,
+      @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
+      @JsonKey(name: "listing_title") String? listingTitle,
+      @JsonKey(name: "listing_price") int? listingPrice,
+      @JsonKey(name: "other_user_name") String? otherUserName,
+      @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+      @JsonKey(name: "unread_count") int? unreadCount,
+      @JsonKey(name: "listing_subway_line_id") int? listingSubwayLineId,
+      @JsonKey(name: "listing_subway_station_id") int? listingSubwayStationId,
+      @JsonKey(name: "listing_location_id") int? listingLocationId,
+      @JsonKey(name: "subway_station_name_uz") String? subwayStationNameUz,
+      @JsonKey(name: "subway_station_name_ru") String? subwayStationNameRu,
+      @JsonKey(name: "subway_station_name_en") String? subwayStationNameEn,
+      @JsonKey(name: "subway_station_line") int? subwayStationLine,
+      @JsonKey(name: "subway_station_ordinal") int? subwayStationOrdinal,
+      @JsonKey(name: "location_name_uz") String? locationNameUz,
+      @JsonKey(name: "location_name_ru") String? locationNameRu,
+      @JsonKey(name: "location_name_en") String? locationNameEn,
+      @JsonKey(name: "location_short_name_uz") String? locationShortNameUz,
+      @JsonKey(name: "location_short_name_ru") String? locationShortNameRu,
+      @JsonKey(name: "location_short_name_en") String? locationShortNameEn});
 }
 
 /// @nodoc
@@ -696,209 +660,174 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
     Object? locationShortNameRu = freezed,
     Object? locationShortNameEn = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            listingId:
-                null == listingId
-                    ? _value.listingId
-                    : listingId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            initiatorId:
-                null == initiatorId
-                    ? _value.initiatorId
-                    : initiatorId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            participantId:
-                null == participantId
-                    ? _value.participantId
-                    : participantId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            isActive:
-                null == isActive
-                    ? _value.isActive
-                    : isActive // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            updatedAt:
-                null == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            lastMessageAt:
-                freezed == lastMessageAt
-                    ? _value.lastMessageAt
-                    : lastMessageAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            lastMessageContent:
-                freezed == lastMessageContent
-                    ? _value.lastMessageContent
-                    : lastMessageContent // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            lastMessageSenderId:
-                freezed == lastMessageSenderId
-                    ? _value.lastMessageSenderId
-                    : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            listingTitle:
-                freezed == listingTitle
-                    ? _value.listingTitle
-                    : listingTitle // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            listingPrice:
-                freezed == listingPrice
-                    ? _value.listingPrice
-                    : listingPrice // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            otherUserName:
-                freezed == otherUserName
-                    ? _value.otherUserName
-                    : otherUserName // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            otherUserAvatar:
-                freezed == otherUserAvatar
-                    ? _value.otherUserAvatar
-                    : otherUserAvatar // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            unreadCount:
-                freezed == unreadCount
-                    ? _value.unreadCount
-                    : unreadCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            listingSubwayLineId:
-                freezed == listingSubwayLineId
-                    ? _value.listingSubwayLineId
-                    : listingSubwayLineId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            listingSubwayStationId:
-                freezed == listingSubwayStationId
-                    ? _value.listingSubwayStationId
-                    : listingSubwayStationId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            listingLocationId:
-                freezed == listingLocationId
-                    ? _value.listingLocationId
-                    : listingLocationId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            subwayStationNameUz:
-                freezed == subwayStationNameUz
-                    ? _value.subwayStationNameUz
-                    : subwayStationNameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            subwayStationNameRu:
-                freezed == subwayStationNameRu
-                    ? _value.subwayStationNameRu
-                    : subwayStationNameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            subwayStationNameEn:
-                freezed == subwayStationNameEn
-                    ? _value.subwayStationNameEn
-                    : subwayStationNameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            subwayStationLine:
-                freezed == subwayStationLine
-                    ? _value.subwayStationLine
-                    : subwayStationLine // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            subwayStationOrdinal:
-                freezed == subwayStationOrdinal
-                    ? _value.subwayStationOrdinal
-                    : subwayStationOrdinal // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            locationNameUz:
-                freezed == locationNameUz
-                    ? _value.locationNameUz
-                    : locationNameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            locationNameRu:
-                freezed == locationNameRu
-                    ? _value.locationNameRu
-                    : locationNameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            locationNameEn:
-                freezed == locationNameEn
-                    ? _value.locationNameEn
-                    : locationNameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            locationShortNameUz:
-                freezed == locationShortNameUz
-                    ? _value.locationShortNameUz
-                    : locationShortNameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            locationShortNameRu:
-                freezed == locationShortNameRu
-                    ? _value.locationShortNameRu
-                    : locationShortNameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            locationShortNameEn:
-                freezed == locationShortNameEn
-                    ? _value.locationShortNameEn
-                    : locationShortNameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      listingId: null == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as int,
+      initiatorId: null == initiatorId
+          ? _value.initiatorId
+          : initiatorId // ignore: cast_nullable_to_non_nullable
+              as int,
+      participantId: null == participantId
+          ? _value.participantId
+          : participantId // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      lastMessageAt: freezed == lastMessageAt
+          ? _value.lastMessageAt
+          : lastMessageAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastMessageContent: freezed == lastMessageContent
+          ? _value.lastMessageContent
+          : lastMessageContent // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastMessageSenderId: freezed == lastMessageSenderId
+          ? _value.lastMessageSenderId
+          : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingTitle: freezed == listingTitle
+          ? _value.listingTitle
+          : listingTitle // ignore: cast_nullable_to_non_nullable
+              as String?,
+      listingPrice: freezed == listingPrice
+          ? _value.listingPrice
+          : listingPrice // ignore: cast_nullable_to_non_nullable
+              as int?,
+      otherUserName: freezed == otherUserName
+          ? _value.otherUserName
+          : otherUserName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      otherUserAvatar: freezed == otherUserAvatar
+          ? _value.otherUserAvatar
+          : otherUserAvatar // ignore: cast_nullable_to_non_nullable
+              as String?,
+      unreadCount: freezed == unreadCount
+          ? _value.unreadCount
+          : unreadCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingSubwayLineId: freezed == listingSubwayLineId
+          ? _value.listingSubwayLineId
+          : listingSubwayLineId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingSubwayStationId: freezed == listingSubwayStationId
+          ? _value.listingSubwayStationId
+          : listingSubwayStationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingLocationId: freezed == listingLocationId
+          ? _value.listingLocationId
+          : listingLocationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      subwayStationNameUz: freezed == subwayStationNameUz
+          ? _value.subwayStationNameUz
+          : subwayStationNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      subwayStationNameRu: freezed == subwayStationNameRu
+          ? _value.subwayStationNameRu
+          : subwayStationNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      subwayStationNameEn: freezed == subwayStationNameEn
+          ? _value.subwayStationNameEn
+          : subwayStationNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      subwayStationLine: freezed == subwayStationLine
+          ? _value.subwayStationLine
+          : subwayStationLine // ignore: cast_nullable_to_non_nullable
+              as int?,
+      subwayStationOrdinal: freezed == subwayStationOrdinal
+          ? _value.subwayStationOrdinal
+          : subwayStationOrdinal // ignore: cast_nullable_to_non_nullable
+              as int?,
+      locationNameUz: freezed == locationNameUz
+          ? _value.locationNameUz
+          : locationNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationNameRu: freezed == locationNameRu
+          ? _value.locationNameRu
+          : locationNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationNameEn: freezed == locationNameEn
+          ? _value.locationNameEn
+          : locationNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationShortNameUz: freezed == locationShortNameUz
+          ? _value.locationShortNameUz
+          : locationShortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationShortNameRu: freezed == locationShortNameRu
+          ? _value.locationShortNameRu
+          : locationShortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationShortNameEn: freezed == locationShortNameEn
+          ? _value.locationShortNameEn
+          : locationShortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$ConversationSummaryImplCopyWith<$Res>
     implements $ConversationSummaryCopyWith<$Res> {
-  factory _$$ConversationSummaryImplCopyWith(
-    _$ConversationSummaryImpl value,
-    $Res Function(_$ConversationSummaryImpl) then,
-  ) = __$$ConversationSummaryImplCopyWithImpl<$Res>;
+  factory _$$ConversationSummaryImplCopyWith(_$ConversationSummaryImpl value,
+          $Res Function(_$ConversationSummaryImpl) then) =
+      __$$ConversationSummaryImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "listing_id") int listingId,
-    @JsonKey(name: "initiator_id") int initiatorId,
-    @JsonKey(name: "participant_id") int participantId,
-    @JsonKey(name: "is_active") bool isActive,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    @JsonKey(name: "last_message_at") String? lastMessageAt,
-    @JsonKey(name: "last_message_content") String? lastMessageContent,
-    @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
-    @JsonKey(name: "listing_title") String? listingTitle,
-    @JsonKey(name: "listing_price") int? listingPrice,
-    @JsonKey(name: "other_user_name") String? otherUserName,
-    @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
-    @JsonKey(name: "unread_count") int? unreadCount,
-    @JsonKey(name: "listing_subway_line_id") int? listingSubwayLineId,
-    @JsonKey(name: "listing_subway_station_id") int? listingSubwayStationId,
-    @JsonKey(name: "listing_location_id") int? listingLocationId,
-    @JsonKey(name: "subway_station_name_uz") String? subwayStationNameUz,
-    @JsonKey(name: "subway_station_name_ru") String? subwayStationNameRu,
-    @JsonKey(name: "subway_station_name_en") String? subwayStationNameEn,
-    @JsonKey(name: "subway_station_line") int? subwayStationLine,
-    @JsonKey(name: "subway_station_ordinal") int? subwayStationOrdinal,
-    @JsonKey(name: "location_name_uz") String? locationNameUz,
-    @JsonKey(name: "location_name_ru") String? locationNameRu,
-    @JsonKey(name: "location_name_en") String? locationNameEn,
-    @JsonKey(name: "location_short_name_uz") String? locationShortNameUz,
-    @JsonKey(name: "location_short_name_ru") String? locationShortNameRu,
-    @JsonKey(name: "location_short_name_en") String? locationShortNameEn,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "listing_id") int listingId,
+      @JsonKey(name: "initiator_id") int initiatorId,
+      @JsonKey(name: "participant_id") int participantId,
+      @JsonKey(name: "is_active") bool isActive,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      @JsonKey(name: "last_message_at") String? lastMessageAt,
+      @JsonKey(name: "last_message_content") String? lastMessageContent,
+      @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
+      @JsonKey(name: "listing_title") String? listingTitle,
+      @JsonKey(name: "listing_price") int? listingPrice,
+      @JsonKey(name: "other_user_name") String? otherUserName,
+      @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+      @JsonKey(name: "unread_count") int? unreadCount,
+      @JsonKey(name: "listing_subway_line_id") int? listingSubwayLineId,
+      @JsonKey(name: "listing_subway_station_id") int? listingSubwayStationId,
+      @JsonKey(name: "listing_location_id") int? listingLocationId,
+      @JsonKey(name: "subway_station_name_uz") String? subwayStationNameUz,
+      @JsonKey(name: "subway_station_name_ru") String? subwayStationNameRu,
+      @JsonKey(name: "subway_station_name_en") String? subwayStationNameEn,
+      @JsonKey(name: "subway_station_line") int? subwayStationLine,
+      @JsonKey(name: "subway_station_ordinal") int? subwayStationOrdinal,
+      @JsonKey(name: "location_name_uz") String? locationNameUz,
+      @JsonKey(name: "location_name_ru") String? locationNameRu,
+      @JsonKey(name: "location_name_en") String? locationNameEn,
+      @JsonKey(name: "location_short_name_uz") String? locationShortNameUz,
+      @JsonKey(name: "location_short_name_ru") String? locationShortNameRu,
+      @JsonKey(name: "location_short_name_en") String? locationShortNameEn});
 }
 
 /// @nodoc
 class __$$ConversationSummaryImplCopyWithImpl<$Res>
     extends _$ConversationSummaryCopyWithImpl<$Res, _$ConversationSummaryImpl>
     implements _$$ConversationSummaryImplCopyWith<$Res> {
-  __$$ConversationSummaryImplCopyWithImpl(
-    _$ConversationSummaryImpl _value,
-    $Res Function(_$ConversationSummaryImpl) _then,
-  ) : super(_value, _then);
+  __$$ConversationSummaryImplCopyWithImpl(_$ConversationSummaryImpl _value,
+      $Res Function(_$ConversationSummaryImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ConversationSummary
   /// with the given fields replaced by the non-null parameter values.
@@ -935,192 +864,160 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
     Object? locationShortNameRu = freezed,
     Object? locationShortNameEn = freezed,
   }) {
-    return _then(
-      _$ConversationSummaryImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        listingId:
-            null == listingId
-                ? _value.listingId
-                : listingId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        initiatorId:
-            null == initiatorId
-                ? _value.initiatorId
-                : initiatorId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        participantId:
-            null == participantId
-                ? _value.participantId
-                : participantId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isActive:
-            null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        updatedAt:
-            null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        lastMessageAt:
-            freezed == lastMessageAt
-                ? _value.lastMessageAt
-                : lastMessageAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        lastMessageContent:
-            freezed == lastMessageContent
-                ? _value.lastMessageContent
-                : lastMessageContent // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        lastMessageSenderId:
-            freezed == lastMessageSenderId
-                ? _value.lastMessageSenderId
-                : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        listingTitle:
-            freezed == listingTitle
-                ? _value.listingTitle
-                : listingTitle // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        listingPrice:
-            freezed == listingPrice
-                ? _value.listingPrice
-                : listingPrice // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        otherUserName:
-            freezed == otherUserName
-                ? _value.otherUserName
-                : otherUserName // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        otherUserAvatar:
-            freezed == otherUserAvatar
-                ? _value.otherUserAvatar
-                : otherUserAvatar // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        unreadCount:
-            freezed == unreadCount
-                ? _value.unreadCount
-                : unreadCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        listingSubwayLineId:
-            freezed == listingSubwayLineId
-                ? _value.listingSubwayLineId
-                : listingSubwayLineId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        listingSubwayStationId:
-            freezed == listingSubwayStationId
-                ? _value.listingSubwayStationId
-                : listingSubwayStationId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        listingLocationId:
-            freezed == listingLocationId
-                ? _value.listingLocationId
-                : listingLocationId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        subwayStationNameUz:
-            freezed == subwayStationNameUz
-                ? _value.subwayStationNameUz
-                : subwayStationNameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        subwayStationNameRu:
-            freezed == subwayStationNameRu
-                ? _value.subwayStationNameRu
-                : subwayStationNameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        subwayStationNameEn:
-            freezed == subwayStationNameEn
-                ? _value.subwayStationNameEn
-                : subwayStationNameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        subwayStationLine:
-            freezed == subwayStationLine
-                ? _value.subwayStationLine
-                : subwayStationLine // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        subwayStationOrdinal:
-            freezed == subwayStationOrdinal
-                ? _value.subwayStationOrdinal
-                : subwayStationOrdinal // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        locationNameUz:
-            freezed == locationNameUz
-                ? _value.locationNameUz
-                : locationNameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        locationNameRu:
-            freezed == locationNameRu
-                ? _value.locationNameRu
-                : locationNameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        locationNameEn:
-            freezed == locationNameEn
-                ? _value.locationNameEn
-                : locationNameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        locationShortNameUz:
-            freezed == locationShortNameUz
-                ? _value.locationShortNameUz
-                : locationShortNameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        locationShortNameRu:
-            freezed == locationShortNameRu
-                ? _value.locationShortNameRu
-                : locationShortNameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        locationShortNameEn:
-            freezed == locationShortNameEn
-                ? _value.locationShortNameEn
-                : locationShortNameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-      ),
-    );
+    return _then(_$ConversationSummaryImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      listingId: null == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as int,
+      initiatorId: null == initiatorId
+          ? _value.initiatorId
+          : initiatorId // ignore: cast_nullable_to_non_nullable
+              as int,
+      participantId: null == participantId
+          ? _value.participantId
+          : participantId // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      lastMessageAt: freezed == lastMessageAt
+          ? _value.lastMessageAt
+          : lastMessageAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastMessageContent: freezed == lastMessageContent
+          ? _value.lastMessageContent
+          : lastMessageContent // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastMessageSenderId: freezed == lastMessageSenderId
+          ? _value.lastMessageSenderId
+          : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingTitle: freezed == listingTitle
+          ? _value.listingTitle
+          : listingTitle // ignore: cast_nullable_to_non_nullable
+              as String?,
+      listingPrice: freezed == listingPrice
+          ? _value.listingPrice
+          : listingPrice // ignore: cast_nullable_to_non_nullable
+              as int?,
+      otherUserName: freezed == otherUserName
+          ? _value.otherUserName
+          : otherUserName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      otherUserAvatar: freezed == otherUserAvatar
+          ? _value.otherUserAvatar
+          : otherUserAvatar // ignore: cast_nullable_to_non_nullable
+              as String?,
+      unreadCount: freezed == unreadCount
+          ? _value.unreadCount
+          : unreadCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingSubwayLineId: freezed == listingSubwayLineId
+          ? _value.listingSubwayLineId
+          : listingSubwayLineId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingSubwayStationId: freezed == listingSubwayStationId
+          ? _value.listingSubwayStationId
+          : listingSubwayStationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingLocationId: freezed == listingLocationId
+          ? _value.listingLocationId
+          : listingLocationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      subwayStationNameUz: freezed == subwayStationNameUz
+          ? _value.subwayStationNameUz
+          : subwayStationNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      subwayStationNameRu: freezed == subwayStationNameRu
+          ? _value.subwayStationNameRu
+          : subwayStationNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      subwayStationNameEn: freezed == subwayStationNameEn
+          ? _value.subwayStationNameEn
+          : subwayStationNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      subwayStationLine: freezed == subwayStationLine
+          ? _value.subwayStationLine
+          : subwayStationLine // ignore: cast_nullable_to_non_nullable
+              as int?,
+      subwayStationOrdinal: freezed == subwayStationOrdinal
+          ? _value.subwayStationOrdinal
+          : subwayStationOrdinal // ignore: cast_nullable_to_non_nullable
+              as int?,
+      locationNameUz: freezed == locationNameUz
+          ? _value.locationNameUz
+          : locationNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationNameRu: freezed == locationNameRu
+          ? _value.locationNameRu
+          : locationNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationNameEn: freezed == locationNameEn
+          ? _value.locationNameEn
+          : locationNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationShortNameUz: freezed == locationShortNameUz
+          ? _value.locationShortNameUz
+          : locationShortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationShortNameRu: freezed == locationShortNameRu
+          ? _value.locationShortNameRu
+          : locationShortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationShortNameEn: freezed == locationShortNameEn
+          ? _value.locationShortNameEn
+          : locationShortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ConversationSummaryImpl implements _ConversationSummary {
-  const _$ConversationSummaryImpl({
-    required this.id,
-    @JsonKey(name: "listing_id") required this.listingId,
-    @JsonKey(name: "initiator_id") required this.initiatorId,
-    @JsonKey(name: "participant_id") required this.participantId,
-    @JsonKey(name: "is_active") required this.isActive,
-    @JsonKey(name: "created_at") required this.createdAt,
-    @JsonKey(name: "updated_at") required this.updatedAt,
-    @JsonKey(name: "last_message_at") this.lastMessageAt,
-    @JsonKey(name: "last_message_content") this.lastMessageContent,
-    @JsonKey(name: "last_message_sender_id") this.lastMessageSenderId,
-    @JsonKey(name: "listing_title") this.listingTitle,
-    @JsonKey(name: "listing_price") this.listingPrice,
-    @JsonKey(name: "other_user_name") this.otherUserName,
-    @JsonKey(name: "other_user_avatar") this.otherUserAvatar,
-    @JsonKey(name: "unread_count") this.unreadCount,
-    @JsonKey(name: "listing_subway_line_id") this.listingSubwayLineId,
-    @JsonKey(name: "listing_subway_station_id") this.listingSubwayStationId,
-    @JsonKey(name: "listing_location_id") this.listingLocationId,
-    @JsonKey(name: "subway_station_name_uz") this.subwayStationNameUz,
-    @JsonKey(name: "subway_station_name_ru") this.subwayStationNameRu,
-    @JsonKey(name: "subway_station_name_en") this.subwayStationNameEn,
-    @JsonKey(name: "subway_station_line") this.subwayStationLine,
-    @JsonKey(name: "subway_station_ordinal") this.subwayStationOrdinal,
-    @JsonKey(name: "location_name_uz") this.locationNameUz,
-    @JsonKey(name: "location_name_ru") this.locationNameRu,
-    @JsonKey(name: "location_name_en") this.locationNameEn,
-    @JsonKey(name: "location_short_name_uz") this.locationShortNameUz,
-    @JsonKey(name: "location_short_name_ru") this.locationShortNameRu,
-    @JsonKey(name: "location_short_name_en") this.locationShortNameEn,
-  });
+  const _$ConversationSummaryImpl(
+      {required this.id,
+      @JsonKey(name: "listing_id") required this.listingId,
+      @JsonKey(name: "initiator_id") required this.initiatorId,
+      @JsonKey(name: "participant_id") required this.participantId,
+      @JsonKey(name: "is_active") required this.isActive,
+      @JsonKey(name: "created_at") required this.createdAt,
+      @JsonKey(name: "updated_at") required this.updatedAt,
+      @JsonKey(name: "last_message_at") this.lastMessageAt,
+      @JsonKey(name: "last_message_content") this.lastMessageContent,
+      @JsonKey(name: "last_message_sender_id") this.lastMessageSenderId,
+      @JsonKey(name: "listing_title") this.listingTitle,
+      @JsonKey(name: "listing_price") this.listingPrice,
+      @JsonKey(name: "other_user_name") this.otherUserName,
+      @JsonKey(name: "other_user_avatar") this.otherUserAvatar,
+      @JsonKey(name: "unread_count") this.unreadCount,
+      @JsonKey(name: "listing_subway_line_id") this.listingSubwayLineId,
+      @JsonKey(name: "listing_subway_station_id") this.listingSubwayStationId,
+      @JsonKey(name: "listing_location_id") this.listingLocationId,
+      @JsonKey(name: "subway_station_name_uz") this.subwayStationNameUz,
+      @JsonKey(name: "subway_station_name_ru") this.subwayStationNameRu,
+      @JsonKey(name: "subway_station_name_en") this.subwayStationNameEn,
+      @JsonKey(name: "subway_station_line") this.subwayStationLine,
+      @JsonKey(name: "subway_station_ordinal") this.subwayStationOrdinal,
+      @JsonKey(name: "location_name_uz") this.locationNameUz,
+      @JsonKey(name: "location_name_ru") this.locationNameRu,
+      @JsonKey(name: "location_name_en") this.locationNameEn,
+      @JsonKey(name: "location_short_name_uz") this.locationShortNameUz,
+      @JsonKey(name: "location_short_name_ru") this.locationShortNameRu,
+      @JsonKey(name: "location_short_name_en") this.locationShortNameEn});
 
   factory _$ConversationSummaryImpl.fromJson(Map<String, dynamic> json) =>
       _$$ConversationSummaryImplFromJson(json);
@@ -1154,7 +1051,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @override
   @JsonKey(name: "last_message_sender_id")
   final int? lastMessageSenderId;
-  // Summary data
+// Summary data
   @override
   @JsonKey(name: "listing_title")
   final String? listingTitle;
@@ -1170,7 +1067,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @override
   @JsonKey(name: "unread_count")
   final int? unreadCount;
-  // Location and metro station data
+// Location and metro station data
   @override
   @JsonKey(name: "listing_subway_line_id")
   final int? listingSubwayLineId;
@@ -1286,37 +1183,37 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
-    runtimeType,
-    id,
-    listingId,
-    initiatorId,
-    participantId,
-    isActive,
-    createdAt,
-    updatedAt,
-    lastMessageAt,
-    lastMessageContent,
-    lastMessageSenderId,
-    listingTitle,
-    listingPrice,
-    otherUserName,
-    otherUserAvatar,
-    unreadCount,
-    listingSubwayLineId,
-    listingSubwayStationId,
-    listingLocationId,
-    subwayStationNameUz,
-    subwayStationNameRu,
-    subwayStationNameEn,
-    subwayStationLine,
-    subwayStationOrdinal,
-    locationNameUz,
-    locationNameRu,
-    locationNameEn,
-    locationShortNameUz,
-    locationShortNameRu,
-    locationShortNameEn,
-  ]);
+        runtimeType,
+        id,
+        listingId,
+        initiatorId,
+        participantId,
+        isActive,
+        createdAt,
+        updatedAt,
+        lastMessageAt,
+        lastMessageContent,
+        lastMessageSenderId,
+        listingTitle,
+        listingPrice,
+        otherUserName,
+        otherUserAvatar,
+        unreadCount,
+        listingSubwayLineId,
+        listingSubwayStationId,
+        listingLocationId,
+        subwayStationNameUz,
+        subwayStationNameRu,
+        subwayStationNameEn,
+        subwayStationLine,
+        subwayStationOrdinal,
+        locationNameUz,
+        locationNameRu,
+        locationNameEn,
+        locationShortNameUz,
+        locationShortNameRu,
+        locationShortNameEn
+      ]);
 
   /// Create a copy of ConversationSummary
   /// with the given fields replaced by the non-null parameter values.
@@ -1325,49 +1222,54 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @pragma('vm:prefer-inline')
   _$$ConversationSummaryImplCopyWith<_$ConversationSummaryImpl> get copyWith =>
       __$$ConversationSummaryImplCopyWithImpl<_$ConversationSummaryImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ConversationSummaryImplToJson(this);
+    return _$$ConversationSummaryImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _ConversationSummary implements ConversationSummary {
-  const factory _ConversationSummary({
-    required final int id,
-    @JsonKey(name: "listing_id") required final int listingId,
-    @JsonKey(name: "initiator_id") required final int initiatorId,
-    @JsonKey(name: "participant_id") required final int participantId,
-    @JsonKey(name: "is_active") required final bool isActive,
-    @JsonKey(name: "created_at") required final String createdAt,
-    @JsonKey(name: "updated_at") required final String updatedAt,
-    @JsonKey(name: "last_message_at") final String? lastMessageAt,
-    @JsonKey(name: "last_message_content") final String? lastMessageContent,
-    @JsonKey(name: "last_message_sender_id") final int? lastMessageSenderId,
-    @JsonKey(name: "listing_title") final String? listingTitle,
-    @JsonKey(name: "listing_price") final int? listingPrice,
-    @JsonKey(name: "other_user_name") final String? otherUserName,
-    @JsonKey(name: "other_user_avatar") final String? otherUserAvatar,
-    @JsonKey(name: "unread_count") final int? unreadCount,
-    @JsonKey(name: "listing_subway_line_id") final int? listingSubwayLineId,
-    @JsonKey(name: "listing_subway_station_id")
-    final int? listingSubwayStationId,
-    @JsonKey(name: "listing_location_id") final int? listingLocationId,
-    @JsonKey(name: "subway_station_name_uz") final String? subwayStationNameUz,
-    @JsonKey(name: "subway_station_name_ru") final String? subwayStationNameRu,
-    @JsonKey(name: "subway_station_name_en") final String? subwayStationNameEn,
-    @JsonKey(name: "subway_station_line") final int? subwayStationLine,
-    @JsonKey(name: "subway_station_ordinal") final int? subwayStationOrdinal,
-    @JsonKey(name: "location_name_uz") final String? locationNameUz,
-    @JsonKey(name: "location_name_ru") final String? locationNameRu,
-    @JsonKey(name: "location_name_en") final String? locationNameEn,
-    @JsonKey(name: "location_short_name_uz") final String? locationShortNameUz,
-    @JsonKey(name: "location_short_name_ru") final String? locationShortNameRu,
-    @JsonKey(name: "location_short_name_en") final String? locationShortNameEn,
-  }) = _$ConversationSummaryImpl;
+  const factory _ConversationSummary(
+      {required final int id,
+      @JsonKey(name: "listing_id") required final int listingId,
+      @JsonKey(name: "initiator_id") required final int initiatorId,
+      @JsonKey(name: "participant_id") required final int participantId,
+      @JsonKey(name: "is_active") required final bool isActive,
+      @JsonKey(name: "created_at") required final String createdAt,
+      @JsonKey(name: "updated_at") required final String updatedAt,
+      @JsonKey(name: "last_message_at") final String? lastMessageAt,
+      @JsonKey(name: "last_message_content") final String? lastMessageContent,
+      @JsonKey(name: "last_message_sender_id") final int? lastMessageSenderId,
+      @JsonKey(name: "listing_title") final String? listingTitle,
+      @JsonKey(name: "listing_price") final int? listingPrice,
+      @JsonKey(name: "other_user_name") final String? otherUserName,
+      @JsonKey(name: "other_user_avatar") final String? otherUserAvatar,
+      @JsonKey(name: "unread_count") final int? unreadCount,
+      @JsonKey(name: "listing_subway_line_id") final int? listingSubwayLineId,
+      @JsonKey(name: "listing_subway_station_id")
+      final int? listingSubwayStationId,
+      @JsonKey(name: "listing_location_id") final int? listingLocationId,
+      @JsonKey(name: "subway_station_name_uz")
+      final String? subwayStationNameUz,
+      @JsonKey(name: "subway_station_name_ru")
+      final String? subwayStationNameRu,
+      @JsonKey(name: "subway_station_name_en")
+      final String? subwayStationNameEn,
+      @JsonKey(name: "subway_station_line") final int? subwayStationLine,
+      @JsonKey(name: "subway_station_ordinal") final int? subwayStationOrdinal,
+      @JsonKey(name: "location_name_uz") final String? locationNameUz,
+      @JsonKey(name: "location_name_ru") final String? locationNameRu,
+      @JsonKey(name: "location_name_en") final String? locationNameEn,
+      @JsonKey(name: "location_short_name_uz")
+      final String? locationShortNameUz,
+      @JsonKey(name: "location_short_name_ru")
+      final String? locationShortNameRu,
+      @JsonKey(name: "location_short_name_en")
+      final String? locationShortNameEn}) = _$ConversationSummaryImpl;
 
   factory _ConversationSummary.fromJson(Map<String, dynamic> json) =
       _$ConversationSummaryImpl.fromJson;

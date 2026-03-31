@@ -12,8 +12,7 @@ part of 'subway_stations_bloc.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$SubwayStationsEvent {
@@ -21,45 +20,50 @@ mixin _$SubwayStationsEvent {
   TResult when<TResult extends Object?>({
     required TResult Function() fetchSubwayStations,
     required TResult Function(int line) fetchSubwayStationsByLine,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? fetchSubwayStations,
     TResult? Function(int line)? fetchSubwayStationsByLine,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? fetchSubwayStations,
     TResult Function(int line)? fetchSubwayStationsByLine,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchSubwayStations value) fetchSubwayStations,
     required TResult Function(_FetchSubwayStationsByLine value)
-    fetchSubwayStationsByLine,
-  }) => throw _privateConstructorUsedError;
+        fetchSubwayStationsByLine,
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchSubwayStations value)? fetchSubwayStations,
     TResult? Function(_FetchSubwayStationsByLine value)?
-    fetchSubwayStationsByLine,
-  }) => throw _privateConstructorUsedError;
+        fetchSubwayStationsByLine,
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_FetchSubwayStations value)? fetchSubwayStations,
     TResult Function(_FetchSubwayStationsByLine value)?
-    fetchSubwayStationsByLine,
+        fetchSubwayStationsByLine,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $SubwayStationsEventCopyWith<$Res> {
   factory $SubwayStationsEventCopyWith(
-    SubwayStationsEvent value,
-    $Res Function(SubwayStationsEvent) then,
-  ) = _$SubwayStationsEventCopyWithImpl<$Res, SubwayStationsEvent>;
+          SubwayStationsEvent value, $Res Function(SubwayStationsEvent) then) =
+      _$SubwayStationsEventCopyWithImpl<$Res, SubwayStationsEvent>;
 }
 
 /// @nodoc
@@ -78,20 +82,18 @@ class _$SubwayStationsEventCopyWithImpl<$Res, $Val extends SubwayStationsEvent>
 
 /// @nodoc
 abstract class _$$FetchSubwayStationsImplCopyWith<$Res> {
-  factory _$$FetchSubwayStationsImplCopyWith(
-    _$FetchSubwayStationsImpl value,
-    $Res Function(_$FetchSubwayStationsImpl) then,
-  ) = __$$FetchSubwayStationsImplCopyWithImpl<$Res>;
+  factory _$$FetchSubwayStationsImplCopyWith(_$FetchSubwayStationsImpl value,
+          $Res Function(_$FetchSubwayStationsImpl) then) =
+      __$$FetchSubwayStationsImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$FetchSubwayStationsImplCopyWithImpl<$Res>
     extends _$SubwayStationsEventCopyWithImpl<$Res, _$FetchSubwayStationsImpl>
     implements _$$FetchSubwayStationsImplCopyWith<$Res> {
-  __$$FetchSubwayStationsImplCopyWithImpl(
-    _$FetchSubwayStationsImpl _value,
-    $Res Function(_$FetchSubwayStationsImpl) _then,
-  ) : super(_value, _then);
+  __$$FetchSubwayStationsImplCopyWithImpl(_$FetchSubwayStationsImpl _value,
+      $Res Function(_$FetchSubwayStationsImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of SubwayStationsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -153,7 +155,7 @@ class _$FetchSubwayStationsImpl implements _FetchSubwayStations {
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchSubwayStations value) fetchSubwayStations,
     required TResult Function(_FetchSubwayStationsByLine value)
-    fetchSubwayStationsByLine,
+        fetchSubwayStationsByLine,
   }) {
     return fetchSubwayStations(this);
   }
@@ -163,7 +165,7 @@ class _$FetchSubwayStationsImpl implements _FetchSubwayStations {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchSubwayStations value)? fetchSubwayStations,
     TResult? Function(_FetchSubwayStationsByLine value)?
-    fetchSubwayStationsByLine,
+        fetchSubwayStationsByLine,
   }) {
     return fetchSubwayStations?.call(this);
   }
@@ -173,7 +175,7 @@ class _$FetchSubwayStationsImpl implements _FetchSubwayStations {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_FetchSubwayStations value)? fetchSubwayStations,
     TResult Function(_FetchSubwayStationsByLine value)?
-    fetchSubwayStationsByLine,
+        fetchSubwayStationsByLine,
     required TResult orElse(),
   }) {
     if (fetchSubwayStations != null) {
@@ -190,37 +192,36 @@ abstract class _FetchSubwayStations implements SubwayStationsEvent {
 /// @nodoc
 abstract class _$$FetchSubwayStationsByLineImplCopyWith<$Res> {
   factory _$$FetchSubwayStationsByLineImplCopyWith(
-    _$FetchSubwayStationsByLineImpl value,
-    $Res Function(_$FetchSubwayStationsByLineImpl) then,
-  ) = __$$FetchSubwayStationsByLineImplCopyWithImpl<$Res>;
+          _$FetchSubwayStationsByLineImpl value,
+          $Res Function(_$FetchSubwayStationsByLineImpl) then) =
+      __$$FetchSubwayStationsByLineImplCopyWithImpl<$Res>;
   @useResult
   $Res call({int line});
 }
 
 /// @nodoc
 class __$$FetchSubwayStationsByLineImplCopyWithImpl<$Res>
-    extends
-        _$SubwayStationsEventCopyWithImpl<$Res, _$FetchSubwayStationsByLineImpl>
+    extends _$SubwayStationsEventCopyWithImpl<$Res,
+        _$FetchSubwayStationsByLineImpl>
     implements _$$FetchSubwayStationsByLineImplCopyWith<$Res> {
   __$$FetchSubwayStationsByLineImplCopyWithImpl(
-    _$FetchSubwayStationsByLineImpl _value,
-    $Res Function(_$FetchSubwayStationsByLineImpl) _then,
-  ) : super(_value, _then);
+      _$FetchSubwayStationsByLineImpl _value,
+      $Res Function(_$FetchSubwayStationsByLineImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of SubwayStationsEvent
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? line = null}) {
-    return _then(
-      _$FetchSubwayStationsByLineImpl(
-        line:
-            null == line
-                ? _value.line
-                : line // ignore: cast_nullable_to_non_nullable
-                    as int,
-      ),
-    );
+  $Res call({
+    Object? line = null,
+  }) {
+    return _then(_$FetchSubwayStationsByLineImpl(
+      line: null == line
+          ? _value.line
+          : line // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
@@ -254,9 +255,8 @@ class _$FetchSubwayStationsByLineImpl implements _FetchSubwayStationsByLine {
   @override
   @pragma('vm:prefer-inline')
   _$$FetchSubwayStationsByLineImplCopyWith<_$FetchSubwayStationsByLineImpl>
-  get copyWith => __$$FetchSubwayStationsByLineImplCopyWithImpl<
-    _$FetchSubwayStationsByLineImpl
-  >(this, _$identity);
+      get copyWith => __$$FetchSubwayStationsByLineImplCopyWithImpl<
+          _$FetchSubwayStationsByLineImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -294,7 +294,7 @@ class _$FetchSubwayStationsByLineImpl implements _FetchSubwayStationsByLine {
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchSubwayStations value) fetchSubwayStations,
     required TResult Function(_FetchSubwayStationsByLine value)
-    fetchSubwayStationsByLine,
+        fetchSubwayStationsByLine,
   }) {
     return fetchSubwayStationsByLine(this);
   }
@@ -304,7 +304,7 @@ class _$FetchSubwayStationsByLineImpl implements _FetchSubwayStationsByLine {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchSubwayStations value)? fetchSubwayStations,
     TResult? Function(_FetchSubwayStationsByLine value)?
-    fetchSubwayStationsByLine,
+        fetchSubwayStationsByLine,
   }) {
     return fetchSubwayStationsByLine?.call(this);
   }
@@ -314,7 +314,7 @@ class _$FetchSubwayStationsByLineImpl implements _FetchSubwayStationsByLine {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_FetchSubwayStations value)? fetchSubwayStations,
     TResult Function(_FetchSubwayStationsByLine value)?
-    fetchSubwayStationsByLine,
+        fetchSubwayStationsByLine,
     required TResult orElse(),
   }) {
     if (fetchSubwayStationsByLine != null) {
@@ -334,7 +334,7 @@ abstract class _FetchSubwayStationsByLine implements SubwayStationsEvent {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FetchSubwayStationsByLineImplCopyWith<_$FetchSubwayStationsByLineImpl>
-  get copyWith => throw _privateConstructorUsedError;
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -345,14 +345,16 @@ mixin _$SubwayStationsState {
     required TResult Function() loading,
     required TResult Function(List<SubwayStation> stations) loaded,
     required TResult Function(String message) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<SubwayStation> stations)? loaded,
     TResult? Function(String message)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
@@ -360,21 +362,24 @@ mixin _$SubwayStationsState {
     TResult Function(List<SubwayStation> stations)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_Initial value) initial,
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Initial value)? initial,
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Initial value)? initial,
@@ -382,15 +387,15 @@ mixin _$SubwayStationsState {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $SubwayStationsStateCopyWith<$Res> {
   factory $SubwayStationsStateCopyWith(
-    SubwayStationsState value,
-    $Res Function(SubwayStationsState) then,
-  ) = _$SubwayStationsStateCopyWithImpl<$Res, SubwayStationsState>;
+          SubwayStationsState value, $Res Function(SubwayStationsState) then) =
+      _$SubwayStationsStateCopyWithImpl<$Res, SubwayStationsState>;
 }
 
 /// @nodoc
@@ -410,9 +415,8 @@ class _$SubwayStationsStateCopyWithImpl<$Res, $Val extends SubwayStationsState>
 /// @nodoc
 abstract class _$$InitialImplCopyWith<$Res> {
   factory _$$InitialImplCopyWith(
-    _$InitialImpl value,
-    $Res Function(_$InitialImpl) then,
-  ) = __$$InitialImplCopyWithImpl<$Res>;
+          _$InitialImpl value, $Res Function(_$InitialImpl) then) =
+      __$$InitialImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -420,9 +424,8 @@ class __$$InitialImplCopyWithImpl<$Res>
     extends _$SubwayStationsStateCopyWithImpl<$Res, _$InitialImpl>
     implements _$$InitialImplCopyWith<$Res> {
   __$$InitialImplCopyWithImpl(
-    _$InitialImpl _value,
-    $Res Function(_$InitialImpl) _then,
-  ) : super(_value, _then);
+      _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of SubwayStationsState
   /// with the given fields replaced by the non-null parameter values.
@@ -529,9 +532,8 @@ abstract class _Initial implements SubwayStationsState {
 /// @nodoc
 abstract class _$$LoadingImplCopyWith<$Res> {
   factory _$$LoadingImplCopyWith(
-    _$LoadingImpl value,
-    $Res Function(_$LoadingImpl) then,
-  ) = __$$LoadingImplCopyWithImpl<$Res>;
+          _$LoadingImpl value, $Res Function(_$LoadingImpl) then) =
+      __$$LoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -539,9 +541,8 @@ class __$$LoadingImplCopyWithImpl<$Res>
     extends _$SubwayStationsStateCopyWithImpl<$Res, _$LoadingImpl>
     implements _$$LoadingImplCopyWith<$Res> {
   __$$LoadingImplCopyWithImpl(
-    _$LoadingImpl _value,
-    $Res Function(_$LoadingImpl) _then,
-  ) : super(_value, _then);
+      _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of SubwayStationsState
   /// with the given fields replaced by the non-null parameter values.
@@ -648,9 +649,8 @@ abstract class _Loading implements SubwayStationsState {
 /// @nodoc
 abstract class _$$LoadedImplCopyWith<$Res> {
   factory _$$LoadedImplCopyWith(
-    _$LoadedImpl value,
-    $Res Function(_$LoadedImpl) then,
-  ) = __$$LoadedImplCopyWithImpl<$Res>;
+          _$LoadedImpl value, $Res Function(_$LoadedImpl) then) =
+      __$$LoadedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({List<SubwayStation> stations});
 }
@@ -660,24 +660,22 @@ class __$$LoadedImplCopyWithImpl<$Res>
     extends _$SubwayStationsStateCopyWithImpl<$Res, _$LoadedImpl>
     implements _$$LoadedImplCopyWith<$Res> {
   __$$LoadedImplCopyWithImpl(
-    _$LoadedImpl _value,
-    $Res Function(_$LoadedImpl) _then,
-  ) : super(_value, _then);
+      _$LoadedImpl _value, $Res Function(_$LoadedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of SubwayStationsState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? stations = null}) {
-    return _then(
-      _$LoadedImpl(
-        stations:
-            null == stations
-                ? _value._stations
-                : stations // ignore: cast_nullable_to_non_nullable
-                    as List<SubwayStation>,
-      ),
-    );
+  $Res call({
+    Object? stations = null,
+  }) {
+    return _then(_$LoadedImpl(
+      stations: null == stations
+          ? _value._stations
+          : stations // ignore: cast_nullable_to_non_nullable
+              as List<SubwayStation>,
+    ));
   }
 }
 
@@ -685,7 +683,7 @@ class __$$LoadedImplCopyWithImpl<$Res>
 
 class _$LoadedImpl implements _Loaded {
   const _$LoadedImpl({required final List<SubwayStation> stations})
-    : _stations = stations;
+      : _stations = stations;
 
   final List<SubwayStation> _stations;
   @override
@@ -811,9 +809,8 @@ abstract class _Loaded implements SubwayStationsState {
 /// @nodoc
 abstract class _$$ErrorImplCopyWith<$Res> {
   factory _$$ErrorImplCopyWith(
-    _$ErrorImpl value,
-    $Res Function(_$ErrorImpl) then,
-  ) = __$$ErrorImplCopyWithImpl<$Res>;
+          _$ErrorImpl value, $Res Function(_$ErrorImpl) then) =
+      __$$ErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -823,24 +820,22 @@ class __$$ErrorImplCopyWithImpl<$Res>
     extends _$SubwayStationsStateCopyWithImpl<$Res, _$ErrorImpl>
     implements _$$ErrorImplCopyWith<$Res> {
   __$$ErrorImplCopyWithImpl(
-    _$ErrorImpl _value,
-    $Res Function(_$ErrorImpl) _then,
-  ) : super(_value, _then);
+      _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of SubwayStationsState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$ErrorImpl(
-        message:
-            null == message
-                ? _value.message
-                : message // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$ErrorImpl(
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 

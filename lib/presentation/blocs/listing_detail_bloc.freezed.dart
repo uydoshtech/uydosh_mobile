@@ -12,8 +12,7 @@ part of 'listing_detail_bloc.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$ListingDetailEvent {
@@ -21,42 +20,47 @@ mixin _$ListingDetailEvent {
   TResult when<TResult extends Object?>({
     required TResult Function(int id) fetchListingDetail,
     required TResult Function(ListingDetail listingDetail) updateListingDetail,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(int id)? fetchListingDetail,
     TResult? Function(ListingDetail listingDetail)? updateListingDetail,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(int id)? fetchListingDetail,
     TResult Function(ListingDetail listingDetail)? updateListingDetail,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchListingDetail value) fetchListingDetail,
     required TResult Function(_UpdateListingDetail value) updateListingDetail,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchListingDetail value)? fetchListingDetail,
     TResult? Function(_UpdateListingDetail value)? updateListingDetail,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_FetchListingDetail value)? fetchListingDetail,
     TResult Function(_UpdateListingDetail value)? updateListingDetail,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $ListingDetailEventCopyWith<$Res> {
   factory $ListingDetailEventCopyWith(
-    ListingDetailEvent value,
-    $Res Function(ListingDetailEvent) then,
-  ) = _$ListingDetailEventCopyWithImpl<$Res, ListingDetailEvent>;
+          ListingDetailEvent value, $Res Function(ListingDetailEvent) then) =
+      _$ListingDetailEventCopyWithImpl<$Res, ListingDetailEvent>;
 }
 
 /// @nodoc
@@ -75,10 +79,9 @@ class _$ListingDetailEventCopyWithImpl<$Res, $Val extends ListingDetailEvent>
 
 /// @nodoc
 abstract class _$$FetchListingDetailImplCopyWith<$Res> {
-  factory _$$FetchListingDetailImplCopyWith(
-    _$FetchListingDetailImpl value,
-    $Res Function(_$FetchListingDetailImpl) then,
-  ) = __$$FetchListingDetailImplCopyWithImpl<$Res>;
+  factory _$$FetchListingDetailImplCopyWith(_$FetchListingDetailImpl value,
+          $Res Function(_$FetchListingDetailImpl) then) =
+      __$$FetchListingDetailImplCopyWithImpl<$Res>;
   @useResult
   $Res call({int id});
 }
@@ -87,25 +90,23 @@ abstract class _$$FetchListingDetailImplCopyWith<$Res> {
 class __$$FetchListingDetailImplCopyWithImpl<$Res>
     extends _$ListingDetailEventCopyWithImpl<$Res, _$FetchListingDetailImpl>
     implements _$$FetchListingDetailImplCopyWith<$Res> {
-  __$$FetchListingDetailImplCopyWithImpl(
-    _$FetchListingDetailImpl _value,
-    $Res Function(_$FetchListingDetailImpl) _then,
-  ) : super(_value, _then);
+  __$$FetchListingDetailImplCopyWithImpl(_$FetchListingDetailImpl _value,
+      $Res Function(_$FetchListingDetailImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingDetailEvent
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = null}) {
-    return _then(
-      _$FetchListingDetailImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-      ),
-    );
+  $Res call({
+    Object? id = null,
+  }) {
+    return _then(_$FetchListingDetailImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
@@ -140,9 +141,7 @@ class _$FetchListingDetailImpl implements _FetchListingDetail {
   @pragma('vm:prefer-inline')
   _$$FetchListingDetailImplCopyWith<_$FetchListingDetailImpl> get copyWith =>
       __$$FetchListingDetailImplCopyWithImpl<_$FetchListingDetailImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -222,10 +221,9 @@ abstract class _FetchListingDetail implements ListingDetailEvent {
 
 /// @nodoc
 abstract class _$$UpdateListingDetailImplCopyWith<$Res> {
-  factory _$$UpdateListingDetailImplCopyWith(
-    _$UpdateListingDetailImpl value,
-    $Res Function(_$UpdateListingDetailImpl) then,
-  ) = __$$UpdateListingDetailImplCopyWithImpl<$Res>;
+  factory _$$UpdateListingDetailImplCopyWith(_$UpdateListingDetailImpl value,
+          $Res Function(_$UpdateListingDetailImpl) then) =
+      __$$UpdateListingDetailImplCopyWithImpl<$Res>;
   @useResult
   $Res call({ListingDetail listingDetail});
 
@@ -236,25 +234,23 @@ abstract class _$$UpdateListingDetailImplCopyWith<$Res> {
 class __$$UpdateListingDetailImplCopyWithImpl<$Res>
     extends _$ListingDetailEventCopyWithImpl<$Res, _$UpdateListingDetailImpl>
     implements _$$UpdateListingDetailImplCopyWith<$Res> {
-  __$$UpdateListingDetailImplCopyWithImpl(
-    _$UpdateListingDetailImpl _value,
-    $Res Function(_$UpdateListingDetailImpl) _then,
-  ) : super(_value, _then);
+  __$$UpdateListingDetailImplCopyWithImpl(_$UpdateListingDetailImpl _value,
+      $Res Function(_$UpdateListingDetailImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingDetailEvent
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? listingDetail = null}) {
-    return _then(
-      _$UpdateListingDetailImpl(
-        listingDetail:
-            null == listingDetail
-                ? _value.listingDetail
-                : listingDetail // ignore: cast_nullable_to_non_nullable
-                    as ListingDetail,
-      ),
-    );
+  $Res call({
+    Object? listingDetail = null,
+  }) {
+    return _then(_$UpdateListingDetailImpl(
+      listingDetail: null == listingDetail
+          ? _value.listingDetail
+          : listingDetail // ignore: cast_nullable_to_non_nullable
+              as ListingDetail,
+    ));
   }
 
   /// Create a copy of ListingDetailEvent
@@ -300,9 +296,7 @@ class _$UpdateListingDetailImpl implements _UpdateListingDetail {
   @pragma('vm:prefer-inline')
   _$$UpdateListingDetailImplCopyWith<_$UpdateListingDetailImpl> get copyWith =>
       __$$UpdateListingDetailImplCopyWithImpl<_$UpdateListingDetailImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -368,9 +362,8 @@ class _$UpdateListingDetailImpl implements _UpdateListingDetail {
 }
 
 abstract class _UpdateListingDetail implements ListingDetailEvent {
-  const factory _UpdateListingDetail({
-    required final ListingDetail listingDetail,
-  }) = _$UpdateListingDetailImpl;
+  const factory _UpdateListingDetail(
+      {required final ListingDetail listingDetail}) = _$UpdateListingDetailImpl;
 
   ListingDetail get listingDetail;
 
@@ -389,14 +382,16 @@ mixin _$ListingDetailState {
     required TResult Function() loading,
     required TResult Function(ListingDetail listingDetail) loaded,
     required TResult Function(String message) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(ListingDetail listingDetail)? loaded,
     TResult? Function(String message)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
@@ -404,21 +399,24 @@ mixin _$ListingDetailState {
     TResult Function(ListingDetail listingDetail)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_Initial value) initial,
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Initial value)? initial,
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Initial value)? initial,
@@ -426,15 +424,15 @@ mixin _$ListingDetailState {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $ListingDetailStateCopyWith<$Res> {
   factory $ListingDetailStateCopyWith(
-    ListingDetailState value,
-    $Res Function(ListingDetailState) then,
-  ) = _$ListingDetailStateCopyWithImpl<$Res, ListingDetailState>;
+          ListingDetailState value, $Res Function(ListingDetailState) then) =
+      _$ListingDetailStateCopyWithImpl<$Res, ListingDetailState>;
 }
 
 /// @nodoc
@@ -454,9 +452,8 @@ class _$ListingDetailStateCopyWithImpl<$Res, $Val extends ListingDetailState>
 /// @nodoc
 abstract class _$$InitialImplCopyWith<$Res> {
   factory _$$InitialImplCopyWith(
-    _$InitialImpl value,
-    $Res Function(_$InitialImpl) then,
-  ) = __$$InitialImplCopyWithImpl<$Res>;
+          _$InitialImpl value, $Res Function(_$InitialImpl) then) =
+      __$$InitialImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -464,9 +461,8 @@ class __$$InitialImplCopyWithImpl<$Res>
     extends _$ListingDetailStateCopyWithImpl<$Res, _$InitialImpl>
     implements _$$InitialImplCopyWith<$Res> {
   __$$InitialImplCopyWithImpl(
-    _$InitialImpl _value,
-    $Res Function(_$InitialImpl) _then,
-  ) : super(_value, _then);
+      _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingDetailState
   /// with the given fields replaced by the non-null parameter values.
@@ -573,9 +569,8 @@ abstract class _Initial implements ListingDetailState {
 /// @nodoc
 abstract class _$$LoadingImplCopyWith<$Res> {
   factory _$$LoadingImplCopyWith(
-    _$LoadingImpl value,
-    $Res Function(_$LoadingImpl) then,
-  ) = __$$LoadingImplCopyWithImpl<$Res>;
+          _$LoadingImpl value, $Res Function(_$LoadingImpl) then) =
+      __$$LoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -583,9 +578,8 @@ class __$$LoadingImplCopyWithImpl<$Res>
     extends _$ListingDetailStateCopyWithImpl<$Res, _$LoadingImpl>
     implements _$$LoadingImplCopyWith<$Res> {
   __$$LoadingImplCopyWithImpl(
-    _$LoadingImpl _value,
-    $Res Function(_$LoadingImpl) _then,
-  ) : super(_value, _then);
+      _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingDetailState
   /// with the given fields replaced by the non-null parameter values.
@@ -692,9 +686,8 @@ abstract class _Loading implements ListingDetailState {
 /// @nodoc
 abstract class _$$LoadedImplCopyWith<$Res> {
   factory _$$LoadedImplCopyWith(
-    _$LoadedImpl value,
-    $Res Function(_$LoadedImpl) then,
-  ) = __$$LoadedImplCopyWithImpl<$Res>;
+          _$LoadedImpl value, $Res Function(_$LoadedImpl) then) =
+      __$$LoadedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({ListingDetail listingDetail});
 
@@ -706,24 +699,22 @@ class __$$LoadedImplCopyWithImpl<$Res>
     extends _$ListingDetailStateCopyWithImpl<$Res, _$LoadedImpl>
     implements _$$LoadedImplCopyWith<$Res> {
   __$$LoadedImplCopyWithImpl(
-    _$LoadedImpl _value,
-    $Res Function(_$LoadedImpl) _then,
-  ) : super(_value, _then);
+      _$LoadedImpl _value, $Res Function(_$LoadedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingDetailState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? listingDetail = null}) {
-    return _then(
-      _$LoadedImpl(
-        listingDetail:
-            null == listingDetail
-                ? _value.listingDetail
-                : listingDetail // ignore: cast_nullable_to_non_nullable
-                    as ListingDetail,
-      ),
-    );
+  $Res call({
+    Object? listingDetail = null,
+  }) {
+    return _then(_$LoadedImpl(
+      listingDetail: null == listingDetail
+          ? _value.listingDetail
+          : listingDetail // ignore: cast_nullable_to_non_nullable
+              as ListingDetail,
+    ));
   }
 
   /// Create a copy of ListingDetailState
@@ -861,9 +852,8 @@ abstract class _Loaded implements ListingDetailState {
 /// @nodoc
 abstract class _$$ErrorImplCopyWith<$Res> {
   factory _$$ErrorImplCopyWith(
-    _$ErrorImpl value,
-    $Res Function(_$ErrorImpl) then,
-  ) = __$$ErrorImplCopyWithImpl<$Res>;
+          _$ErrorImpl value, $Res Function(_$ErrorImpl) then) =
+      __$$ErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -873,24 +863,22 @@ class __$$ErrorImplCopyWithImpl<$Res>
     extends _$ListingDetailStateCopyWithImpl<$Res, _$ErrorImpl>
     implements _$$ErrorImplCopyWith<$Res> {
   __$$ErrorImplCopyWithImpl(
-    _$ErrorImpl _value,
-    $Res Function(_$ErrorImpl) _then,
-  ) : super(_value, _then);
+      _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingDetailState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$ErrorImpl(
-        message:
-            null == message
-                ? _value.message
-                : message // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$ErrorImpl(
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 

@@ -12,8 +12,7 @@ part of 'gamification_bloc.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$GamificationEvent {
@@ -21,69 +20,71 @@ mixin _$GamificationEvent {
   TResult when<TResult extends Object?>({
     required TResult Function() loadAchievements,
     required TResult Function(
-      bool hasAccount,
-      int profileCompletionPercent,
-      int viewedListingsCount,
-      int favoritesCount,
-      int messagesSentCount,
-      int listingsCreatedCount,
-      int conversationsStartedCount,
-    )
-    checkAndUnlock,
-  }) => throw _privateConstructorUsedError;
+            bool hasAccount,
+            int profileCompletionPercent,
+            int viewedListingsCount,
+            int favoritesCount,
+            int messagesSentCount,
+            int listingsCreatedCount,
+            int conversationsStartedCount)
+        checkAndUnlock,
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loadAchievements,
     TResult? Function(
-      bool hasAccount,
-      int profileCompletionPercent,
-      int viewedListingsCount,
-      int favoritesCount,
-      int messagesSentCount,
-      int listingsCreatedCount,
-      int conversationsStartedCount,
-    )?
-    checkAndUnlock,
-  }) => throw _privateConstructorUsedError;
+            bool hasAccount,
+            int profileCompletionPercent,
+            int viewedListingsCount,
+            int favoritesCount,
+            int messagesSentCount,
+            int listingsCreatedCount,
+            int conversationsStartedCount)?
+        checkAndUnlock,
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loadAchievements,
     TResult Function(
-      bool hasAccount,
-      int profileCompletionPercent,
-      int viewedListingsCount,
-      int favoritesCount,
-      int messagesSentCount,
-      int listingsCreatedCount,
-      int conversationsStartedCount,
-    )?
-    checkAndUnlock,
+            bool hasAccount,
+            int profileCompletionPercent,
+            int viewedListingsCount,
+            int favoritesCount,
+            int messagesSentCount,
+            int listingsCreatedCount,
+            int conversationsStartedCount)?
+        checkAndUnlock,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_LoadAchievements value) loadAchievements,
     required TResult Function(_CheckAndUnlock value) checkAndUnlock,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_LoadAchievements value)? loadAchievements,
     TResult? Function(_CheckAndUnlock value)? checkAndUnlock,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_LoadAchievements value)? loadAchievements,
     TResult Function(_CheckAndUnlock value)? checkAndUnlock,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $GamificationEventCopyWith<$Res> {
   factory $GamificationEventCopyWith(
-    GamificationEvent value,
-    $Res Function(GamificationEvent) then,
-  ) = _$GamificationEventCopyWithImpl<$Res, GamificationEvent>;
+          GamificationEvent value, $Res Function(GamificationEvent) then) =
+      _$GamificationEventCopyWithImpl<$Res, GamificationEvent>;
 }
 
 /// @nodoc
@@ -102,20 +103,18 @@ class _$GamificationEventCopyWithImpl<$Res, $Val extends GamificationEvent>
 
 /// @nodoc
 abstract class _$$LoadAchievementsImplCopyWith<$Res> {
-  factory _$$LoadAchievementsImplCopyWith(
-    _$LoadAchievementsImpl value,
-    $Res Function(_$LoadAchievementsImpl) then,
-  ) = __$$LoadAchievementsImplCopyWithImpl<$Res>;
+  factory _$$LoadAchievementsImplCopyWith(_$LoadAchievementsImpl value,
+          $Res Function(_$LoadAchievementsImpl) then) =
+      __$$LoadAchievementsImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$LoadAchievementsImplCopyWithImpl<$Res>
     extends _$GamificationEventCopyWithImpl<$Res, _$LoadAchievementsImpl>
     implements _$$LoadAchievementsImplCopyWith<$Res> {
-  __$$LoadAchievementsImplCopyWithImpl(
-    _$LoadAchievementsImpl _value,
-    $Res Function(_$LoadAchievementsImpl) _then,
-  ) : super(_value, _then);
+  __$$LoadAchievementsImplCopyWithImpl(_$LoadAchievementsImpl _value,
+      $Res Function(_$LoadAchievementsImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of GamificationEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -145,15 +144,14 @@ class _$LoadAchievementsImpl implements _LoadAchievements {
   TResult when<TResult extends Object?>({
     required TResult Function() loadAchievements,
     required TResult Function(
-      bool hasAccount,
-      int profileCompletionPercent,
-      int viewedListingsCount,
-      int favoritesCount,
-      int messagesSentCount,
-      int listingsCreatedCount,
-      int conversationsStartedCount,
-    )
-    checkAndUnlock,
+            bool hasAccount,
+            int profileCompletionPercent,
+            int viewedListingsCount,
+            int favoritesCount,
+            int messagesSentCount,
+            int listingsCreatedCount,
+            int conversationsStartedCount)
+        checkAndUnlock,
   }) {
     return loadAchievements();
   }
@@ -163,15 +161,14 @@ class _$LoadAchievementsImpl implements _LoadAchievements {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loadAchievements,
     TResult? Function(
-      bool hasAccount,
-      int profileCompletionPercent,
-      int viewedListingsCount,
-      int favoritesCount,
-      int messagesSentCount,
-      int listingsCreatedCount,
-      int conversationsStartedCount,
-    )?
-    checkAndUnlock,
+            bool hasAccount,
+            int profileCompletionPercent,
+            int viewedListingsCount,
+            int favoritesCount,
+            int messagesSentCount,
+            int listingsCreatedCount,
+            int conversationsStartedCount)?
+        checkAndUnlock,
   }) {
     return loadAchievements?.call();
   }
@@ -181,15 +178,14 @@ class _$LoadAchievementsImpl implements _LoadAchievements {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loadAchievements,
     TResult Function(
-      bool hasAccount,
-      int profileCompletionPercent,
-      int viewedListingsCount,
-      int favoritesCount,
-      int messagesSentCount,
-      int listingsCreatedCount,
-      int conversationsStartedCount,
-    )?
-    checkAndUnlock,
+            bool hasAccount,
+            int profileCompletionPercent,
+            int viewedListingsCount,
+            int favoritesCount,
+            int messagesSentCount,
+            int listingsCreatedCount,
+            int conversationsStartedCount)?
+        checkAndUnlock,
     required TResult orElse(),
   }) {
     if (loadAchievements != null) {
@@ -236,20 +232,18 @@ abstract class _LoadAchievements implements GamificationEvent {
 
 /// @nodoc
 abstract class _$$CheckAndUnlockImplCopyWith<$Res> {
-  factory _$$CheckAndUnlockImplCopyWith(
-    _$CheckAndUnlockImpl value,
-    $Res Function(_$CheckAndUnlockImpl) then,
-  ) = __$$CheckAndUnlockImplCopyWithImpl<$Res>;
+  factory _$$CheckAndUnlockImplCopyWith(_$CheckAndUnlockImpl value,
+          $Res Function(_$CheckAndUnlockImpl) then) =
+      __$$CheckAndUnlockImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({
-    bool hasAccount,
-    int profileCompletionPercent,
-    int viewedListingsCount,
-    int favoritesCount,
-    int messagesSentCount,
-    int listingsCreatedCount,
-    int conversationsStartedCount,
-  });
+  $Res call(
+      {bool hasAccount,
+      int profileCompletionPercent,
+      int viewedListingsCount,
+      int favoritesCount,
+      int messagesSentCount,
+      int listingsCreatedCount,
+      int conversationsStartedCount});
 }
 
 /// @nodoc
@@ -257,9 +251,8 @@ class __$$CheckAndUnlockImplCopyWithImpl<$Res>
     extends _$GamificationEventCopyWithImpl<$Res, _$CheckAndUnlockImpl>
     implements _$$CheckAndUnlockImplCopyWith<$Res> {
   __$$CheckAndUnlockImplCopyWithImpl(
-    _$CheckAndUnlockImpl _value,
-    $Res Function(_$CheckAndUnlockImpl) _then,
-  ) : super(_value, _then);
+      _$CheckAndUnlockImpl _value, $Res Function(_$CheckAndUnlockImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of GamificationEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -274,60 +267,50 @@ class __$$CheckAndUnlockImplCopyWithImpl<$Res>
     Object? listingsCreatedCount = null,
     Object? conversationsStartedCount = null,
   }) {
-    return _then(
-      _$CheckAndUnlockImpl(
-        hasAccount:
-            null == hasAccount
-                ? _value.hasAccount
-                : hasAccount // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        profileCompletionPercent:
-            null == profileCompletionPercent
-                ? _value.profileCompletionPercent
-                : profileCompletionPercent // ignore: cast_nullable_to_non_nullable
-                    as int,
-        viewedListingsCount:
-            null == viewedListingsCount
-                ? _value.viewedListingsCount
-                : viewedListingsCount // ignore: cast_nullable_to_non_nullable
-                    as int,
-        favoritesCount:
-            null == favoritesCount
-                ? _value.favoritesCount
-                : favoritesCount // ignore: cast_nullable_to_non_nullable
-                    as int,
-        messagesSentCount:
-            null == messagesSentCount
-                ? _value.messagesSentCount
-                : messagesSentCount // ignore: cast_nullable_to_non_nullable
-                    as int,
-        listingsCreatedCount:
-            null == listingsCreatedCount
-                ? _value.listingsCreatedCount
-                : listingsCreatedCount // ignore: cast_nullable_to_non_nullable
-                    as int,
-        conversationsStartedCount:
-            null == conversationsStartedCount
-                ? _value.conversationsStartedCount
-                : conversationsStartedCount // ignore: cast_nullable_to_non_nullable
-                    as int,
-      ),
-    );
+    return _then(_$CheckAndUnlockImpl(
+      hasAccount: null == hasAccount
+          ? _value.hasAccount
+          : hasAccount // ignore: cast_nullable_to_non_nullable
+              as bool,
+      profileCompletionPercent: null == profileCompletionPercent
+          ? _value.profileCompletionPercent
+          : profileCompletionPercent // ignore: cast_nullable_to_non_nullable
+              as int,
+      viewedListingsCount: null == viewedListingsCount
+          ? _value.viewedListingsCount
+          : viewedListingsCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      favoritesCount: null == favoritesCount
+          ? _value.favoritesCount
+          : favoritesCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      messagesSentCount: null == messagesSentCount
+          ? _value.messagesSentCount
+          : messagesSentCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      listingsCreatedCount: null == listingsCreatedCount
+          ? _value.listingsCreatedCount
+          : listingsCreatedCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      conversationsStartedCount: null == conversationsStartedCount
+          ? _value.conversationsStartedCount
+          : conversationsStartedCount // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$CheckAndUnlockImpl implements _CheckAndUnlock {
-  const _$CheckAndUnlockImpl({
-    required this.hasAccount,
-    required this.profileCompletionPercent,
-    required this.viewedListingsCount,
-    required this.favoritesCount,
-    required this.messagesSentCount,
-    required this.listingsCreatedCount,
-    required this.conversationsStartedCount,
-  });
+  const _$CheckAndUnlockImpl(
+      {required this.hasAccount,
+      required this.profileCompletionPercent,
+      required this.viewedListingsCount,
+      required this.favoritesCount,
+      required this.messagesSentCount,
+      required this.listingsCreatedCount,
+      required this.conversationsStartedCount});
 
   @override
   final bool hasAccount;
@@ -357,9 +340,7 @@ class _$CheckAndUnlockImpl implements _CheckAndUnlock {
             (identical(other.hasAccount, hasAccount) ||
                 other.hasAccount == hasAccount) &&
             (identical(
-                  other.profileCompletionPercent,
-                  profileCompletionPercent,
-                ) ||
+                    other.profileCompletionPercent, profileCompletionPercent) ||
                 other.profileCompletionPercent == profileCompletionPercent) &&
             (identical(other.viewedListingsCount, viewedListingsCount) ||
                 other.viewedListingsCount == viewedListingsCount) &&
@@ -369,24 +350,21 @@ class _$CheckAndUnlockImpl implements _CheckAndUnlock {
                 other.messagesSentCount == messagesSentCount) &&
             (identical(other.listingsCreatedCount, listingsCreatedCount) ||
                 other.listingsCreatedCount == listingsCreatedCount) &&
-            (identical(
-                  other.conversationsStartedCount,
-                  conversationsStartedCount,
-                ) ||
+            (identical(other.conversationsStartedCount,
+                    conversationsStartedCount) ||
                 other.conversationsStartedCount == conversationsStartedCount));
   }
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    hasAccount,
-    profileCompletionPercent,
-    viewedListingsCount,
-    favoritesCount,
-    messagesSentCount,
-    listingsCreatedCount,
-    conversationsStartedCount,
-  );
+      runtimeType,
+      hasAccount,
+      profileCompletionPercent,
+      viewedListingsCount,
+      favoritesCount,
+      messagesSentCount,
+      listingsCreatedCount,
+      conversationsStartedCount);
 
   /// Create a copy of GamificationEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -395,34 +373,30 @@ class _$CheckAndUnlockImpl implements _CheckAndUnlock {
   @pragma('vm:prefer-inline')
   _$$CheckAndUnlockImplCopyWith<_$CheckAndUnlockImpl> get copyWith =>
       __$$CheckAndUnlockImplCopyWithImpl<_$CheckAndUnlockImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() loadAchievements,
     required TResult Function(
-      bool hasAccount,
-      int profileCompletionPercent,
-      int viewedListingsCount,
-      int favoritesCount,
-      int messagesSentCount,
-      int listingsCreatedCount,
-      int conversationsStartedCount,
-    )
-    checkAndUnlock,
+            bool hasAccount,
+            int profileCompletionPercent,
+            int viewedListingsCount,
+            int favoritesCount,
+            int messagesSentCount,
+            int listingsCreatedCount,
+            int conversationsStartedCount)
+        checkAndUnlock,
   }) {
     return checkAndUnlock(
-      hasAccount,
-      profileCompletionPercent,
-      viewedListingsCount,
-      favoritesCount,
-      messagesSentCount,
-      listingsCreatedCount,
-      conversationsStartedCount,
-    );
+        hasAccount,
+        profileCompletionPercent,
+        viewedListingsCount,
+        favoritesCount,
+        messagesSentCount,
+        listingsCreatedCount,
+        conversationsStartedCount);
   }
 
   @override
@@ -430,25 +404,23 @@ class _$CheckAndUnlockImpl implements _CheckAndUnlock {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loadAchievements,
     TResult? Function(
-      bool hasAccount,
-      int profileCompletionPercent,
-      int viewedListingsCount,
-      int favoritesCount,
-      int messagesSentCount,
-      int listingsCreatedCount,
-      int conversationsStartedCount,
-    )?
-    checkAndUnlock,
+            bool hasAccount,
+            int profileCompletionPercent,
+            int viewedListingsCount,
+            int favoritesCount,
+            int messagesSentCount,
+            int listingsCreatedCount,
+            int conversationsStartedCount)?
+        checkAndUnlock,
   }) {
     return checkAndUnlock?.call(
-      hasAccount,
-      profileCompletionPercent,
-      viewedListingsCount,
-      favoritesCount,
-      messagesSentCount,
-      listingsCreatedCount,
-      conversationsStartedCount,
-    );
+        hasAccount,
+        profileCompletionPercent,
+        viewedListingsCount,
+        favoritesCount,
+        messagesSentCount,
+        listingsCreatedCount,
+        conversationsStartedCount);
   }
 
   @override
@@ -456,27 +428,25 @@ class _$CheckAndUnlockImpl implements _CheckAndUnlock {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loadAchievements,
     TResult Function(
-      bool hasAccount,
-      int profileCompletionPercent,
-      int viewedListingsCount,
-      int favoritesCount,
-      int messagesSentCount,
-      int listingsCreatedCount,
-      int conversationsStartedCount,
-    )?
-    checkAndUnlock,
+            bool hasAccount,
+            int profileCompletionPercent,
+            int viewedListingsCount,
+            int favoritesCount,
+            int messagesSentCount,
+            int listingsCreatedCount,
+            int conversationsStartedCount)?
+        checkAndUnlock,
     required TResult orElse(),
   }) {
     if (checkAndUnlock != null) {
       return checkAndUnlock(
-        hasAccount,
-        profileCompletionPercent,
-        viewedListingsCount,
-        favoritesCount,
-        messagesSentCount,
-        listingsCreatedCount,
-        conversationsStartedCount,
-      );
+          hasAccount,
+          profileCompletionPercent,
+          viewedListingsCount,
+          favoritesCount,
+          messagesSentCount,
+          listingsCreatedCount,
+          conversationsStartedCount);
     }
     return orElse();
   }
@@ -514,15 +484,14 @@ class _$CheckAndUnlockImpl implements _CheckAndUnlock {
 }
 
 abstract class _CheckAndUnlock implements GamificationEvent {
-  const factory _CheckAndUnlock({
-    required final bool hasAccount,
-    required final int profileCompletionPercent,
-    required final int viewedListingsCount,
-    required final int favoritesCount,
-    required final int messagesSentCount,
-    required final int listingsCreatedCount,
-    required final int conversationsStartedCount,
-  }) = _$CheckAndUnlockImpl;
+  const factory _CheckAndUnlock(
+      {required final bool hasAccount,
+      required final int profileCompletionPercent,
+      required final int viewedListingsCount,
+      required final int favoritesCount,
+      required final int messagesSentCount,
+      required final int listingsCreatedCount,
+      required final int conversationsStartedCount}) = _$CheckAndUnlockImpl;
 
   bool get hasAccount;
   int get profileCompletionPercent;
@@ -546,43 +515,46 @@ mixin _$GamificationState {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Achievement> achievements,
-      Set<String> unlockedIds,
-    )
-    loaded,
+            List<Achievement> achievements, Set<String> unlockedIds)
+        loaded,
     required TResult Function(String message) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_Initial value) initial,
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Initial value)? initial,
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Initial value)? initial,
@@ -590,15 +562,15 @@ mixin _$GamificationState {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $GamificationStateCopyWith<$Res> {
   factory $GamificationStateCopyWith(
-    GamificationState value,
-    $Res Function(GamificationState) then,
-  ) = _$GamificationStateCopyWithImpl<$Res, GamificationState>;
+          GamificationState value, $Res Function(GamificationState) then) =
+      _$GamificationStateCopyWithImpl<$Res, GamificationState>;
 }
 
 /// @nodoc
@@ -618,9 +590,8 @@ class _$GamificationStateCopyWithImpl<$Res, $Val extends GamificationState>
 /// @nodoc
 abstract class _$$InitialImplCopyWith<$Res> {
   factory _$$InitialImplCopyWith(
-    _$InitialImpl value,
-    $Res Function(_$InitialImpl) then,
-  ) = __$$InitialImplCopyWithImpl<$Res>;
+          _$InitialImpl value, $Res Function(_$InitialImpl) then) =
+      __$$InitialImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -628,9 +599,8 @@ class __$$InitialImplCopyWithImpl<$Res>
     extends _$GamificationStateCopyWithImpl<$Res, _$InitialImpl>
     implements _$$InitialImplCopyWith<$Res> {
   __$$InitialImplCopyWithImpl(
-    _$InitialImpl _value,
-    $Res Function(_$InitialImpl) _then,
-  ) : super(_value, _then);
+      _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of GamificationState
   /// with the given fields replaced by the non-null parameter values.
@@ -661,10 +631,8 @@ class _$InitialImpl implements _Initial {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Achievement> achievements,
-      Set<String> unlockedIds,
-    )
-    loaded,
+            List<Achievement> achievements, Set<String> unlockedIds)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return initial();
@@ -676,7 +644,7 @@ class _$InitialImpl implements _Initial {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return initial?.call();
@@ -688,7 +656,7 @@ class _$InitialImpl implements _Initial {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -743,9 +711,8 @@ abstract class _Initial implements GamificationState {
 /// @nodoc
 abstract class _$$LoadingImplCopyWith<$Res> {
   factory _$$LoadingImplCopyWith(
-    _$LoadingImpl value,
-    $Res Function(_$LoadingImpl) then,
-  ) = __$$LoadingImplCopyWithImpl<$Res>;
+          _$LoadingImpl value, $Res Function(_$LoadingImpl) then) =
+      __$$LoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -753,9 +720,8 @@ class __$$LoadingImplCopyWithImpl<$Res>
     extends _$GamificationStateCopyWithImpl<$Res, _$LoadingImpl>
     implements _$$LoadingImplCopyWith<$Res> {
   __$$LoadingImplCopyWithImpl(
-    _$LoadingImpl _value,
-    $Res Function(_$LoadingImpl) _then,
-  ) : super(_value, _then);
+      _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of GamificationState
   /// with the given fields replaced by the non-null parameter values.
@@ -786,10 +752,8 @@ class _$LoadingImpl implements _Loading {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Achievement> achievements,
-      Set<String> unlockedIds,
-    )
-    loaded,
+            List<Achievement> achievements, Set<String> unlockedIds)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return loading();
@@ -801,7 +765,7 @@ class _$LoadingImpl implements _Loading {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return loading?.call();
@@ -813,7 +777,7 @@ class _$LoadingImpl implements _Loading {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -868,9 +832,8 @@ abstract class _Loading implements GamificationState {
 /// @nodoc
 abstract class _$$LoadedImplCopyWith<$Res> {
   factory _$$LoadedImplCopyWith(
-    _$LoadedImpl value,
-    $Res Function(_$LoadedImpl) then,
-  ) = __$$LoadedImplCopyWithImpl<$Res>;
+          _$LoadedImpl value, $Res Function(_$LoadedImpl) then) =
+      __$$LoadedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({List<Achievement> achievements, Set<String> unlockedIds});
 }
@@ -880,40 +843,38 @@ class __$$LoadedImplCopyWithImpl<$Res>
     extends _$GamificationStateCopyWithImpl<$Res, _$LoadedImpl>
     implements _$$LoadedImplCopyWith<$Res> {
   __$$LoadedImplCopyWithImpl(
-    _$LoadedImpl _value,
-    $Res Function(_$LoadedImpl) _then,
-  ) : super(_value, _then);
+      _$LoadedImpl _value, $Res Function(_$LoadedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of GamificationState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? achievements = null, Object? unlockedIds = null}) {
-    return _then(
-      _$LoadedImpl(
-        achievements:
-            null == achievements
-                ? _value._achievements
-                : achievements // ignore: cast_nullable_to_non_nullable
-                    as List<Achievement>,
-        unlockedIds:
-            null == unlockedIds
-                ? _value._unlockedIds
-                : unlockedIds // ignore: cast_nullable_to_non_nullable
-                    as Set<String>,
-      ),
-    );
+  $Res call({
+    Object? achievements = null,
+    Object? unlockedIds = null,
+  }) {
+    return _then(_$LoadedImpl(
+      achievements: null == achievements
+          ? _value._achievements
+          : achievements // ignore: cast_nullable_to_non_nullable
+              as List<Achievement>,
+      unlockedIds: null == unlockedIds
+          ? _value._unlockedIds
+          : unlockedIds // ignore: cast_nullable_to_non_nullable
+              as Set<String>,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$LoadedImpl implements _Loaded {
-  const _$LoadedImpl({
-    required final List<Achievement> achievements,
-    required final Set<String> unlockedIds,
-  }) : _achievements = achievements,
-       _unlockedIds = unlockedIds;
+  const _$LoadedImpl(
+      {required final List<Achievement> achievements,
+      required final Set<String> unlockedIds})
+      : _achievements = achievements,
+        _unlockedIds = unlockedIds;
 
   final List<Achievement> _achievements;
   @override
@@ -941,22 +902,17 @@ class _$LoadedImpl implements _Loaded {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$LoadedImpl &&
-            const DeepCollectionEquality().equals(
-              other._achievements,
-              _achievements,
-            ) &&
-            const DeepCollectionEquality().equals(
-              other._unlockedIds,
-              _unlockedIds,
-            ));
+            const DeepCollectionEquality()
+                .equals(other._achievements, _achievements) &&
+            const DeepCollectionEquality()
+                .equals(other._unlockedIds, _unlockedIds));
   }
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    const DeepCollectionEquality().hash(_achievements),
-    const DeepCollectionEquality().hash(_unlockedIds),
-  );
+      runtimeType,
+      const DeepCollectionEquality().hash(_achievements),
+      const DeepCollectionEquality().hash(_unlockedIds));
 
   /// Create a copy of GamificationState
   /// with the given fields replaced by the non-null parameter values.
@@ -972,10 +928,8 @@ class _$LoadedImpl implements _Loaded {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Achievement> achievements,
-      Set<String> unlockedIds,
-    )
-    loaded,
+            List<Achievement> achievements, Set<String> unlockedIds)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return loaded(achievements, unlockedIds);
@@ -987,7 +941,7 @@ class _$LoadedImpl implements _Loaded {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return loaded?.call(achievements, unlockedIds);
@@ -999,7 +953,7 @@ class _$LoadedImpl implements _Loaded {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -1048,10 +1002,9 @@ class _$LoadedImpl implements _Loaded {
 }
 
 abstract class _Loaded implements GamificationState {
-  const factory _Loaded({
-    required final List<Achievement> achievements,
-    required final Set<String> unlockedIds,
-  }) = _$LoadedImpl;
+  const factory _Loaded(
+      {required final List<Achievement> achievements,
+      required final Set<String> unlockedIds}) = _$LoadedImpl;
 
   List<Achievement> get achievements;
   Set<String> get unlockedIds;
@@ -1066,9 +1019,8 @@ abstract class _Loaded implements GamificationState {
 /// @nodoc
 abstract class _$$ErrorImplCopyWith<$Res> {
   factory _$$ErrorImplCopyWith(
-    _$ErrorImpl value,
-    $Res Function(_$ErrorImpl) then,
-  ) = __$$ErrorImplCopyWithImpl<$Res>;
+          _$ErrorImpl value, $Res Function(_$ErrorImpl) then) =
+      __$$ErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -1078,24 +1030,22 @@ class __$$ErrorImplCopyWithImpl<$Res>
     extends _$GamificationStateCopyWithImpl<$Res, _$ErrorImpl>
     implements _$$ErrorImplCopyWith<$Res> {
   __$$ErrorImplCopyWithImpl(
-    _$ErrorImpl _value,
-    $Res Function(_$ErrorImpl) _then,
-  ) : super(_value, _then);
+      _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of GamificationState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$ErrorImpl(
-        message:
-            null == message
-                ? _value.message
-                : message // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$ErrorImpl(
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
@@ -1137,10 +1087,8 @@ class _$ErrorImpl implements _Error {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Achievement> achievements,
-      Set<String> unlockedIds,
-    )
-    loaded,
+            List<Achievement> achievements, Set<String> unlockedIds)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return error(message);
@@ -1152,7 +1100,7 @@ class _$ErrorImpl implements _Error {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return error?.call(message);
@@ -1164,7 +1112,7 @@ class _$ErrorImpl implements _Error {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Achievement> achievements, Set<String> unlockedIds)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {

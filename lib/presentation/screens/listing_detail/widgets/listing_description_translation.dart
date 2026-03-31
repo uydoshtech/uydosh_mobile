@@ -1,7 +1,11 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 
 enum _TranslationTarget { original, en, ru, uz }
@@ -10,12 +14,22 @@ enum _TranslationTarget { original, en, ru, uz }
 /// Controls sit **below** the text, start-aligned (left in LTR).
 class ListingDescriptionTranslation extends StatefulWidget {
   const ListingDescriptionTranslation({
+    required this.listingId,
     required this.originalText,
     required this.textStyle,
+    this.descriptionRu,
+    this.descriptionEn,
+    this.descriptionUz,
     super.key,
   });
 
+  /// Listing id for persisting new translations (server cache).
+  final int listingId;
   final String originalText;
+  /// Optional DB-backed translations from [GET /listings/:id] (skip Gemini when set).
+  final String? descriptionRu;
+  final String? descriptionEn;
+  final String? descriptionUz;
   final TextStyle textStyle;
 
   @override
@@ -30,6 +44,58 @@ class _ListingDescriptionTranslationState
   final Map<String, String> _cache = {};
   String? _loadingLang;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _mergeDbIntoCache();
+  }
+
+  @override
+  void didUpdateWidget(ListingDescriptionTranslation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.listingId != widget.listingId) {
+      _cache.clear();
+      _target = _TranslationTarget.original;
+      _loadingLang = null;
+      _error = null;
+    }
+    if (oldWidget.listingId != widget.listingId ||
+        oldWidget.descriptionEn != widget.descriptionEn ||
+        oldWidget.descriptionRu != widget.descriptionRu ||
+        oldWidget.descriptionUz != widget.descriptionUz) {
+      _mergeDbIntoCache();
+    }
+  }
+
+  void _mergeDbIntoCache() {
+    void put(String code, String? s) {
+      final t = s?.trim();
+      if (t != null && t.isNotEmpty) {
+        _cache[code] = t;
+      }
+    }
+
+    put("en", widget.descriptionEn);
+    put("ru", widget.descriptionRu);
+    put("uz", widget.descriptionUz);
+  }
+
+  void _persistTranslation(String code, String text) {
+    unawaited(_saveTranslationToServer(code, text));
+  }
+
+  Future<void> _saveTranslationToServer(String code, String text) async {
+    try {
+      await getIt<IListingService>().saveDescriptionTranslation(
+        listingId: widget.listingId,
+        targetLanguageCode: code,
+        translatedText: text,
+      );
+    } catch (e, st) {
+      logger.d("saveDescriptionTranslation failed: $e\n$st");
+    }
+  }
 
   String _codeForTarget(_TranslationTarget t) => switch (t) {
     _TranslationTarget.en => "en",
@@ -93,6 +159,8 @@ class _ListingDescriptionTranslationState
         _cache[code] = t;
         if (t == widget.originalText.trim()) {
           _target = _TranslationTarget.original;
+        } else {
+          _persistTranslation(code, t);
         }
       });
     } catch (_) {

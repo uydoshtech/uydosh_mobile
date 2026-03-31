@@ -12,8 +12,7 @@ part of 'location.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 Location _$LocationFromJson(Map<String, dynamic> json) {
   return _Location.fromJson(json);
@@ -58,20 +57,19 @@ abstract class $LocationCopyWith<$Res> {
   factory $LocationCopyWith(Location value, $Res Function(Location) then) =
       _$LocationCopyWithImpl<$Res, Location>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "short_name_uz") String? shortNameUz,
-    @JsonKey(name: "short_name_ru") String? shortNameRu,
-    @JsonKey(name: "short_name_en") String? shortNameEn,
-    @JsonKey(name: "short_name") String? shortName,
-    double? latitude,
-    double? longitude,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "short_name_uz") String? shortNameUz,
+      @JsonKey(name: "short_name_ru") String? shortNameRu,
+      @JsonKey(name: "short_name_en") String? shortNameEn,
+      @JsonKey(name: "short_name") String? shortName,
+      double? latitude,
+      double? longitude});
 }
 
 /// @nodoc
@@ -102,71 +100,56 @@ class _$LocationCopyWithImpl<$Res, $Val extends Location>
     Object? latitude = freezed,
     Object? longitude = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            updatedAt:
-                null == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            nameUz:
-                freezed == nameUz
-                    ? _value.nameUz
-                    : nameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameRu:
-                freezed == nameRu
-                    ? _value.nameRu
-                    : nameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameEn:
-                freezed == nameEn
-                    ? _value.nameEn
-                    : nameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameUz:
-                freezed == shortNameUz
-                    ? _value.shortNameUz
-                    : shortNameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameRu:
-                freezed == shortNameRu
-                    ? _value.shortNameRu
-                    : shortNameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameEn:
-                freezed == shortNameEn
-                    ? _value.shortNameEn
-                    : shortNameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortName:
-                freezed == shortName
-                    ? _value.shortName
-                    : shortName // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            latitude:
-                freezed == latitude
-                    ? _value.latitude
-                    : latitude // ignore: cast_nullable_to_non_nullable
-                        as double?,
-            longitude:
-                freezed == longitude
-                    ? _value.longitude
-                    : longitude // ignore: cast_nullable_to_non_nullable
-                        as double?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameUz: freezed == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameRu: freezed == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameEn: freezed == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortName: freezed == shortName
+          ? _value.shortName
+          : shortName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      latitude: freezed == latitude
+          ? _value.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _value.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+    ) as $Val);
   }
 }
 
@@ -174,25 +157,23 @@ class _$LocationCopyWithImpl<$Res, $Val extends Location>
 abstract class _$$LocationImplCopyWith<$Res>
     implements $LocationCopyWith<$Res> {
   factory _$$LocationImplCopyWith(
-    _$LocationImpl value,
-    $Res Function(_$LocationImpl) then,
-  ) = __$$LocationImplCopyWithImpl<$Res>;
+          _$LocationImpl value, $Res Function(_$LocationImpl) then) =
+      __$$LocationImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "short_name_uz") String? shortNameUz,
-    @JsonKey(name: "short_name_ru") String? shortNameRu,
-    @JsonKey(name: "short_name_en") String? shortNameEn,
-    @JsonKey(name: "short_name") String? shortName,
-    double? latitude,
-    double? longitude,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "short_name_uz") String? shortNameUz,
+      @JsonKey(name: "short_name_ru") String? shortNameRu,
+      @JsonKey(name: "short_name_en") String? shortNameEn,
+      @JsonKey(name: "short_name") String? shortName,
+      double? latitude,
+      double? longitude});
 }
 
 /// @nodoc
@@ -200,9 +181,8 @@ class __$$LocationImplCopyWithImpl<$Res>
     extends _$LocationCopyWithImpl<$Res, _$LocationImpl>
     implements _$$LocationImplCopyWith<$Res> {
   __$$LocationImplCopyWithImpl(
-    _$LocationImpl _value,
-    $Res Function(_$LocationImpl) _then,
-  ) : super(_value, _then);
+      _$LocationImpl _value, $Res Function(_$LocationImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of Location
   /// with the given fields replaced by the non-null parameter values.
@@ -222,90 +202,75 @@ class __$$LocationImplCopyWithImpl<$Res>
     Object? latitude = freezed,
     Object? longitude = freezed,
   }) {
-    return _then(
-      _$LocationImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        updatedAt:
-            null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        nameUz:
-            freezed == nameUz
-                ? _value.nameUz
-                : nameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameRu:
-            freezed == nameRu
-                ? _value.nameRu
-                : nameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameEn:
-            freezed == nameEn
-                ? _value.nameEn
-                : nameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameUz:
-            freezed == shortNameUz
-                ? _value.shortNameUz
-                : shortNameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameRu:
-            freezed == shortNameRu
-                ? _value.shortNameRu
-                : shortNameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameEn:
-            freezed == shortNameEn
-                ? _value.shortNameEn
-                : shortNameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortName:
-            freezed == shortName
-                ? _value.shortName
-                : shortName // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        latitude:
-            freezed == latitude
-                ? _value.latitude
-                : latitude // ignore: cast_nullable_to_non_nullable
-                    as double?,
-        longitude:
-            freezed == longitude
-                ? _value.longitude
-                : longitude // ignore: cast_nullable_to_non_nullable
-                    as double?,
-      ),
-    );
+    return _then(_$LocationImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameUz: freezed == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameRu: freezed == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameEn: freezed == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortName: freezed == shortName
+          ? _value.shortName
+          : shortName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      latitude: freezed == latitude
+          ? _value.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _value.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$LocationImpl implements _Location {
-  const _$LocationImpl({
-    required this.id,
-    @JsonKey(name: "created_at") required this.createdAt,
-    @JsonKey(name: "updated_at") required this.updatedAt,
-    @JsonKey(name: "name_uz") this.nameUz,
-    @JsonKey(name: "name_ru") this.nameRu,
-    @JsonKey(name: "name_en") this.nameEn,
-    @JsonKey(name: "short_name_uz") this.shortNameUz,
-    @JsonKey(name: "short_name_ru") this.shortNameRu,
-    @JsonKey(name: "short_name_en") this.shortNameEn,
-    @JsonKey(name: "short_name") this.shortName,
-    this.latitude,
-    this.longitude,
-  });
+  const _$LocationImpl(
+      {required this.id,
+      @JsonKey(name: "created_at") required this.createdAt,
+      @JsonKey(name: "updated_at") required this.updatedAt,
+      @JsonKey(name: "name_uz") this.nameUz,
+      @JsonKey(name: "name_ru") this.nameRu,
+      @JsonKey(name: "name_en") this.nameEn,
+      @JsonKey(name: "short_name_uz") this.shortNameUz,
+      @JsonKey(name: "short_name_ru") this.shortNameRu,
+      @JsonKey(name: "short_name_en") this.shortNameEn,
+      @JsonKey(name: "short_name") this.shortName,
+      this.latitude,
+      this.longitude});
 
   factory _$LocationImpl.fromJson(Map<String, dynamic> json) =>
       _$$LocationImplFromJson(json);
@@ -379,20 +344,19 @@ class _$LocationImpl implements _Location {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    createdAt,
-    updatedAt,
-    nameUz,
-    nameRu,
-    nameEn,
-    shortNameUz,
-    shortNameRu,
-    shortNameEn,
-    shortName,
-    latitude,
-    longitude,
-  );
+      runtimeType,
+      id,
+      createdAt,
+      updatedAt,
+      nameUz,
+      nameRu,
+      nameEn,
+      shortNameUz,
+      shortNameRu,
+      shortNameEn,
+      shortName,
+      latitude,
+      longitude);
 
   /// Create a copy of Location
   /// with the given fields replaced by the non-null parameter values.
@@ -404,25 +368,26 @@ class _$LocationImpl implements _Location {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$LocationImplToJson(this);
+    return _$$LocationImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _Location implements Location {
-  const factory _Location({
-    required final int id,
-    @JsonKey(name: "created_at") required final String createdAt,
-    @JsonKey(name: "updated_at") required final String updatedAt,
-    @JsonKey(name: "name_uz") final String? nameUz,
-    @JsonKey(name: "name_ru") final String? nameRu,
-    @JsonKey(name: "name_en") final String? nameEn,
-    @JsonKey(name: "short_name_uz") final String? shortNameUz,
-    @JsonKey(name: "short_name_ru") final String? shortNameRu,
-    @JsonKey(name: "short_name_en") final String? shortNameEn,
-    @JsonKey(name: "short_name") final String? shortName,
-    final double? latitude,
-    final double? longitude,
-  }) = _$LocationImpl;
+  const factory _Location(
+      {required final int id,
+      @JsonKey(name: "created_at") required final String createdAt,
+      @JsonKey(name: "updated_at") required final String updatedAt,
+      @JsonKey(name: "name_uz") final String? nameUz,
+      @JsonKey(name: "name_ru") final String? nameRu,
+      @JsonKey(name: "name_en") final String? nameEn,
+      @JsonKey(name: "short_name_uz") final String? shortNameUz,
+      @JsonKey(name: "short_name_ru") final String? shortNameRu,
+      @JsonKey(name: "short_name_en") final String? shortNameEn,
+      @JsonKey(name: "short_name") final String? shortName,
+      final double? latitude,
+      final double? longitude}) = _$LocationImpl;
 
   factory _Location.fromJson(Map<String, dynamic> json) =
       _$LocationImpl.fromJson;

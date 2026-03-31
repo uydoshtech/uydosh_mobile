@@ -24,32 +24,23 @@ _$ListingImpl _$$ListingImplFromJson(Map<String, dynamic> json) =>
       featuredAt: json['featured_at'] as String?,
       moveInDate: json['move_in_date'] as String?,
       privateRoom: json['private_room'] as bool?,
-      subwayStation:
-          json['subway_station'] == null
-              ? null
-              : SubwayStationDetail.fromJson(
-                json['subway_station'] as Map<String, dynamic>,
-              ),
-      location:
-          json['location'] == null
-              ? null
-              : LocationDetail.fromJson(
-                json['location'] as Map<String, dynamic>,
-              ),
-      listingType:
-          json['listing_type'] == null
-              ? null
-              : ListingTypeDetail.fromJson(
-                json['listing_type'] as Map<String, dynamic>,
-              ),
-      amenities:
-          (json['amenities'] as List<dynamic>?)
-              ?.map((e) => Amenity.fromJson(e as Map<String, dynamic>))
-              .toList(),
-      photos:
-          (json['photos'] as List<dynamic>?)
-              ?.map((e) => Photo.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      subwayStation: json['subway_station'] == null
+          ? null
+          : SubwayStationDetail.fromJson(
+              json['subway_station'] as Map<String, dynamic>),
+      location: json['location'] == null
+          ? null
+          : LocationDetail.fromJson(json['location'] as Map<String, dynamic>),
+      listingType: json['listing_type'] == null
+          ? null
+          : ListingTypeDetail.fromJson(
+              json['listing_type'] as Map<String, dynamic>),
+      amenities: (json['amenities'] as List<dynamic>?)
+          ?.map((e) => Amenity.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      photos: (json['photos'] as List<dynamic>?)
+          ?.map((e) => Photo.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$$ListingImplToJson(_$ListingImpl instance) =>
@@ -78,24 +69,24 @@ Map<String, dynamic> _$$ListingImplToJson(_$ListingImpl instance) =>
     };
 
 _$SubwayStationDetailImpl _$$SubwayStationDetailImplFromJson(
-  Map<String, dynamic> json,
-) => _$SubwayStationDetailImpl(
-  id: (json['id'] as num).toInt(),
-  line: (json['line'] as num).toInt(),
-  nameUz: json['name_uz'] as String?,
-  nameRu: json['name_ru'] as String?,
-  nameEn: json['name_en'] as String?,
-);
+        Map<String, dynamic> json) =>
+    _$SubwayStationDetailImpl(
+      id: (json['id'] as num).toInt(),
+      line: (json['line'] as num).toInt(),
+      nameUz: json['name_uz'] as String?,
+      nameRu: json['name_ru'] as String?,
+      nameEn: json['name_en'] as String?,
+    );
 
 Map<String, dynamic> _$$SubwayStationDetailImplToJson(
-  _$SubwayStationDetailImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'line': instance.line,
-  'name_uz': instance.nameUz,
-  'name_ru': instance.nameRu,
-  'name_en': instance.nameEn,
-};
+        _$SubwayStationDetailImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'line': instance.line,
+      'name_uz': instance.nameUz,
+      'name_ru': instance.nameRu,
+      'name_en': instance.nameEn,
+    };
 
 _$LocationDetailImpl _$$LocationDetailImplFromJson(Map<String, dynamic> json) =>
     _$LocationDetailImpl(
@@ -109,33 +100,33 @@ _$LocationDetailImpl _$$LocationDetailImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$$LocationDetailImplToJson(
-  _$LocationDetailImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'name_uz': instance.nameUz,
-  'name_ru': instance.nameRu,
-  'name_en': instance.nameEn,
-  'short_name_uz': instance.shortNameUz,
-  'short_name_ru': instance.shortNameRu,
-  'short_name_en': instance.shortNameEn,
-};
+        _$LocationDetailImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'name_uz': instance.nameUz,
+      'name_ru': instance.nameRu,
+      'name_en': instance.nameEn,
+      'short_name_uz': instance.shortNameUz,
+      'short_name_ru': instance.shortNameRu,
+      'short_name_en': instance.shortNameEn,
+    };
 
 _$ListingTypeDetailImpl _$$ListingTypeDetailImplFromJson(
-  Map<String, dynamic> json,
-) => _$ListingTypeDetailImpl(
-  id: (json['id'] as num).toInt(),
-  code: json['code'] as String,
-  nameUz: json['name_uz'] as String?,
-  nameRu: json['name_ru'] as String?,
-  nameEn: json['name_en'] as String?,
-);
+        Map<String, dynamic> json) =>
+    _$ListingTypeDetailImpl(
+      id: (json['id'] as num).toInt(),
+      code: json['code'] as String,
+      nameUz: json['name_uz'] as String?,
+      nameRu: json['name_ru'] as String?,
+      nameEn: json['name_en'] as String?,
+    );
 
 Map<String, dynamic> _$$ListingTypeDetailImplToJson(
-  _$ListingTypeDetailImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'code': instance.code,
-  'name_uz': instance.nameUz,
-  'name_ru': instance.nameRu,
-  'name_en': instance.nameEn,
-};
+        _$ListingTypeDetailImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'code': instance.code,
+      'name_uz': instance.nameUz,
+      'name_ru': instance.nameRu,
+      'name_en': instance.nameEn,
+    };

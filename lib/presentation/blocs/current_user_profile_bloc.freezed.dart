@@ -12,8 +12,7 @@ part of 'current_user_profile_bloc.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$CurrentUserProfileEvent {
@@ -21,49 +20,52 @@ mixin _$CurrentUserProfileEvent {
   TResult when<TResult extends Object?>({
     required TResult Function() fetchProfile,
     required TResult Function() reset,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? fetchProfile,
     TResult? Function()? reset,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? fetchProfile,
     TResult Function()? reset,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchProfile value) fetchProfile,
     required TResult Function(_Reset value) reset,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchProfile value)? fetchProfile,
     TResult? Function(_Reset value)? reset,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_FetchProfile value)? fetchProfile,
     TResult Function(_Reset value)? reset,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $CurrentUserProfileEventCopyWith<$Res> {
-  factory $CurrentUserProfileEventCopyWith(
-    CurrentUserProfileEvent value,
-    $Res Function(CurrentUserProfileEvent) then,
-  ) = _$CurrentUserProfileEventCopyWithImpl<$Res, CurrentUserProfileEvent>;
+  factory $CurrentUserProfileEventCopyWith(CurrentUserProfileEvent value,
+          $Res Function(CurrentUserProfileEvent) then) =
+      _$CurrentUserProfileEventCopyWithImpl<$Res, CurrentUserProfileEvent>;
 }
 
 /// @nodoc
-class _$CurrentUserProfileEventCopyWithImpl<
-  $Res,
-  $Val extends CurrentUserProfileEvent
->
+class _$CurrentUserProfileEventCopyWithImpl<$Res,
+        $Val extends CurrentUserProfileEvent>
     implements $CurrentUserProfileEventCopyWith<$Res> {
   _$CurrentUserProfileEventCopyWithImpl(this._value, this._then);
 
@@ -79,9 +81,8 @@ class _$CurrentUserProfileEventCopyWithImpl<
 /// @nodoc
 abstract class _$$FetchProfileImplCopyWith<$Res> {
   factory _$$FetchProfileImplCopyWith(
-    _$FetchProfileImpl value,
-    $Res Function(_$FetchProfileImpl) then,
-  ) = __$$FetchProfileImplCopyWithImpl<$Res>;
+          _$FetchProfileImpl value, $Res Function(_$FetchProfileImpl) then) =
+      __$$FetchProfileImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -89,9 +90,8 @@ class __$$FetchProfileImplCopyWithImpl<$Res>
     extends _$CurrentUserProfileEventCopyWithImpl<$Res, _$FetchProfileImpl>
     implements _$$FetchProfileImplCopyWith<$Res> {
   __$$FetchProfileImplCopyWithImpl(
-    _$FetchProfileImpl _value,
-    $Res Function(_$FetchProfileImpl) _then,
-  ) : super(_value, _then);
+      _$FetchProfileImpl _value, $Res Function(_$FetchProfileImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of CurrentUserProfileEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -186,9 +186,8 @@ abstract class _FetchProfile implements CurrentUserProfileEvent {
 /// @nodoc
 abstract class _$$ResetImplCopyWith<$Res> {
   factory _$$ResetImplCopyWith(
-    _$ResetImpl value,
-    $Res Function(_$ResetImpl) then,
-  ) = __$$ResetImplCopyWithImpl<$Res>;
+          _$ResetImpl value, $Res Function(_$ResetImpl) then) =
+      __$$ResetImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -196,9 +195,8 @@ class __$$ResetImplCopyWithImpl<$Res>
     extends _$CurrentUserProfileEventCopyWithImpl<$Res, _$ResetImpl>
     implements _$$ResetImplCopyWith<$Res> {
   __$$ResetImplCopyWithImpl(
-    _$ResetImpl _value,
-    $Res Function(_$ResetImpl) _then,
-  ) : super(_value, _then);
+      _$ResetImpl _value, $Res Function(_$ResetImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of CurrentUserProfileEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -298,14 +296,16 @@ mixin _$CurrentUserProfileState {
     required TResult Function() loading,
     required TResult Function(UserProfile profile) loaded,
     required TResult Function(String message) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(UserProfile profile)? loaded,
     TResult? Function(String message)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
@@ -313,21 +313,24 @@ mixin _$CurrentUserProfileState {
     TResult Function(UserProfile profile)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_Initial value) initial,
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Initial value)? initial,
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Initial value)? initial,
@@ -335,22 +338,20 @@ mixin _$CurrentUserProfileState {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $CurrentUserProfileStateCopyWith<$Res> {
-  factory $CurrentUserProfileStateCopyWith(
-    CurrentUserProfileState value,
-    $Res Function(CurrentUserProfileState) then,
-  ) = _$CurrentUserProfileStateCopyWithImpl<$Res, CurrentUserProfileState>;
+  factory $CurrentUserProfileStateCopyWith(CurrentUserProfileState value,
+          $Res Function(CurrentUserProfileState) then) =
+      _$CurrentUserProfileStateCopyWithImpl<$Res, CurrentUserProfileState>;
 }
 
 /// @nodoc
-class _$CurrentUserProfileStateCopyWithImpl<
-  $Res,
-  $Val extends CurrentUserProfileState
->
+class _$CurrentUserProfileStateCopyWithImpl<$Res,
+        $Val extends CurrentUserProfileState>
     implements $CurrentUserProfileStateCopyWith<$Res> {
   _$CurrentUserProfileStateCopyWithImpl(this._value, this._then);
 
@@ -366,9 +367,8 @@ class _$CurrentUserProfileStateCopyWithImpl<
 /// @nodoc
 abstract class _$$InitialImplCopyWith<$Res> {
   factory _$$InitialImplCopyWith(
-    _$InitialImpl value,
-    $Res Function(_$InitialImpl) then,
-  ) = __$$InitialImplCopyWithImpl<$Res>;
+          _$InitialImpl value, $Res Function(_$InitialImpl) then) =
+      __$$InitialImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -376,9 +376,8 @@ class __$$InitialImplCopyWithImpl<$Res>
     extends _$CurrentUserProfileStateCopyWithImpl<$Res, _$InitialImpl>
     implements _$$InitialImplCopyWith<$Res> {
   __$$InitialImplCopyWithImpl(
-    _$InitialImpl _value,
-    $Res Function(_$InitialImpl) _then,
-  ) : super(_value, _then);
+      _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of CurrentUserProfileState
   /// with the given fields replaced by the non-null parameter values.
@@ -485,9 +484,8 @@ abstract class _Initial implements CurrentUserProfileState {
 /// @nodoc
 abstract class _$$LoadingImplCopyWith<$Res> {
   factory _$$LoadingImplCopyWith(
-    _$LoadingImpl value,
-    $Res Function(_$LoadingImpl) then,
-  ) = __$$LoadingImplCopyWithImpl<$Res>;
+          _$LoadingImpl value, $Res Function(_$LoadingImpl) then) =
+      __$$LoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -495,9 +493,8 @@ class __$$LoadingImplCopyWithImpl<$Res>
     extends _$CurrentUserProfileStateCopyWithImpl<$Res, _$LoadingImpl>
     implements _$$LoadingImplCopyWith<$Res> {
   __$$LoadingImplCopyWithImpl(
-    _$LoadingImpl _value,
-    $Res Function(_$LoadingImpl) _then,
-  ) : super(_value, _then);
+      _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of CurrentUserProfileState
   /// with the given fields replaced by the non-null parameter values.
@@ -604,9 +601,8 @@ abstract class _Loading implements CurrentUserProfileState {
 /// @nodoc
 abstract class _$$LoadedImplCopyWith<$Res> {
   factory _$$LoadedImplCopyWith(
-    _$LoadedImpl value,
-    $Res Function(_$LoadedImpl) then,
-  ) = __$$LoadedImplCopyWithImpl<$Res>;
+          _$LoadedImpl value, $Res Function(_$LoadedImpl) then) =
+      __$$LoadedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({UserProfile profile});
 
@@ -618,24 +614,22 @@ class __$$LoadedImplCopyWithImpl<$Res>
     extends _$CurrentUserProfileStateCopyWithImpl<$Res, _$LoadedImpl>
     implements _$$LoadedImplCopyWith<$Res> {
   __$$LoadedImplCopyWithImpl(
-    _$LoadedImpl _value,
-    $Res Function(_$LoadedImpl) _then,
-  ) : super(_value, _then);
+      _$LoadedImpl _value, $Res Function(_$LoadedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of CurrentUserProfileState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? profile = null}) {
-    return _then(
-      _$LoadedImpl(
-        profile:
-            null == profile
-                ? _value.profile
-                : profile // ignore: cast_nullable_to_non_nullable
-                    as UserProfile,
-      ),
-    );
+  $Res call({
+    Object? profile = null,
+  }) {
+    return _then(_$LoadedImpl(
+      profile: null == profile
+          ? _value.profile
+          : profile // ignore: cast_nullable_to_non_nullable
+              as UserProfile,
+    ));
   }
 
   /// Create a copy of CurrentUserProfileState
@@ -771,9 +765,8 @@ abstract class _Loaded implements CurrentUserProfileState {
 /// @nodoc
 abstract class _$$ErrorImplCopyWith<$Res> {
   factory _$$ErrorImplCopyWith(
-    _$ErrorImpl value,
-    $Res Function(_$ErrorImpl) then,
-  ) = __$$ErrorImplCopyWithImpl<$Res>;
+          _$ErrorImpl value, $Res Function(_$ErrorImpl) then) =
+      __$$ErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -783,24 +776,22 @@ class __$$ErrorImplCopyWithImpl<$Res>
     extends _$CurrentUserProfileStateCopyWithImpl<$Res, _$ErrorImpl>
     implements _$$ErrorImplCopyWith<$Res> {
   __$$ErrorImplCopyWithImpl(
-    _$ErrorImpl _value,
-    $Res Function(_$ErrorImpl) _then,
-  ) : super(_value, _then);
+      _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of CurrentUserProfileState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$ErrorImpl(
-        message:
-            null == message
-                ? _value.message
-                : message // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$ErrorImpl(
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 

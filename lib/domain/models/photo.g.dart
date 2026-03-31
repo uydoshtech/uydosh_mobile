@@ -7,12 +7,12 @@ part of 'photo.dart';
 // **************************************************************************
 
 _$PhotoImpl _$$PhotoImplFromJson(Map<String, dynamic> json) => _$PhotoImpl(
-  id: (json['id'] as num).toInt(),
-  photoUrl: json['photo_url'] as String,
-  photoOrder: (json['photo_order'] as num).toInt(),
-  isPrimary: json['is_primary'] as bool,
-  createdAt: json['created_at'] as String,
-);
+      id: (json['id'] as num).toInt(),
+      photoUrl: json['photo_url'] as String,
+      photoOrder: (json['photo_order'] as num).toInt(),
+      isPrimary: json['is_primary'] as bool,
+      createdAt: json['created_at'] as String,
+    );
 
 Map<String, dynamic> _$$PhotoImplToJson(_$PhotoImpl instance) =>
     <String, dynamic>{

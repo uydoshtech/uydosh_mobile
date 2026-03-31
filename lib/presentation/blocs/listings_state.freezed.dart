@@ -12,8 +12,7 @@ part of 'listings_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$ListingsState {
@@ -22,44 +21,46 @@ mixin _$ListingsState {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Listing> listings,
-      bool hasMore,
-      int currentPage,
-    )
-    loaded,
+            List<Listing> listings, bool hasMore, int currentPage)
+        loaded,
     required TResult Function(String message) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_$InitialImpl value) initial,
     required TResult Function(_$LoadingImpl value) loading,
     required TResult Function(_$LoadedImpl value) loaded,
     required TResult Function(_$ErrorImpl value) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_$InitialImpl value)? initial,
     TResult? Function(_$LoadingImpl value)? loading,
     TResult? Function(_$LoadedImpl value)? loaded,
     TResult? Function(_$ErrorImpl value)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_$InitialImpl value)? initial,
@@ -67,15 +68,15 @@ mixin _$ListingsState {
     TResult Function(_$LoadedImpl value)? loaded,
     TResult Function(_$ErrorImpl value)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $ListingsStateCopyWith<$Res> {
   factory $ListingsStateCopyWith(
-    ListingsState value,
-    $Res Function(ListingsState) then,
-  ) = _$ListingsStateCopyWithImpl<$Res, ListingsState>;
+          ListingsState value, $Res Function(ListingsState) then) =
+      _$ListingsStateCopyWithImpl<$Res, ListingsState>;
 }
 
 /// @nodoc
@@ -95,9 +96,8 @@ class _$ListingsStateCopyWithImpl<$Res, $Val extends ListingsState>
 /// @nodoc
 abstract class _$$$InitialImplImplCopyWith<$Res> {
   factory _$$$InitialImplImplCopyWith(
-    _$$InitialImplImpl value,
-    $Res Function(_$$InitialImplImpl) then,
-  ) = __$$$InitialImplImplCopyWithImpl<$Res>;
+          _$$InitialImplImpl value, $Res Function(_$$InitialImplImpl) then) =
+      __$$$InitialImplImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -105,9 +105,8 @@ class __$$$InitialImplImplCopyWithImpl<$Res>
     extends _$ListingsStateCopyWithImpl<$Res, _$$InitialImplImpl>
     implements _$$$InitialImplImplCopyWith<$Res> {
   __$$$InitialImplImplCopyWithImpl(
-    _$$InitialImplImpl _value,
-    $Res Function(_$$InitialImplImpl) _then,
-  ) : super(_value, _then);
+      _$$InitialImplImpl _value, $Res Function(_$$InitialImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -138,11 +137,8 @@ class _$$InitialImplImpl implements _$InitialImpl {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Listing> listings,
-      bool hasMore,
-      int currentPage,
-    )
-    loaded,
+            List<Listing> listings, bool hasMore, int currentPage)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return initial();
@@ -154,7 +150,7 @@ class _$$InitialImplImpl implements _$InitialImpl {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return initial?.call();
@@ -166,7 +162,7 @@ class _$$InitialImplImpl implements _$InitialImpl {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -221,9 +217,8 @@ abstract class _$InitialImpl implements ListingsState {
 /// @nodoc
 abstract class _$$$LoadingImplImplCopyWith<$Res> {
   factory _$$$LoadingImplImplCopyWith(
-    _$$LoadingImplImpl value,
-    $Res Function(_$$LoadingImplImpl) then,
-  ) = __$$$LoadingImplImplCopyWithImpl<$Res>;
+          _$$LoadingImplImpl value, $Res Function(_$$LoadingImplImpl) then) =
+      __$$$LoadingImplImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -231,9 +226,8 @@ class __$$$LoadingImplImplCopyWithImpl<$Res>
     extends _$ListingsStateCopyWithImpl<$Res, _$$LoadingImplImpl>
     implements _$$$LoadingImplImplCopyWith<$Res> {
   __$$$LoadingImplImplCopyWithImpl(
-    _$$LoadingImplImpl _value,
-    $Res Function(_$$LoadingImplImpl) _then,
-  ) : super(_value, _then);
+      _$$LoadingImplImpl _value, $Res Function(_$$LoadingImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -264,11 +258,8 @@ class _$$LoadingImplImpl implements _$LoadingImpl {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Listing> listings,
-      bool hasMore,
-      int currentPage,
-    )
-    loaded,
+            List<Listing> listings, bool hasMore, int currentPage)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return loading();
@@ -280,7 +271,7 @@ class _$$LoadingImplImpl implements _$LoadingImpl {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return loading?.call();
@@ -292,7 +283,7 @@ class _$$LoadingImplImpl implements _$LoadingImpl {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -347,9 +338,8 @@ abstract class _$LoadingImpl implements ListingsState {
 /// @nodoc
 abstract class _$$$LoadedImplImplCopyWith<$Res> {
   factory _$$$LoadedImplImplCopyWith(
-    _$$LoadedImplImpl value,
-    $Res Function(_$$LoadedImplImpl) then,
-  ) = __$$$LoadedImplImplCopyWithImpl<$Res>;
+          _$$LoadedImplImpl value, $Res Function(_$$LoadedImplImpl) then) =
+      __$$$LoadedImplImplCopyWithImpl<$Res>;
   @useResult
   $Res call({List<Listing> listings, bool hasMore, int currentPage});
 }
@@ -359,9 +349,8 @@ class __$$$LoadedImplImplCopyWithImpl<$Res>
     extends _$ListingsStateCopyWithImpl<$Res, _$$LoadedImplImpl>
     implements _$$$LoadedImplImplCopyWith<$Res> {
   __$$$LoadedImplImplCopyWithImpl(
-    _$$LoadedImplImpl _value,
-    $Res Function(_$$LoadedImplImpl) _then,
-  ) : super(_value, _then);
+      _$$LoadedImplImpl _value, $Res Function(_$$LoadedImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -372,36 +361,31 @@ class __$$$LoadedImplImplCopyWithImpl<$Res>
     Object? hasMore = null,
     Object? currentPage = null,
   }) {
-    return _then(
-      _$$LoadedImplImpl(
-        listings:
-            null == listings
-                ? _value._listings
-                : listings // ignore: cast_nullable_to_non_nullable
-                    as List<Listing>,
-        hasMore:
-            null == hasMore
-                ? _value.hasMore
-                : hasMore // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        currentPage:
-            null == currentPage
-                ? _value.currentPage
-                : currentPage // ignore: cast_nullable_to_non_nullable
-                    as int,
-      ),
-    );
+    return _then(_$$LoadedImplImpl(
+      listings: null == listings
+          ? _value._listings
+          : listings // ignore: cast_nullable_to_non_nullable
+              as List<Listing>,
+      hasMore: null == hasMore
+          ? _value.hasMore
+          : hasMore // ignore: cast_nullable_to_non_nullable
+              as bool,
+      currentPage: null == currentPage
+          ? _value.currentPage
+          : currentPage // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$$LoadedImplImpl implements _$LoadedImpl {
-  const _$$LoadedImplImpl({
-    required final List<Listing> listings,
-    required this.hasMore,
-    required this.currentPage,
-  }) : _listings = listings;
+  const _$$LoadedImplImpl(
+      {required final List<Listing> listings,
+      required this.hasMore,
+      required this.currentPage})
+      : _listings = listings;
 
   final List<Listing> _listings;
   @override
@@ -433,12 +417,8 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
   }
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    const DeepCollectionEquality().hash(_listings),
-    hasMore,
-    currentPage,
-  );
+  int get hashCode => Object.hash(runtimeType,
+      const DeepCollectionEquality().hash(_listings), hasMore, currentPage);
 
   /// Create a copy of ListingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -454,11 +434,8 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Listing> listings,
-      bool hasMore,
-      int currentPage,
-    )
-    loaded,
+            List<Listing> listings, bool hasMore, int currentPage)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return loaded(listings, hasMore, currentPage);
@@ -470,7 +447,7 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return loaded?.call(listings, hasMore, currentPage);
@@ -482,7 +459,7 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -531,11 +508,10 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
 }
 
 abstract class _$LoadedImpl implements ListingsState {
-  const factory _$LoadedImpl({
-    required final List<Listing> listings,
-    required final bool hasMore,
-    required final int currentPage,
-  }) = _$$LoadedImplImpl;
+  const factory _$LoadedImpl(
+      {required final List<Listing> listings,
+      required final bool hasMore,
+      required final int currentPage}) = _$$LoadedImplImpl;
 
   List<Listing> get listings;
   bool get hasMore;
@@ -551,9 +527,8 @@ abstract class _$LoadedImpl implements ListingsState {
 /// @nodoc
 abstract class _$$$ErrorImplImplCopyWith<$Res> {
   factory _$$$ErrorImplImplCopyWith(
-    _$$ErrorImplImpl value,
-    $Res Function(_$$ErrorImplImpl) then,
-  ) = __$$$ErrorImplImplCopyWithImpl<$Res>;
+          _$$ErrorImplImpl value, $Res Function(_$$ErrorImplImpl) then) =
+      __$$$ErrorImplImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -563,23 +538,22 @@ class __$$$ErrorImplImplCopyWithImpl<$Res>
     extends _$ListingsStateCopyWithImpl<$Res, _$$ErrorImplImpl>
     implements _$$$ErrorImplImplCopyWith<$Res> {
   __$$$ErrorImplImplCopyWithImpl(
-    _$$ErrorImplImpl _value,
-    $Res Function(_$$ErrorImplImpl) _then,
-  ) : super(_value, _then);
+      _$$ErrorImplImpl _value, $Res Function(_$$ErrorImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$$ErrorImplImpl(
-        null == message
-            ? _value.message
-            : message // ignore: cast_nullable_to_non_nullable
-                as String,
-      ),
-    );
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$$ErrorImplImpl(
+      null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
@@ -621,11 +595,8 @@ class _$$ErrorImplImpl implements _$ErrorImpl {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-      List<Listing> listings,
-      bool hasMore,
-      int currentPage,
-    )
-    loaded,
+            List<Listing> listings, bool hasMore, int currentPage)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return error(message);
@@ -637,7 +608,7 @@ class _$$ErrorImplImpl implements _$ErrorImpl {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return error?.call(message);
@@ -649,7 +620,7 @@ class _$$ErrorImplImpl implements _$ErrorImpl {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
-    loaded,
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {

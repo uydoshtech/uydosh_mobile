@@ -281,6 +281,10 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 widget.listingDetail.description!.isNotEmpty) ...[
               const SizedBox(height: 12),
               ListingDescriptionTranslation(
+                listingId: widget.listingDetail.id,
+                descriptionRu: widget.listingDetail.descriptionRu,
+                descriptionEn: widget.listingDetail.descriptionEn,
+                descriptionUz: widget.listingDetail.descriptionUz,
                 originalText: widget.listingDetail.description!,
                 textStyle: TextStyle(
                   fontSize: 16,

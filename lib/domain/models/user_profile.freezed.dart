@@ -12,8 +12,7 @@ part of 'user_profile.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 UserProfile _$UserProfileFromJson(Map<String, dynamic> json) {
   return _UserProfile.fromJson(json);
@@ -22,9 +21,8 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$UserProfile {
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertToJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertToJson)
   int get id => throw _privateConstructorUsedError;
   @JsonKey(name: "user_id")
   int get userId => throw _privateConstructorUsedError;
@@ -83,43 +81,40 @@ mixin _$UserProfile {
 /// @nodoc
 abstract class $UserProfileCopyWith<$Res> {
   factory $UserProfileCopyWith(
-    UserProfile value,
-    $Res Function(UserProfile) then,
-  ) = _$UserProfileCopyWithImpl<$Res, UserProfile>;
+          UserProfile value, $Res Function(UserProfile) then) =
+      _$UserProfileCopyWithImpl<$Res, UserProfile>;
   @useResult
-  $Res call({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    int id,
-    @JsonKey(name: "user_id") int userId,
-    String? name,
-    int? gender,
-    @JsonKey(name: "is_verified") bool? isVerified,
-    @JsonKey(name: "region_id") int? regionId,
-    @JsonKey(name: "university_id") int? universityId,
-    @JsonKey(name: "avatar_url") String? avatarUrl,
-    String? telegram,
-    double? rating,
-    @JsonKey(name: "about_me") String? aboutMe,
-    bool? employed,
-    int? cleanliness,
-    @JsonKey(name: "noise_level") int? noiseLevel,
-    int? sociability,
-    @JsonKey(name: "guests_allowed") bool? guestsAllowed,
-    @JsonKey(name: "smoking_preference") String? smokingPreference,
-    @JsonKey(name: "alcohol_preference") String? alcoholPreference,
-    @JsonKey(name: "cooking_habits") bool? cookingHabits,
-    @JsonKey(name: "pets_preference") bool? petsPreference,
-    @JsonKey(name: "wakeup_time") String? wakeupTime,
-    @JsonKey(name: "sleep_time") String? sleepTime,
-    @JsonKey(name: "preferred_language") String? preferredLanguage,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-    UserProfileRegion? region,
-    UserProfileUniversity? university,
-  });
+  $Res call(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      int id,
+      @JsonKey(name: "user_id") int userId,
+      String? name,
+      int? gender,
+      @JsonKey(name: "is_verified") bool? isVerified,
+      @JsonKey(name: "region_id") int? regionId,
+      @JsonKey(name: "university_id") int? universityId,
+      @JsonKey(name: "avatar_url") String? avatarUrl,
+      String? telegram,
+      double? rating,
+      @JsonKey(name: "about_me") String? aboutMe,
+      bool? employed,
+      int? cleanliness,
+      @JsonKey(name: "noise_level") int? noiseLevel,
+      int? sociability,
+      @JsonKey(name: "guests_allowed") bool? guestsAllowed,
+      @JsonKey(name: "smoking_preference") String? smokingPreference,
+      @JsonKey(name: "alcohol_preference") String? alcoholPreference,
+      @JsonKey(name: "cooking_habits") bool? cookingHabits,
+      @JsonKey(name: "pets_preference") bool? petsPreference,
+      @JsonKey(name: "wakeup_time") String? wakeupTime,
+      @JsonKey(name: "sleep_time") String? sleepTime,
+      @JsonKey(name: "preferred_language") String? preferredLanguage,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt,
+      UserProfileRegion? region,
+      UserProfileUniversity? university});
 
   $UserProfileRegionCopyWith<$Res>? get region;
   $UserProfileUniversityCopyWith<$Res>? get university;
@@ -168,146 +163,116 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? region = freezed,
     Object? university = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            userId:
-                null == userId
-                    ? _value.userId
-                    : userId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            name:
-                freezed == name
-                    ? _value.name
-                    : name // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            gender:
-                freezed == gender
-                    ? _value.gender
-                    : gender // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            isVerified:
-                freezed == isVerified
-                    ? _value.isVerified
-                    : isVerified // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            regionId:
-                freezed == regionId
-                    ? _value.regionId
-                    : regionId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            universityId:
-                freezed == universityId
-                    ? _value.universityId
-                    : universityId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            avatarUrl:
-                freezed == avatarUrl
-                    ? _value.avatarUrl
-                    : avatarUrl // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            telegram:
-                freezed == telegram
-                    ? _value.telegram
-                    : telegram // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            rating:
-                freezed == rating
-                    ? _value.rating
-                    : rating // ignore: cast_nullable_to_non_nullable
-                        as double?,
-            aboutMe:
-                freezed == aboutMe
-                    ? _value.aboutMe
-                    : aboutMe // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            employed:
-                freezed == employed
-                    ? _value.employed
-                    : employed // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            cleanliness:
-                freezed == cleanliness
-                    ? _value.cleanliness
-                    : cleanliness // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            noiseLevel:
-                freezed == noiseLevel
-                    ? _value.noiseLevel
-                    : noiseLevel // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            sociability:
-                freezed == sociability
-                    ? _value.sociability
-                    : sociability // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            guestsAllowed:
-                freezed == guestsAllowed
-                    ? _value.guestsAllowed
-                    : guestsAllowed // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            smokingPreference:
-                freezed == smokingPreference
-                    ? _value.smokingPreference
-                    : smokingPreference // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            alcoholPreference:
-                freezed == alcoholPreference
-                    ? _value.alcoholPreference
-                    : alcoholPreference // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            cookingHabits:
-                freezed == cookingHabits
-                    ? _value.cookingHabits
-                    : cookingHabits // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            petsPreference:
-                freezed == petsPreference
-                    ? _value.petsPreference
-                    : petsPreference // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            wakeupTime:
-                freezed == wakeupTime
-                    ? _value.wakeupTime
-                    : wakeupTime // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            sleepTime:
-                freezed == sleepTime
-                    ? _value.sleepTime
-                    : sleepTime // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            preferredLanguage:
-                freezed == preferredLanguage
-                    ? _value.preferredLanguage
-                    : preferredLanguage // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            createdAt:
-                freezed == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            updatedAt:
-                freezed == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            region:
-                freezed == region
-                    ? _value.region
-                    : region // ignore: cast_nullable_to_non_nullable
-                        as UserProfileRegion?,
-            university:
-                freezed == university
-                    ? _value.university
-                    : university // ignore: cast_nullable_to_non_nullable
-                        as UserProfileUniversity?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      userId: null == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as int,
+      name: freezed == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+      gender: freezed == gender
+          ? _value.gender
+          : gender // ignore: cast_nullable_to_non_nullable
+              as int?,
+      isVerified: freezed == isVerified
+          ? _value.isVerified
+          : isVerified // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      regionId: freezed == regionId
+          ? _value.regionId
+          : regionId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      universityId: freezed == universityId
+          ? _value.universityId
+          : universityId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      avatarUrl: freezed == avatarUrl
+          ? _value.avatarUrl
+          : avatarUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      telegram: freezed == telegram
+          ? _value.telegram
+          : telegram // ignore: cast_nullable_to_non_nullable
+              as String?,
+      rating: freezed == rating
+          ? _value.rating
+          : rating // ignore: cast_nullable_to_non_nullable
+              as double?,
+      aboutMe: freezed == aboutMe
+          ? _value.aboutMe
+          : aboutMe // ignore: cast_nullable_to_non_nullable
+              as String?,
+      employed: freezed == employed
+          ? _value.employed
+          : employed // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      cleanliness: freezed == cleanliness
+          ? _value.cleanliness
+          : cleanliness // ignore: cast_nullable_to_non_nullable
+              as int?,
+      noiseLevel: freezed == noiseLevel
+          ? _value.noiseLevel
+          : noiseLevel // ignore: cast_nullable_to_non_nullable
+              as int?,
+      sociability: freezed == sociability
+          ? _value.sociability
+          : sociability // ignore: cast_nullable_to_non_nullable
+              as int?,
+      guestsAllowed: freezed == guestsAllowed
+          ? _value.guestsAllowed
+          : guestsAllowed // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      smokingPreference: freezed == smokingPreference
+          ? _value.smokingPreference
+          : smokingPreference // ignore: cast_nullable_to_non_nullable
+              as String?,
+      alcoholPreference: freezed == alcoholPreference
+          ? _value.alcoholPreference
+          : alcoholPreference // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cookingHabits: freezed == cookingHabits
+          ? _value.cookingHabits
+          : cookingHabits // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      petsPreference: freezed == petsPreference
+          ? _value.petsPreference
+          : petsPreference // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      wakeupTime: freezed == wakeupTime
+          ? _value.wakeupTime
+          : wakeupTime // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sleepTime: freezed == sleepTime
+          ? _value.sleepTime
+          : sleepTime // ignore: cast_nullable_to_non_nullable
+              as String?,
+      preferredLanguage: freezed == preferredLanguage
+          ? _value.preferredLanguage
+          : preferredLanguage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      region: freezed == region
+          ? _value.region
+          : region // ignore: cast_nullable_to_non_nullable
+              as UserProfileRegion?,
+      university: freezed == university
+          ? _value.university
+          : university // ignore: cast_nullable_to_non_nullable
+              as UserProfileUniversity?,
+    ) as $Val);
   }
 
   /// Create a copy of UserProfile
@@ -343,44 +308,41 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
 abstract class _$$UserProfileImplCopyWith<$Res>
     implements $UserProfileCopyWith<$Res> {
   factory _$$UserProfileImplCopyWith(
-    _$UserProfileImpl value,
-    $Res Function(_$UserProfileImpl) then,
-  ) = __$$UserProfileImplCopyWithImpl<$Res>;
+          _$UserProfileImpl value, $Res Function(_$UserProfileImpl) then) =
+      __$$UserProfileImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    int id,
-    @JsonKey(name: "user_id") int userId,
-    String? name,
-    int? gender,
-    @JsonKey(name: "is_verified") bool? isVerified,
-    @JsonKey(name: "region_id") int? regionId,
-    @JsonKey(name: "university_id") int? universityId,
-    @JsonKey(name: "avatar_url") String? avatarUrl,
-    String? telegram,
-    double? rating,
-    @JsonKey(name: "about_me") String? aboutMe,
-    bool? employed,
-    int? cleanliness,
-    @JsonKey(name: "noise_level") int? noiseLevel,
-    int? sociability,
-    @JsonKey(name: "guests_allowed") bool? guestsAllowed,
-    @JsonKey(name: "smoking_preference") String? smokingPreference,
-    @JsonKey(name: "alcohol_preference") String? alcoholPreference,
-    @JsonKey(name: "cooking_habits") bool? cookingHabits,
-    @JsonKey(name: "pets_preference") bool? petsPreference,
-    @JsonKey(name: "wakeup_time") String? wakeupTime,
-    @JsonKey(name: "sleep_time") String? sleepTime,
-    @JsonKey(name: "preferred_language") String? preferredLanguage,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-    UserProfileRegion? region,
-    UserProfileUniversity? university,
-  });
+  $Res call(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      int id,
+      @JsonKey(name: "user_id") int userId,
+      String? name,
+      int? gender,
+      @JsonKey(name: "is_verified") bool? isVerified,
+      @JsonKey(name: "region_id") int? regionId,
+      @JsonKey(name: "university_id") int? universityId,
+      @JsonKey(name: "avatar_url") String? avatarUrl,
+      String? telegram,
+      double? rating,
+      @JsonKey(name: "about_me") String? aboutMe,
+      bool? employed,
+      int? cleanliness,
+      @JsonKey(name: "noise_level") int? noiseLevel,
+      int? sociability,
+      @JsonKey(name: "guests_allowed") bool? guestsAllowed,
+      @JsonKey(name: "smoking_preference") String? smokingPreference,
+      @JsonKey(name: "alcohol_preference") String? alcoholPreference,
+      @JsonKey(name: "cooking_habits") bool? cookingHabits,
+      @JsonKey(name: "pets_preference") bool? petsPreference,
+      @JsonKey(name: "wakeup_time") String? wakeupTime,
+      @JsonKey(name: "sleep_time") String? sleepTime,
+      @JsonKey(name: "preferred_language") String? preferredLanguage,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt,
+      UserProfileRegion? region,
+      UserProfileUniversity? university});
 
   @override
   $UserProfileRegionCopyWith<$Res>? get region;
@@ -393,9 +355,8 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     extends _$UserProfileCopyWithImpl<$Res, _$UserProfileImpl>
     implements _$$UserProfileImplCopyWith<$Res> {
   __$$UserProfileImplCopyWithImpl(
-    _$UserProfileImpl _value,
-    $Res Function(_$UserProfileImpl) _then,
-  ) : super(_value, _then);
+      _$UserProfileImpl _value, $Res Function(_$UserProfileImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of UserProfile
   /// with the given fields replaced by the non-null parameter values.
@@ -430,193 +391,161 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? region = freezed,
     Object? university = freezed,
   }) {
-    return _then(
-      _$UserProfileImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        userId:
-            null == userId
-                ? _value.userId
-                : userId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        name:
-            freezed == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        gender:
-            freezed == gender
-                ? _value.gender
-                : gender // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        isVerified:
-            freezed == isVerified
-                ? _value.isVerified
-                : isVerified // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        regionId:
-            freezed == regionId
-                ? _value.regionId
-                : regionId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        universityId:
-            freezed == universityId
-                ? _value.universityId
-                : universityId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        avatarUrl:
-            freezed == avatarUrl
-                ? _value.avatarUrl
-                : avatarUrl // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        telegram:
-            freezed == telegram
-                ? _value.telegram
-                : telegram // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        rating:
-            freezed == rating
-                ? _value.rating
-                : rating // ignore: cast_nullable_to_non_nullable
-                    as double?,
-        aboutMe:
-            freezed == aboutMe
-                ? _value.aboutMe
-                : aboutMe // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        employed:
-            freezed == employed
-                ? _value.employed
-                : employed // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        cleanliness:
-            freezed == cleanliness
-                ? _value.cleanliness
-                : cleanliness // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        noiseLevel:
-            freezed == noiseLevel
-                ? _value.noiseLevel
-                : noiseLevel // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        sociability:
-            freezed == sociability
-                ? _value.sociability
-                : sociability // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        guestsAllowed:
-            freezed == guestsAllowed
-                ? _value.guestsAllowed
-                : guestsAllowed // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        smokingPreference:
-            freezed == smokingPreference
-                ? _value.smokingPreference
-                : smokingPreference // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        alcoholPreference:
-            freezed == alcoholPreference
-                ? _value.alcoholPreference
-                : alcoholPreference // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        cookingHabits:
-            freezed == cookingHabits
-                ? _value.cookingHabits
-                : cookingHabits // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        petsPreference:
-            freezed == petsPreference
-                ? _value.petsPreference
-                : petsPreference // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        wakeupTime:
-            freezed == wakeupTime
-                ? _value.wakeupTime
-                : wakeupTime // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        sleepTime:
-            freezed == sleepTime
-                ? _value.sleepTime
-                : sleepTime // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        preferredLanguage:
-            freezed == preferredLanguage
-                ? _value.preferredLanguage
-                : preferredLanguage // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        createdAt:
-            freezed == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        updatedAt:
-            freezed == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        region:
-            freezed == region
-                ? _value.region
-                : region // ignore: cast_nullable_to_non_nullable
-                    as UserProfileRegion?,
-        university:
-            freezed == university
-                ? _value.university
-                : university // ignore: cast_nullable_to_non_nullable
-                    as UserProfileUniversity?,
-      ),
-    );
+    return _then(_$UserProfileImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      userId: null == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as int,
+      name: freezed == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+      gender: freezed == gender
+          ? _value.gender
+          : gender // ignore: cast_nullable_to_non_nullable
+              as int?,
+      isVerified: freezed == isVerified
+          ? _value.isVerified
+          : isVerified // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      regionId: freezed == regionId
+          ? _value.regionId
+          : regionId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      universityId: freezed == universityId
+          ? _value.universityId
+          : universityId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      avatarUrl: freezed == avatarUrl
+          ? _value.avatarUrl
+          : avatarUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      telegram: freezed == telegram
+          ? _value.telegram
+          : telegram // ignore: cast_nullable_to_non_nullable
+              as String?,
+      rating: freezed == rating
+          ? _value.rating
+          : rating // ignore: cast_nullable_to_non_nullable
+              as double?,
+      aboutMe: freezed == aboutMe
+          ? _value.aboutMe
+          : aboutMe // ignore: cast_nullable_to_non_nullable
+              as String?,
+      employed: freezed == employed
+          ? _value.employed
+          : employed // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      cleanliness: freezed == cleanliness
+          ? _value.cleanliness
+          : cleanliness // ignore: cast_nullable_to_non_nullable
+              as int?,
+      noiseLevel: freezed == noiseLevel
+          ? _value.noiseLevel
+          : noiseLevel // ignore: cast_nullable_to_non_nullable
+              as int?,
+      sociability: freezed == sociability
+          ? _value.sociability
+          : sociability // ignore: cast_nullable_to_non_nullable
+              as int?,
+      guestsAllowed: freezed == guestsAllowed
+          ? _value.guestsAllowed
+          : guestsAllowed // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      smokingPreference: freezed == smokingPreference
+          ? _value.smokingPreference
+          : smokingPreference // ignore: cast_nullable_to_non_nullable
+              as String?,
+      alcoholPreference: freezed == alcoholPreference
+          ? _value.alcoholPreference
+          : alcoholPreference // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cookingHabits: freezed == cookingHabits
+          ? _value.cookingHabits
+          : cookingHabits // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      petsPreference: freezed == petsPreference
+          ? _value.petsPreference
+          : petsPreference // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      wakeupTime: freezed == wakeupTime
+          ? _value.wakeupTime
+          : wakeupTime // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sleepTime: freezed == sleepTime
+          ? _value.sleepTime
+          : sleepTime // ignore: cast_nullable_to_non_nullable
+              as String?,
+      preferredLanguage: freezed == preferredLanguage
+          ? _value.preferredLanguage
+          : preferredLanguage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      region: freezed == region
+          ? _value.region
+          : region // ignore: cast_nullable_to_non_nullable
+              as UserProfileRegion?,
+      university: freezed == university
+          ? _value.university
+          : university // ignore: cast_nullable_to_non_nullable
+              as UserProfileUniversity?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$UserProfileImpl implements _UserProfile {
-  const _$UserProfileImpl({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    required this.id,
-    @JsonKey(name: "user_id") required this.userId,
-    this.name,
-    this.gender,
-    @JsonKey(name: "is_verified") this.isVerified,
-    @JsonKey(name: "region_id") this.regionId,
-    @JsonKey(name: "university_id") this.universityId,
-    @JsonKey(name: "avatar_url") this.avatarUrl,
-    this.telegram,
-    this.rating,
-    @JsonKey(name: "about_me") this.aboutMe,
-    this.employed,
-    this.cleanliness,
-    @JsonKey(name: "noise_level") this.noiseLevel,
-    this.sociability,
-    @JsonKey(name: "guests_allowed") this.guestsAllowed,
-    @JsonKey(name: "smoking_preference") this.smokingPreference,
-    @JsonKey(name: "alcohol_preference") this.alcoholPreference,
-    @JsonKey(name: "cooking_habits") this.cookingHabits,
-    @JsonKey(name: "pets_preference") this.petsPreference,
-    @JsonKey(name: "wakeup_time") this.wakeupTime,
-    @JsonKey(name: "sleep_time") this.sleepTime,
-    @JsonKey(name: "preferred_language") this.preferredLanguage,
-    @JsonKey(name: "created_at") this.createdAt,
-    @JsonKey(name: "updated_at") this.updatedAt,
-    this.region,
-    this.university,
-  });
+  const _$UserProfileImpl(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      required this.id,
+      @JsonKey(name: "user_id") required this.userId,
+      this.name,
+      this.gender,
+      @JsonKey(name: "is_verified") this.isVerified,
+      @JsonKey(name: "region_id") this.regionId,
+      @JsonKey(name: "university_id") this.universityId,
+      @JsonKey(name: "avatar_url") this.avatarUrl,
+      this.telegram,
+      this.rating,
+      @JsonKey(name: "about_me") this.aboutMe,
+      this.employed,
+      this.cleanliness,
+      @JsonKey(name: "noise_level") this.noiseLevel,
+      this.sociability,
+      @JsonKey(name: "guests_allowed") this.guestsAllowed,
+      @JsonKey(name: "smoking_preference") this.smokingPreference,
+      @JsonKey(name: "alcohol_preference") this.alcoholPreference,
+      @JsonKey(name: "cooking_habits") this.cookingHabits,
+      @JsonKey(name: "pets_preference") this.petsPreference,
+      @JsonKey(name: "wakeup_time") this.wakeupTime,
+      @JsonKey(name: "sleep_time") this.sleepTime,
+      @JsonKey(name: "preferred_language") this.preferredLanguage,
+      @JsonKey(name: "created_at") this.createdAt,
+      @JsonKey(name: "updated_at") this.updatedAt,
+      this.region,
+      this.university});
 
   factory _$UserProfileImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserProfileImplFromJson(json);
 
   @override
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertToJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertToJson)
   final int id;
   @override
   @JsonKey(name: "user_id")
@@ -750,35 +679,35 @@ class _$UserProfileImpl implements _UserProfile {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
-    runtimeType,
-    id,
-    userId,
-    name,
-    gender,
-    isVerified,
-    regionId,
-    universityId,
-    avatarUrl,
-    telegram,
-    rating,
-    aboutMe,
-    employed,
-    cleanliness,
-    noiseLevel,
-    sociability,
-    guestsAllowed,
-    smokingPreference,
-    alcoholPreference,
-    cookingHabits,
-    petsPreference,
-    wakeupTime,
-    sleepTime,
-    preferredLanguage,
-    createdAt,
-    updatedAt,
-    region,
-    university,
-  ]);
+        runtimeType,
+        id,
+        userId,
+        name,
+        gender,
+        isVerified,
+        regionId,
+        universityId,
+        avatarUrl,
+        telegram,
+        rating,
+        aboutMe,
+        employed,
+        cleanliness,
+        noiseLevel,
+        sociability,
+        guestsAllowed,
+        smokingPreference,
+        alcoholPreference,
+        cookingHabits,
+        petsPreference,
+        wakeupTime,
+        sleepTime,
+        preferredLanguage,
+        createdAt,
+        updatedAt,
+        region,
+        university
+      ]);
 
   /// Create a copy of UserProfile
   /// with the given fields replaced by the non-null parameter values.
@@ -790,53 +719,52 @@ class _$UserProfileImpl implements _UserProfile {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UserProfileImplToJson(this);
+    return _$$UserProfileImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _UserProfile implements UserProfile {
-  const factory _UserProfile({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    required final int id,
-    @JsonKey(name: "user_id") required final int userId,
-    final String? name,
-    final int? gender,
-    @JsonKey(name: "is_verified") final bool? isVerified,
-    @JsonKey(name: "region_id") final int? regionId,
-    @JsonKey(name: "university_id") final int? universityId,
-    @JsonKey(name: "avatar_url") final String? avatarUrl,
-    final String? telegram,
-    final double? rating,
-    @JsonKey(name: "about_me") final String? aboutMe,
-    final bool? employed,
-    final int? cleanliness,
-    @JsonKey(name: "noise_level") final int? noiseLevel,
-    final int? sociability,
-    @JsonKey(name: "guests_allowed") final bool? guestsAllowed,
-    @JsonKey(name: "smoking_preference") final String? smokingPreference,
-    @JsonKey(name: "alcohol_preference") final String? alcoholPreference,
-    @JsonKey(name: "cooking_habits") final bool? cookingHabits,
-    @JsonKey(name: "pets_preference") final bool? petsPreference,
-    @JsonKey(name: "wakeup_time") final String? wakeupTime,
-    @JsonKey(name: "sleep_time") final String? sleepTime,
-    @JsonKey(name: "preferred_language") final String? preferredLanguage,
-    @JsonKey(name: "created_at") final String? createdAt,
-    @JsonKey(name: "updated_at") final String? updatedAt,
-    final UserProfileRegion? region,
-    final UserProfileUniversity? university,
-  }) = _$UserProfileImpl;
+  const factory _UserProfile(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      required final int id,
+      @JsonKey(name: "user_id") required final int userId,
+      final String? name,
+      final int? gender,
+      @JsonKey(name: "is_verified") final bool? isVerified,
+      @JsonKey(name: "region_id") final int? regionId,
+      @JsonKey(name: "university_id") final int? universityId,
+      @JsonKey(name: "avatar_url") final String? avatarUrl,
+      final String? telegram,
+      final double? rating,
+      @JsonKey(name: "about_me") final String? aboutMe,
+      final bool? employed,
+      final int? cleanliness,
+      @JsonKey(name: "noise_level") final int? noiseLevel,
+      final int? sociability,
+      @JsonKey(name: "guests_allowed") final bool? guestsAllowed,
+      @JsonKey(name: "smoking_preference") final String? smokingPreference,
+      @JsonKey(name: "alcohol_preference") final String? alcoholPreference,
+      @JsonKey(name: "cooking_habits") final bool? cookingHabits,
+      @JsonKey(name: "pets_preference") final bool? petsPreference,
+      @JsonKey(name: "wakeup_time") final String? wakeupTime,
+      @JsonKey(name: "sleep_time") final String? sleepTime,
+      @JsonKey(name: "preferred_language") final String? preferredLanguage,
+      @JsonKey(name: "created_at") final String? createdAt,
+      @JsonKey(name: "updated_at") final String? updatedAt,
+      final UserProfileRegion? region,
+      final UserProfileUniversity? university}) = _$UserProfileImpl;
 
   factory _UserProfile.fromJson(Map<String, dynamic> json) =
       _$UserProfileImpl.fromJson;
 
   @override
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertToJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertToJson)
   int get id;
   @override
   @JsonKey(name: "user_id")
@@ -923,9 +851,8 @@ UserProfileRegion _$UserProfileRegionFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$UserProfileRegion {
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertToJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertToJson)
   int get id => throw _privateConstructorUsedError;
   @JsonKey(name: "name_uz")
   String? get nameUz => throw _privateConstructorUsedError;
@@ -953,23 +880,20 @@ mixin _$UserProfileRegion {
 /// @nodoc
 abstract class $UserProfileRegionCopyWith<$Res> {
   factory $UserProfileRegionCopyWith(
-    UserProfileRegion value,
-    $Res Function(UserProfileRegion) then,
-  ) = _$UserProfileRegionCopyWithImpl<$Res, UserProfileRegion>;
+          UserProfileRegion value, $Res Function(UserProfileRegion) then) =
+      _$UserProfileRegionCopyWithImpl<$Res, UserProfileRegion>;
   @useResult
-  $Res call({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    int id,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "short_name_uz") String? shortNameUz,
-    @JsonKey(name: "short_name_ru") String? shortNameRu,
-    @JsonKey(name: "short_name_en") String? shortNameEn,
-  });
+  $Res call(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      int id,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "short_name_uz") String? shortNameUz,
+      @JsonKey(name: "short_name_ru") String? shortNameRu,
+      @JsonKey(name: "short_name_en") String? shortNameEn});
 }
 
 /// @nodoc
@@ -995,81 +919,67 @@ class _$UserProfileRegionCopyWithImpl<$Res, $Val extends UserProfileRegion>
     Object? shortNameRu = freezed,
     Object? shortNameEn = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            nameUz:
-                freezed == nameUz
-                    ? _value.nameUz
-                    : nameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameRu:
-                freezed == nameRu
-                    ? _value.nameRu
-                    : nameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameEn:
-                freezed == nameEn
-                    ? _value.nameEn
-                    : nameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameUz:
-                freezed == shortNameUz
-                    ? _value.shortNameUz
-                    : shortNameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameRu:
-                freezed == shortNameRu
-                    ? _value.shortNameRu
-                    : shortNameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameEn:
-                freezed == shortNameEn
-                    ? _value.shortNameEn
-                    : shortNameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameUz: freezed == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameRu: freezed == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameEn: freezed == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$UserProfileRegionImplCopyWith<$Res>
     implements $UserProfileRegionCopyWith<$Res> {
-  factory _$$UserProfileRegionImplCopyWith(
-    _$UserProfileRegionImpl value,
-    $Res Function(_$UserProfileRegionImpl) then,
-  ) = __$$UserProfileRegionImplCopyWithImpl<$Res>;
+  factory _$$UserProfileRegionImplCopyWith(_$UserProfileRegionImpl value,
+          $Res Function(_$UserProfileRegionImpl) then) =
+      __$$UserProfileRegionImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    int id,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "short_name_uz") String? shortNameUz,
-    @JsonKey(name: "short_name_ru") String? shortNameRu,
-    @JsonKey(name: "short_name_en") String? shortNameEn,
-  });
+  $Res call(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      int id,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "short_name_uz") String? shortNameUz,
+      @JsonKey(name: "short_name_ru") String? shortNameRu,
+      @JsonKey(name: "short_name_en") String? shortNameEn});
 }
 
 /// @nodoc
 class __$$UserProfileRegionImplCopyWithImpl<$Res>
     extends _$UserProfileRegionCopyWithImpl<$Res, _$UserProfileRegionImpl>
     implements _$$UserProfileRegionImplCopyWith<$Res> {
-  __$$UserProfileRegionImplCopyWithImpl(
-    _$UserProfileRegionImpl _value,
-    $Res Function(_$UserProfileRegionImpl) _then,
-  ) : super(_value, _then);
+  __$$UserProfileRegionImplCopyWithImpl(_$UserProfileRegionImpl _value,
+      $Res Function(_$UserProfileRegionImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of UserProfileRegion
   /// with the given fields replaced by the non-null parameter values.
@@ -1084,73 +994,61 @@ class __$$UserProfileRegionImplCopyWithImpl<$Res>
     Object? shortNameRu = freezed,
     Object? shortNameEn = freezed,
   }) {
-    return _then(
-      _$UserProfileRegionImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        nameUz:
-            freezed == nameUz
-                ? _value.nameUz
-                : nameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameRu:
-            freezed == nameRu
-                ? _value.nameRu
-                : nameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameEn:
-            freezed == nameEn
-                ? _value.nameEn
-                : nameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameUz:
-            freezed == shortNameUz
-                ? _value.shortNameUz
-                : shortNameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameRu:
-            freezed == shortNameRu
-                ? _value.shortNameRu
-                : shortNameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameEn:
-            freezed == shortNameEn
-                ? _value.shortNameEn
-                : shortNameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-      ),
-    );
+    return _then(_$UserProfileRegionImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameUz: freezed == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameRu: freezed == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameEn: freezed == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$UserProfileRegionImpl implements _UserProfileRegion {
-  const _$UserProfileRegionImpl({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    required this.id,
-    @JsonKey(name: "name_uz") this.nameUz,
-    @JsonKey(name: "name_ru") this.nameRu,
-    @JsonKey(name: "name_en") this.nameEn,
-    @JsonKey(name: "short_name_uz") this.shortNameUz,
-    @JsonKey(name: "short_name_ru") this.shortNameRu,
-    @JsonKey(name: "short_name_en") this.shortNameEn,
-  });
+  const _$UserProfileRegionImpl(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      required this.id,
+      @JsonKey(name: "name_uz") this.nameUz,
+      @JsonKey(name: "name_ru") this.nameRu,
+      @JsonKey(name: "name_en") this.nameEn,
+      @JsonKey(name: "short_name_uz") this.shortNameUz,
+      @JsonKey(name: "short_name_ru") this.shortNameRu,
+      @JsonKey(name: "short_name_en") this.shortNameEn});
 
   factory _$UserProfileRegionImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserProfileRegionImplFromJson(json);
 
   @override
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertToJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertToJson)
   final int id;
   @override
   @JsonKey(name: "name_uz")
@@ -1195,16 +1093,8 @@ class _$UserProfileRegionImpl implements _UserProfileRegion {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    nameUz,
-    nameRu,
-    nameEn,
-    shortNameUz,
-    shortNameRu,
-    shortNameEn,
-  );
+  int get hashCode => Object.hash(runtimeType, id, nameUz, nameRu, nameEn,
+      shortNameUz, shortNameRu, shortNameEn);
 
   /// Create a copy of UserProfileRegion
   /// with the given fields replaced by the non-null parameter values.
@@ -1213,39 +1103,37 @@ class _$UserProfileRegionImpl implements _UserProfileRegion {
   @pragma('vm:prefer-inline')
   _$$UserProfileRegionImplCopyWith<_$UserProfileRegionImpl> get copyWith =>
       __$$UserProfileRegionImplCopyWithImpl<_$UserProfileRegionImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UserProfileRegionImplToJson(this);
+    return _$$UserProfileRegionImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _UserProfileRegion implements UserProfileRegion {
-  const factory _UserProfileRegion({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    required final int id,
-    @JsonKey(name: "name_uz") final String? nameUz,
-    @JsonKey(name: "name_ru") final String? nameRu,
-    @JsonKey(name: "name_en") final String? nameEn,
-    @JsonKey(name: "short_name_uz") final String? shortNameUz,
-    @JsonKey(name: "short_name_ru") final String? shortNameRu,
-    @JsonKey(name: "short_name_en") final String? shortNameEn,
-  }) = _$UserProfileRegionImpl;
+  const factory _UserProfileRegion(
+          {@JsonKey(
+              fromJson: NullableIntConverter.convertFromJson,
+              toJson: NullableIntConverter.convertToJson)
+          required final int id,
+          @JsonKey(name: "name_uz") final String? nameUz,
+          @JsonKey(name: "name_ru") final String? nameRu,
+          @JsonKey(name: "name_en") final String? nameEn,
+          @JsonKey(name: "short_name_uz") final String? shortNameUz,
+          @JsonKey(name: "short_name_ru") final String? shortNameRu,
+          @JsonKey(name: "short_name_en") final String? shortNameEn}) =
+      _$UserProfileRegionImpl;
 
   factory _UserProfileRegion.fromJson(Map<String, dynamic> json) =
       _$UserProfileRegionImpl.fromJson;
 
   @override
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertToJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertToJson)
   int get id;
   @override
   @JsonKey(name: "name_uz")
@@ -1275,17 +1163,15 @@ abstract class _UserProfileRegion implements UserProfileRegion {
 }
 
 UserProfileUniversity _$UserProfileUniversityFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   return _UserProfileUniversity.fromJson(json);
 }
 
 /// @nodoc
 mixin _$UserProfileUniversity {
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertToJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertToJson)
   int get id => throw _privateConstructorUsedError;
   @JsonKey(name: "name_uz")
   String? get nameUz => throw _privateConstructorUsedError;
@@ -1314,33 +1200,28 @@ mixin _$UserProfileUniversity {
 
 /// @nodoc
 abstract class $UserProfileUniversityCopyWith<$Res> {
-  factory $UserProfileUniversityCopyWith(
-    UserProfileUniversity value,
-    $Res Function(UserProfileUniversity) then,
-  ) = _$UserProfileUniversityCopyWithImpl<$Res, UserProfileUniversity>;
+  factory $UserProfileUniversityCopyWith(UserProfileUniversity value,
+          $Res Function(UserProfileUniversity) then) =
+      _$UserProfileUniversityCopyWithImpl<$Res, UserProfileUniversity>;
   @useResult
-  $Res call({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    int id,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "short_name_uz") String? shortNameUz,
-    @JsonKey(name: "short_name_ru") String? shortNameRu,
-    @JsonKey(name: "short_name_en") String? shortNameEn,
-    String? address,
-    String? website,
-  });
+  $Res call(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      int id,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "short_name_uz") String? shortNameUz,
+      @JsonKey(name: "short_name_ru") String? shortNameRu,
+      @JsonKey(name: "short_name_en") String? shortNameEn,
+      String? address,
+      String? website});
 }
 
 /// @nodoc
-class _$UserProfileUniversityCopyWithImpl<
-  $Res,
-  $Val extends UserProfileUniversity
->
+class _$UserProfileUniversityCopyWithImpl<$Res,
+        $Val extends UserProfileUniversity>
     implements $UserProfileUniversityCopyWith<$Res> {
   _$UserProfileUniversityCopyWithImpl(this._value, this._then);
 
@@ -1364,56 +1245,44 @@ class _$UserProfileUniversityCopyWithImpl<
     Object? address = freezed,
     Object? website = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            nameUz:
-                freezed == nameUz
-                    ? _value.nameUz
-                    : nameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameRu:
-                freezed == nameRu
-                    ? _value.nameRu
-                    : nameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameEn:
-                freezed == nameEn
-                    ? _value.nameEn
-                    : nameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameUz:
-                freezed == shortNameUz
-                    ? _value.shortNameUz
-                    : shortNameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameRu:
-                freezed == shortNameRu
-                    ? _value.shortNameRu
-                    : shortNameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameEn:
-                freezed == shortNameEn
-                    ? _value.shortNameEn
-                    : shortNameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            address:
-                freezed == address
-                    ? _value.address
-                    : address // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            website:
-                freezed == website
-                    ? _value.website
-                    : website // ignore: cast_nullable_to_non_nullable
-                        as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameUz: freezed == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameRu: freezed == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameEn: freezed == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      address: freezed == address
+          ? _value.address
+          : address // ignore: cast_nullable_to_non_nullable
+              as String?,
+      website: freezed == website
+          ? _value.website
+          : website // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 }
 
@@ -1421,37 +1290,34 @@ class _$UserProfileUniversityCopyWithImpl<
 abstract class _$$UserProfileUniversityImplCopyWith<$Res>
     implements $UserProfileUniversityCopyWith<$Res> {
   factory _$$UserProfileUniversityImplCopyWith(
-    _$UserProfileUniversityImpl value,
-    $Res Function(_$UserProfileUniversityImpl) then,
-  ) = __$$UserProfileUniversityImplCopyWithImpl<$Res>;
+          _$UserProfileUniversityImpl value,
+          $Res Function(_$UserProfileUniversityImpl) then) =
+      __$$UserProfileUniversityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    int id,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "short_name_uz") String? shortNameUz,
-    @JsonKey(name: "short_name_ru") String? shortNameRu,
-    @JsonKey(name: "short_name_en") String? shortNameEn,
-    String? address,
-    String? website,
-  });
+  $Res call(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      int id,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "short_name_uz") String? shortNameUz,
+      @JsonKey(name: "short_name_ru") String? shortNameRu,
+      @JsonKey(name: "short_name_en") String? shortNameEn,
+      String? address,
+      String? website});
 }
 
 /// @nodoc
 class __$$UserProfileUniversityImplCopyWithImpl<$Res>
-    extends
-        _$UserProfileUniversityCopyWithImpl<$Res, _$UserProfileUniversityImpl>
+    extends _$UserProfileUniversityCopyWithImpl<$Res,
+        _$UserProfileUniversityImpl>
     implements _$$UserProfileUniversityImplCopyWith<$Res> {
-  __$$UserProfileUniversityImplCopyWithImpl(
-    _$UserProfileUniversityImpl _value,
-    $Res Function(_$UserProfileUniversityImpl) _then,
-  ) : super(_value, _then);
+  __$$UserProfileUniversityImplCopyWithImpl(_$UserProfileUniversityImpl _value,
+      $Res Function(_$UserProfileUniversityImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of UserProfileUniversity
   /// with the given fields replaced by the non-null parameter values.
@@ -1468,85 +1334,71 @@ class __$$UserProfileUniversityImplCopyWithImpl<$Res>
     Object? address = freezed,
     Object? website = freezed,
   }) {
-    return _then(
-      _$UserProfileUniversityImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        nameUz:
-            freezed == nameUz
-                ? _value.nameUz
-                : nameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameRu:
-            freezed == nameRu
-                ? _value.nameRu
-                : nameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameEn:
-            freezed == nameEn
-                ? _value.nameEn
-                : nameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameUz:
-            freezed == shortNameUz
-                ? _value.shortNameUz
-                : shortNameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameRu:
-            freezed == shortNameRu
-                ? _value.shortNameRu
-                : shortNameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameEn:
-            freezed == shortNameEn
-                ? _value.shortNameEn
-                : shortNameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        address:
-            freezed == address
-                ? _value.address
-                : address // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        website:
-            freezed == website
-                ? _value.website
-                : website // ignore: cast_nullable_to_non_nullable
-                    as String?,
-      ),
-    );
+    return _then(_$UserProfileUniversityImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameUz: freezed == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameRu: freezed == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameEn: freezed == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      address: freezed == address
+          ? _value.address
+          : address // ignore: cast_nullable_to_non_nullable
+              as String?,
+      website: freezed == website
+          ? _value.website
+          : website // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$UserProfileUniversityImpl implements _UserProfileUniversity {
-  const _$UserProfileUniversityImpl({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    required this.id,
-    @JsonKey(name: "name_uz") this.nameUz,
-    @JsonKey(name: "name_ru") this.nameRu,
-    @JsonKey(name: "name_en") this.nameEn,
-    @JsonKey(name: "short_name_uz") this.shortNameUz,
-    @JsonKey(name: "short_name_ru") this.shortNameRu,
-    @JsonKey(name: "short_name_en") this.shortNameEn,
-    this.address,
-    this.website,
-  });
+  const _$UserProfileUniversityImpl(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      required this.id,
+      @JsonKey(name: "name_uz") this.nameUz,
+      @JsonKey(name: "name_ru") this.nameRu,
+      @JsonKey(name: "name_en") this.nameEn,
+      @JsonKey(name: "short_name_uz") this.shortNameUz,
+      @JsonKey(name: "short_name_ru") this.shortNameRu,
+      @JsonKey(name: "short_name_en") this.shortNameEn,
+      this.address,
+      this.website});
 
   factory _$UserProfileUniversityImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserProfileUniversityImplFromJson(json);
 
   @override
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertToJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertToJson)
   final int id;
   @override
   @JsonKey(name: "name_uz")
@@ -1597,18 +1449,8 @@ class _$UserProfileUniversityImpl implements _UserProfileUniversity {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    nameUz,
-    nameRu,
-    nameEn,
-    shortNameUz,
-    shortNameRu,
-    shortNameEn,
-    address,
-    website,
-  );
+  int get hashCode => Object.hash(runtimeType, id, nameUz, nameRu, nameEn,
+      shortNameUz, shortNameRu, shortNameEn, address, website);
 
   /// Create a copy of UserProfileUniversity
   /// with the given fields replaced by the non-null parameter values.
@@ -1616,43 +1458,39 @@ class _$UserProfileUniversityImpl implements _UserProfileUniversity {
   @override
   @pragma('vm:prefer-inline')
   _$$UserProfileUniversityImplCopyWith<_$UserProfileUniversityImpl>
-  get copyWith =>
-      __$$UserProfileUniversityImplCopyWithImpl<_$UserProfileUniversityImpl>(
-        this,
-        _$identity,
-      );
+      get copyWith => __$$UserProfileUniversityImplCopyWithImpl<
+          _$UserProfileUniversityImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UserProfileUniversityImplToJson(this);
+    return _$$UserProfileUniversityImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _UserProfileUniversity implements UserProfileUniversity {
-  const factory _UserProfileUniversity({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertToJson,
-    )
-    required final int id,
-    @JsonKey(name: "name_uz") final String? nameUz,
-    @JsonKey(name: "name_ru") final String? nameRu,
-    @JsonKey(name: "name_en") final String? nameEn,
-    @JsonKey(name: "short_name_uz") final String? shortNameUz,
-    @JsonKey(name: "short_name_ru") final String? shortNameRu,
-    @JsonKey(name: "short_name_en") final String? shortNameEn,
-    final String? address,
-    final String? website,
-  }) = _$UserProfileUniversityImpl;
+  const factory _UserProfileUniversity(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertToJson)
+      required final int id,
+      @JsonKey(name: "name_uz") final String? nameUz,
+      @JsonKey(name: "name_ru") final String? nameRu,
+      @JsonKey(name: "name_en") final String? nameEn,
+      @JsonKey(name: "short_name_uz") final String? shortNameUz,
+      @JsonKey(name: "short_name_ru") final String? shortNameRu,
+      @JsonKey(name: "short_name_en") final String? shortNameEn,
+      final String? address,
+      final String? website}) = _$UserProfileUniversityImpl;
 
   factory _UserProfileUniversity.fromJson(Map<String, dynamic> json) =
       _$UserProfileUniversityImpl.fromJson;
 
   @override
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertToJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertToJson)
   int get id;
   @override
   @JsonKey(name: "name_uz")
@@ -1682,5 +1520,5 @@ abstract class _UserProfileUniversity implements UserProfileUniversity {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UserProfileUniversityImplCopyWith<_$UserProfileUniversityImpl>
-  get copyWith => throw _privateConstructorUsedError;
+      get copyWith => throw _privateConstructorUsedError;
 }

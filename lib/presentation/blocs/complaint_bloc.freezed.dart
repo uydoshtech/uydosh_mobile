@@ -12,8 +12,7 @@ part of 'complaint_bloc.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$ComplaintEvent {
@@ -25,7 +24,8 @@ mixin _$ComplaintEvent {
     required TResult Function(int listingId) fetchListingComplaints,
     required TResult Function(int id, String status) updateComplaintStatus,
     required TResult Function(int id) deleteComplaint,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? fetchComplaintCategories,
@@ -34,7 +34,8 @@ mixin _$ComplaintEvent {
     TResult? Function(int listingId)? fetchListingComplaints,
     TResult? Function(int id, String status)? updateComplaintStatus,
     TResult? Function(int id)? deleteComplaint,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? fetchComplaintCategories,
@@ -44,29 +45,32 @@ mixin _$ComplaintEvent {
     TResult Function(int id, String status)? updateComplaintStatus,
     TResult Function(int id)? deleteComplaint,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchComplaintCategories value)
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     required TResult Function(_CreateComplaint value) createComplaint,
     required TResult Function(_FetchUserComplaints value) fetchUserComplaints,
     required TResult Function(_FetchListingComplaints value)
-    fetchListingComplaints,
+        fetchListingComplaints,
     required TResult Function(_UpdateComplaintStatus value)
-    updateComplaintStatus,
+        updateComplaintStatus,
     required TResult Function(_DeleteComplaint value) deleteComplaint,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchComplaintCategories value)?
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     TResult? Function(_CreateComplaint value)? createComplaint,
     TResult? Function(_FetchUserComplaints value)? fetchUserComplaints,
     TResult? Function(_FetchListingComplaints value)? fetchListingComplaints,
     TResult? Function(_UpdateComplaintStatus value)? updateComplaintStatus,
     TResult? Function(_DeleteComplaint value)? deleteComplaint,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_FetchComplaintCategories value)? fetchComplaintCategories,
@@ -76,15 +80,15 @@ mixin _$ComplaintEvent {
     TResult Function(_UpdateComplaintStatus value)? updateComplaintStatus,
     TResult Function(_DeleteComplaint value)? deleteComplaint,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $ComplaintEventCopyWith<$Res> {
   factory $ComplaintEventCopyWith(
-    ComplaintEvent value,
-    $Res Function(ComplaintEvent) then,
-  ) = _$ComplaintEventCopyWithImpl<$Res, ComplaintEvent>;
+          ComplaintEvent value, $Res Function(ComplaintEvent) then) =
+      _$ComplaintEventCopyWithImpl<$Res, ComplaintEvent>;
 }
 
 /// @nodoc
@@ -104,9 +108,9 @@ class _$ComplaintEventCopyWithImpl<$Res, $Val extends ComplaintEvent>
 /// @nodoc
 abstract class _$$FetchComplaintCategoriesImplCopyWith<$Res> {
   factory _$$FetchComplaintCategoriesImplCopyWith(
-    _$FetchComplaintCategoriesImpl value,
-    $Res Function(_$FetchComplaintCategoriesImpl) then,
-  ) = __$$FetchComplaintCategoriesImplCopyWithImpl<$Res>;
+          _$FetchComplaintCategoriesImpl value,
+          $Res Function(_$FetchComplaintCategoriesImpl) then) =
+      __$$FetchComplaintCategoriesImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -114,9 +118,9 @@ class __$$FetchComplaintCategoriesImplCopyWithImpl<$Res>
     extends _$ComplaintEventCopyWithImpl<$Res, _$FetchComplaintCategoriesImpl>
     implements _$$FetchComplaintCategoriesImplCopyWith<$Res> {
   __$$FetchComplaintCategoriesImplCopyWithImpl(
-    _$FetchComplaintCategoriesImpl _value,
-    $Res Function(_$FetchComplaintCategoriesImpl) _then,
-  ) : super(_value, _then);
+      _$FetchComplaintCategoriesImpl _value,
+      $Res Function(_$FetchComplaintCategoriesImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -189,13 +193,13 @@ class _$FetchComplaintCategoriesImpl implements _FetchComplaintCategories {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchComplaintCategories value)
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     required TResult Function(_CreateComplaint value) createComplaint,
     required TResult Function(_FetchUserComplaints value) fetchUserComplaints,
     required TResult Function(_FetchListingComplaints value)
-    fetchListingComplaints,
+        fetchListingComplaints,
     required TResult Function(_UpdateComplaintStatus value)
-    updateComplaintStatus,
+        updateComplaintStatus,
     required TResult Function(_DeleteComplaint value) deleteComplaint,
   }) {
     return fetchComplaintCategories(this);
@@ -205,7 +209,7 @@ class _$FetchComplaintCategoriesImpl implements _FetchComplaintCategories {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchComplaintCategories value)?
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     TResult? Function(_CreateComplaint value)? createComplaint,
     TResult? Function(_FetchUserComplaints value)? fetchUserComplaints,
     TResult? Function(_FetchListingComplaints value)? fetchListingComplaints,
@@ -239,10 +243,9 @@ abstract class _FetchComplaintCategories implements ComplaintEvent {
 
 /// @nodoc
 abstract class _$$CreateComplaintImplCopyWith<$Res> {
-  factory _$$CreateComplaintImplCopyWith(
-    _$CreateComplaintImpl value,
-    $Res Function(_$CreateComplaintImpl) then,
-  ) = __$$CreateComplaintImplCopyWithImpl<$Res>;
+  factory _$$CreateComplaintImplCopyWith(_$CreateComplaintImpl value,
+          $Res Function(_$CreateComplaintImpl) then) =
+      __$$CreateComplaintImplCopyWithImpl<$Res>;
   @useResult
   $Res call({CreateComplaintRequest request});
 
@@ -254,23 +257,22 @@ class __$$CreateComplaintImplCopyWithImpl<$Res>
     extends _$ComplaintEventCopyWithImpl<$Res, _$CreateComplaintImpl>
     implements _$$CreateComplaintImplCopyWith<$Res> {
   __$$CreateComplaintImplCopyWithImpl(
-    _$CreateComplaintImpl _value,
-    $Res Function(_$CreateComplaintImpl) _then,
-  ) : super(_value, _then);
+      _$CreateComplaintImpl _value, $Res Function(_$CreateComplaintImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintEvent
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? request = null}) {
-    return _then(
-      _$CreateComplaintImpl(
-        null == request
-            ? _value.request
-            : request // ignore: cast_nullable_to_non_nullable
-                as CreateComplaintRequest,
-      ),
-    );
+  $Res call({
+    Object? request = null,
+  }) {
+    return _then(_$CreateComplaintImpl(
+      null == request
+          ? _value.request
+          : request // ignore: cast_nullable_to_non_nullable
+              as CreateComplaintRequest,
+    ));
   }
 
   /// Create a copy of ComplaintEvent
@@ -315,9 +317,7 @@ class _$CreateComplaintImpl implements _CreateComplaint {
   @pragma('vm:prefer-inline')
   _$$CreateComplaintImplCopyWith<_$CreateComplaintImpl> get copyWith =>
       __$$CreateComplaintImplCopyWithImpl<_$CreateComplaintImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -366,13 +366,13 @@ class _$CreateComplaintImpl implements _CreateComplaint {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchComplaintCategories value)
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     required TResult Function(_CreateComplaint value) createComplaint,
     required TResult Function(_FetchUserComplaints value) fetchUserComplaints,
     required TResult Function(_FetchListingComplaints value)
-    fetchListingComplaints,
+        fetchListingComplaints,
     required TResult Function(_UpdateComplaintStatus value)
-    updateComplaintStatus,
+        updateComplaintStatus,
     required TResult Function(_DeleteComplaint value) deleteComplaint,
   }) {
     return createComplaint(this);
@@ -382,7 +382,7 @@ class _$CreateComplaintImpl implements _CreateComplaint {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchComplaintCategories value)?
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     TResult? Function(_CreateComplaint value)? createComplaint,
     TResult? Function(_FetchUserComplaints value)? fetchUserComplaints,
     TResult? Function(_FetchListingComplaints value)? fetchListingComplaints,
@@ -425,10 +425,9 @@ abstract class _CreateComplaint implements ComplaintEvent {
 
 /// @nodoc
 abstract class _$$FetchUserComplaintsImplCopyWith<$Res> {
-  factory _$$FetchUserComplaintsImplCopyWith(
-    _$FetchUserComplaintsImpl value,
-    $Res Function(_$FetchUserComplaintsImpl) then,
-  ) = __$$FetchUserComplaintsImplCopyWithImpl<$Res>;
+  factory _$$FetchUserComplaintsImplCopyWith(_$FetchUserComplaintsImpl value,
+          $Res Function(_$FetchUserComplaintsImpl) then) =
+      __$$FetchUserComplaintsImplCopyWithImpl<$Res>;
   @useResult
   $Res call({int userId});
 }
@@ -437,24 +436,23 @@ abstract class _$$FetchUserComplaintsImplCopyWith<$Res> {
 class __$$FetchUserComplaintsImplCopyWithImpl<$Res>
     extends _$ComplaintEventCopyWithImpl<$Res, _$FetchUserComplaintsImpl>
     implements _$$FetchUserComplaintsImplCopyWith<$Res> {
-  __$$FetchUserComplaintsImplCopyWithImpl(
-    _$FetchUserComplaintsImpl _value,
-    $Res Function(_$FetchUserComplaintsImpl) _then,
-  ) : super(_value, _then);
+  __$$FetchUserComplaintsImplCopyWithImpl(_$FetchUserComplaintsImpl _value,
+      $Res Function(_$FetchUserComplaintsImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintEvent
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? userId = null}) {
-    return _then(
-      _$FetchUserComplaintsImpl(
-        null == userId
-            ? _value.userId
-            : userId // ignore: cast_nullable_to_non_nullable
-                as int,
-      ),
-    );
+  $Res call({
+    Object? userId = null,
+  }) {
+    return _then(_$FetchUserComplaintsImpl(
+      null == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
@@ -489,9 +487,7 @@ class _$FetchUserComplaintsImpl implements _FetchUserComplaints {
   @pragma('vm:prefer-inline')
   _$$FetchUserComplaintsImplCopyWith<_$FetchUserComplaintsImpl> get copyWith =>
       __$$FetchUserComplaintsImplCopyWithImpl<_$FetchUserComplaintsImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -540,13 +536,13 @@ class _$FetchUserComplaintsImpl implements _FetchUserComplaints {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchComplaintCategories value)
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     required TResult Function(_CreateComplaint value) createComplaint,
     required TResult Function(_FetchUserComplaints value) fetchUserComplaints,
     required TResult Function(_FetchListingComplaints value)
-    fetchListingComplaints,
+        fetchListingComplaints,
     required TResult Function(_UpdateComplaintStatus value)
-    updateComplaintStatus,
+        updateComplaintStatus,
     required TResult Function(_DeleteComplaint value) deleteComplaint,
   }) {
     return fetchUserComplaints(this);
@@ -556,7 +552,7 @@ class _$FetchUserComplaintsImpl implements _FetchUserComplaints {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchComplaintCategories value)?
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     TResult? Function(_CreateComplaint value)? createComplaint,
     TResult? Function(_FetchUserComplaints value)? fetchUserComplaints,
     TResult? Function(_FetchListingComplaints value)? fetchListingComplaints,
@@ -600,9 +596,9 @@ abstract class _FetchUserComplaints implements ComplaintEvent {
 /// @nodoc
 abstract class _$$FetchListingComplaintsImplCopyWith<$Res> {
   factory _$$FetchListingComplaintsImplCopyWith(
-    _$FetchListingComplaintsImpl value,
-    $Res Function(_$FetchListingComplaintsImpl) then,
-  ) = __$$FetchListingComplaintsImplCopyWithImpl<$Res>;
+          _$FetchListingComplaintsImpl value,
+          $Res Function(_$FetchListingComplaintsImpl) then) =
+      __$$FetchListingComplaintsImplCopyWithImpl<$Res>;
   @useResult
   $Res call({int listingId});
 }
@@ -612,23 +608,23 @@ class __$$FetchListingComplaintsImplCopyWithImpl<$Res>
     extends _$ComplaintEventCopyWithImpl<$Res, _$FetchListingComplaintsImpl>
     implements _$$FetchListingComplaintsImplCopyWith<$Res> {
   __$$FetchListingComplaintsImplCopyWithImpl(
-    _$FetchListingComplaintsImpl _value,
-    $Res Function(_$FetchListingComplaintsImpl) _then,
-  ) : super(_value, _then);
+      _$FetchListingComplaintsImpl _value,
+      $Res Function(_$FetchListingComplaintsImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintEvent
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? listingId = null}) {
-    return _then(
-      _$FetchListingComplaintsImpl(
-        null == listingId
-            ? _value.listingId
-            : listingId // ignore: cast_nullable_to_non_nullable
-                as int,
-      ),
-    );
+  $Res call({
+    Object? listingId = null,
+  }) {
+    return _then(_$FetchListingComplaintsImpl(
+      null == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
@@ -663,11 +659,8 @@ class _$FetchListingComplaintsImpl implements _FetchListingComplaints {
   @override
   @pragma('vm:prefer-inline')
   _$$FetchListingComplaintsImplCopyWith<_$FetchListingComplaintsImpl>
-  get copyWith =>
-      __$$FetchListingComplaintsImplCopyWithImpl<_$FetchListingComplaintsImpl>(
-        this,
-        _$identity,
-      );
+      get copyWith => __$$FetchListingComplaintsImplCopyWithImpl<
+          _$FetchListingComplaintsImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -716,13 +709,13 @@ class _$FetchListingComplaintsImpl implements _FetchListingComplaints {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchComplaintCategories value)
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     required TResult Function(_CreateComplaint value) createComplaint,
     required TResult Function(_FetchUserComplaints value) fetchUserComplaints,
     required TResult Function(_FetchListingComplaints value)
-    fetchListingComplaints,
+        fetchListingComplaints,
     required TResult Function(_UpdateComplaintStatus value)
-    updateComplaintStatus,
+        updateComplaintStatus,
     required TResult Function(_DeleteComplaint value) deleteComplaint,
   }) {
     return fetchListingComplaints(this);
@@ -732,7 +725,7 @@ class _$FetchListingComplaintsImpl implements _FetchListingComplaints {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchComplaintCategories value)?
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     TResult? Function(_CreateComplaint value)? createComplaint,
     TResult? Function(_FetchUserComplaints value)? fetchUserComplaints,
     TResult? Function(_FetchListingComplaints value)? fetchListingComplaints,
@@ -770,15 +763,15 @@ abstract class _FetchListingComplaints implements ComplaintEvent {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FetchListingComplaintsImplCopyWith<_$FetchListingComplaintsImpl>
-  get copyWith => throw _privateConstructorUsedError;
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$UpdateComplaintStatusImplCopyWith<$Res> {
   factory _$$UpdateComplaintStatusImplCopyWith(
-    _$UpdateComplaintStatusImpl value,
-    $Res Function(_$UpdateComplaintStatusImpl) then,
-  ) = __$$UpdateComplaintStatusImplCopyWithImpl<$Res>;
+          _$UpdateComplaintStatusImpl value,
+          $Res Function(_$UpdateComplaintStatusImpl) then) =
+      __$$UpdateComplaintStatusImplCopyWithImpl<$Res>;
   @useResult
   $Res call({int id, String status});
 }
@@ -787,28 +780,28 @@ abstract class _$$UpdateComplaintStatusImplCopyWith<$Res> {
 class __$$UpdateComplaintStatusImplCopyWithImpl<$Res>
     extends _$ComplaintEventCopyWithImpl<$Res, _$UpdateComplaintStatusImpl>
     implements _$$UpdateComplaintStatusImplCopyWith<$Res> {
-  __$$UpdateComplaintStatusImplCopyWithImpl(
-    _$UpdateComplaintStatusImpl _value,
-    $Res Function(_$UpdateComplaintStatusImpl) _then,
-  ) : super(_value, _then);
+  __$$UpdateComplaintStatusImplCopyWithImpl(_$UpdateComplaintStatusImpl _value,
+      $Res Function(_$UpdateComplaintStatusImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintEvent
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = null, Object? status = null}) {
-    return _then(
-      _$UpdateComplaintStatusImpl(
-        null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                as int,
-        null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
-                as String,
-      ),
-    );
+  $Res call({
+    Object? id = null,
+    Object? status = null,
+  }) {
+    return _then(_$UpdateComplaintStatusImpl(
+      null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
@@ -845,11 +838,8 @@ class _$UpdateComplaintStatusImpl implements _UpdateComplaintStatus {
   @override
   @pragma('vm:prefer-inline')
   _$$UpdateComplaintStatusImplCopyWith<_$UpdateComplaintStatusImpl>
-  get copyWith =>
-      __$$UpdateComplaintStatusImplCopyWithImpl<_$UpdateComplaintStatusImpl>(
-        this,
-        _$identity,
-      );
+      get copyWith => __$$UpdateComplaintStatusImplCopyWithImpl<
+          _$UpdateComplaintStatusImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -898,13 +888,13 @@ class _$UpdateComplaintStatusImpl implements _UpdateComplaintStatus {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchComplaintCategories value)
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     required TResult Function(_CreateComplaint value) createComplaint,
     required TResult Function(_FetchUserComplaints value) fetchUserComplaints,
     required TResult Function(_FetchListingComplaints value)
-    fetchListingComplaints,
+        fetchListingComplaints,
     required TResult Function(_UpdateComplaintStatus value)
-    updateComplaintStatus,
+        updateComplaintStatus,
     required TResult Function(_DeleteComplaint value) deleteComplaint,
   }) {
     return updateComplaintStatus(this);
@@ -914,7 +904,7 @@ class _$UpdateComplaintStatusImpl implements _UpdateComplaintStatus {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchComplaintCategories value)?
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     TResult? Function(_CreateComplaint value)? createComplaint,
     TResult? Function(_FetchUserComplaints value)? fetchUserComplaints,
     TResult? Function(_FetchListingComplaints value)? fetchListingComplaints,
@@ -953,15 +943,14 @@ abstract class _UpdateComplaintStatus implements ComplaintEvent {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UpdateComplaintStatusImplCopyWith<_$UpdateComplaintStatusImpl>
-  get copyWith => throw _privateConstructorUsedError;
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$DeleteComplaintImplCopyWith<$Res> {
-  factory _$$DeleteComplaintImplCopyWith(
-    _$DeleteComplaintImpl value,
-    $Res Function(_$DeleteComplaintImpl) then,
-  ) = __$$DeleteComplaintImplCopyWithImpl<$Res>;
+  factory _$$DeleteComplaintImplCopyWith(_$DeleteComplaintImpl value,
+          $Res Function(_$DeleteComplaintImpl) then) =
+      __$$DeleteComplaintImplCopyWithImpl<$Res>;
   @useResult
   $Res call({int id});
 }
@@ -971,23 +960,22 @@ class __$$DeleteComplaintImplCopyWithImpl<$Res>
     extends _$ComplaintEventCopyWithImpl<$Res, _$DeleteComplaintImpl>
     implements _$$DeleteComplaintImplCopyWith<$Res> {
   __$$DeleteComplaintImplCopyWithImpl(
-    _$DeleteComplaintImpl _value,
-    $Res Function(_$DeleteComplaintImpl) _then,
-  ) : super(_value, _then);
+      _$DeleteComplaintImpl _value, $Res Function(_$DeleteComplaintImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintEvent
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = null}) {
-    return _then(
-      _$DeleteComplaintImpl(
-        null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                as int,
-      ),
-    );
+  $Res call({
+    Object? id = null,
+  }) {
+    return _then(_$DeleteComplaintImpl(
+      null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
@@ -1022,9 +1010,7 @@ class _$DeleteComplaintImpl implements _DeleteComplaint {
   @pragma('vm:prefer-inline')
   _$$DeleteComplaintImplCopyWith<_$DeleteComplaintImpl> get copyWith =>
       __$$DeleteComplaintImplCopyWithImpl<_$DeleteComplaintImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1073,13 +1059,13 @@ class _$DeleteComplaintImpl implements _DeleteComplaint {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchComplaintCategories value)
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     required TResult Function(_CreateComplaint value) createComplaint,
     required TResult Function(_FetchUserComplaints value) fetchUserComplaints,
     required TResult Function(_FetchListingComplaints value)
-    fetchListingComplaints,
+        fetchListingComplaints,
     required TResult Function(_UpdateComplaintStatus value)
-    updateComplaintStatus,
+        updateComplaintStatus,
     required TResult Function(_DeleteComplaint value) deleteComplaint,
   }) {
     return deleteComplaint(this);
@@ -1089,7 +1075,7 @@ class _$DeleteComplaintImpl implements _DeleteComplaint {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchComplaintCategories value)?
-    fetchComplaintCategories,
+        fetchComplaintCategories,
     TResult? Function(_CreateComplaint value)? createComplaint,
     TResult? Function(_FetchUserComplaints value)? fetchUserComplaints,
     TResult? Function(_FetchListingComplaints value)? fetchListingComplaints,
@@ -1136,13 +1122,14 @@ mixin _$ComplaintState {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<ComplaintCategory> categories)
-    categoriesLoaded,
+        categoriesLoaded,
     required TResult Function(Complaint complaint) complaintCreated,
     required TResult Function(List<Complaint> complaints) complaintsLoaded,
     required TResult Function(Complaint complaint) complaintUpdated,
     required TResult Function(int id) complaintDeleted,
     required TResult Function(String message) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
@@ -1153,7 +1140,8 @@ mixin _$ComplaintState {
     TResult? Function(Complaint complaint)? complaintUpdated,
     TResult? Function(int id)? complaintDeleted,
     TResult? Function(String message)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
@@ -1165,7 +1153,8 @@ mixin _$ComplaintState {
     TResult Function(int id)? complaintDeleted,
     TResult Function(String message)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_Initial value) initial,
@@ -1176,7 +1165,8 @@ mixin _$ComplaintState {
     required TResult Function(_ComplaintUpdated value) complaintUpdated,
     required TResult Function(_ComplaintDeleted value) complaintDeleted,
     required TResult Function(_Error value) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Initial value)? initial,
@@ -1187,7 +1177,8 @@ mixin _$ComplaintState {
     TResult? Function(_ComplaintUpdated value)? complaintUpdated,
     TResult? Function(_ComplaintDeleted value)? complaintDeleted,
     TResult? Function(_Error value)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Initial value)? initial,
@@ -1199,15 +1190,15 @@ mixin _$ComplaintState {
     TResult Function(_ComplaintDeleted value)? complaintDeleted,
     TResult Function(_Error value)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $ComplaintStateCopyWith<$Res> {
   factory $ComplaintStateCopyWith(
-    ComplaintState value,
-    $Res Function(ComplaintState) then,
-  ) = _$ComplaintStateCopyWithImpl<$Res, ComplaintState>;
+          ComplaintState value, $Res Function(ComplaintState) then) =
+      _$ComplaintStateCopyWithImpl<$Res, ComplaintState>;
 }
 
 /// @nodoc
@@ -1227,9 +1218,8 @@ class _$ComplaintStateCopyWithImpl<$Res, $Val extends ComplaintState>
 /// @nodoc
 abstract class _$$InitialImplCopyWith<$Res> {
   factory _$$InitialImplCopyWith(
-    _$InitialImpl value,
-    $Res Function(_$InitialImpl) then,
-  ) = __$$InitialImplCopyWithImpl<$Res>;
+          _$InitialImpl value, $Res Function(_$InitialImpl) then) =
+      __$$InitialImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -1237,9 +1227,8 @@ class __$$InitialImplCopyWithImpl<$Res>
     extends _$ComplaintStateCopyWithImpl<$Res, _$InitialImpl>
     implements _$$InitialImplCopyWith<$Res> {
   __$$InitialImplCopyWithImpl(
-    _$InitialImpl _value,
-    $Res Function(_$InitialImpl) _then,
-  ) : super(_value, _then);
+      _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
@@ -1270,7 +1259,7 @@ class _$InitialImpl implements _Initial {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<ComplaintCategory> categories)
-    categoriesLoaded,
+        categoriesLoaded,
     required TResult Function(Complaint complaint) complaintCreated,
     required TResult Function(List<Complaint> complaints) complaintsLoaded,
     required TResult Function(Complaint complaint) complaintUpdated,
@@ -1371,9 +1360,8 @@ abstract class _Initial implements ComplaintState {
 /// @nodoc
 abstract class _$$LoadingImplCopyWith<$Res> {
   factory _$$LoadingImplCopyWith(
-    _$LoadingImpl value,
-    $Res Function(_$LoadingImpl) then,
-  ) = __$$LoadingImplCopyWithImpl<$Res>;
+          _$LoadingImpl value, $Res Function(_$LoadingImpl) then) =
+      __$$LoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -1381,9 +1369,8 @@ class __$$LoadingImplCopyWithImpl<$Res>
     extends _$ComplaintStateCopyWithImpl<$Res, _$LoadingImpl>
     implements _$$LoadingImplCopyWith<$Res> {
   __$$LoadingImplCopyWithImpl(
-    _$LoadingImpl _value,
-    $Res Function(_$LoadingImpl) _then,
-  ) : super(_value, _then);
+      _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
@@ -1414,7 +1401,7 @@ class _$LoadingImpl implements _Loading {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<ComplaintCategory> categories)
-    categoriesLoaded,
+        categoriesLoaded,
     required TResult Function(Complaint complaint) complaintCreated,
     required TResult Function(List<Complaint> complaints) complaintsLoaded,
     required TResult Function(Complaint complaint) complaintUpdated,
@@ -1514,10 +1501,9 @@ abstract class _Loading implements ComplaintState {
 
 /// @nodoc
 abstract class _$$CategoriesLoadedImplCopyWith<$Res> {
-  factory _$$CategoriesLoadedImplCopyWith(
-    _$CategoriesLoadedImpl value,
-    $Res Function(_$CategoriesLoadedImpl) then,
-  ) = __$$CategoriesLoadedImplCopyWithImpl<$Res>;
+  factory _$$CategoriesLoadedImplCopyWith(_$CategoriesLoadedImpl value,
+          $Res Function(_$CategoriesLoadedImpl) then) =
+      __$$CategoriesLoadedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({List<ComplaintCategory> categories});
 }
@@ -1526,34 +1512,32 @@ abstract class _$$CategoriesLoadedImplCopyWith<$Res> {
 class __$$CategoriesLoadedImplCopyWithImpl<$Res>
     extends _$ComplaintStateCopyWithImpl<$Res, _$CategoriesLoadedImpl>
     implements _$$CategoriesLoadedImplCopyWith<$Res> {
-  __$$CategoriesLoadedImplCopyWithImpl(
-    _$CategoriesLoadedImpl _value,
-    $Res Function(_$CategoriesLoadedImpl) _then,
-  ) : super(_value, _then);
+  __$$CategoriesLoadedImplCopyWithImpl(_$CategoriesLoadedImpl _value,
+      $Res Function(_$CategoriesLoadedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? categories = null}) {
-    return _then(
-      _$CategoriesLoadedImpl(
-        categories:
-            null == categories
-                ? _value._categories
-                : categories // ignore: cast_nullable_to_non_nullable
-                    as List<ComplaintCategory>,
-      ),
-    );
+  $Res call({
+    Object? categories = null,
+  }) {
+    return _then(_$CategoriesLoadedImpl(
+      categories: null == categories
+          ? _value._categories
+          : categories // ignore: cast_nullable_to_non_nullable
+              as List<ComplaintCategory>,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$CategoriesLoadedImpl implements _CategoriesLoaded {
-  const _$CategoriesLoadedImpl({
-    required final List<ComplaintCategory> categories,
-  }) : _categories = categories;
+  const _$CategoriesLoadedImpl(
+      {required final List<ComplaintCategory> categories})
+      : _categories = categories;
 
   final List<ComplaintCategory> _categories;
   @override
@@ -1573,17 +1557,13 @@ class _$CategoriesLoadedImpl implements _CategoriesLoaded {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$CategoriesLoadedImpl &&
-            const DeepCollectionEquality().equals(
-              other._categories,
-              _categories,
-            ));
+            const DeepCollectionEquality()
+                .equals(other._categories, _categories));
   }
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    const DeepCollectionEquality().hash(_categories),
-  );
+      runtimeType, const DeepCollectionEquality().hash(_categories));
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
@@ -1592,9 +1572,7 @@ class _$CategoriesLoadedImpl implements _CategoriesLoaded {
   @pragma('vm:prefer-inline')
   _$$CategoriesLoadedImplCopyWith<_$CategoriesLoadedImpl> get copyWith =>
       __$$CategoriesLoadedImplCopyWithImpl<_$CategoriesLoadedImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1602,7 +1580,7 @@ class _$CategoriesLoadedImpl implements _CategoriesLoaded {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<ComplaintCategory> categories)
-    categoriesLoaded,
+        categoriesLoaded,
     required TResult Function(Complaint complaint) complaintCreated,
     required TResult Function(List<Complaint> complaints) complaintsLoaded,
     required TResult Function(Complaint complaint) complaintUpdated,
@@ -1697,9 +1675,9 @@ class _$CategoriesLoadedImpl implements _CategoriesLoaded {
 }
 
 abstract class _CategoriesLoaded implements ComplaintState {
-  const factory _CategoriesLoaded({
-    required final List<ComplaintCategory> categories,
-  }) = _$CategoriesLoadedImpl;
+  const factory _CategoriesLoaded(
+          {required final List<ComplaintCategory> categories}) =
+      _$CategoriesLoadedImpl;
 
   List<ComplaintCategory> get categories;
 
@@ -1712,10 +1690,9 @@ abstract class _CategoriesLoaded implements ComplaintState {
 
 /// @nodoc
 abstract class _$$ComplaintCreatedImplCopyWith<$Res> {
-  factory _$$ComplaintCreatedImplCopyWith(
-    _$ComplaintCreatedImpl value,
-    $Res Function(_$ComplaintCreatedImpl) then,
-  ) = __$$ComplaintCreatedImplCopyWithImpl<$Res>;
+  factory _$$ComplaintCreatedImplCopyWith(_$ComplaintCreatedImpl value,
+          $Res Function(_$ComplaintCreatedImpl) then) =
+      __$$ComplaintCreatedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({Complaint complaint});
 
@@ -1726,25 +1703,23 @@ abstract class _$$ComplaintCreatedImplCopyWith<$Res> {
 class __$$ComplaintCreatedImplCopyWithImpl<$Res>
     extends _$ComplaintStateCopyWithImpl<$Res, _$ComplaintCreatedImpl>
     implements _$$ComplaintCreatedImplCopyWith<$Res> {
-  __$$ComplaintCreatedImplCopyWithImpl(
-    _$ComplaintCreatedImpl _value,
-    $Res Function(_$ComplaintCreatedImpl) _then,
-  ) : super(_value, _then);
+  __$$ComplaintCreatedImplCopyWithImpl(_$ComplaintCreatedImpl _value,
+      $Res Function(_$ComplaintCreatedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? complaint = null}) {
-    return _then(
-      _$ComplaintCreatedImpl(
-        complaint:
-            null == complaint
-                ? _value.complaint
-                : complaint // ignore: cast_nullable_to_non_nullable
-                    as Complaint,
-      ),
-    );
+  $Res call({
+    Object? complaint = null,
+  }) {
+    return _then(_$ComplaintCreatedImpl(
+      complaint: null == complaint
+          ? _value.complaint
+          : complaint // ignore: cast_nullable_to_non_nullable
+              as Complaint,
+    ));
   }
 
   /// Create a copy of ComplaintState
@@ -1790,9 +1765,7 @@ class _$ComplaintCreatedImpl implements _ComplaintCreated {
   @pragma('vm:prefer-inline')
   _$$ComplaintCreatedImplCopyWith<_$ComplaintCreatedImpl> get copyWith =>
       __$$ComplaintCreatedImplCopyWithImpl<_$ComplaintCreatedImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1800,7 +1773,7 @@ class _$ComplaintCreatedImpl implements _ComplaintCreated {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<ComplaintCategory> categories)
-    categoriesLoaded,
+        categoriesLoaded,
     required TResult Function(Complaint complaint) complaintCreated,
     required TResult Function(List<Complaint> complaints) complaintsLoaded,
     required TResult Function(Complaint complaint) complaintUpdated,
@@ -1909,10 +1882,9 @@ abstract class _ComplaintCreated implements ComplaintState {
 
 /// @nodoc
 abstract class _$$ComplaintsLoadedImplCopyWith<$Res> {
-  factory _$$ComplaintsLoadedImplCopyWith(
-    _$ComplaintsLoadedImpl value,
-    $Res Function(_$ComplaintsLoadedImpl) then,
-  ) = __$$ComplaintsLoadedImplCopyWithImpl<$Res>;
+  factory _$$ComplaintsLoadedImplCopyWith(_$ComplaintsLoadedImpl value,
+          $Res Function(_$ComplaintsLoadedImpl) then) =
+      __$$ComplaintsLoadedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({List<Complaint> complaints});
 }
@@ -1921,25 +1893,23 @@ abstract class _$$ComplaintsLoadedImplCopyWith<$Res> {
 class __$$ComplaintsLoadedImplCopyWithImpl<$Res>
     extends _$ComplaintStateCopyWithImpl<$Res, _$ComplaintsLoadedImpl>
     implements _$$ComplaintsLoadedImplCopyWith<$Res> {
-  __$$ComplaintsLoadedImplCopyWithImpl(
-    _$ComplaintsLoadedImpl _value,
-    $Res Function(_$ComplaintsLoadedImpl) _then,
-  ) : super(_value, _then);
+  __$$ComplaintsLoadedImplCopyWithImpl(_$ComplaintsLoadedImpl _value,
+      $Res Function(_$ComplaintsLoadedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? complaints = null}) {
-    return _then(
-      _$ComplaintsLoadedImpl(
-        complaints:
-            null == complaints
-                ? _value._complaints
-                : complaints // ignore: cast_nullable_to_non_nullable
-                    as List<Complaint>,
-      ),
-    );
+  $Res call({
+    Object? complaints = null,
+  }) {
+    return _then(_$ComplaintsLoadedImpl(
+      complaints: null == complaints
+          ? _value._complaints
+          : complaints // ignore: cast_nullable_to_non_nullable
+              as List<Complaint>,
+    ));
   }
 }
 
@@ -1947,7 +1917,7 @@ class __$$ComplaintsLoadedImplCopyWithImpl<$Res>
 
 class _$ComplaintsLoadedImpl implements _ComplaintsLoaded {
   const _$ComplaintsLoadedImpl({required final List<Complaint> complaints})
-    : _complaints = complaints;
+      : _complaints = complaints;
 
   final List<Complaint> _complaints;
   @override
@@ -1967,17 +1937,13 @@ class _$ComplaintsLoadedImpl implements _ComplaintsLoaded {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ComplaintsLoadedImpl &&
-            const DeepCollectionEquality().equals(
-              other._complaints,
-              _complaints,
-            ));
+            const DeepCollectionEquality()
+                .equals(other._complaints, _complaints));
   }
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    const DeepCollectionEquality().hash(_complaints),
-  );
+      runtimeType, const DeepCollectionEquality().hash(_complaints));
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
@@ -1986,9 +1952,7 @@ class _$ComplaintsLoadedImpl implements _ComplaintsLoaded {
   @pragma('vm:prefer-inline')
   _$$ComplaintsLoadedImplCopyWith<_$ComplaintsLoadedImpl> get copyWith =>
       __$$ComplaintsLoadedImplCopyWithImpl<_$ComplaintsLoadedImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1996,7 +1960,7 @@ class _$ComplaintsLoadedImpl implements _ComplaintsLoaded {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<ComplaintCategory> categories)
-    categoriesLoaded,
+        categoriesLoaded,
     required TResult Function(Complaint complaint) complaintCreated,
     required TResult Function(List<Complaint> complaints) complaintsLoaded,
     required TResult Function(Complaint complaint) complaintUpdated,
@@ -2105,10 +2069,9 @@ abstract class _ComplaintsLoaded implements ComplaintState {
 
 /// @nodoc
 abstract class _$$ComplaintUpdatedImplCopyWith<$Res> {
-  factory _$$ComplaintUpdatedImplCopyWith(
-    _$ComplaintUpdatedImpl value,
-    $Res Function(_$ComplaintUpdatedImpl) then,
-  ) = __$$ComplaintUpdatedImplCopyWithImpl<$Res>;
+  factory _$$ComplaintUpdatedImplCopyWith(_$ComplaintUpdatedImpl value,
+          $Res Function(_$ComplaintUpdatedImpl) then) =
+      __$$ComplaintUpdatedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({Complaint complaint});
 
@@ -2119,25 +2082,23 @@ abstract class _$$ComplaintUpdatedImplCopyWith<$Res> {
 class __$$ComplaintUpdatedImplCopyWithImpl<$Res>
     extends _$ComplaintStateCopyWithImpl<$Res, _$ComplaintUpdatedImpl>
     implements _$$ComplaintUpdatedImplCopyWith<$Res> {
-  __$$ComplaintUpdatedImplCopyWithImpl(
-    _$ComplaintUpdatedImpl _value,
-    $Res Function(_$ComplaintUpdatedImpl) _then,
-  ) : super(_value, _then);
+  __$$ComplaintUpdatedImplCopyWithImpl(_$ComplaintUpdatedImpl _value,
+      $Res Function(_$ComplaintUpdatedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? complaint = null}) {
-    return _then(
-      _$ComplaintUpdatedImpl(
-        complaint:
-            null == complaint
-                ? _value.complaint
-                : complaint // ignore: cast_nullable_to_non_nullable
-                    as Complaint,
-      ),
-    );
+  $Res call({
+    Object? complaint = null,
+  }) {
+    return _then(_$ComplaintUpdatedImpl(
+      complaint: null == complaint
+          ? _value.complaint
+          : complaint // ignore: cast_nullable_to_non_nullable
+              as Complaint,
+    ));
   }
 
   /// Create a copy of ComplaintState
@@ -2183,9 +2144,7 @@ class _$ComplaintUpdatedImpl implements _ComplaintUpdated {
   @pragma('vm:prefer-inline')
   _$$ComplaintUpdatedImplCopyWith<_$ComplaintUpdatedImpl> get copyWith =>
       __$$ComplaintUpdatedImplCopyWithImpl<_$ComplaintUpdatedImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -2193,7 +2152,7 @@ class _$ComplaintUpdatedImpl implements _ComplaintUpdated {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<ComplaintCategory> categories)
-    categoriesLoaded,
+        categoriesLoaded,
     required TResult Function(Complaint complaint) complaintCreated,
     required TResult Function(List<Complaint> complaints) complaintsLoaded,
     required TResult Function(Complaint complaint) complaintUpdated,
@@ -2302,10 +2261,9 @@ abstract class _ComplaintUpdated implements ComplaintState {
 
 /// @nodoc
 abstract class _$$ComplaintDeletedImplCopyWith<$Res> {
-  factory _$$ComplaintDeletedImplCopyWith(
-    _$ComplaintDeletedImpl value,
-    $Res Function(_$ComplaintDeletedImpl) then,
-  ) = __$$ComplaintDeletedImplCopyWithImpl<$Res>;
+  factory _$$ComplaintDeletedImplCopyWith(_$ComplaintDeletedImpl value,
+          $Res Function(_$ComplaintDeletedImpl) then) =
+      __$$ComplaintDeletedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({int id});
 }
@@ -2314,25 +2272,23 @@ abstract class _$$ComplaintDeletedImplCopyWith<$Res> {
 class __$$ComplaintDeletedImplCopyWithImpl<$Res>
     extends _$ComplaintStateCopyWithImpl<$Res, _$ComplaintDeletedImpl>
     implements _$$ComplaintDeletedImplCopyWith<$Res> {
-  __$$ComplaintDeletedImplCopyWithImpl(
-    _$ComplaintDeletedImpl _value,
-    $Res Function(_$ComplaintDeletedImpl) _then,
-  ) : super(_value, _then);
+  __$$ComplaintDeletedImplCopyWithImpl(_$ComplaintDeletedImpl _value,
+      $Res Function(_$ComplaintDeletedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = null}) {
-    return _then(
-      _$ComplaintDeletedImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-      ),
-    );
+  $Res call({
+    Object? id = null,
+  }) {
+    return _then(_$ComplaintDeletedImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
@@ -2367,9 +2323,7 @@ class _$ComplaintDeletedImpl implements _ComplaintDeleted {
   @pragma('vm:prefer-inline')
   _$$ComplaintDeletedImplCopyWith<_$ComplaintDeletedImpl> get copyWith =>
       __$$ComplaintDeletedImplCopyWithImpl<_$ComplaintDeletedImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -2377,7 +2331,7 @@ class _$ComplaintDeletedImpl implements _ComplaintDeleted {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<ComplaintCategory> categories)
-    categoriesLoaded,
+        categoriesLoaded,
     required TResult Function(Complaint complaint) complaintCreated,
     required TResult Function(List<Complaint> complaints) complaintsLoaded,
     required TResult Function(Complaint complaint) complaintUpdated,
@@ -2487,9 +2441,8 @@ abstract class _ComplaintDeleted implements ComplaintState {
 /// @nodoc
 abstract class _$$ErrorImplCopyWith<$Res> {
   factory _$$ErrorImplCopyWith(
-    _$ErrorImpl value,
-    $Res Function(_$ErrorImpl) then,
-  ) = __$$ErrorImplCopyWithImpl<$Res>;
+          _$ErrorImpl value, $Res Function(_$ErrorImpl) then) =
+      __$$ErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -2499,24 +2452,22 @@ class __$$ErrorImplCopyWithImpl<$Res>
     extends _$ComplaintStateCopyWithImpl<$Res, _$ErrorImpl>
     implements _$$ErrorImplCopyWith<$Res> {
   __$$ErrorImplCopyWithImpl(
-    _$ErrorImpl _value,
-    $Res Function(_$ErrorImpl) _then,
-  ) : super(_value, _then);
+      _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$ErrorImpl(
-        message:
-            null == message
-                ? _value.message
-                : message // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$ErrorImpl(
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
@@ -2558,7 +2509,7 @@ class _$ErrorImpl implements _Error {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<ComplaintCategory> categories)
-    categoriesLoaded,
+        categoriesLoaded,
     required TResult Function(Complaint complaint) complaintCreated,
     required TResult Function(List<Complaint> complaints) complaintsLoaded,
     required TResult Function(Complaint complaint) complaintUpdated,

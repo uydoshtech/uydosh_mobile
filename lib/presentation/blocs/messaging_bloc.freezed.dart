@@ -12,8 +12,7 @@ part of 'messaging_bloc.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$MessagingState {
@@ -21,74 +20,56 @@ mixin _$MessagingState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
@@ -100,7 +81,8 @@ mixin _$MessagingState {
     required TResult Function(MessageSent value) messageSent,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
@@ -112,7 +94,8 @@ mixin _$MessagingState {
     TResult? Function(MessageSent value)? messageSent,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
@@ -125,15 +108,15 @@ mixin _$MessagingState {
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $MessagingStateCopyWith<$Res> {
   factory $MessagingStateCopyWith(
-    MessagingState value,
-    $Res Function(MessagingState) then,
-  ) = _$MessagingStateCopyWithImpl<$Res, MessagingState>;
+          MessagingState value, $Res Function(MessagingState) then) =
+      _$MessagingStateCopyWithImpl<$Res, MessagingState>;
 }
 
 /// @nodoc
@@ -152,20 +135,18 @@ class _$MessagingStateCopyWithImpl<$Res, $Val extends MessagingState>
 
 /// @nodoc
 abstract class _$$MessagingInitialImplCopyWith<$Res> {
-  factory _$$MessagingInitialImplCopyWith(
-    _$MessagingInitialImpl value,
-    $Res Function(_$MessagingInitialImpl) then,
-  ) = __$$MessagingInitialImplCopyWithImpl<$Res>;
+  factory _$$MessagingInitialImplCopyWith(_$MessagingInitialImpl value,
+          $Res Function(_$MessagingInitialImpl) then) =
+      __$$MessagingInitialImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$MessagingInitialImplCopyWithImpl<$Res>
     extends _$MessagingStateCopyWithImpl<$Res, _$MessagingInitialImpl>
     implements _$$MessagingInitialImplCopyWith<$Res> {
-  __$$MessagingInitialImplCopyWithImpl(
-    _$MessagingInitialImpl _value,
-    $Res Function(_$MessagingInitialImpl) _then,
-  ) : super(_value, _then);
+  __$$MessagingInitialImplCopyWithImpl(_$MessagingInitialImpl _value,
+      $Res Function(_$MessagingInitialImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
@@ -195,24 +176,17 @@ class _$MessagingInitialImpl implements MessagingInitial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
   }) {
     return initial();
@@ -223,24 +197,17 @@ class _$MessagingInitialImpl implements MessagingInitial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
   }) {
     return initial?.call();
@@ -251,20 +218,13 @@ class _$MessagingInitialImpl implements MessagingInitial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
@@ -336,20 +296,18 @@ abstract class MessagingInitial implements MessagingState {
 
 /// @nodoc
 abstract class _$$MessagingLoadingImplCopyWith<$Res> {
-  factory _$$MessagingLoadingImplCopyWith(
-    _$MessagingLoadingImpl value,
-    $Res Function(_$MessagingLoadingImpl) then,
-  ) = __$$MessagingLoadingImplCopyWithImpl<$Res>;
+  factory _$$MessagingLoadingImplCopyWith(_$MessagingLoadingImpl value,
+          $Res Function(_$MessagingLoadingImpl) then) =
+      __$$MessagingLoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$MessagingLoadingImplCopyWithImpl<$Res>
     extends _$MessagingStateCopyWithImpl<$Res, _$MessagingLoadingImpl>
     implements _$$MessagingLoadingImplCopyWith<$Res> {
-  __$$MessagingLoadingImplCopyWithImpl(
-    _$MessagingLoadingImpl _value,
-    $Res Function(_$MessagingLoadingImpl) _then,
-  ) : super(_value, _then);
+  __$$MessagingLoadingImplCopyWithImpl(_$MessagingLoadingImpl _value,
+      $Res Function(_$MessagingLoadingImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
@@ -379,24 +337,17 @@ class _$MessagingLoadingImpl implements MessagingLoading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
   }) {
     return loading();
@@ -407,24 +358,17 @@ class _$MessagingLoadingImpl implements MessagingLoading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
   }) {
     return loading?.call();
@@ -435,20 +379,13 @@ class _$MessagingLoadingImpl implements MessagingLoading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
@@ -520,26 +457,21 @@ abstract class MessagingLoading implements MessagingState {
 
 /// @nodoc
 abstract class _$$ConversationsLoadedImplCopyWith<$Res> {
-  factory _$$ConversationsLoadedImplCopyWith(
-    _$ConversationsLoadedImpl value,
-    $Res Function(_$ConversationsLoadedImpl) then,
-  ) = __$$ConversationsLoadedImplCopyWithImpl<$Res>;
+  factory _$$ConversationsLoadedImplCopyWith(_$ConversationsLoadedImpl value,
+          $Res Function(_$ConversationsLoadedImpl) then) =
+      __$$ConversationsLoadedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({
-    List<ConversationSummary> conversations,
-    bool hasMore,
-    int currentPage,
-  });
+  $Res call(
+      {List<ConversationSummary> conversations, bool hasMore, int currentPage});
 }
 
 /// @nodoc
 class __$$ConversationsLoadedImplCopyWithImpl<$Res>
     extends _$MessagingStateCopyWithImpl<$Res, _$ConversationsLoadedImpl>
     implements _$$ConversationsLoadedImplCopyWith<$Res> {
-  __$$ConversationsLoadedImplCopyWithImpl(
-    _$ConversationsLoadedImpl _value,
-    $Res Function(_$ConversationsLoadedImpl) _then,
-  ) : super(_value, _then);
+  __$$ConversationsLoadedImplCopyWithImpl(_$ConversationsLoadedImpl _value,
+      $Res Function(_$ConversationsLoadedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
@@ -550,36 +482,31 @@ class __$$ConversationsLoadedImplCopyWithImpl<$Res>
     Object? hasMore = null,
     Object? currentPage = null,
   }) {
-    return _then(
-      _$ConversationsLoadedImpl(
-        conversations:
-            null == conversations
-                ? _value._conversations
-                : conversations // ignore: cast_nullable_to_non_nullable
-                    as List<ConversationSummary>,
-        hasMore:
-            null == hasMore
-                ? _value.hasMore
-                : hasMore // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        currentPage:
-            null == currentPage
-                ? _value.currentPage
-                : currentPage // ignore: cast_nullable_to_non_nullable
-                    as int,
-      ),
-    );
+    return _then(_$ConversationsLoadedImpl(
+      conversations: null == conversations
+          ? _value._conversations
+          : conversations // ignore: cast_nullable_to_non_nullable
+              as List<ConversationSummary>,
+      hasMore: null == hasMore
+          ? _value.hasMore
+          : hasMore // ignore: cast_nullable_to_non_nullable
+              as bool,
+      currentPage: null == currentPage
+          ? _value.currentPage
+          : currentPage // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$ConversationsLoadedImpl implements ConversationsLoaded {
-  const _$ConversationsLoadedImpl({
-    required final List<ConversationSummary> conversations,
-    required this.hasMore,
-    required this.currentPage,
-  }) : _conversations = conversations;
+  const _$ConversationsLoadedImpl(
+      {required final List<ConversationSummary> conversations,
+      required this.hasMore,
+      required this.currentPage})
+      : _conversations = conversations;
 
   final List<ConversationSummary> _conversations;
   @override
@@ -604,10 +531,8 @@ class _$ConversationsLoadedImpl implements ConversationsLoaded {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ConversationsLoadedImpl &&
-            const DeepCollectionEquality().equals(
-              other._conversations,
-              _conversations,
-            ) &&
+            const DeepCollectionEquality()
+                .equals(other._conversations, _conversations) &&
             (identical(other.hasMore, hasMore) || other.hasMore == hasMore) &&
             (identical(other.currentPage, currentPage) ||
                 other.currentPage == currentPage));
@@ -615,11 +540,10 @@ class _$ConversationsLoadedImpl implements ConversationsLoaded {
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    const DeepCollectionEquality().hash(_conversations),
-    hasMore,
-    currentPage,
-  );
+      runtimeType,
+      const DeepCollectionEquality().hash(_conversations),
+      hasMore,
+      currentPage);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
@@ -628,33 +552,24 @@ class _$ConversationsLoadedImpl implements ConversationsLoaded {
   @pragma('vm:prefer-inline')
   _$$ConversationsLoadedImplCopyWith<_$ConversationsLoadedImpl> get copyWith =>
       __$$ConversationsLoadedImplCopyWithImpl<_$ConversationsLoadedImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
   }) {
     return conversationsLoaded(conversations, hasMore, currentPage);
@@ -665,24 +580,17 @@ class _$ConversationsLoadedImpl implements ConversationsLoaded {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
   }) {
     return conversationsLoaded?.call(conversations, hasMore, currentPage);
@@ -693,20 +601,13 @@ class _$ConversationsLoadedImpl implements ConversationsLoaded {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
@@ -773,11 +674,10 @@ class _$ConversationsLoadedImpl implements ConversationsLoaded {
 }
 
 abstract class ConversationsLoaded implements MessagingState {
-  const factory ConversationsLoaded({
-    required final List<ConversationSummary> conversations,
-    required final bool hasMore,
-    required final int currentPage,
-  }) = _$ConversationsLoadedImpl;
+  const factory ConversationsLoaded(
+      {required final List<ConversationSummary> conversations,
+      required final bool hasMore,
+      required final int currentPage}) = _$ConversationsLoadedImpl;
 
   List<ConversationSummary> get conversations;
   bool get hasMore;
@@ -792,20 +692,18 @@ abstract class ConversationsLoaded implements MessagingState {
 
 /// @nodoc
 abstract class _$$ConversationsClearedImplCopyWith<$Res> {
-  factory _$$ConversationsClearedImplCopyWith(
-    _$ConversationsClearedImpl value,
-    $Res Function(_$ConversationsClearedImpl) then,
-  ) = __$$ConversationsClearedImplCopyWithImpl<$Res>;
+  factory _$$ConversationsClearedImplCopyWith(_$ConversationsClearedImpl value,
+          $Res Function(_$ConversationsClearedImpl) then) =
+      __$$ConversationsClearedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$ConversationsClearedImplCopyWithImpl<$Res>
     extends _$MessagingStateCopyWithImpl<$Res, _$ConversationsClearedImpl>
     implements _$$ConversationsClearedImplCopyWith<$Res> {
-  __$$ConversationsClearedImplCopyWithImpl(
-    _$ConversationsClearedImpl _value,
-    $Res Function(_$ConversationsClearedImpl) _then,
-  ) : super(_value, _then);
+  __$$ConversationsClearedImplCopyWithImpl(_$ConversationsClearedImpl _value,
+      $Res Function(_$ConversationsClearedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
@@ -836,24 +734,17 @@ class _$ConversationsClearedImpl implements ConversationsCleared {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
   }) {
     return conversationsCleared();
@@ -864,24 +755,17 @@ class _$ConversationsClearedImpl implements ConversationsCleared {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
   }) {
     return conversationsCleared?.call();
@@ -892,20 +776,13 @@ class _$ConversationsClearedImpl implements ConversationsCleared {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
@@ -977,17 +854,15 @@ abstract class ConversationsCleared implements MessagingState {
 
 /// @nodoc
 abstract class _$$MessagesLoadedImplCopyWith<$Res> {
-  factory _$$MessagesLoadedImplCopyWith(
-    _$MessagesLoadedImpl value,
-    $Res Function(_$MessagesLoadedImpl) then,
-  ) = __$$MessagesLoadedImplCopyWithImpl<$Res>;
+  factory _$$MessagesLoadedImplCopyWith(_$MessagesLoadedImpl value,
+          $Res Function(_$MessagesLoadedImpl) then) =
+      __$$MessagesLoadedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({
-    List<Message> messages,
-    bool hasMore,
-    int currentPage,
-    int conversationId,
-  });
+  $Res call(
+      {List<Message> messages,
+      bool hasMore,
+      int currentPage,
+      int conversationId});
 }
 
 /// @nodoc
@@ -995,9 +870,8 @@ class __$$MessagesLoadedImplCopyWithImpl<$Res>
     extends _$MessagingStateCopyWithImpl<$Res, _$MessagesLoadedImpl>
     implements _$$MessagesLoadedImplCopyWith<$Res> {
   __$$MessagesLoadedImplCopyWithImpl(
-    _$MessagesLoadedImpl _value,
-    $Res Function(_$MessagesLoadedImpl) _then,
-  ) : super(_value, _then);
+      _$MessagesLoadedImpl _value, $Res Function(_$MessagesLoadedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
@@ -1009,42 +883,36 @@ class __$$MessagesLoadedImplCopyWithImpl<$Res>
     Object? currentPage = null,
     Object? conversationId = null,
   }) {
-    return _then(
-      _$MessagesLoadedImpl(
-        messages:
-            null == messages
-                ? _value._messages
-                : messages // ignore: cast_nullable_to_non_nullable
-                    as List<Message>,
-        hasMore:
-            null == hasMore
-                ? _value.hasMore
-                : hasMore // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        currentPage:
-            null == currentPage
-                ? _value.currentPage
-                : currentPage // ignore: cast_nullable_to_non_nullable
-                    as int,
-        conversationId:
-            null == conversationId
-                ? _value.conversationId
-                : conversationId // ignore: cast_nullable_to_non_nullable
-                    as int,
-      ),
-    );
+    return _then(_$MessagesLoadedImpl(
+      messages: null == messages
+          ? _value._messages
+          : messages // ignore: cast_nullable_to_non_nullable
+              as List<Message>,
+      hasMore: null == hasMore
+          ? _value.hasMore
+          : hasMore // ignore: cast_nullable_to_non_nullable
+              as bool,
+      currentPage: null == currentPage
+          ? _value.currentPage
+          : currentPage // ignore: cast_nullable_to_non_nullable
+              as int,
+      conversationId: null == conversationId
+          ? _value.conversationId
+          : conversationId // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$MessagesLoadedImpl implements MessagesLoaded {
-  const _$MessagesLoadedImpl({
-    required final List<Message> messages,
-    required this.hasMore,
-    required this.currentPage,
-    required this.conversationId,
-  }) : _messages = messages;
+  const _$MessagesLoadedImpl(
+      {required final List<Message> messages,
+      required this.hasMore,
+      required this.currentPage,
+      required this.conversationId})
+      : _messages = messages;
 
   final List<Message> _messages;
   @override
@@ -1081,12 +949,11 @@ class _$MessagesLoadedImpl implements MessagesLoaded {
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    const DeepCollectionEquality().hash(_messages),
-    hasMore,
-    currentPage,
-    conversationId,
-  );
+      runtimeType,
+      const DeepCollectionEquality().hash(_messages),
+      hasMore,
+      currentPage,
+      conversationId);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
@@ -1095,33 +962,24 @@ class _$MessagesLoadedImpl implements MessagesLoaded {
   @pragma('vm:prefer-inline')
   _$$MessagesLoadedImplCopyWith<_$MessagesLoadedImpl> get copyWith =>
       __$$MessagesLoadedImplCopyWithImpl<_$MessagesLoadedImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
   }) {
     return messagesLoaded(messages, hasMore, currentPage, conversationId);
@@ -1132,24 +990,17 @@ class _$MessagesLoadedImpl implements MessagesLoaded {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
   }) {
     return messagesLoaded?.call(messages, hasMore, currentPage, conversationId);
@@ -1160,20 +1011,13 @@ class _$MessagesLoadedImpl implements MessagesLoaded {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
@@ -1240,12 +1084,11 @@ class _$MessagesLoadedImpl implements MessagesLoaded {
 }
 
 abstract class MessagesLoaded implements MessagingState {
-  const factory MessagesLoaded({
-    required final List<Message> messages,
-    required final bool hasMore,
-    required final int currentPage,
-    required final int conversationId,
-  }) = _$MessagesLoadedImpl;
+  const factory MessagesLoaded(
+      {required final List<Message> messages,
+      required final bool hasMore,
+      required final int currentPage,
+      required final int conversationId}) = _$MessagesLoadedImpl;
 
   List<Message> get messages;
   bool get hasMore;
@@ -1261,10 +1104,9 @@ abstract class MessagesLoaded implements MessagingState {
 
 /// @nodoc
 abstract class _$$ConversationCreatedImplCopyWith<$Res> {
-  factory _$$ConversationCreatedImplCopyWith(
-    _$ConversationCreatedImpl value,
-    $Res Function(_$ConversationCreatedImpl) then,
-  ) = __$$ConversationCreatedImplCopyWithImpl<$Res>;
+  factory _$$ConversationCreatedImplCopyWith(_$ConversationCreatedImpl value,
+          $Res Function(_$ConversationCreatedImpl) then) =
+      __$$ConversationCreatedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({Conversation conversation});
 
@@ -1275,25 +1117,23 @@ abstract class _$$ConversationCreatedImplCopyWith<$Res> {
 class __$$ConversationCreatedImplCopyWithImpl<$Res>
     extends _$MessagingStateCopyWithImpl<$Res, _$ConversationCreatedImpl>
     implements _$$ConversationCreatedImplCopyWith<$Res> {
-  __$$ConversationCreatedImplCopyWithImpl(
-    _$ConversationCreatedImpl _value,
-    $Res Function(_$ConversationCreatedImpl) _then,
-  ) : super(_value, _then);
+  __$$ConversationCreatedImplCopyWithImpl(_$ConversationCreatedImpl _value,
+      $Res Function(_$ConversationCreatedImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? conversation = null}) {
-    return _then(
-      _$ConversationCreatedImpl(
-        conversation:
-            null == conversation
-                ? _value.conversation
-                : conversation // ignore: cast_nullable_to_non_nullable
-                    as Conversation,
-      ),
-    );
+  $Res call({
+    Object? conversation = null,
+  }) {
+    return _then(_$ConversationCreatedImpl(
+      conversation: null == conversation
+          ? _value.conversation
+          : conversation // ignore: cast_nullable_to_non_nullable
+              as Conversation,
+    ));
   }
 
   /// Create a copy of MessagingState
@@ -1339,33 +1179,24 @@ class _$ConversationCreatedImpl implements ConversationCreated {
   @pragma('vm:prefer-inline')
   _$$ConversationCreatedImplCopyWith<_$ConversationCreatedImpl> get copyWith =>
       __$$ConversationCreatedImplCopyWithImpl<_$ConversationCreatedImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
   }) {
     return conversationCreated(conversation);
@@ -1376,24 +1207,17 @@ class _$ConversationCreatedImpl implements ConversationCreated {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
   }) {
     return conversationCreated?.call(conversation);
@@ -1404,20 +1228,13 @@ class _$ConversationCreatedImpl implements ConversationCreated {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
@@ -1484,9 +1301,8 @@ class _$ConversationCreatedImpl implements ConversationCreated {
 }
 
 abstract class ConversationCreated implements MessagingState {
-  const factory ConversationCreated({
-    required final Conversation conversation,
-  }) = _$ConversationCreatedImpl;
+  const factory ConversationCreated(
+      {required final Conversation conversation}) = _$ConversationCreatedImpl;
 
   Conversation get conversation;
 
@@ -1500,9 +1316,8 @@ abstract class ConversationCreated implements MessagingState {
 /// @nodoc
 abstract class _$$MessageSentImplCopyWith<$Res> {
   factory _$$MessageSentImplCopyWith(
-    _$MessageSentImpl value,
-    $Res Function(_$MessageSentImpl) then,
-  ) = __$$MessageSentImplCopyWithImpl<$Res>;
+          _$MessageSentImpl value, $Res Function(_$MessageSentImpl) then) =
+      __$$MessageSentImplCopyWithImpl<$Res>;
   @useResult
   $Res call({Message message});
 
@@ -1514,24 +1329,22 @@ class __$$MessageSentImplCopyWithImpl<$Res>
     extends _$MessagingStateCopyWithImpl<$Res, _$MessageSentImpl>
     implements _$$MessageSentImplCopyWith<$Res> {
   __$$MessageSentImplCopyWithImpl(
-    _$MessageSentImpl _value,
-    $Res Function(_$MessageSentImpl) _then,
-  ) : super(_value, _then);
+      _$MessageSentImpl _value, $Res Function(_$MessageSentImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$MessageSentImpl(
-        message:
-            null == message
-                ? _value.message
-                : message // ignore: cast_nullable_to_non_nullable
-                    as Message,
-      ),
-    );
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$MessageSentImpl(
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as Message,
+    ));
   }
 
   /// Create a copy of MessagingState
@@ -1582,24 +1395,17 @@ class _$MessageSentImpl implements MessageSent {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
   }) {
     return messageSent(message);
@@ -1610,24 +1416,17 @@ class _$MessageSentImpl implements MessageSent {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
   }) {
     return messageSent?.call(message);
@@ -1638,20 +1437,13 @@ class _$MessageSentImpl implements MessageSent {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
@@ -1732,10 +1524,9 @@ abstract class MessageSent implements MessagingState {
 
 /// @nodoc
 abstract class _$$MessagesMarkedAsReadImplCopyWith<$Res> {
-  factory _$$MessagesMarkedAsReadImplCopyWith(
-    _$MessagesMarkedAsReadImpl value,
-    $Res Function(_$MessagesMarkedAsReadImpl) then,
-  ) = __$$MessagesMarkedAsReadImplCopyWithImpl<$Res>;
+  factory _$$MessagesMarkedAsReadImplCopyWith(_$MessagesMarkedAsReadImpl value,
+          $Res Function(_$MessagesMarkedAsReadImpl) then) =
+      __$$MessagesMarkedAsReadImplCopyWithImpl<$Res>;
   @useResult
   $Res call({int conversationId, int markedCount});
 }
@@ -1744,40 +1535,36 @@ abstract class _$$MessagesMarkedAsReadImplCopyWith<$Res> {
 class __$$MessagesMarkedAsReadImplCopyWithImpl<$Res>
     extends _$MessagingStateCopyWithImpl<$Res, _$MessagesMarkedAsReadImpl>
     implements _$$MessagesMarkedAsReadImplCopyWith<$Res> {
-  __$$MessagesMarkedAsReadImplCopyWithImpl(
-    _$MessagesMarkedAsReadImpl _value,
-    $Res Function(_$MessagesMarkedAsReadImpl) _then,
-  ) : super(_value, _then);
+  __$$MessagesMarkedAsReadImplCopyWithImpl(_$MessagesMarkedAsReadImpl _value,
+      $Res Function(_$MessagesMarkedAsReadImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? conversationId = null, Object? markedCount = null}) {
-    return _then(
-      _$MessagesMarkedAsReadImpl(
-        conversationId:
-            null == conversationId
-                ? _value.conversationId
-                : conversationId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        markedCount:
-            null == markedCount
-                ? _value.markedCount
-                : markedCount // ignore: cast_nullable_to_non_nullable
-                    as int,
-      ),
-    );
+  $Res call({
+    Object? conversationId = null,
+    Object? markedCount = null,
+  }) {
+    return _then(_$MessagesMarkedAsReadImpl(
+      conversationId: null == conversationId
+          ? _value.conversationId
+          : conversationId // ignore: cast_nullable_to_non_nullable
+              as int,
+      markedCount: null == markedCount
+          ? _value.markedCount
+          : markedCount // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$MessagesMarkedAsReadImpl implements MessagesMarkedAsRead {
-  const _$MessagesMarkedAsReadImpl({
-    required this.conversationId,
-    required this.markedCount,
-  });
+  const _$MessagesMarkedAsReadImpl(
+      {required this.conversationId, required this.markedCount});
 
   @override
   final int conversationId;
@@ -1809,35 +1596,26 @@ class _$MessagesMarkedAsReadImpl implements MessagesMarkedAsRead {
   @override
   @pragma('vm:prefer-inline')
   _$$MessagesMarkedAsReadImplCopyWith<_$MessagesMarkedAsReadImpl>
-  get copyWith =>
-      __$$MessagesMarkedAsReadImplCopyWithImpl<_$MessagesMarkedAsReadImpl>(
-        this,
-        _$identity,
-      );
+      get copyWith =>
+          __$$MessagesMarkedAsReadImplCopyWithImpl<_$MessagesMarkedAsReadImpl>(
+              this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
   }) {
     return messagesMarkedAsRead(conversationId, markedCount);
@@ -1848,24 +1626,17 @@ class _$MessagesMarkedAsReadImpl implements MessagesMarkedAsRead {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
   }) {
     return messagesMarkedAsRead?.call(conversationId, markedCount);
@@ -1876,20 +1647,13 @@ class _$MessagesMarkedAsReadImpl implements MessagesMarkedAsRead {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
@@ -1956,10 +1720,9 @@ class _$MessagesMarkedAsReadImpl implements MessagesMarkedAsRead {
 }
 
 abstract class MessagesMarkedAsRead implements MessagingState {
-  const factory MessagesMarkedAsRead({
-    required final int conversationId,
-    required final int markedCount,
-  }) = _$MessagesMarkedAsReadImpl;
+  const factory MessagesMarkedAsRead(
+      {required final int conversationId,
+      required final int markedCount}) = _$MessagesMarkedAsReadImpl;
 
   int get conversationId;
   int get markedCount;
@@ -1968,15 +1731,14 @@ abstract class MessagesMarkedAsRead implements MessagingState {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MessagesMarkedAsReadImplCopyWith<_$MessagesMarkedAsReadImpl>
-  get copyWith => throw _privateConstructorUsedError;
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$MessagingErrorImplCopyWith<$Res> {
-  factory _$$MessagingErrorImplCopyWith(
-    _$MessagingErrorImpl value,
-    $Res Function(_$MessagingErrorImpl) then,
-  ) = __$$MessagingErrorImplCopyWithImpl<$Res>;
+  factory _$$MessagingErrorImplCopyWith(_$MessagingErrorImpl value,
+          $Res Function(_$MessagingErrorImpl) then) =
+      __$$MessagingErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -1986,24 +1748,22 @@ class __$$MessagingErrorImplCopyWithImpl<$Res>
     extends _$MessagingStateCopyWithImpl<$Res, _$MessagingErrorImpl>
     implements _$$MessagingErrorImplCopyWith<$Res> {
   __$$MessagingErrorImplCopyWithImpl(
-    _$MessagingErrorImpl _value,
-    $Res Function(_$MessagingErrorImpl) _then,
-  ) : super(_value, _then);
+      _$MessagingErrorImpl _value, $Res Function(_$MessagingErrorImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$MessagingErrorImpl(
-        message:
-            null == message
-                ? _value.message
-                : message // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$MessagingErrorImpl(
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
@@ -2038,33 +1798,24 @@ class _$MessagingErrorImpl implements MessagingError {
   @pragma('vm:prefer-inline')
   _$$MessagingErrorImplCopyWith<_$MessagingErrorImpl> get copyWith =>
       __$$MessagingErrorImplCopyWithImpl<_$MessagingErrorImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )
-    conversationsLoaded,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
     required TResult Function() conversationsCleared,
-    required TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )
-    messagesLoaded,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
     required TResult Function(int conversationId, int markedCount)
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     required TResult Function(String message) error,
   }) {
     return error(message);
@@ -2075,24 +1826,17 @@ class _$MessagingErrorImpl implements MessagingError {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult? Function()? conversationsCleared,
-    TResult? Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
     TResult? Function(int conversationId, int markedCount)?
-    messagesMarkedAsRead,
+        messagesMarkedAsRead,
     TResult? Function(String message)? error,
   }) {
     return error?.call(message);
@@ -2103,20 +1847,13 @@ class _$MessagingErrorImpl implements MessagingError {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-      List<ConversationSummary> conversations,
-      bool hasMore,
-      int currentPage,
-    )?
-    conversationsLoaded,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
     TResult Function()? conversationsCleared,
-    TResult Function(
-      List<Message> messages,
-      bool hasMore,
-      int currentPage,
-      int conversationId,
-    )?
-    messagesLoaded,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,

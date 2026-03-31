@@ -12,8 +12,7 @@ part of 'otp_code.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 OtpCode _$OtpCodeFromJson(Map<String, dynamic> json) {
   return _OtpCode.fromJson(json);
@@ -49,16 +48,15 @@ abstract class $OtpCodeCopyWith<$Res> {
   factory $OtpCodeCopyWith(OtpCode value, $Res Function(OtpCode) then) =
       _$OtpCodeCopyWithImpl<$Res, OtpCode>;
   @useResult
-  $Res call({
-    int id,
-    String email,
-    String code,
-    String type,
-    @JsonKey(name: "is_used") bool isUsed,
-    @JsonKey(name: "expires_at") String expiresAt,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-  });
+  $Res call(
+      {int id,
+      String email,
+      String code,
+      String type,
+      @JsonKey(name: "is_used") bool isUsed,
+      @JsonKey(name: "expires_at") String expiresAt,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt});
 }
 
 /// @nodoc
@@ -85,72 +83,59 @@ class _$OtpCodeCopyWithImpl<$Res, $Val extends OtpCode>
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            email:
-                null == email
-                    ? _value.email
-                    : email // ignore: cast_nullable_to_non_nullable
-                        as String,
-            code:
-                null == code
-                    ? _value.code
-                    : code // ignore: cast_nullable_to_non_nullable
-                        as String,
-            type:
-                null == type
-                    ? _value.type
-                    : type // ignore: cast_nullable_to_non_nullable
-                        as String,
-            isUsed:
-                null == isUsed
-                    ? _value.isUsed
-                    : isUsed // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            expiresAt:
-                null == expiresAt
-                    ? _value.expiresAt
-                    : expiresAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            updatedAt:
-                null == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      email: null == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String,
+      code: null == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String,
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      isUsed: null == isUsed
+          ? _value.isUsed
+          : isUsed // ignore: cast_nullable_to_non_nullable
+              as bool,
+      expiresAt: null == expiresAt
+          ? _value.expiresAt
+          : expiresAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$OtpCodeImplCopyWith<$Res> implements $OtpCodeCopyWith<$Res> {
   factory _$$OtpCodeImplCopyWith(
-    _$OtpCodeImpl value,
-    $Res Function(_$OtpCodeImpl) then,
-  ) = __$$OtpCodeImplCopyWithImpl<$Res>;
+          _$OtpCodeImpl value, $Res Function(_$OtpCodeImpl) then) =
+      __$$OtpCodeImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    String email,
-    String code,
-    String type,
-    @JsonKey(name: "is_used") bool isUsed,
-    @JsonKey(name: "expires_at") String expiresAt,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-  });
+  $Res call(
+      {int id,
+      String email,
+      String code,
+      String type,
+      @JsonKey(name: "is_used") bool isUsed,
+      @JsonKey(name: "expires_at") String expiresAt,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt});
 }
 
 /// @nodoc
@@ -158,9 +143,8 @@ class __$$OtpCodeImplCopyWithImpl<$Res>
     extends _$OtpCodeCopyWithImpl<$Res, _$OtpCodeImpl>
     implements _$$OtpCodeImplCopyWith<$Res> {
   __$$OtpCodeImplCopyWithImpl(
-    _$OtpCodeImpl _value,
-    $Res Function(_$OtpCodeImpl) _then,
-  ) : super(_value, _then);
+      _$OtpCodeImpl _value, $Res Function(_$OtpCodeImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of OtpCode
   /// with the given fields replaced by the non-null parameter values.
@@ -176,66 +160,55 @@ class __$$OtpCodeImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
-    return _then(
-      _$OtpCodeImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        email:
-            null == email
-                ? _value.email
-                : email // ignore: cast_nullable_to_non_nullable
-                    as String,
-        code:
-            null == code
-                ? _value.code
-                : code // ignore: cast_nullable_to_non_nullable
-                    as String,
-        type:
-            null == type
-                ? _value.type
-                : type // ignore: cast_nullable_to_non_nullable
-                    as String,
-        isUsed:
-            null == isUsed
-                ? _value.isUsed
-                : isUsed // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        expiresAt:
-            null == expiresAt
-                ? _value.expiresAt
-                : expiresAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        updatedAt:
-            null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+    return _then(_$OtpCodeImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      email: null == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String,
+      code: null == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String,
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      isUsed: null == isUsed
+          ? _value.isUsed
+          : isUsed // ignore: cast_nullable_to_non_nullable
+              as bool,
+      expiresAt: null == expiresAt
+          ? _value.expiresAt
+          : expiresAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$OtpCodeImpl implements _OtpCode {
-  const _$OtpCodeImpl({
-    required this.id,
-    required this.email,
-    required this.code,
-    required this.type,
-    @JsonKey(name: "is_used") required this.isUsed,
-    @JsonKey(name: "expires_at") required this.expiresAt,
-    @JsonKey(name: "created_at") required this.createdAt,
-    @JsonKey(name: "updated_at") required this.updatedAt,
-  });
+  const _$OtpCodeImpl(
+      {required this.id,
+      required this.email,
+      required this.code,
+      required this.type,
+      @JsonKey(name: "is_used") required this.isUsed,
+      @JsonKey(name: "expires_at") required this.expiresAt,
+      @JsonKey(name: "created_at") required this.createdAt,
+      @JsonKey(name: "updated_at") required this.updatedAt});
 
   factory _$OtpCodeImpl.fromJson(Map<String, dynamic> json) =>
       _$$OtpCodeImplFromJson(json);
@@ -246,10 +219,10 @@ class _$OtpCodeImpl implements _OtpCode {
   final String email;
   @override
   final String code;
-  // 4-digit code
+// 4-digit code
   @override
   final String type;
-  // 'email_verification', 'password_reset', 'login'
+// 'email_verification', 'password_reset', 'login'
   @override
   @JsonKey(name: "is_used")
   final bool isUsed;
@@ -288,17 +261,8 @@ class _$OtpCodeImpl implements _OtpCode {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    email,
-    code,
-    type,
-    isUsed,
-    expiresAt,
-    createdAt,
-    updatedAt,
-  );
+  int get hashCode => Object.hash(runtimeType, id, email, code, type, isUsed,
+      expiresAt, createdAt, updatedAt);
 
   /// Create a copy of OtpCode
   /// with the given fields replaced by the non-null parameter values.
@@ -310,21 +274,23 @@ class _$OtpCodeImpl implements _OtpCode {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$OtpCodeImplToJson(this);
+    return _$$OtpCodeImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _OtpCode implements OtpCode {
-  const factory _OtpCode({
-    required final int id,
-    required final String email,
-    required final String code,
-    required final String type,
-    @JsonKey(name: "is_used") required final bool isUsed,
-    @JsonKey(name: "expires_at") required final String expiresAt,
-    @JsonKey(name: "created_at") required final String createdAt,
-    @JsonKey(name: "updated_at") required final String updatedAt,
-  }) = _$OtpCodeImpl;
+  const factory _OtpCode(
+          {required final int id,
+          required final String email,
+          required final String code,
+          required final String type,
+          @JsonKey(name: "is_used") required final bool isUsed,
+          @JsonKey(name: "expires_at") required final String expiresAt,
+          @JsonKey(name: "created_at") required final String createdAt,
+          @JsonKey(name: "updated_at") required final String updatedAt}) =
+      _$OtpCodeImpl;
 
   factory _OtpCode.fromJson(Map<String, dynamic> json) = _$OtpCodeImpl.fromJson;
 

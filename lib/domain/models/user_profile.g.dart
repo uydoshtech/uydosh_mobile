@@ -33,18 +33,13 @@ _$UserProfileImpl _$$UserProfileImplFromJson(Map<String, dynamic> json) =>
       preferredLanguage: json['preferred_language'] as String?,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
-      region:
-          json['region'] == null
-              ? null
-              : UserProfileRegion.fromJson(
-                json['region'] as Map<String, dynamic>,
-              ),
-      university:
-          json['university'] == null
-              ? null
-              : UserProfileUniversity.fromJson(
-                json['university'] as Map<String, dynamic>,
-              ),
+      region: json['region'] == null
+          ? null
+          : UserProfileRegion.fromJson(json['region'] as Map<String, dynamic>),
+      university: json['university'] == null
+          ? null
+          : UserProfileUniversity.fromJson(
+              json['university'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$UserProfileImplToJson(_$UserProfileImpl instance) =>
@@ -79,53 +74,53 @@ Map<String, dynamic> _$$UserProfileImplToJson(_$UserProfileImpl instance) =>
     };
 
 _$UserProfileRegionImpl _$$UserProfileRegionImplFromJson(
-  Map<String, dynamic> json,
-) => _$UserProfileRegionImpl(
-  id: NullableIntConverter.convertFromJson(json['id']),
-  nameUz: json['name_uz'] as String?,
-  nameRu: json['name_ru'] as String?,
-  nameEn: json['name_en'] as String?,
-  shortNameUz: json['short_name_uz'] as String?,
-  shortNameRu: json['short_name_ru'] as String?,
-  shortNameEn: json['short_name_en'] as String?,
-);
+        Map<String, dynamic> json) =>
+    _$UserProfileRegionImpl(
+      id: NullableIntConverter.convertFromJson(json['id']),
+      nameUz: json['name_uz'] as String?,
+      nameRu: json['name_ru'] as String?,
+      nameEn: json['name_en'] as String?,
+      shortNameUz: json['short_name_uz'] as String?,
+      shortNameRu: json['short_name_ru'] as String?,
+      shortNameEn: json['short_name_en'] as String?,
+    );
 
 Map<String, dynamic> _$$UserProfileRegionImplToJson(
-  _$UserProfileRegionImpl instance,
-) => <String, dynamic>{
-  'id': NullableIntConverter.convertToJson(instance.id),
-  'name_uz': instance.nameUz,
-  'name_ru': instance.nameRu,
-  'name_en': instance.nameEn,
-  'short_name_uz': instance.shortNameUz,
-  'short_name_ru': instance.shortNameRu,
-  'short_name_en': instance.shortNameEn,
-};
+        _$UserProfileRegionImpl instance) =>
+    <String, dynamic>{
+      'id': NullableIntConverter.convertToJson(instance.id),
+      'name_uz': instance.nameUz,
+      'name_ru': instance.nameRu,
+      'name_en': instance.nameEn,
+      'short_name_uz': instance.shortNameUz,
+      'short_name_ru': instance.shortNameRu,
+      'short_name_en': instance.shortNameEn,
+    };
 
 _$UserProfileUniversityImpl _$$UserProfileUniversityImplFromJson(
-  Map<String, dynamic> json,
-) => _$UserProfileUniversityImpl(
-  id: NullableIntConverter.convertFromJson(json['id']),
-  nameUz: json['name_uz'] as String?,
-  nameRu: json['name_ru'] as String?,
-  nameEn: json['name_en'] as String?,
-  shortNameUz: json['short_name_uz'] as String?,
-  shortNameRu: json['short_name_ru'] as String?,
-  shortNameEn: json['short_name_en'] as String?,
-  address: json['address'] as String?,
-  website: json['website'] as String?,
-);
+        Map<String, dynamic> json) =>
+    _$UserProfileUniversityImpl(
+      id: NullableIntConverter.convertFromJson(json['id']),
+      nameUz: json['name_uz'] as String?,
+      nameRu: json['name_ru'] as String?,
+      nameEn: json['name_en'] as String?,
+      shortNameUz: json['short_name_uz'] as String?,
+      shortNameRu: json['short_name_ru'] as String?,
+      shortNameEn: json['short_name_en'] as String?,
+      address: json['address'] as String?,
+      website: json['website'] as String?,
+    );
 
 Map<String, dynamic> _$$UserProfileUniversityImplToJson(
-  _$UserProfileUniversityImpl instance,
-) => <String, dynamic>{
-  'id': NullableIntConverter.convertToJson(instance.id),
-  'name_uz': instance.nameUz,
-  'name_ru': instance.nameRu,
-  'name_en': instance.nameEn,
-  'short_name_uz': instance.shortNameUz,
-  'short_name_ru': instance.shortNameRu,
-  'short_name_en': instance.shortNameEn,
-  'address': instance.address,
-  'website': instance.website,
-};
+        _$UserProfileUniversityImpl instance) =>
+    <String, dynamic>{
+      'id': NullableIntConverter.convertToJson(instance.id),
+      'name_uz': instance.nameUz,
+      'name_ru': instance.nameRu,
+      'name_en': instance.nameEn,
+      'short_name_uz': instance.shortNameUz,
+      'short_name_ru': instance.shortNameRu,
+      'short_name_en': instance.shortNameEn,
+      'address': instance.address,
+      'website': instance.website,
+    };

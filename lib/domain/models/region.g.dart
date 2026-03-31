@@ -7,20 +7,20 @@ part of 'region.dart';
 // **************************************************************************
 
 _$RegionImpl _$$RegionImplFromJson(Map<String, dynamic> json) => _$RegionImpl(
-  id: (json['id'] as num).toInt(),
-  name: json['name'] as String?,
-  nameEn: json['name_en'] as String?,
-  nameRu: json['name_ru'] as String?,
-  nameUz: json['name_uz'] as String?,
-  shortName: json['short_name'] as String?,
-  shortNameEn: json['short_name_en'] as String?,
-  shortNameRu: json['short_name_ru'] as String?,
-  shortNameUz: json['short_name_uz'] as String?,
-  latitude: json['latitude'] as String?,
-  longitude: json['longitude'] as String?,
-  createdAt: json['created_at'] as String?,
-  updatedAt: json['updated_at'] as String?,
-);
+      id: (json['id'] as num).toInt(),
+      name: json['name'] as String?,
+      nameEn: json['name_en'] as String?,
+      nameRu: json['name_ru'] as String?,
+      nameUz: json['name_uz'] as String?,
+      shortName: json['short_name'] as String?,
+      shortNameEn: json['short_name_en'] as String?,
+      shortNameRu: json['short_name_ru'] as String?,
+      shortNameUz: json['short_name_uz'] as String?,
+      latitude: json['latitude'] as String?,
+      longitude: json['longitude'] as String?,
+      createdAt: json['created_at'] as String?,
+      updatedAt: json['updated_at'] as String?,
+    );
 
 Map<String, dynamic> _$$RegionImplToJson(_$RegionImpl instance) =>
     <String, dynamic>{

@@ -12,8 +12,7 @@ part of 'university.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 University _$UniversityFromJson(Map<String, dynamic> json) {
   return _University.fromJson(json);
@@ -22,9 +21,8 @@ University _$UniversityFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$University {
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertFromJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertFromJson)
   int get id => throw _privateConstructorUsedError;
   @JsonKey(name: "name")
   String? get name => throw _privateConstructorUsedError;
@@ -68,31 +66,28 @@ mixin _$University {
 /// @nodoc
 abstract class $UniversityCopyWith<$Res> {
   factory $UniversityCopyWith(
-    University value,
-    $Res Function(University) then,
-  ) = _$UniversityCopyWithImpl<$Res, University>;
+          University value, $Res Function(University) then) =
+      _$UniversityCopyWithImpl<$Res, University>;
   @useResult
-  $Res call({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertFromJson,
-    )
-    int id,
-    @JsonKey(name: "name") String? name,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "short_name") String? shortName,
-    @JsonKey(name: "short_name_en") String? shortNameEn,
-    @JsonKey(name: "short_name_ru") String? shortNameRu,
-    @JsonKey(name: "short_name_uz") String? shortNameUz,
-    @JsonKey(name: "latitude") String? latitude,
-    @JsonKey(name: "longitude") String? longitude,
-    @JsonKey(name: "location_id") int? locationId,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-    @JsonKey(name: "location") Map<String, dynamic>? location,
-  });
+  $Res call(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertFromJson)
+      int id,
+      @JsonKey(name: "name") String? name,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "short_name") String? shortName,
+      @JsonKey(name: "short_name_en") String? shortNameEn,
+      @JsonKey(name: "short_name_ru") String? shortNameRu,
+      @JsonKey(name: "short_name_uz") String? shortNameUz,
+      @JsonKey(name: "latitude") String? latitude,
+      @JsonKey(name: "longitude") String? longitude,
+      @JsonKey(name: "location_id") int? locationId,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt,
+      @JsonKey(name: "location") Map<String, dynamic>? location});
 }
 
 /// @nodoc
@@ -126,86 +121,68 @@ class _$UniversityCopyWithImpl<$Res, $Val extends University>
     Object? updatedAt = freezed,
     Object? location = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            name:
-                freezed == name
-                    ? _value.name
-                    : name // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameEn:
-                freezed == nameEn
-                    ? _value.nameEn
-                    : nameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameRu:
-                freezed == nameRu
-                    ? _value.nameRu
-                    : nameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameUz:
-                freezed == nameUz
-                    ? _value.nameUz
-                    : nameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortName:
-                freezed == shortName
-                    ? _value.shortName
-                    : shortName // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameEn:
-                freezed == shortNameEn
-                    ? _value.shortNameEn
-                    : shortNameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameRu:
-                freezed == shortNameRu
-                    ? _value.shortNameRu
-                    : shortNameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            shortNameUz:
-                freezed == shortNameUz
-                    ? _value.shortNameUz
-                    : shortNameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            latitude:
-                freezed == latitude
-                    ? _value.latitude
-                    : latitude // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            longitude:
-                freezed == longitude
-                    ? _value.longitude
-                    : longitude // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            locationId:
-                freezed == locationId
-                    ? _value.locationId
-                    : locationId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            createdAt:
-                freezed == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            updatedAt:
-                freezed == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            location:
-                freezed == location
-                    ? _value.location
-                    : location // ignore: cast_nullable_to_non_nullable
-                        as Map<String, dynamic>?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      name: freezed == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortName: freezed == shortName
+          ? _value.shortName
+          : shortName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameEn: freezed == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameRu: freezed == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameUz: freezed == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      latitude: freezed == latitude
+          ? _value.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as String?,
+      longitude: freezed == longitude
+          ? _value.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationId: freezed == locationId
+          ? _value.locationId
+          : locationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      location: freezed == location
+          ? _value.location
+          : location // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+    ) as $Val);
   }
 }
 
@@ -213,32 +190,29 @@ class _$UniversityCopyWithImpl<$Res, $Val extends University>
 abstract class _$$UniversityImplCopyWith<$Res>
     implements $UniversityCopyWith<$Res> {
   factory _$$UniversityImplCopyWith(
-    _$UniversityImpl value,
-    $Res Function(_$UniversityImpl) then,
-  ) = __$$UniversityImplCopyWithImpl<$Res>;
+          _$UniversityImpl value, $Res Function(_$UniversityImpl) then) =
+      __$$UniversityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertFromJson,
-    )
-    int id,
-    @JsonKey(name: "name") String? name,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "short_name") String? shortName,
-    @JsonKey(name: "short_name_en") String? shortNameEn,
-    @JsonKey(name: "short_name_ru") String? shortNameRu,
-    @JsonKey(name: "short_name_uz") String? shortNameUz,
-    @JsonKey(name: "latitude") String? latitude,
-    @JsonKey(name: "longitude") String? longitude,
-    @JsonKey(name: "location_id") int? locationId,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-    @JsonKey(name: "location") Map<String, dynamic>? location,
-  });
+  $Res call(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertFromJson)
+      int id,
+      @JsonKey(name: "name") String? name,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "short_name") String? shortName,
+      @JsonKey(name: "short_name_en") String? shortNameEn,
+      @JsonKey(name: "short_name_ru") String? shortNameRu,
+      @JsonKey(name: "short_name_uz") String? shortNameUz,
+      @JsonKey(name: "latitude") String? latitude,
+      @JsonKey(name: "longitude") String? longitude,
+      @JsonKey(name: "location_id") int? locationId,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt,
+      @JsonKey(name: "location") Map<String, dynamic>? location});
 }
 
 /// @nodoc
@@ -246,9 +220,8 @@ class __$$UniversityImplCopyWithImpl<$Res>
     extends _$UniversityCopyWithImpl<$Res, _$UniversityImpl>
     implements _$$UniversityImplCopyWith<$Res> {
   __$$UniversityImplCopyWithImpl(
-    _$UniversityImpl _value,
-    $Res Function(_$UniversityImpl) _then,
-  ) : super(_value, _then);
+      _$UniversityImpl _value, $Res Function(_$UniversityImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of University
   /// with the given fields replaced by the non-null parameter values.
@@ -271,121 +244,102 @@ class __$$UniversityImplCopyWithImpl<$Res>
     Object? updatedAt = freezed,
     Object? location = freezed,
   }) {
-    return _then(
-      _$UniversityImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        name:
-            freezed == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameEn:
-            freezed == nameEn
-                ? _value.nameEn
-                : nameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameRu:
-            freezed == nameRu
-                ? _value.nameRu
-                : nameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameUz:
-            freezed == nameUz
-                ? _value.nameUz
-                : nameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortName:
-            freezed == shortName
-                ? _value.shortName
-                : shortName // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameEn:
-            freezed == shortNameEn
-                ? _value.shortNameEn
-                : shortNameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameRu:
-            freezed == shortNameRu
-                ? _value.shortNameRu
-                : shortNameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        shortNameUz:
-            freezed == shortNameUz
-                ? _value.shortNameUz
-                : shortNameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        latitude:
-            freezed == latitude
-                ? _value.latitude
-                : latitude // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        longitude:
-            freezed == longitude
-                ? _value.longitude
-                : longitude // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        locationId:
-            freezed == locationId
-                ? _value.locationId
-                : locationId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        createdAt:
-            freezed == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        updatedAt:
-            freezed == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        location:
-            freezed == location
-                ? _value._location
-                : location // ignore: cast_nullable_to_non_nullable
-                    as Map<String, dynamic>?,
-      ),
-    );
+    return _then(_$UniversityImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      name: freezed == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortName: freezed == shortName
+          ? _value.shortName
+          : shortName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameEn: freezed == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameRu: freezed == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      shortNameUz: freezed == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      latitude: freezed == latitude
+          ? _value.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as String?,
+      longitude: freezed == longitude
+          ? _value.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as String?,
+      locationId: freezed == locationId
+          ? _value.locationId
+          : locationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      location: freezed == location
+          ? _value._location
+          : location // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$UniversityImpl implements _University {
-  const _$UniversityImpl({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertFromJson,
-    )
-    required this.id,
-    @JsonKey(name: "name") this.name,
-    @JsonKey(name: "name_en") this.nameEn,
-    @JsonKey(name: "name_ru") this.nameRu,
-    @JsonKey(name: "name_uz") this.nameUz,
-    @JsonKey(name: "short_name") this.shortName,
-    @JsonKey(name: "short_name_en") this.shortNameEn,
-    @JsonKey(name: "short_name_ru") this.shortNameRu,
-    @JsonKey(name: "short_name_uz") this.shortNameUz,
-    @JsonKey(name: "latitude") this.latitude,
-    @JsonKey(name: "longitude") this.longitude,
-    @JsonKey(name: "location_id") this.locationId,
-    @JsonKey(name: "created_at") this.createdAt,
-    @JsonKey(name: "updated_at") this.updatedAt,
-    @JsonKey(name: "location") final Map<String, dynamic>? location,
-  }) : _location = location;
+  const _$UniversityImpl(
+      {@JsonKey(
+          fromJson: NullableIntConverter.convertFromJson,
+          toJson: NullableIntConverter.convertFromJson)
+      required this.id,
+      @JsonKey(name: "name") this.name,
+      @JsonKey(name: "name_en") this.nameEn,
+      @JsonKey(name: "name_ru") this.nameRu,
+      @JsonKey(name: "name_uz") this.nameUz,
+      @JsonKey(name: "short_name") this.shortName,
+      @JsonKey(name: "short_name_en") this.shortNameEn,
+      @JsonKey(name: "short_name_ru") this.shortNameRu,
+      @JsonKey(name: "short_name_uz") this.shortNameUz,
+      @JsonKey(name: "latitude") this.latitude,
+      @JsonKey(name: "longitude") this.longitude,
+      @JsonKey(name: "location_id") this.locationId,
+      @JsonKey(name: "created_at") this.createdAt,
+      @JsonKey(name: "updated_at") this.updatedAt,
+      @JsonKey(name: "location") final Map<String, dynamic>? location})
+      : _location = location;
 
   factory _$UniversityImpl.fromJson(Map<String, dynamic> json) =>
       _$$UniversityImplFromJson(json);
 
   @override
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertFromJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertFromJson)
   final int id;
   @override
   @JsonKey(name: "name")
@@ -476,23 +430,22 @@ class _$UniversityImpl implements _University {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    name,
-    nameEn,
-    nameRu,
-    nameUz,
-    shortName,
-    shortNameEn,
-    shortNameRu,
-    shortNameUz,
-    latitude,
-    longitude,
-    locationId,
-    createdAt,
-    updatedAt,
-    const DeepCollectionEquality().hash(_location),
-  );
+      runtimeType,
+      id,
+      name,
+      nameEn,
+      nameRu,
+      nameUz,
+      shortName,
+      shortNameEn,
+      shortNameRu,
+      shortNameUz,
+      latitude,
+      longitude,
+      locationId,
+      createdAt,
+      updatedAt,
+      const DeepCollectionEquality().hash(_location));
 
   /// Create a copy of University
   /// with the given fields replaced by the non-null parameter values.
@@ -504,41 +457,41 @@ class _$UniversityImpl implements _University {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UniversityImplToJson(this);
+    return _$$UniversityImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _University implements University {
-  const factory _University({
-    @JsonKey(
-      fromJson: NullableIntConverter.convertFromJson,
-      toJson: NullableIntConverter.convertFromJson,
-    )
-    required final int id,
-    @JsonKey(name: "name") final String? name,
-    @JsonKey(name: "name_en") final String? nameEn,
-    @JsonKey(name: "name_ru") final String? nameRu,
-    @JsonKey(name: "name_uz") final String? nameUz,
-    @JsonKey(name: "short_name") final String? shortName,
-    @JsonKey(name: "short_name_en") final String? shortNameEn,
-    @JsonKey(name: "short_name_ru") final String? shortNameRu,
-    @JsonKey(name: "short_name_uz") final String? shortNameUz,
-    @JsonKey(name: "latitude") final String? latitude,
-    @JsonKey(name: "longitude") final String? longitude,
-    @JsonKey(name: "location_id") final int? locationId,
-    @JsonKey(name: "created_at") final String? createdAt,
-    @JsonKey(name: "updated_at") final String? updatedAt,
-    @JsonKey(name: "location") final Map<String, dynamic>? location,
-  }) = _$UniversityImpl;
+  const factory _University(
+          {@JsonKey(
+              fromJson: NullableIntConverter.convertFromJson,
+              toJson: NullableIntConverter.convertFromJson)
+          required final int id,
+          @JsonKey(name: "name") final String? name,
+          @JsonKey(name: "name_en") final String? nameEn,
+          @JsonKey(name: "name_ru") final String? nameRu,
+          @JsonKey(name: "name_uz") final String? nameUz,
+          @JsonKey(name: "short_name") final String? shortName,
+          @JsonKey(name: "short_name_en") final String? shortNameEn,
+          @JsonKey(name: "short_name_ru") final String? shortNameRu,
+          @JsonKey(name: "short_name_uz") final String? shortNameUz,
+          @JsonKey(name: "latitude") final String? latitude,
+          @JsonKey(name: "longitude") final String? longitude,
+          @JsonKey(name: "location_id") final int? locationId,
+          @JsonKey(name: "created_at") final String? createdAt,
+          @JsonKey(name: "updated_at") final String? updatedAt,
+          @JsonKey(name: "location") final Map<String, dynamic>? location}) =
+      _$UniversityImpl;
 
   factory _University.fromJson(Map<String, dynamic> json) =
       _$UniversityImpl.fromJson;
 
   @override
   @JsonKey(
-    fromJson: NullableIntConverter.convertFromJson,
-    toJson: NullableIntConverter.convertFromJson,
-  )
+      fromJson: NullableIntConverter.convertFromJson,
+      toJson: NullableIntConverter.convertFromJson)
   int get id;
   @override
   @JsonKey(name: "name")

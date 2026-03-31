@@ -12,8 +12,7 @@ part of 'complaint_category.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 ComplaintCategory _$ComplaintCategoryFromJson(Map<String, dynamic> json) {
   return _ComplaintCategory.fromJson(json);
@@ -46,18 +45,16 @@ mixin _$ComplaintCategory {
 /// @nodoc
 abstract class $ComplaintCategoryCopyWith<$Res> {
   factory $ComplaintCategoryCopyWith(
-    ComplaintCategory value,
-    $Res Function(ComplaintCategory) then,
-  ) = _$ComplaintCategoryCopyWithImpl<$Res, ComplaintCategory>;
+          ComplaintCategory value, $Res Function(ComplaintCategory) then) =
+      _$ComplaintCategoryCopyWithImpl<$Res, ComplaintCategory>;
   @useResult
-  $Res call({
-    @JsonKey(name: "name_uz") String nameUz,
-    @JsonKey(name: "name_ru") String nameRu,
-    @JsonKey(name: "name_en") String nameEn,
-    int? id,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-  });
+  $Res call(
+      {@JsonKey(name: "name_uz") String nameUz,
+      @JsonKey(name: "name_ru") String nameRu,
+      @JsonKey(name: "name_en") String nameEn,
+      int? id,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt});
 }
 
 /// @nodoc
@@ -82,71 +79,59 @@ class _$ComplaintCategoryCopyWithImpl<$Res, $Val extends ComplaintCategory>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            nameUz:
-                null == nameUz
-                    ? _value.nameUz
-                    : nameUz // ignore: cast_nullable_to_non_nullable
-                        as String,
-            nameRu:
-                null == nameRu
-                    ? _value.nameRu
-                    : nameRu // ignore: cast_nullable_to_non_nullable
-                        as String,
-            nameEn:
-                null == nameEn
-                    ? _value.nameEn
-                    : nameEn // ignore: cast_nullable_to_non_nullable
-                        as String,
-            id:
-                freezed == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            createdAt:
-                freezed == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            updatedAt:
-                freezed == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      nameUz: null == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameRu: null == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameEn: null == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$ComplaintCategoryImplCopyWith<$Res>
     implements $ComplaintCategoryCopyWith<$Res> {
-  factory _$$ComplaintCategoryImplCopyWith(
-    _$ComplaintCategoryImpl value,
-    $Res Function(_$ComplaintCategoryImpl) then,
-  ) = __$$ComplaintCategoryImplCopyWithImpl<$Res>;
+  factory _$$ComplaintCategoryImplCopyWith(_$ComplaintCategoryImpl value,
+          $Res Function(_$ComplaintCategoryImpl) then) =
+      __$$ComplaintCategoryImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @JsonKey(name: "name_uz") String nameUz,
-    @JsonKey(name: "name_ru") String nameRu,
-    @JsonKey(name: "name_en") String nameEn,
-    int? id,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-  });
+  $Res call(
+      {@JsonKey(name: "name_uz") String nameUz,
+      @JsonKey(name: "name_ru") String nameRu,
+      @JsonKey(name: "name_en") String nameEn,
+      int? id,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt});
 }
 
 /// @nodoc
 class __$$ComplaintCategoryImplCopyWithImpl<$Res>
     extends _$ComplaintCategoryCopyWithImpl<$Res, _$ComplaintCategoryImpl>
     implements _$$ComplaintCategoryImplCopyWith<$Res> {
-  __$$ComplaintCategoryImplCopyWithImpl(
-    _$ComplaintCategoryImpl _value,
-    $Res Function(_$ComplaintCategoryImpl) _then,
-  ) : super(_value, _then);
+  __$$ComplaintCategoryImplCopyWithImpl(_$ComplaintCategoryImpl _value,
+      $Res Function(_$ComplaintCategoryImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ComplaintCategory
   /// with the given fields replaced by the non-null parameter values.
@@ -160,54 +145,45 @@ class __$$ComplaintCategoryImplCopyWithImpl<$Res>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(
-      _$ComplaintCategoryImpl(
-        nameUz:
-            null == nameUz
-                ? _value.nameUz
-                : nameUz // ignore: cast_nullable_to_non_nullable
-                    as String,
-        nameRu:
-            null == nameRu
-                ? _value.nameRu
-                : nameRu // ignore: cast_nullable_to_non_nullable
-                    as String,
-        nameEn:
-            null == nameEn
-                ? _value.nameEn
-                : nameEn // ignore: cast_nullable_to_non_nullable
-                    as String,
-        id:
-            freezed == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        createdAt:
-            freezed == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        updatedAt:
-            freezed == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-      ),
-    );
+    return _then(_$ComplaintCategoryImpl(
+      nameUz: null == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameRu: null == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameEn: null == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ComplaintCategoryImpl implements _ComplaintCategory {
-  const _$ComplaintCategoryImpl({
-    @JsonKey(name: "name_uz") required this.nameUz,
-    @JsonKey(name: "name_ru") required this.nameRu,
-    @JsonKey(name: "name_en") required this.nameEn,
-    this.id,
-    @JsonKey(name: "created_at") this.createdAt,
-    @JsonKey(name: "updated_at") this.updatedAt,
-  });
+  const _$ComplaintCategoryImpl(
+      {@JsonKey(name: "name_uz") required this.nameUz,
+      @JsonKey(name: "name_ru") required this.nameRu,
+      @JsonKey(name: "name_en") required this.nameEn,
+      this.id,
+      @JsonKey(name: "created_at") this.createdAt,
+      @JsonKey(name: "updated_at") this.updatedAt});
 
   factory _$ComplaintCategoryImpl.fromJson(Map<String, dynamic> json) =>
       _$$ComplaintCategoryImplFromJson(json);
@@ -253,14 +229,7 @@ class _$ComplaintCategoryImpl implements _ComplaintCategory {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    nameUz,
-    nameRu,
-    nameEn,
-    id,
-    createdAt,
-    updatedAt,
-  );
+      runtimeType, nameUz, nameRu, nameEn, id, createdAt, updatedAt);
 
   /// Create a copy of ComplaintCategory
   /// with the given fields replaced by the non-null parameter values.
@@ -269,25 +238,25 @@ class _$ComplaintCategoryImpl implements _ComplaintCategory {
   @pragma('vm:prefer-inline')
   _$$ComplaintCategoryImplCopyWith<_$ComplaintCategoryImpl> get copyWith =>
       __$$ComplaintCategoryImplCopyWithImpl<_$ComplaintCategoryImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ComplaintCategoryImplToJson(this);
+    return _$$ComplaintCategoryImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _ComplaintCategory implements ComplaintCategory {
-  const factory _ComplaintCategory({
-    @JsonKey(name: "name_uz") required final String nameUz,
-    @JsonKey(name: "name_ru") required final String nameRu,
-    @JsonKey(name: "name_en") required final String nameEn,
-    final int? id,
-    @JsonKey(name: "created_at") final String? createdAt,
-    @JsonKey(name: "updated_at") final String? updatedAt,
-  }) = _$ComplaintCategoryImpl;
+  const factory _ComplaintCategory(
+          {@JsonKey(name: "name_uz") required final String nameUz,
+          @JsonKey(name: "name_ru") required final String nameRu,
+          @JsonKey(name: "name_en") required final String nameEn,
+          final int? id,
+          @JsonKey(name: "created_at") final String? createdAt,
+          @JsonKey(name: "updated_at") final String? updatedAt}) =
+      _$ComplaintCategoryImpl;
 
   factory _ComplaintCategory.fromJson(Map<String, dynamic> json) =
       _$ComplaintCategoryImpl.fromJson;

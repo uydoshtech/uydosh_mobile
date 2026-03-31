@@ -42,6 +42,12 @@ abstract class IListingService {
 
   Future<ListingDetail> getListingDetail(int listingId, {String? language});
 
+  Future<void> saveDescriptionTranslation({
+    required int listingId,
+    required String targetLanguageCode,
+    required String translatedText,
+  });
+
   Future<ListingDetail> createListing({
     required String title,
     required int listingTypeId,
@@ -210,6 +216,18 @@ class ListingService implements IListingService {
   @override
   Future<ListingDetail> getListingDetail(int listingId, {String? language}) =>
       _detailService.getListingDetail(listingId, language: language);
+
+  @override
+  Future<void> saveDescriptionTranslation({
+    required int listingId,
+    required String targetLanguageCode,
+    required String translatedText,
+  }) =>
+      _detailService.saveDescriptionTranslation(
+        listingId: listingId,
+        targetLanguageCode: targetLanguageCode,
+        translatedText: translatedText,
+      );
 
   @override
   Future<ListingDetail> createListing({

@@ -12,8 +12,7 @@ part of 'listing_detail.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 ListingDetail _$ListingDetailFromJson(Map<String, dynamic> json) {
   return _ListingDetail.fromJson(json);
@@ -39,6 +38,12 @@ mixin _$ListingDetail {
   @JsonKey(name: "listing_type")
   ListingTypeDetail get listingType => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
+  @JsonKey(name: "description_ru")
+  String? get descriptionRu => throw _privateConstructorUsedError;
+  @JsonKey(name: "description_en")
+  String? get descriptionEn => throw _privateConstructorUsedError;
+  @JsonKey(name: "description_uz")
+  String? get descriptionUz => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_station_id")
   int? get subwayStationId => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_line_id")
@@ -71,34 +76,35 @@ mixin _$ListingDetail {
 /// @nodoc
 abstract class $ListingDetailCopyWith<$Res> {
   factory $ListingDetailCopyWith(
-    ListingDetail value,
-    $Res Function(ListingDetail) then,
-  ) = _$ListingDetailCopyWithImpl<$Res, ListingDetail>;
+          ListingDetail value, $Res Function(ListingDetail) then) =
+      _$ListingDetailCopyWithImpl<$Res, ListingDetail>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "user_id") int userId,
-    String title,
-    @JsonKey(name: "listing_type_id") int listingTypeId,
-    @JsonKey(name: "price") int price,
-    @JsonKey(name: "is_active") bool isActive,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    UserDetail user,
-    @JsonKey(name: "listing_type") ListingTypeDetail listingType,
-    String? description,
-    @JsonKey(name: "subway_station_id") int? subwayStationId,
-    @JsonKey(name: "subway_line_id") int? subwayLineId,
-    @JsonKey(name: "location_id") int? locationId,
-    int? gender,
-    @JsonKey(name: "featured_at") String? featuredAt,
-    @JsonKey(name: "move_in_date") String? moveInDate,
-    @JsonKey(name: "private_room") bool? privateRoom,
-    @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
-    LocationDetail? location,
-    List<Amenity>? amenities,
-    List<Photo>? photos,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "user_id") int userId,
+      String title,
+      @JsonKey(name: "listing_type_id") int listingTypeId,
+      @JsonKey(name: "price") int price,
+      @JsonKey(name: "is_active") bool isActive,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      UserDetail user,
+      @JsonKey(name: "listing_type") ListingTypeDetail listingType,
+      String? description,
+      @JsonKey(name: "description_ru") String? descriptionRu,
+      @JsonKey(name: "description_en") String? descriptionEn,
+      @JsonKey(name: "description_uz") String? descriptionUz,
+      @JsonKey(name: "subway_station_id") int? subwayStationId,
+      @JsonKey(name: "subway_line_id") int? subwayLineId,
+      @JsonKey(name: "location_id") int? locationId,
+      int? gender,
+      @JsonKey(name: "featured_at") String? featuredAt,
+      @JsonKey(name: "move_in_date") String? moveInDate,
+      @JsonKey(name: "private_room") bool? privateRoom,
+      @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
+      LocationDetail? location,
+      List<Amenity>? amenities,
+      List<Photo>? photos});
 
   $UserDetailCopyWith<$Res> get user;
   $ListingTypeDetailCopyWith<$Res> get listingType;
@@ -132,6 +138,9 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? user = null,
     Object? listingType = null,
     Object? description = freezed,
+    Object? descriptionRu = freezed,
+    Object? descriptionEn = freezed,
+    Object? descriptionUz = freezed,
     Object? subwayStationId = freezed,
     Object? subwayLineId = freezed,
     Object? locationId = freezed,
@@ -144,121 +153,108 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? amenities = freezed,
     Object? photos = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            userId:
-                null == userId
-                    ? _value.userId
-                    : userId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            title:
-                null == title
-                    ? _value.title
-                    : title // ignore: cast_nullable_to_non_nullable
-                        as String,
-            listingTypeId:
-                null == listingTypeId
-                    ? _value.listingTypeId
-                    : listingTypeId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            price:
-                null == price
-                    ? _value.price
-                    : price // ignore: cast_nullable_to_non_nullable
-                        as int,
-            isActive:
-                null == isActive
-                    ? _value.isActive
-                    : isActive // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            updatedAt:
-                null == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            user:
-                null == user
-                    ? _value.user
-                    : user // ignore: cast_nullable_to_non_nullable
-                        as UserDetail,
-            listingType:
-                null == listingType
-                    ? _value.listingType
-                    : listingType // ignore: cast_nullable_to_non_nullable
-                        as ListingTypeDetail,
-            description:
-                freezed == description
-                    ? _value.description
-                    : description // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            subwayStationId:
-                freezed == subwayStationId
-                    ? _value.subwayStationId
-                    : subwayStationId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            subwayLineId:
-                freezed == subwayLineId
-                    ? _value.subwayLineId
-                    : subwayLineId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            locationId:
-                freezed == locationId
-                    ? _value.locationId
-                    : locationId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            gender:
-                freezed == gender
-                    ? _value.gender
-                    : gender // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            featuredAt:
-                freezed == featuredAt
-                    ? _value.featuredAt
-                    : featuredAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            moveInDate:
-                freezed == moveInDate
-                    ? _value.moveInDate
-                    : moveInDate // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            privateRoom:
-                freezed == privateRoom
-                    ? _value.privateRoom
-                    : privateRoom // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            subwayStation:
-                freezed == subwayStation
-                    ? _value.subwayStation
-                    : subwayStation // ignore: cast_nullable_to_non_nullable
-                        as SubwayStationDetail?,
-            location:
-                freezed == location
-                    ? _value.location
-                    : location // ignore: cast_nullable_to_non_nullable
-                        as LocationDetail?,
-            amenities:
-                freezed == amenities
-                    ? _value.amenities
-                    : amenities // ignore: cast_nullable_to_non_nullable
-                        as List<Amenity>?,
-            photos:
-                freezed == photos
-                    ? _value.photos
-                    : photos // ignore: cast_nullable_to_non_nullable
-                        as List<Photo>?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      userId: null == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as int,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      listingTypeId: null == listingTypeId
+          ? _value.listingTypeId
+          : listingTypeId // ignore: cast_nullable_to_non_nullable
+              as int,
+      price: null == price
+          ? _value.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      user: null == user
+          ? _value.user
+          : user // ignore: cast_nullable_to_non_nullable
+              as UserDetail,
+      listingType: null == listingType
+          ? _value.listingType
+          : listingType // ignore: cast_nullable_to_non_nullable
+              as ListingTypeDetail,
+      description: freezed == description
+          ? _value.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+      descriptionRu: freezed == descriptionRu
+          ? _value.descriptionRu
+          : descriptionRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      descriptionEn: freezed == descriptionEn
+          ? _value.descriptionEn
+          : descriptionEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      descriptionUz: freezed == descriptionUz
+          ? _value.descriptionUz
+          : descriptionUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      subwayStationId: freezed == subwayStationId
+          ? _value.subwayStationId
+          : subwayStationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      subwayLineId: freezed == subwayLineId
+          ? _value.subwayLineId
+          : subwayLineId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      locationId: freezed == locationId
+          ? _value.locationId
+          : locationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      gender: freezed == gender
+          ? _value.gender
+          : gender // ignore: cast_nullable_to_non_nullable
+              as int?,
+      featuredAt: freezed == featuredAt
+          ? _value.featuredAt
+          : featuredAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      moveInDate: freezed == moveInDate
+          ? _value.moveInDate
+          : moveInDate // ignore: cast_nullable_to_non_nullable
+              as String?,
+      privateRoom: freezed == privateRoom
+          ? _value.privateRoom
+          : privateRoom // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      subwayStation: freezed == subwayStation
+          ? _value.subwayStation
+          : subwayStation // ignore: cast_nullable_to_non_nullable
+              as SubwayStationDetail?,
+      location: freezed == location
+          ? _value.location
+          : location // ignore: cast_nullable_to_non_nullable
+              as LocationDetail?,
+      amenities: freezed == amenities
+          ? _value.amenities
+          : amenities // ignore: cast_nullable_to_non_nullable
+              as List<Amenity>?,
+      photos: freezed == photos
+          ? _value.photos
+          : photos // ignore: cast_nullable_to_non_nullable
+              as List<Photo>?,
+    ) as $Val);
   }
 
   /// Create a copy of ListingDetail
@@ -314,35 +310,36 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
 abstract class _$$ListingDetailImplCopyWith<$Res>
     implements $ListingDetailCopyWith<$Res> {
   factory _$$ListingDetailImplCopyWith(
-    _$ListingDetailImpl value,
-    $Res Function(_$ListingDetailImpl) then,
-  ) = __$$ListingDetailImplCopyWithImpl<$Res>;
+          _$ListingDetailImpl value, $Res Function(_$ListingDetailImpl) then) =
+      __$$ListingDetailImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "user_id") int userId,
-    String title,
-    @JsonKey(name: "listing_type_id") int listingTypeId,
-    @JsonKey(name: "price") int price,
-    @JsonKey(name: "is_active") bool isActive,
-    @JsonKey(name: "created_at") String createdAt,
-    @JsonKey(name: "updated_at") String updatedAt,
-    UserDetail user,
-    @JsonKey(name: "listing_type") ListingTypeDetail listingType,
-    String? description,
-    @JsonKey(name: "subway_station_id") int? subwayStationId,
-    @JsonKey(name: "subway_line_id") int? subwayLineId,
-    @JsonKey(name: "location_id") int? locationId,
-    int? gender,
-    @JsonKey(name: "featured_at") String? featuredAt,
-    @JsonKey(name: "move_in_date") String? moveInDate,
-    @JsonKey(name: "private_room") bool? privateRoom,
-    @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
-    LocationDetail? location,
-    List<Amenity>? amenities,
-    List<Photo>? photos,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "user_id") int userId,
+      String title,
+      @JsonKey(name: "listing_type_id") int listingTypeId,
+      @JsonKey(name: "price") int price,
+      @JsonKey(name: "is_active") bool isActive,
+      @JsonKey(name: "created_at") String createdAt,
+      @JsonKey(name: "updated_at") String updatedAt,
+      UserDetail user,
+      @JsonKey(name: "listing_type") ListingTypeDetail listingType,
+      String? description,
+      @JsonKey(name: "description_ru") String? descriptionRu,
+      @JsonKey(name: "description_en") String? descriptionEn,
+      @JsonKey(name: "description_uz") String? descriptionUz,
+      @JsonKey(name: "subway_station_id") int? subwayStationId,
+      @JsonKey(name: "subway_line_id") int? subwayLineId,
+      @JsonKey(name: "location_id") int? locationId,
+      int? gender,
+      @JsonKey(name: "featured_at") String? featuredAt,
+      @JsonKey(name: "move_in_date") String? moveInDate,
+      @JsonKey(name: "private_room") bool? privateRoom,
+      @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
+      LocationDetail? location,
+      List<Amenity>? amenities,
+      List<Photo>? photos});
 
   @override
   $UserDetailCopyWith<$Res> get user;
@@ -359,9 +356,8 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     extends _$ListingDetailCopyWithImpl<$Res, _$ListingDetailImpl>
     implements _$$ListingDetailImplCopyWith<$Res> {
   __$$ListingDetailImplCopyWithImpl(
-    _$ListingDetailImpl _value,
-    $Res Function(_$ListingDetailImpl) _then,
-  ) : super(_value, _then);
+      _$ListingDetailImpl _value, $Res Function(_$ListingDetailImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -379,6 +375,9 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? user = null,
     Object? listingType = null,
     Object? description = freezed,
+    Object? descriptionRu = freezed,
+    Object? descriptionEn = freezed,
+    Object? descriptionUz = freezed,
     Object? subwayStationId = freezed,
     Object? subwayLineId = freezed,
     Object? locationId = freezed,
@@ -391,151 +390,142 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? amenities = freezed,
     Object? photos = freezed,
   }) {
-    return _then(
-      _$ListingDetailImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        userId:
-            null == userId
-                ? _value.userId
-                : userId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        title:
-            null == title
-                ? _value.title
-                : title // ignore: cast_nullable_to_non_nullable
-                    as String,
-        listingTypeId:
-            null == listingTypeId
-                ? _value.listingTypeId
-                : listingTypeId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        price:
-            null == price
-                ? _value.price
-                : price // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isActive:
-            null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        updatedAt:
-            null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        user:
-            null == user
-                ? _value.user
-                : user // ignore: cast_nullable_to_non_nullable
-                    as UserDetail,
-        listingType:
-            null == listingType
-                ? _value.listingType
-                : listingType // ignore: cast_nullable_to_non_nullable
-                    as ListingTypeDetail,
-        description:
-            freezed == description
-                ? _value.description
-                : description // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        subwayStationId:
-            freezed == subwayStationId
-                ? _value.subwayStationId
-                : subwayStationId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        subwayLineId:
-            freezed == subwayLineId
-                ? _value.subwayLineId
-                : subwayLineId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        locationId:
-            freezed == locationId
-                ? _value.locationId
-                : locationId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        gender:
-            freezed == gender
-                ? _value.gender
-                : gender // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        featuredAt:
-            freezed == featuredAt
-                ? _value.featuredAt
-                : featuredAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        moveInDate:
-            freezed == moveInDate
-                ? _value.moveInDate
-                : moveInDate // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        privateRoom:
-            freezed == privateRoom
-                ? _value.privateRoom
-                : privateRoom // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        subwayStation:
-            freezed == subwayStation
-                ? _value.subwayStation
-                : subwayStation // ignore: cast_nullable_to_non_nullable
-                    as SubwayStationDetail?,
-        location:
-            freezed == location
-                ? _value.location
-                : location // ignore: cast_nullable_to_non_nullable
-                    as LocationDetail?,
-        amenities:
-            freezed == amenities
-                ? _value._amenities
-                : amenities // ignore: cast_nullable_to_non_nullable
-                    as List<Amenity>?,
-        photos:
-            freezed == photos
-                ? _value._photos
-                : photos // ignore: cast_nullable_to_non_nullable
-                    as List<Photo>?,
-      ),
-    );
+    return _then(_$ListingDetailImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      userId: null == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as int,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      listingTypeId: null == listingTypeId
+          ? _value.listingTypeId
+          : listingTypeId // ignore: cast_nullable_to_non_nullable
+              as int,
+      price: null == price
+          ? _value.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      user: null == user
+          ? _value.user
+          : user // ignore: cast_nullable_to_non_nullable
+              as UserDetail,
+      listingType: null == listingType
+          ? _value.listingType
+          : listingType // ignore: cast_nullable_to_non_nullable
+              as ListingTypeDetail,
+      description: freezed == description
+          ? _value.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+      descriptionRu: freezed == descriptionRu
+          ? _value.descriptionRu
+          : descriptionRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      descriptionEn: freezed == descriptionEn
+          ? _value.descriptionEn
+          : descriptionEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      descriptionUz: freezed == descriptionUz
+          ? _value.descriptionUz
+          : descriptionUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      subwayStationId: freezed == subwayStationId
+          ? _value.subwayStationId
+          : subwayStationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      subwayLineId: freezed == subwayLineId
+          ? _value.subwayLineId
+          : subwayLineId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      locationId: freezed == locationId
+          ? _value.locationId
+          : locationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      gender: freezed == gender
+          ? _value.gender
+          : gender // ignore: cast_nullable_to_non_nullable
+              as int?,
+      featuredAt: freezed == featuredAt
+          ? _value.featuredAt
+          : featuredAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      moveInDate: freezed == moveInDate
+          ? _value.moveInDate
+          : moveInDate // ignore: cast_nullable_to_non_nullable
+              as String?,
+      privateRoom: freezed == privateRoom
+          ? _value.privateRoom
+          : privateRoom // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      subwayStation: freezed == subwayStation
+          ? _value.subwayStation
+          : subwayStation // ignore: cast_nullable_to_non_nullable
+              as SubwayStationDetail?,
+      location: freezed == location
+          ? _value.location
+          : location // ignore: cast_nullable_to_non_nullable
+              as LocationDetail?,
+      amenities: freezed == amenities
+          ? _value._amenities
+          : amenities // ignore: cast_nullable_to_non_nullable
+              as List<Amenity>?,
+      photos: freezed == photos
+          ? _value._photos
+          : photos // ignore: cast_nullable_to_non_nullable
+              as List<Photo>?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ListingDetailImpl implements _ListingDetail {
-  const _$ListingDetailImpl({
-    required this.id,
-    @JsonKey(name: "user_id") required this.userId,
-    required this.title,
-    @JsonKey(name: "listing_type_id") required this.listingTypeId,
-    @JsonKey(name: "price") required this.price,
-    @JsonKey(name: "is_active") required this.isActive,
-    @JsonKey(name: "created_at") required this.createdAt,
-    @JsonKey(name: "updated_at") required this.updatedAt,
-    required this.user,
-    @JsonKey(name: "listing_type") required this.listingType,
-    this.description,
-    @JsonKey(name: "subway_station_id") this.subwayStationId,
-    @JsonKey(name: "subway_line_id") this.subwayLineId,
-    @JsonKey(name: "location_id") this.locationId,
-    this.gender,
-    @JsonKey(name: "featured_at") this.featuredAt,
-    @JsonKey(name: "move_in_date") this.moveInDate,
-    @JsonKey(name: "private_room") this.privateRoom,
-    @JsonKey(name: "subway_station") this.subwayStation,
-    this.location,
-    final List<Amenity>? amenities,
-    final List<Photo>? photos,
-  }) : _amenities = amenities,
-       _photos = photos;
+  const _$ListingDetailImpl(
+      {required this.id,
+      @JsonKey(name: "user_id") required this.userId,
+      required this.title,
+      @JsonKey(name: "listing_type_id") required this.listingTypeId,
+      @JsonKey(name: "price") required this.price,
+      @JsonKey(name: "is_active") required this.isActive,
+      @JsonKey(name: "created_at") required this.createdAt,
+      @JsonKey(name: "updated_at") required this.updatedAt,
+      required this.user,
+      @JsonKey(name: "listing_type") required this.listingType,
+      this.description,
+      @JsonKey(name: "description_ru") this.descriptionRu,
+      @JsonKey(name: "description_en") this.descriptionEn,
+      @JsonKey(name: "description_uz") this.descriptionUz,
+      @JsonKey(name: "subway_station_id") this.subwayStationId,
+      @JsonKey(name: "subway_line_id") this.subwayLineId,
+      @JsonKey(name: "location_id") this.locationId,
+      this.gender,
+      @JsonKey(name: "featured_at") this.featuredAt,
+      @JsonKey(name: "move_in_date") this.moveInDate,
+      @JsonKey(name: "private_room") this.privateRoom,
+      @JsonKey(name: "subway_station") this.subwayStation,
+      this.location,
+      final List<Amenity>? amenities,
+      final List<Photo>? photos})
+      : _amenities = amenities,
+        _photos = photos;
 
   factory _$ListingDetailImpl.fromJson(Map<String, dynamic> json) =>
       _$$ListingDetailImplFromJson(json);
@@ -569,6 +559,15 @@ class _$ListingDetailImpl implements _ListingDetail {
   final ListingTypeDetail listingType;
   @override
   final String? description;
+  @override
+  @JsonKey(name: "description_ru")
+  final String? descriptionRu;
+  @override
+  @JsonKey(name: "description_en")
+  final String? descriptionEn;
+  @override
+  @JsonKey(name: "description_uz")
+  final String? descriptionUz;
   @override
   @JsonKey(name: "subway_station_id")
   final int? subwayStationId;
@@ -616,7 +615,7 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos)';
   }
 
   @override
@@ -641,6 +640,12 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.listingType == listingType) &&
             (identical(other.description, description) ||
                 other.description == description) &&
+            (identical(other.descriptionRu, descriptionRu) ||
+                other.descriptionRu == descriptionRu) &&
+            (identical(other.descriptionEn, descriptionEn) ||
+                other.descriptionEn == descriptionEn) &&
+            (identical(other.descriptionUz, descriptionUz) ||
+                other.descriptionUz == descriptionUz) &&
             (identical(other.subwayStationId, subwayStationId) ||
                 other.subwayStationId == subwayStationId) &&
             (identical(other.subwayLineId, subwayLineId) ||
@@ -658,40 +663,41 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.subwayStation == subwayStation) &&
             (identical(other.location, location) ||
                 other.location == location) &&
-            const DeepCollectionEquality().equals(
-              other._amenities,
-              _amenities,
-            ) &&
+            const DeepCollectionEquality()
+                .equals(other._amenities, _amenities) &&
             const DeepCollectionEquality().equals(other._photos, _photos));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
-    runtimeType,
-    id,
-    userId,
-    title,
-    listingTypeId,
-    price,
-    isActive,
-    createdAt,
-    updatedAt,
-    user,
-    listingType,
-    description,
-    subwayStationId,
-    subwayLineId,
-    locationId,
-    gender,
-    featuredAt,
-    moveInDate,
-    privateRoom,
-    subwayStation,
-    location,
-    const DeepCollectionEquality().hash(_amenities),
-    const DeepCollectionEquality().hash(_photos),
-  ]);
+        runtimeType,
+        id,
+        userId,
+        title,
+        listingTypeId,
+        price,
+        isActive,
+        createdAt,
+        updatedAt,
+        user,
+        listingType,
+        description,
+        descriptionRu,
+        descriptionEn,
+        descriptionUz,
+        subwayStationId,
+        subwayLineId,
+        locationId,
+        gender,
+        featuredAt,
+        moveInDate,
+        privateRoom,
+        subwayStation,
+        location,
+        const DeepCollectionEquality().hash(_amenities),
+        const DeepCollectionEquality().hash(_photos)
+      ]);
 
   /// Create a copy of ListingDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -703,35 +709,40 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ListingDetailImplToJson(this);
+    return _$$ListingDetailImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _ListingDetail implements ListingDetail {
-  const factory _ListingDetail({
-    required final int id,
-    @JsonKey(name: "user_id") required final int userId,
-    required final String title,
-    @JsonKey(name: "listing_type_id") required final int listingTypeId,
-    @JsonKey(name: "price") required final int price,
-    @JsonKey(name: "is_active") required final bool isActive,
-    @JsonKey(name: "created_at") required final String createdAt,
-    @JsonKey(name: "updated_at") required final String updatedAt,
-    required final UserDetail user,
-    @JsonKey(name: "listing_type") required final ListingTypeDetail listingType,
-    final String? description,
-    @JsonKey(name: "subway_station_id") final int? subwayStationId,
-    @JsonKey(name: "subway_line_id") final int? subwayLineId,
-    @JsonKey(name: "location_id") final int? locationId,
-    final int? gender,
-    @JsonKey(name: "featured_at") final String? featuredAt,
-    @JsonKey(name: "move_in_date") final String? moveInDate,
-    @JsonKey(name: "private_room") final bool? privateRoom,
-    @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
-    final LocationDetail? location,
-    final List<Amenity>? amenities,
-    final List<Photo>? photos,
-  }) = _$ListingDetailImpl;
+  const factory _ListingDetail(
+      {required final int id,
+      @JsonKey(name: "user_id") required final int userId,
+      required final String title,
+      @JsonKey(name: "listing_type_id") required final int listingTypeId,
+      @JsonKey(name: "price") required final int price,
+      @JsonKey(name: "is_active") required final bool isActive,
+      @JsonKey(name: "created_at") required final String createdAt,
+      @JsonKey(name: "updated_at") required final String updatedAt,
+      required final UserDetail user,
+      @JsonKey(name: "listing_type")
+      required final ListingTypeDetail listingType,
+      final String? description,
+      @JsonKey(name: "description_ru") final String? descriptionRu,
+      @JsonKey(name: "description_en") final String? descriptionEn,
+      @JsonKey(name: "description_uz") final String? descriptionUz,
+      @JsonKey(name: "subway_station_id") final int? subwayStationId,
+      @JsonKey(name: "subway_line_id") final int? subwayLineId,
+      @JsonKey(name: "location_id") final int? locationId,
+      final int? gender,
+      @JsonKey(name: "featured_at") final String? featuredAt,
+      @JsonKey(name: "move_in_date") final String? moveInDate,
+      @JsonKey(name: "private_room") final bool? privateRoom,
+      @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
+      final LocationDetail? location,
+      final List<Amenity>? amenities,
+      final List<Photo>? photos}) = _$ListingDetailImpl;
 
   factory _ListingDetail.fromJson(Map<String, dynamic> json) =
       _$ListingDetailImpl.fromJson;
@@ -765,6 +776,15 @@ abstract class _ListingDetail implements ListingDetail {
   ListingTypeDetail get listingType;
   @override
   String? get description;
+  @override
+  @JsonKey(name: "description_ru")
+  String? get descriptionRu;
+  @override
+  @JsonKey(name: "description_en")
+  String? get descriptionEn;
+  @override
+  @JsonKey(name: "description_uz")
+  String? get descriptionUz;
   @override
   @JsonKey(name: "subway_station_id")
   int? get subwayStationId;
@@ -829,16 +849,14 @@ mixin _$UserDetail {
 /// @nodoc
 abstract class $UserDetailCopyWith<$Res> {
   factory $UserDetailCopyWith(
-    UserDetail value,
-    $Res Function(UserDetail) then,
-  ) = _$UserDetailCopyWithImpl<$Res, UserDetail>;
+          UserDetail value, $Res Function(UserDetail) then) =
+      _$UserDetailCopyWithImpl<$Res, UserDetail>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "created_at") String createdAt,
-    String? email,
-    String? phone,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "created_at") String createdAt,
+      String? email,
+      String? phone});
 }
 
 /// @nodoc
@@ -861,31 +879,24 @@ class _$UserDetailCopyWithImpl<$Res, $Val extends UserDetail>
     Object? email = freezed,
     Object? phone = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            email:
-                freezed == email
-                    ? _value.email
-                    : email // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            phone:
-                freezed == phone
-                    ? _value.phone
-                    : phone // ignore: cast_nullable_to_non_nullable
-                        as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      email: freezed == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String?,
+      phone: freezed == phone
+          ? _value.phone
+          : phone // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 }
 
@@ -893,17 +904,15 @@ class _$UserDetailCopyWithImpl<$Res, $Val extends UserDetail>
 abstract class _$$UserDetailImplCopyWith<$Res>
     implements $UserDetailCopyWith<$Res> {
   factory _$$UserDetailImplCopyWith(
-    _$UserDetailImpl value,
-    $Res Function(_$UserDetailImpl) then,
-  ) = __$$UserDetailImplCopyWithImpl<$Res>;
+          _$UserDetailImpl value, $Res Function(_$UserDetailImpl) then) =
+      __$$UserDetailImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "created_at") String createdAt,
-    String? email,
-    String? phone,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "created_at") String createdAt,
+      String? email,
+      String? phone});
 }
 
 /// @nodoc
@@ -911,9 +920,8 @@ class __$$UserDetailImplCopyWithImpl<$Res>
     extends _$UserDetailCopyWithImpl<$Res, _$UserDetailImpl>
     implements _$$UserDetailImplCopyWith<$Res> {
   __$$UserDetailImplCopyWithImpl(
-    _$UserDetailImpl _value,
-    $Res Function(_$UserDetailImpl) _then,
-  ) : super(_value, _then);
+      _$UserDetailImpl _value, $Res Function(_$UserDetailImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of UserDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -925,42 +933,35 @@ class __$$UserDetailImplCopyWithImpl<$Res>
     Object? email = freezed,
     Object? phone = freezed,
   }) {
-    return _then(
-      _$UserDetailImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        email:
-            freezed == email
-                ? _value.email
-                : email // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        phone:
-            freezed == phone
-                ? _value.phone
-                : phone // ignore: cast_nullable_to_non_nullable
-                    as String?,
-      ),
-    );
+    return _then(_$UserDetailImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      email: freezed == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String?,
+      phone: freezed == phone
+          ? _value.phone
+          : phone // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$UserDetailImpl implements _UserDetail {
-  const _$UserDetailImpl({
-    required this.id,
-    @JsonKey(name: "created_at") required this.createdAt,
-    this.email,
-    this.phone,
-  });
+  const _$UserDetailImpl(
+      {required this.id,
+      @JsonKey(name: "created_at") required this.createdAt,
+      this.email,
+      this.phone});
 
   factory _$UserDetailImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserDetailImplFromJson(json);
@@ -972,7 +973,7 @@ class _$UserDetailImpl implements _UserDetail {
   final String createdAt;
   @override
   final String? email;
-  // Add email field from API response
+// Add email field from API response
   @override
   final String? phone;
 
@@ -1007,17 +1008,18 @@ class _$UserDetailImpl implements _UserDetail {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UserDetailImplToJson(this);
+    return _$$UserDetailImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _UserDetail implements UserDetail {
-  const factory _UserDetail({
-    required final int id,
-    @JsonKey(name: "created_at") required final String createdAt,
-    final String? email,
-    final String? phone,
-  }) = _$UserDetailImpl;
+  const factory _UserDetail(
+      {required final int id,
+      @JsonKey(name: "created_at") required final String createdAt,
+      final String? email,
+      final String? phone}) = _$UserDetailImpl;
 
   factory _UserDetail.fromJson(Map<String, dynamic> json) =
       _$UserDetailImpl.fromJson;
@@ -1068,17 +1070,15 @@ mixin _$ListingTypeDetail {
 /// @nodoc
 abstract class $ListingTypeDetailCopyWith<$Res> {
   factory $ListingTypeDetailCopyWith(
-    ListingTypeDetail value,
-    $Res Function(ListingTypeDetail) then,
-  ) = _$ListingTypeDetailCopyWithImpl<$Res, ListingTypeDetail>;
+          ListingTypeDetail value, $Res Function(ListingTypeDetail) then) =
+      _$ListingTypeDetailCopyWithImpl<$Res, ListingTypeDetail>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "name_uz") String nameUz,
-    @JsonKey(name: "name_ru") String nameRu,
-    @JsonKey(name: "name_en") String nameEn,
-    String code,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "name_uz") String nameUz,
+      @JsonKey(name: "name_ru") String nameRu,
+      @JsonKey(name: "name_en") String nameEn,
+      String code});
 }
 
 /// @nodoc
@@ -1102,65 +1102,54 @@ class _$ListingTypeDetailCopyWithImpl<$Res, $Val extends ListingTypeDetail>
     Object? nameEn = null,
     Object? code = null,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            nameUz:
-                null == nameUz
-                    ? _value.nameUz
-                    : nameUz // ignore: cast_nullable_to_non_nullable
-                        as String,
-            nameRu:
-                null == nameRu
-                    ? _value.nameRu
-                    : nameRu // ignore: cast_nullable_to_non_nullable
-                        as String,
-            nameEn:
-                null == nameEn
-                    ? _value.nameEn
-                    : nameEn // ignore: cast_nullable_to_non_nullable
-                        as String,
-            code:
-                null == code
-                    ? _value.code
-                    : code // ignore: cast_nullable_to_non_nullable
-                        as String,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: null == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameRu: null == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameEn: null == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+      code: null == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$ListingTypeDetailImplCopyWith<$Res>
     implements $ListingTypeDetailCopyWith<$Res> {
-  factory _$$ListingTypeDetailImplCopyWith(
-    _$ListingTypeDetailImpl value,
-    $Res Function(_$ListingTypeDetailImpl) then,
-  ) = __$$ListingTypeDetailImplCopyWithImpl<$Res>;
+  factory _$$ListingTypeDetailImplCopyWith(_$ListingTypeDetailImpl value,
+          $Res Function(_$ListingTypeDetailImpl) then) =
+      __$$ListingTypeDetailImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "name_uz") String nameUz,
-    @JsonKey(name: "name_ru") String nameRu,
-    @JsonKey(name: "name_en") String nameEn,
-    String code,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "name_uz") String nameUz,
+      @JsonKey(name: "name_ru") String nameRu,
+      @JsonKey(name: "name_en") String nameEn,
+      String code});
 }
 
 /// @nodoc
 class __$$ListingTypeDetailImplCopyWithImpl<$Res>
     extends _$ListingTypeDetailCopyWithImpl<$Res, _$ListingTypeDetailImpl>
     implements _$$ListingTypeDetailImplCopyWith<$Res> {
-  __$$ListingTypeDetailImplCopyWithImpl(
-    _$ListingTypeDetailImpl _value,
-    $Res Function(_$ListingTypeDetailImpl) _then,
-  ) : super(_value, _then);
+  __$$ListingTypeDetailImplCopyWithImpl(_$ListingTypeDetailImpl _value,
+      $Res Function(_$ListingTypeDetailImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingTypeDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -1173,48 +1162,40 @@ class __$$ListingTypeDetailImplCopyWithImpl<$Res>
     Object? nameEn = null,
     Object? code = null,
   }) {
-    return _then(
-      _$ListingTypeDetailImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        nameUz:
-            null == nameUz
-                ? _value.nameUz
-                : nameUz // ignore: cast_nullable_to_non_nullable
-                    as String,
-        nameRu:
-            null == nameRu
-                ? _value.nameRu
-                : nameRu // ignore: cast_nullable_to_non_nullable
-                    as String,
-        nameEn:
-            null == nameEn
-                ? _value.nameEn
-                : nameEn // ignore: cast_nullable_to_non_nullable
-                    as String,
-        code:
-            null == code
-                ? _value.code
-                : code // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+    return _then(_$ListingTypeDetailImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: null == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameRu: null == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameEn: null == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+      code: null == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ListingTypeDetailImpl implements _ListingTypeDetail {
-  const _$ListingTypeDetailImpl({
-    required this.id,
-    @JsonKey(name: "name_uz") required this.nameUz,
-    @JsonKey(name: "name_ru") required this.nameRu,
-    @JsonKey(name: "name_en") required this.nameEn,
-    required this.code,
-  });
+  const _$ListingTypeDetailImpl(
+      {required this.id,
+      @JsonKey(name: "name_uz") required this.nameUz,
+      @JsonKey(name: "name_ru") required this.nameRu,
+      @JsonKey(name: "name_en") required this.nameEn,
+      required this.code});
 
   factory _$ListingTypeDetailImpl.fromJson(Map<String, dynamic> json) =>
       _$$ListingTypeDetailImplFromJson(json);
@@ -1262,24 +1243,23 @@ class _$ListingTypeDetailImpl implements _ListingTypeDetail {
   @pragma('vm:prefer-inline')
   _$$ListingTypeDetailImplCopyWith<_$ListingTypeDetailImpl> get copyWith =>
       __$$ListingTypeDetailImplCopyWithImpl<_$ListingTypeDetailImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ListingTypeDetailImplToJson(this);
+    return _$$ListingTypeDetailImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _ListingTypeDetail implements ListingTypeDetail {
-  const factory _ListingTypeDetail({
-    required final int id,
-    @JsonKey(name: "name_uz") required final String nameUz,
-    @JsonKey(name: "name_ru") required final String nameRu,
-    @JsonKey(name: "name_en") required final String nameEn,
-    required final String code,
-  }) = _$ListingTypeDetailImpl;
+  const factory _ListingTypeDetail(
+      {required final int id,
+      @JsonKey(name: "name_uz") required final String nameUz,
+      @JsonKey(name: "name_ru") required final String nameRu,
+      @JsonKey(name: "name_en") required final String nameEn,
+      required final String code}) = _$ListingTypeDetailImpl;
 
   factory _ListingTypeDetail.fromJson(Map<String, dynamic> json) =
       _$ListingTypeDetailImpl.fromJson;
@@ -1334,17 +1314,15 @@ mixin _$SubwayStationDetail {
 /// @nodoc
 abstract class $SubwayStationDetailCopyWith<$Res> {
   factory $SubwayStationDetailCopyWith(
-    SubwayStationDetail value,
-    $Res Function(SubwayStationDetail) then,
-  ) = _$SubwayStationDetailCopyWithImpl<$Res, SubwayStationDetail>;
+          SubwayStationDetail value, $Res Function(SubwayStationDetail) then) =
+      _$SubwayStationDetailCopyWithImpl<$Res, SubwayStationDetail>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "name_uz") String nameUz,
-    @JsonKey(name: "name_ru") String nameRu,
-    @JsonKey(name: "name_en") String nameEn,
-    int line,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "name_uz") String nameUz,
+      @JsonKey(name: "name_ru") String nameRu,
+      @JsonKey(name: "name_en") String nameEn,
+      int line});
 }
 
 /// @nodoc
@@ -1368,65 +1346,54 @@ class _$SubwayStationDetailCopyWithImpl<$Res, $Val extends SubwayStationDetail>
     Object? nameEn = null,
     Object? line = null,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            nameUz:
-                null == nameUz
-                    ? _value.nameUz
-                    : nameUz // ignore: cast_nullable_to_non_nullable
-                        as String,
-            nameRu:
-                null == nameRu
-                    ? _value.nameRu
-                    : nameRu // ignore: cast_nullable_to_non_nullable
-                        as String,
-            nameEn:
-                null == nameEn
-                    ? _value.nameEn
-                    : nameEn // ignore: cast_nullable_to_non_nullable
-                        as String,
-            line:
-                null == line
-                    ? _value.line
-                    : line // ignore: cast_nullable_to_non_nullable
-                        as int,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: null == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameRu: null == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameEn: null == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+      line: null == line
+          ? _value.line
+          : line // ignore: cast_nullable_to_non_nullable
+              as int,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$SubwayStationDetailImplCopyWith<$Res>
     implements $SubwayStationDetailCopyWith<$Res> {
-  factory _$$SubwayStationDetailImplCopyWith(
-    _$SubwayStationDetailImpl value,
-    $Res Function(_$SubwayStationDetailImpl) then,
-  ) = __$$SubwayStationDetailImplCopyWithImpl<$Res>;
+  factory _$$SubwayStationDetailImplCopyWith(_$SubwayStationDetailImpl value,
+          $Res Function(_$SubwayStationDetailImpl) then) =
+      __$$SubwayStationDetailImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "name_uz") String nameUz,
-    @JsonKey(name: "name_ru") String nameRu,
-    @JsonKey(name: "name_en") String nameEn,
-    int line,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "name_uz") String nameUz,
+      @JsonKey(name: "name_ru") String nameRu,
+      @JsonKey(name: "name_en") String nameEn,
+      int line});
 }
 
 /// @nodoc
 class __$$SubwayStationDetailImplCopyWithImpl<$Res>
     extends _$SubwayStationDetailCopyWithImpl<$Res, _$SubwayStationDetailImpl>
     implements _$$SubwayStationDetailImplCopyWith<$Res> {
-  __$$SubwayStationDetailImplCopyWithImpl(
-    _$SubwayStationDetailImpl _value,
-    $Res Function(_$SubwayStationDetailImpl) _then,
-  ) : super(_value, _then);
+  __$$SubwayStationDetailImplCopyWithImpl(_$SubwayStationDetailImpl _value,
+      $Res Function(_$SubwayStationDetailImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of SubwayStationDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -1439,48 +1406,40 @@ class __$$SubwayStationDetailImplCopyWithImpl<$Res>
     Object? nameEn = null,
     Object? line = null,
   }) {
-    return _then(
-      _$SubwayStationDetailImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        nameUz:
-            null == nameUz
-                ? _value.nameUz
-                : nameUz // ignore: cast_nullable_to_non_nullable
-                    as String,
-        nameRu:
-            null == nameRu
-                ? _value.nameRu
-                : nameRu // ignore: cast_nullable_to_non_nullable
-                    as String,
-        nameEn:
-            null == nameEn
-                ? _value.nameEn
-                : nameEn // ignore: cast_nullable_to_non_nullable
-                    as String,
-        line:
-            null == line
-                ? _value.line
-                : line // ignore: cast_nullable_to_non_nullable
-                    as int,
-      ),
-    );
+    return _then(_$SubwayStationDetailImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: null == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameRu: null == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameEn: null == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+      line: null == line
+          ? _value.line
+          : line // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$SubwayStationDetailImpl implements _SubwayStationDetail {
-  const _$SubwayStationDetailImpl({
-    required this.id,
-    @JsonKey(name: "name_uz") required this.nameUz,
-    @JsonKey(name: "name_ru") required this.nameRu,
-    @JsonKey(name: "name_en") required this.nameEn,
-    required this.line,
-  });
+  const _$SubwayStationDetailImpl(
+      {required this.id,
+      @JsonKey(name: "name_uz") required this.nameUz,
+      @JsonKey(name: "name_ru") required this.nameRu,
+      @JsonKey(name: "name_en") required this.nameEn,
+      required this.line});
 
   factory _$SubwayStationDetailImpl.fromJson(Map<String, dynamic> json) =>
       _$$SubwayStationDetailImplFromJson(json);
@@ -1528,24 +1487,23 @@ class _$SubwayStationDetailImpl implements _SubwayStationDetail {
   @pragma('vm:prefer-inline')
   _$$SubwayStationDetailImplCopyWith<_$SubwayStationDetailImpl> get copyWith =>
       __$$SubwayStationDetailImplCopyWithImpl<_$SubwayStationDetailImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SubwayStationDetailImplToJson(this);
+    return _$$SubwayStationDetailImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _SubwayStationDetail implements SubwayStationDetail {
-  const factory _SubwayStationDetail({
-    required final int id,
-    @JsonKey(name: "name_uz") required final String nameUz,
-    @JsonKey(name: "name_ru") required final String nameRu,
-    @JsonKey(name: "name_en") required final String nameEn,
-    required final int line,
-  }) = _$SubwayStationDetailImpl;
+  const factory _SubwayStationDetail(
+      {required final int id,
+      @JsonKey(name: "name_uz") required final String nameUz,
+      @JsonKey(name: "name_ru") required final String nameRu,
+      @JsonKey(name: "name_en") required final String nameEn,
+      required final int line}) = _$SubwayStationDetailImpl;
 
   factory _SubwayStationDetail.fromJson(Map<String, dynamic> json) =
       _$SubwayStationDetailImpl.fromJson;
@@ -1605,19 +1563,17 @@ mixin _$LocationDetail {
 /// @nodoc
 abstract class $LocationDetailCopyWith<$Res> {
   factory $LocationDetailCopyWith(
-    LocationDetail value,
-    $Res Function(LocationDetail) then,
-  ) = _$LocationDetailCopyWithImpl<$Res, LocationDetail>;
+          LocationDetail value, $Res Function(LocationDetail) then) =
+      _$LocationDetailCopyWithImpl<$Res, LocationDetail>;
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "name_uz") String nameUz,
-    @JsonKey(name: "name_ru") String nameRu,
-    @JsonKey(name: "name_en") String nameEn,
-    @JsonKey(name: "short_name_uz") String shortNameUz,
-    @JsonKey(name: "short_name_ru") String shortNameRu,
-    @JsonKey(name: "short_name_en") String shortNameEn,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "name_uz") String nameUz,
+      @JsonKey(name: "name_ru") String nameRu,
+      @JsonKey(name: "name_en") String nameEn,
+      @JsonKey(name: "short_name_uz") String shortNameUz,
+      @JsonKey(name: "short_name_ru") String shortNameRu,
+      @JsonKey(name: "short_name_en") String shortNameEn});
 }
 
 /// @nodoc
@@ -1643,67 +1599,55 @@ class _$LocationDetailCopyWithImpl<$Res, $Val extends LocationDetail>
     Object? shortNameRu = null,
     Object? shortNameEn = null,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            nameUz:
-                null == nameUz
-                    ? _value.nameUz
-                    : nameUz // ignore: cast_nullable_to_non_nullable
-                        as String,
-            nameRu:
-                null == nameRu
-                    ? _value.nameRu
-                    : nameRu // ignore: cast_nullable_to_non_nullable
-                        as String,
-            nameEn:
-                null == nameEn
-                    ? _value.nameEn
-                    : nameEn // ignore: cast_nullable_to_non_nullable
-                        as String,
-            shortNameUz:
-                null == shortNameUz
-                    ? _value.shortNameUz
-                    : shortNameUz // ignore: cast_nullable_to_non_nullable
-                        as String,
-            shortNameRu:
-                null == shortNameRu
-                    ? _value.shortNameRu
-                    : shortNameRu // ignore: cast_nullable_to_non_nullable
-                        as String,
-            shortNameEn:
-                null == shortNameEn
-                    ? _value.shortNameEn
-                    : shortNameEn // ignore: cast_nullable_to_non_nullable
-                        as String,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: null == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameRu: null == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameEn: null == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+      shortNameUz: null == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      shortNameRu: null == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      shortNameEn: null == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$LocationDetailImplCopyWith<$Res>
     implements $LocationDetailCopyWith<$Res> {
-  factory _$$LocationDetailImplCopyWith(
-    _$LocationDetailImpl value,
-    $Res Function(_$LocationDetailImpl) then,
-  ) = __$$LocationDetailImplCopyWithImpl<$Res>;
+  factory _$$LocationDetailImplCopyWith(_$LocationDetailImpl value,
+          $Res Function(_$LocationDetailImpl) then) =
+      __$$LocationDetailImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    @JsonKey(name: "name_uz") String nameUz,
-    @JsonKey(name: "name_ru") String nameRu,
-    @JsonKey(name: "name_en") String nameEn,
-    @JsonKey(name: "short_name_uz") String shortNameUz,
-    @JsonKey(name: "short_name_ru") String shortNameRu,
-    @JsonKey(name: "short_name_en") String shortNameEn,
-  });
+  $Res call(
+      {int id,
+      @JsonKey(name: "name_uz") String nameUz,
+      @JsonKey(name: "name_ru") String nameRu,
+      @JsonKey(name: "name_en") String nameEn,
+      @JsonKey(name: "short_name_uz") String shortNameUz,
+      @JsonKey(name: "short_name_ru") String shortNameRu,
+      @JsonKey(name: "short_name_en") String shortNameEn});
 }
 
 /// @nodoc
@@ -1711,9 +1655,8 @@ class __$$LocationDetailImplCopyWithImpl<$Res>
     extends _$LocationDetailCopyWithImpl<$Res, _$LocationDetailImpl>
     implements _$$LocationDetailImplCopyWith<$Res> {
   __$$LocationDetailImplCopyWithImpl(
-    _$LocationDetailImpl _value,
-    $Res Function(_$LocationDetailImpl) _then,
-  ) : super(_value, _then);
+      _$LocationDetailImpl _value, $Res Function(_$LocationDetailImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of LocationDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -1728,60 +1671,50 @@ class __$$LocationDetailImplCopyWithImpl<$Res>
     Object? shortNameRu = null,
     Object? shortNameEn = null,
   }) {
-    return _then(
-      _$LocationDetailImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        nameUz:
-            null == nameUz
-                ? _value.nameUz
-                : nameUz // ignore: cast_nullable_to_non_nullable
-                    as String,
-        nameRu:
-            null == nameRu
-                ? _value.nameRu
-                : nameRu // ignore: cast_nullable_to_non_nullable
-                    as String,
-        nameEn:
-            null == nameEn
-                ? _value.nameEn
-                : nameEn // ignore: cast_nullable_to_non_nullable
-                    as String,
-        shortNameUz:
-            null == shortNameUz
-                ? _value.shortNameUz
-                : shortNameUz // ignore: cast_nullable_to_non_nullable
-                    as String,
-        shortNameRu:
-            null == shortNameRu
-                ? _value.shortNameRu
-                : shortNameRu // ignore: cast_nullable_to_non_nullable
-                    as String,
-        shortNameEn:
-            null == shortNameEn
-                ? _value.shortNameEn
-                : shortNameEn // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
+    return _then(_$LocationDetailImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: null == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameRu: null == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameEn: null == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+      shortNameUz: null == shortNameUz
+          ? _value.shortNameUz
+          : shortNameUz // ignore: cast_nullable_to_non_nullable
+              as String,
+      shortNameRu: null == shortNameRu
+          ? _value.shortNameRu
+          : shortNameRu // ignore: cast_nullable_to_non_nullable
+              as String,
+      shortNameEn: null == shortNameEn
+          ? _value.shortNameEn
+          : shortNameEn // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$LocationDetailImpl implements _LocationDetail {
-  const _$LocationDetailImpl({
-    required this.id,
-    @JsonKey(name: "name_uz") required this.nameUz,
-    @JsonKey(name: "name_ru") required this.nameRu,
-    @JsonKey(name: "name_en") required this.nameEn,
-    @JsonKey(name: "short_name_uz") required this.shortNameUz,
-    @JsonKey(name: "short_name_ru") required this.shortNameRu,
-    @JsonKey(name: "short_name_en") required this.shortNameEn,
-  });
+  const _$LocationDetailImpl(
+      {required this.id,
+      @JsonKey(name: "name_uz") required this.nameUz,
+      @JsonKey(name: "name_ru") required this.nameRu,
+      @JsonKey(name: "name_en") required this.nameEn,
+      @JsonKey(name: "short_name_uz") required this.shortNameUz,
+      @JsonKey(name: "short_name_ru") required this.shortNameRu,
+      @JsonKey(name: "short_name_en") required this.shortNameEn});
 
   factory _$LocationDetailImpl.fromJson(Map<String, dynamic> json) =>
       _$$LocationDetailImplFromJson(json);
@@ -1831,16 +1764,8 @@ class _$LocationDetailImpl implements _LocationDetail {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    nameUz,
-    nameRu,
-    nameEn,
-    shortNameUz,
-    shortNameRu,
-    shortNameEn,
-  );
+  int get hashCode => Object.hash(runtimeType, id, nameUz, nameRu, nameEn,
+      shortNameUz, shortNameRu, shortNameEn);
 
   /// Create a copy of LocationDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -1849,26 +1774,26 @@ class _$LocationDetailImpl implements _LocationDetail {
   @pragma('vm:prefer-inline')
   _$$LocationDetailImplCopyWith<_$LocationDetailImpl> get copyWith =>
       __$$LocationDetailImplCopyWithImpl<_$LocationDetailImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$LocationDetailImplToJson(this);
+    return _$$LocationDetailImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _LocationDetail implements LocationDetail {
-  const factory _LocationDetail({
-    required final int id,
-    @JsonKey(name: "name_uz") required final String nameUz,
-    @JsonKey(name: "name_ru") required final String nameRu,
-    @JsonKey(name: "name_en") required final String nameEn,
-    @JsonKey(name: "short_name_uz") required final String shortNameUz,
-    @JsonKey(name: "short_name_ru") required final String shortNameRu,
-    @JsonKey(name: "short_name_en") required final String shortNameEn,
-  }) = _$LocationDetailImpl;
+  const factory _LocationDetail(
+          {required final int id,
+          @JsonKey(name: "name_uz") required final String nameUz,
+          @JsonKey(name: "name_ru") required final String nameRu,
+          @JsonKey(name: "name_en") required final String nameEn,
+          @JsonKey(name: "short_name_uz") required final String shortNameUz,
+          @JsonKey(name: "short_name_ru") required final String shortNameRu,
+          @JsonKey(name: "short_name_en") required final String shortNameEn}) =
+      _$LocationDetailImpl;
 
   factory _LocationDetail.fromJson(Map<String, dynamic> json) =
       _$LocationDetailImpl.fromJson;

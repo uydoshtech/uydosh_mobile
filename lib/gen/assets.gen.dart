@@ -93,21 +93,21 @@ class $AssetsMapElementsGen {
 
   /// List of all assets
   List<String> get values => [
-    airport,
-    bazaarChorsu,
-    bazaarMirabad,
-    busHub,
-    catholicChurch,
-    circus,
-    cityPark,
-    monument,
-    monument2,
-    stadium,
-    tashkentMetroMap,
-    trainStation,
-    tvTower,
-    tvTower2,
-  ];
+        airport,
+        bazaarChorsu,
+        bazaarMirabad,
+        busHub,
+        catholicChurch,
+        circus,
+        cityPark,
+        monument,
+        monument2,
+        stadium,
+        tashkentMetroMap,
+        trainStation,
+        tvTower,
+        tvTower2
+      ];
 }
 
 class $AssetsSoundsGen {
@@ -149,7 +149,12 @@ class Assets {
 }
 
 class AssetGenImage {
-  const AssetGenImage(this._assetName, {this.size, this.flavors = const {}, this.animation});
+  const AssetGenImage(
+    this._assetName, {
+    this.size,
+    this.flavors = const {},
+    this.animation,
+  });
 
   final String _assetName;
 
@@ -210,8 +215,15 @@ class AssetGenImage {
     );
   }
 
-  ImageProvider provider({AssetBundle? bundle, String? package}) {
-    return AssetImage(_assetName, bundle: bundle, package: package);
+  ImageProvider provider({
+    AssetBundle? bundle,
+    String? package,
+  }) {
+    return AssetImage(
+      _assetName,
+      bundle: bundle,
+      package: package,
+    );
   }
 
   String get path => _assetName;

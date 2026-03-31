@@ -23,11 +23,11 @@ Map<String, dynamic> _$$AuthResponseImplToJson(_$AuthResponseImpl instance) =>
     };
 
 _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
-  id: (json['id'] as num).toInt(),
-  email: json['email'] as String,
-  createdAt: json['created_at'] as String,
-  role: json['role'] as String?,
-);
+      id: (json['id'] as num).toInt(),
+      email: json['email'] as String,
+      createdAt: json['created_at'] as String,
+      role: json['role'] as String?,
+    );
 
 Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
     <String, dynamic>{

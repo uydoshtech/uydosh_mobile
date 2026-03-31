@@ -12,8 +12,7 @@ part of 'subway_station.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 SubwayStation _$SubwayStationFromJson(Map<String, dynamic> json) {
   return _SubwayStation.fromJson(json);
@@ -54,23 +53,21 @@ mixin _$SubwayStation {
 /// @nodoc
 abstract class $SubwayStationCopyWith<$Res> {
   factory $SubwayStationCopyWith(
-    SubwayStation value,
-    $Res Function(SubwayStation) then,
-  ) = _$SubwayStationCopyWithImpl<$Res, SubwayStation>;
+          SubwayStation value, $Res Function(SubwayStation) then) =
+      _$SubwayStationCopyWithImpl<$Res, SubwayStation>;
   @useResult
-  $Res call({
-    int id,
-    int line,
-    int ordinal,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "latitude") double? latitude,
-    @JsonKey(name: "longitude") double? longitude,
-    @JsonKey(name: "location_id") int? locationId,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-  });
+  $Res call(
+      {int id,
+      int line,
+      int ordinal,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "latitude") double? latitude,
+      @JsonKey(name: "longitude") double? longitude,
+      @JsonKey(name: "location_id") int? locationId,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt});
 }
 
 /// @nodoc
@@ -100,66 +97,52 @@ class _$SubwayStationCopyWithImpl<$Res, $Val extends SubwayStation>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int,
-            line:
-                null == line
-                    ? _value.line
-                    : line // ignore: cast_nullable_to_non_nullable
-                        as int,
-            ordinal:
-                null == ordinal
-                    ? _value.ordinal
-                    : ordinal // ignore: cast_nullable_to_non_nullable
-                        as int,
-            nameUz:
-                freezed == nameUz
-                    ? _value.nameUz
-                    : nameUz // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameRu:
-                freezed == nameRu
-                    ? _value.nameRu
-                    : nameRu // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            nameEn:
-                freezed == nameEn
-                    ? _value.nameEn
-                    : nameEn // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            latitude:
-                freezed == latitude
-                    ? _value.latitude
-                    : latitude // ignore: cast_nullable_to_non_nullable
-                        as double?,
-            longitude:
-                freezed == longitude
-                    ? _value.longitude
-                    : longitude // ignore: cast_nullable_to_non_nullable
-                        as double?,
-            locationId:
-                freezed == locationId
-                    ? _value.locationId
-                    : locationId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            createdAt:
-                freezed == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            updatedAt:
-                freezed == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      line: null == line
+          ? _value.line
+          : line // ignore: cast_nullable_to_non_nullable
+              as int,
+      ordinal: null == ordinal
+          ? _value.ordinal
+          : ordinal // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      latitude: freezed == latitude
+          ? _value.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _value.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      locationId: freezed == locationId
+          ? _value.locationId
+          : locationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 }
 
@@ -167,24 +150,22 @@ class _$SubwayStationCopyWithImpl<$Res, $Val extends SubwayStation>
 abstract class _$$SubwayStationImplCopyWith<$Res>
     implements $SubwayStationCopyWith<$Res> {
   factory _$$SubwayStationImplCopyWith(
-    _$SubwayStationImpl value,
-    $Res Function(_$SubwayStationImpl) then,
-  ) = __$$SubwayStationImplCopyWithImpl<$Res>;
+          _$SubwayStationImpl value, $Res Function(_$SubwayStationImpl) then) =
+      __$$SubwayStationImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int id,
-    int line,
-    int ordinal,
-    @JsonKey(name: "name_uz") String? nameUz,
-    @JsonKey(name: "name_ru") String? nameRu,
-    @JsonKey(name: "name_en") String? nameEn,
-    @JsonKey(name: "latitude") double? latitude,
-    @JsonKey(name: "longitude") double? longitude,
-    @JsonKey(name: "location_id") int? locationId,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-  });
+  $Res call(
+      {int id,
+      int line,
+      int ordinal,
+      @JsonKey(name: "name_uz") String? nameUz,
+      @JsonKey(name: "name_ru") String? nameRu,
+      @JsonKey(name: "name_en") String? nameEn,
+      @JsonKey(name: "latitude") double? latitude,
+      @JsonKey(name: "longitude") double? longitude,
+      @JsonKey(name: "location_id") int? locationId,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt});
 }
 
 /// @nodoc
@@ -192,9 +173,8 @@ class __$$SubwayStationImplCopyWithImpl<$Res>
     extends _$SubwayStationCopyWithImpl<$Res, _$SubwayStationImpl>
     implements _$$SubwayStationImplCopyWith<$Res> {
   __$$SubwayStationImplCopyWithImpl(
-    _$SubwayStationImpl _value,
-    $Res Function(_$SubwayStationImpl) _then,
-  ) : super(_value, _then);
+      _$SubwayStationImpl _value, $Res Function(_$SubwayStationImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of SubwayStation
   /// with the given fields replaced by the non-null parameter values.
@@ -213,84 +193,70 @@ class __$$SubwayStationImplCopyWithImpl<$Res>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(
-      _$SubwayStationImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int,
-        line:
-            null == line
-                ? _value.line
-                : line // ignore: cast_nullable_to_non_nullable
-                    as int,
-        ordinal:
-            null == ordinal
-                ? _value.ordinal
-                : ordinal // ignore: cast_nullable_to_non_nullable
-                    as int,
-        nameUz:
-            freezed == nameUz
-                ? _value.nameUz
-                : nameUz // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameRu:
-            freezed == nameRu
-                ? _value.nameRu
-                : nameRu // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        nameEn:
-            freezed == nameEn
-                ? _value.nameEn
-                : nameEn // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        latitude:
-            freezed == latitude
-                ? _value.latitude
-                : latitude // ignore: cast_nullable_to_non_nullable
-                    as double?,
-        longitude:
-            freezed == longitude
-                ? _value.longitude
-                : longitude // ignore: cast_nullable_to_non_nullable
-                    as double?,
-        locationId:
-            freezed == locationId
-                ? _value.locationId
-                : locationId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        createdAt:
-            freezed == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        updatedAt:
-            freezed == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-      ),
-    );
+    return _then(_$SubwayStationImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      line: null == line
+          ? _value.line
+          : line // ignore: cast_nullable_to_non_nullable
+              as int,
+      ordinal: null == ordinal
+          ? _value.ordinal
+          : ordinal // ignore: cast_nullable_to_non_nullable
+              as int,
+      nameUz: freezed == nameUz
+          ? _value.nameUz
+          : nameUz // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameRu: freezed == nameRu
+          ? _value.nameRu
+          : nameRu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameEn: freezed == nameEn
+          ? _value.nameEn
+          : nameEn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      latitude: freezed == latitude
+          ? _value.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _value.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      locationId: freezed == locationId
+          ? _value.locationId
+          : locationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$SubwayStationImpl implements _SubwayStation {
-  const _$SubwayStationImpl({
-    required this.id,
-    required this.line,
-    required this.ordinal,
-    @JsonKey(name: "name_uz") this.nameUz,
-    @JsonKey(name: "name_ru") this.nameRu,
-    @JsonKey(name: "name_en") this.nameEn,
-    @JsonKey(name: "latitude") this.latitude,
-    @JsonKey(name: "longitude") this.longitude,
-    @JsonKey(name: "location_id") this.locationId,
-    @JsonKey(name: "created_at") this.createdAt,
-    @JsonKey(name: "updated_at") this.updatedAt,
-  });
+  const _$SubwayStationImpl(
+      {required this.id,
+      required this.line,
+      required this.ordinal,
+      @JsonKey(name: "name_uz") this.nameUz,
+      @JsonKey(name: "name_ru") this.nameRu,
+      @JsonKey(name: "name_en") this.nameEn,
+      @JsonKey(name: "latitude") this.latitude,
+      @JsonKey(name: "longitude") this.longitude,
+      @JsonKey(name: "location_id") this.locationId,
+      @JsonKey(name: "created_at") this.createdAt,
+      @JsonKey(name: "updated_at") this.updatedAt});
 
   factory _$SubwayStationImpl.fromJson(Map<String, dynamic> json) =>
       _$$SubwayStationImplFromJson(json);
@@ -356,20 +322,8 @@ class _$SubwayStationImpl implements _SubwayStation {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    line,
-    ordinal,
-    nameUz,
-    nameRu,
-    nameEn,
-    latitude,
-    longitude,
-    locationId,
-    createdAt,
-    updatedAt,
-  );
+  int get hashCode => Object.hash(runtimeType, id, line, ordinal, nameUz,
+      nameRu, nameEn, latitude, longitude, locationId, createdAt, updatedAt);
 
   /// Create a copy of SubwayStation
   /// with the given fields replaced by the non-null parameter values.
@@ -381,24 +335,26 @@ class _$SubwayStationImpl implements _SubwayStation {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SubwayStationImplToJson(this);
+    return _$$SubwayStationImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _SubwayStation implements SubwayStation {
-  const factory _SubwayStation({
-    required final int id,
-    required final int line,
-    required final int ordinal,
-    @JsonKey(name: "name_uz") final String? nameUz,
-    @JsonKey(name: "name_ru") final String? nameRu,
-    @JsonKey(name: "name_en") final String? nameEn,
-    @JsonKey(name: "latitude") final double? latitude,
-    @JsonKey(name: "longitude") final double? longitude,
-    @JsonKey(name: "location_id") final int? locationId,
-    @JsonKey(name: "created_at") final String? createdAt,
-    @JsonKey(name: "updated_at") final String? updatedAt,
-  }) = _$SubwayStationImpl;
+  const factory _SubwayStation(
+          {required final int id,
+          required final int line,
+          required final int ordinal,
+          @JsonKey(name: "name_uz") final String? nameUz,
+          @JsonKey(name: "name_ru") final String? nameRu,
+          @JsonKey(name: "name_en") final String? nameEn,
+          @JsonKey(name: "latitude") final double? latitude,
+          @JsonKey(name: "longitude") final double? longitude,
+          @JsonKey(name: "location_id") final int? locationId,
+          @JsonKey(name: "created_at") final String? createdAt,
+          @JsonKey(name: "updated_at") final String? updatedAt}) =
+      _$SubwayStationImpl;
 
   factory _SubwayStation.fromJson(Map<String, dynamic> json) =
       _$SubwayStationImpl.fromJson;

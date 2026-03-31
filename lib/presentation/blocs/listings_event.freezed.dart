@@ -12,8 +12,7 @@ part of 'listings_event.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$ListingsEvent {
@@ -21,158 +20,127 @@ mixin _$ListingsEvent {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListings,
+            int page, int limit, bool isActive, bool isRefresh)
+        fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
+    required TResult Function(int subwayStationId, int page, int limit,
+            bool isActive, bool isRefresh)
+        fetchListingsBySubwayStation,
     required TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)
+        fetchListingsByLocation,
     required TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsByLocation,
-    required TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)
+        searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
-    fetchUserListings,
-  }) => throw _privateConstructorUsedError;
+        fetchUserListings,
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
+    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult? Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult? Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult? Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
+    TResult Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
     required TResult Function(_$FetchListingsBySubwayStationImpl value)
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
     required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
     TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
     TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
     TResult Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
     TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
     required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+  }) =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -184,9 +152,8 @@ mixin _$ListingsEvent {
 /// @nodoc
 abstract class $ListingsEventCopyWith<$Res> {
   factory $ListingsEventCopyWith(
-    ListingsEvent value,
-    $Res Function(ListingsEvent) then,
-  ) = _$ListingsEventCopyWithImpl<$Res, ListingsEvent>;
+          ListingsEvent value, $Res Function(ListingsEvent) then) =
+      _$ListingsEventCopyWithImpl<$Res, ListingsEvent>;
   @useResult
   $Res call({int limit});
 }
@@ -205,27 +172,24 @@ class _$ListingsEventCopyWithImpl<$Res, $Val extends ListingsEvent>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? limit = null}) {
-    return _then(
-      _value.copyWith(
-            limit:
-                null == limit
-                    ? _value.limit
-                    : limit // ignore: cast_nullable_to_non_nullable
-                        as int,
-          )
-          as $Val,
-    );
+  $Res call({
+    Object? limit = null,
+  }) {
+    return _then(_value.copyWith(
+      limit: null == limit
+          ? _value.limit
+          : limit // ignore: cast_nullable_to_non_nullable
+              as int,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$$FetchListingsImplImplCopyWith<$Res>
     implements $ListingsEventCopyWith<$Res> {
-  factory _$$$FetchListingsImplImplCopyWith(
-    _$$FetchListingsImplImpl value,
-    $Res Function(_$$FetchListingsImplImpl) then,
-  ) = __$$$FetchListingsImplImplCopyWithImpl<$Res>;
+  factory _$$$FetchListingsImplImplCopyWith(_$$FetchListingsImplImpl value,
+          $Res Function(_$$FetchListingsImplImpl) then) =
+      __$$$FetchListingsImplImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({int page, int limit, bool isActive, bool isRefresh});
@@ -235,10 +199,9 @@ abstract class _$$$FetchListingsImplImplCopyWith<$Res>
 class __$$$FetchListingsImplImplCopyWithImpl<$Res>
     extends _$ListingsEventCopyWithImpl<$Res, _$$FetchListingsImplImpl>
     implements _$$$FetchListingsImplImplCopyWith<$Res> {
-  __$$$FetchListingsImplImplCopyWithImpl(
-    _$$FetchListingsImplImpl _value,
-    $Res Function(_$$FetchListingsImplImpl) _then,
-  ) : super(_value, _then);
+  __$$$FetchListingsImplImplCopyWithImpl(_$$FetchListingsImplImpl _value,
+      $Res Function(_$$FetchListingsImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -250,42 +213,35 @@ class __$$$FetchListingsImplImplCopyWithImpl<$Res>
     Object? isActive = null,
     Object? isRefresh = null,
   }) {
-    return _then(
-      _$$FetchListingsImplImpl(
-        page:
-            null == page
-                ? _value.page
-                : page // ignore: cast_nullable_to_non_nullable
-                    as int,
-        limit:
-            null == limit
-                ? _value.limit
-                : limit // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isActive:
-            null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        isRefresh:
-            null == isRefresh
-                ? _value.isRefresh
-                : isRefresh // ignore: cast_nullable_to_non_nullable
-                    as bool,
-      ),
-    );
+    return _then(_$$FetchListingsImplImpl(
+      page: null == page
+          ? _value.page
+          : page // ignore: cast_nullable_to_non_nullable
+              as int,
+      limit: null == limit
+          ? _value.limit
+          : limit // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isRefresh: null == isRefresh
+          ? _value.isRefresh
+          : isRefresh // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
-  const _$$FetchListingsImplImpl({
-    this.page = 1,
-    this.limit = 10,
-    this.isActive = true,
-    this.isRefresh = true,
-  });
+  const _$$FetchListingsImplImpl(
+      {this.page = 1,
+      this.limit = 10,
+      this.isActive = true,
+      this.isRefresh = true});
 
   @override
   @JsonKey()
@@ -329,54 +285,37 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
   @pragma('vm:prefer-inline')
   _$$$FetchListingsImplImplCopyWith<_$$FetchListingsImplImpl> get copyWith =>
       __$$$FetchListingsImplImplCopyWithImpl<_$$FetchListingsImplImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListings,
+            int page, int limit, bool isActive, bool isRefresh)
+        fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
+    required TResult Function(int subwayStationId, int page, int limit,
+            bool isActive, bool isRefresh)
+        fetchListingsBySubwayStation,
     required TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)
+        fetchListingsByLocation,
     required TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsByLocation,
-    required TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)
+        searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
-    fetchUserListings,
+        fetchUserListings,
   }) {
     return fetchListings(page, limit, isActive, isRefresh);
   }
@@ -385,39 +324,28 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
+    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult? Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult? Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult? Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
     return fetchListings?.call(page, limit, isActive, isRefresh);
@@ -427,39 +355,28 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
+    TResult Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
   }) {
@@ -475,9 +392,9 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
     required TResult Function(_$FetchListingsBySubwayStationImpl value)
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
     required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
   }) {
@@ -490,9 +407,9 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
     TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
     TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
   }) {
@@ -505,9 +422,9 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
     TResult Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
     TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
     required TResult orElse(),
@@ -520,12 +437,11 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
 }
 
 abstract class _$FetchListingsImpl implements ListingsEvent {
-  const factory _$FetchListingsImpl({
-    final int page,
-    final int limit,
-    final bool isActive,
-    final bool isRefresh,
-  }) = _$$FetchListingsImplImpl;
+  const factory _$FetchListingsImpl(
+      {final int page,
+      final int limit,
+      final bool isActive,
+      final bool isRefresh}) = _$$FetchListingsImplImpl;
 
   int get page;
   @override
@@ -545,9 +461,8 @@ abstract class _$FetchListingsImpl implements ListingsEvent {
 abstract class _$$$LoadMoreImplImplCopyWith<$Res>
     implements $ListingsEventCopyWith<$Res> {
   factory _$$$LoadMoreImplImplCopyWith(
-    _$$LoadMoreImplImpl value,
-    $Res Function(_$$LoadMoreImplImpl) then,
-  ) = __$$$LoadMoreImplImplCopyWithImpl<$Res>;
+          _$$LoadMoreImplImpl value, $Res Function(_$$LoadMoreImplImpl) then) =
+      __$$$LoadMoreImplImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({int limit, bool isActive});
@@ -558,29 +473,27 @@ class __$$$LoadMoreImplImplCopyWithImpl<$Res>
     extends _$ListingsEventCopyWithImpl<$Res, _$$LoadMoreImplImpl>
     implements _$$$LoadMoreImplImplCopyWith<$Res> {
   __$$$LoadMoreImplImplCopyWithImpl(
-    _$$LoadMoreImplImpl _value,
-    $Res Function(_$$LoadMoreImplImpl) _then,
-  ) : super(_value, _then);
+      _$$LoadMoreImplImpl _value, $Res Function(_$$LoadMoreImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? limit = null, Object? isActive = null}) {
-    return _then(
-      _$$LoadMoreImplImpl(
-        limit:
-            null == limit
-                ? _value.limit
-                : limit // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isActive:
-            null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                    as bool,
-      ),
-    );
+  $Res call({
+    Object? limit = null,
+    Object? isActive = null,
+  }) {
+    return _then(_$$LoadMoreImplImpl(
+      limit: null == limit
+          ? _value.limit
+          : limit // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
   }
 }
 
@@ -626,46 +539,31 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListings,
+            int page, int limit, bool isActive, bool isRefresh)
+        fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
+    required TResult Function(int subwayStationId, int page, int limit,
+            bool isActive, bool isRefresh)
+        fetchListingsBySubwayStation,
     required TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)
+        fetchListingsByLocation,
     required TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsByLocation,
-    required TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)
+        searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
-    fetchUserListings,
+        fetchUserListings,
   }) {
     return loadMore(limit, isActive);
   }
@@ -674,39 +572,28 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
+    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult? Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult? Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult? Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
     return loadMore?.call(limit, isActive);
@@ -716,39 +603,28 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
+    TResult Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
   }) {
@@ -764,9 +640,9 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
     required TResult Function(_$FetchListingsBySubwayStationImpl value)
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
     required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
   }) {
@@ -779,9 +655,9 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
     TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
     TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
   }) {
@@ -794,9 +670,9 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
     TResult Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
     TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
     required TResult orElse(),
@@ -828,32 +704,28 @@ abstract class _$LoadMoreImpl implements ListingsEvent {
 abstract class _$$$FetchListingsBySubwayStationImplImplCopyWith<$Res>
     implements $ListingsEventCopyWith<$Res> {
   factory _$$$FetchListingsBySubwayStationImplImplCopyWith(
-    _$$FetchListingsBySubwayStationImplImpl value,
-    $Res Function(_$$FetchListingsBySubwayStationImplImpl) then,
-  ) = __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<$Res>;
+          _$$FetchListingsBySubwayStationImplImpl value,
+          $Res Function(_$$FetchListingsBySubwayStationImplImpl) then) =
+      __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int subwayStationId,
-    int page,
-    int limit,
-    bool isActive,
-    bool isRefresh,
-  });
+  $Res call(
+      {int subwayStationId,
+      int page,
+      int limit,
+      bool isActive,
+      bool isRefresh});
 }
 
 /// @nodoc
 class __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<$Res>
-    extends
-        _$ListingsEventCopyWithImpl<
-          $Res,
-          _$$FetchListingsBySubwayStationImplImpl
-        >
+    extends _$ListingsEventCopyWithImpl<$Res,
+        _$$FetchListingsBySubwayStationImplImpl>
     implements _$$$FetchListingsBySubwayStationImplImplCopyWith<$Res> {
   __$$$FetchListingsBySubwayStationImplImplCopyWithImpl(
-    _$$FetchListingsBySubwayStationImplImpl _value,
-    $Res Function(_$$FetchListingsBySubwayStationImplImpl) _then,
-  ) : super(_value, _then);
+      _$$FetchListingsBySubwayStationImplImpl _value,
+      $Res Function(_$$FetchListingsBySubwayStationImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -866,35 +738,28 @@ class __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<$Res>
     Object? isActive = null,
     Object? isRefresh = null,
   }) {
-    return _then(
-      _$$FetchListingsBySubwayStationImplImpl(
-        subwayStationId:
-            null == subwayStationId
-                ? _value.subwayStationId
-                : subwayStationId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        page:
-            null == page
-                ? _value.page
-                : page // ignore: cast_nullable_to_non_nullable
-                    as int,
-        limit:
-            null == limit
-                ? _value.limit
-                : limit // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isActive:
-            null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        isRefresh:
-            null == isRefresh
-                ? _value.isRefresh
-                : isRefresh // ignore: cast_nullable_to_non_nullable
-                    as bool,
-      ),
-    );
+    return _then(_$$FetchListingsBySubwayStationImplImpl(
+      subwayStationId: null == subwayStationId
+          ? _value.subwayStationId
+          : subwayStationId // ignore: cast_nullable_to_non_nullable
+              as int,
+      page: null == page
+          ? _value.page
+          : page // ignore: cast_nullable_to_non_nullable
+              as int,
+      limit: null == limit
+          ? _value.limit
+          : limit // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isRefresh: null == isRefresh
+          ? _value.isRefresh
+          : isRefresh // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
   }
 }
 
@@ -902,13 +767,12 @@ class __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<$Res>
 
 class _$$FetchListingsBySubwayStationImplImpl
     implements _$FetchListingsBySubwayStationImpl {
-  const _$$FetchListingsBySubwayStationImplImpl({
-    required this.subwayStationId,
-    this.page = 1,
-    this.limit = 10,
-    this.isActive = true,
-    this.isRefresh = true,
-  });
+  const _$$FetchListingsBySubwayStationImplImpl(
+      {required this.subwayStationId,
+      this.page = 1,
+      this.limit = 10,
+      this.isActive = true,
+      this.isRefresh = true});
 
   @override
   final int subwayStationId;
@@ -947,13 +811,7 @@ class _$$FetchListingsBySubwayStationImplImpl
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    subwayStationId,
-    page,
-    limit,
-    isActive,
-    isRefresh,
-  );
+      runtimeType, subwayStationId, page, limit, isActive, isRefresh);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -961,162 +819,108 @@ class _$$FetchListingsBySubwayStationImplImpl
   @override
   @pragma('vm:prefer-inline')
   _$$$FetchListingsBySubwayStationImplImplCopyWith<
-    _$$FetchListingsBySubwayStationImplImpl
-  >
-  get copyWith => __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<
-    _$$FetchListingsBySubwayStationImplImpl
-  >(this, _$identity);
+          _$$FetchListingsBySubwayStationImplImpl>
+      get copyWith => __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<
+          _$$FetchListingsBySubwayStationImplImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListings,
+            int page, int limit, bool isActive, bool isRefresh)
+        fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
+    required TResult Function(int subwayStationId, int page, int limit,
+            bool isActive, bool isRefresh)
+        fetchListingsBySubwayStation,
     required TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)
+        fetchListingsByLocation,
     required TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsByLocation,
-    required TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)
+        searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
-    fetchUserListings,
+        fetchUserListings,
   }) {
     return fetchListingsBySubwayStation(
-      subwayStationId,
-      page,
-      limit,
-      isActive,
-      isRefresh,
-    );
+        subwayStationId, page, limit, isActive, isRefresh);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
+    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult? Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult? Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult? Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
     return fetchListingsBySubwayStation?.call(
-      subwayStationId,
-      page,
-      limit,
-      isActive,
-      isRefresh,
-    );
+        subwayStationId, page, limit, isActive, isRefresh);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
+    TResult Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
   }) {
     if (fetchListingsBySubwayStation != null) {
       return fetchListingsBySubwayStation(
-        subwayStationId,
-        page,
-        limit,
-        isActive,
-        isRefresh,
-      );
+          subwayStationId, page, limit, isActive, isRefresh);
     }
     return orElse();
   }
@@ -1127,9 +931,9 @@ class _$$FetchListingsBySubwayStationImplImpl
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
     required TResult Function(_$FetchListingsBySubwayStationImpl value)
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
     required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
   }) {
@@ -1142,9 +946,9 @@ class _$$FetchListingsBySubwayStationImplImpl
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
     TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
     TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
   }) {
@@ -1157,9 +961,9 @@ class _$$FetchListingsBySubwayStationImplImpl
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
     TResult Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
     TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
     required TResult orElse(),
@@ -1172,13 +976,12 @@ class _$$FetchListingsBySubwayStationImplImpl
 }
 
 abstract class _$FetchListingsBySubwayStationImpl implements ListingsEvent {
-  const factory _$FetchListingsBySubwayStationImpl({
-    required final int subwayStationId,
-    final int page,
-    final int limit,
-    final bool isActive,
-    final bool isRefresh,
-  }) = _$$FetchListingsBySubwayStationImplImpl;
+  const factory _$FetchListingsBySubwayStationImpl(
+      {required final int subwayStationId,
+      final int page,
+      final int limit,
+      final bool isActive,
+      final bool isRefresh}) = _$$FetchListingsBySubwayStationImplImpl;
 
   int get subwayStationId;
   int get page;
@@ -1192,38 +995,32 @@ abstract class _$FetchListingsBySubwayStationImpl implements ListingsEvent {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$$FetchListingsBySubwayStationImplImplCopyWith<
-    _$$FetchListingsBySubwayStationImplImpl
-  >
-  get copyWith => throw _privateConstructorUsedError;
+          _$$FetchListingsBySubwayStationImplImpl>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$$FetchListingsByLocationImplImplCopyWith<$Res>
     implements $ListingsEventCopyWith<$Res> {
   factory _$$$FetchListingsByLocationImplImplCopyWith(
-    _$$FetchListingsByLocationImplImpl value,
-    $Res Function(_$$FetchListingsByLocationImplImpl) then,
-  ) = __$$$FetchListingsByLocationImplImplCopyWithImpl<$Res>;
+          _$$FetchListingsByLocationImplImpl value,
+          $Res Function(_$$FetchListingsByLocationImplImpl) then) =
+      __$$$FetchListingsByLocationImplImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int locationId,
-    int page,
-    int limit,
-    bool isActive,
-    bool isRefresh,
-  });
+  $Res call(
+      {int locationId, int page, int limit, bool isActive, bool isRefresh});
 }
 
 /// @nodoc
 class __$$$FetchListingsByLocationImplImplCopyWithImpl<$Res>
-    extends
-        _$ListingsEventCopyWithImpl<$Res, _$$FetchListingsByLocationImplImpl>
+    extends _$ListingsEventCopyWithImpl<$Res,
+        _$$FetchListingsByLocationImplImpl>
     implements _$$$FetchListingsByLocationImplImplCopyWith<$Res> {
   __$$$FetchListingsByLocationImplImplCopyWithImpl(
-    _$$FetchListingsByLocationImplImpl _value,
-    $Res Function(_$$FetchListingsByLocationImplImpl) _then,
-  ) : super(_value, _then);
+      _$$FetchListingsByLocationImplImpl _value,
+      $Res Function(_$$FetchListingsByLocationImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -1236,35 +1033,28 @@ class __$$$FetchListingsByLocationImplImplCopyWithImpl<$Res>
     Object? isActive = null,
     Object? isRefresh = null,
   }) {
-    return _then(
-      _$$FetchListingsByLocationImplImpl(
-        locationId:
-            null == locationId
-                ? _value.locationId
-                : locationId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        page:
-            null == page
-                ? _value.page
-                : page // ignore: cast_nullable_to_non_nullable
-                    as int,
-        limit:
-            null == limit
-                ? _value.limit
-                : limit // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isActive:
-            null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        isRefresh:
-            null == isRefresh
-                ? _value.isRefresh
-                : isRefresh // ignore: cast_nullable_to_non_nullable
-                    as bool,
-      ),
-    );
+    return _then(_$$FetchListingsByLocationImplImpl(
+      locationId: null == locationId
+          ? _value.locationId
+          : locationId // ignore: cast_nullable_to_non_nullable
+              as int,
+      page: null == page
+          ? _value.page
+          : page // ignore: cast_nullable_to_non_nullable
+              as int,
+      limit: null == limit
+          ? _value.limit
+          : limit // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isRefresh: null == isRefresh
+          ? _value.isRefresh
+          : isRefresh // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
   }
 }
 
@@ -1272,13 +1062,12 @@ class __$$$FetchListingsByLocationImplImplCopyWithImpl<$Res>
 
 class _$$FetchListingsByLocationImplImpl
     implements _$FetchListingsByLocationImpl {
-  const _$$FetchListingsByLocationImplImpl({
-    required this.locationId,
-    this.page = 1,
-    this.limit = 10,
-    this.isActive = true,
-    this.isRefresh = true,
-  });
+  const _$$FetchListingsByLocationImplImpl(
+      {required this.locationId,
+      this.page = 1,
+      this.limit = 10,
+      this.isActive = true,
+      this.isRefresh = true});
 
   @override
   final int locationId;
@@ -1325,162 +1114,108 @@ class _$$FetchListingsByLocationImplImpl
   @override
   @pragma('vm:prefer-inline')
   _$$$FetchListingsByLocationImplImplCopyWith<
-    _$$FetchListingsByLocationImplImpl
-  >
-  get copyWith => __$$$FetchListingsByLocationImplImplCopyWithImpl<
-    _$$FetchListingsByLocationImplImpl
-  >(this, _$identity);
+          _$$FetchListingsByLocationImplImpl>
+      get copyWith => __$$$FetchListingsByLocationImplImplCopyWithImpl<
+          _$$FetchListingsByLocationImplImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListings,
+            int page, int limit, bool isActive, bool isRefresh)
+        fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
+    required TResult Function(int subwayStationId, int page, int limit,
+            bool isActive, bool isRefresh)
+        fetchListingsBySubwayStation,
     required TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)
+        fetchListingsByLocation,
     required TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsByLocation,
-    required TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)
+        searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
-    fetchUserListings,
+        fetchUserListings,
   }) {
     return fetchListingsByLocation(
-      locationId,
-      page,
-      limit,
-      isActive,
-      isRefresh,
-    );
+        locationId, page, limit, isActive, isRefresh);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
+    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult? Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult? Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult? Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
     return fetchListingsByLocation?.call(
-      locationId,
-      page,
-      limit,
-      isActive,
-      isRefresh,
-    );
+        locationId, page, limit, isActive, isRefresh);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
+    TResult Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
   }) {
     if (fetchListingsByLocation != null) {
       return fetchListingsByLocation(
-        locationId,
-        page,
-        limit,
-        isActive,
-        isRefresh,
-      );
+          locationId, page, limit, isActive, isRefresh);
     }
     return orElse();
   }
@@ -1491,9 +1226,9 @@ class _$$FetchListingsByLocationImplImpl
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
     required TResult Function(_$FetchListingsBySubwayStationImpl value)
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
     required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
   }) {
@@ -1506,9 +1241,9 @@ class _$$FetchListingsByLocationImplImpl
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
     TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
     TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
   }) {
@@ -1521,9 +1256,9 @@ class _$$FetchListingsByLocationImplImpl
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
     TResult Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
     TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
     required TResult orElse(),
@@ -1536,13 +1271,12 @@ class _$$FetchListingsByLocationImplImpl
 }
 
 abstract class _$FetchListingsByLocationImpl implements ListingsEvent {
-  const factory _$FetchListingsByLocationImpl({
-    required final int locationId,
-    final int page,
-    final int limit,
-    final bool isActive,
-    final bool isRefresh,
-  }) = _$$FetchListingsByLocationImplImpl;
+  const factory _$FetchListingsByLocationImpl(
+      {required final int locationId,
+      final int page,
+      final int limit,
+      final bool isActive,
+      final bool isRefresh}) = _$$FetchListingsByLocationImplImpl;
 
   int get locationId;
   int get page;
@@ -1556,44 +1290,40 @@ abstract class _$FetchListingsByLocationImpl implements ListingsEvent {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$$FetchListingsByLocationImplImplCopyWith<
-    _$$FetchListingsByLocationImplImpl
-  >
-  get copyWith => throw _privateConstructorUsedError;
+          _$$FetchListingsByLocationImplImpl>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$$SearchListingsImplImplCopyWith<$Res>
     implements $ListingsEventCopyWith<$Res> {
-  factory _$$$SearchListingsImplImplCopyWith(
-    _$$SearchListingsImplImpl value,
-    $Res Function(_$$SearchListingsImplImpl) then,
-  ) = __$$$SearchListingsImplImplCopyWithImpl<$Res>;
+  factory _$$$SearchListingsImplImplCopyWith(_$$SearchListingsImplImpl value,
+          $Res Function(_$$SearchListingsImplImpl) then) =
+      __$$$SearchListingsImplImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int? listingTypeId,
-    int? locationId,
-    int? subwayStationId,
-    int? subwayLineId,
-    int? gender,
-    double? minPrice,
-    double? maxPrice,
-    bool? privateRoom,
-    int page,
-    int limit,
-    bool isActive,
-    bool isRefresh,
-  });
+  $Res call(
+      {int? listingTypeId,
+      int? locationId,
+      int? subwayStationId,
+      int? subwayLineId,
+      int? gender,
+      double? minPrice,
+      double? maxPrice,
+      bool? privateRoom,
+      int page,
+      int limit,
+      bool isActive,
+      bool isRefresh});
 }
 
 /// @nodoc
 class __$$$SearchListingsImplImplCopyWithImpl<$Res>
     extends _$ListingsEventCopyWithImpl<$Res, _$$SearchListingsImplImpl>
     implements _$$$SearchListingsImplImplCopyWith<$Res> {
-  __$$$SearchListingsImplImplCopyWithImpl(
-    _$$SearchListingsImplImpl _value,
-    $Res Function(_$$SearchListingsImplImpl) _then,
-  ) : super(_value, _then);
+  __$$$SearchListingsImplImplCopyWithImpl(_$$SearchListingsImplImpl _value,
+      $Res Function(_$$SearchListingsImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -1613,90 +1343,75 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
     Object? isActive = null,
     Object? isRefresh = null,
   }) {
-    return _then(
-      _$$SearchListingsImplImpl(
-        listingTypeId:
-            freezed == listingTypeId
-                ? _value.listingTypeId
-                : listingTypeId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        locationId:
-            freezed == locationId
-                ? _value.locationId
-                : locationId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        subwayStationId:
-            freezed == subwayStationId
-                ? _value.subwayStationId
-                : subwayStationId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        subwayLineId:
-            freezed == subwayLineId
-                ? _value.subwayLineId
-                : subwayLineId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        gender:
-            freezed == gender
-                ? _value.gender
-                : gender // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        minPrice:
-            freezed == minPrice
-                ? _value.minPrice
-                : minPrice // ignore: cast_nullable_to_non_nullable
-                    as double?,
-        maxPrice:
-            freezed == maxPrice
-                ? _value.maxPrice
-                : maxPrice // ignore: cast_nullable_to_non_nullable
-                    as double?,
-        privateRoom:
-            freezed == privateRoom
-                ? _value.privateRoom
-                : privateRoom // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        page:
-            null == page
-                ? _value.page
-                : page // ignore: cast_nullable_to_non_nullable
-                    as int,
-        limit:
-            null == limit
-                ? _value.limit
-                : limit // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isActive:
-            null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        isRefresh:
-            null == isRefresh
-                ? _value.isRefresh
-                : isRefresh // ignore: cast_nullable_to_non_nullable
-                    as bool,
-      ),
-    );
+    return _then(_$$SearchListingsImplImpl(
+      listingTypeId: freezed == listingTypeId
+          ? _value.listingTypeId
+          : listingTypeId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      locationId: freezed == locationId
+          ? _value.locationId
+          : locationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      subwayStationId: freezed == subwayStationId
+          ? _value.subwayStationId
+          : subwayStationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      subwayLineId: freezed == subwayLineId
+          ? _value.subwayLineId
+          : subwayLineId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      gender: freezed == gender
+          ? _value.gender
+          : gender // ignore: cast_nullable_to_non_nullable
+              as int?,
+      minPrice: freezed == minPrice
+          ? _value.minPrice
+          : minPrice // ignore: cast_nullable_to_non_nullable
+              as double?,
+      maxPrice: freezed == maxPrice
+          ? _value.maxPrice
+          : maxPrice // ignore: cast_nullable_to_non_nullable
+              as double?,
+      privateRoom: freezed == privateRoom
+          ? _value.privateRoom
+          : privateRoom // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      page: null == page
+          ? _value.page
+          : page // ignore: cast_nullable_to_non_nullable
+              as int,
+      limit: null == limit
+          ? _value.limit
+          : limit // ignore: cast_nullable_to_non_nullable
+              as int,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isRefresh: null == isRefresh
+          ? _value.isRefresh
+          : isRefresh // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
-  const _$$SearchListingsImplImpl({
-    this.listingTypeId,
-    this.locationId,
-    this.subwayStationId,
-    this.subwayLineId,
-    this.gender,
-    this.minPrice,
-    this.maxPrice,
-    this.privateRoom,
-    this.page = 1,
-    this.limit = 10,
-    this.isActive = true,
-    this.isRefresh = true,
-  });
+  const _$$SearchListingsImplImpl(
+      {this.listingTypeId,
+      this.locationId,
+      this.subwayStationId,
+      this.subwayLineId,
+      this.gender,
+      this.minPrice,
+      this.maxPrice,
+      this.privateRoom,
+      this.page = 1,
+      this.limit = 10,
+      this.isActive = true,
+      this.isRefresh = true});
 
   @override
   final int? listingTypeId;
@@ -1762,20 +1477,19 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    listingTypeId,
-    locationId,
-    subwayStationId,
-    subwayLineId,
-    gender,
-    minPrice,
-    maxPrice,
-    privateRoom,
-    page,
-    limit,
-    isActive,
-    isRefresh,
-  );
+      runtimeType,
+      listingTypeId,
+      locationId,
+      subwayStationId,
+      subwayLineId,
+      gender,
+      minPrice,
+      maxPrice,
+      privateRoom,
+      page,
+      limit,
+      isActive,
+      isRefresh);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -1784,168 +1498,39 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   @pragma('vm:prefer-inline')
   _$$$SearchListingsImplImplCopyWith<_$$SearchListingsImplImpl> get copyWith =>
       __$$$SearchListingsImplImplCopyWithImpl<_$$SearchListingsImplImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListings,
+            int page, int limit, bool isActive, bool isRefresh)
+        fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
+    required TResult Function(int subwayStationId, int page, int limit,
+            bool isActive, bool isRefresh)
+        fetchListingsBySubwayStation,
     required TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)
+        fetchListingsByLocation,
     required TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsByLocation,
-    required TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)
+        searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
-    fetchUserListings,
+        fetchUserListings,
   }) {
     return searchListings(
-      listingTypeId,
-      locationId,
-      subwayStationId,
-      subwayLineId,
-      gender,
-      minPrice,
-      maxPrice,
-      privateRoom,
-      page,
-      limit,
-      isActive,
-      isRefresh,
-    );
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
-    TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
-    TResult? Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult? Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
-    TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
-  }) {
-    return searchListings?.call(
-      listingTypeId,
-      locationId,
-      subwayStationId,
-      subwayLineId,
-      gender,
-      minPrice,
-      maxPrice,
-      privateRoom,
-      page,
-      limit,
-      isActive,
-      isRefresh,
-    );
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
-    TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
-    TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
-    TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (searchListings != null) {
-      return searchListings(
         listingTypeId,
         locationId,
         subwayStationId,
@@ -1957,8 +1542,95 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         page,
         limit,
         isActive,
-        isRefresh,
-      );
+        isRefresh);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
+        fetchListings,
+    TResult? Function(int limit, bool isActive)? loadMore,
+    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
+    TResult? Function(
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
+    TResult? Function(
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
+    TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
+  }) {
+    return searchListings?.call(
+        listingTypeId,
+        locationId,
+        subwayStationId,
+        subwayLineId,
+        gender,
+        minPrice,
+        maxPrice,
+        privateRoom,
+        page,
+        limit,
+        isActive,
+        isRefresh);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(int page, int limit, bool isActive, bool isRefresh)?
+        fetchListings,
+    TResult Function(int limit, bool isActive)? loadMore,
+    TResult Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
+    TResult Function(
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
+    TResult Function(
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
+    TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
+    required TResult orElse(),
+  }) {
+    if (searchListings != null) {
+      return searchListings(
+          listingTypeId,
+          locationId,
+          subwayStationId,
+          subwayLineId,
+          gender,
+          minPrice,
+          maxPrice,
+          privateRoom,
+          page,
+          limit,
+          isActive,
+          isRefresh);
     }
     return orElse();
   }
@@ -1969,9 +1641,9 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
     required TResult Function(_$FetchListingsBySubwayStationImpl value)
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
     required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
   }) {
@@ -1984,9 +1656,9 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
     TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
     TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
   }) {
@@ -1999,9 +1671,9 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
     TResult Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
     TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
     required TResult orElse(),
@@ -2014,20 +1686,19 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
 }
 
 abstract class _$SearchListingsImpl implements ListingsEvent {
-  const factory _$SearchListingsImpl({
-    final int? listingTypeId,
-    final int? locationId,
-    final int? subwayStationId,
-    final int? subwayLineId,
-    final int? gender,
-    final double? minPrice,
-    final double? maxPrice,
-    final bool? privateRoom,
-    final int page,
-    final int limit,
-    final bool isActive,
-    final bool isRefresh,
-  }) = _$$SearchListingsImplImpl;
+  const factory _$SearchListingsImpl(
+      {final int? listingTypeId,
+      final int? locationId,
+      final int? subwayStationId,
+      final int? subwayLineId,
+      final int? gender,
+      final double? minPrice,
+      final double? maxPrice,
+      final bool? privateRoom,
+      final int page,
+      final int limit,
+      final bool isActive,
+      final bool isRefresh}) = _$$SearchListingsImplImpl;
 
   int? get listingTypeId;
   int? get locationId;
@@ -2055,9 +1726,9 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
 abstract class _$$$FetchUserListingsImplImplCopyWith<$Res>
     implements $ListingsEventCopyWith<$Res> {
   factory _$$$FetchUserListingsImplImplCopyWith(
-    _$$FetchUserListingsImplImpl value,
-    $Res Function(_$$FetchUserListingsImplImpl) then,
-  ) = __$$$FetchUserListingsImplImplCopyWithImpl<$Res>;
+          _$$FetchUserListingsImplImpl value,
+          $Res Function(_$$FetchUserListingsImplImpl) then) =
+      __$$$FetchUserListingsImplImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({int page, int limit, bool isRefresh});
@@ -2068,9 +1739,9 @@ class __$$$FetchUserListingsImplImplCopyWithImpl<$Res>
     extends _$ListingsEventCopyWithImpl<$Res, _$$FetchUserListingsImplImpl>
     implements _$$$FetchUserListingsImplImplCopyWith<$Res> {
   __$$$FetchUserListingsImplImplCopyWithImpl(
-    _$$FetchUserListingsImplImpl _value,
-    $Res Function(_$$FetchUserListingsImplImpl) _then,
-  ) : super(_value, _then);
+      _$$FetchUserListingsImplImpl _value,
+      $Res Function(_$$FetchUserListingsImplImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -2081,36 +1752,28 @@ class __$$$FetchUserListingsImplImplCopyWithImpl<$Res>
     Object? limit = null,
     Object? isRefresh = null,
   }) {
-    return _then(
-      _$$FetchUserListingsImplImpl(
-        page:
-            null == page
-                ? _value.page
-                : page // ignore: cast_nullable_to_non_nullable
-                    as int,
-        limit:
-            null == limit
-                ? _value.limit
-                : limit // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isRefresh:
-            null == isRefresh
-                ? _value.isRefresh
-                : isRefresh // ignore: cast_nullable_to_non_nullable
-                    as bool,
-      ),
-    );
+    return _then(_$$FetchUserListingsImplImpl(
+      page: null == page
+          ? _value.page
+          : page // ignore: cast_nullable_to_non_nullable
+              as int,
+      limit: null == limit
+          ? _value.limit
+          : limit // ignore: cast_nullable_to_non_nullable
+              as int,
+      isRefresh: null == isRefresh
+          ? _value.isRefresh
+          : isRefresh // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
-  const _$$FetchUserListingsImplImpl({
-    this.page = 1,
-    this.limit = 10,
-    this.isRefresh = true,
-  });
+  const _$$FetchUserListingsImplImpl(
+      {this.page = 1, this.limit = 10, this.isRefresh = true});
 
   @override
   @JsonKey()
@@ -2147,56 +1810,38 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
   @override
   @pragma('vm:prefer-inline')
   _$$$FetchUserListingsImplImplCopyWith<_$$FetchUserListingsImplImpl>
-  get copyWith =>
-      __$$$FetchUserListingsImplImplCopyWithImpl<_$$FetchUserListingsImplImpl>(
-        this,
-        _$identity,
-      );
+      get copyWith => __$$$FetchUserListingsImplImplCopyWithImpl<
+          _$$FetchUserListingsImplImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListings,
+            int page, int limit, bool isActive, bool isRefresh)
+        fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
+    required TResult Function(int subwayStationId, int page, int limit,
+            bool isActive, bool isRefresh)
+        fetchListingsBySubwayStation,
     required TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)
+        fetchListingsByLocation,
     required TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    fetchListingsByLocation,
-    required TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)
+        searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
-    fetchUserListings,
+        fetchUserListings,
   }) {
     return fetchUserListings(page, limit, isRefresh);
   }
@@ -2205,39 +1850,28 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
+    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult? Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult? Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult? Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
     return fetchUserListings?.call(page, limit, isRefresh);
@@ -2247,39 +1881,28 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-    fetchListings,
+        fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
+    TResult Function(int subwayStationId, int page, int limit, bool isActive,
+            bool isRefresh)?
+        fetchListingsBySubwayStation,
     TResult Function(
-      int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsBySubwayStation,
+            int locationId, int page, int limit, bool isActive, bool isRefresh)?
+        fetchListingsByLocation,
     TResult Function(
-      int locationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    fetchListingsByLocation,
-    TResult Function(
-      int? listingTypeId,
-      int? locationId,
-      int? subwayStationId,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-    )?
-    searchListings,
+            int? listingTypeId,
+            int? locationId,
+            int? subwayStationId,
+            int? subwayLineId,
+            int? gender,
+            double? minPrice,
+            double? maxPrice,
+            bool? privateRoom,
+            int page,
+            int limit,
+            bool isActive,
+            bool isRefresh)?
+        searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
   }) {
@@ -2295,9 +1918,9 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
     required TResult Function(_$FetchListingsBySubwayStationImpl value)
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
     required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
   }) {
@@ -2310,9 +1933,9 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
     TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
     TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
   }) {
@@ -2325,9 +1948,9 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
     TResult Function(_$FetchListingsBySubwayStationImpl value)?
-    fetchListingsBySubwayStation,
+        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
-    fetchListingsByLocation,
+        fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
     TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
     required TResult orElse(),
@@ -2340,11 +1963,10 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
 }
 
 abstract class _$FetchUserListingsImpl implements ListingsEvent {
-  const factory _$FetchUserListingsImpl({
-    final int page,
-    final int limit,
-    final bool isRefresh,
-  }) = _$$FetchUserListingsImplImpl;
+  const factory _$FetchUserListingsImpl(
+      {final int page,
+      final int limit,
+      final bool isRefresh}) = _$$FetchUserListingsImplImpl;
 
   int get page;
   @override
@@ -2356,5 +1978,5 @@ abstract class _$FetchUserListingsImpl implements ListingsEvent {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$$FetchUserListingsImplImplCopyWith<_$$FetchUserListingsImplImpl>
-  get copyWith => throw _privateConstructorUsedError;
+      get copyWith => throw _privateConstructorUsedError;
 }

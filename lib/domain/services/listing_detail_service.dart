@@ -5,11 +5,18 @@ import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/pageable_response.dart";
-import "package:uy_dosh/domain/services/listing_service_common.dart";
+import "package:uy_dosh/domain/services/listing_service_common.dart"
+    show EmptyListingRequest, DescriptionTranslationRequest;
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 abstract class IListingDetailService {
   Future<ListingDetail> getListingDetail(int listingId, {String? language});
+  /// Persists a translated description for [listingId] (requires auth).
+  Future<void> saveDescriptionTranslation({
+    required int listingId,
+    required String targetLanguageCode,
+    required String translatedText,
+  });
   Future<void> recordListingView(int listingId);
   Future<PageableResponse<Listing>> getViewedListings({
     int page = 1,
@@ -55,6 +62,23 @@ class ListingDetailService implements IListingDetailService {
       logger.d("Error fetching listing detail: $e");
       rethrow;
     }
+  }
+
+  @override
+  Future<void> saveDescriptionTranslation({
+    required int listingId,
+    required String targetLanguageCode,
+    required String translatedText,
+  }) async {
+    await _oauthApiClient.post<dynamic, DescriptionTranslationRequest>(
+      "/listings/$listingId/description-translations",
+      (json) => json,
+      basePath: EnvironmentUtil.basePath,
+      data: DescriptionTranslationRequest(
+        targetLanguageCode: targetLanguageCode,
+        translatedText: translatedText,
+      ),
+    );
   }
 
   @override

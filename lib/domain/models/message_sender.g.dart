@@ -12,12 +12,10 @@ _$MessageSenderImpl _$$MessageSenderImplFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String,
       firebaseUid: json['firebase_uid'] as String,
       telegramId: json['telegram_id'] as String?,
-      profile:
-          json['profile'] == null
-              ? null
-              : MessageSenderProfile.fromJson(
-                json['profile'] as Map<String, dynamic>,
-              ),
+      profile: json['profile'] == null
+          ? null
+          : MessageSenderProfile.fromJson(
+              json['profile'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$MessageSenderImplToJson(_$MessageSenderImpl instance) =>
@@ -30,12 +28,15 @@ Map<String, dynamic> _$$MessageSenderImplToJson(_$MessageSenderImpl instance) =>
     };
 
 _$MessageSenderProfileImpl _$$MessageSenderProfileImplFromJson(
-  Map<String, dynamic> json,
-) => _$MessageSenderProfileImpl(
-  name: json['name'] as String?,
-  avatarUrl: json['avatar_url'] as String?,
-);
+        Map<String, dynamic> json) =>
+    _$MessageSenderProfileImpl(
+      name: json['name'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
+    );
 
 Map<String, dynamic> _$$MessageSenderProfileImplToJson(
-  _$MessageSenderProfileImpl instance,
-) => <String, dynamic>{'name': instance.name, 'avatar_url': instance.avatarUrl};
+        _$MessageSenderProfileImpl instance) =>
+    <String, dynamic>{
+      'name': instance.name,
+      'avatar_url': instance.avatarUrl,
+    };

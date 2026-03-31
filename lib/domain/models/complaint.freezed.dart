@@ -12,8 +12,7 @@ part of 'complaint.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 Complaint _$ComplaintFromJson(Map<String, dynamic> json) {
   return _Complaint.fromJson(json);
@@ -22,10 +21,9 @@ Complaint _$ComplaintFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Complaint {
   @JsonKey(
-    name: "status",
-    fromJson: _complaintStatusFromJson,
-    defaultValue: "pending",
-  )
+      name: "status",
+      fromJson: _complaintStatusFromJson,
+      defaultValue: "pending")
   String get status => throw _privateConstructorUsedError;
   int? get id => throw _privateConstructorUsedError;
   @JsonKey(name: "complainant_id")
@@ -57,22 +55,20 @@ abstract class $ComplaintCopyWith<$Res> {
   factory $ComplaintCopyWith(Complaint value, $Res Function(Complaint) then) =
       _$ComplaintCopyWithImpl<$Res, Complaint>;
   @useResult
-  $Res call({
-    @JsonKey(
-      name: "status",
-      fromJson: _complaintStatusFromJson,
-      defaultValue: "pending",
-    )
-    String status,
-    int? id,
-    @JsonKey(name: "complainant_id") int? complainantId,
-    @JsonKey(name: "listing_id") int? listingId,
-    @JsonKey(name: "category_id") int? categoryId,
-    @JsonKey(name: "category") ComplaintCategory? category,
-    String? text,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-  });
+  $Res call(
+      {@JsonKey(
+          name: "status",
+          fromJson: _complaintStatusFromJson,
+          defaultValue: "pending")
+      String status,
+      int? id,
+      @JsonKey(name: "complainant_id") int? complainantId,
+      @JsonKey(name: "listing_id") int? listingId,
+      @JsonKey(name: "category_id") int? categoryId,
+      @JsonKey(name: "category") ComplaintCategory? category,
+      String? text,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt});
 
   $ComplaintCategoryCopyWith<$Res>? get category;
 }
@@ -102,56 +98,44 @@ class _$ComplaintCopyWithImpl<$Res, $Val extends Complaint>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            status:
-                null == status
-                    ? _value.status
-                    : status // ignore: cast_nullable_to_non_nullable
-                        as String,
-            id:
-                freezed == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            complainantId:
-                freezed == complainantId
-                    ? _value.complainantId
-                    : complainantId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            listingId:
-                freezed == listingId
-                    ? _value.listingId
-                    : listingId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            categoryId:
-                freezed == categoryId
-                    ? _value.categoryId
-                    : categoryId // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            category:
-                freezed == category
-                    ? _value.category
-                    : category // ignore: cast_nullable_to_non_nullable
-                        as ComplaintCategory?,
-            text:
-                freezed == text
-                    ? _value.text
-                    : text // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            createdAt:
-                freezed == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            updatedAt:
-                freezed == updatedAt
-                    ? _value.updatedAt
-                    : updatedAt // ignore: cast_nullable_to_non_nullable
-                        as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String,
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      complainantId: freezed == complainantId
+          ? _value.complainantId
+          : complainantId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingId: freezed == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      categoryId: freezed == categoryId
+          ? _value.categoryId
+          : categoryId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      category: freezed == category
+          ? _value.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as ComplaintCategory?,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 
   /// Create a copy of Complaint
@@ -173,27 +157,24 @@ class _$ComplaintCopyWithImpl<$Res, $Val extends Complaint>
 abstract class _$$ComplaintImplCopyWith<$Res>
     implements $ComplaintCopyWith<$Res> {
   factory _$$ComplaintImplCopyWith(
-    _$ComplaintImpl value,
-    $Res Function(_$ComplaintImpl) then,
-  ) = __$$ComplaintImplCopyWithImpl<$Res>;
+          _$ComplaintImpl value, $Res Function(_$ComplaintImpl) then) =
+      __$$ComplaintImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @JsonKey(
-      name: "status",
-      fromJson: _complaintStatusFromJson,
-      defaultValue: "pending",
-    )
-    String status,
-    int? id,
-    @JsonKey(name: "complainant_id") int? complainantId,
-    @JsonKey(name: "listing_id") int? listingId,
-    @JsonKey(name: "category_id") int? categoryId,
-    @JsonKey(name: "category") ComplaintCategory? category,
-    String? text,
-    @JsonKey(name: "created_at") String? createdAt,
-    @JsonKey(name: "updated_at") String? updatedAt,
-  });
+  $Res call(
+      {@JsonKey(
+          name: "status",
+          fromJson: _complaintStatusFromJson,
+          defaultValue: "pending")
+      String status,
+      int? id,
+      @JsonKey(name: "complainant_id") int? complainantId,
+      @JsonKey(name: "listing_id") int? listingId,
+      @JsonKey(name: "category_id") int? categoryId,
+      @JsonKey(name: "category") ComplaintCategory? category,
+      String? text,
+      @JsonKey(name: "created_at") String? createdAt,
+      @JsonKey(name: "updated_at") String? updatedAt});
 
   @override
   $ComplaintCategoryCopyWith<$Res>? get category;
@@ -204,9 +185,8 @@ class __$$ComplaintImplCopyWithImpl<$Res>
     extends _$ComplaintCopyWithImpl<$Res, _$ComplaintImpl>
     implements _$$ComplaintImplCopyWith<$Res> {
   __$$ComplaintImplCopyWithImpl(
-    _$ComplaintImpl _value,
-    $Res Function(_$ComplaintImpl) _then,
-  ) : super(_value, _then);
+      _$ComplaintImpl _value, $Res Function(_$ComplaintImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of Complaint
   /// with the given fields replaced by the non-null parameter values.
@@ -223,87 +203,73 @@ class __$$ComplaintImplCopyWithImpl<$Res>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(
-      _$ComplaintImpl(
-        status:
-            null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                    as String,
-        id:
-            freezed == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        complainantId:
-            freezed == complainantId
-                ? _value.complainantId
-                : complainantId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        listingId:
-            freezed == listingId
-                ? _value.listingId
-                : listingId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        categoryId:
-            freezed == categoryId
-                ? _value.categoryId
-                : categoryId // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        category:
-            freezed == category
-                ? _value.category
-                : category // ignore: cast_nullable_to_non_nullable
-                    as ComplaintCategory?,
-        text:
-            freezed == text
-                ? _value.text
-                : text // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        createdAt:
-            freezed == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        updatedAt:
-            freezed == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                    as String?,
-      ),
-    );
+    return _then(_$ComplaintImpl(
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String,
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      complainantId: freezed == complainantId
+          ? _value.complainantId
+          : complainantId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingId: freezed == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      categoryId: freezed == categoryId
+          ? _value.categoryId
+          : categoryId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      category: freezed == category
+          ? _value.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as ComplaintCategory?,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      updatedAt: freezed == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ComplaintImpl implements _Complaint {
-  const _$ComplaintImpl({
-    @JsonKey(
-      name: "status",
-      fromJson: _complaintStatusFromJson,
-      defaultValue: "pending",
-    )
-    required this.status,
-    this.id,
-    @JsonKey(name: "complainant_id") this.complainantId,
-    @JsonKey(name: "listing_id") this.listingId,
-    @JsonKey(name: "category_id") this.categoryId,
-    @JsonKey(name: "category") this.category,
-    this.text,
-    @JsonKey(name: "created_at") this.createdAt,
-    @JsonKey(name: "updated_at") this.updatedAt,
-  });
+  const _$ComplaintImpl(
+      {@JsonKey(
+          name: "status",
+          fromJson: _complaintStatusFromJson,
+          defaultValue: "pending")
+      required this.status,
+      this.id,
+      @JsonKey(name: "complainant_id") this.complainantId,
+      @JsonKey(name: "listing_id") this.listingId,
+      @JsonKey(name: "category_id") this.categoryId,
+      @JsonKey(name: "category") this.category,
+      this.text,
+      @JsonKey(name: "created_at") this.createdAt,
+      @JsonKey(name: "updated_at") this.updatedAt});
 
   factory _$ComplaintImpl.fromJson(Map<String, dynamic> json) =>
       _$$ComplaintImplFromJson(json);
 
   @override
   @JsonKey(
-    name: "status",
-    fromJson: _complaintStatusFromJson,
-    defaultValue: "pending",
-  )
+      name: "status",
+      fromJson: _complaintStatusFromJson,
+      defaultValue: "pending")
   final String status;
   @override
   final int? id;
@@ -357,18 +323,8 @@ class _$ComplaintImpl implements _Complaint {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    status,
-    id,
-    complainantId,
-    listingId,
-    categoryId,
-    category,
-    text,
-    createdAt,
-    updatedAt,
-  );
+  int get hashCode => Object.hash(runtimeType, status, id, complainantId,
+      listingId, categoryId, category, text, createdAt, updatedAt);
 
   /// Create a copy of Complaint
   /// with the given fields replaced by the non-null parameter values.
@@ -380,37 +336,36 @@ class _$ComplaintImpl implements _Complaint {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ComplaintImplToJson(this);
+    return _$$ComplaintImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _Complaint implements Complaint {
-  const factory _Complaint({
-    @JsonKey(
-      name: "status",
-      fromJson: _complaintStatusFromJson,
-      defaultValue: "pending",
-    )
-    required final String status,
-    final int? id,
-    @JsonKey(name: "complainant_id") final int? complainantId,
-    @JsonKey(name: "listing_id") final int? listingId,
-    @JsonKey(name: "category_id") final int? categoryId,
-    @JsonKey(name: "category") final ComplaintCategory? category,
-    final String? text,
-    @JsonKey(name: "created_at") final String? createdAt,
-    @JsonKey(name: "updated_at") final String? updatedAt,
-  }) = _$ComplaintImpl;
+  const factory _Complaint(
+      {@JsonKey(
+          name: "status",
+          fromJson: _complaintStatusFromJson,
+          defaultValue: "pending")
+      required final String status,
+      final int? id,
+      @JsonKey(name: "complainant_id") final int? complainantId,
+      @JsonKey(name: "listing_id") final int? listingId,
+      @JsonKey(name: "category_id") final int? categoryId,
+      @JsonKey(name: "category") final ComplaintCategory? category,
+      final String? text,
+      @JsonKey(name: "created_at") final String? createdAt,
+      @JsonKey(name: "updated_at") final String? updatedAt}) = _$ComplaintImpl;
 
   factory _Complaint.fromJson(Map<String, dynamic> json) =
       _$ComplaintImpl.fromJson;
 
   @override
   @JsonKey(
-    name: "status",
-    fromJson: _complaintStatusFromJson,
-    defaultValue: "pending",
-  )
+      name: "status",
+      fromJson: _complaintStatusFromJson,
+      defaultValue: "pending")
   String get status;
   @override
   int? get id;
@@ -444,8 +399,7 @@ abstract class _Complaint implements Complaint {
 }
 
 CreateComplaintRequest _$CreateComplaintRequestFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   return _CreateComplaintRequest.fromJson(json);
 }
 
@@ -469,23 +423,19 @@ mixin _$CreateComplaintRequest {
 
 /// @nodoc
 abstract class $CreateComplaintRequestCopyWith<$Res> {
-  factory $CreateComplaintRequestCopyWith(
-    CreateComplaintRequest value,
-    $Res Function(CreateComplaintRequest) then,
-  ) = _$CreateComplaintRequestCopyWithImpl<$Res, CreateComplaintRequest>;
+  factory $CreateComplaintRequestCopyWith(CreateComplaintRequest value,
+          $Res Function(CreateComplaintRequest) then) =
+      _$CreateComplaintRequestCopyWithImpl<$Res, CreateComplaintRequest>;
   @useResult
-  $Res call({
-    @JsonKey(name: "listing_id") int listingId,
-    @JsonKey(name: "category_id") int categoryId,
-    String? text,
-  });
+  $Res call(
+      {@JsonKey(name: "listing_id") int listingId,
+      @JsonKey(name: "category_id") int categoryId,
+      String? text});
 }
 
 /// @nodoc
-class _$CreateComplaintRequestCopyWithImpl<
-  $Res,
-  $Val extends CreateComplaintRequest
->
+class _$CreateComplaintRequestCopyWithImpl<$Res,
+        $Val extends CreateComplaintRequest>
     implements $CreateComplaintRequestCopyWith<$Res> {
   _$CreateComplaintRequestCopyWithImpl(this._value, this._then);
 
@@ -503,26 +453,20 @@ class _$CreateComplaintRequestCopyWithImpl<
     Object? categoryId = null,
     Object? text = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            listingId:
-                null == listingId
-                    ? _value.listingId
-                    : listingId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            categoryId:
-                null == categoryId
-                    ? _value.categoryId
-                    : categoryId // ignore: cast_nullable_to_non_nullable
-                        as int,
-            text:
-                freezed == text
-                    ? _value.text
-                    : text // ignore: cast_nullable_to_non_nullable
-                        as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      listingId: null == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as int,
+      categoryId: null == categoryId
+          ? _value.categoryId
+          : categoryId // ignore: cast_nullable_to_non_nullable
+              as int,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 }
 
@@ -530,27 +474,26 @@ class _$CreateComplaintRequestCopyWithImpl<
 abstract class _$$CreateComplaintRequestImplCopyWith<$Res>
     implements $CreateComplaintRequestCopyWith<$Res> {
   factory _$$CreateComplaintRequestImplCopyWith(
-    _$CreateComplaintRequestImpl value,
-    $Res Function(_$CreateComplaintRequestImpl) then,
-  ) = __$$CreateComplaintRequestImplCopyWithImpl<$Res>;
+          _$CreateComplaintRequestImpl value,
+          $Res Function(_$CreateComplaintRequestImpl) then) =
+      __$$CreateComplaintRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @JsonKey(name: "listing_id") int listingId,
-    @JsonKey(name: "category_id") int categoryId,
-    String? text,
-  });
+  $Res call(
+      {@JsonKey(name: "listing_id") int listingId,
+      @JsonKey(name: "category_id") int categoryId,
+      String? text});
 }
 
 /// @nodoc
 class __$$CreateComplaintRequestImplCopyWithImpl<$Res>
-    extends
-        _$CreateComplaintRequestCopyWithImpl<$Res, _$CreateComplaintRequestImpl>
+    extends _$CreateComplaintRequestCopyWithImpl<$Res,
+        _$CreateComplaintRequestImpl>
     implements _$$CreateComplaintRequestImplCopyWith<$Res> {
   __$$CreateComplaintRequestImplCopyWithImpl(
-    _$CreateComplaintRequestImpl _value,
-    $Res Function(_$CreateComplaintRequestImpl) _then,
-  ) : super(_value, _then);
+      _$CreateComplaintRequestImpl _value,
+      $Res Function(_$CreateComplaintRequestImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of CreateComplaintRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -561,36 +504,30 @@ class __$$CreateComplaintRequestImplCopyWithImpl<$Res>
     Object? categoryId = null,
     Object? text = freezed,
   }) {
-    return _then(
-      _$CreateComplaintRequestImpl(
-        listingId:
-            null == listingId
-                ? _value.listingId
-                : listingId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        categoryId:
-            null == categoryId
-                ? _value.categoryId
-                : categoryId // ignore: cast_nullable_to_non_nullable
-                    as int,
-        text:
-            freezed == text
-                ? _value.text
-                : text // ignore: cast_nullable_to_non_nullable
-                    as String?,
-      ),
-    );
+    return _then(_$CreateComplaintRequestImpl(
+      listingId: null == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as int,
+      categoryId: null == categoryId
+          ? _value.categoryId
+          : categoryId // ignore: cast_nullable_to_non_nullable
+              as int,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$CreateComplaintRequestImpl implements _CreateComplaintRequest {
-  const _$CreateComplaintRequestImpl({
-    @JsonKey(name: "listing_id") required this.listingId,
-    @JsonKey(name: "category_id") required this.categoryId,
-    this.text,
-  });
+  const _$CreateComplaintRequestImpl(
+      {@JsonKey(name: "listing_id") required this.listingId,
+      @JsonKey(name: "category_id") required this.categoryId,
+      this.text});
 
   factory _$CreateComplaintRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$CreateComplaintRequestImplFromJson(json);
@@ -631,24 +568,22 @@ class _$CreateComplaintRequestImpl implements _CreateComplaintRequest {
   @override
   @pragma('vm:prefer-inline')
   _$$CreateComplaintRequestImplCopyWith<_$CreateComplaintRequestImpl>
-  get copyWith =>
-      __$$CreateComplaintRequestImplCopyWithImpl<_$CreateComplaintRequestImpl>(
-        this,
-        _$identity,
-      );
+      get copyWith => __$$CreateComplaintRequestImplCopyWithImpl<
+          _$CreateComplaintRequestImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$CreateComplaintRequestImplToJson(this);
+    return _$$CreateComplaintRequestImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _CreateComplaintRequest implements CreateComplaintRequest {
-  const factory _CreateComplaintRequest({
-    @JsonKey(name: "listing_id") required final int listingId,
-    @JsonKey(name: "category_id") required final int categoryId,
-    final String? text,
-  }) = _$CreateComplaintRequestImpl;
+  const factory _CreateComplaintRequest(
+      {@JsonKey(name: "listing_id") required final int listingId,
+      @JsonKey(name: "category_id") required final int categoryId,
+      final String? text}) = _$CreateComplaintRequestImpl;
 
   factory _CreateComplaintRequest.fromJson(Map<String, dynamic> json) =
       _$CreateComplaintRequestImpl.fromJson;
@@ -667,5 +602,5 @@ abstract class _CreateComplaintRequest implements CreateComplaintRequest {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CreateComplaintRequestImplCopyWith<_$CreateComplaintRequestImpl>
-  get copyWith => throw _privateConstructorUsedError;
+      get copyWith => throw _privateConstructorUsedError;
 }
