@@ -93,6 +93,8 @@ class AdminSubwayMapScreen extends StatefulWidget {
 class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   Key _mapKey = UniqueKey();
   late final TransformationController _transformationController;
+  /// Stations with at least one listing (from API). Empty set before load completes.
+  Set<int> _stationIdsWithListings = {};
 
   @override
   void initState() {
@@ -102,6 +104,36 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
         ..translate(_initialMapShiftX, _initialMapShiftY)
         ..scale(1.3),
     );
+    _loadListingStationIds();
+  }
+
+  Future<void> _loadListingStationIds() async {
+    final service = getIt<IListingService>();
+    final ids = MetroCache.getAllStations().map((s) => s.id).toList();
+    final withListings = <int>{};
+    const batchSize = 8;
+    for (var i = 0; i < ids.length; i += batchSize) {
+      final batch = ids.skip(i).take(batchSize).toList();
+      final results = await Future.wait(
+        batch.map((id) async {
+          try {
+            final r = await service.getListings(
+              subwayStationId: id,
+              limit: 1,
+              page: 1,
+            );
+            return r.total > 0 ? id : null;
+          } catch (_) {
+            return null;
+          }
+        }),
+      );
+      for (final id in results) {
+        if (id != null) withListings.add(id);
+      }
+    }
+    if (!mounted) return;
+    setState(() => _stationIdsWithListings = withListings);
   }
 
   @override
@@ -315,6 +347,36 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     return labels;
   }
 
+  /// Resolves [SubwayStation.id] from a `<switch>` inner fragment (same matching as labels).
+  static int? _stationIdFromSwitchContent(String content) {
+    final tspanRegExp = RegExp("<tspan[^>]*>([^<]+)</tspan>");
+    final labelCandidates = tspanRegExp
+        .allMatches(content)
+        .map((m) => m.group(1)?.trim())
+        .whereType<String>()
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    if (labelCandidates.isEmpty) return null;
+
+    SubwayStation? station;
+    for (final label in labelCandidates) {
+      station = _findStationByLabel(label);
+      if (station != null) return station.id;
+      final fixup = _labelFixups[label];
+      if (fixup != null) {
+        station = _findStationByLabel(fixup);
+        if (station != null) return station.id;
+      }
+      final abbrevMatch = RegExp(r"^[^\s]+\.\s*(.+)$").firstMatch(label);
+      if (abbrevMatch != null) {
+        station = _findStationByLabel(abbrevMatch.group(1)!.trim());
+        if (station != null) return station.id;
+      }
+    }
+    return null;
+  }
+
   static SubwayStation? _findStationByLabel(String label) {
     final matches = MetroCache.getStationsByName(label);
     if (matches.isEmpty) return null;
@@ -467,11 +529,28 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
 
   static final Map<String, String> _processedSvgCache = {};
 
-  static String _processSvg(String svg, String language) {
-    return _processedSvgCache.putIfAbsent(language, () => _processSvgImpl(svg, language));
+  static String _processSvgCacheKey(String language, Set<int> boldStationIds) {
+    final sorted = boldStationIds.toList()..sort();
+    return "$language|${sorted.join(",")}";
   }
 
-  static String _processSvgImpl(String svg, String language) {
+  static String _processSvg(
+    String svg,
+    String language,
+    Set<int> boldStationIds,
+  ) {
+    final key = _processSvgCacheKey(language, boldStationIds);
+    return _processedSvgCache.putIfAbsent(
+      key,
+      () => _processSvgImpl(svg, language, boldStationIds),
+    );
+  }
+
+  static String _processSvgImpl(
+    String svg,
+    String language,
+    Set<int> boldStationIds,
+  ) {
     final withoutStyle = svg.replaceAll(
       RegExp(r"<style[\s\S]*?</style>"),
       "",
@@ -509,7 +588,15 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
             RegExp('transform="[^"]+"').firstMatch(attributes);
         if (transformMatch == null) return textValue;
 
-        return "<g ${transformMatch.group(0)}>$textValue</g>";
+        final stationId = _stationIdFromSwitchContent(content);
+        final useBold = stationId != null &&
+            boldStationIds.isNotEmpty &&
+            boldStationIds.contains(stationId);
+        final inner = useBold
+            ? '<g style="font-weight:bold">$textValue</g>'
+            : textValue;
+
+        return "<g ${transformMatch.group(0)}>$inner</g>";
       },
     );
     return flattenedSwitches
@@ -613,6 +700,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                   ..translate(_initialMapShiftX, _initialMapShiftY)
                   ..scale(1.3);
               });
+              _loadListingStationIds();
             },
             tooltip: "Refresh map",
           ),
@@ -669,6 +757,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                                     _processSvg(
                                       mapData.rawSvg,
                                       LanguageState().currentLanguage,
+                                      _stationIdsWithListings,
                                     ),
                                     width: mapWidth,
                                     height: mapHeight,
