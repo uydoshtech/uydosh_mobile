@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/popup_menu_open_curve.dart";
 
 /// Theme manager for switching between different app themes
 class AppTheme {
@@ -10,14 +11,17 @@ class AppTheme {
   /// Shared alpha for popup menus and [DropdownButton] panels so content behind shows slightly.
   static const double menuOverlaySurfaceOpacity = 0.92;
 
-  /// [PopupMenuButton] open animation: settling bounces at the end ([Curves.bounceOut]).
-  /// Curves whose output exceeds 1.0 (e.g. [Curves.easeOutBack]) break the framework:
-  /// nested [Interval] curves assert when t > 1. [Curves.bounceOut] stays in range.
+  /// [PopupMenuButton] open animation: bounce-like motion via [PopupMenuOpenCurve]
+  /// (based on [Curves.bounceOut] with a smooth final segment so the last row does not flicker).
+  /// Curves whose output exceeds 1.0 (e.g. [Curves.easeOutBack]) break nested [Interval] asserts.
   static const AnimationStyle popupMenuAnimationStyle = AnimationStyle(
     duration: Duration(milliseconds: 480),
-    curve: Curves.bounceOut,
+    curve: PopupMenuOpenCurve(),
     reverseCurve: Curves.easeInCubic,
   );
+
+  /// Padding inside popup menus (default is 8 vertical). Extra bottom inset under the last row.
+  static const EdgeInsets popupMenuPadding = EdgeInsets.fromLTRB(0, 8, 0, 20);
 
   /// Get the current theme data based on theme name
   static ThemeData getTheme(String themeName) {
@@ -185,6 +189,7 @@ class AppTheme {
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: 8,
+        menuPadding: popupMenuPadding,
       ),
 
       // Drawer theme
@@ -373,6 +378,7 @@ class AppTheme {
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: 8,
+        menuPadding: popupMenuPadding,
       ),
 
       // Drawer theme
@@ -532,6 +538,7 @@ class AppTheme {
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: 8,
+        menuPadding: popupMenuPadding,
       ),
 
       // Text theme

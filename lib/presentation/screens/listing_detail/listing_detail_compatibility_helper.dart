@@ -1,5 +1,6 @@
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/utils/profile_match_scoring.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -12,8 +13,6 @@ class ListingDetailCompatibilityHelper {
     UserProfile currentProfile,
     UserProfile ownerProfile,
   ) {
-    var total = 0;
-    var matched = 0;
     final matches = <CompatibilityMatch>[];
     final differences = <CompatibilityDifference>[];
 
@@ -25,13 +24,11 @@ class ListingDetailCompatibilityHelper {
       required String Function(T value) formatValue,
     }) {
       if (currentValue == null || ownerValue == null) return;
-      total += 1;
       final label = L10n.get(labelKey);
       final currentText = formatValue(currentValue);
       final ownerText = formatValue(ownerValue);
 
       if (isMatch(currentValue, ownerValue)) {
-        matched += 1;
         matches.add(CompatibilityMatch(
           labelKey: labelKey,
           label: label,
@@ -50,7 +47,6 @@ class ListingDetailCompatibilityHelper {
     // University
     if (currentProfile.universityId != null &&
         ownerProfile.universityId != null) {
-      total += 1;
       final currentLang = LanguageState().currentLanguage;
       final currentText = currentProfile.university != null
           ? currentProfile.university!.getLocalizedNameCapitalized(currentLang)
@@ -60,7 +56,6 @@ class ListingDetailCompatibilityHelper {
           : "";
 
       if (currentProfile.universityId == ownerProfile.universityId) {
-        matched += 1;
         matches.insert(
           0,
           CompatibilityMatch(
@@ -70,7 +65,6 @@ class ListingDetailCompatibilityHelper {
           ),
         );
       } else {
-        matched += 1;
         matches.insert(
           0,
           CompatibilityMatch(
@@ -84,8 +78,7 @@ class ListingDetailCompatibilityHelper {
 
     // Region
     if (currentProfile.regionId != null && ownerProfile.regionId != null) {
-      total += 1;
-      final labelKey = "region";
+      const labelKey = "region";
       final label = L10n.get(labelKey);
       final currentText = currentProfile.region != null
           ? _getLocalizedRegionName(currentProfile.region!)
@@ -95,7 +88,6 @@ class ListingDetailCompatibilityHelper {
           : "";
 
       if (currentProfile.regionId == ownerProfile.regionId) {
-        matched += 1;
         matches.add(CompatibilityMatch(
           labelKey: "same_region",
           label: L10n.get("same_region"),
@@ -207,7 +199,9 @@ class ListingDetailCompatibilityHelper {
       formatValue: _formatBooleanPreference,
     );
 
-    final percent = total > 0 ? ((matched / total) * 100).round() : null;
+    // Weighted score (sleep, smoking, drinking, university, hobbies) — not plain field counts.
+    final weighted = computeProfileMatchScore(currentProfile, ownerProfile);
+    final percent = (weighted * 100).round();
     return CompatibilityResult(
       percent: percent,
       matches: matches,
