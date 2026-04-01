@@ -208,7 +208,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     SearchTutorialOverlay.show(
       context,
       searchButtonKey: _searchButtonTutorialKey,
-      fullScreenKey: AppRouter.fullScreenTutorialKey,
       profileIconKey: AppRouter.profileIconTutorialKey,
       onComplete: TutorialState().markSearchTutorialCompleted,
     );

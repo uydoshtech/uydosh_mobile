@@ -35,13 +35,10 @@ class SearchTutorialOverlay {
   ///   that wraps the search FAB.
   /// [profileIconKey] - Optional. When provided, after 5 seconds the spotlight
   ///   automatically moves to the profile icon in the top right corner.
-  /// [fullScreenKey] - Key for the main content area; used for the expand-out
-  ///   animation before finishing.
   /// [onComplete] - Called when the tutorial finishes (auto or tap).
   static void show(
     BuildContext context, {
     required GlobalKey<TutorialTargetWrapperState> searchButtonKey,
-    required GlobalKey<TutorialTargetWrapperState> fullScreenKey,
     GlobalKey<TutorialTargetWrapperState>? profileIconKey,
     VoidCallback? onComplete,
   }) {
@@ -111,30 +108,12 @@ class SearchTutorialOverlay {
       );
     }
 
-    // Final target: expand spotlight to full screen for smooth exit animation
-    targets.add(
-      TargetFocus(
-        identify: "expand_out",
-        keyTarget: fullScreenKey,
-        alignSkip: Alignment.topRight,
-        enableOverlayTab: true,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) => const SizedBox.shrink(),
-          ),
-        ],
-      ),
-    );
-
     Timer? profileTransitionTimer;
     Timer? autoFinishTimer;
-    Timer? finishAfterExpandTimer;
 
     void finishTutorial() {
       profileTransitionTimer?.cancel();
       autoFinishTimer?.cancel();
-      finishAfterExpandTimer?.cancel();
       onComplete?.call();
     }
 
@@ -143,6 +122,7 @@ class SearchTutorialOverlay {
       colorShadow: Colors.black,
       opacityShadow: 0.92,
       hideSkip: true,
+      pulseEnable: false,
       unFocusAnimationDuration: const Duration(milliseconds: 900),
       onFinish: finishTutorial,
       onSkip: () {
@@ -153,8 +133,6 @@ class SearchTutorialOverlay {
 
     tutorial.show(context: context);
 
-    const expandAnimationDuration = Duration(milliseconds: 1600);
-
     const targetDuration = Duration(seconds: 4);
 
     // Auto-advance to profile icon after 4 seconds (if present)
@@ -164,27 +142,18 @@ class SearchTutorialOverlay {
           tutorial.next();
         }
       });
-      // Expand spotlight to full screen at 8 sec (4 + 4), then finish after animation
+      // Finish after profile step (do not use a full-screen "expand out" target:
+      // that spotlight draws huge circular masks and can leave rendering artifacts
+      // on Flutter web when the overlay is removed).
       autoFinishTimer = Timer(const Duration(seconds: 8), () {
         if (tutorial.isShowing) {
-          tutorial.next(); // Transition to expand-out target
-          finishAfterExpandTimer = Timer(expandAnimationDuration, () {
-            if (tutorial.isShowing) {
-              tutorial.finish();
-            }
-          });
+          tutorial.finish();
         }
       });
     } else {
-      // Expand spotlight at 4 sec, then finish after animation
       autoFinishTimer = Timer(targetDuration, () {
         if (tutorial.isShowing) {
-          tutorial.next(); // Transition to expand-out target
-          finishAfterExpandTimer = Timer(expandAnimationDuration, () {
-            if (tutorial.isShowing) {
-              tutorial.finish();
-            }
-          });
+          tutorial.finish();
         }
       });
     }

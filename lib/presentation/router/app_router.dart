@@ -39,10 +39,6 @@ class AppRouter {
   static final GlobalKey<TutorialTargetWrapperState> profileIconTutorialKey =
       GlobalKey<TutorialTargetWrapperState>();
 
-  /// Global key for the main content area; used for spotlight expand animation.
-  static final GlobalKey<TutorialTargetWrapperState> fullScreenTutorialKey =
-      GlobalKey<TutorialTargetWrapperState>();
-
   static Widget buildMainNavigation({bool attachKey = false}) => BlocProvider(
     create: (context) {
       final bloc = ListingsBloc(getIt<IListingService>());
@@ -601,10 +597,7 @@ class _MainNavigationState extends State<MainNavigation>
       onDrawerChanged: (isOpened) {
         if (isOpened) HapticFeedbackUtils.impact();
       },
-      body: TutorialTargetWrapper(
-        key: AppRouter.fullScreenTutorialKey,
-        child: IndexedStack(index: _currentIndex, children: _getScreens()),
-      ),
+      body: IndexedStack(index: _currentIndex, children: _getScreens()),
       bottomNavigationBar: ListenableBuilder(
         listenable: UnreadMessagesState(),
         builder: (context, child) {
