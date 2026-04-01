@@ -30,6 +30,9 @@ class AppColors {
   static const Color errorLight = Color(0xFFE57373);
   static const Color errorDark = Color(0xFFD32F2F);
 
+  /// Material [Colors.brown] primary shade — used for native 3D viewer “on floor” objects.
+  static const Color floorObject3dTint = Color(0xFF795548);
+
   // Neutral Colors
   static const Color background = Color(0xFF121212); // Dark background
   static const Color surface = Color(0xFF1E1E1E); // Dark surface

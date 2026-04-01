@@ -177,6 +177,10 @@ class AppStrings {
       "room_3d_gesture_hint":
           "Drag with one finger to look around the model.\nPinch with two fingers to zoom in or out.",
       "room_3d_load_error_title": "Could not load 3D model",
+      "room_3d_floor_only_button": "Hide walls",
+      "room_3d_full_room_button": "Full room",
+      "room_3d_floor_only_unavailable":
+          "No wall meshes were found by name in this file. Walls must be separate labeled objects in the 3D export.",
 
       "profile_completed_success": "Profile completed successfully!",
       "profile_updated_success": "Profile updated successfully",
@@ -1021,6 +1025,10 @@ class AppStrings {
       "room_3d_gesture_hint":
           "Перетаскивайте одним пальцем, чтобы осмотреть модель.\nЩипок двумя пальцами — масштаб.",
       "room_3d_load_error_title": "Не удалось загрузить 3D-модель",
+      "room_3d_floor_only_button": "Скрыть стены",
+      "room_3d_full_room_button": "Вся комната",
+      "room_3d_floor_only_unavailable":
+          "В файле не найдены отдельные стены по имени. В экспорте стены должны быть отдельными объектами.",
 
       "profile_completed_success": "Профиль успешно завершен!",
       "profile_updated_success": "Профиль успешно обновлен",
@@ -1873,6 +1881,10 @@ class AppStrings {
       "room_3d_gesture_hint":
           "Modelni ko'rish uchun barmoq bilan suring.\nIkki barmoq bilan yaqinlashtiring yoki uzoqlashtiring.",
       "room_3d_load_error_title": "3D modelni yuklab bo'lmadi",
+      "room_3d_floor_only_button": "Devorlarni yashirish",
+      "room_3d_full_room_button": "Butun xona",
+      "room_3d_floor_only_unavailable":
+          "Bu faylda devorlar nomi bo'yicha topilmadi. 3D eksportda devorlar alohida obyektlar bo'lishi kerak.",
 
       "profile_completed_success": "Profil muvaffaqiyatli to'ldirildi!",
       "profile_updated_success": "Profil muvaffaqiyatli yangilandi",

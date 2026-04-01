@@ -10,6 +10,11 @@ struct RoomViewerStrings {
   let gestureHint: String
   let loadErrorTitle: String
   let alertOk: String
+  let floorOnlyButtonTitle: String
+  let fullRoomButtonTitle: String
+  let floorOnlyUnavailableMessage: String
+  /// RGB hex `RRGGBB` from [AppColors.floorObject3dTint] (Material brown).
+  let onFloorObjectTint: UIColor
 
   init(
     title: String,
@@ -17,7 +22,11 @@ struct RoomViewerStrings {
     dimensionsLineTemplate: String,
     gestureHint: String,
     loadErrorTitle: String,
-    alertOk: String
+    alertOk: String,
+    floorOnlyButtonTitle: String,
+    fullRoomButtonTitle: String,
+    floorOnlyUnavailableMessage: String,
+    onFloorObjectTint: UIColor
   ) {
     self.title = title
     self.dimensionsCaption = dimensionsCaption
@@ -25,6 +34,10 @@ struct RoomViewerStrings {
     self.gestureHint = gestureHint
     self.loadErrorTitle = loadErrorTitle
     self.alertOk = alertOk
+    self.floorOnlyButtonTitle = floorOnlyButtonTitle
+    self.fullRoomButtonTitle = fullRoomButtonTitle
+    self.floorOnlyUnavailableMessage = floorOnlyUnavailableMessage
+    self.onFloorObjectTint = onFloorObjectTint
   }
 
   init?(dict: [String: String]) {
@@ -41,8 +54,26 @@ struct RoomViewerStrings {
       dimensionsLineTemplate: dimensionsLineTemplate,
       gestureHint: gestureHint,
       loadErrorTitle: loadErrorTitle,
-      alertOk: alertOk
+      alertOk: alertOk,
+      floorOnlyButtonTitle: dict["floorOnlyButton"] ?? "Hide walls",
+      fullRoomButtonTitle: dict["fullRoomButton"] ?? "Full room",
+      floorOnlyUnavailableMessage: dict["floorOnlyUnavailable"]
+        ?? "No wall meshes were found by name in this file.",
+      onFloorObjectTint: Self.uiColorFromRgbHex6(dict["onFloorTintRgb"] ?? "795548")
     )
+  }
+
+  /// `RRGGBB` (e.g. Material brown `795548`).
+  private static func uiColorFromRgbHex6(_ hex: String) -> UIColor {
+    var h = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+    if h.hasPrefix("#") { h.removeFirst() }
+    guard h.count == 6, let v = UInt32(h, radix: 16) else {
+      return UIColor(red: 121 / 255, green: 85 / 255, blue: 72 / 255, alpha: 1)
+    }
+    let r = CGFloat((v >> 16) & 0xFF) / 255
+    let g = CGFloat((v >> 8) & 0xFF) / 255
+    let b = CGFloat(v & 0xFF) / 255
+    return UIColor(red: r, green: g, blue: b, alpha: 1)
   }
 
   static let englishFallback = RoomViewerStrings(
@@ -53,7 +84,12 @@ struct RoomViewerStrings {
       "Drag with one finger to look around the model.\n"
       + "Pinch with two fingers to zoom in or out.",
     loadErrorTitle: "Could not load 3D model",
-    alertOk: "OK"
+    alertOk: "OK",
+    floorOnlyButtonTitle: "Hide walls",
+    fullRoomButtonTitle: "Full room",
+    floorOnlyUnavailableMessage:
+      "No wall meshes were found by name in this file.",
+    onFloorObjectTint: Self.uiColorFromRgbHex6("795548")
   )
 }
 
@@ -68,6 +104,12 @@ final class RoomUsdzViewerViewController: UIViewController {
   private let dimensionsValueLabel = UILabel()
   private let hintLabel = UILabel()
   private var loadedScene: SCNScene?
+  /// When true, architectural shells (walls/ceiling/openings) are hidden; floor and furniture stay.
+  private var wallsHidden = false
+  private var floorModeBarButton: UIBarButtonItem?
+  private var sceneWorldBounds: (min: SCNVector3, max: SCNVector3)?
+  private var didCacheOriginalMaterials = false
+  private var originalMaterialsByGeometry = [ObjectIdentifier: [SCNMaterial]]()
 
   init(fileURL: URL, strings: RoomViewerStrings) {
     self.fileURL = fileURL
@@ -89,6 +131,14 @@ final class RoomUsdzViewerViewController: UIViewController {
       target: self,
       action: #selector(closeTapped)
     )
+    let wallBtn = UIBarButtonItem(
+      title: strings.floorOnlyButtonTitle,
+      style: .plain,
+      target: self,
+      action: #selector(toggleWallsHiddenMode)
+    )
+    floorModeBarButton = wallBtn
+    navigationItem.rightBarButtonItem = wallBtn
 
     sceneView.translatesAutoresizingMaskIntoConstraints = false
     sceneView.backgroundColor = .black
@@ -214,6 +264,227 @@ final class RoomUsdzViewerViewController: UIViewController {
     return (minV, maxV)
   }
 
+  private func worldBounds(of node: SCNNode) -> (min: SCNVector3, max: SCNVector3)? {
+    guard node.geometry != nil else { return nil }
+    let box = node.boundingBox
+    let corners: [SCNVector3] = [
+      SCNVector3(box.min.x, box.min.y, box.min.z),
+      SCNVector3(box.max.x, box.min.y, box.min.z),
+      SCNVector3(box.min.x, box.max.y, box.min.z),
+      SCNVector3(box.max.x, box.max.y, box.min.z),
+      SCNVector3(box.min.x, box.min.y, box.max.z),
+      SCNVector3(box.max.x, box.min.y, box.max.z),
+      SCNVector3(box.min.x, box.max.y, box.max.z),
+      SCNVector3(box.max.x, box.max.y, box.max.z),
+    ]
+    var minV = SCNVector3(
+      Float.greatestFiniteMagnitude,
+      Float.greatestFiniteMagnitude,
+      Float.greatestFiniteMagnitude
+    )
+    var maxV = SCNVector3(
+      -Float.greatestFiniteMagnitude,
+      -Float.greatestFiniteMagnitude,
+      -Float.greatestFiniteMagnitude
+    )
+    for c in corners {
+      let w = node.convertPosition(c, to: nil)
+      minV.x = Swift.min(minV.x, w.x)
+      minV.y = Swift.min(minV.y, w.y)
+      minV.z = Swift.min(minV.z, w.z)
+      maxV.x = Swift.max(maxV.x, w.x)
+      maxV.y = Swift.max(maxV.y, w.y)
+      maxV.z = Swift.max(maxV.z, w.z)
+    }
+    return (minV, maxV)
+  }
+
+  private func isLikelyFloorSlab(
+    _ b: (min: SCNVector3, max: SCNVector3),
+    sceneBounds: (min: SCNVector3, max: SCNVector3)
+  ) -> Bool {
+    let dx = b.max.x - b.min.x
+    let dy = b.max.y - b.min.y
+    let dz = b.max.z - b.min.z
+    let foot = max(dx, dz)
+    guard foot > 0.06 else { return false }
+    guard dy < max(0.05, 0.12 * foot) else { return false }
+    let sceneH = max(sceneBounds.max.y - sceneBounds.min.y, 0.12)
+    return b.min.y <= sceneBounds.min.y + 0.14 * sceneH + 0.04
+  }
+
+  private func isLikelyVerticalWallSlab(
+    _ b: (min: SCNVector3, max: SCNVector3),
+    sceneHeight: Float
+  ) -> Bool {
+    let dx = b.max.x - b.min.x
+    let dy = b.max.y - b.min.y
+    let dz = b.max.z - b.min.z
+    let hMax = max(dx, dz)
+    let hMin = min(dx, dz)
+    guard dy > 0.18 else { return false }
+    guard dy > 0.28 * max(hMax, 0.08) else { return false }
+    guard hMin < 0.26 * hMax else { return false }
+    return dy > 0.22 * max(sceneHeight, 0.2)
+  }
+
+  /// Anything that sits on the floor plane: not the floor mesh itself, not walls/doors/ceiling by name or shape.
+  private func isOnFloorObject(_ node: SCNNode, sceneBounds: (min: SCNVector3, max: SCNVector3)) -> Bool {
+    if node.name == "UydoshFramingCamera" { return false }
+    if shouldHideWallLikeSurface(node) { return false }
+    let name = (node.name ?? "").lowercased()
+    if name.contains("ceiling") { return false }
+    if name.contains("floor") || name.contains("ground") { return false }
+    guard let b = worldBounds(of: node) else { return false }
+    let sceneMinY = sceneBounds.min.y
+    let sceneH = max(sceneBounds.max.y - sceneBounds.min.y, 0.12)
+    if isLikelyFloorSlab(b, sceneBounds: sceneBounds) { return false }
+    if isLikelyVerticalWallSlab(b, sceneHeight: sceneH) { return false }
+    let bottomY = b.min.y
+    guard bottomY >= sceneMinY - 0.08, bottomY <= sceneMinY + 0.22 * sceneH + 0.06 else { return false }
+    let dy = b.max.y - b.min.y
+    guard dy > 0.025 else { return false }
+    return true
+  }
+
+  private func cacheOriginalMaterialsIfNeeded() {
+    guard !didCacheOriginalMaterials, let root = loadedScene?.rootNode else { return }
+    func visit(_ node: SCNNode) {
+      if let geo = node.geometry {
+        let id = ObjectIdentifier(geo)
+        if originalMaterialsByGeometry[id] == nil {
+          originalMaterialsByGeometry[id] = geo.materials.map { mat in
+            mat.copy() as! SCNMaterial
+          }
+        }
+      }
+      for child in node.childNodes {
+        visit(child)
+      }
+    }
+    visit(root)
+    didCacheOriginalMaterials = true
+  }
+
+  /// Tints meshes that sit on the floor using app brown ([AppColors.floorObject3dTint]).
+  private func applyOnFloorObjectTint() {
+    guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
+    cacheOriginalMaterialsIfNeeded()
+    let tint = strings.onFloorObjectTint
+    SCNTransaction.begin()
+    SCNTransaction.animationDuration = 0
+    func visit(_ node: SCNNode) {
+      guard let geo = node.geometry else {
+        for c in node.childNodes { visit(c) }
+        return
+      }
+      let id = ObjectIdentifier(geo)
+      guard let originals = originalMaterialsByGeometry[id] else {
+        for c in node.childNodes { visit(c) }
+        return
+      }
+      if isOnFloorObject(node, sceneBounds: sceneBounds) {
+        geo.materials = originals.map { orig in
+          let m = orig.copy() as! SCNMaterial
+          m.diffuse.contents = tint
+          return m
+        }
+      } else {
+        geo.materials = originals.map { $0.copy() as! SCNMaterial }
+      }
+      for c in node.childNodes {
+        visit(c)
+      }
+    }
+    visit(root)
+    SCNTransaction.commit()
+  }
+
+  /// Uses mesh node names from RoomPlan-style USDZ. Furniture stays visible unless its name matches these.
+  private func shouldHideWallLikeSurface(_ node: SCNNode) -> Bool {
+    if node.name == "UydoshFramingCamera" { return false }
+    let name = (node.name ?? "").lowercased()
+    if name.contains("floor") || name.contains("ground") { return false }
+    if name.contains("wall") || name.contains("ceiling") { return true }
+    if name.contains("door") || name.contains("window") || name.contains("opening") { return true }
+    return false
+  }
+
+  private func setAllGeometryVisible(_ visible: Bool) {
+    guard let root = loadedScene?.rootNode else { return }
+    SCNTransaction.begin()
+    SCNTransaction.animationDuration = 0
+    func visit(_ node: SCNNode) {
+      if node.geometry != nil {
+        node.isHidden = !visible
+      }
+      for child in node.childNodes {
+        visit(child)
+      }
+    }
+    visit(root)
+    SCNTransaction.commit()
+  }
+
+  private func applyWallsHiddenMode(_ hideWalls: Bool) {
+    guard let root = loadedScene?.rootNode else { return }
+    SCNTransaction.begin()
+    SCNTransaction.animationDuration = 0
+    func visit(_ node: SCNNode) {
+      if node.geometry != nil {
+        if hideWalls {
+          node.isHidden = shouldHideWallLikeSurface(node)
+        } else {
+          node.isHidden = false
+        }
+      }
+      for child in node.childNodes {
+        visit(child)
+      }
+    }
+    visit(root)
+    SCNTransaction.commit()
+  }
+
+  @objc private func toggleWallsHiddenMode() {
+    guard loadedScene != nil else { return }
+    if wallsHidden {
+      wallsHidden = false
+      setAllGeometryVisible(true)
+      floorModeBarButton?.title = strings.floorOnlyButtonTitle
+      return
+    }
+    applyWallsHiddenMode(true)
+    guard let root = loadedScene?.rootNode else { return }
+    var anyHidden = false
+    func checkHidden(_ node: SCNNode) {
+      if node.geometry != nil, node.isHidden {
+        anyHidden = true
+        return
+      }
+      guard !anyHidden else { return }
+      for c in node.childNodes {
+        checkHidden(c)
+      }
+    }
+    checkHidden(root)
+    if anyHidden {
+      wallsHidden = true
+      floorModeBarButton?.title = strings.fullRoomButtonTitle
+    } else {
+      applyWallsHiddenMode(false)
+      wallsHidden = false
+      floorModeBarButton?.title = strings.floorOnlyButtonTitle
+      let alert = UIAlertController(
+        title: nil,
+        message: strings.floorOnlyUnavailableMessage,
+        preferredStyle: .alert
+      )
+      alert.addAction(UIAlertAction(title: strings.alertOk, style: .default))
+      present(alert, animated: true)
+    }
+  }
+
   /// RoomPlan / SceneKit: meters, Y-up. Uses horizontal spans (X, Z) as floor footprint and Y as height.
   private func updateDimensionsDisplay(dx: Float, dy: Float, dz: Float) {
     let floorLong = max(dx, dz)
@@ -242,6 +513,7 @@ final class RoomUsdzViewerViewController: UIViewController {
     let dz = maxB.z - minB.z
     guard dx > 1e-6 || dy > 1e-6 || dz > 1e-6 else { return }
 
+    sceneWorldBounds = (minB, maxB)
     updateDimensionsDisplay(dx: dx, dy: dy, dz: dz)
 
     let centerWorld = SCNVector3(
@@ -300,22 +572,23 @@ final class RoomUsdzViewerViewController: UIViewController {
     view.pointOfView = cameraNode
 
     view.defaultCameraController.target = centerWorld
+
+    cacheOriginalMaterialsIfNeeded()
+    applyOnFloorObjectTint()
   }
 
   private func loadScene() {
-    DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+    // Load on the main thread: SceneKit + SCNView expect scene graph work on main; background
+    // loading has caused rare runtime issues with Metal/SceneKit state.
+    DispatchQueue.main.async { [weak self] in
       guard let self = self else { return }
       do {
         let scene = try SCNScene(url: self.fileURL, options: nil)
-        DispatchQueue.main.async {
-          self.loadedScene = scene
-          self.sceneView.scene = scene
-          self.frameCamera(for: scene, in: self.sceneView)
-        }
+        self.loadedScene = scene
+        self.sceneView.scene = scene
+        self.frameCamera(for: scene, in: self.sceneView)
       } catch {
-        DispatchQueue.main.async {
-          self.presentLoadError(error)
-        }
+        self.presentLoadError(error)
       }
     }
   }
@@ -337,6 +610,11 @@ final class RoomUsdzViewerViewController: UIViewController {
   }
 
   private func dismissViewer() {
+    wallsHidden = false
+    didCacheOriginalMaterials = false
+    originalMaterialsByGeometry.removeAll(keepingCapacity: false)
+    sceneWorldBounds = nil
+    floorModeBarButton?.title = strings.floorOnlyButtonTitle
     sceneView.scene = nil
     loadedScene = nil
     dismiss(animated: true)
@@ -347,10 +625,28 @@ final class RoomUsdzViewerViewController: UIViewController {
   }
 }
 
+/// Flutter `FlutterResult` must run at most once; duplicate replies can abort the engine connection.
+private final class OnceFlutterResult {
+  private var consumed = false
+  private let result: FlutterResult
+
+  init(_ result: @escaping FlutterResult) {
+    self.result = result
+  }
+
+  func send(_ value: Any?) {
+    guard !consumed else { return }
+    consumed = true
+    result(value)
+  }
+}
+
 enum RoomUsdzViewerPresenter {
   static func present(filePath: String, strings: [String: String], result: @escaping FlutterResult) {
+    let once = OnceFlutterResult(result)
+
     guard FileManager.default.fileExists(atPath: filePath) else {
-      result(
+      once.send(
         FlutterError(
           code: "missing_file",
           message: "USDZ not found",
@@ -361,7 +657,7 @@ enum RoomUsdzViewerPresenter {
     }
     let url = URL(fileURLWithPath: filePath)
     guard let host = topViewController() else {
-      result(
+      once.send(
         FlutterError(
           code: "no_vc",
           message: "Cannot present 3D viewer",
@@ -378,7 +674,7 @@ enum RoomUsdzViewerPresenter {
     nav.navigationBar.prefersLargeTitles = false
 
     host.present(nav, animated: true) {
-      result(true)
+      once.send(true)
     }
   }
 
