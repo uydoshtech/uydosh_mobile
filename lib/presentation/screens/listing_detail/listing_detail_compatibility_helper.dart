@@ -1,4 +1,5 @@
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/utils/profile_match_scoring.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
@@ -167,7 +168,7 @@ class ListingDetailCompatibilityHelper {
       formatValue: _formatCookingHabits,
     );
 
-    compare<bool>(
+    compare<String>(
       labelKey: "pets_preference",
       currentValue: currentProfile.petsPreference,
       ownerValue: ownerProfile.petsPreference,
@@ -228,8 +229,8 @@ class ListingDetailCompatibilityHelper {
   static String _formatCookingHabits(bool value) =>
       L10n.get(value ? "cook" : "dont_cook");
 
-  static String _formatPetsPreference(bool value) =>
-      L10n.get(value ? "pets_okay" : "pets_not_okay");
+  static String _formatPetsPreference(String value) =>
+      localizedPetsPreference(value);
 
   static String _formatDayPreference(String value) {
     switch (value) {

@@ -6,6 +6,7 @@ import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -648,10 +649,9 @@ L10n.get("rating"),
                           _buildProfileField(
                             icon: Icons.pets,
                             label: L10n.get("pets_preference"),
-                            value:
-                                profile.petsPreference!
-                                    ? L10n.get("pets_okay")
-                                    : L10n.get("pets_not_okay"),
+                            value: localizedPetsPreference(
+                              profile.petsPreference!,
+                            ),
                             context: context,
                           ),
                           const SizedBox(height: 16),

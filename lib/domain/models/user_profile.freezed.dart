@@ -53,8 +53,11 @@ mixin _$UserProfile {
   String? get alcoholPreference => throw _privateConstructorUsedError;
   @JsonKey(name: "cooking_habits")
   bool? get cookingHabits => throw _privateConstructorUsedError;
-  @JsonKey(name: "pets_preference")
-  bool? get petsPreference => throw _privateConstructorUsedError;
+  @JsonKey(
+      name: "pets_preference",
+      fromJson: PetsPreferenceConverter.fromJson,
+      toJson: PetsPreferenceConverter.toJson)
+  String? get petsPreference => throw _privateConstructorUsedError;
   @JsonKey(name: "wakeup_time")
   String? get wakeupTime => throw _privateConstructorUsedError;
   @JsonKey(name: "sleep_time")
@@ -107,7 +110,11 @@ abstract class $UserProfileCopyWith<$Res> {
       @JsonKey(name: "smoking_preference") String? smokingPreference,
       @JsonKey(name: "alcohol_preference") String? alcoholPreference,
       @JsonKey(name: "cooking_habits") bool? cookingHabits,
-      @JsonKey(name: "pets_preference") bool? petsPreference,
+      @JsonKey(
+          name: "pets_preference",
+          fromJson: PetsPreferenceConverter.fromJson,
+          toJson: PetsPreferenceConverter.toJson)
+      String? petsPreference,
       @JsonKey(name: "wakeup_time") String? wakeupTime,
       @JsonKey(name: "sleep_time") String? sleepTime,
       @JsonKey(name: "preferred_language") String? preferredLanguage,
@@ -243,7 +250,7 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
       petsPreference: freezed == petsPreference
           ? _value.petsPreference
           : petsPreference // ignore: cast_nullable_to_non_nullable
-              as bool?,
+              as String?,
       wakeupTime: freezed == wakeupTime
           ? _value.wakeupTime
           : wakeupTime // ignore: cast_nullable_to_non_nullable
@@ -335,7 +342,11 @@ abstract class _$$UserProfileImplCopyWith<$Res>
       @JsonKey(name: "smoking_preference") String? smokingPreference,
       @JsonKey(name: "alcohol_preference") String? alcoholPreference,
       @JsonKey(name: "cooking_habits") bool? cookingHabits,
-      @JsonKey(name: "pets_preference") bool? petsPreference,
+      @JsonKey(
+          name: "pets_preference",
+          fromJson: PetsPreferenceConverter.fromJson,
+          toJson: PetsPreferenceConverter.toJson)
+      String? petsPreference,
       @JsonKey(name: "wakeup_time") String? wakeupTime,
       @JsonKey(name: "sleep_time") String? sleepTime,
       @JsonKey(name: "preferred_language") String? preferredLanguage,
@@ -471,7 +482,7 @@ class __$$UserProfileImplCopyWithImpl<$Res>
       petsPreference: freezed == petsPreference
           ? _value.petsPreference
           : petsPreference // ignore: cast_nullable_to_non_nullable
-              as bool?,
+              as String?,
       wakeupTime: freezed == wakeupTime
           ? _value.wakeupTime
           : wakeupTime // ignore: cast_nullable_to_non_nullable
@@ -530,7 +541,11 @@ class _$UserProfileImpl implements _UserProfile {
       @JsonKey(name: "smoking_preference") this.smokingPreference,
       @JsonKey(name: "alcohol_preference") this.alcoholPreference,
       @JsonKey(name: "cooking_habits") this.cookingHabits,
-      @JsonKey(name: "pets_preference") this.petsPreference,
+      @JsonKey(
+          name: "pets_preference",
+          fromJson: PetsPreferenceConverter.fromJson,
+          toJson: PetsPreferenceConverter.toJson)
+      this.petsPreference,
       @JsonKey(name: "wakeup_time") this.wakeupTime,
       @JsonKey(name: "sleep_time") this.sleepTime,
       @JsonKey(name: "preferred_language") this.preferredLanguage,
@@ -595,8 +610,11 @@ class _$UserProfileImpl implements _UserProfile {
   @JsonKey(name: "cooking_habits")
   final bool? cookingHabits;
   @override
-  @JsonKey(name: "pets_preference")
-  final bool? petsPreference;
+  @JsonKey(
+      name: "pets_preference",
+      fromJson: PetsPreferenceConverter.fromJson,
+      toJson: PetsPreferenceConverter.toJson)
+  final String? petsPreference;
   @override
   @JsonKey(name: "wakeup_time")
   final String? wakeupTime;
@@ -749,7 +767,11 @@ abstract class _UserProfile implements UserProfile {
       @JsonKey(name: "smoking_preference") final String? smokingPreference,
       @JsonKey(name: "alcohol_preference") final String? alcoholPreference,
       @JsonKey(name: "cooking_habits") final bool? cookingHabits,
-      @JsonKey(name: "pets_preference") final bool? petsPreference,
+      @JsonKey(
+          name: "pets_preference",
+          fromJson: PetsPreferenceConverter.fromJson,
+          toJson: PetsPreferenceConverter.toJson)
+      final String? petsPreference,
       @JsonKey(name: "wakeup_time") final String? wakeupTime,
       @JsonKey(name: "sleep_time") final String? sleepTime,
       @JsonKey(name: "preferred_language") final String? preferredLanguage,
@@ -814,8 +836,11 @@ abstract class _UserProfile implements UserProfile {
   @JsonKey(name: "cooking_habits")
   bool? get cookingHabits;
   @override
-  @JsonKey(name: "pets_preference")
-  bool? get petsPreference;
+  @JsonKey(
+      name: "pets_preference",
+      fromJson: PetsPreferenceConverter.fromJson,
+      toJson: PetsPreferenceConverter.toJson)
+  String? get petsPreference;
   @override
   @JsonKey(name: "wakeup_time")
   String? get wakeupTime;

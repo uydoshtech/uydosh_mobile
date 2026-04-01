@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     smoking_preference character varying(50),
     alcohol_preference character varying(50),
     cooking_habits boolean,
-    pets_preference boolean,
+    pets_preference character varying(50),
     wakeup_time character varying(20),
     sleep_time character varying(20),
     preferred_language character varying(10),

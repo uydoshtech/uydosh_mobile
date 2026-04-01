@@ -1,5 +1,6 @@
 import "package:json_annotation/json_annotation.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/converter/pets_preference_converter.dart";
 
 part "update_profile_request.g.dart";
 
@@ -58,8 +59,12 @@ class UpdateProfileRequest implements IJsonEncodable {
   final String? alcoholPreference;
   @JsonKey(name: "cooking_habits")
   final bool? cookingHabits;
-  @JsonKey(name: "pets_preference")
-  final bool? petsPreference;
+  @JsonKey(
+    name: "pets_preference",
+    fromJson: PetsPreferenceConverter.fromJson,
+    toJson: PetsPreferenceConverter.toJson,
+  )
+  final String? petsPreference;
   @JsonKey(name: "wakeup_time")
   final String? wakeupTime;
   @JsonKey(name: "sleep_time")

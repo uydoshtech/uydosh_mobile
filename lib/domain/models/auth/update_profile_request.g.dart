@@ -26,7 +26,7 @@ UpdateProfileRequest _$UpdateProfileRequestFromJson(
       smokingPreference: json['smoking_preference'] as String?,
       alcoholPreference: json['alcohol_preference'] as String?,
       cookingHabits: json['cooking_habits'] as bool?,
-      petsPreference: json['pets_preference'] as bool?,
+      petsPreference: PetsPreferenceConverter.fromJson(json['pets_preference']),
       wakeupTime: json['wakeup_time'] as String?,
       sleepTime: json['sleep_time'] as String?,
       preferredLanguage: json['preferred_language'] as String?,
@@ -52,7 +52,8 @@ Map<String, dynamic> _$UpdateProfileRequestToJson(
       'smoking_preference': instance.smokingPreference,
       'alcohol_preference': instance.alcoholPreference,
       'cooking_habits': instance.cookingHabits,
-      'pets_preference': instance.petsPreference,
+      'pets_preference':
+          PetsPreferenceConverter.toJson(instance.petsPreference),
       'wakeup_time': instance.wakeupTime,
       'sleep_time': instance.sleepTime,
       'preferred_language': instance.preferredLanguage,

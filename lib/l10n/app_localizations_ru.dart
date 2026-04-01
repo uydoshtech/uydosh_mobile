@@ -984,6 +984,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pets_not_okay => 'Не очень';
 
   @override
+  String get pets_like_pets => 'Люблю животных';
+
+  @override
+  String get pets_dont_like_pets => 'Не люблю животных';
+
+  @override
+  String get pets_have_cat => 'Есть кот';
+
+  @override
+  String get pets_have_dog => 'Есть собака';
+
+  @override
   String get lifestyle_preferences => 'Предпочтения образа жизни';
 
   @override

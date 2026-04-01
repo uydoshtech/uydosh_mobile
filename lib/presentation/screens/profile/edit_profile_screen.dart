@@ -53,7 +53,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late ValueNotifier<String?> _smokingPreference;
   late ValueNotifier<String?> _alcoholPreference;
   late ValueNotifier<bool?> _cookingHabits;
-  late ValueNotifier<bool?> _petsPreference;
+  late ValueNotifier<String?> _petsPreference;
   late ValueNotifier<String?> _wakeupTime;
   late ValueNotifier<String?> _sleepTime;
 
@@ -827,16 +827,49 @@ L10n.get(
 
             const SizedBox(height: 16),
 
-            // Pets Preference Toggle
-            ValueListenableBuilder<bool?>(
+            // Pets preference (like / dislike / have cat / have dog)
+            ValueListenableBuilder<String?>(
               valueListenable: _petsPreference,
-              builder: (context, petsPreference, _) => ProfileToggleControl(
+              builder: (context, petsPreference, _) =>
+                  ProfileDropdownControl(
                 label: L10n.get(
                   "pets_preference",
                 ),
                 value: petsPreference,
                 onChanged: (value) => _petsPreference.value = value,
                 icon: Icons.pets,
+                options: [
+                  DropdownOption(
+                    value: null,
+                    label: L10n.get(
+                      "not_specified",
+                    ),
+                  ),
+                  DropdownOption(
+                    value: "like_pets",
+                    label: L10n.get(
+                      "pets_like_pets",
+                    ),
+                  ),
+                  DropdownOption(
+                    value: "dont_like_pets",
+                    label: L10n.get(
+                      "pets_dont_like_pets",
+                    ),
+                  ),
+                  DropdownOption(
+                    value: "have_cat",
+                    label: L10n.get(
+                      "pets_have_cat",
+                    ),
+                  ),
+                  DropdownOption(
+                    value: "have_dog",
+                    label: L10n.get(
+                      "pets_have_dog",
+                    ),
+                  ),
+                ],
               ),
             ),
 

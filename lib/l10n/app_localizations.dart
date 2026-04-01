@@ -1912,6 +1912,30 @@ abstract class AppLocalizations {
   /// **'Not great'**
   String get pets_not_okay;
 
+  /// No description provided for @pets_like_pets.
+  ///
+  /// In en, this message translates to:
+  /// **'Like pets'**
+  String get pets_like_pets;
+
+  /// No description provided for @pets_dont_like_pets.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t like pets'**
+  String get pets_dont_like_pets;
+
+  /// No description provided for @pets_have_cat.
+  ///
+  /// In en, this message translates to:
+  /// **'Have a cat'**
+  String get pets_have_cat;
+
+  /// No description provided for @pets_have_dog.
+  ///
+  /// In en, this message translates to:
+  /// **'Have a dog'**
+  String get pets_have_dog;
+
   /// No description provided for @lifestyle_preferences.
   ///
   /// In en, this message translates to:

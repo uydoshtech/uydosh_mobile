@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -357,10 +358,9 @@ class ProfileStatsSection extends StatelessWidget {
                               context,
                               icon: Icons.pets,
                               label: L10n.get("pets_preference"),
-                              value:
-                                  profile.petsPreference!
-                                      ? L10n.get("pets_okay")
-                                      : L10n.get("pets_not_okay"),
+                              value: localizedPetsPreference(
+                                profile.petsPreference!,
+                              ),
                             ),
                             const SizedBox(height: 16),
                           ],

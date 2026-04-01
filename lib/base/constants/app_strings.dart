@@ -392,6 +392,10 @@ class AppStrings {
       "night": "Night",
       "pets_okay": "Okay",
       "pets_not_okay": "Not great",
+      "pets_like_pets": "Like pets",
+      "pets_dont_like_pets": "Don't like pets",
+      "pets_have_cat": "Have a cat",
+      "pets_have_dog": "Have a dog",
 
       // Slider labels
       "lifestyle_preferences": "Lifestyle Preferences",
@@ -1205,6 +1209,10 @@ class AppStrings {
       "night": "Ночь",
       "pets_okay": "Нормальное",
       "pets_not_okay": "Не очень",
+      "pets_like_pets": "Люблю животных",
+      "pets_dont_like_pets": "Не люблю животных",
+      "pets_have_cat": "Есть кот",
+      "pets_have_dog": "Есть собака",
 
       // Slider labels
       "lifestyle_preferences": "Предпочтения образа жизни",
@@ -2030,6 +2038,10 @@ class AppStrings {
       "night": "Tun",
       "pets_okay": "Yaxshi",
       "pets_not_okay": "Unchalik emas",
+      "pets_like_pets": "Hayvonlarni yaxshi ko'raman",
+      "pets_dont_like_pets": "Hayvonlarni yoqtirmayman",
+      "pets_have_cat": "Menda mushuk bor",
+      "pets_have_dog": "Menda it bor",
 
       // Slider labels
       "lifestyle_preferences": "Turmush tarzi afzalliklari",

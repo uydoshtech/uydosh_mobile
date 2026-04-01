@@ -989,6 +989,18 @@ class AppLocalizationsUz extends AppLocalizations {
   String get pets_not_okay => 'Unchalik emas';
 
   @override
+  String get pets_like_pets => 'Hayvonlarni yaxshi ko\'raman';
+
+  @override
+  String get pets_dont_like_pets => 'Hayvonlarni yoqtirmayman';
+
+  @override
+  String get pets_have_cat => 'Menda mushuk bor';
+
+  @override
+  String get pets_have_dog => 'Menda it bor';
+
+  @override
   String get lifestyle_preferences => 'Turmush tarzi afzalliklari';
 
   @override

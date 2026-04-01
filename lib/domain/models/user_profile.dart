@@ -1,6 +1,7 @@
 import "package:freezed_annotation/freezed_annotation.dart";
 
 import "package:uy_dosh/base/api/converter/nullable_int_converter.dart";
+import "package:uy_dosh/base/api/converter/pets_preference_converter.dart";
 
 part "user_profile.freezed.dart";
 part "user_profile.g.dart";
@@ -31,7 +32,12 @@ class UserProfile with _$UserProfile {
     @JsonKey(name: "smoking_preference") String? smokingPreference,
     @JsonKey(name: "alcohol_preference") String? alcoholPreference,
     @JsonKey(name: "cooking_habits") bool? cookingHabits,
-    @JsonKey(name: "pets_preference") bool? petsPreference,
+    @JsonKey(
+      name: "pets_preference",
+      fromJson: PetsPreferenceConverter.fromJson,
+      toJson: PetsPreferenceConverter.toJson,
+    )
+    String? petsPreference,
     @JsonKey(name: "wakeup_time") String? wakeupTime,
     @JsonKey(name: "sleep_time") String? sleepTime,
     @JsonKey(name: "preferred_language") String? preferredLanguage,

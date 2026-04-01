@@ -977,6 +977,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pets_not_okay => 'Not great';
 
   @override
+  String get pets_like_pets => 'Like pets';
+
+  @override
+  String get pets_dont_like_pets => 'Don\'t like pets';
+
+  @override
+  String get pets_have_cat => 'Have a cat';
+
+  @override
+  String get pets_have_dog => 'Have a dog';
+
+  @override
   String get lifestyle_preferences => 'Lifestyle Preferences';
 
   @override
