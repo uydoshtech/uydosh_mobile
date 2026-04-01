@@ -71,6 +71,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   FixedExtentScrollController? _regionScrollController;
   FixedExtentScrollController? _universityScrollController;
 
+  /// Role as loaded from session (baseline for dirty check).
+  String? _baselineRole;
+
+  late final Listenable _formListenables;
+
   @override
   void initState() {
     super.initState();
@@ -107,6 +112,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _isLoadingUniversities = ValueNotifier(true);
     _isRoleLoaded = ValueNotifier(false);
 
+    _formListenables = Listenable.merge([
+      _nameController,
+      _aboutMeController,
+      _telegramController,
+      _selectedGender,
+      _selectedRegionId,
+      _selectedUniversityId,
+      _isStudent,
+      _selectedLanguage,
+      _selectedRole,
+      _employed,
+      _cleanliness,
+      _noiseLevel,
+      _sociability,
+      _guestsAllowed,
+      _smokingPreference,
+      _alcoholPreference,
+      _cookingHabits,
+      _petsPreference,
+      _wakeupTime,
+      _sleepTime,
+      _isRoleLoaded,
+    ]);
+
     _loadRegions();
     _loadUniversities();
     _loadUserRole();
@@ -116,9 +145,86 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final role = await SessionManager.getUserRole();
     if (mounted) {
       _isAdmin = role == "admin";
-      _selectedRole.value =
+      final resolved =
           (role == "admin" || role == "landlord") ? role! : "tenant";
+      _selectedRole.value = resolved;
+      _baselineRole = resolved;
       _isRoleLoaded.value = true;
+    }
+  }
+
+  String _normText(String? s) => (s ?? "").trim();
+
+  int? _resolvedRegionIdFromProfile() {
+    final id = widget.profile.regionId;
+    if (id == null) return null;
+    if (_regions.isEmpty) return id;
+    return _regions.any((r) => r.id == id) ? id : null;
+  }
+
+  int? _resolvedUniversityIdFromProfile() {
+    final id = widget.profile.universityId;
+    if (id == null) return null;
+    if (_universities.isEmpty) return id;
+    return _universities.any((u) => u.id == id) ? id : null;
+  }
+
+  bool _isFormDirty() {
+    final p = widget.profile;
+    if (_nameController.text.trim() != (p.name ?? "").trim()) return true;
+    if (_normText(_aboutMeController.text) != _normText(p.aboutMe)) {
+      return true;
+    }
+    if (_normText(_telegramController.text) != _normText(p.telegram)) {
+      return true;
+    }
+    if (_selectedGender.value != (p.gender ?? 1)) return true;
+    if (_selectedRegionId.value != _resolvedRegionIdFromProfile()) {
+      return true;
+    }
+
+    final baselineStudent = p.universityId != null;
+    if (_isStudent.value != baselineStudent) return true;
+
+    final effectiveUni = _isStudent.value ? _selectedUniversityId.value : null;
+    if (effectiveUni != _resolvedUniversityIdFromProfile()) return true;
+
+    final langBaseline =
+        p.preferredLanguage ?? LanguageState().currentLanguage;
+    if (_selectedLanguage.value != langBaseline) return true;
+
+    if (_isRoleLoaded.value) {
+      final br = _baselineRole;
+      if (br != null && _selectedRole.value != br) return true;
+    }
+
+    if (p.employed != _employed.value) return true;
+    if (p.cleanliness != _cleanliness.value) return true;
+    if (p.noiseLevel != _noiseLevel.value) return true;
+    if (p.sociability != _sociability.value) return true;
+    if (p.guestsAllowed != _guestsAllowed.value) return true;
+    if (p.smokingPreference != _smokingPreference.value) return true;
+    if (p.alcoholPreference != _alcoholPreference.value) return true;
+    if (p.cookingHabits != _cookingHabits.value) return true;
+    if (p.petsPreference != _petsPreference.value) return true;
+    if (p.wakeupTime != _wakeupTime.value) return true;
+    if (p.sleepTime != _sleepTime.value) return true;
+
+    return false;
+  }
+
+  Future<void> _onPopInvoked(bool didPop, dynamic result) async {
+    if (didPop) return;
+    final leave = await ConfirmationDialog.show(
+      context: context,
+      titleKey: "unsaved_changes_title",
+      messageKey: "unsaved_changes_message",
+      confirmButtonKey: "leave_without_saving",
+      cancelButtonKey: "keep_editing",
+      isDestructive: true,
+    );
+    if (leave == true && mounted) {
+      Navigator.of(context).pop(result);
     }
   }
 

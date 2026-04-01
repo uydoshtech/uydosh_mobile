@@ -168,6 +168,8 @@ class AppStrings {
           "3D room scan requires an iPhone or iPad with LiDAR.",
       "add_room_scan_3d": "Add 3D room scan",
       "skip": "Skip",
+      "view_room_3d": "View 3D room",
+      "room_3d_open_error": "Could not open 3D model. Check your connection.",
 
       "profile_completed_success": "Profile completed successfully!",
       "profile_updated_success": "Profile updated successfully",
@@ -235,6 +237,11 @@ class AppStrings {
       "create_listing_button": "Create Listing",
       "update_listing_button": "Update Listing",
       "save_changes": "Save Changes",
+      "unsaved_changes_title": "Unsaved changes",
+      "unsaved_changes_message":
+          "You have unsaved changes. If you leave now, they will be lost.",
+      "keep_editing": "Keep editing",
+      "leave_without_saving": "Leave",
 
       "confirm": "Confirm",
       "next": "Next",
@@ -996,6 +1003,9 @@ class AppStrings {
           "3D-скан требует iPhone или iPad с LiDAR.",
       "add_room_scan_3d": "Добавить 3D-скан комнаты",
       "skip": "Пропустить",
+      "view_room_3d": "Смотреть комнату в 3D",
+      "room_3d_open_error":
+          "Не удалось открыть 3D-модель. Проверьте подключение.",
 
       "profile_completed_success": "Профиль успешно завершен!",
       "profile_updated_success": "Профиль успешно обновлен",
@@ -1064,6 +1074,11 @@ class AppStrings {
       "create_listing_button": "Создать объявление",
       "update_listing_button": "Обновить объявление",
       "save_changes": "Сохранить изменения",
+      "unsaved_changes_title": "Несохранённые изменения",
+      "unsaved_changes_message":
+          "У вас есть несохранённые изменения. Если выйти сейчас, они будут потеряны.",
+      "keep_editing": "Продолжить редактирование",
+      "leave_without_saving": "Выйти",
 
       "confirm": "Подтвердить",
       "next": "Далее",
@@ -1832,6 +1847,9 @@ class AppStrings {
           "3D skan uchun LiDARli iPhone yoki iPad kerak.",
       "add_room_scan_3d": "3D xona skanini qo'shish",
       "skip": "O'tkazib yuborish",
+      "view_room_3d": "3D xonani ko'rish",
+      "room_3d_open_error":
+          "3D modelni ochib bo'lmadi. Internetni tekshiring.",
 
       "profile_completed_success": "Profil muvaffaqiyatli to'ldirildi!",
       "profile_updated_success": "Profil muvaffaqiyatli yangilandi",
@@ -1901,6 +1919,11 @@ class AppStrings {
       "create_listing_button": "E'lon yaratish",
       "update_listing_button": "E'loni yangilash",
       "save_changes": "O'zgarishlarni saqlash",
+      "unsaved_changes_title": "Saqlanmagan o'zgarishlar",
+      "unsaved_changes_message":
+          "Saqlanmagan o'zgarishlaringiz bor. Hozir chiqsangiz, ular yo'qoladi.",
+      "keep_editing": "Tahrirlashni davom ettirish",
+      "leave_without_saving": "Chiqish",
 
       "confirm": "Tasdiqlash",
       "next": "Keyingi",

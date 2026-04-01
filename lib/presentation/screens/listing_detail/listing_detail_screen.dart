@@ -2,6 +2,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:flutter_viewer_usdz/flutter_viewer_usdz.dart";
 import "package:share_plus/share_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:url_launcher/url_launcher.dart";
@@ -30,6 +31,7 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -696,6 +698,30 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
     final fullUrl = "${EnvironmentUtil.basePath}$photoUrl";
     logger.d("🔍 [Photo URL] Constructed full URL: $fullUrl");
     return fullUrl;
+  }
+
+  Future<void> _openRoom3dViewer(ListingDetail listingDetail) async {
+    final raw = listingDetail.pointCloudUrl;
+    if (raw == null || raw.isEmpty) return;
+    HapticFeedbackUtils.impact();
+    final url = _buildPhotoUrl(raw);
+    try {
+      final ok = await FlutterViewerUsdz().loadUSDZFileFromUrl(url);
+      if (!mounted) return;
+      if (!ok) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("room_3d_open_error"),
+        );
+      }
+    } catch (e) {
+      logger.d("Room 3D viewer error: $e");
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("room_3d_open_error"),
+      );
+    }
   }
 
   void _openFullScreenPhotoViewer(int initialIndex) {
@@ -1882,6 +1908,50 @@ L10n.get("feature_listing_error",
                     ] else ...[
                       _metaBadgesTile(listingDetail),
                       const SizedBox(height: 4),
+                    ],
+                    if (isIOSDevice &&
+                        (listingDetail.pointCloudUrl?.isNotEmpty ?? false)) ...[
+                      const SizedBox(height: 12),
+                      Material(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          onTap: () => _openRoom3dViewer(listingDetail),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.view_in_ar,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    L10n.get("view_room_3d"),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall,
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.chevron_right,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                     // Unified Listing Detail Card (gap above = space between photo tile and this card)
                     ListingDetailContentCard(

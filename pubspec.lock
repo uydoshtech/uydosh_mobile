@@ -728,6 +728,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_viewer_usdz:
+    dependency: "direct main"
+    description:
+      name: flutter_viewer_usdz
+      sha256: ab850ff4d846f6e692fbb5a27a3b599761e3fcb5902cf52f51d301cb667cb3bc
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.7"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
