@@ -27,6 +27,13 @@ class _ListingDescriptionAiEnhanceButtonState
     with SingleTickerProviderStateMixin {
   bool _loading = false;
 
+  /// High-contrast label/icon on dark inputs (blue theme) and light inputs (light theme).
+  /// Uses [ColorScheme.onSurface] (app primary text: white / black), not [ColorScheme.primary]
+  /// or default [TextButton] blue, which are low-contrast on this field’s fill.
+  Color _accentColor(BuildContext context) {
+    return Theme.of(context).colorScheme.onSurface;
+  }
+
   late final AnimationController _sparkleBlinkController;
   late final Animation<double> _sparkleOpacity;
 
@@ -51,10 +58,10 @@ class _ListingDescriptionAiEnhanceButtonState
     super.dispose();
   }
 
-  Widget _blinkingSparkleIcon(ColorScheme scheme) {
+  Widget _blinkingSparkleIcon(BuildContext context) {
     return FadeTransition(
       opacity: _sparkleOpacity,
-      child: Icon(Icons.auto_awesome, size: 18, color: scheme.primary),
+      child: Icon(Icons.auto_awesome, size: 18, color: _accentColor(context)),
     );
   }
 
@@ -109,10 +116,10 @@ class _ListingDescriptionAiEnhanceButtonState
 
   /// Label with a dashed line drawn below the text (not [TextDecoration], so the gap is controllable).
   Widget _buildEnhanceLabel(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final accent = _accentColor(context);
     final base = Theme.of(context).textTheme.labelLarge;
-    final textStyle = (base ?? const TextStyle()).copyWith(color: scheme.primary);
-    final lineColor = scheme.primary.withValues(alpha: 0.85);
+    final textStyle = (base ?? const TextStyle()).copyWith(color: accent);
+    final lineColor = accent.withValues(alpha: 0.85);
     return IntrinsicWidth(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -145,7 +152,7 @@ class _ListingDescriptionAiEnhanceButtonState
   }
 
   Widget _buildButton(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final accent = _accentColor(context);
     final inlineChild = Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,14 +165,14 @@ class _ListingDescriptionAiEnhanceButtonState
               height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: scheme.primary,
+                color: accent,
               ),
             ),
           )
         else
           Padding(
             padding: const EdgeInsets.only(top: 2),
-            child: _blinkingSparkleIcon(scheme),
+            child: _blinkingSparkleIcon(context),
           ),
         const SizedBox(width: 6),
         _buildEnhanceLabel(context),
@@ -176,6 +183,7 @@ class _ListingDescriptionAiEnhanceButtonState
             ? TextButton(
               onPressed: _loading ? null : _onPressed,
               style: TextButton.styleFrom(
+                foregroundColor: accent,
                 padding: EdgeInsets.zero,
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -193,12 +201,13 @@ class _ListingDescriptionAiEnhanceButtonState
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: scheme.primary,
+                          color: accent,
                         ),
                       )
-                      : _blinkingSparkleIcon(scheme),
+                      : _blinkingSparkleIcon(context),
               label: _buildEnhanceLabel(context),
               style: TextButton.styleFrom(
+                foregroundColor: accent,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
