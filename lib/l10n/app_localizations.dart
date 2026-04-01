@@ -1174,6 +1174,30 @@ abstract class AppLocalizations {
   /// **'Save Changes'**
   String get save_changes;
 
+  /// No description provided for @unsaved_changes_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved changes'**
+  String get unsaved_changes_title;
+
+  /// No description provided for @unsaved_changes_message.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. If you leave now, they will be lost.'**
+  String get unsaved_changes_message;
+
+  /// No description provided for @keep_editing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get keep_editing;
+
+  /// No description provided for @leave_without_saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leave_without_saving;
+
   /// No description provided for @confirm.
   ///
   /// In en, this message translates to:

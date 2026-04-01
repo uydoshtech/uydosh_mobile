@@ -2,7 +2,6 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:flutter_viewer_usdz/flutter_viewer_usdz.dart";
 import "package:share_plus/share_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:url_launcher/url_launcher.dart";
@@ -21,6 +20,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/services/usdz_quick_look_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -706,7 +706,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
     HapticFeedbackUtils.impact();
     final url = _buildPhotoUrl(raw);
     try {
-      final ok = await FlutterViewerUsdz().loadUSDZFileFromUrl(url);
+      final ok = await UsdzQuickLookService.downloadAndPresent(
+        url,
+        listingId: listingDetail.id,
+      );
       if (!mounted) return;
       if (!ok) {
         ToastTheme.showError(

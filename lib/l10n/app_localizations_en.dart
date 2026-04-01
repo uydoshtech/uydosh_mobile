@@ -592,6 +592,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save_changes => 'Save Changes';
 
   @override
+  String get unsaved_changes_title => 'Unsaved changes';
+
+  @override
+  String get unsaved_changes_message =>
+      'You have unsaved changes. If you leave now, they will be lost.';
+
+  @override
+  String get keep_editing => 'Keep editing';
+
+  @override
+  String get leave_without_saving => 'Leave';
+
+  @override
   String get confirm => 'Confirm';
 
   @override

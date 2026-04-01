@@ -80,5 +80,11 @@
 	<string>This app uses your location to show nearby listings and metro stations.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- Allow HTTP image/API URLs (e.g. EC2) so USDZ download & Quick Look work -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

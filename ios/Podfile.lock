@@ -122,8 +122,6 @@ PODS:
   - Flutter (1.0.0)
   - flutter_roomplan (0.0.4):
     - Flutter
-  - flutter_viewer_usdz (0.0.1):
-    - Flutter
   - google_sign_in_ios (0.0.1):
     - AppAuth (>= 1.7.4)
     - Flutter
@@ -237,7 +235,6 @@ DEPENDENCIES:
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
   - flutter_roomplan (from `.symlinks/plugins/flutter_roomplan/ios`)
-  - flutter_viewer_usdz (from `.symlinks/plugins/flutter_viewer_usdz/ios`)
   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
@@ -296,8 +293,6 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_roomplan:
     :path: ".symlinks/plugins/flutter_roomplan/ios"
-  flutter_viewer_usdz:
-    :path: ".symlinks/plugins/flutter_viewer_usdz/ios"
   google_sign_in_ios:
     :path: ".symlinks/plugins/google_sign_in_ios/darwin"
   image_picker_ios:
@@ -340,7 +335,6 @@ SPEC CHECKSUMS:
   FirebaseSessions: b9a92c1c51bbb81e78fc3142cda6d925d700f8e7
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_roomplan: a0df08e00ddc20fda094f6480163255a13bbd3bc
-  flutter_viewer_usdz: 9b58afda23d3ae72cb64d3f3568953f520a229b6
   google_sign_in_ios: 7411fab6948df90490dc4620ecbcabdc3ca04017
   GoogleAdsOnDeviceConversion: 2be6297a4f048459e0ae17fad9bfd2844e10cf64
   GoogleAppMeasurement: 700dce7541804bec33db590a5c496b663fbe2539

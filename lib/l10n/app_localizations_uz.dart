@@ -600,6 +600,19 @@ class AppLocalizationsUz extends AppLocalizations {
   String get save_changes => 'O\'zgarishlarni saqlash';
 
   @override
+  String get unsaved_changes_title => 'Saqlanmagan o\'zgarishlar';
+
+  @override
+  String get unsaved_changes_message =>
+      'Saqlanmagan o\'zgarishlaringiz bor. Hozir chiqsangiz, ular yo\'qoladi.';
+
+  @override
+  String get keep_editing => 'Tahrirlashni davom ettirish';
+
+  @override
+  String get leave_without_saving => 'Chiqish';
+
+  @override
   String get confirm => 'Tasdiqlash';
 
   @override

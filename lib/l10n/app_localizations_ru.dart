@@ -596,6 +596,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get save_changes => 'Сохранить изменения';
 
   @override
+  String get unsaved_changes_title => 'Несохранённые изменения';
+
+  @override
+  String get unsaved_changes_message =>
+      'У вас есть несохранённые изменения. Если выйти сейчас, они будут потеряны.';
+
+  @override
+  String get keep_editing => 'Продолжить редактирование';
+
+  @override
+  String get leave_without_saving => 'Выйти';
+
+  @override
   String get confirm => 'Подтвердить';
 
   @override
