@@ -80,9 +80,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
   final Set<int> _makingPhotoPrimaryIds =
       {}; // Track which photos are being made primary
 
+  /// When true, [Navigator.pop] after a successful save is allowed despite dirty form.
+  bool _allowPopWithoutConfirm = false;
+
+  void _markDirty() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
+    _titleController.addListener(_markDirty);
+    _descriptionController.addListener(_markDirty);
+    _moveInDateController.addListener(_markDirty);
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
     _initializeForm();
     _genderScrollController = FixedExtentScrollController(
@@ -100,10 +110,29 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _loadLocations();
   }
 
+  /// Text shown in the single description field (matches API: main `description` or per-language columns).
+  String _descriptionForEditing(ListingDetail d) {
+    final main = d.description?.trim();
+    if (main != null && main.isNotEmpty) return d.description!;
+    switch (L10n.currentLanguage) {
+      case "ru":
+        return d.descriptionRu?.trim() ?? "";
+      case "uz":
+        return d.descriptionUz?.trim() ?? "";
+      case "en":
+        return d.descriptionEn?.trim() ?? "";
+      default:
+        return d.descriptionRu?.trim() ??
+            d.descriptionEn?.trim() ??
+            d.descriptionUz?.trim() ??
+            "";
+    }
+  }
+
   void _initializeForm() {
     // Pre-populate form with existing listing data
     _titleController.text = widget.listingDetail.title;
-    _descriptionController.text = widget.listingDetail.description ?? "";
+    _descriptionController.text = _descriptionForEditing(widget.listingDetail);
 
     // Extract only the date part from moveInDate (remove time component)
     var moveInDate = widget.listingDetail.moveInDate ?? "";
@@ -316,6 +345,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   @override
   void dispose() {
+    _titleController.removeListener(_markDirty);
+    _descriptionController.removeListener(_markDirty);
+    _moveInDateController.removeListener(_markDirty);
     _titleController.dispose();
     _descriptionController.dispose();
     _locationScrollController?.dispose();
@@ -373,11 +405,136 @@ class _EditListingScreenState extends State<EditListingScreen> {
     }
   }
 
+  String _normListingText(String? s) => (s ?? "").trim();
+
+  String _baselineMoveInDate(ListingDetail d) {
+    var moveInDate = d.moveInDate ?? "";
+    if (moveInDate.isNotEmpty && moveInDate.contains("T")) {
+      moveInDate = moveInDate.split("T")[0];
+    }
+    return moveInDate;
+  }
+
+  int? _currentLocationId() {
+    if (_selectedLocationIndex < 0 ||
+        _selectedLocationIndex >= _currentLocations.length) {
+      return null;
+    }
+    return _currentLocations[_selectedLocationIndex].id;
+  }
+
+  int? _currentSubwayStationId() {
+    if (_selectedSubwayLine <= 0 || _currentStations.isEmpty) return null;
+    if (_selectedStationIndex < 0 ||
+        _selectedStationIndex >= _currentStations.length) {
+      return null;
+    }
+    return _currentStations[_selectedStationIndex].id;
+  }
+
+  bool _amenityIdsMatchBaseline() {
+    final baseline =
+        widget.listingDetail.amenities?.map((a) => a.id).toSet() ?? <int>{};
+    if (baseline.length != _selectedAmenityIds.length) return false;
+    for (final id in baseline) {
+      if (!_selectedAmenityIds.contains(id)) return false;
+    }
+    return true;
+  }
+
+  /// Compares the form to the listing as originally opened (fields persisted via Update only).
+  /// Photo deletes / primary changes that save immediately are intentionally ignored.
+  bool _isFormDirty() {
+    final d = widget.listingDetail;
+
+    if (_normListingText(_titleController.text) != _normListingText(d.title)) {
+      return true;
+    }
+    if (_normListingText(_descriptionController.text) !=
+        _normListingText(_descriptionForEditing(d))) {
+      return true;
+    }
+
+    final baselineTypeId = d.listingType.code == "roommate_needed" ? 2 : 1;
+    if (_selectedListingTypeId != baselineTypeId) return true;
+
+    final baselineGender = d.gender ?? 1;
+    if (_selectedGender != baselineGender) return true;
+
+    if (_price.round() != d.price) return true;
+
+    if (_isPrivateRoom != (d.privateRoom ?? false)) return true;
+
+    if (_moveInDateValue != _baselineMoveInDate(d)) return true;
+
+    if (!_isLoadingLocations && d.locationId != _currentLocationId()) {
+      return true;
+    }
+
+    if (!_isLoadingStations) {
+      if (d.subwayStationId != _currentSubwayStationId()) return true;
+      final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
+      if (d.subwayLineId != curLine) return true;
+    }
+
+    if (!_amenityIdsMatchBaseline()) return true;
+
+    if (_selectedPhotos.isNotEmpty) return true;
+
+    return false;
+  }
+
+  Future<void> _onPopInvoked(bool didPop, dynamic result) async {
+    if (didPop) return;
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return AlertDialog(
+          backgroundColor: theme.dialogTheme.backgroundColor,
+          title: Text(
+            L10n.get("unsaved_changes_title"),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          content: Text(
+            L10n.get("unsaved_changes_message"),
+            style: TextStyle(
+              fontSize: 16,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(L10n.get("keep_editing")),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: theme.colorScheme.error,
+              ),
+              child: Text(L10n.get("leave_without_saving")),
+            ),
+          ],
+        );
+      },
+    );
+    if (!mounted || !(leave ?? false)) return;
+    Navigator.of(context).pop(result);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
+    return PopScope(
+      canPop: _allowPopWithoutConfirm || !_isFormDirty(),
+      onPopInvokedWithResult: _onPopInvoked,
+      child: Scaffold(
       appBar: AppBar(
         title: L10n.text(
           "edit_listing",
@@ -394,9 +551,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
                 theme.appBarTheme.foregroundColor ??
                 theme.colorScheme.onPrimary,
           ),
-          onPressed: () {
+          onPressed: () async {
             HapticFeedbackUtils.impact();
-            Navigator.of(context).pop();
+            // Use maybePop so PopScope (unsaved changes) is respected; imperative
+            // Navigator.pop bypasses Route.popDisposition and always removes the route.
+            await Navigator.of(context).maybePop();
           },
         ),
         actions: [
@@ -1029,6 +1188,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -1199,8 +1359,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Mark home screen for refresh since we updated a listing
       HomeRefreshState().markForRefresh();
 
-      // Navigate back to listing detail screen with updated flag
-      Navigator.of(context).pop(true); // true indicates listing was updated
+      // Navigate back after PopScope allows pop (form still "dirty" vs baseline).
+      setState(() => _allowPopWithoutConfirm = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pop(true); // true indicates listing was updated
+      });
     } catch (e) {
       var errorMessage = L10n.get("error_updating_listing");
 
