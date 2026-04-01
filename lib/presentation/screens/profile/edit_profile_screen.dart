@@ -189,8 +189,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final effectiveUni = _isStudent.value ? _selectedUniversityId.value : null;
     if (effectiveUni != _resolvedUniversityIdFromProfile()) return true;
 
-    final langBaseline =
-        p.preferredLanguage ?? LanguageState().currentLanguage;
+    final langBaseline = p.preferredLanguage ?? LanguageState().currentLanguage;
     if (_selectedLanguage.value != langBaseline) return true;
 
     if (_isRoleLoaded.value) {
@@ -215,17 +214,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _onPopInvoked(bool didPop, dynamic result) async {
     if (didPop) return;
-    final leave = await ConfirmationDialog.show(
+    final leave = await showDialog<bool>(
       context: context,
-      titleKey: "unsaved_changes_title",
-      messageKey: "unsaved_changes_message",
-      confirmButtonKey: "leave_without_saving",
-      cancelButtonKey: "keep_editing",
-      isDestructive: true,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return AlertDialog(
+          backgroundColor: theme.dialogTheme.backgroundColor,
+          title: Text(
+            L10n.get("unsaved_changes_title"),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          content: Text(
+            L10n.get("unsaved_changes_message"),
+            style: TextStyle(
+              fontSize: 16,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(L10n.get("keep_editing")),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: theme.colorScheme.error,
+              ),
+              child: Text(L10n.get("leave_without_saving")),
+            ),
+          ],
+        );
+      },
     );
-    if (leave == true && mounted) {
-      Navigator.of(context).pop(result);
-    }
+    if (!mounted || !(leave ?? false)) return;
+    Navigator.of(context).pop(result);
   }
 
   @override
@@ -280,8 +307,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final regionExists = regions.any(
           (region) => region.id == widget.profile.regionId,
         );
-        _selectedRegionId.value =
-            regionExists ? widget.profile.regionId : null;
+        _selectedRegionId.value = regionExists ? widget.profile.regionId : null;
       } else {
         _selectedRegionId.value = null;
       }
@@ -349,7 +375,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_nameController.text.trim().isEmpty) {
       ToastTheme.showError(
         context,
-        message: L10n.get( "name_required"),
+        message: L10n.get("name_required"),
       );
       return;
     }
@@ -386,7 +412,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // Preserve admin role: check actual role at save time to avoid overwriting
       // when dropdown wasn't loaded yet (race condition)
       final currentRole = await SessionManager.getUserRole();
-      final roleToSave = (currentRole == "admin") ? "admin" : _selectedRole.value;
+      final roleToSave =
+          (currentRole == "admin") ? "admin" : _selectedRole.value;
 
       final updateRequest = UpdateProfileRequest(
         name: name,
@@ -468,543 +495,551 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          L10n.get( "edit_profile"),
-          style: theme.appBarTheme.titleTextStyle,
-        ),
-        backgroundColor:
-            theme.appBarTheme.backgroundColor ?? theme.colorScheme.primary,
-        foregroundColor:
-            theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
-        elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: ValueListenableBuilder<bool>(
-              valueListenable: _isLoading,
-              builder: (context, isLoading, _) => IconButton(
-                onPressed: isLoading ? null : _saveProfile,
-                icon:
-                    isLoading
-                      ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            theme.appBarTheme.foregroundColor ??
-                                theme.colorScheme.onPrimary,
+    return ListenableBuilder(
+      listenable: _formListenables,
+      builder: (context, _) {
+        return PopScope(
+          canPop: !_isFormDirty(),
+          onPopInvokedWithResult: _onPopInvoked,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(
+                L10n.get("edit_profile"),
+                style: theme.appBarTheme.titleTextStyle,
+              ),
+              backgroundColor: theme.appBarTheme.backgroundColor ??
+                  theme.colorScheme.primary,
+              foregroundColor: theme.appBarTheme.foregroundColor ??
+                  theme.colorScheme.onPrimary,
+              elevation: 0,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _isLoading,
+                    builder: (context, isLoading, _) => IconButton(
+                      onPressed: isLoading ? null : _saveProfile,
+                      icon: isLoading
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  theme.appBarTheme.foregroundColor ??
+                                      theme.colorScheme.onPrimary,
+                                ),
+                              ),
+                            )
+                          : const Icon(Icons.save),
+                      tooltip: L10n.get(
+                        "save_changes",
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Name Field
+                  _buildTextField(
+                    label: L10n.get("name"),
+                    controller: _nameController,
+                    icon: Icons.person,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Gender Selector
+                  _buildGenderSelector(context),
+
+                  const SizedBox(height: 24),
+
+                  // Region Selector
+                  _buildRegionSelector(context),
+
+                  const SizedBox(height: 24),
+
+                  // Student status (like onboarding wizard)
+                  _buildStudentSelector(context),
+
+                  // University Selector (only show when user selects "I'm a student")
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _isStudent,
+                    builder: (context, isStudent, _) => isStudent
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 24),
+                              _buildUniversitySelector(context),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // About Me Field
+                  _buildTextField(
+                    label: L10n.get("about_me"),
+                    controller: _aboutMeController,
+                    icon: Icons.info,
+                    maxLines: 3,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Telegram Field
+                  _buildTextField(
+                    label: L10n.get("telegram"),
+                    controller: _telegramController,
+                    icon: Icons.telegram,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Language (visible to other users - what language you speak)
+                  ValueListenableBuilder<String>(
+                    valueListenable: _selectedLanguage,
+                    builder: (context, selectedLanguage, _) =>
+                        ProfileDropdownControl(
+                      label: L10n.get("language"),
+                      value: selectedLanguage,
+                      onChanged: (value) {
+                        if (value != null) {
+                          _selectedLanguage.value = value;
+                          LanguageState().setLanguage(value);
+                        }
+                      },
+                      icon: CupertinoIcons.globe,
+                      options: const [
+                        DropdownOption(value: "uz", label: "🇺🇿 O'zbekcha"),
+                        DropdownOption(value: "ru", label: "🇷🇺 Русский"),
+                        DropdownOption(value: "en", label: "🇺🇸 English"),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Role Dropdown (landlord / tenant; admin option when user is admin)
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _isRoleLoaded,
+                    builder: (context, isRoleLoaded, _) => isRoleLoaded
+                        ? ValueListenableBuilder<String>(
+                            valueListenable: _selectedRole,
+                            builder: (context, selectedRole, _) =>
+                                ProfileDropdownControl(
+                              label: L10n.get(
+                                "are_you_landlord_or_renter",
+                              ),
+                              value: selectedRole,
+                              onChanged: (value) =>
+                                  _selectedRole.value = value ?? "tenant",
+                              icon: Icons.badge,
+                              options: [
+                                if (_isAdmin)
+                                  DropdownOption(
+                                    value: "admin",
+                                    label: L10n.get(
+                                      "role_admin",
+                                    ),
+                                  ),
+                                DropdownOption(
+                                  value: "landlord",
+                                  label: L10n.get(
+                                    "role_landlord",
+                                  ),
+                                ),
+                                DropdownOption(
+                                  value: "tenant",
+                                  label: L10n.get(
+                                    "role_tenant",
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : _buildRoleLoadingPlaceholder(context),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // New Profile Fields Section
+                  Text(
+                    L10n.get(
+                      "lifestyle_preferences",
+                    ),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: _getLifestyleHeaderColor(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Employed Toggle
+                  ValueListenableBuilder<bool?>(
+                    valueListenable: _employed,
+                    builder: (context, employed, _) => ProfileToggleControl(
+                      label: L10n.get("employed"),
+                      value: employed,
+                      onChanged: (value) => _employed.value = value,
+                      icon: Icons.work,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Wake-up Time Dropdown
+                  ValueListenableBuilder<String?>(
+                    valueListenable: _wakeupTime,
+                    builder: (context, wakeupTime, _) => ProfileDropdownControl(
+                      label: L10n.get(
+                        "wakeup_time",
+                      ),
+                      value: wakeupTime,
+                      onChanged: (value) => _wakeupTime.value = value,
+                      icon: Icons.wb_sunny,
+                      options: [
+                        DropdownOption(
+                          value: null,
+                          label: L10n.get(
+                            "not_specified",
                           ),
                         ),
-                      )
-                      : const Icon(Icons.save),
-                tooltip: L10n.get(
-                  "save_changes",
-                ),
+                        DropdownOption(
+                          value: "morning",
+                          label: L10n.get(
+                            "morning",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "evening",
+                          label: L10n.get(
+                            "evening",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "night",
+                          label: L10n.get("night"),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Sleep Time Dropdown
+                  ValueListenableBuilder<String?>(
+                    valueListenable: _sleepTime,
+                    builder: (context, sleepTime, _) => ProfileDropdownControl(
+                      label: L10n.get(
+                        "sleep_time",
+                      ),
+                      value: sleepTime,
+                      onChanged: (value) => _sleepTime.value = value,
+                      icon: Icons.bedtime,
+                      options: [
+                        DropdownOption(
+                          value: null,
+                          label: L10n.get(
+                            "not_specified",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "morning",
+                          label: L10n.get(
+                            "morning",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "evening",
+                          label: L10n.get(
+                            "evening",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "night",
+                          label: L10n.get("night"),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Cleanliness Slider
+                  ValueListenableBuilder<int?>(
+                    valueListenable: _cleanliness,
+                    builder: (context, cleanliness, _) => ProfileSliderControl(
+                      label: L10n.get(
+                        "cleanliness",
+                      ),
+                      value: cleanliness,
+                      onChanged: (value) => _cleanliness.value = value,
+                      min: 1,
+                      max: 5,
+                      icon: Icons.cleaning_services,
+                      labels: [
+                        L10n.get("very_messy"),
+                        L10n.get("messy"),
+                        L10n.get("average"),
+                        L10n.get("clean"),
+                        L10n.get("very_clean"),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Noise Level Slider
+                  ValueListenableBuilder<int?>(
+                    valueListenable: _noiseLevel,
+                    builder: (context, noiseLevel, _) => ProfileSliderControl(
+                      label: L10n.get(
+                        "noise_level",
+                      ),
+                      value: noiseLevel,
+                      onChanged: (value) => _noiseLevel.value = value,
+                      min: 1,
+                      max: 5,
+                      icon: Icons.volume_up,
+                      labels: [
+                        L10n.get("very_quiet"),
+                        L10n.get("quiet"),
+                        L10n.get("average"),
+                        L10n.get("loud"),
+                        L10n.get("very_loud"),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Sociability Slider
+                  ValueListenableBuilder<int?>(
+                    valueListenable: _sociability,
+                    builder: (context, sociability, _) => ProfileSliderControl(
+                      label: L10n.get(
+                        "sociability",
+                      ),
+                      value: sociability,
+                      onChanged: (value) => _sociability.value = value,
+                      min: 1,
+                      max: 5,
+                      icon: Icons.people,
+                      labels: [
+                        L10n.get(
+                          "very_introverted",
+                        ),
+                        L10n.get("introverted"),
+                        L10n.get("balanced"),
+                        L10n.get("extroverted"),
+                        L10n.get(
+                          "very_extroverted",
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Guests Allowed Toggle
+                  ValueListenableBuilder<bool?>(
+                    valueListenable: _guestsAllowed,
+                    builder: (context, guestsAllowed, _) =>
+                        ProfileToggleControl(
+                      label: L10n.get(
+                        "guests_allowed",
+                      ),
+                      value: guestsAllowed,
+                      onChanged: (value) => _guestsAllowed.value = value,
+                      icon: Icons.group_add,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Smoking Preference Dropdown
+                  ValueListenableBuilder<String?>(
+                    valueListenable: _smokingPreference,
+                    builder: (context, smokingPreference, _) =>
+                        ProfileDropdownControl(
+                      label: L10n.get(
+                        "smoking_preference",
+                      ),
+                      value: smokingPreference,
+                      onChanged: (value) => _smokingPreference.value = value,
+                      icon: Icons.smoking_rooms,
+                      options: [
+                        DropdownOption(
+                          value: null,
+                          label: L10n.get(
+                            "not_specified",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "non-smoker",
+                          label: L10n.get(
+                            "non_smoker",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "occasional",
+                          label: L10n.get(
+                            "occasional_smoker",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "regular",
+                          label: L10n.get(
+                            "regular_smoker",
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Alcohol Preference Dropdown
+                  ValueListenableBuilder<String?>(
+                    valueListenable: _alcoholPreference,
+                    builder: (context, alcoholPreference, _) =>
+                        ProfileDropdownControl(
+                      label: L10n.get(
+                        "alcohol_preference",
+                      ),
+                      value: alcoholPreference,
+                      onChanged: (value) => _alcoholPreference.value = value,
+                      icon: Icons.local_bar,
+                      options: [
+                        DropdownOption(
+                          value: null,
+                          label: L10n.get(
+                            "not_specified",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "non-drinker",
+                          label: L10n.get(
+                            "non_drinker",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "occasional",
+                          label: L10n.get(
+                            "occasional_drinker",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "regular",
+                          label: L10n.get(
+                            "regular_drinker",
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Cooking Habits Toggle
+                  ValueListenableBuilder<bool?>(
+                    valueListenable: _cookingHabits,
+                    builder: (context, cookingHabits, _) =>
+                        ProfileToggleControl(
+                      label: L10n.get(
+                        "cooking_habits",
+                      ),
+                      value: cookingHabits,
+                      onChanged: (value) => _cookingHabits.value = value,
+                      icon: Icons.restaurant,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Pets preference (like / dislike / have cat / have dog)
+                  ValueListenableBuilder<String?>(
+                    valueListenable: _petsPreference,
+                    builder: (context, petsPreference, _) =>
+                        ProfileDropdownControl(
+                      label: L10n.get(
+                        "pets_preference",
+                      ),
+                      value: petsPreference,
+                      onChanged: (value) => _petsPreference.value = value,
+                      icon: Icons.pets,
+                      options: [
+                        DropdownOption(
+                          value: null,
+                          label: L10n.get(
+                            "not_specified",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "like_pets",
+                          label: L10n.get(
+                            "pets_like_pets",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "dont_like_pets",
+                          label: L10n.get(
+                            "pets_dont_like_pets",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "have_cat",
+                          label: L10n.get(
+                            "pets_have_cat",
+                          ),
+                        ),
+                        DropdownOption(
+                          value: "have_dog",
+                          label: L10n.get(
+                            "pets_have_dog",
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Save Button
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _isLoading,
+                    builder: (context, isLoading, _) => SizedBox(
+                      width: double.infinity,
+                      child: GhostButtonFactory.iconText(
+                        onPressed: isLoading ? null : _saveProfile,
+                        icon: Icons.save,
+                        text: isLoading
+                            ? L10n.get(
+                                "saving",
+                              )
+                            : L10n.get(
+                                "save_changes",
+                              ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        isLoading: isLoading,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Name Field
-            _buildTextField(
-              label: L10n.get( "name"),
-              controller: _nameController,
-              icon: Icons.person,
-            ),
-
-            const SizedBox(height: 24),
-
-            // Gender Selector
-            _buildGenderSelector(context),
-
-            const SizedBox(height: 24),
-
-            // Region Selector
-            _buildRegionSelector(context),
-
-            const SizedBox(height: 24),
-
-            // Student status (like onboarding wizard)
-            _buildStudentSelector(context),
-
-            // University Selector (only show when user selects "I'm a student")
-            ValueListenableBuilder<bool>(
-              valueListenable: _isStudent,
-              builder: (context, isStudent, _) => isStudent
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 24),
-                        _buildUniversitySelector(context),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
-            ),
-
-            const SizedBox(height: 24),
-
-            // About Me Field
-            _buildTextField(
-              label: L10n.get( "about_me"),
-              controller: _aboutMeController,
-              icon: Icons.info,
-              maxLines: 3,
-            ),
-
-            const SizedBox(height: 24),
-
-            // Telegram Field
-            _buildTextField(
-              label: L10n.get( "telegram"),
-              controller: _telegramController,
-              icon: Icons.telegram,
-            ),
-
-            const SizedBox(height: 24),
-
-            // Language (visible to other users - what language you speak)
-            ValueListenableBuilder<String>(
-              valueListenable: _selectedLanguage,
-              builder: (context, selectedLanguage, _) =>
-                  ProfileDropdownControl(
-                label: L10n.get("language"),
-                value: selectedLanguage,
-                onChanged: (value) {
-                  if (value != null) {
-                    _selectedLanguage.value = value;
-                    LanguageState().setLanguage(value);
-                  }
-                },
-              icon: CupertinoIcons.globe,
-                options: const [
-                  DropdownOption(value: "uz", label: "🇺🇿 O'zbekcha"),
-                  DropdownOption(value: "ru", label: "🇷🇺 Русский"),
-                  DropdownOption(value: "en", label: "🇺🇸 English"),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Role Dropdown (landlord / tenant; admin option when user is admin)
-            ValueListenableBuilder<bool>(
-              valueListenable: _isRoleLoaded,
-              builder: (context, isRoleLoaded, _) =>
-                  isRoleLoaded
-                      ? ValueListenableBuilder<String>(
-                          valueListenable: _selectedRole,
-                          builder: (context, selectedRole, _) =>
-                              ProfileDropdownControl(
-                            label: L10n.get(
-                              "are_you_landlord_or_renter",
-                            ),
-                            value: selectedRole,
-                            onChanged: (value) =>
-                                _selectedRole.value = value ?? "tenant",
-                            icon: Icons.badge,
-                            options: [
-                              if (_isAdmin)
-                                DropdownOption(
-                                  value: "admin",
-                                  label: L10n.get(
-                                    "role_admin",
-                                  ),
-                                ),
-                              DropdownOption(
-                                value: "landlord",
-                                label: L10n.get(
-                                  "role_landlord",
-                                ),
-                              ),
-                              DropdownOption(
-                                value: "tenant",
-                                label: L10n.get(
-                                  "role_tenant",
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : _buildRoleLoadingPlaceholder(context),
-            ),
-
-            const SizedBox(height: 24),
-
-            // New Profile Fields Section
-            Text(
-L10n.get(
-                "lifestyle_preferences",
-              ),
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: _getLifestyleHeaderColor(),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Employed Toggle
-            ValueListenableBuilder<bool?>(
-              valueListenable: _employed,
-              builder: (context, employed, _) => ProfileToggleControl(
-                label: L10n.get( "employed"),
-                value: employed,
-                onChanged: (value) => _employed.value = value,
-                icon: Icons.work,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Wake-up Time Dropdown
-            ValueListenableBuilder<String?>(
-              valueListenable: _wakeupTime,
-              builder: (context, wakeupTime, _) => ProfileDropdownControl(
-                label: L10n.get(
-                  "wakeup_time",
-                ),
-                value: wakeupTime,
-                onChanged: (value) => _wakeupTime.value = value,
-                icon: Icons.wb_sunny,
-                options: [
-                DropdownOption(
-                  value: null,
-                  label: L10n.get(
-                    "not_specified",
-                  ),
-                ),
-                DropdownOption(
-                  value: "morning",
-                  label: L10n.get(
-                    "morning",
-                  ),
-                ),
-                DropdownOption(
-                  value: "evening",
-                  label: L10n.get(
-                    "evening",
-                  ),
-                ),
-                DropdownOption(
-                  value: "night",
-                  label: L10n.get( "night"),
-                ),
-              ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Sleep Time Dropdown
-            ValueListenableBuilder<String?>(
-              valueListenable: _sleepTime,
-              builder: (context, sleepTime, _) => ProfileDropdownControl(
-                label: L10n.get(
-                  "sleep_time",
-                ),
-                value: sleepTime,
-                onChanged: (value) => _sleepTime.value = value,
-                icon: Icons.bedtime,
-                options: [
-                DropdownOption(
-                  value: null,
-                  label: L10n.get(
-                    "not_specified",
-                  ),
-                ),
-                DropdownOption(
-                  value: "morning",
-                  label: L10n.get(
-                    "morning",
-                  ),
-                ),
-                DropdownOption(
-                  value: "evening",
-                  label: L10n.get(
-                    "evening",
-                  ),
-                ),
-                DropdownOption(
-                  value: "night",
-                  label: L10n.get( "night"),
-                ),
-              ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Cleanliness Slider
-            ValueListenableBuilder<int?>(
-              valueListenable: _cleanliness,
-              builder: (context, cleanliness, _) => ProfileSliderControl(
-                label: L10n.get(
-                  "cleanliness",
-                ),
-                value: cleanliness,
-                onChanged: (value) => _cleanliness.value = value,
-              min: 1,
-              max: 5,
-              icon: Icons.cleaning_services,
-                labels: [
-                  L10n.get( "very_messy"),
-                  L10n.get( "messy"),
-                  L10n.get( "average"),
-                  L10n.get( "clean"),
-                  L10n.get( "very_clean"),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Noise Level Slider
-            ValueListenableBuilder<int?>(
-              valueListenable: _noiseLevel,
-              builder: (context, noiseLevel, _) => ProfileSliderControl(
-                label: L10n.get(
-                  "noise_level",
-                ),
-                value: noiseLevel,
-                onChanged: (value) => _noiseLevel.value = value,
-              min: 1,
-              max: 5,
-              icon: Icons.volume_up,
-                labels: [
-                  L10n.get( "very_quiet"),
-                  L10n.get( "quiet"),
-                  L10n.get( "average"),
-                  L10n.get( "loud"),
-                  L10n.get( "very_loud"),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Sociability Slider
-            ValueListenableBuilder<int?>(
-              valueListenable: _sociability,
-              builder: (context, sociability, _) => ProfileSliderControl(
-                label: L10n.get(
-                  "sociability",
-                ),
-                value: sociability,
-                onChanged: (value) => _sociability.value = value,
-              min: 1,
-              max: 5,
-              icon: Icons.people,
-              labels: [
-L10n.get(
-                  "very_introverted",
-                ),
-                L10n.get( "introverted"),
-                L10n.get( "balanced"),
-                L10n.get( "extroverted"),
-L10n.get(
-                  "very_extroverted",
-                ),
-              ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Guests Allowed Toggle
-            ValueListenableBuilder<bool?>(
-              valueListenable: _guestsAllowed,
-              builder: (context, guestsAllowed, _) => ProfileToggleControl(
-                label: L10n.get(
-                  "guests_allowed",
-                ),
-                value: guestsAllowed,
-                onChanged: (value) => _guestsAllowed.value = value,
-                icon: Icons.group_add,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Smoking Preference Dropdown
-            ValueListenableBuilder<String?>(
-              valueListenable: _smokingPreference,
-              builder: (context, smokingPreference, _) =>
-                  ProfileDropdownControl(
-                label: L10n.get(
-                  "smoking_preference",
-                ),
-                value: smokingPreference,
-                onChanged: (value) => _smokingPreference.value = value,
-                icon: Icons.smoking_rooms,
-                options: [
-                DropdownOption(
-                  value: null,
-                  label: L10n.get(
-                    "not_specified",
-                  ),
-                ),
-                DropdownOption(
-                  value: "non-smoker",
-                  label: L10n.get(
-                    "non_smoker",
-                  ),
-                ),
-                DropdownOption(
-                  value: "occasional",
-                  label: L10n.get(
-                    "occasional_smoker",
-                  ),
-                ),
-                DropdownOption(
-                  value: "regular",
-                  label: L10n.get(
-                    "regular_smoker",
-                  ),
-                ),
-              ],
-                  ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Alcohol Preference Dropdown
-            ValueListenableBuilder<String?>(
-              valueListenable: _alcoholPreference,
-              builder: (context, alcoholPreference, _) =>
-                  ProfileDropdownControl(
-                label: L10n.get(
-                  "alcohol_preference",
-                ),
-                value: alcoholPreference,
-                onChanged: (value) => _alcoholPreference.value = value,
-                icon: Icons.local_bar,
-                options: [
-                DropdownOption(
-                  value: null,
-                  label: L10n.get(
-                    "not_specified",
-                  ),
-                ),
-                DropdownOption(
-                  value: "non-drinker",
-                  label: L10n.get(
-                    "non_drinker",
-                  ),
-                ),
-                DropdownOption(
-                  value: "occasional",
-                  label: L10n.get(
-                    "occasional_drinker",
-                  ),
-                ),
-                DropdownOption(
-                  value: "regular",
-                  label: L10n.get(
-                    "regular_drinker",
-                  ),
-                ),
-              ],
-                  ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Cooking Habits Toggle
-            ValueListenableBuilder<bool?>(
-              valueListenable: _cookingHabits,
-              builder: (context, cookingHabits, _) => ProfileToggleControl(
-                label: L10n.get(
-                  "cooking_habits",
-                ),
-                value: cookingHabits,
-                onChanged: (value) => _cookingHabits.value = value,
-                icon: Icons.restaurant,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Pets preference (like / dislike / have cat / have dog)
-            ValueListenableBuilder<String?>(
-              valueListenable: _petsPreference,
-              builder: (context, petsPreference, _) =>
-                  ProfileDropdownControl(
-                label: L10n.get(
-                  "pets_preference",
-                ),
-                value: petsPreference,
-                onChanged: (value) => _petsPreference.value = value,
-                icon: Icons.pets,
-                options: [
-                  DropdownOption(
-                    value: null,
-                    label: L10n.get(
-                      "not_specified",
-                    ),
-                  ),
-                  DropdownOption(
-                    value: "like_pets",
-                    label: L10n.get(
-                      "pets_like_pets",
-                    ),
-                  ),
-                  DropdownOption(
-                    value: "dont_like_pets",
-                    label: L10n.get(
-                      "pets_dont_like_pets",
-                    ),
-                  ),
-                  DropdownOption(
-                    value: "have_cat",
-                    label: L10n.get(
-                      "pets_have_cat",
-                    ),
-                  ),
-                  DropdownOption(
-                    value: "have_dog",
-                    label: L10n.get(
-                      "pets_have_dog",
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // Save Button
-            ValueListenableBuilder<bool>(
-              valueListenable: _isLoading,
-              builder: (context, isLoading, _) => SizedBox(
-                width: double.infinity,
-                child: GhostButtonFactory.iconText(
-                  onPressed: isLoading ? null : _saveProfile,
-                  icon: Icons.save,
-                  text:
-                      isLoading
-                          ? L10n.get(
-                            "saving",
-                          )
-                          : L10n.get(
-                            "save_changes",
-                          ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  isLoading: isLoading,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -1013,10 +1048,9 @@ L10n.get(
     final isBlueTheme = ThemeState().isBlueTheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color:
-            isBlueTheme
-                ? BlueThemeColors.surface
-                : theme.colorScheme.surfaceContainerHighest,
+        color: isBlueTheme
+            ? BlueThemeColors.surface
+            : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: theme.colorScheme.outline),
       ),
@@ -1026,24 +1060,22 @@ L10n.get(
           children: [
             Icon(
               Icons.badge,
-              color:
-                  isBlueTheme
-                      ? Colors.white
-                      : theme.colorScheme.onSurfaceVariant,
+              color: isBlueTheme
+                  ? Colors.white
+                  : theme.colorScheme.onSurfaceVariant,
               size: 20,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-L10n.get(
+                L10n.get(
                   "are_you_landlord_or_renter",
                 ),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color:
-                      isBlueTheme
-                          ? Colors.white
-                          : theme.colorScheme.onSurfaceVariant,
+                  color: isBlueTheme
+                      ? Colors.white
+                      : theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -1105,10 +1137,9 @@ L10n.get(
               ),
             ),
             filled: true,
-            fillColor:
-                isBlueTheme
-                    ? BlueThemeColors.surface
-                    : theme.colorScheme.surfaceContainerHighest,
+            fillColor: isBlueTheme
+                ? BlueThemeColors.surface
+                : theme.colorScheme.surfaceContainerHighest,
           ),
         ),
       ],
@@ -1122,7 +1153,7 @@ L10n.get(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            L10n.get( "gender"),
+            L10n.get("gender"),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -1190,17 +1221,16 @@ L10n.get(
         final theme = Theme.of(context);
         final isBlueTheme = ThemeState().isBlueTheme;
         final isSelected = currentIsStudent == isStudent;
-    final backgroundColor = isSelected
-        ? Colors.white
-        : (isBlueTheme
-            ? BlueThemeColors.surface
-            : theme.colorScheme.surfaceContainerHighest);
-    final borderColor = isSelected
-        ? Colors.black
-        : theme.colorScheme.outline;
-    final textColor = isSelected
-        ? Colors.black
-        : (isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
+        final backgroundColor = isSelected
+            ? Colors.white
+            : (isBlueTheme
+                ? BlueThemeColors.surface
+                : theme.colorScheme.surfaceContainerHighest);
+        final borderColor =
+            isSelected ? Colors.black : theme.colorScheme.outline;
+        final textColor = isSelected
+            ? Colors.black
+            : (isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
 
         return GestureDetector(
           onTap: () {
@@ -1259,7 +1289,7 @@ L10n.get(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              L10n.get( "im_from"),
+              L10n.get("im_from"),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -1269,10 +1299,9 @@ L10n.get(
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
-                color:
-                    isBlueTheme
-                        ? BlueThemeColors.surface
-                        : theme.colorScheme.surfaceContainerHighest,
+                color: isBlueTheme
+                    ? BlueThemeColors.surface
+                    : theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: theme.colorScheme.outline),
               ),
@@ -1284,90 +1313,53 @@ L10n.get(
                       valueListenable: _isLoadingRegions,
                       builder: (context, isLoadingRegions, _) =>
                           isLoadingRegions
-                            ? Center(
-                              child: Text(
-L10n.get(
-                                  "loading_regions",
-                                ),
-                                style: TextStyle(
-                                  color:
-                                      ThemeState().isBlueTheme
+                              ? Center(
+                                  child: Text(
+                                    L10n.get(
+                                      "loading_regions",
+                                    ),
+                                    style: TextStyle(
+                                      color: ThemeState().isBlueTheme
                                           ? Colors.white
                                           : Colors.black,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            )
-                            : _regionScrollController != null
-                            ? CupertinoPicker(
-                              itemExtent: 40,
-                              scrollController: _regionScrollController,
-                              onSelectedItemChanged: (index) {
-                                HapticFeedbackUtils.impact();
-                                SendSoundUtils.playSelectionSound();
-                                if (index == 0) {
-                                  _selectedRegionId.value = null;
-                                } else {
-                                  final regionIndex = index - 1;
-                                  if (regionIndex < _regions.length) {
-                                    _selectedRegionId.value =
-                                        _regions[regionIndex].id;
-                                  }
-                                }
-                              },
-                              children: [
-                                // Unselected option
-                                Center(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.location_on,
-                                        color:
-                                            theme.colorScheme.onSurfaceVariant,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-L10n.get(
-                                          "select_region",
-                                        ),
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color:
-                                              ThemeState().isBlueTheme
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
+                                      fontStyle: FontStyle.italic,
+                                    ),
                                   ),
-                                ),
-                                // Region options
-                                ..._regions
-                                    .asMap()
-                                    .entries
-                                    .map(
-                                      (entry) => Center(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.location_on,
-                                              color:
-                                                  _getRegionIconColorForIndex(
-                                                    entry.key + 1,
-                                                  ),
-                                              size: 18,
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Flexible(
-                                              child: Text(
-                                                _getLocalizedRegionName(
-                                                  entry.value,
+                                )
+                              : _regionScrollController != null
+                                  ? CupertinoPicker(
+                                      itemExtent: 40,
+                                      scrollController: _regionScrollController,
+                                      onSelectedItemChanged: (index) {
+                                        HapticFeedbackUtils.impact();
+                                        SendSoundUtils.playSelectionSound();
+                                        if (index == 0) {
+                                          _selectedRegionId.value = null;
+                                        } else {
+                                          final regionIndex = index - 1;
+                                          if (regionIndex < _regions.length) {
+                                            _selectedRegionId.value =
+                                                _regions[regionIndex].id;
+                                          }
+                                        }
+                                      },
+                                      children: [
+                                        // Unselected option
+                                        Center(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.location_on,
+                                                color: theme.colorScheme
+                                                    .onSurfaceVariant,
+                                                size: 18,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                L10n.get(
+                                                  "select_region",
                                                 ),
                                                 style: TextStyle(
                                                   fontSize: 14,
@@ -1377,31 +1369,66 @@ L10n.get(
                                                           ? Colors.white
                                                           : Colors.black,
                                                 ),
-                                                textAlign: TextAlign.center,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Region options
+                                        ..._regions.asMap().entries.map(
+                                              (entry) => Center(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.location_on,
+                                                      color:
+                                                          _getRegionIconColorForIndex(
+                                                        entry.key + 1,
+                                                      ),
+                                                      size: 18,
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Flexible(
+                                                      child: Text(
+                                                        _getLocalizedRegionName(
+                                                          entry.value,
+                                                        ),
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: ThemeState()
+                                                                  .isBlueTheme
+                                                              ? Colors.white
+                                                              : Colors.black,
+                                                        ),
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
-                                          ],
+                                      ],
+                                    )
+                                  : Center(
+                                      child: Text(
+                                        L10n.get(
+                                          "loading_regions",
+                                        ),
+                                        style: TextStyle(
+                                          color: ThemeState().isBlueTheme
+                                              ? Colors.white
+                                              : Colors.black,
+                                          fontStyle: FontStyle.italic,
                                         ),
                                       ),
-                                    )
-                                    ,
-                              ],
-                            )
-                            : Center(
-                              child: Text(
-L10n.get(
-                                  "loading_regions",
-                                ),
-                                style: TextStyle(
-                                  color:
-                                      ThemeState().isBlueTheme
-                                          ? Colors.white
-                                          : Colors.black,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
+                                    ),
                     ),
                   ),
                 ],
@@ -1453,7 +1480,7 @@ L10n.get(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              L10n.get( "university"),
+              L10n.get("university"),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -1463,10 +1490,9 @@ L10n.get(
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
-                color:
-                    isBlueTheme
-                        ? BlueThemeColors.surface
-                        : theme.colorScheme.surfaceContainerHighest,
+                color: isBlueTheme
+                    ? BlueThemeColors.surface
+                    : theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: theme.colorScheme.outline),
               ),
@@ -1478,93 +1504,57 @@ L10n.get(
                       valueListenable: _isLoadingUniversities,
                       builder: (context, isLoadingUniversities, _) =>
                           isLoadingUniversities
-                            ? Center(
-                              child: Text(
-L10n.get(
-                                  "loading_universities",
-                                ),
-                                style: TextStyle(
-                                  color:
-                                      ThemeState().isBlueTheme
+                              ? Center(
+                                  child: Text(
+                                    L10n.get(
+                                      "loading_universities",
+                                    ),
+                                    style: TextStyle(
+                                      color: ThemeState().isBlueTheme
                                           ? Colors.white
                                           : Colors.black,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            )
-                            : _universityScrollController != null
-                            ? CupertinoPicker(
-                              itemExtent: 50,
-                              scrollController: _universityScrollController,
-                              onSelectedItemChanged: (index) {
-                                HapticFeedbackUtils.impact();
-                                SendSoundUtils.playSelectionSound();
-                                if (index == 0) {
-                                  _selectedUniversityId.value = null;
-                                } else {
-                                  final universityIndex = index - 1;
-                                  if (universityIndex < _universities.length) {
-                                    _selectedUniversityId.value =
-                                        _universities[universityIndex].id;
-                                  }
-                                }
-                              },
-                              children: [
-                                // Unselected option
-                                Center(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.school,
-                                        color:
-                                            theme.colorScheme.onSurfaceVariant,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-L10n.get(
-                                          "select_university",
-                                        ),
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color:
-                                              ThemeState().isBlueTheme
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
+                                      fontStyle: FontStyle.italic,
+                                    ),
                                   ),
-                                ),
-                                // University options
-                                ..._universities
-                                    .asMap()
-                                    .entries
-                                    .map(
-                                      (entry) => Center(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.school,
-                                              color:
-                                                  _getUniversityIconColorForIndex(
-                                                    entry.key + 1,
-                                                  ),
-                                              size: 18,
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Flexible(
-                                              child: Text(
-                                                entry.value
-                                                    .getLocalizedNameCapitalized(
-                                                      LanguageState()
-                                                          .currentLanguage,
-                                                    ),
+                                )
+                              : _universityScrollController != null
+                                  ? CupertinoPicker(
+                                      itemExtent: 50,
+                                      scrollController:
+                                          _universityScrollController,
+                                      onSelectedItemChanged: (index) {
+                                        HapticFeedbackUtils.impact();
+                                        SendSoundUtils.playSelectionSound();
+                                        if (index == 0) {
+                                          _selectedUniversityId.value = null;
+                                        } else {
+                                          final universityIndex = index - 1;
+                                          if (universityIndex <
+                                              _universities.length) {
+                                            _selectedUniversityId.value =
+                                                _universities[universityIndex]
+                                                    .id;
+                                          }
+                                        }
+                                      },
+                                      children: [
+                                        // Unselected option
+                                        Center(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.school,
+                                                color: theme.colorScheme
+                                                    .onSurfaceVariant,
+                                                size: 18,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                L10n.get(
+                                                  "select_university",
+                                                ),
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
@@ -1573,31 +1563,68 @@ L10n.get(
                                                           ? Colors.white
                                                           : Colors.black,
                                                 ),
-                                                textAlign: TextAlign.center,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
+                                            ],
+                                          ),
+                                        ),
+                                        // University options
+                                        ..._universities.asMap().entries.map(
+                                              (entry) => Center(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.school,
+                                                      color:
+                                                          _getUniversityIconColorForIndex(
+                                                        entry.key + 1,
+                                                      ),
+                                                      size: 18,
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Flexible(
+                                                      child: Text(
+                                                        entry.value
+                                                            .getLocalizedNameCapitalized(
+                                                          LanguageState()
+                                                              .currentLanguage,
+                                                        ),
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: ThemeState()
+                                                                  .isBlueTheme
+                                                              ? Colors.white
+                                                              : Colors.black,
+                                                        ),
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
-                                          ],
+                                      ],
+                                    )
+                                  : Center(
+                                      child: Text(
+                                        L10n.get(
+                                          "loading_universities",
+                                        ),
+                                        style: TextStyle(
+                                          color: ThemeState().isBlueTheme
+                                              ? Colors.white
+                                              : Colors.black,
+                                          fontStyle: FontStyle.italic,
                                         ),
                                       ),
-                                    )
-                                    ,
-                              ],
-                            )
-                            : Center(
-                              child: Text(
-L10n.get(
-                                  "loading_universities",
-                                ),
-                                style: TextStyle(
-                                  color:
-                                      ThemeState().isBlueTheme
-                                          ? Colors.white
-                                          : Colors.black,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
+                                    ),
                     ),
                   ),
                 ],
@@ -1641,21 +1668,20 @@ L10n.get(
 
   String _getSelectedRegionName() {
     if (_isLoadingRegions.value) {
-      return L10n.get( "loading_regions");
+      return L10n.get("loading_regions");
     }
 
     if (_selectedRegionId.value == null) {
-      return L10n.get( "select_region");
+      return L10n.get("select_region");
     }
 
     final selectedRegion = _regions.firstWhere(
       (region) => region.id == _selectedRegionId.value,
-      orElse:
-          () => Region(
-            id: 0,
-            name: L10n.get( "unknown"),
-            shortName: L10n.get( "unknown"),
-          ),
+      orElse: () => Region(
+        id: 0,
+        name: L10n.get("unknown"),
+        shortName: L10n.get("unknown"),
+      ),
     );
 
     return _getLocalizedRegionName(selectedRegion);
