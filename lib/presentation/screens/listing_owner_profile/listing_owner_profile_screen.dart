@@ -503,6 +503,20 @@ L10n.get("rating"),
                         ),
                         const SizedBox(height: 16),
 
+                        // Employed field
+                        if (profile.employed != null) ...[
+                          _buildProfileField(
+                            icon: Icons.work,
+                            label: L10n.get("employed"),
+                            value:
+                                profile.employed!
+                                    ? L10n.get("yes")
+                                    : L10n.get("no"),
+                            context: context,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
                         // Wake-up Time field
                         if (profile.wakeupTime != null) ...[
                           _buildProfileField(
@@ -526,20 +540,6 @@ L10n.get("rating"),
                               profile.sleepTime!,
                               context,
                             ),
-                            context: context,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-
-                        // Employed field
-                        if (profile.employed != null) ...[
-                          _buildProfileField(
-                            icon: Icons.work,
-                            label: L10n.get("employed"),
-                            value:
-                                profile.employed!
-                                    ? L10n.get("yes")
-                                    : L10n.get("no"),
                             context: context,
                           ),
                           const SizedBox(height: 16),

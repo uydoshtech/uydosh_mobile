@@ -559,6 +559,84 @@ L10n.get(
 
             const SizedBox(height: 16),
 
+            // Wake-up Time Dropdown
+            ValueListenableBuilder<String?>(
+              valueListenable: _wakeupTime,
+              builder: (context, wakeupTime, _) => ProfileDropdownControl(
+                label: L10n.get(
+                  "wakeup_time",
+                ),
+                value: wakeupTime,
+                onChanged: (value) => _wakeupTime.value = value,
+                icon: Icons.wb_sunny,
+                options: [
+                DropdownOption(
+                  value: null,
+                  label: L10n.get(
+                    "not_specified",
+                  ),
+                ),
+                DropdownOption(
+                  value: "morning",
+                  label: L10n.get(
+                    "morning",
+                  ),
+                ),
+                DropdownOption(
+                  value: "evening",
+                  label: L10n.get(
+                    "evening",
+                  ),
+                ),
+                DropdownOption(
+                  value: "night",
+                  label: L10n.get( "night"),
+                ),
+              ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Sleep Time Dropdown
+            ValueListenableBuilder<String?>(
+              valueListenable: _sleepTime,
+              builder: (context, sleepTime, _) => ProfileDropdownControl(
+                label: L10n.get(
+                  "sleep_time",
+                ),
+                value: sleepTime,
+                onChanged: (value) => _sleepTime.value = value,
+                icon: Icons.bedtime,
+                options: [
+                DropdownOption(
+                  value: null,
+                  label: L10n.get(
+                    "not_specified",
+                  ),
+                ),
+                DropdownOption(
+                  value: "morning",
+                  label: L10n.get(
+                    "morning",
+                  ),
+                ),
+                DropdownOption(
+                  value: "evening",
+                  label: L10n.get(
+                    "evening",
+                  ),
+                ),
+                DropdownOption(
+                  value: "night",
+                  label: L10n.get( "night"),
+                ),
+              ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
             // Cleanliness Slider
             ValueListenableBuilder<int?>(
               valueListenable: _cleanliness,
@@ -759,84 +837,6 @@ L10n.get(
                 value: petsPreference,
                 onChanged: (value) => _petsPreference.value = value,
                 icon: Icons.pets,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Wake-up Time Dropdown
-            ValueListenableBuilder<String?>(
-              valueListenable: _wakeupTime,
-              builder: (context, wakeupTime, _) => ProfileDropdownControl(
-                label: L10n.get(
-                  "wakeup_time",
-                ),
-                value: wakeupTime,
-                onChanged: (value) => _wakeupTime.value = value,
-                icon: Icons.wb_sunny,
-                options: [
-                DropdownOption(
-                  value: null,
-                  label: L10n.get(
-                    "not_specified",
-                  ),
-                ),
-                DropdownOption(
-                  value: "morning",
-                  label: L10n.get(
-                    "morning",
-                  ),
-                ),
-                DropdownOption(
-                  value: "evening",
-                  label: L10n.get(
-                    "evening",
-                  ),
-                ),
-                DropdownOption(
-                  value: "night",
-                  label: L10n.get( "night"),
-                ),
-              ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Sleep Time Dropdown
-            ValueListenableBuilder<String?>(
-              valueListenable: _sleepTime,
-              builder: (context, sleepTime, _) => ProfileDropdownControl(
-                label: L10n.get(
-                  "sleep_time",
-                ),
-                value: sleepTime,
-                onChanged: (value) => _sleepTime.value = value,
-                icon: Icons.bedtime,
-                options: [
-                DropdownOption(
-                  value: null,
-                  label: L10n.get(
-                    "not_specified",
-                  ),
-                ),
-                DropdownOption(
-                  value: "morning",
-                  label: L10n.get(
-                    "morning",
-                  ),
-                ),
-                DropdownOption(
-                  value: "evening",
-                  label: L10n.get(
-                    "evening",
-                  ),
-                ),
-                DropdownOption(
-                  value: "night",
-                  label: L10n.get( "night"),
-                ),
-              ],
               ),
             ),
 

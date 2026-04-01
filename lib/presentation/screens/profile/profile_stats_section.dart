@@ -232,6 +232,18 @@ class ProfileStatsSection extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (profile.employed != null) ...[
+                            _buildProfileField(
+                              context,
+                              icon: Icons.work,
+                              label: L10n.get("employed"),
+                              value:
+                                  profile.employed!
+                                      ? L10n.get("yes")
+                                      : L10n.get("no"),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                           if (profile.wakeupTime != null) ...[
                             _buildProfileField(
                               context,
@@ -253,18 +265,6 @@ class ProfileStatsSection extends StatelessWidget {
                                 profile.sleepTime!,
                                 context,
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                          if (profile.employed != null) ...[
-                            _buildProfileField(
-                              context,
-                              icon: Icons.work,
-                              label: L10n.get("employed"),
-                              value:
-                                  profile.employed!
-                                      ? L10n.get("yes")
-                                      : L10n.get("no"),
                             ),
                             const SizedBox(height: 16),
                           ],
