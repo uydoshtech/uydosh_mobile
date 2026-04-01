@@ -6,6 +6,8 @@ import UIKit
 final class RoomUsdzViewerViewController: UIViewController {
   private let fileURL: URL
   private let sceneView = SCNView()
+  private let hintContainer = UIView()
+  private let hintLabel = UILabel()
   private var loadedScene: SCNScene?
 
   init(fileURL: URL) {
@@ -35,14 +37,161 @@ final class RoomUsdzViewerViewController: UIViewController {
     sceneView.autoenablesDefaultLighting = true
     view.addSubview(sceneView)
 
+    hintContainer.translatesAutoresizingMaskIntoConstraints = false
+    hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)
+    hintContainer.layer.cornerRadius = 12
+    if #available(iOS 13.0, *) {
+      hintContainer.layer.cornerCurve = .continuous
+    }
+    hintContainer.clipsToBounds = true
+
+    hintLabel.translatesAutoresizingMaskIntoConstraints = false
+    hintLabel.numberOfLines = 0
+    hintLabel.textAlignment = .center
+    hintLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
+    hintLabel.adjustsFontForContentSizeCategory = true
+    hintLabel.textColor = UIColor.white.withAlphaComponent(0.95)
+    hintLabel.text =
+      "Drag with one finger to look around the model.\n"
+      + "Pinch with two fingers to zoom in or out."
+
+    hintContainer.addSubview(hintLabel)
+    view.addSubview(hintContainer)
+
     NSLayoutConstraint.activate([
       sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
       sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      sceneView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+      sceneView.bottomAnchor.constraint(equalTo: hintContainer.topAnchor, constant: -12),
+
+      hintLabel.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 10),
+      hintLabel.leadingAnchor.constraint(equalTo: hintContainer.leadingAnchor, constant: 14),
+      hintLabel.trailingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: -14),
+      hintLabel.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: -10),
+
+      hintContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+      hintContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+      hintContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
     ])
 
     loadScene()
+  }
+
+  /// World-space union of all geometry bounding boxes (root’s own `boundingBox` ignores children).
+  private func unionWorldBounds(of root: SCNNode) -> (min: SCNVector3, max: SCNVector3)? {
+    var minV = SCNVector3(
+      Float.greatestFiniteMagnitude,
+      Float.greatestFiniteMagnitude,
+      Float.greatestFiniteMagnitude
+    )
+    var maxV = SCNVector3(
+      -Float.greatestFiniteMagnitude,
+      -Float.greatestFiniteMagnitude,
+      -Float.greatestFiniteMagnitude
+    )
+    var any = false
+
+    func visit(_ node: SCNNode) {
+      if node.geometry != nil {
+        let box = node.boundingBox
+        let corners: [SCNVector3] = [
+          SCNVector3(box.min.x, box.min.y, box.min.z),
+          SCNVector3(box.max.x, box.min.y, box.min.z),
+          SCNVector3(box.min.x, box.max.y, box.min.z),
+          SCNVector3(box.max.x, box.max.y, box.min.z),
+          SCNVector3(box.min.x, box.min.y, box.max.z),
+          SCNVector3(box.max.x, box.min.y, box.max.z),
+          SCNVector3(box.min.x, box.max.y, box.max.z),
+          SCNVector3(box.max.x, box.max.y, box.max.z),
+        ]
+        for c in corners {
+          let w = node.convertPosition(c, to: nil)
+          minV.x = Swift.min(minV.x, w.x)
+          minV.y = Swift.min(minV.y, w.y)
+          minV.z = Swift.min(minV.z, w.z)
+          maxV.x = Swift.max(maxV.x, w.x)
+          maxV.y = Swift.max(maxV.y, w.y)
+          maxV.z = Swift.max(maxV.z, w.z)
+          any = true
+        }
+      }
+      for child in node.childNodes {
+        visit(child)
+      }
+    }
+
+    visit(root)
+    guard any else { return nil }
+    return (minV, maxV)
+  }
+
+  /// Places the camera so the whole model fits the viewport (avoids default “inside the mesh” zoom).
+  private func frameCamera(for scene: SCNScene, in view: SCNView) {
+    guard let bounds = unionWorldBounds(of: scene.rootNode) else { return }
+
+    let minB = bounds.min
+    let maxB = bounds.max
+    let dx = maxB.x - minB.x
+    let dy = maxB.y - minB.y
+    let dz = maxB.z - minB.z
+    guard dx > 1e-6 || dy > 1e-6 || dz > 1e-6 else { return }
+
+    let centerWorld = SCNVector3(
+      (minB.x + maxB.x) * 0.5,
+      (minB.y + maxB.y) * 0.5,
+      (minB.z + maxB.z) * 0.5
+    )
+
+    // Half diagonal of the axis-aligned box; enclosing sphere radius for a conservative fit.
+    let halfDiagonal =
+      0.5 * sqrt(dx * dx + dy * dy + dz * dz)
+    guard halfDiagonal > 1e-4 else { return }
+
+    let cameraNode = SCNNode()
+    cameraNode.name = "UydoshFramingCamera"
+    let cam = SCNCamera()
+    cameraNode.camera = cam
+
+    let vfovDegrees: CGFloat = 60
+    cam.fieldOfView = vfovDegrees
+    let vfov = vfovDegrees * .pi / 180
+    // Portrait phones are tall: horizontal FOV is narrower than vertical. Framing using only
+    // vertical FOV leaves the model cropped on the sides (still “too close” for room scans).
+    let w = max(view.bounds.width, 1)
+    let h = max(view.bounds.height, 1)
+    let aspect = w / h
+    let tanHalfV = tan(vfov / 2)
+    let tanHalfH = aspect * tanHalfV
+    let tanHalfLimit = min(tanHalfV, tanHalfH)
+    let padding: CGFloat = 1.38
+    let distance = CGFloat(halfDiagonal) / tanHalfLimit * padding
+
+    // Slightly elevated “corner” view reads well for room scans.
+    let vx: Float = 0.55
+    let vy: Float = 0.38
+    let vz: Float = 0.75
+    let len = sqrt(vx * vx + vy * vy + vz * vz)
+    let ox = vx / len * Float(distance)
+    let oy = vy / len * Float(distance)
+    let oz = vz / len * Float(distance)
+
+    let worldCam = SCNVector3(
+      centerWorld.x + ox,
+      centerWorld.y + oy,
+      centerWorld.z + oz
+    )
+
+    cam.zNear = Double(max(0.001, CGFloat(halfDiagonal) * 0.0005))
+    cam.zFar = Double(max(100, CGFloat(halfDiagonal) * 50))
+
+    let root = scene.rootNode
+    cameraNode.position = root.convertPosition(worldCam, from: nil)
+    cameraNode.look(at: centerWorld, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+
+    root.addChildNode(cameraNode)
+    view.pointOfView = cameraNode
+
+    view.defaultCameraController.target = centerWorld
   }
 
   private func loadScene() {
@@ -53,6 +202,7 @@ final class RoomUsdzViewerViewController: UIViewController {
         DispatchQueue.main.async {
           self.loadedScene = scene
           self.sceneView.scene = scene
+          self.frameCamera(for: scene, in: self.sceneView)
         }
       } catch {
         DispatchQueue.main.async {

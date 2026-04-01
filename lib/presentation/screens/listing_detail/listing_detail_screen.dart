@@ -1850,6 +1850,40 @@ L10n.get("feature_listing_error",
     );
   }
 
+  Widget _room3dTile(ListingDetail listingDetail) {
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _openRoom3dViewer(listingDetail),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.view_in_ar,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    L10n.get("view_room_3d"),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLoadedState(
     ListingDetail listingDetail,
     ListingDetailPageState pageState,
@@ -1914,47 +1948,8 @@ L10n.get("feature_listing_error",
                     ],
                     if (isIOSDevice &&
                         (listingDetail.pointCloudUrl?.isNotEmpty ?? false)) ...[
-                      const SizedBox(height: 12),
-                      Material(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withValues(alpha: 0.45),
-                        borderRadius: BorderRadius.circular(12),
-                        child: InkWell(
-                          onTap: () => _openRoom3dViewer(listingDetail),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.view_in_ar,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    L10n.get("view_room_3d"),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleSmall,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.chevron_right,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                      const SizedBox(height: 4),
+                      _room3dTile(listingDetail),
                     ],
                     // Unified Listing Detail Card (gap above = space between photo tile and this card)
                     ListingDetailContentCard(
