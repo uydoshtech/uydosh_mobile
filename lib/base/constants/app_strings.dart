@@ -170,6 +170,13 @@ class AppStrings {
       "skip": "Skip",
       "view_room_3d": "View 3D room",
       "room_3d_open_error": "Could not open 3D model. Check your connection.",
+      "room_3d_viewer_title": "3D",
+      "room_3d_dimensions_caption": "Approximate dimensions (full scan bounds)",
+      "room_3d_dimensions_line_template":
+          "{floorLong} × {floorShort} m floor · {height} m high",
+      "room_3d_gesture_hint":
+          "Drag with one finger to look around the model.\nPinch with two fingers to zoom in or out.",
+      "room_3d_load_error_title": "Could not load 3D model",
 
       "profile_completed_success": "Profile completed successfully!",
       "profile_updated_success": "Profile updated successfully",
@@ -1006,6 +1013,14 @@ class AppStrings {
       "view_room_3d": "Смотреть комнату в 3D",
       "room_3d_open_error":
           "Не удалось открыть 3D-модель. Проверьте подключение.",
+      "room_3d_viewer_title": "3D",
+      "room_3d_dimensions_caption":
+          "Приблизительные размеры (границы всего скана)",
+      "room_3d_dimensions_line_template":
+          "Пол: {floorLong} × {floorShort} м · высота {height} м",
+      "room_3d_gesture_hint":
+          "Перетаскивайте одним пальцем, чтобы осмотреть модель.\nЩипок двумя пальцами — масштаб.",
+      "room_3d_load_error_title": "Не удалось загрузить 3D-модель",
 
       "profile_completed_success": "Профиль успешно завершен!",
       "profile_updated_success": "Профиль успешно обновлен",
@@ -1850,6 +1865,14 @@ class AppStrings {
       "view_room_3d": "3D xonani ko'rish",
       "room_3d_open_error":
           "3D modelni ochib bo'lmadi. Internetni tekshiring.",
+      "room_3d_viewer_title": "3D",
+      "room_3d_dimensions_caption":
+          "Taxminiy o'lchamlar (to'liq skan chegarasi)",
+      "room_3d_dimensions_line_template":
+          "Pol: {floorLong} × {floorShort} m · balandlik {height} m",
+      "room_3d_gesture_hint":
+          "Modelni ko'rish uchun barmoq bilan suring.\nIkki barmoq bilan yaqinlashtiring yoki uzoqlashtiring.",
+      "room_3d_load_error_title": "3D modelni yuklab bo'lmadi",
 
       "profile_completed_success": "Profil muvaffaqiyatli to'ldirildi!",
       "profile_updated_success": "Profil muvaffaqiyatli yangilandi",

@@ -19,11 +19,20 @@ import YandexMapsMobile
       )
       channel.setMethodCallHandler { call, result in
         if call.method == "presentLocalFile" {
-          guard let path = call.arguments as? String else {
-            result(FlutterError(code: "bad_args", message: "Expected file path", details: nil))
+          guard let args = call.arguments as? [String: Any],
+            let path = args["path"] as? String,
+            let strings = args["strings"] as? [String: String]
+          else {
+            result(
+              FlutterError(
+                code: "bad_args",
+                message: "Expected map with path and strings",
+                details: nil
+              )
+            )
             return
           }
-          RoomUsdzViewerPresenter.present(filePath: path, result: result)
+          RoomUsdzViewerPresenter.present(filePath: path, strings: strings, result: result)
         } else {
           result(FlutterMethodNotImplemented)
         }

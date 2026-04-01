@@ -709,6 +709,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
       final ok = await RoomUsdzViewerService.downloadAndPresent(
         url,
         listingId: listingDetail.id,
+        languageCode: LanguageState().currentLanguage,
       );
       if (!mounted) return;
       if (!ok) {

@@ -2,16 +2,76 @@ import Flutter
 import SceneKit
 import UIKit
 
+/// Strings resolved in Flutter ([AppStrings] by language) and passed through the method channel.
+struct RoomViewerStrings {
+  let title: String
+  let dimensionsCaption: String
+  let dimensionsLineTemplate: String
+  let gestureHint: String
+  let loadErrorTitle: String
+  let alertOk: String
+
+  init(
+    title: String,
+    dimensionsCaption: String,
+    dimensionsLineTemplate: String,
+    gestureHint: String,
+    loadErrorTitle: String,
+    alertOk: String
+  ) {
+    self.title = title
+    self.dimensionsCaption = dimensionsCaption
+    self.dimensionsLineTemplate = dimensionsLineTemplate
+    self.gestureHint = gestureHint
+    self.loadErrorTitle = loadErrorTitle
+    self.alertOk = alertOk
+  }
+
+  init?(dict: [String: String]) {
+    guard let title = dict["title"],
+      let dimensionsCaption = dict["dimensionsCaption"],
+      let dimensionsLineTemplate = dict["dimensionsLineTemplate"],
+      let gestureHint = dict["gestureHint"],
+      let loadErrorTitle = dict["loadErrorTitle"],
+      let alertOk = dict["alertOk"]
+    else { return nil }
+    self.init(
+      title: title,
+      dimensionsCaption: dimensionsCaption,
+      dimensionsLineTemplate: dimensionsLineTemplate,
+      gestureHint: gestureHint,
+      loadErrorTitle: loadErrorTitle,
+      alertOk: alertOk
+    )
+  }
+
+  static let englishFallback = RoomViewerStrings(
+    title: "3D",
+    dimensionsCaption: "Approximate dimensions (full scan bounds)",
+    dimensionsLineTemplate: "{floorLong} × {floorShort} m floor · {height} m high",
+    gestureHint:
+      "Drag with one finger to look around the model.\n"
+      + "Pinch with two fingers to zoom in or out.",
+    loadErrorTitle: "Could not load 3D model",
+    alertOk: "OK"
+  )
+}
+
 /// Full-screen 3D viewer for a local USDZ (object-only, no Quick Look AR/Object toggle).
 final class RoomUsdzViewerViewController: UIViewController {
   private let fileURL: URL
+  private let strings: RoomViewerStrings
   private let sceneView = SCNView()
   private let hintContainer = UIView()
+  private let hintStack = UIStackView()
+  private let dimensionsTitleLabel = UILabel()
+  private let dimensionsValueLabel = UILabel()
   private let hintLabel = UILabel()
   private var loadedScene: SCNScene?
 
-  init(fileURL: URL) {
+  init(fileURL: URL, strings: RoomViewerStrings) {
     self.fileURL = fileURL
+    self.strings = strings
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -22,7 +82,7 @@ final class RoomUsdzViewerViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = .black
-    title = "3D"
+    title = strings.title
 
     navigationItem.leftBarButtonItem = UIBarButtonItem(
       barButtonSystemItem: .close,
@@ -45,17 +105,46 @@ final class RoomUsdzViewerViewController: UIViewController {
     }
     hintContainer.clipsToBounds = true
 
+    dimensionsTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+    dimensionsTitleLabel.textAlignment = .center
+    dimensionsTitleLabel.numberOfLines = 0
+    dimensionsTitleLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+    dimensionsTitleLabel.adjustsFontForContentSizeCategory = true
+    dimensionsTitleLabel.textColor = UIColor.white.withAlphaComponent(0.68)
+    dimensionsTitleLabel.text = strings.dimensionsCaption
+    dimensionsTitleLabel.isHidden = true
+
+    dimensionsValueLabel.translatesAutoresizingMaskIntoConstraints = false
+    dimensionsValueLabel.textAlignment = .center
+    dimensionsValueLabel.numberOfLines = 0
+    dimensionsValueLabel.adjustsFontForContentSizeCategory = true
+    dimensionsValueLabel.textColor = UIColor.white.withAlphaComponent(0.98)
+    let subHead = UIFont.preferredFont(forTextStyle: .subheadline)
+    if let boldDesc = subHead.fontDescriptor.withSymbolicTraits(.traitBold) {
+      dimensionsValueLabel.font = UIFont(descriptor: boldDesc, size: 0)
+    } else {
+      dimensionsValueLabel.font = subHead
+    }
+    dimensionsValueLabel.isHidden = true
+
     hintLabel.translatesAutoresizingMaskIntoConstraints = false
     hintLabel.numberOfLines = 0
     hintLabel.textAlignment = .center
     hintLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
     hintLabel.adjustsFontForContentSizeCategory = true
     hintLabel.textColor = UIColor.white.withAlphaComponent(0.95)
-    hintLabel.text =
-      "Drag with one finger to look around the model.\n"
-      + "Pinch with two fingers to zoom in or out."
+    hintLabel.text = strings.gestureHint
 
-    hintContainer.addSubview(hintLabel)
+    hintStack.translatesAutoresizingMaskIntoConstraints = false
+    hintStack.axis = .vertical
+    hintStack.alignment = .fill
+    hintStack.spacing = 4
+    hintStack.addArrangedSubview(dimensionsTitleLabel)
+    hintStack.addArrangedSubview(dimensionsValueLabel)
+    hintStack.setCustomSpacing(12, after: dimensionsValueLabel)
+    hintStack.addArrangedSubview(hintLabel)
+
+    hintContainer.addSubview(hintStack)
     view.addSubview(hintContainer)
 
     NSLayoutConstraint.activate([
@@ -64,10 +153,10 @@ final class RoomUsdzViewerViewController: UIViewController {
       sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       sceneView.bottomAnchor.constraint(equalTo: hintContainer.topAnchor, constant: -12),
 
-      hintLabel.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 10),
-      hintLabel.leadingAnchor.constraint(equalTo: hintContainer.leadingAnchor, constant: 14),
-      hintLabel.trailingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: -14),
-      hintLabel.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: -10),
+      hintStack.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 10),
+      hintStack.leadingAnchor.constraint(equalTo: hintContainer.leadingAnchor, constant: 14),
+      hintStack.trailingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: -14),
+      hintStack.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: -10),
 
       hintContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
       hintContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
@@ -125,6 +214,23 @@ final class RoomUsdzViewerViewController: UIViewController {
     return (minV, maxV)
   }
 
+  /// RoomPlan / SceneKit: meters, Y-up. Uses horizontal spans (X, Z) as floor footprint and Y as height.
+  private func updateDimensionsDisplay(dx: Float, dy: Float, dz: Float) {
+    let floorLong = max(dx, dz)
+    let floorShort = min(dx, dz)
+    let height = dy
+    func fmt(_ v: Float) -> String {
+      String(format: "%.1f", v)
+    }
+    var line = strings.dimensionsLineTemplate
+    line = line.replacingOccurrences(of: "{floorLong}", with: fmt(floorLong))
+    line = line.replacingOccurrences(of: "{floorShort}", with: fmt(floorShort))
+    line = line.replacingOccurrences(of: "{height}", with: fmt(height))
+    dimensionsValueLabel.text = line
+    dimensionsTitleLabel.isHidden = false
+    dimensionsValueLabel.isHidden = false
+  }
+
   /// Places the camera so the whole model fits the viewport (avoids default “inside the mesh” zoom).
   private func frameCamera(for scene: SCNScene, in view: SCNView) {
     guard let bounds = unionWorldBounds(of: scene.rootNode) else { return }
@@ -135,6 +241,8 @@ final class RoomUsdzViewerViewController: UIViewController {
     let dy = maxB.y - minB.y
     let dz = maxB.z - minB.z
     guard dx > 1e-6 || dy > 1e-6 || dz > 1e-6 else { return }
+
+    updateDimensionsDisplay(dx: dx, dy: dy, dz: dz)
 
     let centerWorld = SCNVector3(
       (minB.x + maxB.x) * 0.5,
@@ -214,11 +322,11 @@ final class RoomUsdzViewerViewController: UIViewController {
 
   private func presentLoadError(_ error: Error) {
     let alert = UIAlertController(
-      title: "Could not load 3D model",
+      title: strings.loadErrorTitle,
       message: error.localizedDescription,
       preferredStyle: .alert
     )
-    alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+    alert.addAction(UIAlertAction(title: strings.alertOk, style: .default) { [weak self] _ in
       self?.dismissViewer()
     })
     present(alert, animated: true)
@@ -240,7 +348,7 @@ final class RoomUsdzViewerViewController: UIViewController {
 }
 
 enum RoomUsdzViewerPresenter {
-  static func present(filePath: String, result: @escaping FlutterResult) {
+  static func present(filePath: String, strings: [String: String], result: @escaping FlutterResult) {
     guard FileManager.default.fileExists(atPath: filePath) else {
       result(
         FlutterError(
@@ -263,7 +371,8 @@ enum RoomUsdzViewerPresenter {
       return
     }
 
-    let viewer = RoomUsdzViewerViewController(fileURL: url)
+    let resolved = RoomViewerStrings(dict: strings) ?? RoomViewerStrings.englishFallback
+    let viewer = RoomUsdzViewerViewController(fileURL: url, strings: resolved)
     let nav = UINavigationController(rootViewController: viewer)
     nav.modalPresentationStyle = .fullScreen
     nav.navigationBar.prefersLargeTitles = false
