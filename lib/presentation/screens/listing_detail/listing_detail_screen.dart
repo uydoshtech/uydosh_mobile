@@ -20,7 +20,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
-import "package:uy_dosh/base/services/usdz_quick_look_service.dart";
+import "package:uy_dosh/base/services/room_usdz_viewer_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -706,7 +706,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
     HapticFeedbackUtils.impact();
     final url = _buildPhotoUrl(raw);
     try {
-      final ok = await UsdzQuickLookService.downloadAndPresent(
+      final ok = await RoomUsdzViewerService.downloadAndPresent(
         url,
         listingId: listingDetail.id,
       );
