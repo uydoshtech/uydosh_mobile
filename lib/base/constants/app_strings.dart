@@ -157,6 +157,17 @@ class AppStrings {
       // ===== SUCCESS MESSAGES =====
       "listing_created_success": "Listing created successfully!",
       "listing_updated_success": "Listing updated successfully",
+      "room_scan_title": "3D room scan",
+      "room_scan_instructions":
+          "Scan your room with LiDAR (iPhone Pro or compatible iPad). After you finish, the model uploads to your listing.",
+      "room_scan_start": "Start scan",
+      "room_scan_uploading": "Uploading…",
+      "room_scan_success": "3D scan saved",
+      "room_scan_error": "Could not save scan. Try again.",
+      "room_scan_not_supported":
+          "3D room scan requires an iPhone or iPad with LiDAR.",
+      "add_room_scan_3d": "Add 3D room scan",
+      "skip": "Skip",
 
       "profile_completed_success": "Profile completed successfully!",
       "profile_updated_success": "Profile updated successfully",
@@ -974,6 +985,17 @@ class AppStrings {
       // ===== SUCCESS MESSAGES =====
       "listing_created_success": "Объявление успешно создано!",
       "listing_updated_success": "Объявление успешно обновлено",
+      "room_scan_title": "3D-скан комнаты",
+      "room_scan_instructions":
+          "Отсканируйте комнату с помощью LiDAR (iPhone Pro или совместимый iPad). После завершения модель загрузится в объявление.",
+      "room_scan_start": "Начать сканирование",
+      "room_scan_uploading": "Загрузка…",
+      "room_scan_success": "3D-скан сохранён",
+      "room_scan_error": "Не удалось сохранить скан. Попробуйте снова.",
+      "room_scan_not_supported":
+          "3D-скан требует iPhone или iPad с LiDAR.",
+      "add_room_scan_3d": "Добавить 3D-скан комнаты",
+      "skip": "Пропустить",
 
       "profile_completed_success": "Профиль успешно завершен!",
       "profile_updated_success": "Профиль успешно обновлен",
@@ -1799,6 +1821,17 @@ class AppStrings {
       // ===== SUCCESS MESSAGES =====
       "listing_created_success": "E'lon muvaffaqiyatli yaratildi!",
       "listing_updated_success": "E'lon muvaffaqiyatli yangilandi",
+      "room_scan_title": "3D xona skani",
+      "room_scan_instructions":
+          "Xonani LiDAR yordamida skanerlang (iPhone Pro yoki mos iPad). Tugagach, model e'loningizga yuklanadi.",
+      "room_scan_start": "Skanlashni boshlash",
+      "room_scan_uploading": "Yuklanmoqda…",
+      "room_scan_success": "3D skan saqlandi",
+      "room_scan_error": "Skanni saqlab bo'lmadi. Qayta urinib ko'ring.",
+      "room_scan_not_supported":
+          "3D skan uchun LiDARli iPhone yoki iPad kerak.",
+      "add_room_scan_3d": "3D xona skanini qo'shish",
+      "skip": "O'tkazib yuborish",
 
       "profile_completed_success": "Profil muvaffaqiyatli to'ldirildi!",
       "profile_updated_success": "Profil muvaffaqiyatli yangilandi",

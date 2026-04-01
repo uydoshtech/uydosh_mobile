@@ -128,6 +128,10 @@ abstract class IListingService {
   });
   Future<bool> deletePhoto({required int listingId, required int photoId});
   Future<bool> setPrimaryPhoto({required int listingId, required int photoId});
+  Future<void> uploadRoomScan({
+    required int listingId,
+    required String usdzFilePath,
+  });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
   Future<void> recordListingView(int listingId);
@@ -409,6 +413,16 @@ class ListingService implements IListingService {
     required int photoId,
   }) =>
       _crudService.setPrimaryPhoto(listingId: listingId, photoId: photoId);
+
+  @override
+  Future<void> uploadRoomScan({
+    required int listingId,
+    required String usdzFilePath,
+  }) =>
+      _crudService.uploadRoomScan(
+        listingId: listingId,
+        usdzFilePath: usdzFilePath,
+      );
 
   @override
   Future<bool> featureListing(int listingId) =>

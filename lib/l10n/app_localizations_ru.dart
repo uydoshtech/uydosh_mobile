@@ -404,6 +404,35 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_created_success => 'Объявление успешно создано!';
 
   @override
+  String get room_scan_title => '3D-скан комнаты';
+
+  @override
+  String get room_scan_instructions =>
+      'Отсканируйте комнату с помощью LiDAR (iPhone Pro или совместимый iPad). После завершения модель загрузится в объявление.';
+
+  @override
+  String get room_scan_start => 'Начать сканирование';
+
+  @override
+  String get room_scan_uploading => 'Загрузка…';
+
+  @override
+  String get room_scan_success => '3D-скан сохранён';
+
+  @override
+  String get room_scan_error => 'Не удалось сохранить скан. Попробуйте снова.';
+
+  @override
+  String get room_scan_not_supported =>
+      '3D-скан требует iPhone или iPad с LiDAR.';
+
+  @override
+  String get add_room_scan_3d => 'Добавить 3D-скан комнаты';
+
+  @override
+  String get skip => 'Пропустить';
+
+  @override
   String get listing_updated_success => 'Объявление успешно обновлено';
 
   @override

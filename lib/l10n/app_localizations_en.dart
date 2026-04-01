@@ -400,6 +400,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_created_success => 'Listing created successfully!';
 
   @override
+  String get room_scan_title => '3D room scan';
+
+  @override
+  String get room_scan_instructions =>
+      'Scan your room with LiDAR (iPhone Pro or compatible iPad). After you finish, the model uploads to your listing.';
+
+  @override
+  String get room_scan_start => 'Start scan';
+
+  @override
+  String get room_scan_uploading => 'Uploading…';
+
+  @override
+  String get room_scan_success => '3D scan saved';
+
+  @override
+  String get room_scan_error => 'Could not save scan. Try again.';
+
+  @override
+  String get room_scan_not_supported =>
+      '3D room scan requires an iPhone or iPad with LiDAR.';
+
+  @override
+  String get add_room_scan_3d => 'Add 3D room scan';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
   String get listing_updated_success => 'Listing updated successfully';
 
   @override

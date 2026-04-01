@@ -21,6 +21,7 @@ class Listing with _$Listing {
     @JsonKey(name: "featured_at") String? featuredAt,
     @JsonKey(name: "move_in_date") String? moveInDate,
     @JsonKey(name: "private_room") bool? privateRoom,
+    @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
     @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
     @JsonKey(name: "location") LocationDetail? location,
     @JsonKey(name: "listing_type") ListingTypeDetail? listingType,

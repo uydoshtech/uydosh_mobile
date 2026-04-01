@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
@@ -30,6 +31,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
+import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 
 class EditListingScreen extends StatefulWidget {
 
@@ -960,6 +962,27 @@ class _EditListingScreenState extends State<EditListingScreen> {
                       maxPhotos: 5,
                       isRequired: false,
                     ),
+
+                    if (isIOSDevice) ...[
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            HapticFeedbackUtils.impact();
+                            await Navigator.of(context).push<bool>(
+                              MaterialPageRoute(
+                                builder: (context) => RoomPlanScanScreen(
+                                  listingId: widget.listingDetail.id,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.view_in_ar),
+                          label: Text(L10n.get("add_room_scan_3d")),
+                        ),
+                      ),
+                    ],
 
                     const SizedBox(height: 20),
 

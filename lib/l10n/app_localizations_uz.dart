@@ -403,6 +403,36 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_created_success => 'E\'lon muvaffaqiyatli yaratildi!';
 
   @override
+  String get room_scan_title => '3D xona skani';
+
+  @override
+  String get room_scan_instructions =>
+      'Xonani LiDAR yordamida skanerlang (iPhone Pro yoki mos iPad). Tugagach, model e\'loningizga yuklanadi.';
+
+  @override
+  String get room_scan_start => 'Skanlashni boshlash';
+
+  @override
+  String get room_scan_uploading => 'Yuklanmoqda…';
+
+  @override
+  String get room_scan_success => '3D skan saqlandi';
+
+  @override
+  String get room_scan_error =>
+      'Skanni saqlab bo\'lmadi. Qayta urinib ko\'ring.';
+
+  @override
+  String get room_scan_not_supported =>
+      '3D skan uchun LiDARli iPhone yoki iPad kerak.';
+
+  @override
+  String get add_room_scan_3d => '3D xona skanini qo\'shish';
+
+  @override
+  String get skip => 'O\'tkazib yuborish';
+
+  @override
   String get listing_updated_success => 'E\'lon muvaffaqiyatli yangilandi';
 
   @override

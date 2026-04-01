@@ -94,6 +94,9 @@ dependencies:
   tutorial_coach_mark: ^1.3.3
   google_generative_ai: ^0.4.7
 
+  # iOS RoomPlan (LiDAR) — room USDZ export; Android stub in plugin
+  flutter_roomplan: ^1.0.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

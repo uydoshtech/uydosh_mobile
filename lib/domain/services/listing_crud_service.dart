@@ -55,6 +55,10 @@ abstract class IListingCrudService {
   });
   Future<bool> deletePhoto({required int listingId, required int photoId});
   Future<bool> setPrimaryPhoto({required int listingId, required int photoId});
+  Future<void> uploadRoomScan({
+    required int listingId,
+    required String usdzFilePath,
+  });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
 }
@@ -412,6 +416,26 @@ class ListingCrudService implements IListingCrudService {
       logger.d("❌ Error setting primary photo: $e");
       rethrow;
     }
+  }
+
+  @override
+  Future<void> uploadRoomScan({
+    required int listingId,
+    required String usdzFilePath,
+  }) async {
+    final file = File(usdzFilePath);
+    if (!file.existsSync()) {
+      throw Exception("USDZ file not found: $usdzFilePath");
+    }
+    final bytes = await file.readAsBytes();
+    final b64 = base64Encode(bytes);
+    final request = RoomScanUploadRequest(usdzData: b64);
+    await _oauthApiClient.post<Map<String, dynamic>, RoomScanUploadRequest>(
+      "/listings/$listingId/room-scan",
+      (json) => json as Map<String, dynamic>,
+      basePath: EnvironmentUtil.basePath,
+      data: request,
+    );
   }
 
   @override

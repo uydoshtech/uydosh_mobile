@@ -35,3 +35,13 @@ class PhotoUploadRequest implements IJsonEncodable {
         "isPrimary": isPrimary,
       };
 }
+
+/// RoomPlan USDZ upload (stored server-side; URL saved as listing.point_cloud_url).
+class RoomScanUploadRequest implements IJsonEncodable {
+  RoomScanUploadRequest({required this.usdzData});
+
+  final String usdzData;
+
+  @override
+  Map<String, dynamic> toJson() => {"usdzData": usdzData};
+}

@@ -13,6 +13,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
@@ -35,6 +36,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
+import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({super.key, this.showAppBar = false});
@@ -1235,6 +1237,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 : null, // Upload photos with primary first (only for roommate needed)
       );
 
+      if (!mounted) return;
+
       getIt<AppAnalyticsService>().logListingCreated(
         listingTypeId: listingTypeId,
         locationId: selectedLocation.id,
@@ -1246,6 +1250,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         context,
         message: L10n.get("listing_created_success"),
       );
+
+      if (isIOSDevice && mounted) {
+        await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (context) => RoomPlanScanScreen(
+              listingId: createdListing.id,
+            ),
+          ),
+        );
+      }
 
       // Clear form
       _titleController.clear();

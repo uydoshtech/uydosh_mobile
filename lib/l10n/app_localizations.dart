@@ -820,6 +820,60 @@ abstract class AppLocalizations {
   /// **'Listing created successfully!'**
   String get listing_created_success;
 
+  /// No description provided for @room_scan_title.
+  ///
+  /// In en, this message translates to:
+  /// **'3D room scan'**
+  String get room_scan_title;
+
+  /// No description provided for @room_scan_instructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan your room with LiDAR (iPhone Pro or compatible iPad). After you finish, the model uploads to your listing.'**
+  String get room_scan_instructions;
+
+  /// No description provided for @room_scan_start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start scan'**
+  String get room_scan_start;
+
+  /// No description provided for @room_scan_uploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get room_scan_uploading;
+
+  /// No description provided for @room_scan_success.
+  ///
+  /// In en, this message translates to:
+  /// **'3D scan saved'**
+  String get room_scan_success;
+
+  /// No description provided for @room_scan_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save scan. Try again.'**
+  String get room_scan_error;
+
+  /// No description provided for @room_scan_not_supported.
+  ///
+  /// In en, this message translates to:
+  /// **'3D room scan requires an iPhone or iPad with LiDAR.'**
+  String get room_scan_not_supported;
+
+  /// No description provided for @add_room_scan_3d.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 3D room scan'**
+  String get add_room_scan_3d;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
   /// No description provided for @listing_updated_success.
   ///
   /// In en, this message translates to:
