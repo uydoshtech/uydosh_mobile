@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -25,7 +24,6 @@ class ActionDropdownMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      popUpAnimationStyle: AppTheme.popupMenuAnimationStyle,
       onOpened: HapticFeedbackUtils.impact,
       onSelected: (value) {
         HapticFeedbackUtils.impact();

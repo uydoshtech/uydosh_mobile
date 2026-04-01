@@ -35,7 +35,6 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
             Theme.of(context).appBarTheme.foregroundColor ?? Colors.white,
         actions: [
           PopupMenuButton<String>(
-            popUpAnimationStyle: AppTheme.popupMenuAnimationStyle,
             onSelected: _changeTheme,
             itemBuilder:
                 (context) => [

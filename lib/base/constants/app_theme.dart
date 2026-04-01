@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/popup_menu_open_curve.dart";
 
 /// Theme manager for switching between different app themes
 class AppTheme {
@@ -11,17 +10,14 @@ class AppTheme {
   /// Shared alpha for popup menus and [DropdownButton] panels so content behind shows slightly.
   static const double menuOverlaySurfaceOpacity = 0.92;
 
-  /// [PopupMenuButton] open animation: bounce-like motion via [PopupMenuOpenCurve]
-  /// (based on [Curves.bounceOut] with a smooth final segment so the last row does not flicker).
-  /// Curves whose output exceeds 1.0 (e.g. [Curves.easeOutBack]) break nested [Interval] asserts.
-  static const AnimationStyle popupMenuAnimationStyle = AnimationStyle(
-    duration: Duration(milliseconds: 480),
-    curve: PopupMenuOpenCurve(),
-    reverseCurve: Curves.easeInCubic,
-  );
+  /// Padding inside popup menus (Material default: 8 vertical).
+  static const EdgeInsets popupMenuPadding = EdgeInsets.symmetric(vertical: 8.0);
 
-  /// Padding inside popup menus (default is 8 vertical). Extra bottom inset under the last row.
-  static const EdgeInsets popupMenuPadding = EdgeInsets.fromLTRB(0, 8, 0, 20);
+  /// Elevation for [PopupMenuThemeData] and [DropdownButton] menus ([kElevationToShadow] includes 16).
+  static const int menuPanelElevation = 16;
+
+  /// Darker shadow under popup/dropdown panels (Material default is easy to miss on busy UIs).
+  static const Color menuPanelShadowColor = Color(0x59000000);
 
   /// Get the current theme data based on theme name
   static ThemeData getTheme(String themeName) {
@@ -188,7 +184,8 @@ class AppTheme {
           fontSize: 16,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 8,
+        elevation: menuPanelElevation.toDouble(),
+        shadowColor: menuPanelShadowColor,
         menuPadding: popupMenuPadding,
       ),
 
@@ -377,7 +374,8 @@ class AppTheme {
           fontSize: 16,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 8,
+        elevation: menuPanelElevation.toDouble(),
+        shadowColor: menuPanelShadowColor,
         menuPadding: popupMenuPadding,
       ),
 
@@ -537,7 +535,8 @@ class AppTheme {
           fontSize: 16,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 8,
+        elevation: menuPanelElevation.toDouble(),
+        shadowColor: menuPanelShadowColor,
         menuPadding: popupMenuPadding,
       ),
 

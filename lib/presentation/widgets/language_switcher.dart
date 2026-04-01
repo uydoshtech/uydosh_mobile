@@ -3,7 +3,6 @@ import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/university_cache.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -136,7 +135,6 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
             Theme.of(context).colorScheme.inversePrimary,
         actions: [
           PopupMenuButton<String>(
-            popUpAnimationStyle: AppTheme.popupMenuAnimationStyle,
             onSelected: _changeLanguage,
             itemBuilder:
                 (context) => [

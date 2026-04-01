@@ -71,6 +71,7 @@ class UydoshDropdown extends StatelessWidget {
               child: DropdownButton<String?>(
                 value: value,
                 isExpanded: true,
+                elevation: AppTheme.menuPanelElevation,
                 icon: Icon(
                   Icons.arrow_drop_down,
                   color:

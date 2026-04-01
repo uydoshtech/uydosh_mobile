@@ -1,8 +1,9 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 
 /// A reusable component for displaying listing type information
 /// Handles both badge display and utility functions for listing types
@@ -199,6 +200,7 @@ class ListingTypeDropdown extends StatelessWidget {
     return DropdownButtonFormField<String>(
       initialValue: selectedValue,
       onChanged: onChanged,
+      elevation: AppTheme.menuPanelElevation,
       decoration: InputDecoration(
         hintText: hintText,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

@@ -337,6 +337,7 @@ L10n.get("admin_user_detail_block_permanent"),
             DropdownButtonFormField<String?>(
               key: ValueKey(_currentUser.id),
               initialValue: _selectedRole,
+              elevation: AppTheme.menuPanelElevation,
               items:
                   _roleOptions(context)
                       .map(
