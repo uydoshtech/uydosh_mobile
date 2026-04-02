@@ -19,7 +19,7 @@ class Room3dIconBadge extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: primary.withValues(alpha: 0.1),
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: primary, width: 1),
       ),

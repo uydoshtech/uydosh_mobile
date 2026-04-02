@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -563,8 +564,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       color: _getRefreshIndicatorColor(),
       backgroundColor: _getRefreshIndicatorBackgroundColor(),
       onRefresh: () async {
-        HapticFeedbackUtils.impact();
-        // Refresh listings
+        // Refresh listings (pull haptics: [PullToRefreshStretchHaptics])
         if (widget.isSearchMode) {
           // Use search filters for search mode
           _dispatchSearch(isRefresh: true);
@@ -574,29 +574,31 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           bloc.add(const ListingsEvent.searchListings(isRefresh: true));
         }
       },
-      child: CommonListView(
-        itemCount: listings.length,
-        itemBuilder: (context, index) {
-          final listing = listings[index];
-          return ListingTile(
-            key: ValueKey(listing.id),
-            listing: listing,
-            forceFavorite:
-                false, // Home screen listings don"t force favorite state
-            showHeartIcon:
-                false, // Don"t show heart icon on home screen
-            onFavoriteRemoved:
-                null, // No callback needed for home screen
-          );
-        },
-        controller: _scrollController,
-        padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-        showRefreshIndicator:
-            false, // Already handled by RefreshIndicator wrapper
-        showLoadMoreIndicator: hasMore,
-        hasMore: hasMore,
-        loadMoreIndicator: _buildLoadMoreIndicator(),
-        cacheExtent: 500, // Larger cache for smoother scrolling of large tiles
+      child: PullToRefreshStretchHaptics(
+        child: CommonListView(
+          itemCount: listings.length,
+          itemBuilder: (context, index) {
+            final listing = listings[index];
+            return ListingTile(
+              key: ValueKey(listing.id),
+              listing: listing,
+              forceFavorite:
+                  false, // Home screen listings don"t force favorite state
+              showHeartIcon:
+                  false, // Don"t show heart icon on home screen
+              onFavoriteRemoved:
+                  null, // No callback needed for home screen
+            );
+          },
+          controller: _scrollController,
+          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+          showRefreshIndicator:
+              false, // Already handled by RefreshIndicator wrapper
+          showLoadMoreIndicator: hasMore,
+          hasMore: hasMore,
+          loadMoreIndicator: _buildLoadMoreIndicator(),
+          cacheExtent: 500, // Larger cache for smoother scrolling of large tiles
+        ),
       ),
     );
   }
