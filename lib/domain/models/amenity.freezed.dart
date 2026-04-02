@@ -21,14 +21,14 @@ Amenity _$AmenityFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Amenity {
   int get id => throw _privateConstructorUsedError;
-  String? get code =>
-      throw _privateConstructorUsedError; // Made optional since backend doesn't always provide it
   @JsonKey(name: "name_en")
   String get nameEn => throw _privateConstructorUsedError;
   @JsonKey(name: "name_ru")
   String get nameRu => throw _privateConstructorUsedError;
   @JsonKey(name: "name_uz")
   String get nameUz => throw _privateConstructorUsedError;
+  String? get code =>
+      throw _privateConstructorUsedError; // Made optional since backend doesn't always provide it
   String? get icon =>
       throw _privateConstructorUsedError; // Added icon field from backend response
   @JsonKey(name: "created_at")
@@ -52,10 +52,10 @@ abstract class $AmenityCopyWith<$Res> {
   @useResult
   $Res call(
       {int id,
-      String? code,
       @JsonKey(name: "name_en") String nameEn,
       @JsonKey(name: "name_ru") String nameRu,
       @JsonKey(name: "name_uz") String nameUz,
+      String? code,
       String? icon,
       @JsonKey(name: "created_at") String? createdAt,
       @JsonKey(name: "updated_at") String? updatedAt});
@@ -77,10 +77,10 @@ class _$AmenityCopyWithImpl<$Res, $Val extends Amenity>
   @override
   $Res call({
     Object? id = null,
-    Object? code = freezed,
     Object? nameEn = null,
     Object? nameRu = null,
     Object? nameUz = null,
+    Object? code = freezed,
     Object? icon = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
@@ -90,10 +90,6 @@ class _$AmenityCopyWithImpl<$Res, $Val extends Amenity>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
-      code: freezed == code
-          ? _value.code
-          : code // ignore: cast_nullable_to_non_nullable
-              as String?,
       nameEn: null == nameEn
           ? _value.nameEn
           : nameEn // ignore: cast_nullable_to_non_nullable
@@ -106,6 +102,10 @@ class _$AmenityCopyWithImpl<$Res, $Val extends Amenity>
           ? _value.nameUz
           : nameUz // ignore: cast_nullable_to_non_nullable
               as String,
+      code: freezed == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String?,
       icon: freezed == icon
           ? _value.icon
           : icon // ignore: cast_nullable_to_non_nullable
@@ -131,10 +131,10 @@ abstract class _$$AmenityImplCopyWith<$Res> implements $AmenityCopyWith<$Res> {
   @useResult
   $Res call(
       {int id,
-      String? code,
       @JsonKey(name: "name_en") String nameEn,
       @JsonKey(name: "name_ru") String nameRu,
       @JsonKey(name: "name_uz") String nameUz,
+      String? code,
       String? icon,
       @JsonKey(name: "created_at") String? createdAt,
       @JsonKey(name: "updated_at") String? updatedAt});
@@ -154,10 +154,10 @@ class __$$AmenityImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
-    Object? code = freezed,
     Object? nameEn = null,
     Object? nameRu = null,
     Object? nameUz = null,
+    Object? code = freezed,
     Object? icon = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
@@ -167,10 +167,6 @@ class __$$AmenityImplCopyWithImpl<$Res>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
-      code: freezed == code
-          ? _value.code
-          : code // ignore: cast_nullable_to_non_nullable
-              as String?,
       nameEn: null == nameEn
           ? _value.nameEn
           : nameEn // ignore: cast_nullable_to_non_nullable
@@ -183,6 +179,10 @@ class __$$AmenityImplCopyWithImpl<$Res>
           ? _value.nameUz
           : nameUz // ignore: cast_nullable_to_non_nullable
               as String,
+      code: freezed == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String?,
       icon: freezed == icon
           ? _value.icon
           : icon // ignore: cast_nullable_to_non_nullable
@@ -204,10 +204,10 @@ class __$$AmenityImplCopyWithImpl<$Res>
 class _$AmenityImpl implements _Amenity {
   const _$AmenityImpl(
       {required this.id,
-      this.code,
       @JsonKey(name: "name_en") required this.nameEn,
       @JsonKey(name: "name_ru") required this.nameRu,
       @JsonKey(name: "name_uz") required this.nameUz,
+      this.code,
       this.icon,
       @JsonKey(name: "created_at") this.createdAt,
       @JsonKey(name: "updated_at") this.updatedAt});
@@ -218,9 +218,6 @@ class _$AmenityImpl implements _Amenity {
   @override
   final int id;
   @override
-  final String? code;
-// Made optional since backend doesn't always provide it
-  @override
   @JsonKey(name: "name_en")
   final String nameEn;
   @override
@@ -229,6 +226,9 @@ class _$AmenityImpl implements _Amenity {
   @override
   @JsonKey(name: "name_uz")
   final String nameUz;
+  @override
+  final String? code;
+// Made optional since backend doesn't always provide it
   @override
   final String? icon;
 // Added icon field from backend response
@@ -241,7 +241,7 @@ class _$AmenityImpl implements _Amenity {
 
   @override
   String toString() {
-    return 'Amenity(id: $id, code: $code, nameEn: $nameEn, nameRu: $nameRu, nameUz: $nameUz, icon: $icon, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Amenity(id: $id, nameEn: $nameEn, nameRu: $nameRu, nameUz: $nameUz, code: $code, icon: $icon, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -250,10 +250,10 @@ class _$AmenityImpl implements _Amenity {
         (other.runtimeType == runtimeType &&
             other is _$AmenityImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.code, code) || other.code == code) &&
             (identical(other.nameEn, nameEn) || other.nameEn == nameEn) &&
             (identical(other.nameRu, nameRu) || other.nameRu == nameRu) &&
             (identical(other.nameUz, nameUz) || other.nameUz == nameUz) &&
+            (identical(other.code, code) || other.code == code) &&
             (identical(other.icon, icon) || other.icon == icon) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
@@ -263,7 +263,7 @@ class _$AmenityImpl implements _Amenity {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, code, nameEn, nameRu, nameUz,
+  int get hashCode => Object.hash(runtimeType, id, nameEn, nameRu, nameUz, code,
       icon, createdAt, updatedAt);
 
   /// Create a copy of Amenity
@@ -285,10 +285,10 @@ class _$AmenityImpl implements _Amenity {
 abstract class _Amenity implements Amenity {
   const factory _Amenity(
       {required final int id,
-      final String? code,
       @JsonKey(name: "name_en") required final String nameEn,
       @JsonKey(name: "name_ru") required final String nameRu,
       @JsonKey(name: "name_uz") required final String nameUz,
+      final String? code,
       final String? icon,
       @JsonKey(name: "created_at") final String? createdAt,
       @JsonKey(name: "updated_at") final String? updatedAt}) = _$AmenityImpl;
@@ -298,8 +298,6 @@ abstract class _Amenity implements Amenity {
   @override
   int get id;
   @override
-  String? get code; // Made optional since backend doesn't always provide it
-  @override
   @JsonKey(name: "name_en")
   String get nameEn;
   @override
@@ -308,6 +306,8 @@ abstract class _Amenity implements Amenity {
   @override
   @JsonKey(name: "name_uz")
   String get nameUz;
+  @override
+  String? get code; // Made optional since backend doesn't always provide it
   @override
   String? get icon; // Added icon field from backend response
   @override

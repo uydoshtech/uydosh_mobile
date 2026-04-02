@@ -186,9 +186,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
 
   void setCompatibilityResult({
     required int listingUserId,
-    int? percent,
-    required List<CompatibilityMatch> matches,
-    required List<CompatibilityDifference> differences,
+    required List<CompatibilityMatch> matches, required List<CompatibilityDifference> differences, int? percent,
     String? ownerName,
   }) =>
       emit(state.copyWith(

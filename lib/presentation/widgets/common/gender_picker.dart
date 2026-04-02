@@ -1,10 +1,10 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 /// Gender picker - same pattern as LocationPicker: uses persistent scroll
 /// controller (from parent or own) so the wheel scrolls smoothly with sound.

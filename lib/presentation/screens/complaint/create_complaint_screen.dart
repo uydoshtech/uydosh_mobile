@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -12,7 +13,6 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 class CreateComplaintScreen extends StatefulWidget {
 

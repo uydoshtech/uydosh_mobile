@@ -6,13 +6,10 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:google_sign_in/google_sign_in.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_google_sign_in_page.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_language_page.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_profile_page.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -26,10 +23,13 @@ import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_google_sign_in_page.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_language_page.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_profile_page.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 
@@ -578,7 +578,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   void _onStudentSelected(bool? value) {
     setState(() {
       _isStudent = value;
-      if (value == true) {
+      if (value ?? false) {
         _loadUniversities();
         Future.delayed(const Duration(milliseconds: 100), () {
           if (mounted &&
@@ -594,7 +594,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
     });
 
-    if (value == true) {
+    if (value ?? false) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_profileScrollController.hasClients) {
           return;

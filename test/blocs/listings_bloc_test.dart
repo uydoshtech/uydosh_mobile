@@ -52,7 +52,7 @@ void main() {
             page: any(named: "page"),
             limit: any(named: "limit"),
             isActive: any(named: "isActive"),
-          )).thenAnswer((_) async => PageableResponse<Listing>(
+          )).thenAnswer((_) async => const PageableResponse<Listing>(
                 data: listings,
                 total: 1,
                 page: 1,
@@ -140,7 +140,7 @@ void main() {
       when(() => mockListingService.getUserListings(
             page: any(named: "page"),
             limit: any(named: "limit"),
-          )).thenAnswer((_) async => PageableResponse<Listing>(
+          )).thenAnswer((_) async => const PageableResponse<Listing>(
                 data: listings,
                 total: 1,
                 page: 1,

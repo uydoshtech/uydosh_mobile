@@ -2,10 +2,10 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
-import "package:uy_dosh/domain/models/listing_detail.dart";
 
 /// Owner toolbar with view count and promote button for listing detail.
 class ListingDetailOwnerToolbar extends StatelessWidget {

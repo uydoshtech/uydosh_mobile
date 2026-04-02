@@ -2,28 +2,19 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 /// Metro line and station pickers section for the search bottom sheet.
 class SearchBottomSheetMetroSection extends StatelessWidget {
-  const SearchBottomSheetMetroSection({
-    required this.searchFiltersState,
-    required this.currentStations,
-    required this.metroLineScrollController,
-    required this.stationPickerController,
-    required this.onSubwayLineChanged,
-    required this.onStationChanged,
-    required this.metroLineTutorialKey,
-    required this.metroStationTutorialKey,
-    required this.getLocalizedName,
+  const SearchBottomSheetMetroSection({required this.searchFiltersState, required this.currentStations, required this.metroLineScrollController, required this.stationPickerController, required this.onSubwayLineChanged, required this.onStationChanged, required this.metroLineTutorialKey, required this.metroStationTutorialKey, required this.getLocalizedName, super.key,
   });
 
   final SearchFiltersState searchFiltersState;

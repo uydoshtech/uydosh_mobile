@@ -43,7 +43,7 @@ void main() {
       when(() => mockMessagingService.getConversations(
             page: any(named: "page"),
             limit: any(named: "limit"),
-          )).thenAnswer((_) async => PageableResponse<ConversationSummary>(
+          )).thenAnswer((_) async => const PageableResponse<ConversationSummary>(
                 data: conversations,
                 total: 1,
                 page: 1,
@@ -103,7 +103,7 @@ void main() {
             conversationId: any(named: "conversationId"),
             page: any(named: "page"),
             limit: any(named: "limit"),
-          )).thenAnswer((_) async => PageableResponse<Message>(
+          )).thenAnswer((_) async => const PageableResponse<Message>(
                 data: messages,
                 total: 1,
                 page: 1,

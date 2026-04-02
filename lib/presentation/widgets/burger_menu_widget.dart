@@ -350,7 +350,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
 
                                   // Prefer profile name (populated on account creation) over Google name
                                   final displayName =
-                                      (data.profile!.name?.trim().isNotEmpty == true
+                                      (data.profile!.name?.trim().isNotEmpty ?? false
                                               ? data.profile!.name
                                               : null) ??
                                       _cachedGoogleDisplayName ??

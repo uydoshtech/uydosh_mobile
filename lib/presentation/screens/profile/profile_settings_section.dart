@@ -15,9 +15,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 class ProfileSettingsSection extends StatelessWidget {
   const ProfileSettingsSection({
-    super.key,
-    required this.onLogout,
-    required this.onDeleteAccount,
+    required this.onLogout, required this.onDeleteAccount, super.key,
   });
 
   final VoidCallback onLogout;

@@ -4,6 +4,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -11,7 +12,6 @@ import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 class PhotoUploader extends StatefulWidget {
 

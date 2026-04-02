@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -7,7 +8,6 @@ import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 class GroupedConversationsList extends StatefulWidget {
 

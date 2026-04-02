@@ -2,11 +2,11 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 /// Metro line and station selection for create/edit listing forms.

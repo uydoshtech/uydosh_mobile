@@ -9,13 +9,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 class ProfileStatsSection extends StatelessWidget {
   const ProfileStatsSection({
-    super.key,
-    required this.profile,
-    required this.cachedGoogleDisplayName,
-    required this.expandedSectionIndex,
-    required this.onExpandedSectionChanged,
-    required this.getLocalizedRegionName,
-    required this.getLocalizedUniversityName,
+    required this.profile, required this.cachedGoogleDisplayName, required this.expandedSectionIndex, required this.onExpandedSectionChanged, required this.getLocalizedRegionName, required this.getLocalizedUniversityName, super.key,
   });
 
   final UserProfile profile;

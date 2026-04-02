@@ -13,10 +13,7 @@ import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 /// Primary filters: listing type and gender pickers.
 class SearchBottomSheetPrimaryFilters extends StatelessWidget {
   const SearchBottomSheetPrimaryFilters({
-    super.key,
-    required this.searchFiltersState,
-    required this.onListingTypeChanged,
-    required this.onGenderChanged,
+    required this.searchFiltersState, required this.onListingTypeChanged, required this.onGenderChanged, super.key,
   });
 
   final SearchFiltersState searchFiltersState;
@@ -52,11 +49,7 @@ class SearchBottomSheetPrimaryFilters extends StatelessWidget {
 /// Secondary filters: price range, private room toggle, search button.
 class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   const SearchBottomSheetSecondaryFilters({
-    super.key,
-    required this.searchFiltersState,
-    required this.onPriceRangeChanged,
-    required this.onPrivateRoomChanged,
-    required this.onSearchPressed,
+    required this.searchFiltersState, required this.onPriceRangeChanged, required this.onPrivateRoomChanged, required this.onSearchPressed, super.key,
   });
 
   final SearchFiltersState searchFiltersState;

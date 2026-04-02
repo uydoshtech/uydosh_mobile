@@ -275,7 +275,7 @@ class _MessageBubbleState extends State<MessageBubble>
   /// Build checkmarks for message status
   /// Single checkmark = sent, double checkmark = read by recipient
   Widget _buildCheckmarks() {
-    final isReadByRecipient = widget.message.isReadByRecipient == true;
+    final isReadByRecipient = widget.message.isReadByRecipient ?? false;
     return Icon(
       isReadByRecipient ? Icons.done_all : Icons.check,
       size: 12,

@@ -7,11 +7,11 @@ import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class _MapData {
@@ -462,7 +462,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
           ((displayName.isNotEmpty ? displayName : label.label).length *
                   _charWidth)
               .clamp(40.0, 120.0);
-      var left = label.textAnchor == "end"
+      final left = label.textAnchor == "end"
           ? posX - tapWidth - _tapTargetOffsetX - _endAnchorWidthExtra
           : label.textAnchor == "middle"
               ? posX - tapWidth / 2
@@ -482,7 +482,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () => _openStationListings(context, label.stationId),
-            child: Container(
+            child: SizedBox(
               width: width,
               height: _tapTargetHeight,
             ),
@@ -501,7 +501,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     for (final m in textRegExp.allMatches(switchContent)) {
       final attrs = m.group(1) ?? "";
       final full = m.group(0) ?? "";
-      final sysLang = RegExp(r'systemLanguage="([^"]+)"').firstMatch(attrs);
+      final sysLang = RegExp('systemLanguage="([^"]+)"').firstMatch(attrs);
       if (sysLang != null && sysLang.group(1) == language) {
         langMatch = full;
         break;

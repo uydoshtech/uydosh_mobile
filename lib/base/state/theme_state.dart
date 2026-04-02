@@ -1,10 +1,10 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// State management for app themes

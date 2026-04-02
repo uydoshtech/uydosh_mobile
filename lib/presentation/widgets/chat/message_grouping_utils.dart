@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
 import "package:intl/intl.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 /// Represents a single item in the grouped message list for lazy building
 sealed class MessageGroupListItem {}

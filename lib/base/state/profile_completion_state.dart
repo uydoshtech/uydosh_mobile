@@ -90,7 +90,7 @@ class ProfileCompletionState extends ChangeNotifier {
 
   static int _calculateProfileCompletionPercent(UserProfile profile) {
     // Non-students (employed=true) don't need university; total = 16. Students need 17.
-    final totalFields = profile.employed == true ? 16 : 17;
+    final totalFields = profile.employed ?? false ? 16 : 17;
     final completedFields = _countCompletedProfileFields(profile);
     return ((completedFields / totalFields) * 100).round();
   }
@@ -131,27 +131,27 @@ class ProfileCompletionState extends ChangeNotifier {
   /// Aligned with _countCompletedProfileFields. University only when employed=false (student).
   static List<String> getMissingFields(UserProfile profile) {
     final missing = <String>[];
-    if (!_hasText(profile.name)) missing.add('name');
-    if (profile.gender == null) missing.add('gender');
-    if (profile.region == null) missing.add('region');
-    if (profile.employed == null) missing.add('employed');
+    if (!_hasText(profile.name)) missing.add("name");
+    if (profile.gender == null) missing.add("gender");
+    if (profile.region == null) missing.add("region");
+    if (profile.employed == null) missing.add("employed");
     if (profile.employed == false &&
         profile.university == null &&
         profile.universityId == null) {
-      missing.add('university');
+      missing.add("university");
     }
-    if (!_hasText(profile.aboutMe)) missing.add('aboutMe');
-    if (!_hasText(profile.telegram)) missing.add('telegram');
-    if (profile.cleanliness == null) missing.add('cleanliness');
-    if (profile.noiseLevel == null) missing.add('noiseLevel');
-    if (profile.sociability == null) missing.add('sociability');
-    if (profile.guestsAllowed == null) missing.add('guestsAllowed');
-    if (!_hasText(profile.smokingPreference)) missing.add('smokingPreference');
-    if (!_hasText(profile.alcoholPreference)) missing.add('alcoholPreference');
-    if (profile.cookingHabits == null) missing.add('cookingHabits');
-    if (profile.petsPreference == null) missing.add('petsPreference');
-    if (!_hasText(profile.wakeupTime)) missing.add('wakeupTime');
-    if (!_hasText(profile.sleepTime)) missing.add('sleepTime');
+    if (!_hasText(profile.aboutMe)) missing.add("aboutMe");
+    if (!_hasText(profile.telegram)) missing.add("telegram");
+    if (profile.cleanliness == null) missing.add("cleanliness");
+    if (profile.noiseLevel == null) missing.add("noiseLevel");
+    if (profile.sociability == null) missing.add("sociability");
+    if (profile.guestsAllowed == null) missing.add("guestsAllowed");
+    if (!_hasText(profile.smokingPreference)) missing.add("smokingPreference");
+    if (!_hasText(profile.alcoholPreference)) missing.add("alcoholPreference");
+    if (profile.cookingHabits == null) missing.add("cookingHabits");
+    if (profile.petsPreference == null) missing.add("petsPreference");
+    if (!_hasText(profile.wakeupTime)) missing.add("wakeupTime");
+    if (!_hasText(profile.sleepTime)) missing.add("sleepTime");
     return missing;
   }
 }

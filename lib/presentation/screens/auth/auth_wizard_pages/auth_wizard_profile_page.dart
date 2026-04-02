@@ -8,25 +8,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 
 class AuthWizardProfilePage extends StatelessWidget {
   const AuthWizardProfilePage({
-    super.key,
-    required this.profileScrollController,
-    required this.nameController,
-    required this.selectedGender,
-    required this.onGenderSelected,
-    required this.selectedRegionId,
-    required this.regions,
-    required this.onShowRegionPicker,
-    required this.selectedRole,
-    required this.onRoleSelected,
-    required this.isStudent,
-    required this.onStudentSelected,
-    required this.selectedUniversity,
-    required this.universities,
-    required this.onShowUniversityPicker,
-    required this.isLoadingRegions,
-    required this.isLoadingUniversities,
-    required this.getRegionName,
-    required this.getUniversityName,
+    required this.profileScrollController, required this.nameController, required this.selectedGender, required this.onGenderSelected, required this.selectedRegionId, required this.regions, required this.onShowRegionPicker, required this.selectedRole, required this.onRoleSelected, required this.isStudent, required this.onStudentSelected, required this.selectedUniversity, required this.universities, required this.onShowUniversityPicker, required this.isLoadingRegions, required this.isLoadingUniversities, required this.getRegionName, required this.getUniversityName, super.key,
   });
 
   final ScrollController profileScrollController;

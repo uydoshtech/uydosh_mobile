@@ -14,9 +14,7 @@ import "package:uy_dosh/presentation/screens/view_history/view_history_screen.da
 
 class ProfileListingsSection extends StatelessWidget {
   const ProfileListingsSection({
-    super.key,
-    required this.userRole,
-    required this.onAchievementsOpened,
+    required this.userRole, required this.onAchievementsOpened, super.key,
   });
 
   final String? userRole;

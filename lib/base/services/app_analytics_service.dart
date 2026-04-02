@@ -122,9 +122,8 @@ class AppAnalyticsService {
   }
 
   Future<void> logListingCreated({
-    int? listingTypeId,
+    required bool success, int? listingTypeId,
     int? locationId,
-    required bool success,
   }) async {
     await _analytics.logEvent(
       name: "listing_created",

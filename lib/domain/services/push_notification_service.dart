@@ -1,14 +1,14 @@
 import "package:firebase_messaging/firebase_messaging.dart";
-import "package:flutter/foundation.dart" show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import "package:flutter/foundation.dart" show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import "package:flutter/material.dart";
 import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/push/register_fcm_token_request.dart";
-import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 
 /// Background message handler - must be top-level function.

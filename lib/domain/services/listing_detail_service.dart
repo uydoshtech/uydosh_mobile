@@ -6,7 +6,7 @@ import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/pageable_response.dart";
 import "package:uy_dosh/domain/services/listing_service_common.dart"
-    show EmptyListingRequest, DescriptionTranslationRequest;
+    show DescriptionTranslationRequest, EmptyListingRequest;
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 abstract class IListingDetailService {

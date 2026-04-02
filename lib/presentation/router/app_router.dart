@@ -4,9 +4,9 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
-import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -14,10 +14,11 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
-import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
@@ -30,9 +31,8 @@ import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
-import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 class AppRouter {
   /// Global key for the profile icon in the app bar, used by the search tutorial.
@@ -339,7 +339,7 @@ class _MainNavigationState extends State<MainNavigation>
                                 (_) => EditProfileScreen(profile: profile),
                           ),
                         );
-                        if (result == true && mounted) {
+                        if ((result ?? false) && mounted) {
                           setState(() {});
                         }
                       },

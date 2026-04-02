@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -11,38 +10,32 @@ import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/app_config.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
-import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/room_usdz_viewer_service.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
-import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
-import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
-import "package:uy_dosh/domain/models/amenity.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/photo.dart";
-import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
+import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
-import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
@@ -51,24 +44,21 @@ import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_screen.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_map_section.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_map_section.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
-import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -77,7 +67,6 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
@@ -466,7 +455,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       final profile =
           await getIt<IUserProfileService>().getUserProfile(listingUserId);
       if (!mounted) return;
-      final name = profile.name?.trim().isNotEmpty == true ? profile.name : null;
+      final name = profile.name?.trim().isNotEmpty ?? false ? profile.name : null;
       pageBloc.setOwnerName(listingUserId, name);
     } catch (e) {
       logger.d("Error loading owner name: $e");
@@ -505,7 +494,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         percent: result.percent,
         matches: result.matches,
         differences: result.differences,
-        ownerName: ownerProfile.name?.trim().isNotEmpty == true
+        ownerName: ownerProfile.name?.trim().isNotEmpty ?? false
             ? ownerProfile.name
             : null,
       );
@@ -1302,7 +1291,7 @@ L10n.get("feature_listing_error",
             final displayName =
                 (pageState.ownerName != null && pageState.ownerName!.trim().isNotEmpty)
                     ? pageState.ownerName!
-                    : listingDetail.user.email ?? '';
+                    : listingDetail.user.email ?? "";
             final chatScreen = ChatScreen(
               conversationId: conversation.id,
               listingId: widget.listingId,
@@ -1792,10 +1781,9 @@ L10n.get("feature_listing_error",
     ListingDetail listingDetail, {
     required String currentLanguage,
     required String Function({
-      String? nameUz,
+      required String language, String? nameUz,
       String? nameRu,
       String? nameEn,
-      required String language,
     }) getLocalizedName,
   }) {
     final hasMap = listingDetail.location != null ||

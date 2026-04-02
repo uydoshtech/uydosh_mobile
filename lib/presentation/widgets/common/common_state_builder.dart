@@ -1,10 +1,10 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 class CommonStateBuilder extends StatelessWidget {
   const CommonStateBuilder({

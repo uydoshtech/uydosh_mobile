@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_roomplan/flutter_roomplan.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -50,7 +51,8 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
             message: L10n.get("room_scan_success"),
           );
           Navigator.of(context).pop(true);
-        } catch (_) {
+        } catch (e, st) {
+          logger.e("Room scan upload failed", error: e, stackTrace: st);
           if (!mounted) return;
           ToastTheme.showError(
             context,
@@ -79,7 +81,8 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
         return;
       }
       await _roomPlan.startScan();
-    } catch (_) {
+    } catch (e, st) {
+      logger.e("Room scan start failed", error: e, stackTrace: st);
       if (!mounted) return;
       ToastTheme.showError(
         context,

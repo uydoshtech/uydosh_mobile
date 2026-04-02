@@ -3,9 +3,7 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 
 class AuthWizardLanguagePage extends StatelessWidget {
   const AuthWizardLanguagePage({
-    super.key,
-    required this.selectedLanguage,
-    required this.onLanguageSelected,
+    required this.selectedLanguage, required this.onLanguageSelected, super.key,
   });
 
   final String selectedLanguage;

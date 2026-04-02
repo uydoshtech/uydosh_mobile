@@ -1,7 +1,7 @@
 import "dart:async";
 
 import "package:audioplayers/audioplayers.dart";
-import "package:flutter/foundation.dart" show defaultTargetPlatform, TargetPlatform;
+import "package:flutter/foundation.dart" show TargetPlatform, defaultTargetPlatform;
 import "package:flutter/services.dart";
 
 /// Utility for playing the message send confirmation sound at full volume.

@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 /// A compact theme toggle for the app header with sun/moon icons.
 /// Matches the design: oval track with circular knob and theme icons.

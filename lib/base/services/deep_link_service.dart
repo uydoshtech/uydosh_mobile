@@ -2,11 +2,10 @@ import "dart:async";
 
 import "package:app_links/app_links.dart";
 import "package:flutter/material.dart";
-
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 
 /// Handles deep links for sharing listings.
 /// Uses https:// URLs so messengers (Telegram, WhatsApp) make them clickable.

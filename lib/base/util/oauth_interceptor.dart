@@ -16,6 +16,24 @@ class CustomOAuthInterceptor extends Interceptor {
   final IAuthTokenRepository tokenRepo;
   final Dio dio;
 
+  /// Avoid logging multi‑MB bodies (e.g. room-scan `usdzData`) — causes freezes/OOM in debug.
+  static Object? _requestDataForLog(dynamic data) {
+    if (data is Map) {
+      final usdz = data["usdzData"];
+      if (usdz is String && usdz.length > 2000) {
+        return "<Map with usdzData: ${usdz.length} chars (omitted)>";
+      }
+      final imageData = data["imageData"];
+      if (imageData is String && imageData.length > 2000) {
+        return "<Map with imageData: ${imageData.length} chars (omitted)>";
+      }
+    }
+    if (data is String && data.length > 2000) {
+      return "<String body: ${data.length} chars (omitted)>";
+    }
+    return data;
+  }
+
   @override
   Future<void> onRequest(
     RequestOptions options,
@@ -29,7 +47,9 @@ class CustomOAuthInterceptor extends Interceptor {
       "🔑 OAuthInterceptor: Request headers before auth: ${options.headers}",
     );
     logger.d("🔑 OAuthInterceptor: Request method: ${options.method}");
-    logger.d("🔑 OAuthInterceptor: Request data: ${options.data}");
+    logger.d(
+      "🔑 OAuthInterceptor: Request data: ${_requestDataForLog(options.data)}",
+    );
     logger.d(
       "🔑 OAuthInterceptor: Request query parameters: ${options.queryParameters}",
     );
@@ -61,7 +81,7 @@ class CustomOAuthInterceptor extends Interceptor {
           "method": err.requestOptions.method,
           "path": err.requestOptions.path,
           "headers": err.requestOptions.headers,
-          "data": err.requestOptions.data,
+          "data": _requestDataForLog(err.requestOptions.data),
           "queryParameters": err.requestOptions.queryParameters,
         },
         "statusCode": err.response?.statusCode,

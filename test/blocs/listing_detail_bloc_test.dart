@@ -52,7 +52,7 @@ void main() {
         bloc.stream,
         emitsInOrder([
           const ListingDetailState.loading(),
-          ListingDetailState.loaded(listingDetail: listingDetail),
+          const ListingDetailState.loaded(listingDetail: listingDetail),
         ]),
       );
 
@@ -109,11 +109,11 @@ void main() {
 
       final bloc = ListingDetailBloc(mockListingService);
 
-      bloc.add(ListingDetailEvent.updateListingDetail(listingDetail: listingDetail));
+      bloc.add(const ListingDetailEvent.updateListingDetail(listingDetail: listingDetail));
 
       await expectLater(
         bloc.stream,
-        emits(ListingDetailState.loaded(listingDetail: listingDetail)),
+        emits(const ListingDetailState.loaded(listingDetail: listingDetail)),
       );
 
       bloc.close();

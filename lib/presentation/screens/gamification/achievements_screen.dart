@@ -1,14 +1,15 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
-import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
@@ -16,7 +17,6 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/gamification_bloc.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
-import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 

@@ -2,6 +2,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -21,7 +22,6 @@ import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dar
 import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_toggle_control.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class EditProfileScreen extends StatefulWidget {

@@ -26,10 +26,9 @@ class ListingDetailMapSection extends StatefulWidget {
   final ListingDetail listingDetail;
   final String currentLanguage;
   final String Function({
-    String? nameUz,
+    required String language, String? nameUz,
     String? nameRu,
     String? nameEn,
-    required String language,
   }) getLocalizedName;
   final VoidCallback onOpenInYandexMaps;
 

@@ -2,13 +2,13 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/base/state/profile_completion_state.dart";
-import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 class _RoleBadge extends StatelessWidget {
   const _RoleBadge({required this.label});
@@ -40,15 +40,7 @@ class _RoleBadge extends StatelessWidget {
 
 class ProfileHeaderSection extends StatelessWidget {
   const ProfileHeaderSection({
-    super.key,
-    required this.profile,
-    required this.cachedGoogleDisplayName,
-    required this.cachedGooglePhotoUrl,
-    required this.userRole,
-    required this.userRoleLoaded,
-    required this.userBlocked,
-    required this.getRoleLabel,
-    required this.onEditProfile,
+    required this.profile, required this.cachedGoogleDisplayName, required this.cachedGooglePhotoUrl, required this.userRole, required this.userRoleLoaded, required this.userBlocked, required this.getRoleLabel, required this.onEditProfile, super.key,
   });
 
   final UserProfile profile;

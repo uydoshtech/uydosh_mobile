@@ -9,11 +9,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 
 class AuthWizardGoogleSignInPage extends StatelessWidget {
   const AuthWizardGoogleSignInPage({
-    super.key,
-    required this.isAuthenticating,
-    required this.isGoogleSignedIn,
-    required this.currentUser,
-    required this.onSignInWithGoogle,
+    required this.isAuthenticating, required this.isGoogleSignedIn, required this.currentUser, required this.onSignInWithGoogle, super.key,
   });
 
   final bool isAuthenticating;

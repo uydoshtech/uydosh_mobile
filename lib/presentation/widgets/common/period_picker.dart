@@ -1,10 +1,9 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 /// A rotation spinner (CupertinoPicker wheel) for selecting a time period.
 /// Matches the metro/district picker style: vertical scrollable list in a

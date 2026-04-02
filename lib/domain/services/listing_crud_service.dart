@@ -1,6 +1,7 @@
 import "dart:convert";
 import "dart:io";
 
+import "package:dio/dio.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -435,6 +436,10 @@ class ListingCrudService implements IListingCrudService {
       (json) => json as Map<String, dynamic>,
       basePath: EnvironmentUtil.basePath,
       data: request,
+      options: Options(
+        sendTimeout: const Duration(minutes: 6),
+        receiveTimeout: const Duration(minutes: 6),
+      ),
     );
   }
 

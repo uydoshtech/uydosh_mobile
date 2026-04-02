@@ -5,11 +5,11 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 
 class PhotoPicker extends StatefulWidget {
   const PhotoPicker({

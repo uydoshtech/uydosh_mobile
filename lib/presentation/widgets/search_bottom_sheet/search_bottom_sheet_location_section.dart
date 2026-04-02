@@ -1,9 +1,9 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/state/search_filters_state.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/search_filters_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
@@ -43,12 +43,7 @@ class _LocationPickerData {
 /// Location picker section for the search bottom sheet.
 class SearchBottomSheetLocationSection extends StatelessWidget {
   const SearchBottomSheetLocationSection({
-    super.key,
-    required this.searchFiltersState,
-    required this.locationScrollController,
-    required this.getLocationIndexFromId,
-    required this.onLocationChanged,
-    required this.onMetroReset,
+    required this.searchFiltersState, required this.locationScrollController, required this.getLocationIndexFromId, required this.onLocationChanged, required this.onMetroReset, super.key,
   });
 
   final SearchFiltersState searchFiltersState;

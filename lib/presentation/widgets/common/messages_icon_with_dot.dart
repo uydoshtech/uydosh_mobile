@@ -1,7 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 
 class MessagesIconWithDot extends StatelessWidget {
   const MessagesIconWithDot({

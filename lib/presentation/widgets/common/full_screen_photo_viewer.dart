@@ -1,7 +1,7 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
 
 class FullScreenPhotoViewer extends StatefulWidget {
 

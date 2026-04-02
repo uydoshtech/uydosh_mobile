@@ -2,11 +2,8 @@ class SupportChatThread {
   SupportChatThread({
     required this.id,
     required this.userId,
-    this.subject,
-    required this.status,
+    required this.status, required this.createdAt, required this.updatedAt, this.subject,
     this.assignedSupportUserId,
-    required this.createdAt,
-    required this.updatedAt,
     this.user,
     this.lastMessage,
     this.messageCount,
