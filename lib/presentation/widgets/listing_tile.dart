@@ -4,14 +4,15 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ios_device.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -23,6 +24,7 @@ import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/photo_icon.dart";
+import "package:uy_dosh/presentation/widgets/room_3d_icon_badge.dart";
 
 class ListingTile extends StatefulWidget {
   const ListingTile({
@@ -283,6 +285,15 @@ class _ListingTileState extends State<ListingTile>
                                 if (widget.listing.photos != null &&
                                     widget.listing.photos!.isNotEmpty) ...[
                                   const PhotoIcon(),
+                                ],
+                                // 3D room scan (iPhone-sized iOS only; viewer is iOS)
+                                if (isIPhoneFormFactor(context) &&
+                                    (widget.listing.pointCloudUrl?.isNotEmpty ??
+                                        false)) ...[
+                                  if (widget.listing.photos != null &&
+                                      widget.listing.photos!.isNotEmpty)
+                                    const SizedBox(width: 10),
+                                  const Room3dIconBadge(),
                                 ],
                               ],
                             ),

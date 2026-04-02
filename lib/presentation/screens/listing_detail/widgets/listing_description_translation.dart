@@ -242,38 +242,41 @@ class _ListingDescriptionTranslationState
     );
   }
 
-  /// Same pill shape / border as [_flagButton] (unselected style).
-  Widget _originalPillButton(BuildContext context, TextStyle labelStyle) {
+  /// Compact control matching [_flagButton] size; tinted so it reads as “source text”
+  /// without the width of a full label. Full phrase stays in the tooltip.
+  Widget _originalCompactButton(BuildContext context) {
     const pillHeight = 28.0;
     const radius = 14.0;
+    final scheme = Theme.of(context).colorScheme;
     final borderColor =
         ListingDetailThemeHelper.amenityChipBorderColor.withValues(alpha: 0.45);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _target = _TranslationTarget.original;
-            _error = null;
-          });
-        },
-        borderRadius: BorderRadius.circular(radius),
-        child: Container(
-          height: pillHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: borderColor, width: 1),
-            color: Theme.of(context)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.2),
-          ),
-          child: Text(
-            L10n.get("listing_show_original_description"),
-            style: labelStyle,
+    return Tooltip(
+      message: L10n.get("listing_show_original_description"),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _target = _TranslationTarget.original;
+              _error = null;
+            });
+          },
+          borderRadius: BorderRadius.circular(radius),
+          child: Container(
+            height: pillHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 7),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(radius),
+              border: Border.all(color: borderColor, width: 1),
+              color: scheme.primary.withValues(alpha: 0.12),
+            ),
+            child: Icon(
+              Icons.article_outlined,
+              size: 16,
+              color: scheme.primary.withValues(alpha: 0.9),
+            ),
           ),
         ),
       ),
@@ -336,13 +339,6 @@ class _ListingDescriptionTranslationState
         _loadingLang == code &&
         !_cache.containsKey(code);
 
-    final secondaryStyle = widget.textStyle.copyWith(
-      fontSize: (widget.textStyle.fontSize ?? 16) * 0.85,
-      color: ListingDetailThemeHelper.descriptionTextColor.withValues(
-        alpha: 0.85,
-      ),
-    );
-
     final controls = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -366,8 +362,8 @@ class _ListingDescriptionTranslationState
         if (_shouldShowOriginalLink(
           waitingForTranslation: waitingForTranslation,
         )) ...[
-          const SizedBox(width: 4),
-          _originalPillButton(context, secondaryStyle),
+          const SizedBox(width: 6),
+          _originalCompactButton(context),
         ],
       ],
     );

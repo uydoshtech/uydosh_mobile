@@ -563,6 +563,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       color: _getRefreshIndicatorColor(),
       backgroundColor: _getRefreshIndicatorBackgroundColor(),
       onRefresh: () async {
+        HapticFeedbackUtils.impact();
         // Refresh listings
         if (widget.isSearchMode) {
           // Use search filters for search mode
