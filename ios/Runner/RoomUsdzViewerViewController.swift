@@ -103,6 +103,10 @@ final class RoomUsdzViewerViewController: UIViewController {
   private let dimensionsTitleLabel = UILabel()
   private let dimensionsValueLabel = UILabel()
   private let hintLabel = UILabel()
+  private let zoomControlsContainer = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+  private let zoomStack = UIStackView()
+  private let zoomInButton = UIButton(type: .system)
+  private let zoomOutButton = UIButton(type: .system)
   /// App mark (vector): U letter + roof + chimney over the 3D viewport.
   private let brandMarkView = UydoshVectorBrandMarkView()
   private var loadedScene: SCNScene?
@@ -155,6 +159,8 @@ final class RoomUsdzViewerViewController: UIViewController {
     sceneView.antialiasingMode = .multisampling4X
     sceneView.autoenablesDefaultLighting = true
     view.addSubview(sceneView)
+
+    setupZoomControls()
 
     hintContainer.translatesAutoresizingMaskIntoConstraints = false
     hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)
@@ -212,6 +218,9 @@ final class RoomUsdzViewerViewController: UIViewController {
     brandMarkView.accessibilityLabel = "UiDosha"
     view.addSubview(brandMarkView)
 
+    // Make sure overlay controls remain tappable/draggable above SceneKit.
+    view.bringSubviewToFront(zoomControlsContainer)
+
     NSLayoutConstraint.activate([
       sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
       sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -231,10 +240,88 @@ final class RoomUsdzViewerViewController: UIViewController {
       brandMarkView.topAnchor.constraint(equalTo: sceneView.topAnchor, constant: 10),
       brandMarkView.widthAnchor.constraint(equalToConstant: 62),
       brandMarkView.heightAnchor.constraint(equalToConstant: 62),
+
+      zoomControlsContainer.trailingAnchor.constraint(equalTo: sceneView.trailingAnchor, constant: -12),
+      zoomControlsContainer.bottomAnchor.constraint(equalTo: sceneView.bottomAnchor, constant: -12),
     ])
 
     loadScene()
     brandMarkView.playEntranceAnimation()
+  }
+
+  private func setupZoomControls() {
+    zoomControlsContainer.translatesAutoresizingMaskIntoConstraints = false
+    zoomControlsContainer.isUserInteractionEnabled = true
+    zoomControlsContainer.contentView.isUserInteractionEnabled = true
+    zoomControlsContainer.clipsToBounds = true
+    zoomControlsContainer.layer.cornerRadius = 14
+    if #available(iOS 13.0, *) {
+      zoomControlsContainer.layer.cornerCurve = .continuous
+    }
+    view.addSubview(zoomControlsContainer)
+
+    zoomStack.translatesAutoresizingMaskIntoConstraints = false
+    zoomStack.axis = .vertical
+    zoomStack.alignment = .fill
+    zoomStack.spacing = 8
+
+    let iconConfig = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+    zoomInButton.setImage(UIImage(systemName: "plus.magnifyingglass", withConfiguration: iconConfig), for: .normal)
+    zoomOutButton.setImage(UIImage(systemName: "minus.magnifyingglass", withConfiguration: iconConfig), for: .normal)
+
+    for b in [zoomInButton, zoomOutButton] {
+      b.translatesAutoresizingMaskIntoConstraints = false
+      b.tintColor = UIColor.white.withAlphaComponent(0.95)
+      b.backgroundColor = UIColor.black.withAlphaComponent(0.18)
+      b.layer.cornerRadius = 18
+      if #available(iOS 13.0, *) {
+        b.layer.cornerCurve = .continuous
+      }
+      b.clipsToBounds = true
+      NSLayoutConstraint.activate([
+        b.heightAnchor.constraint(equalToConstant: 36),
+        b.widthAnchor.constraint(equalToConstant: 36),
+      ])
+    }
+
+    zoomInButton.accessibilityLabel = "Zoom in"
+    zoomOutButton.accessibilityLabel = "Zoom out"
+    zoomInButton.addTarget(self, action: #selector(zoomInTapped), for: .touchUpInside)
+    zoomOutButton.addTarget(self, action: #selector(zoomOutTapped), for: .touchUpInside)
+
+    zoomStack.addArrangedSubview(zoomInButton)
+    zoomStack.addArrangedSubview(zoomOutButton)
+    zoomControlsContainer.contentView.addSubview(zoomStack)
+
+    NSLayoutConstraint.activate([
+      zoomStack.topAnchor.constraint(equalTo: zoomControlsContainer.contentView.topAnchor, constant: 10),
+      zoomStack.leadingAnchor.constraint(equalTo: zoomControlsContainer.contentView.leadingAnchor, constant: 10),
+      zoomStack.trailingAnchor.constraint(equalTo: zoomControlsContainer.contentView.trailingAnchor, constant: -10),
+      zoomStack.bottomAnchor.constraint(equalTo: zoomControlsContainer.contentView.bottomAnchor, constant: -10),
+    ])
+  }
+
+  private func setZoom(fovDegrees: CGFloat, animated: Bool) {
+    guard let cam = sceneView.pointOfView?.camera else { return }
+    let next = max(28, min(82, fovDegrees))
+    if animated {
+      SCNTransaction.begin()
+      SCNTransaction.animationDuration = 0.12
+      cam.fieldOfView = next
+      SCNTransaction.commit()
+    } else {
+      cam.fieldOfView = next
+    }
+  }
+
+  @objc private func zoomInTapped() {
+    guard let cam = sceneView.pointOfView?.camera else { return }
+    setZoom(fovDegrees: cam.fieldOfView - 6, animated: true)
+  }
+
+  @objc private func zoomOutTapped() {
+    guard let cam = sceneView.pointOfView?.camera else { return }
+    setZoom(fovDegrees: cam.fieldOfView + 6, animated: true)
   }
 
   private func setupModeControl() {
@@ -1047,6 +1134,7 @@ private enum SVGPathParser {
 
     root.addChildNode(cameraNode)
     view.pointOfView = cameraNode
+    setZoom(fovDegrees: vfovDegrees, animated: false)
 
     view.defaultCameraController.target = centerWorld
 
