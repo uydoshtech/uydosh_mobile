@@ -103,6 +103,8 @@ final class RoomUsdzViewerViewController: UIViewController {
   private let dimensionsTitleLabel = UILabel()
   private let dimensionsValueLabel = UILabel()
   private let hintLabel = UILabel()
+  /// App mark (blue tile, U, red roof) over the 3D viewport — same artwork as the app icon.
+  private let brandMarkView = UIImageView()
   private var loadedScene: SCNScene?
   /// When true, architectural shells (walls/ceiling/openings) are hidden; floor and furniture stay.
   private var wallsHidden = false
@@ -197,6 +199,20 @@ final class RoomUsdzViewerViewController: UIViewController {
     hintContainer.addSubview(hintStack)
     view.addSubview(hintContainer)
 
+    brandMarkView.translatesAutoresizingMaskIntoConstraints = false
+    brandMarkView.image = UIImage(named: "UydoshBrandMark")
+    brandMarkView.isHidden = brandMarkView.image == nil
+    brandMarkView.contentMode = .scaleAspectFit
+    brandMarkView.accessibilityIgnoresInvertColors = true
+    brandMarkView.isAccessibilityElement = true
+    brandMarkView.accessibilityLabel = "UiDosha"
+    brandMarkView.layer.shadowColor = UIColor.black.cgColor
+    brandMarkView.layer.shadowOpacity = 0.4
+    brandMarkView.layer.shadowOffset = CGSize(width: 0, height: 1)
+    brandMarkView.layer.shadowRadius = 5
+    brandMarkView.layer.masksToBounds = false
+    view.addSubview(brandMarkView)
+
     NSLayoutConstraint.activate([
       sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
       sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -211,6 +227,11 @@ final class RoomUsdzViewerViewController: UIViewController {
       hintContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
       hintContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
       hintContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+
+      brandMarkView.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
+      brandMarkView.topAnchor.constraint(equalTo: sceneView.topAnchor, constant: 10),
+      brandMarkView.widthAnchor.constraint(equalToConstant: 52),
+      brandMarkView.heightAnchor.constraint(equalToConstant: 52),
     ])
 
     loadScene()
