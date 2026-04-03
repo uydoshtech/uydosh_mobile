@@ -116,6 +116,8 @@ final class RoomUsdzViewerViewController: UIViewController {
 
   private var displayMode: DisplayMode = .fullRoom
   private let modeControl = UISegmentedControl(items: ["", "", ""])
+  private var useStylizedMaterials = true
+  private var materialsBarButton: UIBarButtonItem?
   private var sceneWorldBounds: (min: SCNVector3, max: SCNVector3)?
   private var didCacheOriginalMaterials = false
   private var originalMaterialsByGeometry = [ObjectIdentifier: [SCNMaterial]]()
@@ -141,7 +143,11 @@ final class RoomUsdzViewerViewController: UIViewController {
       action: #selector(closeTapped)
     )
     setupModeControl()
-    navigationItem.rightBarButtonItem = UIBarButtonItem(customView: modeControl)
+    setupMaterialsToggle()
+    navigationItem.rightBarButtonItems = [
+      materialsBarButton,
+      UIBarButtonItem(customView: modeControl),
+    ].compactMap { $0 }
 
     sceneView.translatesAutoresizingMaskIntoConstraints = false
     sceneView.backgroundColor = .black
@@ -269,6 +275,26 @@ final class RoomUsdzViewerViewController: UIViewController {
     modeControl.isAccessibilityElement = true
     modeControl.accessibilityLabel = "3D view mode"
     modeControl.accessibilityHint = "Switch between full room, walls only, and furniture only."
+  }
+
+  private func setupMaterialsToggle() {
+    let btn = UIBarButtonItem(
+      image: UIImage(systemName: "paintbrush.fill"),
+      style: .plain,
+      target: self,
+      action: #selector(toggleMaterialsStyle)
+    )
+    btn.accessibilityLabel = "Materials style"
+    btn.accessibilityHint = "Toggle between real materials and stylized colors."
+    materialsBarButton = btn
+    updateMaterialsButtonAppearance()
+  }
+
+  private func updateMaterialsButtonAppearance() {
+    // Stylized: paintbrush, Real: photo
+    let name = useStylizedMaterials ? "paintbrush.fill" : "photo.fill.on.rectangle.fill"
+    materialsBarButton?.image = UIImage(systemName: name)
+    materialsBarButton?.accessibilityValue = useStylizedMaterials ? "Stylized" : "Real"
   }
 
 /// Minimal vector version of the UiDosha mark (U + roof + chimney) rendered as shape layers.
@@ -741,6 +767,24 @@ private enum SVGPathParser {
     return color
   }
 
+  private func restoreOriginalMaterials() {
+    guard let root = loadedScene?.rootNode else { return }
+    cacheOriginalMaterialsIfNeeded()
+    SCNTransaction.begin()
+    SCNTransaction.animationDuration = 0
+    func visit(_ node: SCNNode) {
+      if let geo = node.geometry {
+        let id = ObjectIdentifier(geo)
+        if let originals = originalMaterialsByGeometry[id] {
+          geo.materials = originals.map { $0.copy() as! SCNMaterial }
+        }
+      }
+      for c in node.childNodes { visit(c) }
+    }
+    visit(root)
+    SCNTransaction.commit()
+  }
+
   /// Makes the floor slightly darker than walls (keeps walls/furniture close to original).
   private func applyFloorAndFurnitureTint() {
     guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
@@ -783,6 +827,15 @@ private enum SVGPathParser {
     }
     visit(root)
     SCNTransaction.commit()
+  }
+
+  private func applyMaterialsStyle() {
+    guard loadedScene != nil else { return }
+    if useStylizedMaterials {
+      applyFloorAndFurnitureTint()
+    } else {
+      restoreOriginalMaterials()
+    }
   }
 
   /// Uses mesh node names from RoomPlan-style USDZ. Furniture stays visible unless its name matches these.
@@ -902,6 +955,13 @@ private enum SVGPathParser {
     applyDisplayMode(next)
   }
 
+  @objc private func toggleMaterialsStyle() {
+    guard loadedScene != nil else { return }
+    useStylizedMaterials.toggle()
+    updateMaterialsButtonAppearance()
+    applyMaterialsStyle()
+  }
+
   /// RoomPlan / SceneKit: meters, Y-up. Uses horizontal spans (X, Z) as floor footprint and Y as height.
   private func updateDimensionsDisplay(dx: Float, dy: Float, dz: Float) {
     let floorLong = max(dx, dz)
@@ -991,7 +1051,7 @@ private enum SVGPathParser {
     view.defaultCameraController.target = centerWorld
 
     cacheOriginalMaterialsIfNeeded()
-    applyFloorAndFurnitureTint()
+    applyMaterialsStyle()
   }
 
   private func loadScene() {
@@ -1034,6 +1094,8 @@ private enum SVGPathParser {
     sceneWorldBounds = nil
     displayMode = .fullRoom
     modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
+    useStylizedMaterials = true
+    updateMaterialsButtonAppearance()
     sceneView.scene = nil
     loadedScene = nil
     dismiss(animated: true)
