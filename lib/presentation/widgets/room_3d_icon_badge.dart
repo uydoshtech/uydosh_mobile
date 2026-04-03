@@ -1,4 +1,6 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 
 /// Compact 3D-room indicator for listing rows (matches detail screen icon).
 class Room3dIconBadge extends StatelessWidget {
@@ -15,15 +17,23 @@ class Room3dIconBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    // Blue theme uses a very dark primary (#1E3A5F) — same as cards — so the
+    // icon must be light (matches other blue-theme row accents).
+    final iconColor =
+        isBlueTheme ? BlueThemeColors.textPrimary : theme.colorScheme.primary;
+    final borderColor = isBlueTheme
+        ? BlueThemeColors.textPrimary.withValues(alpha: 0.45)
+        : theme.colorScheme.primary;
     return Container(
       padding: padding,
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: primary, width: 1),
+        border: Border.all(color: borderColor, width: 1),
       ),
-      child: Icon(Icons.view_in_ar, color: primary, size: size),
+      child: Icon(Icons.view_in_ar, color: iconColor, size: size),
     );
   }
 }

@@ -1852,7 +1852,9 @@ L10n.get("feature_listing_error",
               children: [
                 Icon(
                   Icons.view_in_ar,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ThemeState().isBlueTheme
+                      ? BlueThemeColors.textPrimary
+                      : Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(width: 12),
                 Expanded(

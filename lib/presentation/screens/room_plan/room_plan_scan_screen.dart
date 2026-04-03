@@ -54,9 +54,14 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
         } catch (e, st) {
           logger.e("Room scan upload failed", error: e, stackTrace: st);
           if (!mounted) return;
+          final msg = e.toString();
+          final isTooLarge =
+              msg.contains("File too large") || msg.contains("413") || msg.contains("Payload Too Large");
           ToastTheme.showError(
             context,
-            message: L10n.get("room_scan_error"),
+            message: isTooLarge
+                ? "3D scan is too large to upload. Please try scanning a smaller area."
+                : L10n.get("room_scan_error"),
           );
         } finally {
           if (mounted) setState(() => _uploading = false);
