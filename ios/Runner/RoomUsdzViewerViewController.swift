@@ -106,9 +106,16 @@ final class RoomUsdzViewerViewController: UIViewController {
   /// App mark (vector): U letter + roof + chimney over the 3D viewport.
   private let brandMarkView = UydoshVectorBrandMarkView()
   private var loadedScene: SCNScene?
-  /// When true, architectural shells (walls/ceiling/openings) are hidden; floor and furniture stay.
-  private var wallsHidden = false
-  private var floorModeBarButton: UIBarButtonItem?
+  private enum DisplayMode: Int {
+    case fullRoom = 0
+    /// Furniture removed, keep walls/structure.
+    case wallsOnly = 1
+    /// Walls/structure removed, keep furniture.
+    case furnitureOnly = 2
+  }
+
+  private var displayMode: DisplayMode = .fullRoom
+  private let modeControl = UISegmentedControl(items: ["", "", ""])
   private var sceneWorldBounds: (min: SCNVector3, max: SCNVector3)?
   private var didCacheOriginalMaterials = false
   private var originalMaterialsByGeometry = [ObjectIdentifier: [SCNMaterial]]()
@@ -133,14 +140,8 @@ final class RoomUsdzViewerViewController: UIViewController {
       target: self,
       action: #selector(closeTapped)
     )
-    let wallBtn = UIBarButtonItem(
-      title: strings.floorOnlyButtonTitle,
-      style: .plain,
-      target: self,
-      action: #selector(toggleWallsHiddenMode)
-    )
-    floorModeBarButton = wallBtn
-    navigationItem.rightBarButtonItem = wallBtn
+    setupModeControl()
+    navigationItem.rightBarButtonItem = UIBarButtonItem(customView: modeControl)
 
     sceneView.translatesAutoresizingMaskIntoConstraints = false
     sceneView.backgroundColor = .black
@@ -222,12 +223,52 @@ final class RoomUsdzViewerViewController: UIViewController {
 
       brandMarkView.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
       brandMarkView.topAnchor.constraint(equalTo: sceneView.topAnchor, constant: 10),
-      brandMarkView.widthAnchor.constraint(equalToConstant: 52),
-      brandMarkView.heightAnchor.constraint(equalToConstant: 52),
+      brandMarkView.widthAnchor.constraint(equalToConstant: 62),
+      brandMarkView.heightAnchor.constraint(equalToConstant: 62),
     ])
 
     loadScene()
     brandMarkView.playEntranceAnimation()
+  }
+
+  private func setupModeControl() {
+    modeControl.translatesAutoresizingMaskIntoConstraints = false
+    modeControl.isMomentary = false
+    modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
+    modeControl.apportionsSegmentWidthsByContent = true
+
+    let fullIcon = UIImage(systemName: "house.fill")
+    let wallsIcon = UIImage(systemName: "rectangle.split.3x1.fill")
+      ?? UIImage(systemName: "square.split.2x2.fill")
+    let furnitureIcon = UIImage(systemName: "bed.double.fill")
+      ?? UIImage(systemName: "shippingbox.fill")
+      ?? UIImage(systemName: "cube.box.fill")
+
+    if let fullIcon = fullIcon {
+      modeControl.setImage(fullIcon, forSegmentAt: DisplayMode.fullRoom.rawValue)
+    } else {
+      modeControl.setTitle("All", forSegmentAt: DisplayMode.fullRoom.rawValue)
+    }
+    if let wallsIcon = wallsIcon {
+      modeControl.setImage(wallsIcon, forSegmentAt: DisplayMode.wallsOnly.rawValue)
+    } else {
+      modeControl.setTitle("Walls", forSegmentAt: DisplayMode.wallsOnly.rawValue)
+    }
+    if let furnitureIcon = furnitureIcon {
+      modeControl.setImage(furnitureIcon, forSegmentAt: DisplayMode.furnitureOnly.rawValue)
+    } else {
+      modeControl.setTitle("Items", forSegmentAt: DisplayMode.furnitureOnly.rawValue)
+    }
+
+    modeControl.setWidth(38, forSegmentAt: DisplayMode.fullRoom.rawValue)
+    modeControl.setWidth(38, forSegmentAt: DisplayMode.wallsOnly.rawValue)
+    modeControl.setWidth(38, forSegmentAt: DisplayMode.furnitureOnly.rawValue)
+
+    modeControl.addTarget(self, action: #selector(modeChanged), for: .valueChanged)
+
+    modeControl.isAccessibilityElement = true
+    modeControl.accessibilityLabel = "3D view mode"
+    modeControl.accessibilityHint = "Switch between full room, walls only, and furniture only."
   }
 
 /// Minimal vector version of the UiDosha mark (U + roof + chimney) rendered as shape layers.
@@ -683,11 +724,31 @@ private enum SVGPathParser {
     didCacheOriginalMaterials = true
   }
 
-  /// Tints meshes that sit on the floor using app brown ([AppColors.floorObject3dTint]).
-  private func applyOnFloorObjectTint() {
+  private func darkerColor(from color: UIColor, factor: CGFloat) -> UIColor {
+    // factor < 1 => darker
+    var r: CGFloat = 0
+    var g: CGFloat = 0
+    var b: CGFloat = 0
+    var a: CGFloat = 0
+    if color.getRed(&r, green: &g, blue: &b, alpha: &a) {
+      return UIColor(
+        red: max(0, min(1, r * factor)),
+        green: max(0, min(1, g * factor)),
+        blue: max(0, min(1, b * factor)),
+        alpha: a
+      )
+    }
+    return color
+  }
+
+  /// Makes the floor slightly darker than walls (keeps walls/furniture close to original).
+  private func applyFloorAndFurnitureTint() {
     guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
     cacheOriginalMaterialsIfNeeded()
-    let tint = strings.onFloorObjectTint
+    let floorTint = darkerColor(from: strings.onFloorObjectTint, factor: 0.78)
+    // Muted blue-teal that plays well with warm wood + cool light walls.
+    // (RGB: 0x2F6F7A)
+    let furnitureTint = UIColor(red: 47 / 255, green: 111 / 255, blue: 122 / 255, alpha: 1)
     SCNTransaction.begin()
     SCNTransaction.animationDuration = 0
     func visit(_ node: SCNNode) {
@@ -700,14 +761,21 @@ private enum SVGPathParser {
         for c in node.childNodes { visit(c) }
         return
       }
-      if isOnFloorObject(node, sceneBounds: sceneBounds) {
+
+      // Restore originals first; then selectively tint floor slabs darker.
+      geo.materials = originals.map { $0.copy() as! SCNMaterial }
+      if let b = worldBounds(of: node), isLikelyFloorSlab(b, sceneBounds: sceneBounds) {
         geo.materials = originals.map { orig in
           let m = orig.copy() as! SCNMaterial
-          m.diffuse.contents = tint
+          m.diffuse.contents = floorTint
           return m
         }
-      } else {
-        geo.materials = originals.map { $0.copy() as! SCNMaterial }
+      } else if isOnFloorObject(node, sceneBounds: sceneBounds) {
+        geo.materials = originals.map { orig in
+          let m = orig.copy() as! SCNMaterial
+          m.diffuse.contents = furnitureTint
+          return m
+        }
       }
       for c in node.childNodes {
         visit(c)
@@ -763,43 +831,75 @@ private enum SVGPathParser {
     SCNTransaction.commit()
   }
 
-  @objc private func toggleWallsHiddenMode() {
-    guard loadedScene != nil else { return }
-    if wallsHidden {
-      wallsHidden = false
-      setAllGeometryVisible(true)
-      floorModeBarButton?.title = strings.floorOnlyButtonTitle
-      return
-    }
-    applyWallsHiddenMode(true)
+  private func applyDisplayMode(_ mode: DisplayMode) {
     guard let root = loadedScene?.rootNode else { return }
-    var anyHidden = false
-    func checkHidden(_ node: SCNNode) {
-      if node.geometry != nil, node.isHidden {
-        anyHidden = true
-        return
+
+    SCNTransaction.begin()
+    SCNTransaction.animationDuration = 0
+
+    func visit(_ node: SCNNode) {
+      if node.geometry != nil {
+        switch mode {
+        case .fullRoom:
+          node.isHidden = false
+        case .wallsOnly:
+          if node.name == "UydoshFramingCamera" {
+            node.isHidden = false
+          } else if let sceneBounds = sceneWorldBounds, isOnFloorObject(node, sceneBounds: sceneBounds) {
+            node.isHidden = true
+          } else {
+            node.isHidden = false
+          }
+        case .furnitureOnly:
+          if node.name == "UydoshFramingCamera" {
+            node.isHidden = false
+          } else {
+            node.isHidden = shouldHideWallLikeSurface(node)
+          }
+        }
       }
-      guard !anyHidden else { return }
-      for c in node.childNodes {
-        checkHidden(c)
+      for child in node.childNodes {
+        visit(child)
       }
     }
-    checkHidden(root)
-    if anyHidden {
-      wallsHidden = true
-      floorModeBarButton?.title = strings.fullRoomButtonTitle
-    } else {
-      applyWallsHiddenMode(false)
-      wallsHidden = false
-      floorModeBarButton?.title = strings.floorOnlyButtonTitle
-      let alert = UIAlertController(
-        title: nil,
-        message: strings.floorOnlyUnavailableMessage,
-        preferredStyle: .alert
-      )
-      alert.addAction(UIAlertAction(title: strings.alertOk, style: .default))
-      present(alert, animated: true)
+
+    visit(root)
+    SCNTransaction.commit()
+
+    if mode == .furnitureOnly {
+      // If we cannot find any wall-like meshes by name, don’t pretend mode worked.
+      var anyHidden = false
+      func checkHidden(_ node: SCNNode) {
+        if node.geometry != nil, node.isHidden {
+          anyHidden = true
+          return
+        }
+        guard !anyHidden else { return }
+        for c in node.childNodes { checkHidden(c) }
+      }
+      checkHidden(root)
+      if !anyHidden {
+        // Revert and explain.
+        displayMode = .fullRoom
+        modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
+        setAllGeometryVisible(true)
+        let alert = UIAlertController(
+          title: nil,
+          message: strings.floorOnlyUnavailableMessage,
+          preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: strings.alertOk, style: .default))
+        present(alert, animated: true)
+      }
     }
+  }
+
+  @objc private func modeChanged() {
+    guard loadedScene != nil else { return }
+    let idx = modeControl.selectedSegmentIndex
+    let next = DisplayMode(rawValue: idx) ?? .fullRoom
+    displayMode = next
+    applyDisplayMode(next)
   }
 
   /// RoomPlan / SceneKit: meters, Y-up. Uses horizontal spans (X, Z) as floor footprint and Y as height.
@@ -891,7 +991,7 @@ private enum SVGPathParser {
     view.defaultCameraController.target = centerWorld
 
     cacheOriginalMaterialsIfNeeded()
-    applyOnFloorObjectTint()
+    applyFloorAndFurnitureTint()
   }
 
   private func loadScene() {
@@ -904,6 +1004,8 @@ private enum SVGPathParser {
         self.loadedScene = scene
         self.sceneView.scene = scene
         self.frameCamera(for: scene, in: self.sceneView)
+        self.displayMode = DisplayMode(rawValue: self.modeControl.selectedSegmentIndex) ?? .fullRoom
+        self.applyDisplayMode(self.displayMode)
       } catch {
         self.presentLoadError(error)
       }
@@ -927,11 +1029,11 @@ private enum SVGPathParser {
   }
 
   private func dismissViewer() {
-    wallsHidden = false
     didCacheOriginalMaterials = false
     originalMaterialsByGeometry.removeAll(keepingCapacity: false)
     sceneWorldBounds = nil
-    floorModeBarButton?.title = strings.floorOnlyButtonTitle
+    displayMode = .fullRoom
+    modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
     sceneView.scene = nil
     loadedScene = nil
     dismiss(animated: true)
