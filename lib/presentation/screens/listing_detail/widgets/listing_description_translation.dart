@@ -6,6 +6,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 
@@ -250,6 +251,15 @@ class _ListingDescriptionTranslationState
     final scheme = Theme.of(context).colorScheme;
     final borderColor =
         ListingDetailThemeHelper.amenityChipBorderColor.withValues(alpha: 0.45);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    // Blue theme primary is very dark — same as cards — so primary-tinted icon
+    // is invisible; match flag pills (white icon + light fill).
+    final fillColor = isBlueTheme
+        ? ListingDetailThemeHelper.amenityChipBackgroundColor
+        : scheme.primary.withValues(alpha: 0.12);
+    final iconColor = isBlueTheme
+        ? ListingDetailThemeHelper.iconColor
+        : scheme.primary.withValues(alpha: 0.9);
 
     return Tooltip(
       message: L10n.get("listing_show_original_description"),
@@ -270,12 +280,12 @@ class _ListingDescriptionTranslationState
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(radius),
               border: Border.all(color: borderColor, width: 1),
-              color: scheme.primary.withValues(alpha: 0.12),
+              color: fillColor,
             ),
             child: Icon(
               Icons.article_outlined,
               size: 16,
-              color: scheme.primary.withValues(alpha: 0.9),
+              color: iconColor,
             ),
           ),
         ),
