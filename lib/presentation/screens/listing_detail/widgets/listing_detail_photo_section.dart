@@ -1,5 +1,7 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
+import "package:flutter/widgets.dart";
+import "dart:ui" show ImageFilter;
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
@@ -31,8 +33,10 @@ class ListingDetailPhotoSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                height: 200,
+              AspectRatio(
+                // A stable frame prevents “squeezing” artifacts and avoids hard-cropping
+                // portrait photos too aggressively. 16:9 reads well for listing galleries.
+                aspectRatio: 16 / 9,
                 child: PageView.builder(
                   controller: pageController,
                   itemCount: orderedPhotos.length,
@@ -50,37 +54,59 @@ class ListingDetailPhotoSection extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Stack(
+                              fit: StackFit.expand,
                               children: [
-                                CachedNetworkImage(
-                                  imageUrl: buildPhotoUrl(photo.photoUrl),
-                                  width: double.infinity,
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                  memCacheWidth: 400,
-                                  memCacheHeight: 400,
-                                  fadeInDuration:
-                                      const Duration(milliseconds: 300),
-                                  fadeInCurve: Curves.easeOut,
-                                  placeholder: (context, url) => Container(
-                                    width: double.infinity,
-                                    height: 200,
-                                    color: Colors.grey[200],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+                                // Background fill (blurred + slightly dimmed) so portrait photos
+                                // look good in a horizontal carousel without distortion.
+                                ImageFiltered(
+                                  imageFilter: ImageFilter.blur(
+                                    sigmaX: 18,
+                                    sigmaY: 18,
+                                  ),
+                                  child: CachedNetworkImage(
+                                    imageUrl: buildPhotoUrl(photo.photoUrl),
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 800,
+                                    memCacheHeight: 800,
+                                    fadeInDuration:
+                                        const Duration(milliseconds: 300),
+                                    fadeInCurve: Curves.easeOut,
+                                    placeholder: (context, url) => Container(
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Container(
+                                      color: Colors.grey[300],
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        color: Colors.grey[600],
+                                        size: 48,
                                       ),
                                     ),
                                   ),
-                                  errorWidget: (context, url, error) =>
-                                      Container(
-                                    width: double.infinity,
-                                    height: 200,
-                                    color: Colors.grey[300],
-                                    child: Icon(
-                                      Icons.image_not_supported,
-                                      color: Colors.grey[600],
-                                      size: 48,
-                                    ),
+                                ),
+                                ColoredBox(
+                                  color: Colors.black.withValues(alpha: 0.12),
+                                ),
+                                // Foreground: the real photo, never distorted.
+                                Center(
+                                  child: CachedNetworkImage(
+                                    imageUrl: buildPhotoUrl(photo.photoUrl),
+                                    fit: BoxFit.contain,
+                                    memCacheWidth: 1080,
+                                    memCacheHeight: 1080,
+                                    fadeInDuration:
+                                        const Duration(milliseconds: 300),
+                                    fadeInCurve: Curves.easeOut,
+                                    placeholder: (context, url) =>
+                                        const SizedBox.shrink(),
+                                    errorWidget: (context, url, error) =>
+                                        const SizedBox.shrink(),
                                   ),
                                 ),
                                 Positioned(
