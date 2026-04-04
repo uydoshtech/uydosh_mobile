@@ -1266,6 +1266,59 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось сохранить настройку';
 
   @override
+  String get admin_panel_section_telegram_sync => 'Telegram: загрузка';
+
+  @override
+  String get admin_telegram_sync_title => 'Telegram: загрузка';
+
+  @override
+  String get admin_telegram_sync_intro =>
+      'Запускает на сервере тот же синхрон, что и npm run telegram:sync. Нужна сессия Telegram на хосте API (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.';
+
+  @override
+  String get admin_telegram_sync_chat_label => 'Чат';
+
+  @override
+  String get admin_telegram_sync_limit_label => 'Лимит сообщений';
+
+  @override
+  String get admin_telegram_sync_import_user_label => 'ID владельца объявлений';
+
+  @override
+  String get admin_telegram_sync_import_user_helper =>
+      'users.id для импорта объявлений после синка. Пусто — только запись в БД.';
+
+  @override
+  String get admin_telegram_sync_newest_first => 'Сначала новые';
+
+  @override
+  String get admin_telegram_sync_skip_listing_import =>
+      'Без импорта объявлений (только БД)';
+
+  @override
+  String get admin_telegram_sync_run => 'Запустить синк';
+
+  @override
+  String get admin_telegram_sync_running => 'Выполняется…';
+
+  @override
+  String get admin_telegram_sync_result_header => 'Результат';
+
+  @override
+  String get admin_telegram_sync_sync_section => 'Синк БД';
+
+  @override
+  String get admin_telegram_sync_listing_section => 'Импорт объявлений';
+
+  @override
+  String get admin_telegram_sync_invalid_chat_limit =>
+      'Укажите чат и положительный лимит.';
+
+  @override
+  String get admin_telegram_sync_invalid_import_user =>
+      'ID пользователя должен быть положительным числом или пустым.';
+
+  @override
   String get admin_panel_section_users => 'Пользователи';
 
   @override

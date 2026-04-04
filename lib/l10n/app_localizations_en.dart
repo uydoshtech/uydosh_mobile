@@ -1257,6 +1257,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_content_moderation_save_error => 'Could not save setting';
 
   @override
+  String get admin_panel_section_telegram_sync => 'Telegram ingest';
+
+  @override
+  String get admin_telegram_sync_title => 'Telegram ingest';
+
+  @override
+  String get admin_telegram_sync_intro =>
+      'Runs the same sync as npm run telegram:sync on the server. The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.';
+
+  @override
+  String get admin_telegram_sync_chat_label => 'Chat';
+
+  @override
+  String get admin_telegram_sync_limit_label => 'Message limit';
+
+  @override
+  String get admin_telegram_sync_import_user_label => 'Listing owner user ID';
+
+  @override
+  String get admin_telegram_sync_import_user_helper =>
+      'users.id for listing import after sync. Leave empty to ingest only.';
+
+  @override
+  String get admin_telegram_sync_newest_first => 'Newest first';
+
+  @override
+  String get admin_telegram_sync_skip_listing_import =>
+      'Skip listing import (DB ingest only)';
+
+  @override
+  String get admin_telegram_sync_run => 'Run sync';
+
+  @override
+  String get admin_telegram_sync_running => 'Running…';
+
+  @override
+  String get admin_telegram_sync_result_header => 'Result';
+
+  @override
+  String get admin_telegram_sync_sync_section => 'DB sync';
+
+  @override
+  String get admin_telegram_sync_listing_section => 'Listing import';
+
+  @override
+  String get admin_telegram_sync_invalid_chat_limit =>
+      'Enter a chat and a positive limit.';
+
+  @override
+  String get admin_telegram_sync_invalid_import_user =>
+      'Listing owner user ID must be a positive number or empty.';
+
+  @override
   String get admin_panel_section_users => 'Users';
 
   @override

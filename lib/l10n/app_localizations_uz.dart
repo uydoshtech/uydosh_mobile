@@ -1272,6 +1272,59 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_content_moderation_save_error => 'Sozlama saqlanmadi';
 
   @override
+  String get admin_panel_section_telegram_sync => 'Telegram yuklash';
+
+  @override
+  String get admin_telegram_sync_title => 'Telegram yuklash';
+
+  @override
+  String get admin_telegram_sync_intro =>
+      'Serverda npm run telegram:sync bilan bir xil sinxronni ishga tushiradi. API serverda Telegram sessiyasi bo‘lishi kerak (TELEGRAM_SESSION_STRING yoki .telegram_session). Katta limit proksi taymautlarida uzilishi mumkin.';
+
+  @override
+  String get admin_telegram_sync_chat_label => 'Chat';
+
+  @override
+  String get admin_telegram_sync_limit_label => 'Xabar limiti';
+
+  @override
+  String get admin_telegram_sync_import_user_label => 'E’lon egasi user ID';
+
+  @override
+  String get admin_telegram_sync_import_user_helper =>
+      'Sinxrondan keyin e’lon importi uchun users.id. Bo‘sh qoldiring — faqat ma’lumotlar bazasiga yozadi.';
+
+  @override
+  String get admin_telegram_sync_newest_first => 'Avval yangilar';
+
+  @override
+  String get admin_telegram_sync_skip_listing_import =>
+      'E’lon importisiz (faqat DB)';
+
+  @override
+  String get admin_telegram_sync_run => 'Sinxronni ishga tushirish';
+
+  @override
+  String get admin_telegram_sync_running => 'Bajarilmoqda…';
+
+  @override
+  String get admin_telegram_sync_result_header => 'Natija';
+
+  @override
+  String get admin_telegram_sync_sync_section => 'DB sinxron';
+
+  @override
+  String get admin_telegram_sync_listing_section => 'E’lon importi';
+
+  @override
+  String get admin_telegram_sync_invalid_chat_limit =>
+      'Chat va musbat limit kiriting.';
+
+  @override
+  String get admin_telegram_sync_invalid_import_user =>
+      'Foydalanuvchi ID musbat son yoki bo‘sh bo‘lishi kerak.';
+
+  @override
   String get admin_panel_section_users => 'Foydalanuvchilar';
 
   @override

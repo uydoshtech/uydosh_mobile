@@ -2440,6 +2440,102 @@ abstract class AppLocalizations {
   /// **'Could not save setting'**
   String get admin_content_moderation_save_error;
 
+  /// No description provided for @admin_panel_section_telegram_sync.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram ingest'**
+  String get admin_panel_section_telegram_sync;
+
+  /// No description provided for @admin_telegram_sync_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram ingest'**
+  String get admin_telegram_sync_title;
+
+  /// No description provided for @admin_telegram_sync_intro.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs the same sync as npm run telegram:sync on the server. The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.'**
+  String get admin_telegram_sync_intro;
+
+  /// No description provided for @admin_telegram_sync_chat_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get admin_telegram_sync_chat_label;
+
+  /// No description provided for @admin_telegram_sync_limit_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Message limit'**
+  String get admin_telegram_sync_limit_label;
+
+  /// No description provided for @admin_telegram_sync_import_user_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing owner user ID'**
+  String get admin_telegram_sync_import_user_label;
+
+  /// No description provided for @admin_telegram_sync_import_user_helper.
+  ///
+  /// In en, this message translates to:
+  /// **'users.id for listing import after sync. Leave empty to ingest only.'**
+  String get admin_telegram_sync_import_user_helper;
+
+  /// No description provided for @admin_telegram_sync_newest_first.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get admin_telegram_sync_newest_first;
+
+  /// No description provided for @admin_telegram_sync_skip_listing_import.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip listing import (DB ingest only)'**
+  String get admin_telegram_sync_skip_listing_import;
+
+  /// No description provided for @admin_telegram_sync_run.
+  ///
+  /// In en, this message translates to:
+  /// **'Run sync'**
+  String get admin_telegram_sync_run;
+
+  /// No description provided for @admin_telegram_sync_running.
+  ///
+  /// In en, this message translates to:
+  /// **'Running…'**
+  String get admin_telegram_sync_running;
+
+  /// No description provided for @admin_telegram_sync_result_header.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get admin_telegram_sync_result_header;
+
+  /// No description provided for @admin_telegram_sync_sync_section.
+  ///
+  /// In en, this message translates to:
+  /// **'DB sync'**
+  String get admin_telegram_sync_sync_section;
+
+  /// No description provided for @admin_telegram_sync_listing_section.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing import'**
+  String get admin_telegram_sync_listing_section;
+
+  /// No description provided for @admin_telegram_sync_invalid_chat_limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a chat and a positive limit.'**
+  String get admin_telegram_sync_invalid_chat_limit;
+
+  /// No description provided for @admin_telegram_sync_invalid_import_user.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing owner user ID must be a positive number or empty.'**
+  String get admin_telegram_sync_invalid_import_user;
+
   /// No description provided for @admin_panel_section_users.
   ///
   /// In en, this message translates to:
