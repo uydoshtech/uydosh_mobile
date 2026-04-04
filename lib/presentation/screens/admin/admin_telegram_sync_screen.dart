@@ -1,7 +1,9 @@
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 
 class AdminTelegramSyncScreen extends StatefulWidget {
@@ -12,6 +14,9 @@ class AdminTelegramSyncScreen extends StatefulWidget {
 }
 
 class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
+  static const BorderRadius _kFieldBorderRadius =
+      BorderRadius.all(Radius.circular(8));
+
   final IAdminTelegramSyncService _service = getIt<IAdminTelegramSyncService>();
   final _chatController = TextEditingController(text: "@roommateuz");
   final _limitController = TextEditingController(text: "6");
@@ -118,8 +123,71 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     }
   }
 
+  /// Blue theme uses white [InputDecorationTheme.fillColor] with white label styles
+  /// from [TextTheme], so defaults break. Match profile/location controls: dark fill,
+  /// light text, visible borders.
+  InputDecoration _fieldDecoration(
+    BuildContext context, {
+    required String labelText,
+    String? helperText,
+  }) {
+    final theme = Theme.of(context);
+    if (!ThemeState().isBlueTheme) {
+      return InputDecoration(
+        labelText: labelText,
+        helperText: helperText,
+        border: const OutlineInputBorder(),
+      );
+    }
+    final outline = theme.colorScheme.outline;
+    return InputDecoration(
+      labelText: labelText,
+      helperText: helperText,
+      filled: true,
+      fillColor: BlueThemeColors.surface,
+      labelStyle: const TextStyle(color: BlueThemeColors.textSecondary),
+      floatingLabelStyle: const TextStyle(color: BlueThemeColors.primaryLight),
+      helperStyle: const TextStyle(color: BlueThemeColors.textHint),
+      border: OutlineInputBorder(
+        borderRadius: _kFieldBorderRadius,
+        borderSide: BorderSide(color: outline),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: _kFieldBorderRadius,
+        borderSide: BorderSide(color: outline),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderRadius: _kFieldBorderRadius,
+        borderSide: BorderSide(
+          color: BlueThemeColors.inputFocused,
+          width: 2,
+        ),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: _kFieldBorderRadius,
+        borderSide: BorderSide(color: theme.colorScheme.error),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isBlue = ThemeState().isBlueTheme;
+    final fieldStyle = isBlue
+        ? const TextStyle(color: BlueThemeColors.textPrimary, fontSize: 16)
+        : null;
+    final syncButtonStyle = isBlue
+        ? FilledButton.styleFrom(
+            backgroundColor: BlueThemeColors.buttonPrimary,
+            foregroundColor: BlueThemeColors.textPrimary,
+            minimumSize: const Size(double.infinity, 48),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          )
+        : FilledButton.styleFrom(
+            minimumSize: const Size(double.infinity, 48),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          );
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -139,29 +207,32 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           const SizedBox(height: 20),
           TextField(
             controller: _chatController,
-            decoration: InputDecoration(
+            style: fieldStyle,
+            decoration: _fieldDecoration(
+              context,
               labelText: L10n.get("admin_telegram_sync_chat_label"),
-              border: const OutlineInputBorder(),
             ),
             autocorrect: false,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           TextField(
             controller: _limitController,
-            decoration: InputDecoration(
+            style: fieldStyle,
+            decoration: _fieldDecoration(
+              context,
               labelText: L10n.get("admin_telegram_sync_limit_label"),
-              border: const OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           TextField(
             controller: _importUserController,
-            decoration: InputDecoration(
+            style: fieldStyle,
+            decoration: _fieldDecoration(
+              context,
               labelText: L10n.get("admin_telegram_sync_import_user_label"),
               helperText: L10n.get("admin_telegram_sync_import_user_helper"),
-              border: const OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -181,14 +252,20 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                 ? null
                 : (v) => setState(() => _skipListingImport = v),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           FilledButton.icon(
+            style: syncButtonStyle,
             onPressed: _running ? null : _run,
             icon: _running
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: isBlue
+                          ? BlueThemeColors.textPrimary
+                          : Theme.of(context).colorScheme.onPrimary,
+                    ),
                   )
                 : const Icon(Icons.sync),
             label: Text(

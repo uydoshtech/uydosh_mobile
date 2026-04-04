@@ -168,6 +168,37 @@ class AppTheme {
         thickness: 1,
       ),
 
+      // Switch: fromSeed + our ColorScheme makes the *on* state track/thumb both
+      // read as white on this background (broken pill). Mirror the *off* look: dark
+      // track, light outline, contrasting thumb; when on, use button primary track.
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return BlueThemeColors.textDisabled;
+          }
+          if (states.contains(WidgetState.selected)) {
+            return BlueThemeColors.textPrimary;
+          }
+          return BlueThemeColors.textSecondary;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return BlueThemeColors.divider;
+          }
+          if (states.contains(WidgetState.selected)) {
+            return BlueThemeColors.buttonPrimary;
+          }
+          return BlueThemeColors.card;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return BlueThemeColors.divider;
+          }
+          return BlueThemeColors.textPrimary.withValues(alpha: 0.55);
+        }),
+        trackOutlineWidth: const WidgetStatePropertyAll<double>(1),
+      ),
+
       // Progress indicator theme
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: Colors.white,
