@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_roomplan/flutter_roomplan.dart";
+import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -27,6 +28,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
   void initState() {
     super.initState();
     if (!isIOSDevice) return;
+    if (ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) return;
     _roomPlan.onRoomCaptureFinished(() {
       Future<void> run() async {
         final path = await _roomPlan.getUsdzFilePath();
@@ -100,61 +102,82 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!isIOSDevice) {
-      return Scaffold(
-        appBar: AppBar(title: Text(L10n.get("room_scan_title"))),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              L10n.get("room_scan_not_supported"),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-      );
-    }
-
-    final loading = _uploading || _starting;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(L10n.get("room_scan_title")),
-        actions: [
-          TextButton(
-            onPressed: loading ? null : () => Navigator.of(context).pop(false),
-            child: Text(L10n.get("skip")),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              L10n.get("room_scan_instructions"),
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            if (_uploading)
-              Column(
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(L10n.get("room_scan_uploading")),
-                ],
-              )
-            else
-              PrimaryButton(
-                onPressed: loading ? null : _startScan,
-                isLoading: _starting,
-                isDisabled: loading,
-                child: Text(L10n.get("room_scan_start")),
+    return ValueListenableBuilder<bool>(
+      valueListenable: ClientLidarRoomScanConfig.lidarRoomScanDisabled,
+      builder: (context, lidarDisabled, _) {
+        if (!isIOSDevice) {
+          return Scaffold(
+            appBar: AppBar(title: Text(L10n.get("room_scan_title"))),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  L10n.get("room_scan_not_supported"),
+                  textAlign: TextAlign.center,
+                ),
               ),
-          ],
-        ),
-      ),
+            ),
+          );
+        }
+
+        if (lidarDisabled) {
+          return Scaffold(
+            appBar: AppBar(title: Text(L10n.get("room_scan_title"))),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  L10n.get("room_scan_disabled_globally"),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final loading = _uploading || _starting;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(L10n.get("room_scan_title")),
+            actions: [
+              TextButton(
+                onPressed:
+                    loading ? null : () => Navigator.of(context).pop(false),
+                child: Text(L10n.get("skip")),
+              ),
+            ],
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  L10n.get("room_scan_instructions"),
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 24),
+                if (_uploading)
+                  Column(
+                    children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      Text(L10n.get("room_scan_uploading")),
+                    ],
+                  )
+                else
+                  PrimaryButton(
+                    onPressed: loading ? null : _startScan,
+                    isLoading: _starting,
+                    isDisabled: loading,
+                    child: Text(L10n.get("room_scan_start")),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

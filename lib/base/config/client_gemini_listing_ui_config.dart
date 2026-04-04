@@ -1,23 +1,27 @@
 import "package:flutter/foundation.dart";
-import "package:shared_preferences/shared_preferences.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/domain/services/public_app_settings_service.dart";
 
-/// Local-only setting (SharedPreferences). When true, hides listing description
-/// translation controls and the AI improve action on create/edit.
+/// Server-backed flag from [GET /app/settings/gemini-listing-ui-hidden]. When
+/// true, hides listing description translation controls and the AI improve
+/// action on create/edit for all users.
 abstract final class ClientGeminiListingUiConfig {
-  static const _prefsKey = "client_gemini_listing_ui_hidden";
-
   static final ValueNotifier<bool> hideGeminiListingUi = ValueNotifier(false);
 
   static Future<void> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    hideGeminiListingUi.value = prefs.getBool(_prefsKey) ?? false;
+    try {
+      final service = getIt<IPublicAppSettingsService>();
+      final hidden = await service.getGeminiListingUiHidden();
+      hideGeminiListingUi.value = hidden;
+    } catch (e, st) {
+      logger.d("Gemini listing UI hidden: fetch failed, defaulting to visible: $e\n$st");
+      hideGeminiListingUi.value = false;
+    }
   }
 
-  /// Updates UI immediately; persists to [SharedPreferences] asynchronously.
-  static void setHide({required bool hide}) {
-    hideGeminiListingUi.value = hide;
-    SharedPreferences.getInstance().then(
-      (prefs) => prefs.setBool(_prefsKey, hide),
-    );
+  /// Updates UI after admin PATCH or a successful refetch.
+  static void applyHidden({required bool hidden}) {
+    hideGeminiListingUi.value = hidden;
   }
 }

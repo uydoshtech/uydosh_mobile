@@ -862,6 +862,12 @@ abstract class AppLocalizations {
   /// **'3D room scan requires an iPhone or iPad with LiDAR.'**
   String get room_scan_not_supported;
 
+  /// No description provided for @room_scan_disabled_globally.
+  ///
+  /// In en, this message translates to:
+  /// **'3D room scanning is turned off in app settings. It may be available again later.'**
+  String get room_scan_disabled_globally;
+
   /// No description provided for @add_room_scan_3d.
   ///
   /// In en, this message translates to:
@@ -2386,12 +2392,6 @@ abstract class AppLocalizations {
   /// **'Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).'**
   String get admin_content_moderation_description;
 
-  /// No description provided for @admin_client_config_section_title.
-  ///
-  /// In en, this message translates to:
-  /// **'On this device'**
-  String get admin_client_config_section_title;
-
   /// No description provided for @admin_client_config_hide_gemini_listing_ui.
   ///
   /// In en, this message translates to:
@@ -2401,8 +2401,20 @@ abstract class AppLocalizations {
   /// No description provided for @admin_client_config_hide_gemini_listing_ui_description.
   ///
   /// In en, this message translates to:
-  /// **'Hides description language buttons on listing details and the AI improve action when creating or editing listings. Stored only on this device.'**
+  /// **'Hides description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).'**
   String get admin_client_config_hide_gemini_listing_ui_description;
+
+  /// No description provided for @admin_client_config_disable_lidar_room_scan.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off LiDAR room scan'**
+  String get admin_client_config_disable_lidar_room_scan;
+
+  /// No description provided for @admin_client_config_disable_lidar_room_scan_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).'**
+  String get admin_client_config_disable_lidar_room_scan_description;
 
   /// No description provided for @admin_content_moderation_blur_enabled.
   ///

@@ -9,6 +9,7 @@ import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
+import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
 import "package:uy_dosh/base/injection/injection.dart";
@@ -102,6 +103,7 @@ void main() async {
       SearchFiltersState().initialize(),
       ThemeState().initialize(),
       ClientGeminiListingUiConfig.load(),
+      ClientLidarRoomScanConfig.load(),
     ]);
 
     logger.d(

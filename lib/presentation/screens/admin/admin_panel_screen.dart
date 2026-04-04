@@ -29,18 +29,6 @@ class AdminPanelScreen extends StatelessWidget {
         children: [
           _buildAdminSection(
             context,
-            icon: Icons.photo_filter_outlined,
-            titleKey: "admin_panel_section_content_moderation",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AdminContentModerationScreen(),
-                ),
-              );
-            },
-          ),
-          _buildAdminSection(
-            context,
             icon: Icons.people,
             titleKey: "admin_panel_section_users",
             onTap: () {
@@ -146,6 +134,18 @@ class AdminPanelScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) =>
                       const AdminListingCreationAnalyticsScreen(),
+                ),
+              );
+            },
+          ),
+          _buildAdminSection(
+            context,
+            icon: Icons.photo_filter_outlined,
+            titleKey: "admin_panel_section_content_moderation",
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AdminContentModerationScreen(),
                 ),
               );
             },

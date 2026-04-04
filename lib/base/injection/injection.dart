@@ -19,6 +19,7 @@ import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/otp_service.dart";
 import "package:uy_dosh/domain/services/otp_service_impl.dart";
+import "package:uy_dosh/domain/services/public_app_settings_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
@@ -38,6 +39,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IPublicApiClient>(
     () => PublicApiClient(configurator: getIt<IPublicDioConfigurator>()),
+  );
+
+  getIt.registerLazySingleton<IPublicAppSettingsService>(
+    () => PublicAppSettingsService(getIt<IPublicApiClient>()),
   );
 
   getIt.registerLazySingleton<GeminiService>(

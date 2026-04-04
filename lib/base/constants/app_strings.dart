@@ -166,6 +166,8 @@ class AppStrings {
       "room_scan_error": "Could not save scan. Try again.",
       "room_scan_not_supported":
           "3D room scan requires an iPhone or iPad with LiDAR.",
+      "room_scan_disabled_globally":
+          "3D room scanning is turned off in app settings. It may be available again later.",
       "add_room_scan_3d": "Add 3D room scan",
       "skip": "Skip",
       "view_room_3d": "View 3D room",
@@ -502,10 +504,12 @@ class AppStrings {
       "admin_content_moderation_title": "Client configuration",
       "admin_content_moderation_description":
           "Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).",
-      "admin_client_config_section_title": "On this device",
       "admin_client_config_hide_gemini_listing_ui": "Hide translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
-          "Hides description language buttons on listing details and the AI improve action when creating or editing listings. Stored only on this device.",
+          "Hides description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).",
+      "admin_client_config_disable_lidar_room_scan": "Turn off LiDAR room scan",
+      "admin_client_config_disable_lidar_room_scan_description":
+          "Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).",
       "admin_content_moderation_blur_enabled": "Detect and blur offensive photos",
       "admin_content_moderation_loading": "Loading moderation settings...",
       "admin_content_moderation_error": "Could not load moderation settings",
@@ -1012,6 +1016,8 @@ class AppStrings {
       "room_scan_error": "Не удалось сохранить скан. Попробуйте снова.",
       "room_scan_not_supported":
           "3D-скан требует iPhone или iPad с LiDAR.",
+      "room_scan_disabled_globally":
+          "3D-сканирование комнаты отключено в настройках приложения. Позже оно может снова стать доступным.",
       "add_room_scan_3d": "Добавить 3D-скан комнаты",
       "skip": "Пропустить",
       "view_room_3d": "Смотреть комнату в 3D",
@@ -1351,10 +1357,12 @@ class AppStrings {
       "admin_content_moderation_title": "Настройки клиента",
       "admin_content_moderation_description":
           "Модерация фото (сервер): если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).",
-      "admin_client_config_section_title": "На этом устройстве",
       "admin_client_config_hide_gemini_listing_ui": "Скрыть перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
-          "Скрывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Сохраняется только на этом устройстве.",
+          "Скрывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Действует для всех пользователей и устройств (хранится на сервере).",
+      "admin_client_config_disable_lidar_room_scan": "Отключить сканирование LiDAR",
+      "admin_client_config_disable_lidar_room_scan_description":
+          "Скрывает шаг добавления скана после создания объявления, кнопку при редактировании и блокирует загрузку сканов. Действует для всех пользователей и устройств (хранится на сервере).",
       "admin_content_moderation_blur_enabled": "Проверять и размывать нежелательные фото",
       "admin_content_moderation_loading": "Загрузка настроек модерации...",
       "admin_content_moderation_error": "Не удалось загрузить настройки модерации",
@@ -1868,6 +1876,8 @@ class AppStrings {
       "room_scan_error": "Skanni saqlab bo'lmadi. Qayta urinib ko'ring.",
       "room_scan_not_supported":
           "3D skan uchun LiDARli iPhone yoki iPad kerak.",
+      "room_scan_disabled_globally":
+          "3D xona skanlash ilova sozlamalarida o'chirilgan. Keyinroq yana yoqilishi mumkin.",
       "add_room_scan_3d": "3D xona skanini qo'shish",
       "skip": "O'tkazib yuborish",
       "view_room_3d": "3D xonani ko'rish",
@@ -2210,10 +2220,12 @@ class AppStrings {
       "admin_content_moderation_title": "Klient sozlamalari",
       "admin_content_moderation_description":
           "Foto moderatsiyasi (server): yoqilganda, yuklangan fotolar nojo'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O'chirilganda tekshirish va xiralashtirish o'tkazilmaydi (AWS Rekognition chaqiruvlari yo'q).",
-      "admin_client_config_section_title": "Ushbu qurilmada",
       "admin_client_config_hide_gemini_listing_ui": "Tarjima va AI yaxshilashni yashirish",
       "admin_client_config_hide_gemini_listing_ui_description":
-          "E'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni yashiradi. Faqat ushbu qurilmada saqlanadi.",
+          "E'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni yashiradi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+      "admin_client_config_disable_lidar_room_scan": "LiDAR xona skanini o'chirish",
+      "admin_client_config_disable_lidar_room_scan_description":
+          "E'lon yaratilgach skan qo'shish qadamini, tahrirlashdagi skan tugmasini yashiradi va yuklashni bloklaydi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
       "admin_content_moderation_blur_enabled": "Nojo'ya fotolarni aniqla va xira qil",
       "admin_content_moderation_loading": "Moderatsiya sozlamalari yuklanmoqda...",
       "admin_content_moderation_error": "Moderatsiya sozlamalari yuklanmadi",

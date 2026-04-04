@@ -4,6 +4,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -1251,7 +1252,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         message: L10n.get("listing_created_success"),
       );
 
-      if (isIOSDevice && mounted) {
+      if (isIOSDevice &&
+          mounted &&
+          !ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) {
         await Navigator.of(context).push<bool>(
           MaterialPageRoute(
             fullscreenDialog: true,

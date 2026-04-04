@@ -427,6 +427,10 @@ class AppLocalizationsUz extends AppLocalizations {
       '3D skan uchun LiDARli iPhone yoki iPad kerak.';
 
   @override
+  String get room_scan_disabled_globally =>
+      '3D xona skanlash ilova sozlamalarida o\'chirilgan. Keyinroq yana yoqilishi mumkin.';
+
+  @override
   String get add_room_scan_3d => '3D xona skanini qo\'shish';
 
   @override
@@ -1237,15 +1241,20 @@ class AppLocalizationsUz extends AppLocalizations {
       'Foto moderatsiyasi (server): yoqilganda, yuklangan fotolar nojo\'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O\'chirilganda tekshirish va xiralashtirish o\'tkazilmaydi (AWS Rekognition chaqiruvlari yo\'q).';
 
   @override
-  String get admin_client_config_section_title => 'Ushbu qurilmada';
-
-  @override
   String get admin_client_config_hide_gemini_listing_ui =>
       'Tarjima va AI yaxshilashni yashirish';
 
   @override
   String get admin_client_config_hide_gemini_listing_ui_description =>
-      'E\'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni yashiradi. Faqat ushbu qurilmada saqlanadi.';
+      'E\'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni yashiradi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
+
+  @override
+  String get admin_client_config_disable_lidar_room_scan =>
+      'LiDAR xona skanini o\'chirish';
+
+  @override
+  String get admin_client_config_disable_lidar_room_scan_description =>
+      'E\'lon yaratilgach skan qo\'shish qadamini, tahrirlashdagi skan tugmasini yashiradi va yuklashni bloklaydi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
 
   @override
   String get admin_content_moderation_blur_enabled =>

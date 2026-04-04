@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
+import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
@@ -23,6 +24,10 @@ class _AdminContentModerationScreenState
   bool _hasError = false;
   String? _errorMessage;
   bool _blurEnabled = true;
+  bool _geminiListingUiHidden = false;
+  bool _isSavingGemini = false;
+  bool _lidarRoomScanDisabled = false;
+  bool _isSavingLidar = false;
 
   @override
   void initState() {
@@ -37,12 +42,20 @@ class _AdminContentModerationScreenState
       _errorMessage = null;
     });
     try {
-      final res = await _settingsService.getContentModerationBlurSetting();
+      final blurRes = await _settingsService.getContentModerationBlurSetting();
+      final geminiRes =
+          await _settingsService.getGeminiListingUiHiddenSetting();
+      final lidarRes =
+          await _settingsService.getLidarRoomScanDisabledSetting();
       if (!mounted) return;
       setState(() {
-        _blurEnabled = res.enabled;
+        _blurEnabled = blurRes.enabled;
+        _geminiListingUiHidden = geminiRes.hidden;
+        _lidarRoomScanDisabled = lidarRes.disabled;
         _isLoading = false;
       });
+      ClientGeminiListingUiConfig.applyHidden(hidden: _geminiListingUiHidden);
+      ClientLidarRoomScanConfig.applyDisabled(disabled: _lidarRoomScanDisabled);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -53,8 +66,54 @@ class _AdminContentModerationScreenState
     }
   }
 
-  void _onGeminiHideChanged(bool value) {
-    ClientGeminiListingUiConfig.setHide(hide: value);
+  Future<void> _onLidarDisabledChanged(bool value) async {
+    if (_isSavingLidar) return;
+    setState(() => _isSavingLidar = true);
+    try {
+      final res = await _settingsService.setLidarRoomScanDisabled(
+        disabled: value,
+      );
+      if (!mounted) return;
+      setState(() {
+        _lidarRoomScanDisabled = res.disabled;
+        _isSavingLidar = false;
+      });
+      ClientLidarRoomScanConfig.applyDisabled(disabled: res.disabled);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSavingLidar = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "${L10n.get("admin_content_moderation_save_error")}: $e",
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onGeminiHideChanged(bool value) async {
+    if (_isSavingGemini) return;
+    setState(() => _isSavingGemini = true);
+    try {
+      final res = await _settingsService.setGeminiListingUiHidden(hidden: value);
+      if (!mounted) return;
+      setState(() {
+        _geminiListingUiHidden = res.hidden;
+        _isSavingGemini = false;
+      });
+      ClientGeminiListingUiConfig.applyHidden(hidden: res.hidden);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSavingGemini = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "${L10n.get("admin_content_moderation_save_error")}: $e",
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _onChanged(bool value) async {
@@ -161,33 +220,45 @@ class _AdminContentModerationScreenState
                 )
               : const Icon(Icons.blur_on_outlined),
         ),
-        const SizedBox(height: 8),
-        Text(
-          L10n.get("admin_client_config_section_title"),
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+        const SizedBox(height: 16),
+        SwitchListTile(
+          title: Text(L10n.get("admin_client_config_hide_gemini_listing_ui")),
+          subtitle: Text(
+            L10n.get("admin_client_config_hide_gemini_listing_ui_description"),
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
+          value: _geminiListingUiHidden,
+          onChanged: _isSavingGemini ? null : _onGeminiHideChanged,
+          secondary: _isSavingGemini
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.auto_awesome_outlined),
         ),
-        const SizedBox(height: 8),
-        ValueListenableBuilder<bool>(
-          valueListenable: ClientGeminiListingUiConfig.hideGeminiListingUi,
-          builder: (context, hide, _) {
-            return SwitchListTile(
-              title: Text(L10n.get("admin_client_config_hide_gemini_listing_ui")),
-              subtitle: Text(
-                L10n.get("admin_client_config_hide_gemini_listing_ui_description"),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              value: hide,
-              onChanged: _onGeminiHideChanged,
-              secondary: const Icon(Icons.auto_awesome_outlined),
-            );
-          },
+        const SizedBox(height: 16),
+        SwitchListTile(
+          title: Text(L10n.get("admin_client_config_disable_lidar_room_scan")),
+          subtitle: Text(
+            L10n.get("admin_client_config_disable_lidar_room_scan_description"),
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          value: _lidarRoomScanDisabled,
+          onChanged: _isSavingLidar ? null : _onLidarDisabledChanged,
+          secondary: _isSavingLidar
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.radar_outlined),
         ),
       ],
     );

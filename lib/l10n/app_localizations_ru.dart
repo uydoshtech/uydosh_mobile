@@ -427,6 +427,10 @@ class AppLocalizationsRu extends AppLocalizations {
       '3D-скан требует iPhone или iPad с LiDAR.';
 
   @override
+  String get room_scan_disabled_globally =>
+      '3D-сканирование комнаты отключено в настройках приложения. Позже оно может снова стать доступным.';
+
+  @override
   String get add_room_scan_3d => 'Добавить 3D-скан комнаты';
 
   @override
@@ -1230,15 +1234,20 @@ class AppLocalizationsRu extends AppLocalizations {
       'Модерация фото (сервер): если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).';
 
   @override
-  String get admin_client_config_section_title => 'На этом устройстве';
-
-  @override
   String get admin_client_config_hide_gemini_listing_ui =>
       'Скрыть перевод и улучшение ИИ';
 
   @override
   String get admin_client_config_hide_gemini_listing_ui_description =>
-      'Скрывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Сохраняется только на этом устройстве.';
+      'Скрывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Действует для всех пользователей и устройств (хранится на сервере).';
+
+  @override
+  String get admin_client_config_disable_lidar_room_scan =>
+      'Отключить сканирование LiDAR';
+
+  @override
+  String get admin_client_config_disable_lidar_room_scan_description =>
+      'Скрывает шаг добавления скана после создания объявления, кнопку при редактировании и блокирует загрузку сканов. Действует для всех пользователей и устройств (хранится на сервере).';
 
   @override
   String get admin_content_moderation_blur_enabled =>

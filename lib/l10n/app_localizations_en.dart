@@ -423,6 +423,10 @@ class AppLocalizationsEn extends AppLocalizations {
       '3D room scan requires an iPhone or iPad with LiDAR.';
 
   @override
+  String get room_scan_disabled_globally =>
+      '3D room scanning is turned off in app settings. It may be available again later.';
+
+  @override
   String get add_room_scan_3d => 'Add 3D room scan';
 
   @override
@@ -1222,15 +1226,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).';
 
   @override
-  String get admin_client_config_section_title => 'On this device';
-
-  @override
   String get admin_client_config_hide_gemini_listing_ui =>
       'Hide translation & AI improve';
 
   @override
   String get admin_client_config_hide_gemini_listing_ui_description =>
-      'Hides description language buttons on listing details and the AI improve action when creating or editing listings. Stored only on this device.';
+      'Hides description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).';
+
+  @override
+  String get admin_client_config_disable_lidar_room_scan =>
+      'Turn off LiDAR room scan';
+
+  @override
+  String get admin_client_config_disable_lidar_room_scan_description =>
+      'Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).';
 
   @override
   String get admin_content_moderation_blur_enabled =>

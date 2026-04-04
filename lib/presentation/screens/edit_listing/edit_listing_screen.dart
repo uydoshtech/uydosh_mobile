@@ -2,6 +2,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:intl/intl.dart";
+import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -1122,26 +1123,39 @@ class _EditListingScreenState extends State<EditListingScreen> {
                       isRequired: false,
                     ),
 
-                    if (isIOSDevice) ...[
-                      const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            HapticFeedbackUtils.impact();
-                            await Navigator.of(context).push<bool>(
-                              MaterialPageRoute(
-                                builder: (context) => RoomPlanScanScreen(
-                                  listingId: widget.listingDetail.id,
-                                ),
+                    ValueListenableBuilder<bool>(
+                      valueListenable:
+                          ClientLidarRoomScanConfig.lidarRoomScanDisabled,
+                      builder: (context, lidarDisabled, _) {
+                        if (!isIOSDevice || lidarDisabled) {
+                          return const SizedBox.shrink();
+                        }
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const SizedBox(height: 16),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  HapticFeedbackUtils.impact();
+                                  await Navigator.of(context).push<bool>(
+                                    MaterialPageRoute(
+                                      builder: (context) => RoomPlanScanScreen(
+                                        listingId: widget.listingDetail.id,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.view_in_ar),
+                                label: Text(L10n.get("add_room_scan_3d")),
                               ),
-                            );
-                          },
-                          icon: const Icon(Icons.view_in_ar),
-                          label: Text(L10n.get("add_room_scan_3d")),
-                        ),
-                      ),
-                    ],
+                            ),
+                          ],
+                        );
+                      },
+                    ),
 
                     const SizedBox(height: 20),
 
