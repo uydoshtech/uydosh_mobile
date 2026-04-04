@@ -69,6 +69,17 @@ class _ListingDescriptionTranslationState
       _loadingLang = null;
       _error = null;
     }
+    final originalChanged = oldWidget.listingId == widget.listingId &&
+        oldWidget.originalText.trim() != widget.originalText.trim();
+    if (originalChanged) {
+      _cache.remove("en");
+      _cache.remove("ru");
+      _cache.remove("uz");
+      if (_target != _TranslationTarget.original) {
+        _target = _TranslationTarget.original;
+      }
+      _error = null;
+    }
     if (oldWidget.listingId != widget.listingId ||
         oldWidget.descriptionEn != widget.descriptionEn ||
         oldWidget.descriptionRu != widget.descriptionRu ||
