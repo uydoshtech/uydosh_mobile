@@ -258,7 +258,7 @@ class _AdminContentModerationScreenState
                   height: 24,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(Icons.radar_outlined),
+              : const Icon(Icons.view_in_ar),
         ),
       ],
     );
