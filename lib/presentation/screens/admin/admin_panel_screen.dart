@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_search_analytics_screen
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_card_tile.dart";
 
@@ -34,6 +35,18 @@ class AdminPanelScreen extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const AdminUsersScreen()),
+              );
+            },
+          ),
+          _buildAdminSection(
+            context,
+            icon: Icons.telegram,
+            titleKey: "admin_panel_section_telegram_sync",
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AdminTelegramSyncScreen(),
+                ),
               );
             },
           ),

@@ -515,6 +515,27 @@ class AppStrings {
       "admin_content_moderation_error": "Could not load moderation settings",
       "admin_content_moderation_save_error": "Could not save setting",
 
+      "admin_panel_section_telegram_sync": "Telegram ingest",
+      "admin_telegram_sync_title": "Telegram ingest",
+      "admin_telegram_sync_intro":
+          "Runs the same sync as npm run telegram:sync on the server. The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.",
+      "admin_telegram_sync_chat_label": "Chat",
+      "admin_telegram_sync_limit_label": "Message limit",
+      "admin_telegram_sync_import_user_label": "Listing owner user ID",
+      "admin_telegram_sync_import_user_helper":
+          "users.id for listing import after sync. Leave empty to ingest only.",
+      "admin_telegram_sync_newest_first": "Newest first",
+      "admin_telegram_sync_skip_listing_import":
+          "Skip listing import (DB ingest only)",
+      "admin_telegram_sync_run": "Run sync",
+      "admin_telegram_sync_running": "Running…",
+      "admin_telegram_sync_result_header": "Result",
+      "admin_telegram_sync_sync_section": "DB sync",
+      "admin_telegram_sync_listing_section": "Listing import",
+      "admin_telegram_sync_invalid_chat_limit":
+          "Enter a chat and a positive limit.",
+      "admin_telegram_sync_invalid_import_user":
+          "Listing owner user ID must be a positive number or empty.",
       "admin_panel_section_users": "Users",
       "admin_panel_section_support_chat": "Support chat",
       "admin_panel_section_complaints": "Complaints",
@@ -1368,6 +1389,27 @@ class AppStrings {
       "admin_content_moderation_error": "Не удалось загрузить настройки модерации",
       "admin_content_moderation_save_error": "Не удалось сохранить настройку",
 
+      "admin_panel_section_telegram_sync": "Telegram: загрузка",
+      "admin_telegram_sync_title": "Telegram: загрузка",
+      "admin_telegram_sync_intro":
+          "Запускает на сервере тот же синхрон, что и npm run telegram:sync. Нужна сессия Telegram на хосте API (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.",
+      "admin_telegram_sync_chat_label": "Чат",
+      "admin_telegram_sync_limit_label": "Лимит сообщений",
+      "admin_telegram_sync_import_user_label": "ID владельца объявлений",
+      "admin_telegram_sync_import_user_helper":
+          "users.id для импорта объявлений после синка. Пусто — только запись в БД.",
+      "admin_telegram_sync_newest_first": "Сначала новые",
+      "admin_telegram_sync_skip_listing_import":
+          "Без импорта объявлений (только БД)",
+      "admin_telegram_sync_run": "Запустить синк",
+      "admin_telegram_sync_running": "Выполняется…",
+      "admin_telegram_sync_result_header": "Результат",
+      "admin_telegram_sync_sync_section": "Синк БД",
+      "admin_telegram_sync_listing_section": "Импорт объявлений",
+      "admin_telegram_sync_invalid_chat_limit":
+          "Укажите чат и положительный лимит.",
+      "admin_telegram_sync_invalid_import_user":
+          "ID пользователя должен быть положительным числом или пустым.",
       "admin_panel_section_users": "Пользователи",
       "admin_panel_section_support_chat": "Поддержка",
       "admin_panel_section_complaints": "Жалобы",
@@ -2231,6 +2273,25 @@ class AppStrings {
       "admin_content_moderation_error": "Moderatsiya sozlamalari yuklanmadi",
       "admin_content_moderation_save_error": "Sozlama saqlanmadi",
 
+      "admin_panel_section_telegram_sync": "Telegram yuklash",
+      "admin_telegram_sync_title": "Telegram yuklash",
+      "admin_telegram_sync_intro":
+          "Serverda npm run telegram:sync bilan bir xil sinxronni ishga tushiradi. API serverda Telegram sessiyasi bo‘lishi kerak (TELEGRAM_SESSION_STRING yoki .telegram_session). Katta limit proksi taymautlarida uzilishi mumkin.",
+      "admin_telegram_sync_chat_label": "Chat",
+      "admin_telegram_sync_limit_label": "Xabar limiti",
+      "admin_telegram_sync_import_user_label": "E’lon egasi user ID",
+      "admin_telegram_sync_import_user_helper":
+          "Sinxrondan keyin e’lon importi uchun users.id. Bo‘sh qoldiring — faqat ma’lumotlar bazasiga yozadi.",
+      "admin_telegram_sync_newest_first": "Avval yangilar",
+      "admin_telegram_sync_skip_listing_import": "E’lon importisiz (faqat DB)",
+      "admin_telegram_sync_run": "Sinxronni ishga tushirish",
+      "admin_telegram_sync_running": "Bajarilmoqda…",
+      "admin_telegram_sync_result_header": "Natija",
+      "admin_telegram_sync_sync_section": "DB sinxron",
+      "admin_telegram_sync_listing_section": "E’lon importi",
+      "admin_telegram_sync_invalid_chat_limit": "Chat va musbat limit kiriting.",
+      "admin_telegram_sync_invalid_import_user":
+          "Foydalanuvchi ID musbat son yoki bo‘sh bo‘lishi kerak.",
       "admin_panel_section_users": "Foydalanuvchilar",
       "admin_panel_section_support_chat": "Qo'llab-quvvatlash",
       "admin_panel_section_complaints": "Shikoyatlar",
