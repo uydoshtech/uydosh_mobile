@@ -1216,6 +1216,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_panel_title => 'Admin Panel';
 
   @override
+  String get admin_panel_category_management => 'Users & moderation';
+
+  @override
+  String get admin_panel_category_maps => 'Maps';
+
+  @override
+  String get admin_panel_category_analytics => 'Analytics';
+
+  @override
+  String get admin_panel_category_settings => 'Settings';
+
+  @override
   String get admin_panel_section_content_moderation => 'Client configuration';
 
   @override

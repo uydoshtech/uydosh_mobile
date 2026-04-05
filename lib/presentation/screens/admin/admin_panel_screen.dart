@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_content_moderation_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
@@ -11,13 +12,35 @@ import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart"
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_card_tile.dart";
 
-class AdminPanelScreen extends StatelessWidget {
+class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
 
   @override
+  State<AdminPanelScreen> createState() => _AdminPanelScreenState();
+}
+
+class _AdminPanelScreenState extends State<AdminPanelScreen> {
+  /// Expanded category indices (0–3: management, maps, analytics, settings).
+  final Set<int> _expandedCategories = {0};
+
+  void _toggleCategory(int index) {
+    HapticFeedbackUtils.selectionClick();
+    setState(() {
+      if (_expandedCategories.contains(index)) {
+        _expandedCategories.remove(index);
+      } else {
+        _expandedCategories.add(index);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final iconColor = isDark ? Colors.white : Colors.black;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -28,168 +51,324 @@ class AdminPanelScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-          _buildAdminSection(
-            context,
-            icon: Icons.people,
-            titleKey: "admin_panel_section_users",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AdminUsersScreen()),
-              );
-            },
-          ),
-          _buildAdminSection(
-            context,
-            icon: Icons.telegram,
-            titleKey: "admin_panel_section_telegram_sync",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AdminTelegramSyncScreen(),
-                ),
-              );
-            },
-          ),
-          _buildAdminSection(
-            context,
-            icon: Icons.support_agent,
-            titleKey: "admin_panel_section_support_chat",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AdminSupportChatScreen(),
-                ),
-              );
-            },
-          ),
-          _buildAdminSection(
-            context,
-            icon: Icons.report_problem,
-            titleKey: "admin_panel_section_complaints",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AdminComplaintsScreen(),
-                ),
-              );
-            },
-          ),
-          _buildAdminSection(
-            context,
-            icon: Icons.home_work_outlined,
-            titleKey: "admin_panel_section_listing_complaints",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder:
-                      (context) =>
+          _AdminCategoryCard(
+            headerIcon: Icons.manage_accounts,
+            titleKey: "admin_panel_category_management",
+            expanded: _expandedCategories.contains(0),
+            onHeaderTap: () => _toggleCategory(0),
+            iconColor: iconColor,
+            children: [
+              _AdminMenuRow(
+                icon: Icons.people,
+                titleKey: "admin_panel_section_users",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminUsersScreen(),
+                    ),
+                  );
+                },
+              ),
+              _AdminMenuRow(
+                icon: Icons.support_agent,
+                titleKey: "admin_panel_section_support_chat",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminSupportChatScreen(),
+                    ),
+                  );
+                },
+              ),
+              _AdminMenuRow(
+                icon: Icons.report_problem,
+                titleKey: "admin_panel_section_complaints",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminComplaintsScreen(),
+                    ),
+                  );
+                },
+              ),
+              _AdminMenuRow(
+                icon: Icons.home_work_outlined,
+                titleKey: "admin_panel_section_listing_complaints",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
                           const AdminListingsWithComplaintsScreen(),
-                ),
-              );
-            },
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-          _buildSectionDivider(context),
-          _buildAdminSection(
-            context,
-            icon: Icons.map_outlined,
-            titleKey: "admin_panel_section_district_heatmap",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AdminDistrictHeatmapScreen(),
-                ),
-              );
-            },
+          const SizedBox(height: 12),
+          _AdminCategoryCard(
+            headerIcon: Icons.map_outlined,
+            titleKey: "admin_panel_category_maps",
+            expanded: _expandedCategories.contains(1),
+            onHeaderTap: () => _toggleCategory(1),
+            iconColor: iconColor,
+            children: [
+              _AdminMenuRow(
+                icon: Icons.map_outlined,
+                titleKey: "admin_panel_section_district_heatmap",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminDistrictHeatmapScreen(),
+                    ),
+                  );
+                },
+              ),
+              _AdminMenuRow(
+                icon: Icons.train,
+                titleKey: "admin_panel_section_subway_heatmap",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminSubwayLineHeatmapScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-          _buildAdminSection(
-            context,
-            icon: Icons.train,
-            titleKey: "admin_panel_section_subway_heatmap",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AdminSubwayLineHeatmapScreen(),
-                ),
-              );
-            },
+          const SizedBox(height: 12),
+          _AdminCategoryCard(
+            headerIcon: Icons.insights_outlined,
+            titleKey: "admin_panel_category_analytics",
+            expanded: _expandedCategories.contains(2),
+            onHeaderTap: () => _toggleCategory(2),
+            iconColor: iconColor,
+            children: [
+              _AdminMenuRow(
+                icon: Icons.subway,
+                titleKey: "admin_panel_section_subway_map",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminSubwayMapScreen(),
+                    ),
+                  );
+                },
+              ),
+              _AdminMenuRow(
+                icon: Icons.analytics_outlined,
+                titleKey: "admin_panel_section_search_analytics",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminSearchAnalyticsScreen(),
+                    ),
+                  );
+                },
+              ),
+              _AdminMenuRow(
+                icon: Icons.trending_up,
+                titleKey: "admin_panel_section_listing_creation_analytics",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const AdminListingCreationAnalyticsScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-          _buildSectionDivider(context),
-          _buildAdminSection(
-            context,
-            icon: Icons.subway,
-            titleKey: "admin_panel_section_subway_map",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AdminSubwayMapScreen(),
-                ),
-              );
-            },
-          ),
-          _buildAdminSection(
-            context,
-            icon: Icons.analytics_outlined,
-            titleKey: "admin_panel_section_search_analytics",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AdminSearchAnalyticsScreen(),
-                ),
-              );
-            },
-          ),
-          _buildAdminSection(
-            context,
-            icon: Icons.trending_up,
-            titleKey: "admin_panel_section_listing_creation_analytics",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const AdminListingCreationAnalyticsScreen(),
-                ),
-              );
-            },
-          ),
-          _buildAdminSection(
-            context,
-            icon: Icons.photo_filter_outlined,
-            titleKey: "admin_panel_section_content_moderation",
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AdminContentModerationScreen(),
-                ),
-              );
-            },
+          const SizedBox(height: 12),
+          _AdminCategoryCard(
+            headerIcon: Icons.settings_outlined,
+            titleKey: "admin_panel_category_settings",
+            expanded: _expandedCategories.contains(3),
+            onHeaderTap: () => _toggleCategory(3),
+            iconColor: iconColor,
+            children: [
+              _AdminMenuRow(
+                icon: Icons.telegram,
+                titleKey: "admin_panel_section_telegram_sync",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminTelegramSyncScreen(),
+                    ),
+                  );
+                },
+              ),
+              _AdminMenuRow(
+                icon: Icons.settings_outlined,
+                titleKey: "admin_panel_section_content_moderation",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminContentModerationScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildSectionDivider(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Divider(
-        height: 1,
-        color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
-          alpha: 0.3,
-        ),
+class _AdminCategoryCard extends StatelessWidget {
+  const _AdminCategoryCard({
+    required this.headerIcon,
+    required this.titleKey,
+    required this.expanded,
+    required this.onHeaderTap,
+    required this.iconColor,
+    required this.children,
+  });
+
+  final IconData headerIcon;
+  final String titleKey;
+  final bool expanded;
+  final VoidCallback onHeaderTap;
+  final Color iconColor;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final dividerColor =
+        theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3);
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: onHeaderTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: Row(
+                children: [
+                  Icon(headerIcon, size: 24, color: onSurface),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      L10n.get(titleKey),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: onSurface,
+                      ),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          ClipRect(
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: expanded
+                  ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Divider(height: 1, thickness: 1, color: dividerColor),
+                      for (var i = 0; i < children.length; i++) ...[
+                        children[i],
+                        if (i < children.length - 1)
+                          Divider(
+                            height: 1,
+                            thickness: 1,
+                            indent: 52,
+                            endIndent: 16,
+                            color: dividerColor,
+                          ),
+                      ],
+                    ],
+                  )
+                  : const SizedBox(width: double.infinity),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildAdminSection(
-    BuildContext context, {
-    required IconData icon,
-    required String titleKey,
-    VoidCallback? onTap,
-  }) {
-    return UydoshCardTile(
-      icon: icon,
-      title: Text(L10n.get(titleKey)),
-      onTap: onTap,
+class _AdminMenuRow extends StatelessWidget {
+  const _AdminMenuRow({
+    required this.icon,
+    required this.titleKey,
+    required this.iconColor,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String titleKey;
+  final Color iconColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      onTap: () {
+        HapticFeedbackUtils.selectionClick();
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: iconColor),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                L10n.get(titleKey),
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

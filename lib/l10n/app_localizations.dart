@@ -2374,6 +2374,30 @@ abstract class AppLocalizations {
   /// **'Admin Panel'**
   String get admin_panel_title;
 
+  /// No description provided for @admin_panel_category_management.
+  ///
+  /// In en, this message translates to:
+  /// **'Users & moderation'**
+  String get admin_panel_category_management;
+
+  /// No description provided for @admin_panel_category_maps.
+  ///
+  /// In en, this message translates to:
+  /// **'Maps'**
+  String get admin_panel_category_maps;
+
+  /// No description provided for @admin_panel_category_analytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get admin_panel_category_analytics;
+
+  /// No description provided for @admin_panel_category_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get admin_panel_category_settings;
+
   /// No description provided for @admin_panel_section_content_moderation.
   ///
   /// In en, this message translates to:

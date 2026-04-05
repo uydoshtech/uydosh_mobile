@@ -1224,6 +1224,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_panel_title => 'Админ-панель';
 
   @override
+  String get admin_panel_category_management => 'Пользователи и модерация';
+
+  @override
+  String get admin_panel_category_maps => 'Карты';
+
+  @override
+  String get admin_panel_category_analytics => 'Аналитика';
+
+  @override
+  String get admin_panel_category_settings => 'Настройки';
+
+  @override
   String get admin_panel_section_content_moderation => 'Настройки клиента';
 
   @override

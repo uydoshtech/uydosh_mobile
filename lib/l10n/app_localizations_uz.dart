@@ -1231,6 +1231,19 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_panel_title => 'Admin paneli';
 
   @override
+  String get admin_panel_category_management =>
+      'Foydalanuvchilar va moderatsiya';
+
+  @override
+  String get admin_panel_category_maps => 'Xaritalar';
+
+  @override
+  String get admin_panel_category_analytics => 'Analitika';
+
+  @override
+  String get admin_panel_category_settings => 'Sozlamalar';
+
+  @override
   String get admin_panel_section_content_moderation => 'Klient sozlamalari';
 
   @override

@@ -500,6 +500,10 @@ class AppStrings {
       "manage_property": "Manage Property",
 
       "admin_panel_title": "Admin Panel",
+      "admin_panel_category_management": "Users & moderation",
+      "admin_panel_category_maps": "Maps",
+      "admin_panel_category_analytics": "Analytics",
+      "admin_panel_category_settings": "Settings",
       "admin_panel_section_content_moderation": "Client configuration",
       "admin_content_moderation_title": "Client configuration",
       "admin_content_moderation_description":
@@ -1390,6 +1394,10 @@ class AppStrings {
       "manage_property": "Управление жильём",
 
       "admin_panel_title": "Админ-панель",
+      "admin_panel_category_management": "Пользователи и модерация",
+      "admin_panel_category_maps": "Карты",
+      "admin_panel_category_analytics": "Аналитика",
+      "admin_panel_category_settings": "Настройки",
       "admin_panel_section_content_moderation": "Настройки клиента",
       "admin_content_moderation_title": "Настройки клиента",
       "admin_content_moderation_description":
@@ -2290,6 +2298,10 @@ class AppStrings {
       "manage_property": "Uyni boshqarish",
 
       "admin_panel_title": "Admin paneli",
+      "admin_panel_category_management": "Foydalanuvchilar va moderatsiya",
+      "admin_panel_category_maps": "Xaritalar",
+      "admin_panel_category_analytics": "Analitika",
+      "admin_panel_category_settings": "Sozlamalar",
       "admin_panel_section_content_moderation": "Klient sozlamalari",
       "admin_content_moderation_title": "Klient sozlamalari",
       "admin_content_moderation_description":
