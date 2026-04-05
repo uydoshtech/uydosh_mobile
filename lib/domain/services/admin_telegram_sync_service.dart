@@ -3,6 +3,7 @@ import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/util/save_export.dart" as save_export;
 
 Map<String, dynamic> _requireJsonMap(dynamic response, String errorMessage) {
   if (response is! Map) {
@@ -147,6 +148,12 @@ abstract class IAdminTelegramSyncService {
     required bool skipListingImport,
     int? importUserId,
   });
+
+  /// GET `/admin/telegram/ingested-messages/export` — saves JSONL via share sheet (mobile/desktop) or browser download (web).
+  Future<void> downloadIngestedExport({
+    String? chatKeyFilter,
+    int maxRows = 100000,
+  });
 }
 
 class AdminTelegramSyncService implements IAdminTelegramSyncService {
@@ -155,6 +162,7 @@ class AdminTelegramSyncService implements IAdminTelegramSyncService {
   final IOAuthApiClient _oauthApiClient;
 
   static const Duration _runTimeout = Duration(minutes: 15);
+  static const Duration _exportReceiveTimeout = Duration(minutes: 30);
 
   @override
   Future<TelegramSyncRunResult> runSync({
@@ -185,6 +193,32 @@ class AdminTelegramSyncService implements IAdminTelegramSyncService {
       return TelegramSyncRunResult.fromJson(map);
     } catch (e) {
       logger.d("Telegram sync error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> downloadIngestedExport({
+    String? chatKeyFilter,
+    int maxRows = 100000,
+  }) async {
+    try {
+      final trimmed = chatKeyFilter?.trim();
+      final bytes = await _oauthApiClient.getBytes(
+        "/admin/telegram/ingested-messages/export",
+        queryParameters: {
+          "maxRows": maxRows,
+          if (trimmed != null && trimmed.isNotEmpty) "chatKey": trimmed,
+        },
+        options: Options(receiveTimeout: _exportReceiveTimeout),
+      );
+      final day = DateTime.now().toIso8601String().split("T").first;
+      final rawSlug = trimmed ?? "all";
+      final safe = rawSlug.replaceAll(RegExp(r"[^\w:-]+"), "_");
+      final name = "telegram_ingested_${safe}_$day.jsonl";
+      await save_export.saveExportBytes(bytes, name);
+    } catch (e) {
+      logger.d("Telegram ingested export error: $e");
       rethrow;
     }
   }

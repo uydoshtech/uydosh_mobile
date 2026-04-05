@@ -26,6 +26,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   final IAdminUserService _adminUserService = getIt<IAdminUserService>();
   final _chatController = TextEditingController(text: "@roommateuz");
   final _limitController = TextEditingController(text: "6");
+  final _exportChatKeyController = TextEditingController();
+  final _exportMaxRowsController = TextEditingController(text: "100000");
 
   final List<AdminUser> _adminUsers = [];
   bool _loadingAdmins = true;
@@ -35,6 +37,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   bool _newestFirst = true;
   bool _skipListingImport = false;
   bool _running = false;
+  bool _exporting = false;
   String? _resultText;
   String? _errorText;
 
@@ -48,6 +51,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   void dispose() {
     _chatController.dispose();
     _limitController.dispose();
+    _exportChatKeyController.dispose();
+    _exportMaxRowsController.dispose();
     super.dispose();
   }
 
@@ -171,6 +176,42 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         _errorText = e.toString();
         _running = false;
       });
+    }
+  }
+
+  Future<void> _downloadExport() async {
+    final maxRows = int.tryParse(_exportMaxRowsController.text.trim());
+    if (maxRows == null || maxRows < 1 || maxRows > 500000) {
+      setState(() {
+        _errorText = L10n.get("admin_telegram_export_invalid_max_rows");
+      });
+      return;
+    }
+    setState(() {
+      _exporting = true;
+      _errorText = null;
+    });
+    try {
+      final filter = _exportChatKeyController.text.trim();
+      await _service.downloadIngestedExport(
+        chatKeyFilter: filter.isEmpty ? null : filter,
+        maxRows: maxRows,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(L10n.get("admin_telegram_export_done"))),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorText = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _exporting = false;
+        });
+      }
     }
   }
 
@@ -419,6 +460,73 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
             const SizedBox(height: 8),
             SelectableText(_resultText!),
           ],
+          const SizedBox(height: 32),
+          const Divider(),
+          const SizedBox(height: 16),
+          Text(
+            L10n.get("admin_telegram_export_section_title"),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            L10n.get("admin_telegram_export_intro"),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _exportChatKeyController,
+            style: fieldStyle,
+            decoration: _fieldDecoration(
+              context,
+              labelText: L10n.get("admin_telegram_export_chat_key_label"),
+            ),
+            autocorrect: false,
+            enabled: !_exporting,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _exportMaxRowsController,
+            style: fieldStyle,
+            decoration: _fieldDecoration(
+              context,
+              labelText: L10n.get("admin_telegram_export_max_rows_label"),
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            enabled: !_exporting,
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: (_running || _exporting) ? null : _downloadExport,
+            icon: _exporting
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  )
+                : const Icon(Icons.download_outlined),
+            label: Text(
+              _exporting
+                  ? L10n.get("admin_telegram_export_running")
+                  : L10n.get("admin_telegram_export_download"),
+            ),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+              foregroundColor: isBlue ? BlueThemeColors.textPrimary : null,
+              side: BorderSide(
+                color: isBlue
+                    ? BlueThemeColors.textSecondary
+                    : Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ),
         ],
       ),
     );

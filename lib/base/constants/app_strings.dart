@@ -542,6 +542,16 @@ class AppStrings {
           "Enter a chat and a positive limit.",
       "admin_telegram_sync_invalid_import_user":
           "Listing owner user ID must be a positive number or empty.",
+      "admin_telegram_export_section_title": "Download ingested messages",
+      "admin_telegram_export_intro":
+          "Exports rows from telegram_ingested_messages as a .jsonl text file (one JSON object per line). No Telegram calls. Use chat_key from the sync result to filter one channel, or leave empty for all chats (still capped by max rows).",
+      "admin_telegram_export_chat_key_label": "chat_key filter (optional)",
+      "admin_telegram_export_max_rows_label": "Max rows",
+      "admin_telegram_export_download": "Download export",
+      "admin_telegram_export_running": "Preparing download…",
+      "admin_telegram_export_invalid_max_rows":
+          "Max rows must be between 1 and 500000.",
+      "admin_telegram_export_done": "Export ready — use the share sheet or browser download.",
       "admin_panel_section_users": "Users",
       "admin_panel_section_support_chat": "Support chat",
       "admin_panel_section_complaints": "Complaints",
@@ -1422,6 +1432,16 @@ class AppStrings {
           "Укажите чат и положительный лимит.",
       "admin_telegram_sync_invalid_import_user":
           "ID пользователя должен быть положительным числом или пустым.",
+      "admin_telegram_export_section_title": "Скачать загруженные сообщения",
+      "admin_telegram_export_intro":
+          "Экспорт строк из telegram_ingested_messages в файл .jsonl (по одному JSON на строку). Без вызовов Telegram. Укажите chat_key из результата синка для одного канала или оставьте пустым для всех чатов (лимит по числу строк).",
+      "admin_telegram_export_chat_key_label": "Фильтр chat_key (необязательно)",
+      "admin_telegram_export_max_rows_label": "Макс. строк",
+      "admin_telegram_export_download": "Скачать экспорт",
+      "admin_telegram_export_running": "Готовим файл…",
+      "admin_telegram_export_invalid_max_rows":
+          "Макс. строк: от 1 до 500000.",
+      "admin_telegram_export_done": "Файл готов — поделитесь или сохраните из браузера.",
       "admin_panel_section_users": "Пользователи",
       "admin_panel_section_support_chat": "Поддержка",
       "admin_panel_section_complaints": "Жалобы",
@@ -2310,6 +2330,16 @@ class AppStrings {
       "admin_telegram_sync_invalid_chat_limit": "Chat va musbat limit kiriting.",
       "admin_telegram_sync_invalid_import_user":
           "Foydalanuvchi ID musbat son yoki bo‘sh bo‘lishi kerak.",
+      "admin_telegram_export_section_title": "Yuklangan xabarlarni yuklab olish",
+      "admin_telegram_export_intro":
+          "telegram_ingested_messages jadvalidan .jsonl fayl (har qatorda bitta JSON). Telegram chaqiruvi yo‘q. Sinxron natijasidagi chat_key bilan bitta kanalni filtrlash mumkin; bo‘sh qoldirsangiz — barcha chatlar (maks. qatorlar bilan cheklangan).",
+      "admin_telegram_export_chat_key_label": "chat_key filtri (ixtiyoriy)",
+      "admin_telegram_export_max_rows_label": "Maks. qatorlar",
+      "admin_telegram_export_download": "Eksportni yuklab olish",
+      "admin_telegram_export_running": "Fayl tayyorlanmoqda…",
+      "admin_telegram_export_invalid_max_rows":
+          "Maks. qatorlar 1 dan 500000 gacha bo‘lishi kerak.",
+      "admin_telegram_export_done": "Tayyor — ulashish oynasi yoki brauzer yuklab olishi.",
       "admin_panel_section_users": "Foydalanuvchilar",
       "admin_panel_section_support_chat": "Qo'llab-quvvatlash",
       "admin_panel_section_complaints": "Shikoyatlar",

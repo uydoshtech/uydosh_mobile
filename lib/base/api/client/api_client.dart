@@ -5,6 +5,8 @@
  * is strictly prohibited.
  */
 
+import "dart:typed_data";
+
 import "package:dio/dio.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
@@ -31,6 +33,31 @@ abstract class IApiClient {
       cancelToken: cancelToken,
     );
     return fromJson(response.data);
+  }
+
+  /// Binary GET (e.g. admin export downloads). [path] is relative to [basePath].
+  Future<Uint8List> getBytes(
+    String path, {
+    String basePath = EnvironmentUtil.basePath,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    final response = await dio.get<dynamic>(
+      "$basePath$path",
+      queryParameters: queryParameters,
+      cancelToken: cancelToken,
+      options:
+          (options ?? Options()).copyWith(responseType: ResponseType.bytes),
+    );
+    final data = response.data;
+    if (data is Uint8List) {
+      return data;
+    }
+    if (data is List<int>) {
+      return Uint8List.fromList(data);
+    }
+    throw StateError("Expected byte response from $path");
   }
 
   Future<List<ResponseType>> getList<ResponseType>(
