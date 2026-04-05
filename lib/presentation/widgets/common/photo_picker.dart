@@ -6,6 +6,7 @@ import "package:flutter/services.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/uydosh_vector_mark_watermark_raster.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -40,10 +41,17 @@ class _PhotoPickerState extends State<PhotoPicker> {
 
   Future<Uint8List> _loadWatermarkBytes() async {
     if (_cachedWatermarkBytes != null) return _cachedWatermarkBytes!;
-    final data = await rootBundle.load("assets/icon/app_logo.png");
-    _cachedWatermarkBytes = Uint8List.fromList(
-      data.buffer.asUint8List().toList(),
-    );
+    try {
+      _cachedWatermarkBytes = await UydoshVectorMarkWatermarkRaster.pngBytes();
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint("Vector mark watermark raster failed: $e\n$st");
+      }
+      final data = await rootBundle.load("assets/icon/app_logo.png");
+      _cachedWatermarkBytes = Uint8List.fromList(
+        data.buffer.asUint8List().toList(),
+      );
+    }
     return _cachedWatermarkBytes!;
   }
 

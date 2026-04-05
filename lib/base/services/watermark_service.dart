@@ -6,12 +6,12 @@ import "package:uy_dosh/base/logger/logger.dart";
 
 class WatermarkService {
   static const int _padding = 24;
-  /// Watermark takes ~40% of the shorter image dimension for high visibility on physical devices.
-  static const double _watermarkFraction = 0.40;
+  /// Corner mark size as a fraction of the shorter photo side (vector mark, readable but not dominant).
+  static const double _watermarkFraction = 0.22;
 
-  /// Adds a watermark (app icon) to the given image file.
+  /// Adds a watermark (rasterized vector mark) to the given image file.
   /// [watermarkImageBytes] - PNG/JPEG bytes of the logo to overlay (e.g. from assets).
-  /// Position: center (for testing visibility).
+  /// Position: bottom-right with [_padding] inset.
   static Future<File> addWatermark(
     File imageFile, {
     required Uint8List watermarkImageBytes,
@@ -39,7 +39,7 @@ class WatermarkService {
       // Clone image for modification
       final watermarkedImage = img.Image.from(originalImage);
 
-      // Resize watermark to ~40% of shorter image side (very visible on physical devices)
+      // Resize watermark relative to shorter image side
       final targetSize = (watermarkedImage.width < watermarkedImage.height
               ? watermarkedImage.width
               : watermarkedImage.height) *
@@ -50,9 +50,10 @@ class WatermarkService {
       final w = (watermarkImage.width * scale).round().clamp(1, 2000);
       final h = (watermarkImage.height * scale).round().clamp(1, 2000);
 
-      // Center position (for testing visibility)
-      final dstX = (watermarkedImage.width - w) ~/ 2;
-      final dstY = (watermarkedImage.height - h) ~/ 2;
+      final maxX = (watermarkedImage.width - w).clamp(0, watermarkedImage.width);
+      final maxY = (watermarkedImage.height - h).clamp(0, watermarkedImage.height);
+      final dstX = (watermarkedImage.width - w - _padding).clamp(0, maxX);
+      final dstY = (watermarkedImage.height - h - _padding).clamp(0, maxY);
 
       img.compositeImage(
         watermarkedImage,
