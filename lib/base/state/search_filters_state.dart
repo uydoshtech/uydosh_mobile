@@ -143,20 +143,31 @@ class SearchFiltersState extends ChangeNotifier {
     }
   }
 
-  /// Applies profile listing type and gender to search filters. Call before
-  /// opening the search sheet so it displays profile-based values. Always
-  /// overwrites current values with profile data for logged-in users.
+  /// Fills in listing type and gender from profile only when the user has no
+  /// saved search preference yet. Call before opening the search sheet so first-
+  /// time users see sensible defaults; do not overwrite an explicit choice from
+  /// a previous search (that caused the picker to snap back to profile gender
+  /// and could reset listing type so searches returned no rows).
   Future<void> applyProfileValuesForSearchSheet() async {
     if (!await SessionManager.isAuthenticated()) return;
 
     try {
-      final role = await _getUserRole();
-      final defaultType = role == "tenant" ? 2 : 1; // tenant=Need roommate (2), landlord=Needs Room (1)
-      await setListingTypeId(defaultType);
+      final prefs = await SharedPreferences.getInstance();
+      final savedListingTypeId = prefs.getInt("search_listing_type_id");
+      final savedGender = prefs.getInt("search_gender");
 
-      final gender = await _getProfileGender();
-      if (gender != null && (gender == 1 || gender == 2)) {
-        await setGender(gender);
+      if (savedListingTypeId == null) {
+        final role = await _getUserRole();
+        final defaultType =
+            role == "tenant" ? 2 : 1; // tenant=Need roommate (2), landlord=Needs Room (1)
+        await setListingTypeId(defaultType);
+      }
+
+      if (savedGender == null) {
+        final gender = await _getProfileGender();
+        if (gender != null && (gender == 1 || gender == 2)) {
+          await setGender(gender);
+        }
       }
     } catch (e) {
       logger.d("Error applying profile values for search sheet: $e");
