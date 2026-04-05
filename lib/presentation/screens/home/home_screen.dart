@@ -469,9 +469,34 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
+  /// Scrollable wrapper so [RefreshIndicator] works when content is shorter than
+  /// the viewport (welcome / empty states).
+  Widget _buildPullToRefreshAroundFillChild(Widget child) {
+    return RefreshIndicator(
+      color: _getRefreshIndicatorColor(),
+      backgroundColor: _getRefreshIndicatorBackgroundColor(),
+      onRefresh: _onFeedPullRefresh,
+      child: PullToRefreshStretchHaptics(
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+              sliver: SliverFillRemaining(
+                hasScrollBody: false,
+                child: child,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildInitialState() {
-    return Center(
-      child: Column(
+    return _buildPullToRefreshAroundFillChild(
+      Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.home, size: 64, color: _getHomeIconColor()),
@@ -495,8 +520,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildEmptySearchState() {
-    return Center(
-      child: Column(
+    return _buildPullToRefreshAroundFillChild(
+      Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.search_off, size: 64, color: _getHomeIconColor()),
@@ -554,37 +579,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadedState(List<Listing> listings, bool hasMore) {
-    if (listings.isEmpty) {
-      return RefreshIndicator(
-        color: _getRefreshIndicatorColor(),
-        backgroundColor: _getRefreshIndicatorBackgroundColor(),
-        onRefresh: _onFeedPullRefresh,
-        child: PullToRefreshStretchHaptics(
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-                sliver: SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: CommonStateBuilder(
-                    isLoading: false,
-                    hasError: false,
-                    isEmpty: true,
-                    emptyMessage: L10n.get("no_listings_found"),
-                    emptySubtitle: L10n.get("try_refreshing"),
-                    emptyIcon: Icons.home_outlined,
-                    child: Container(), // This won"t be shown when empty
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return RefreshIndicator(
       color: _getRefreshIndicatorColor(),
       backgroundColor: _getRefreshIndicatorBackgroundColor(),

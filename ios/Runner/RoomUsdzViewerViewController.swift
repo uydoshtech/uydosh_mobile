@@ -125,6 +125,10 @@ final class RoomUsdzViewerViewController: UIViewController {
   private var sceneWorldBounds: (min: SCNVector3, max: SCNVector3)?
   private var didCacheOriginalMaterials = false
   private var originalMaterialsByGeometry = [ObjectIdentifier: [SCNMaterial]]()
+  /// Matches `zoomInTapped` / `zoomOutTapped` (±6° per step).
+  private static let zoomFovStepDegrees: CGFloat = 6
+  /// How many zoom-in steps to apply on open (model appears larger; same camera distance as padded fit).
+  private static let initialZoomInSteps: Int = 2
 
   init(fileURL: URL, strings: RoomViewerStrings) {
     self.fileURL = fileURL
@@ -1134,7 +1138,9 @@ private enum SVGPathParser {
 
     root.addChildNode(cameraNode)
     view.pointOfView = cameraNode
-    setZoom(fovDegrees: vfovDegrees, animated: false)
+    let initialFov =
+      vfovDegrees - Self.zoomFovStepDegrees * CGFloat(Self.initialZoomInSteps)
+    setZoom(fovDegrees: initialFov, animated: false)
 
     view.defaultCameraController.target = centerWorld
 
