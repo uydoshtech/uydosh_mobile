@@ -23,6 +23,7 @@ import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
@@ -624,7 +625,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       language: language,
     );
 
-    final description = listingDetail.description ?? "";
+    final description = ListingContactRedaction.stripForPublicDisplay(
+      listingDetail.description ?? "",
+    );
     final price = listingDetail.price;
 
     // Build location info

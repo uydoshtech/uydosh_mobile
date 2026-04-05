@@ -10,6 +10,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
+import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -169,6 +170,7 @@ class _ListingTileState extends State<ListingTile>
       child: ListenableBuilder(
         listenable: ThemeState(),
         builder: (context, child) {
+          final descriptionSnippet = _descriptionSnippetForPublicTile();
           final cardWidget = Card(
           margin: EdgeInsets.zero,
           child: InkWell(
@@ -491,8 +493,7 @@ class _ListingTileState extends State<ListingTile>
                         ),
                       ),
                       // Description
-                      if (widget.listing.description != null &&
-                          widget.listing.description!.isNotEmpty) ...[
+                      if (descriptionSnippet != null) ...[
                         const SizedBox(height: 8),
                         Container(
                           width: double.infinity,
@@ -500,7 +501,7 @@ class _ListingTileState extends State<ListingTile>
                             right: 40,
                           ), // Add right padding to avoid arrow overlap
                           child: Text(
-                            widget.listing.description!,
+                            descriptionSnippet,
                             style: TextStyle(
                               fontSize: 14,
                               color: _getDescriptionTextColor(),
@@ -935,6 +936,13 @@ class _ListingTileState extends State<ListingTile>
     } else {
       return Colors.black; // Default text for light theme
     }
+  }
+
+  String? _descriptionSnippetForPublicTile() {
+    final raw = widget.listing.description;
+    if (raw == null || raw.isEmpty) return null;
+    final s = ListingContactRedaction.stripForPublicDisplay(raw);
+    return s.isEmpty ? null : s;
   }
 
   // Theme-dependent color method for location and metro text

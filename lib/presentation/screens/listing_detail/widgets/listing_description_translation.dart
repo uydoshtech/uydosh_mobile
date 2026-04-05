@@ -4,11 +4,13 @@ import "package:flutter/gestures.dart";
 import "package:flutter/material.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
+import "package:uy_dosh/base/config/client_listing_contact_ui_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -57,17 +59,6 @@ class _ListingDescriptionTranslationState
   String? _loadingLang;
   String? _error;
   final List<TapGestureRecognizer> _telegramRecognizers = [];
-
-  static final RegExp _telegramUsernameRe = RegExp(
-    r"@([A-Za-z][A-Za-z0-9_]{3,30})\b",
-  );
-
-  /// Uzbekistan mobiles: +998 / 998 prefix or local 9XXXXXXXX.
-  static final RegExp _phoneRe = RegExp(
-    r"\+998[\s\-]*9[0134679][\s\-]?\d{2}[\s\-]?\d{3}[\s\-]?\d{2}|"
-    r"998[\s\-]*9[0134679][\s\-]?\d{2}[\s\-]?\d{3}[\s\-]?\d{2}|"
-    r"(?<![0-9])9[0134679]\d{7}(?![0-9])",
-  );
 
   @override
   void initState() {
@@ -156,33 +147,11 @@ class _ListingDescriptionTranslationState
     return "tel:${rawMatch.replaceAll(RegExp(r"\s"), "")}";
   }
 
-  List<({int start, int end, String kind, String text})> _mergedContactMatches(
-    String content,
-  ) {
-    final raw = <({int start, int end, String kind, String text})>[];
-    for (final m in _telegramUsernameRe.allMatches(content)) {
-      raw.add((start: m.start, end: m.end, kind: "tg", text: m.group(0)!));
-    }
-    for (final m in _phoneRe.allMatches(content)) {
-      raw.add((start: m.start, end: m.end, kind: "phone", text: m.group(0)!));
-    }
-    raw.sort((a, b) {
-      final byStart = a.start.compareTo(b.start);
-      return byStart != 0 ? byStart : b.end.compareTo(a.end);
-    });
-    final kept = <({int start, int end, String kind, String text})>[];
-    for (final m in raw) {
-      final overlaps = kept.any(
-        (k) => m.start < k.end && m.end > k.start,
-      );
-      if (overlaps) continue;
-      kept.add(m);
-    }
-    kept.sort((a, b) => a.start.compareTo(b.start));
-    return kept;
-  }
-
   Widget _buildDescriptionWithTelegramLinks(String content) {
+    if (ClientListingContactUiConfig.hidePublicContactDetails) {
+      final redacted = ListingContactRedaction.stripForPublicDisplay(content);
+      return SelectableText(redacted, style: widget.textStyle);
+    }
     _disposeTelegramRecognizers();
     final linkColor = ListingDetailThemeHelper.descriptionLinkColor;
     final linkTextStyle = TextStyle(
@@ -193,7 +162,7 @@ class _ListingDescriptionTranslationState
       decorationColor: linkColor,
     );
     final spans = <InlineSpan>[];
-    final matches = _mergedContactMatches(content);
+    final matches = ListingContactRedaction.mergedContactMatches(content);
     var cursor = 0;
     for (final m in matches) {
       if (m.start > cursor) {
@@ -530,11 +499,19 @@ class _ListingDescriptionTranslationState
                       ),
                 ),
                 const SizedBox(height: 12),
-                Text(widget.originalText, style: widget.textStyle),
+                Text(
+                  ListingContactRedaction.stripForPublicDisplay(
+                    widget.originalText,
+                  ),
+                  style: widget.textStyle,
+                ),
               ],
             );
           }
-          return Text(widget.originalText, style: widget.textStyle);
+          return Text(
+            ListingContactRedaction.stripForPublicDisplay(widget.originalText),
+            style: widget.textStyle,
+          );
         }
         return _buildTranslationContent(context);
       },

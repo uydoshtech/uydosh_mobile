@@ -3,6 +3,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:url_launcher/url_launcher.dart";
+import "package:uy_dosh/base/config/client_listing_contact_ui_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -663,7 +664,8 @@ L10n.get("rating"),
                 ),
               ],
 
-              if (profile.telegram != null) ...[
+              if (!ClientListingContactUiConfig.hidePublicContactDetails &&
+                  profile.telegram != null) ...[
                 _buildTappableDetailCard(
                   icon: Icons.telegram,
                   title: L10n.get("telegram"),
@@ -676,7 +678,8 @@ L10n.get("rating"),
               const SizedBox(height: 24),
 
               // Contact Button - only show if phone number is available
-              if (widget.phoneNumber != null &&
+              if (!ClientListingContactUiConfig.hidePublicContactDetails &&
+                  widget.phoneNumber != null &&
                   widget.phoneNumber!.isNotEmpty) ...[
                 SizedBox(
                   width: double.infinity,
