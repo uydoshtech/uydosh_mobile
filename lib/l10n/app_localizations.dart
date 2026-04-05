@@ -1455,7 +1455,7 @@ abstract class AppLocalizations {
   /// No description provided for @listing_area_price_footnote.
   ///
   /// In en, this message translates to:
-  /// **'Based on other active listings at this station, on the same metro line, or in this district (same listing type when there are enough; otherwise all types there).'**
+  /// **'Median and average from a cached rollup of active listings (station, line, or district), refreshed on a schedule. Same listing type when the sample is large enough; otherwise all types in that zone.'**
   String get listing_area_price_footnote;
 
   /// No description provided for @listing_area_price_insufficient_data.

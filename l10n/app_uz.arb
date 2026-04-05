@@ -349,7 +349,7 @@
       "count": { "type": "String" }
     }
   },
-  "listing_area_price_footnote": "Shu bekati, shu metro liniyasi yoki shu tuman bo‘yicha boshqa faol e’lonlar (yetarli bo‘lsa xuddi shu tur; bo‘lmasa shu joydagi barcha turlar).",
+  "listing_area_price_footnote": "Median va o‘rtacha — faol e’lonlarning vaqtincha yangilanadigan yig‘indisi (bekat, liniya yoki tuman). Yetarli tanlov bo‘lsa xuddi shu tur, bo‘lmasa shu zonadagi barcha turlar.",
   "listing_area_price_insufficient_data": "Hozircha narx bo‘yicha orientir ko‘rsatish uchun yetarli e’lon yo‘q.",
   "listing_area_price_unknown_station": "Bu metro bekati",
   "listing_area_price_unknown_district": "Bu tuman",

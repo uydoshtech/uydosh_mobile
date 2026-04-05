@@ -751,7 +751,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get listing_area_price_footnote =>
-      'По другим активным объявлениям у этой станции, на той же ветке метро или в этом районе (тот же тип, если данных достаточно; иначе все типы там).';
+      'Медиана и среднее по кэшированной сводке активных объявлений (станция, ветка или район), обновляемой по расписанию. Тот же тип при достаточной выборке, иначе все типы в зоне.';
 
   @override
   String get listing_area_price_insufficient_data =>

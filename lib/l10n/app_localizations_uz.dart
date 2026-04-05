@@ -756,7 +756,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get listing_area_price_footnote =>
-      'Shu bekati, shu metro liniyasi yoki shu tuman bo‘yicha boshqa faol e’lonlar (yetarli bo‘lsa xuddi shu tur; bo‘lmasa shu joydagi barcha turlar).';
+      'Median va o‘rtacha — faol e’lonlarning vaqtincha yangilanadigan yig‘indisi (bekat, liniya yoki tuman). Yetarli tanlov bo‘lsa xuddi shu tur, bo‘lmasa shu zonadagi barcha turlar.';
 
   @override
   String get listing_area_price_insufficient_data =>
