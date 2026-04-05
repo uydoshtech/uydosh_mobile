@@ -682,6 +682,18 @@ abstract class AppLocalizations {
   /// **'With photo'**
   String get with_photo;
 
+  /// No description provided for @search_filter_private_room.
+  ///
+  /// In en, this message translates to:
+  /// **'Own room'**
+  String get search_filter_private_room;
+
+  /// No description provided for @search_filter_with_photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get search_filter_with_photo;
+
   /// No description provided for @conversation_count.
   ///
   /// In en, this message translates to:

@@ -318,6 +318,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get with_photo => 'Surat bilan';
 
   @override
+  String get search_filter_private_room => 'Shaxsiy xona';
+
+  @override
+  String get search_filter_with_photo => 'Suratli';
+
+  @override
   String get conversation_count => 'suhbat';
 
   @override

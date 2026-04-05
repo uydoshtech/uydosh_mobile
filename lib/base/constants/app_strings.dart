@@ -128,6 +128,8 @@ class AppStrings {
       "private_room": "Private Room",
       "private_room_only": "Private Room",
       "with_photo": "With photo",
+      "search_filter_private_room": "Own room",
+      "search_filter_with_photo": "Photos",
       "conversation_count": "conversation",
       "conversations_count": "conversations",
       "incoming": "Incoming",
@@ -177,8 +179,6 @@ class AppStrings {
       "room_3d_dimensions_caption": "Approximate dimensions (full scan bounds)",
       "room_3d_dimensions_line_template":
           "{floorLong} × {floorShort} m floor · {height} m high",
-      "room_3d_gesture_hint":
-          "Drag with one finger to look around the model.\nPinch with two fingers to zoom in or out.",
       "room_3d_load_error_title": "Could not load 3D model",
       "room_3d_floor_only_button": "Hide walls",
       "room_3d_full_room_button": "Full room",
@@ -1025,6 +1025,8 @@ class AppStrings {
       "private_room": "Отдельная комната",
       "private_room_only": "Отдельная комната",
       "with_photo": "С фото",
+      "search_filter_private_room": "Отдельная комната",
+      "search_filter_with_photo": "С фото",
       "conversation_count": "разговор",
       "conversations_count": "разговора",
       "incoming": "Входящие",
@@ -1078,8 +1080,6 @@ class AppStrings {
           "Приблизительные размеры (границы всего скана)",
       "room_3d_dimensions_line_template":
           "Пол: {floorLong} × {floorShort} м · высота {height} м",
-      "room_3d_gesture_hint":
-          "Перетаскивайте одним пальцем, чтобы осмотреть модель.\nЩипок двумя пальцами — масштаб.",
       "room_3d_load_error_title": "Не удалось загрузить 3D-модель",
       "room_3d_floor_only_button": "Скрыть стены",
       "room_3d_full_room_button": "Вся комната",
@@ -1933,6 +1933,8 @@ class AppStrings {
       "private_room": "Shaxsiy xona",
       "private_room_only": "Shaxsiy xona",
       "with_photo": "Surat bilan",
+      "search_filter_private_room": "Shaxsiy xona",
+      "search_filter_with_photo": "Suratli",
       "conversation_count": "suhbat",
       "conversations_count": "suhbat",
       "incoming": "Kiruvchi",
@@ -1987,8 +1989,6 @@ class AppStrings {
           "Taxminiy o'lchamlar (to'liq skan chegarasi)",
       "room_3d_dimensions_line_template":
           "Pol: {floorLong} × {floorShort} m · balandlik {height} m",
-      "room_3d_gesture_hint":
-          "Modelni ko'rish uchun barmoq bilan suring.\nIkki barmoq bilan yaqinlashtiring yoki uzoqlashtiring.",
       "room_3d_load_error_title": "3D modelni yuklab bo'lmadi",
       "room_3d_floor_only_button": "Devorlarni yashirish",
       "room_3d_full_room_button": "Butun xona",

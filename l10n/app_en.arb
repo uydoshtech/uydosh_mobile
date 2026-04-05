@@ -121,6 +121,8 @@
   "private_room": "Private Room",
   "private_room_only": "Private Room",
   "with_photo": "With photo",
+  "search_filter_private_room": "Own room",
+  "search_filter_with_photo": "Photos",
   "conversation_count": "conversation",
   "conversations_count": "conversations",
   "incoming": "Incoming",

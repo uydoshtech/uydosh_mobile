@@ -121,6 +121,8 @@
   "private_room": "Отдельная комната",
   "private_room_only": "Отдельная комната",
   "with_photo": "С фото",
+  "search_filter_private_room": "Отдельная комната",
+  "search_filter_with_photo": "С фото",
   "conversation_count": "разговор",
   "conversations_count": "разговора",
   "incoming": "Входящие",

@@ -121,6 +121,8 @@
   "private_room": "Shaxsiy xona",
   "private_room_only": "Shaxsiy xona",
   "with_photo": "Surat bilan",
+  "search_filter_private_room": "Shaxsiy xona",
+  "search_filter_with_photo": "Suratli",
   "conversation_count": "suhbat",
   "conversations_count": "suhbat",
   "incoming": "Kiruvchi",

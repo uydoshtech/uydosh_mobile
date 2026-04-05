@@ -316,6 +316,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get with_photo => 'With photo';
 
   @override
+  String get search_filter_private_room => 'Own room';
+
+  @override
+  String get search_filter_with_photo => 'Photos';
+
+  @override
   String get conversation_count => 'conversation';
 
   @override

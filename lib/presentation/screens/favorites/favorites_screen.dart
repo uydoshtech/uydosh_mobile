@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -15,6 +16,7 @@ import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -309,109 +311,117 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       return _buildEmptyState();
     }
 
-    return CommonListView(
-      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-      itemCount: _favoriteListings.length,
-      itemSpacing: 16.0,
-      itemBuilder: (context, index) {
-        final listing = _favoriteListings[index];
+    return RefreshIndicator(
+      color: _getRefreshIndicatorColor(),
+      backgroundColor: _getRefreshIndicatorBackgroundColor(),
+      onRefresh: () => _loadFavoriteListings(isRefresh: true),
+      child: PullToRefreshStretchHaptics(
+        child: CommonListView(
+          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+          itemCount: _favoriteListings.length,
+          itemSpacing: 16.0,
+          itemBuilder: (context, index) {
+            final listing = _favoriteListings[index];
 
-        return AnimatedContainer(
-            key: ValueKey(listing.id),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            height: _itemsBeingRemoved.contains(listing.id) ? 0 : null,
-            margin: EdgeInsets.only(
-              bottom: _itemsBeingRemoved.contains(listing.id) ? 0 : 16.0,
-            ),
-            child:
-                _itemsBeingRemoved.contains(listing.id)
-                    ? const SizedBox.shrink()
-                    : ListingTile(
-                      key: ValueKey(
-                        listing.id,
-                      ), // Add key for better performance
+            return AnimatedContainer(
+              key: ValueKey(listing.id),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              height: _itemsBeingRemoved.contains(listing.id) ? 0 : null,
+              margin: EdgeInsets.only(
+                bottom: _itemsBeingRemoved.contains(listing.id) ? 0 : 16.0,
+              ),
+              child: _itemsBeingRemoved.contains(listing.id)
+                  ? const SizedBox.shrink()
+                  : ListingTile(
+                      key: ValueKey(listing.id),
                       listing: listing,
-                      forceFavorite:
-                          true, // Force red heart for all listings on favorites screen
-                      showHeartIcon:
-                          true, // Show heart icon on favorites screen
+                      forceFavorite: true,
+                      showHeartIcon: true,
                       onFavoriteRemoved: () {
-                        // Start the collapse animation
                         setState(() {
                           _itemsBeingRemoved.add(listing.id);
                         });
-
-                        // Remove from favorites after animation
                         Future.delayed(const Duration(milliseconds: 300), () {
                           _removeFromFavorites(listing.id);
                         });
                       },
                     ),
-          );
-        },
-      showRefreshIndicator: true,
-      onRefresh: () => _loadFavoriteListings(isRefresh: true),
-      showLoadMoreIndicator: _hasMoreData,
-      hasMore: _hasMoreData,
-      loadMoreIndicator: _isLoadingMore
-          ? Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    _getLoadingIndicatorColor(),
+            );
+          },
+          showRefreshIndicator: false,
+          showLoadMoreIndicator: _hasMoreData,
+          hasMore: _hasMoreData,
+          loadMoreIndicator: _isLoadingMore
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        _getLoadingIndicatorColor(),
+                      ),
+                    ),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Center(
+                    child: GhostButtonFactory.text(
+                      onPressed: _loadMoreFavorites,
+                      text: L10n.get("load_more"),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            )
-          : Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Center(
-                child: GhostButtonFactory.text(
-                  onPressed: _loadMoreFavorites,
-                  text: L10n.get("load_more"),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-              ),
-            ),
+        ),
+      ),
     );
   }
 
   Widget _buildEmptyState() {
-    return Builder(
-      builder:
-          (context) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ThemeIconFactory.display(icon: Icons.favorite_border),
-                  const SizedBox(height: 16),
-                  ListenableBuilder(
-                    listenable: LanguageState(),
-                    builder: (context, child) {
-                      return L10n.text(
-                        "favorites_empty_title",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: _getEmptyStateTextColor(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  _buildThemeAwareButton(),
-                ],
+    return RefreshIndicator(
+      color: _getRefreshIndicatorColor(),
+      backgroundColor: _getRefreshIndicatorBackgroundColor(),
+      onRefresh: () => _loadFavoriteListings(isRefresh: true),
+      child: PullToRefreshStretchHaptics(
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              sliver: SliverFillRemaining(
+                hasScrollBody: false,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ThemeIconFactory.display(icon: Icons.favorite_border),
+                    const SizedBox(height: 16),
+                    ListenableBuilder(
+                      listenable: LanguageState(),
+                      builder: (context, child) {
+                        return L10n.text(
+                          "favorites_empty_title",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: _getEmptyStateTextColor(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    _buildThemeAwareButton(),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -510,6 +520,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
           ),
     );
+  }
+
+  Color _getRefreshIndicatorColor() {
+    final currentTheme = ThemeState().currentTheme;
+    if (currentTheme == AppTheme.blueTheme) {
+      return Colors.white;
+    }
+    return Theme.of(context).colorScheme.primary;
+  }
+
+  Color _getRefreshIndicatorBackgroundColor() {
+    final currentTheme = ThemeState().currentTheme;
+    if (currentTheme == AppTheme.blueTheme) {
+      return Colors.white.withValues(alpha: 0.2);
+    }
+    return Colors.transparent;
   }
 
   // Theme-dependent color method for loading indicators

@@ -7,7 +7,6 @@ struct RoomViewerStrings {
   let title: String
   let dimensionsCaption: String
   let dimensionsLineTemplate: String
-  let gestureHint: String
   let loadErrorTitle: String
   let alertOk: String
   let floorOnlyButtonTitle: String
@@ -20,7 +19,6 @@ struct RoomViewerStrings {
     title: String,
     dimensionsCaption: String,
     dimensionsLineTemplate: String,
-    gestureHint: String,
     loadErrorTitle: String,
     alertOk: String,
     floorOnlyButtonTitle: String,
@@ -31,7 +29,6 @@ struct RoomViewerStrings {
     self.title = title
     self.dimensionsCaption = dimensionsCaption
     self.dimensionsLineTemplate = dimensionsLineTemplate
-    self.gestureHint = gestureHint
     self.loadErrorTitle = loadErrorTitle
     self.alertOk = alertOk
     self.floorOnlyButtonTitle = floorOnlyButtonTitle
@@ -44,7 +41,6 @@ struct RoomViewerStrings {
     guard let title = dict["title"],
       let dimensionsCaption = dict["dimensionsCaption"],
       let dimensionsLineTemplate = dict["dimensionsLineTemplate"],
-      let gestureHint = dict["gestureHint"],
       let loadErrorTitle = dict["loadErrorTitle"],
       let alertOk = dict["alertOk"]
     else { return nil }
@@ -52,7 +48,6 @@ struct RoomViewerStrings {
       title: title,
       dimensionsCaption: dimensionsCaption,
       dimensionsLineTemplate: dimensionsLineTemplate,
-      gestureHint: gestureHint,
       loadErrorTitle: loadErrorTitle,
       alertOk: alertOk,
       floorOnlyButtonTitle: dict["floorOnlyButton"] ?? "Hide walls",
@@ -80,9 +75,6 @@ struct RoomViewerStrings {
     title: "3D",
     dimensionsCaption: "Approximate dimensions (full scan bounds)",
     dimensionsLineTemplate: "{floorLong} × {floorShort} m floor · {height} m high",
-    gestureHint:
-      "Drag with one finger to look around the model.\n"
-      + "Pinch with two fingers to zoom in or out.",
     loadErrorTitle: "Could not load 3D model",
     alertOk: "OK",
     floorOnlyButtonTitle: "Hide walls",
@@ -102,12 +94,11 @@ final class RoomUsdzViewerViewController: UIViewController {
   private let hintStack = UIStackView()
   private let dimensionsTitleLabel = UILabel()
   private let dimensionsValueLabel = UILabel()
-  private let hintLabel = UILabel()
   private let zoomControlsContainer = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
   private let zoomStack = UIStackView()
   private let zoomInButton = UIButton(type: .system)
   private let zoomOutButton = UIButton(type: .system)
-  /// App mark (vector): U letter + roof + chimney over the 3D viewport.
+  /// App mark (vector): U letter + roof + chimney, bottom-leading over the 3D viewport.
   private let brandMarkView = UydoshVectorBrandMarkView()
   private var loadedScene: SCNScene?
   private enum DisplayMode: Int {
@@ -167,12 +158,14 @@ final class RoomUsdzViewerViewController: UIViewController {
     setupZoomControls()
 
     hintContainer.translatesAutoresizingMaskIntoConstraints = false
-    hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)
+    // Opaque panel only once dimensions are known (avoids an empty strip while labels are hidden).
+    hintContainer.backgroundColor = .clear
     hintContainer.layer.cornerRadius = 12
     if #available(iOS 13.0, *) {
       hintContainer.layer.cornerCurve = .continuous
     }
     hintContainer.clipsToBounds = true
+    hintContainer.isUserInteractionEnabled = false
 
     dimensionsTitleLabel.translatesAutoresizingMaskIntoConstraints = false
     dimensionsTitleLabel.textAlignment = .center
@@ -196,22 +189,12 @@ final class RoomUsdzViewerViewController: UIViewController {
     }
     dimensionsValueLabel.isHidden = true
 
-    hintLabel.translatesAutoresizingMaskIntoConstraints = false
-    hintLabel.numberOfLines = 0
-    hintLabel.textAlignment = .center
-    hintLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
-    hintLabel.adjustsFontForContentSizeCategory = true
-    hintLabel.textColor = UIColor.white.withAlphaComponent(0.95)
-    hintLabel.text = strings.gestureHint
-
     hintStack.translatesAutoresizingMaskIntoConstraints = false
     hintStack.axis = .vertical
     hintStack.alignment = .fill
     hintStack.spacing = 4
     hintStack.addArrangedSubview(dimensionsTitleLabel)
     hintStack.addArrangedSubview(dimensionsValueLabel)
-    hintStack.setCustomSpacing(12, after: dimensionsValueLabel)
-    hintStack.addArrangedSubview(hintLabel)
 
     hintContainer.addSubview(hintStack)
     view.addSubview(hintContainer)
@@ -229,7 +212,8 @@ final class RoomUsdzViewerViewController: UIViewController {
       sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
       sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      sceneView.bottomAnchor.constraint(equalTo: hintContainer.topAnchor, constant: -12),
+      // Footer overlays the bottom; clear until dimensions load so no empty strip is reserved.
+      sceneView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
 
       hintStack.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 10),
       hintStack.leadingAnchor.constraint(equalTo: hintContainer.leadingAnchor, constant: 14),
@@ -241,12 +225,12 @@ final class RoomUsdzViewerViewController: UIViewController {
       hintContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
 
       brandMarkView.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
-      brandMarkView.topAnchor.constraint(equalTo: sceneView.topAnchor, constant: 10),
+      brandMarkView.bottomAnchor.constraint(equalTo: hintContainer.topAnchor, constant: -12),
       brandMarkView.widthAnchor.constraint(equalToConstant: 62),
       brandMarkView.heightAnchor.constraint(equalToConstant: 62),
 
       zoomControlsContainer.trailingAnchor.constraint(equalTo: sceneView.trailingAnchor, constant: -12),
-      zoomControlsContainer.bottomAnchor.constraint(equalTo: sceneView.bottomAnchor, constant: -12),
+      zoomControlsContainer.bottomAnchor.constraint(equalTo: hintContainer.topAnchor, constant: -12),
     ])
 
     loadScene()
@@ -1068,6 +1052,8 @@ private enum SVGPathParser {
     dimensionsValueLabel.text = line
     dimensionsTitleLabel.isHidden = false
     dimensionsValueLabel.isHidden = false
+    hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)
+    hintContainer.isUserInteractionEnabled = true
   }
 
   /// Places the camera so the whole model fits the viewport (avoids default “inside the mesh” zoom).
