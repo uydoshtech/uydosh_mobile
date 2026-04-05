@@ -750,10 +750,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get listing_area_price_footnote =>
-      'Медиана и среднее по кэшированной сводке активных объявлений (станция, ветка или район), обновляемой по расписанию. Тот же тип при достаточной выборке, иначе все типы в зоне.';
-
-  @override
   String get listing_area_price_insufficient_data =>
       'Пока недостаточно похожих объявлений, чтобы показать ориентир по цене.';
 
@@ -1310,6 +1306,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_panel_section_telegram_sync => 'Импорт данных';
 
   @override
+  String get admin_panel_section_area_price_cache => 'Ориентиры по ценам';
+
+  @override
   String get admin_telegram_sync_title => 'Импорт данных';
 
   @override
@@ -1389,6 +1388,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_area_price_cache_running => 'Пересчёт кэша…';
+
+  @override
+  String get admin_area_price_cache_screen_body =>
+      'Пересобирает кэш медианы и средней аренды по станциям, линиям метро и районам (блок «ориентир по цене» в объявлении). Запускайте после крупного импорта из Telegram или если блок пустой.';
 
   @override
   String get admin_panel_section_users => 'Пользователи';

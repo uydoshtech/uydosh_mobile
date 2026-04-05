@@ -5,7 +5,6 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
-import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
 
@@ -30,8 +29,6 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
       BorderRadius.all(Radius.circular(8));
 
   final IAdminTelegramSyncService _service = getIt<IAdminTelegramSyncService>();
-  final IAdminAreaPriceCacheService _areaPriceCacheService =
-      getIt<IAdminAreaPriceCacheService>();
   final IAdminUserService _adminUserService = getIt<IAdminUserService>();
   final _chatController = TextEditingController(text: "@roommateuz");
   final _exportMaxRowsController = TextEditingController(text: "100000");
@@ -46,11 +43,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   bool _skipListingImport = false;
   bool _running = false;
   bool _exporting = false;
-  bool _priceCacheRunning = false;
   String? _resultText;
   String? _errorText;
-  String? _priceCacheResultText;
-  String? _priceCacheErrorText;
 
   @override
   void initState() {
@@ -191,29 +185,6 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
       setState(() {
         _errorText = e.toString();
         _running = false;
-      });
-    }
-  }
-
-  Future<void> _runPriceCacheRefresh() async {
-    setState(() {
-      _priceCacheRunning = true;
-      _priceCacheErrorText = null;
-      _priceCacheResultText = null;
-    });
-    try {
-      final r = await _areaPriceCacheService.refreshCache();
-      if (!mounted) return;
-      setState(() {
-        _priceCacheResultText =
-            "durationMs=${r.durationMs}, cache_rows=${r.rowCount}, source_listings=${r.listingCount}";
-        _priceCacheRunning = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _priceCacheErrorText = e.toString();
-        _priceCacheRunning = false;
       });
     }
   }
@@ -419,7 +390,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                   ),
                 ),
               ],
-              onChanged: (_running || _priceCacheRunning)
+              onChanged: _running
                   ? null
                   : (v) => setState(() => _selectedImportUserId = v),
               decoration: _fieldDecoration(
@@ -437,14 +408,14 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           SwitchListTile(
             title: Text(L10n.get("admin_telegram_sync_newest_first")),
             value: _newestFirst,
-            onChanged: (_running || _priceCacheRunning)
+            onChanged: _running
                 ? null
                 : (v) => setState(() => _newestFirst = v),
           ),
           SwitchListTile(
             title: Text(L10n.get("admin_telegram_sync_skip_listing_import")),
             value: _skipListingImport,
-            onChanged: (_running || _priceCacheRunning)
+            onChanged: _running
                 ? null
                 : (v) => setState(() => _skipListingImport = v),
           ),
@@ -460,7 +431,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                   ),
                 )
                 .toList(),
-            onChanged: (_running || _priceCacheRunning)
+            onChanged: _running
                 ? null
                 : (v) {
                     if (v == null) return;
@@ -478,7 +449,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           const SizedBox(height: 16),
           FilledButton.icon(
             style: primaryFullWidthStyle,
-            onPressed: (_running || _priceCacheRunning) ? null : _run,
+            onPressed: _running ? null : _run,
             icon: _running
                 ? SizedBox(
                     width: 20,
@@ -519,64 +490,6 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           const Divider(),
           const SizedBox(height: 16),
           Text(
-            L10n.get("admin_area_price_cache_section_title"),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            L10n.get("admin_area_price_cache_intro"),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            style: primaryFullWidthStyle,
-            onPressed: (_running || _exporting || _priceCacheRunning)
-                ? null
-                : _runPriceCacheRefresh,
-            icon: _priceCacheRunning
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: isBlue
-                          ? BlueThemeColors.textPrimary
-                          : Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  )
-                : const Icon(Icons.analytics_outlined),
-            label: Text(
-              _priceCacheRunning
-                  ? L10n.get("admin_area_price_cache_running")
-                  : L10n.get("admin_area_price_cache_run"),
-            ),
-          ),
-          if (_priceCacheErrorText != null) ...[
-            const SizedBox(height: 12),
-            SelectableText(
-              _priceCacheErrorText!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ],
-          if (_priceCacheResultText != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              L10n.get("admin_telegram_sync_result_header"),
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            SelectableText(_priceCacheResultText!),
-          ],
-          const SizedBox(height: 32),
-          const Divider(),
-          const SizedBox(height: 16),
-          Text(
             L10n.get("admin_telegram_export_section_title"),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
@@ -604,9 +517,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           const SizedBox(height: 16),
           FilledButton.icon(
             style: primaryFullWidthStyle,
-            onPressed: (_running || _exporting || _priceCacheRunning)
-                ? null
-                : _downloadExport,
+            onPressed: (_running || _exporting) ? null : _downloadExport,
             icon: _exporting
                 ? SizedBox(
                     width: 20,

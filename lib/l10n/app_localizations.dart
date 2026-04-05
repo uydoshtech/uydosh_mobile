@@ -1452,12 +1452,6 @@ abstract class AppLocalizations {
   String listing_area_price_location_line(
       String place, String median, String mean, String count);
 
-  /// No description provided for @listing_area_price_footnote.
-  ///
-  /// In en, this message translates to:
-  /// **'Median and average from a cached rollup of active listings (station, line, or district), refreshed on a schedule. Same listing type when the sample is large enough; otherwise all types in that zone.'**
-  String get listing_area_price_footnote;
-
   /// No description provided for @listing_area_price_insufficient_data.
   ///
   /// In en, this message translates to:
@@ -2514,6 +2508,12 @@ abstract class AppLocalizations {
   /// **'Data import'**
   String get admin_panel_section_telegram_sync;
 
+  /// No description provided for @admin_panel_section_area_price_cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing price benchmarks'**
+  String get admin_panel_section_area_price_cache;
+
   /// No description provided for @admin_telegram_sync_title.
   ///
   /// In en, this message translates to:
@@ -2657,6 +2657,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rebuilding cache…'**
   String get admin_area_price_cache_running;
+
+  /// No description provided for @admin_area_price_cache_screen_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuilds cached median and average rents by metro station, line, and district (the “typical rent nearby” block on listing detail). Run after large Telegram imports or if that block stays empty.'**
+  String get admin_area_price_cache_screen_body;
 
   /// No description provided for @admin_panel_section_users.
   ///

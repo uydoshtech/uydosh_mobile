@@ -341,7 +341,6 @@
       "count": { "type": "String" }
     }
   },
-  "listing_area_price_footnote": "Медиана и среднее по кэшированной сводке активных объявлений (станция, ветка или район), обновляемой по расписанию. Тот же тип при достаточной выборке, иначе все типы в зоне.",
   "listing_area_price_insufficient_data": "Пока недостаточно похожих объявлений, чтобы показать ориентир по цене.",
   "listing_area_price_unknown_station": "Эта станция метро",
   "listing_area_price_unknown_district": "Этот район",
@@ -526,6 +525,7 @@
   "admin_content_moderation_error": "Не удалось загрузить настройки модерации",
   "admin_content_moderation_save_error": "Не удалось сохранить настройку",
   "admin_panel_section_telegram_sync": "Импорт данных",
+  "admin_panel_section_area_price_cache": "Ориентиры по ценам",
   "admin_telegram_sync_title": "Импорт данных",
   "admin_telegram_sync_intro": "Импортирует объявления из Telegram‑канала в базу (тот же процесс, что npm run telegram:sync на сервере). На хосте API нужна сессия Telegram (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.",
   "admin_telegram_sync_chat_label": "Чат",
@@ -550,6 +550,7 @@
   "admin_area_price_cache_intro": "Пересчитывает медиану и среднее по станциям, линиям метро и районам (оринтир на карточке объявления). Запускайте после крупных импортов из Telegram.",
   "admin_area_price_cache_run": "Обновить кэш цен",
   "admin_area_price_cache_running": "Пересчёт кэша…",
+  "admin_area_price_cache_screen_body": "Пересобирает кэш медианы и средней аренды по станциям, линиям метро и районам (блок «ориентир по цене» в объявлении). Запускайте после крупного импорта из Telegram или если блок пустой.",
   "admin_panel_section_users": "Пользователи",
   "admin_panel_section_support_chat": "Поддержка",
   "admin_panel_section_complaints": "Жалобы",

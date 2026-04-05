@@ -755,10 +755,6 @@ class AppLocalizationsUz extends AppLocalizations {
   }
 
   @override
-  String get listing_area_price_footnote =>
-      'Median va o‘rtacha — faol e’lonlarning vaqtincha yangilanadigan yig‘indisi (bekat, liniya yoki tuman). Yetarli tanlov bo‘lsa xuddi shu tur, bo‘lmasa shu zonadagi barcha turlar.';
-
-  @override
   String get listing_area_price_insufficient_data =>
       'Hozircha narx bo‘yicha orientir ko‘rsatish uchun yetarli e’lon yo‘q.';
 
@@ -1317,6 +1313,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_panel_section_telegram_sync => 'Maʼlumot importi';
 
   @override
+  String get admin_panel_section_area_price_cache =>
+      'Narx bo‘yicha orientirlar';
+
+  @override
   String get admin_telegram_sync_title => 'Maʼlumot importi';
 
   @override
@@ -1396,6 +1396,10 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_area_price_cache_running => 'Kesh qayta hisoblanmoqda…';
+
+  @override
+  String get admin_area_price_cache_screen_body =>
+      'Metro bekati, liniya va tuman bo‘yicha median va o‘rtacha ijarani keshda qayta hisoblaydi (e’lon tafsilotidagi «atrofdagi narx» bloki). Katta Telegram importidan keyin yoki bo‘sh qolsa ishga tushiring.';
 
   @override
   String get admin_panel_section_users => 'Foydalanuvchilar';

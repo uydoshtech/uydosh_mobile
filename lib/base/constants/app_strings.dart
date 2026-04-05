@@ -520,6 +520,7 @@ class AppStrings {
       "admin_content_moderation_save_error": "Could not save setting",
 
       "admin_panel_section_telegram_sync": "Data import",
+      "admin_panel_section_area_price_cache": "Listing price benchmarks",
       "admin_telegram_sync_title": "Data import",
       "admin_telegram_sync_intro":
           "Imports listing data from a Telegram channel into the database (same flow as npm run telegram:sync on the server). The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.",
@@ -551,6 +552,8 @@ class AppStrings {
           "Rebuilds median/mean aggregates per metro station, line, and district (used on listing detail). Run after large Telegram imports.",
       "admin_area_price_cache_run": "Refresh area price cache",
       "admin_area_price_cache_running": "Rebuilding cache…",
+      "admin_area_price_cache_screen_body":
+          "Rebuilds cached median and average rents by metro station, line, and district (the “typical rent nearby” block on listing detail). Run after large Telegram imports or if that block stays empty.",
       "admin_telegram_export_section_title": "Download ingested messages",
       "admin_telegram_export_intro":
           "Exports rows from telegram_ingested_messages as a .jsonl text file (one JSON object per line). No Telegram calls. Output includes all chats, capped by max rows.",
@@ -1418,6 +1421,7 @@ class AppStrings {
       "admin_content_moderation_save_error": "Не удалось сохранить настройку",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
+      "admin_panel_section_area_price_cache": "Ориентиры по ценам",
       "admin_telegram_sync_title": "Импорт данных",
       "admin_telegram_sync_intro":
           "Импортирует объявления из Telegram‑канала в базу (тот же процесс, что npm run telegram:sync на сервере). На хосте API нужна сессия Telegram (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.",
@@ -1449,6 +1453,8 @@ class AppStrings {
           "Пересчитывает медиану и среднее по станциям, линиям метро и районам (оринтир на карточке объявления). Запускайте после крупных импортов из Telegram.",
       "admin_area_price_cache_run": "Обновить кэш цен",
       "admin_area_price_cache_running": "Пересчёт кэша…",
+      "admin_area_price_cache_screen_body":
+          "Пересобирает кэш медианы и средней аренды по станциям, линиям метро и районам (блок «ориентир по цене» в объявлении). Запускайте после крупного импорта из Telegram или если блок пустой.",
       "admin_telegram_export_section_title": "Скачать загруженные сообщения",
       "admin_telegram_export_intro":
           "Экспорт строк из telegram_ingested_messages в файл .jsonl (по одному JSON на строку). Без вызовов Telegram. Все чаты, объём ограничен числом строк.",
@@ -2326,6 +2332,7 @@ class AppStrings {
       "admin_content_moderation_save_error": "Sozlama saqlanmadi",
 
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
+      "admin_panel_section_area_price_cache": "Narx bo‘yicha orientirlar",
       "admin_telegram_sync_title": "Maʼlumot importi",
       "admin_telegram_sync_intro":
           "Telegram kanalidan e’lonlarni bazaga import qiladi (serverda npm run telegram:sync bilan bir xil jarayon). API serverda Telegram sessiyasi bo‘lishi kerak (TELEGRAM_SESSION_STRING yoki .telegram_session). Katta limit proksi taymautlarida uzilishi mumkin.",
@@ -2356,6 +2363,8 @@ class AppStrings {
           "Metro bekati, liniya va tuman bo‘yicha median va o‘rtacha narxni qayta hisoblaydi (e’lon tafsilotida). Katta Telegram importidan keyin ishga tushiring.",
       "admin_area_price_cache_run": "Narx keshini yangilash",
       "admin_area_price_cache_running": "Kesh qayta hisoblanmoqda…",
+      "admin_area_price_cache_screen_body":
+          "Metro bekati, liniya va tuman bo‘yicha median va o‘rtacha ijarani keshda qayta hisoblaydi (e’lon tafsilotidagi «atrofdagi narx» bloki). Katta Telegram importidan keyin yoki bo‘sh qolsa ishga tushiring.",
       "admin_telegram_export_section_title": "Yuklangan xabarlarni yuklab olish",
       "admin_telegram_export_intro":
           "telegram_ingested_messages jadvalidan .jsonl fayl (har qatorda bitta JSON). Telegram chaqiruvi yo‘q. Barcha chatlar, hajm maks. qatorlar bilan cheklangan.",

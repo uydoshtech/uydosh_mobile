@@ -92,14 +92,6 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
               ),
               style: theme.textTheme.bodySmall?.copyWith(height: 1.35),
             ),
-          const SizedBox(height: 6),
-          Text(
-            l10n.listing_area_price_footnote,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              height: 1.3,
-            ),
-          ),
         ],
       ),
     );

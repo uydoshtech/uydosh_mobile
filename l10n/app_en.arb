@@ -349,7 +349,6 @@
       "count": { "type": "String" }
     }
   },
-  "listing_area_price_footnote": "Median and average from a cached rollup of active listings (station, line, or district), refreshed on a schedule. Same listing type when the sample is large enough; otherwise all types in that zone.",
   "listing_area_price_insufficient_data": "Not enough similar listings here yet to show a typical rent range.",
   "listing_area_price_unknown_station": "This metro station",
   "listing_area_price_unknown_district": "This district",
@@ -534,6 +533,7 @@
   "admin_content_moderation_error": "Could not load moderation settings",
   "admin_content_moderation_save_error": "Could not save setting",
   "admin_panel_section_telegram_sync": "Data import",
+  "admin_panel_section_area_price_cache": "Listing price benchmarks",
   "admin_telegram_sync_title": "Data import",
   "admin_telegram_sync_intro": "Imports listing data from a Telegram channel into the database (same flow as npm run telegram:sync on the server). The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.",
   "admin_telegram_sync_chat_label": "Chat",
@@ -558,6 +558,7 @@
   "admin_area_price_cache_intro": "Rebuilds median/mean aggregates per metro station, line, and district (used on listing detail). Run after large Telegram imports.",
   "admin_area_price_cache_run": "Refresh area price cache",
   "admin_area_price_cache_running": "Rebuilding cache…",
+  "admin_area_price_cache_screen_body": "Rebuilds cached median and average rents by metro station, line, and district (the “typical rent nearby” block on listing detail). Run after large Telegram imports or if that block stays empty.",
   "admin_panel_section_users": "Users",
   "admin_panel_section_support_chat": "Support chat",
   "admin_panel_section_complaints": "Complaints",

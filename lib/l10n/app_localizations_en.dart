@@ -745,10 +745,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get listing_area_price_footnote =>
-      'Median and average from a cached rollup of active listings (station, line, or district), refreshed on a schedule. Same listing type when the sample is large enough; otherwise all types in that zone.';
-
-  @override
   String get listing_area_price_insufficient_data =>
       'Not enough similar listings here yet to show a typical rent range.';
 
@@ -1301,6 +1297,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_panel_section_telegram_sync => 'Data import';
 
   @override
+  String get admin_panel_section_area_price_cache => 'Listing price benchmarks';
+
+  @override
   String get admin_telegram_sync_title => 'Data import';
 
   @override
@@ -1378,6 +1377,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_area_price_cache_running => 'Rebuilding cache…';
+
+  @override
+  String get admin_area_price_cache_screen_body =>
+      'Rebuilds cached median and average rents by metro station, line, and district (the “typical rent nearby” block on listing detail). Run after large Telegram imports or if that block stays empty.';
 
   @override
   String get admin_panel_section_users => 'Users';
