@@ -523,7 +523,13 @@ class AppStrings {
       "admin_telegram_sync_limit_label": "Message limit",
       "admin_telegram_sync_import_user_label": "Listing owner user ID",
       "admin_telegram_sync_import_user_helper":
-          "users.id for listing import after sync. Leave empty to ingest only.",
+          "Admin account that will own imported listings after sync. Pick “DB sync only” to ingest messages without creating listings.",
+      "admin_telegram_sync_import_user_sync_only":
+          "DB sync only (no listing import)",
+      "admin_telegram_sync_admins_loading": "Loading admin accounts…",
+      "admin_telegram_sync_admins_error": "Could not load admin list",
+      "admin_telegram_sync_admins_retry": "Retry",
+      "admin_telegram_sync_admins_empty": "No admin users found.",
       "admin_telegram_sync_newest_first": "Newest first",
       "admin_telegram_sync_skip_listing_import":
           "Skip listing import (DB ingest only)",
@@ -1397,7 +1403,13 @@ class AppStrings {
       "admin_telegram_sync_limit_label": "Лимит сообщений",
       "admin_telegram_sync_import_user_label": "ID владельца объявлений",
       "admin_telegram_sync_import_user_helper":
-          "users.id для импорта объявлений после синка. Пусто — только запись в БД.",
+          "Аккаунт администратора, от имени которого создаются импортированные объявления. «Только синк БД» — без создания объявлений.",
+      "admin_telegram_sync_import_user_sync_only":
+          "Только синк БД (без импорта объявлений)",
+      "admin_telegram_sync_admins_loading": "Загрузка списка админов…",
+      "admin_telegram_sync_admins_error": "Не удалось загрузить список админов",
+      "admin_telegram_sync_admins_retry": "Повторить",
+      "admin_telegram_sync_admins_empty": "Админов не найдено.",
       "admin_telegram_sync_newest_first": "Сначала новые",
       "admin_telegram_sync_skip_listing_import":
           "Без импорта объявлений (только БД)",
@@ -2281,7 +2293,13 @@ class AppStrings {
       "admin_telegram_sync_limit_label": "Xabar limiti",
       "admin_telegram_sync_import_user_label": "E’lon egasi user ID",
       "admin_telegram_sync_import_user_helper":
-          "Sinxrondan keyin e’lon importi uchun users.id. Bo‘sh qoldiring — faqat ma’lumotlar bazasiga yozadi.",
+          "Sinxrondan keyin import qilinadigan e’lonlar egasi bo‘ladigan admin. «Faqat DB sinxron» — e’lon yaratmasdan.",
+      "admin_telegram_sync_import_user_sync_only":
+          "Faqat DB sinxron (e’lon importisiz)",
+      "admin_telegram_sync_admins_loading": "Adminlar ro‘yxati yuklanmoqda…",
+      "admin_telegram_sync_admins_error": "Adminlar ro‘yxati yuklanmadi",
+      "admin_telegram_sync_admins_retry": "Qayta urinish",
+      "admin_telegram_sync_admins_empty": "Adminlar topilmadi.",
       "admin_telegram_sync_newest_first": "Avval yangilar",
       "admin_telegram_sync_skip_listing_import": "E’lon importisiz (faqat DB)",
       "admin_telegram_sync_run": "Sinxronni ishga tushirish",

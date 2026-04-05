@@ -4,7 +4,11 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 
 abstract class IAdminUserService {
-  Future<List<AdminUser>> getUsers({int pageNumber = 1, int pageSize = 20});
+  Future<List<AdminUser>> getUsers({
+    int pageNumber = 1,
+    int pageSize = 20,
+    String? role,
+  });
   Future<AdminUser> updateUserRole({required int userId, required String role});
   Future<AdminUser> blockUser({
     required int userId,
@@ -23,15 +27,20 @@ class AdminUserService implements IAdminUserService {
   Future<List<AdminUser>> getUsers({
     int pageNumber = 1,
     int pageSize = 20,
+    String? role,
   }) async {
     try {
+      final queryParameters = <String, dynamic>{
+        "pageNumber": pageNumber,
+        "pageSize": pageSize,
+      };
+      if (role != null && role.trim().isNotEmpty) {
+        queryParameters["role"] = role.trim();
+      }
       final response = await _oauthApiClient.get<dynamic>(
         "/users",
         (json) => json,
-        queryParameters: {
-          "pageNumber": pageNumber,
-          "pageSize": pageSize,
-        },
+        queryParameters: queryParameters,
       );
 
       final usersData =

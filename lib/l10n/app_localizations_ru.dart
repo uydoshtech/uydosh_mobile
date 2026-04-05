@@ -1286,7 +1286,24 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_telegram_sync_import_user_helper =>
-      'users.id для импорта объявлений после синка. Пусто — только запись в БД.';
+      'Аккаунт администратора, от имени которого создаются импортированные объявления. «Только синк БД» — без создания объявлений.';
+
+  @override
+  String get admin_telegram_sync_import_user_sync_only =>
+      'Только синк БД (без импорта объявлений)';
+
+  @override
+  String get admin_telegram_sync_admins_loading => 'Загрузка списка админов…';
+
+  @override
+  String get admin_telegram_sync_admins_error =>
+      'Не удалось загрузить список админов';
+
+  @override
+  String get admin_telegram_sync_admins_retry => 'Повторить';
+
+  @override
+  String get admin_telegram_sync_admins_empty => 'Админов не найдено.';
 
   @override
   String get admin_telegram_sync_newest_first => 'Сначала новые';

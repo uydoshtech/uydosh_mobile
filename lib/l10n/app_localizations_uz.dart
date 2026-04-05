@@ -1292,7 +1292,24 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_telegram_sync_import_user_helper =>
-      'Sinxrondan keyin e’lon importi uchun users.id. Bo‘sh qoldiring — faqat ma’lumotlar bazasiga yozadi.';
+      'Sinxrondan keyin import qilinadigan e’lonlar egasi bo‘ladigan admin. «Faqat DB sinxron» — e’lon yaratmasdan.';
+
+  @override
+  String get admin_telegram_sync_import_user_sync_only =>
+      'Faqat DB sinxron (e’lon importisiz)';
+
+  @override
+  String get admin_telegram_sync_admins_loading =>
+      'Adminlar ro‘yxati yuklanmoqda…';
+
+  @override
+  String get admin_telegram_sync_admins_error => 'Adminlar ro‘yxati yuklanmadi';
+
+  @override
+  String get admin_telegram_sync_admins_retry => 'Qayta urinish';
+
+  @override
+  String get admin_telegram_sync_admins_empty => 'Adminlar topilmadi.';
 
   @override
   String get admin_telegram_sync_newest_first => 'Avval yangilar';

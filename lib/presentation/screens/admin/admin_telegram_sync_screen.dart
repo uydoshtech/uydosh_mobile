@@ -4,7 +4,9 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
+import "package:uy_dosh/domain/services/admin_user_service.dart";
 
 class AdminTelegramSyncScreen extends StatefulWidget {
   const AdminTelegramSyncScreen({super.key});
@@ -14,13 +16,21 @@ class AdminTelegramSyncScreen extends StatefulWidget {
 }
 
 class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
+  /// Default listing owner after Telegram sync (Uydoshtech@gmail.com in production).
+  static const int _kDefaultListingOwnerUserId = 86;
+
   static const BorderRadius _kFieldBorderRadius =
       BorderRadius.all(Radius.circular(8));
 
   final IAdminTelegramSyncService _service = getIt<IAdminTelegramSyncService>();
+  final IAdminUserService _adminUserService = getIt<IAdminUserService>();
   final _chatController = TextEditingController(text: "@roommateuz");
   final _limitController = TextEditingController(text: "6");
-  final _importUserController = TextEditingController(text: "86");
+
+  final List<AdminUser> _adminUsers = [];
+  bool _loadingAdmins = true;
+  String? _adminsError;
+  int? _selectedImportUserId;
 
   bool _newestFirst = true;
   bool _skipListingImport = false;
@@ -29,28 +39,69 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   String? _errorText;
 
   @override
+  void initState() {
+    super.initState();
+    _loadAdmins();
+  }
+
+  @override
   void dispose() {
     _chatController.dispose();
     _limitController.dispose();
-    _importUserController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAdmins() async {
+    setState(() {
+      _loadingAdmins = true;
+      _adminsError = null;
+    });
+    try {
+      final list = await _adminUserService.getUsers(
+        pageNumber: 1,
+        pageSize: 200,
+        role: "admin",
+      );
+      if (!mounted) return;
+      setState(() {
+        _adminUsers
+          ..clear()
+          ..addAll(list);
+        _loadingAdmins = false;
+        _selectedImportUserId = _defaultOwnerIdAfterLoad(list);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadingAdmins = false;
+        _adminsError = e.toString();
+        _selectedImportUserId = null;
+      });
+    }
+  }
+
+  int? _defaultOwnerIdAfterLoad(List<AdminUser> admins) {
+    if (admins.any((u) => u.id == _kDefaultListingOwnerUserId)) {
+      return _kDefaultListingOwnerUserId;
+    }
+    if (admins.isNotEmpty) {
+      return admins.first.id;
+    }
+    return null;
+  }
+
+  String _adminDropdownLabel(AdminUser u) {
+    final mail = (u.email ?? "").trim();
+    if (mail.isEmpty) {
+      return "#${u.id}";
+    }
+    return "$mail · #${u.id}";
   }
 
   Future<void> _run() async {
     final chat = _chatController.text.trim();
     final limit = int.tryParse(_limitController.text.trim());
-    int? importUserId;
-    final importRaw = _importUserController.text.trim();
-    if (importRaw.isNotEmpty) {
-      importUserId = int.tryParse(importRaw);
-      if (importUserId == null || importUserId < 1) {
-        setState(() {
-          _errorText = L10n.get("admin_telegram_sync_invalid_import_user");
-          _resultText = null;
-        });
-        return;
-      }
-    }
+    final importUserId = _selectedImportUserId;
 
     if (chat.isEmpty || limit == null || limit < 1) {
       setState(() {
@@ -215,28 +266,93 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
             autocorrect: false,
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _limitController,
-            style: fieldStyle,
-            decoration: _fieldDecoration(
-              context,
-              labelText: L10n.get("admin_telegram_sync_limit_label"),
+          if (_loadingAdmins)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      L10n.get("admin_telegram_sync_admins_loading"),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (_adminsError != null) ...[
+            Text(
+              L10n.get("admin_telegram_sync_admins_error"),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _importUserController,
-            style: fieldStyle,
-            decoration: _fieldDecoration(
-              context,
-              labelText: L10n.get("admin_telegram_sync_import_user_label"),
-              helperText: L10n.get("admin_telegram_sync_import_user_helper"),
+            const SizedBox(height: 4),
+            SelectableText(
+              _adminsError!,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 12,
+              ),
             ),
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          ),
+            TextButton.icon(
+              onPressed: _loadAdmins,
+              icon: const Icon(Icons.refresh),
+              label: Text(L10n.get("admin_telegram_sync_admins_retry")),
+            ),
+          ] else ...[
+            if (_adminUsers.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  L10n.get("admin_telegram_sync_admins_empty"),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            DropdownButtonFormField<int?>(
+              // Controlled after async load; `value` is required (`initialValue` resets on rebuild).
+              // ignore: deprecated_member_use
+              value: _selectedImportUserId,
+              items: [
+                DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text(L10n.get("admin_telegram_sync_import_user_sync_only")),
+                ),
+                ..._adminUsers.map(
+                  (u) => DropdownMenuItem<int?>(
+                    value: u.id,
+                    child: Text(
+                      _adminDropdownLabel(u),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+              onChanged: _running
+                  ? null
+                  : (v) => setState(() => _selectedImportUserId = v),
+              decoration: _fieldDecoration(
+                context,
+                labelText: L10n.get("admin_telegram_sync_import_user_label"),
+                helperText: L10n.get("admin_telegram_sync_import_user_helper"),
+              ),
+              style: fieldStyle,
+              isExpanded: true,
+              dropdownColor: isBlue ? BlueThemeColors.surface : null,
+              iconEnabledColor: isBlue ? BlueThemeColors.textPrimary : null,
+            ),
+          ],
           const SizedBox(height: 8),
           SwitchListTile(
             title: Text(L10n.get("admin_telegram_sync_newest_first")),
@@ -251,6 +367,17 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
             onChanged: _running
                 ? null
                 : (v) => setState(() => _skipListingImport = v),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _limitController,
+            style: fieldStyle,
+            decoration: _fieldDecoration(
+              context,
+              labelText: L10n.get("admin_telegram_sync_limit_label"),
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
           const SizedBox(height: 16),
           FilledButton.icon(

@@ -2479,8 +2479,38 @@ abstract class AppLocalizations {
   /// No description provided for @admin_telegram_sync_import_user_helper.
   ///
   /// In en, this message translates to:
-  /// **'users.id for listing import after sync. Leave empty to ingest only.'**
+  /// **'Admin account that will own imported listings after sync. Pick “DB sync only” to ingest messages without creating listings.'**
   String get admin_telegram_sync_import_user_helper;
+
+  /// No description provided for @admin_telegram_sync_import_user_sync_only.
+  ///
+  /// In en, this message translates to:
+  /// **'DB sync only (no listing import)'**
+  String get admin_telegram_sync_import_user_sync_only;
+
+  /// No description provided for @admin_telegram_sync_admins_loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading admin accounts…'**
+  String get admin_telegram_sync_admins_loading;
+
+  /// No description provided for @admin_telegram_sync_admins_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load admin list'**
+  String get admin_telegram_sync_admins_error;
+
+  /// No description provided for @admin_telegram_sync_admins_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get admin_telegram_sync_admins_retry;
+
+  /// No description provided for @admin_telegram_sync_admins_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No admin users found.'**
+  String get admin_telegram_sync_admins_empty;
 
   /// No description provided for @admin_telegram_sync_newest_first.
   ///

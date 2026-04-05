@@ -1277,7 +1277,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_telegram_sync_import_user_helper =>
-      'users.id for listing import after sync. Leave empty to ingest only.';
+      'Admin account that will own imported listings after sync. Pick “DB sync only” to ingest messages without creating listings.';
+
+  @override
+  String get admin_telegram_sync_import_user_sync_only =>
+      'DB sync only (no listing import)';
+
+  @override
+  String get admin_telegram_sync_admins_loading => 'Loading admin accounts…';
+
+  @override
+  String get admin_telegram_sync_admins_error => 'Could not load admin list';
+
+  @override
+  String get admin_telegram_sync_admins_retry => 'Retry';
+
+  @override
+  String get admin_telegram_sync_admins_empty => 'No admin users found.';
 
   @override
   String get admin_telegram_sync_newest_first => 'Newest first';
