@@ -62,6 +62,13 @@ class _ListingDescriptionTranslationState
     r"@([A-Za-z][A-Za-z0-9_]{3,30})\b",
   );
 
+  /// Uzbekistan mobiles: +998 / 998 prefix or local 9XXXXXXXX.
+  static final RegExp _phoneRe = RegExp(
+    r"\+998[\s\-]*9[0134679][\s\-]?\d{2}[\s\-]?\d{3}[\s\-]?\d{2}|"
+    r"998[\s\-]*9[0134679][\s\-]?\d{2}[\s\-]?\d{3}[\s\-]?\d{2}|"
+    r"(?<![0-9])9[0134679]\d{7}(?![0-9])",
+  );
+
   @override
   void initState() {
     super.initState();
@@ -99,34 +106,141 @@ class _ListingDescriptionTranslationState
     }
   }
 
+  Future<void> _openTelUri(String telUri) async {
+    final uri = Uri.parse(telUri);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else if (mounted) {
+        ToastTheme.showError(context, message: "Could not start call");
+      }
+    } catch (_) {
+      if (mounted) {
+        ToastTheme.showError(context, message: "Could not start call");
+      }
+    }
+  }
+
+  String? _nineDigitUzbekMobile(String digitsOnly) {
+    if (digitsOnly.length >= 12 && digitsOnly.contains("998")) {
+      final idx = digitsOnly.lastIndexOf("998");
+      final rest = digitsOnly.substring(idx + 3);
+      if (rest.length >= 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(rest.substring(0, 9))) {
+        return rest.substring(0, 9);
+      }
+    }
+    if (digitsOnly.length == 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(digitsOnly)) {
+      return digitsOnly;
+    }
+    if (digitsOnly.length > 9) {
+      final m = RegExp(r"(9[0134679]\d{7})$").firstMatch(digitsOnly);
+      return m?.group(1);
+    }
+    return null;
+  }
+
+  String _formatUzbekPhoneDisplay(String rawMatch) {
+    final d = rawMatch.replaceAll(RegExp(r"\D"), "");
+    final nine = _nineDigitUzbekMobile(d);
+    if (nine == null || nine.length != 9) return rawMatch.trim();
+    return "+998 ${nine.substring(0, 2)} ${nine.substring(2, 5)} "
+        "${nine.substring(5, 7)} ${nine.substring(7, 9)}";
+  }
+
+  String _telUriForPhoneMatch(String rawMatch) {
+    final d = rawMatch.replaceAll(RegExp(r"\D"), "");
+    final nine = _nineDigitUzbekMobile(d);
+    if (nine != null && nine.length == 9) {
+      return "tel:+998$nine";
+    }
+    return "tel:${rawMatch.replaceAll(RegExp(r"\s"), "")}";
+  }
+
+  List<({int start, int end, String kind, String text})> _mergedContactMatches(
+    String content,
+  ) {
+    final raw = <({int start, int end, String kind, String text})>[];
+    for (final m in _telegramUsernameRe.allMatches(content)) {
+      raw.add((start: m.start, end: m.end, kind: "tg", text: m.group(0)!));
+    }
+    for (final m in _phoneRe.allMatches(content)) {
+      raw.add((start: m.start, end: m.end, kind: "phone", text: m.group(0)!));
+    }
+    raw.sort((a, b) {
+      final byStart = a.start.compareTo(b.start);
+      return byStart != 0 ? byStart : b.end.compareTo(a.end);
+    });
+    final kept = <({int start, int end, String kind, String text})>[];
+    for (final m in raw) {
+      final overlaps = kept.any(
+        (k) => m.start < k.end && m.end > k.start,
+      );
+      if (overlaps) continue;
+      kept.add(m);
+    }
+    kept.sort((a, b) => a.start.compareTo(b.start));
+    return kept;
+  }
+
   Widget _buildDescriptionWithTelegramLinks(String content) {
     _disposeTelegramRecognizers();
-    final linkColor = Theme.of(context).colorScheme.primary;
+    final linkColor = ListingDetailThemeHelper.descriptionLinkColor;
+    final linkTextStyle = TextStyle(
+      color: linkColor,
+      fontSize: widget.textStyle.fontSize,
+      fontWeight: widget.textStyle.fontWeight,
+      decoration: TextDecoration.underline,
+      decorationColor: linkColor,
+    );
     final spans = <InlineSpan>[];
-    var start = 0;
-    for (final m in _telegramUsernameRe.allMatches(content)) {
-      if (m.start > start) {
-        spans.add(TextSpan(text: content.substring(start, m.start)));
+    final matches = _mergedContactMatches(content);
+    var cursor = 0;
+    for (final m in matches) {
+      if (m.start > cursor) {
+        spans.add(TextSpan(text: content.substring(cursor, m.start)));
       }
-      final full = m.group(0)!;
-      final r = TapGestureRecognizer()
-        ..onTap = () => unawaited(_openTelegramFromHandle(full));
-      _telegramRecognizers.add(r);
-      spans.add(
-        TextSpan(
-          text: full,
-          style: TextStyle(
-            color: linkColor,
-            decoration: TextDecoration.underline,
-            decorationColor: linkColor,
+      if (m.kind == "tg") {
+        final r = TapGestureRecognizer()
+          ..onTap = () => unawaited(_openTelegramFromHandle(m.text));
+        _telegramRecognizers.add(r);
+        spans.add(
+          TextSpan(
+            text: m.text,
+            style: linkTextStyle,
+            recognizer: r,
           ),
-          recognizer: r,
-        ),
-      );
-      start = m.end;
+        );
+      } else {
+        final display = _formatUzbekPhoneDisplay(m.text);
+        final tel = _telUriForPhoneMatch(m.text);
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: GestureDetector(
+              onTap: () => unawaited(_openTelUri(tel)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.phone,
+                    size: (widget.textStyle.fontSize ?? 16) + 1,
+                    color: linkColor,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    display,
+                    style: linkTextStyle,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+      cursor = m.end;
     }
-    if (start < content.length) {
-      spans.add(TextSpan(text: content.substring(start)));
+    if (cursor < content.length) {
+      spans.add(TextSpan(text: content.substring(cursor)));
     }
     return SelectableText.rich(
       TextSpan(style: widget.textStyle, children: spans),

@@ -21,6 +21,13 @@ class ListingDetailThemeHelper {
     return AppColors.textGrey;
   }
 
+  /// Tappable @Telegram / phone links in listing description (readable on blue gradient).
+  static Color get descriptionLinkColor {
+    if (ThemeState().isBlueTheme) return Colors.white;
+    if (ThemeState().isLightTheme) return AppColors.primary;
+    return AppColors.primary;
+  }
+
   static Color get locationTextColor {
     if (ThemeState().isBlueTheme) return AppColors.textLight;
     return AppColors.textDark87;
