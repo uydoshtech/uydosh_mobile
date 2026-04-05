@@ -1,6 +1,8 @@
 import "dart:async";
 
+import "package:flutter/gestures.dart";
 import "package:flutter/material.dart";
+import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -9,6 +11,7 @@ import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 enum _TranslationTarget { original, en, ru, uz }
 
@@ -53,11 +56,81 @@ class _ListingDescriptionTranslationState
   final Map<String, String> _cache = {};
   String? _loadingLang;
   String? _error;
+  final List<TapGestureRecognizer> _telegramRecognizers = [];
+
+  static final RegExp _telegramUsernameRe = RegExp(
+    r"@([A-Za-z][A-Za-z0-9_]{3,30})\b",
+  );
 
   @override
   void initState() {
     super.initState();
     _mergeDbIntoCache();
+  }
+
+  @override
+  void dispose() {
+    for (final r in _telegramRecognizers) {
+      r.dispose();
+    }
+    super.dispose();
+  }
+
+  void _disposeTelegramRecognizers() {
+    for (final r in _telegramRecognizers) {
+      r.dispose();
+    }
+    _telegramRecognizers.clear();
+  }
+
+  Future<void> _openTelegramFromHandle(String handle) async {
+    final clean = handle.startsWith("@") ? handle.substring(1) : handle;
+    final uri = Uri.parse("https://t.me/$clean");
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else if (mounted) {
+        ToastTheme.showError(context, message: "Could not open Telegram");
+      }
+    } catch (_) {
+      if (mounted) {
+        ToastTheme.showError(context, message: "Could not open Telegram");
+      }
+    }
+  }
+
+  Widget _buildDescriptionWithTelegramLinks(String content) {
+    _disposeTelegramRecognizers();
+    final linkColor = Theme.of(context).colorScheme.primary;
+    final spans = <InlineSpan>[];
+    var start = 0;
+    for (final m in _telegramUsernameRe.allMatches(content)) {
+      if (m.start > start) {
+        spans.add(TextSpan(text: content.substring(start, m.start)));
+      }
+      final full = m.group(0)!;
+      final r = TapGestureRecognizer()
+        ..onTap = () => unawaited(_openTelegramFromHandle(full));
+      _telegramRecognizers.add(r);
+      spans.add(
+        TextSpan(
+          text: full,
+          style: TextStyle(
+            color: linkColor,
+            decoration: TextDecoration.underline,
+            decorationColor: linkColor,
+          ),
+          recognizer: r,
+        ),
+      );
+      start = m.end;
+    }
+    if (start < content.length) {
+      spans.add(TextSpan(text: content.substring(start)));
+    }
+    return SelectableText.rich(
+      TextSpan(style: widget.textStyle, children: spans),
+    );
   }
 
   @override
@@ -433,11 +506,10 @@ class _ListingDescriptionTranslationState
             ),
           )
         else
-          Text(
+          _buildDescriptionWithTelegramLinks(
             _target == _TranslationTarget.original
                 ? widget.originalText
                 : (_cache[_codeForTarget(_target)] ?? widget.originalText),
-            style: widget.textStyle,
           ),
         if (_error != null)
           Padding(

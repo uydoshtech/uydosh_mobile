@@ -1089,7 +1089,8 @@ L10n.get("feature_listing_error",
           onPressed:
               () => _navigateToProfile(
                 listingDetail.user.id,
-                phoneNumber: listingDetail.user.phone,
+                phoneNumber: listingDetail.contactPhone ??
+                    listingDetail.user.phone,
               ),
           enabled: menuEnabled,
         ),
@@ -1952,7 +1953,8 @@ L10n.get("feature_listing_error",
                       ownerName: pageState.ownerName,
                       onAuthorTap: () => _navigateToProfile(
                         listingDetail.user.id,
-                        phoneNumber: listingDetail.user.phone,
+                        phoneNumber: listingDetail.contactPhone ??
+                            listingDetail.user.phone,
                       ),
                     ),
                     const SizedBox(height: 8),
