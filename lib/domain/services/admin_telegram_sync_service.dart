@@ -21,10 +21,12 @@ class TelegramSyncStats {
     required this.missingIds,
     required this.duplicatePolicy,
     this.chatKey,
+    this.syncedTelegramMessageIdsCount,
   });
 
   factory TelegramSyncStats.fromJson(Map<String, dynamic> json) {
     int n(dynamic v) => v is int ? v : (v is num ? v.toInt() : 0);
+    final rawCount = json["syncedTelegramMessageIdsCount"];
     return TelegramSyncStats(
       scanned: n(json["scanned"]),
       skippedNoPeer: n(json["skippedNoPeer"]),
@@ -36,6 +38,7 @@ class TelegramSyncStats {
           [],
       duplicatePolicy: json["duplicatePolicy"] as String? ?? "",
       chatKey: json["chatKey"] as String?,
+      syncedTelegramMessageIdsCount: rawCount == null ? null : n(rawCount),
     );
   }
 
@@ -46,6 +49,8 @@ class TelegramSyncStats {
   final List<int> missingIds;
   final String duplicatePolicy;
   final String? chatKey;
+  /// How many Telegram message ids this sync wrote (listing import scopes to these when supported).
+  final int? syncedTelegramMessageIdsCount;
 }
 
 class TelegramListingImportStats {
@@ -57,10 +62,12 @@ class TelegramListingImportStats {
     required this.skippedNoListingType,
     required this.skippedFailed,
     required this.errors,
+    this.scopedToTelegramMessageIds,
   });
 
   factory TelegramListingImportStats.fromJson(Map<String, dynamic> json) {
     int n(dynamic v) => v is int ? v : (v is num ? v.toInt() : 0);
+    final rawScoped = json["scopedToTelegramMessageIds"];
     return TelegramListingImportStats(
       groupsTotal: n(json["groupsTotal"]),
       imported: n(json["imported"]),
@@ -72,6 +79,7 @@ class TelegramListingImportStats {
               ?.map((e) => e?.toString() ?? "")
               .toList() ??
           [],
+      scopedToTelegramMessageIds: rawScoped == null ? null : n(rawScoped),
     );
   }
 
@@ -82,6 +90,8 @@ class TelegramListingImportStats {
   final int skippedNoListingType;
   final int skippedFailed;
   final List<String> errors;
+  /// Present when import was limited to specific `telegram_message_id`s from the sync run.
+  final int? scopedToTelegramMessageIds;
 }
 
 class TelegramSyncRunResult {

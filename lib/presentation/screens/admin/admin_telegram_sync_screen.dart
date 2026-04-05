@@ -140,6 +140,10 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
       buf.writeln(
         "duplicatePolicy=${r.sync.duplicatePolicy}, chatKey=${r.sync.chatKey ?? "—"}",
       );
+      final idScope = r.sync.syncedTelegramMessageIdsCount;
+      if (idScope != null) {
+        buf.writeln("syncedTelegramMessageIdsCount=$idScope");
+      }
       if (r.sync.missingIds.isNotEmpty) {
         buf.writeln("missingIds=${r.sync.missingIds.join(", ")}");
       }
@@ -151,6 +155,10 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
       if (li != null) {
         buf.writeln();
         buf.writeln(L10n.get("admin_telegram_sync_listing_section"));
+        final scoped = li.scopedToTelegramMessageIds;
+        if (scoped != null) {
+          buf.writeln("scopedToTelegramMessageIds=$scoped");
+        }
         buf.writeln(
           "groups=${li.groupsTotal}, created=${li.imported}, "
           "skippedEmpty=${li.skippedEmpty}, skippedBroadcast=${li.skippedBroadcast}, "
