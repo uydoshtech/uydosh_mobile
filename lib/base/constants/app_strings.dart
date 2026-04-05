@@ -546,6 +546,11 @@ class AppStrings {
           "Enter a chat (e.g. @roommateuz).",
       "admin_telegram_sync_invalid_import_user":
           "Listing owner user ID must be a positive number or empty.",
+      "admin_area_price_cache_section_title": "Listing area price cache",
+      "admin_area_price_cache_intro":
+          "Rebuilds median/mean aggregates per metro station, line, and district (used on listing detail). Run after large Telegram imports.",
+      "admin_area_price_cache_run": "Refresh area price cache",
+      "admin_area_price_cache_running": "Rebuilding cache…",
       "admin_telegram_export_section_title": "Download ingested messages",
       "admin_telegram_export_intro":
           "Exports rows from telegram_ingested_messages as a .jsonl text file (one JSON object per line). No Telegram calls. Output includes all chats, capped by max rows.",
@@ -1439,6 +1444,11 @@ class AppStrings {
           "Укажите чат (например @roommateuz).",
       "admin_telegram_sync_invalid_import_user":
           "ID пользователя должен быть положительным числом или пустым.",
+      "admin_area_price_cache_section_title": "Кэш цен по району объявления",
+      "admin_area_price_cache_intro":
+          "Пересчитывает медиану и среднее по станциям, линиям метро и районам (оринтир на карточке объявления). Запускайте после крупных импортов из Telegram.",
+      "admin_area_price_cache_run": "Обновить кэш цен",
+      "admin_area_price_cache_running": "Пересчёт кэша…",
       "admin_telegram_export_section_title": "Скачать загруженные сообщения",
       "admin_telegram_export_intro":
           "Экспорт строк из telegram_ingested_messages в файл .jsonl (по одному JSON на строку). Без вызовов Telegram. Все чаты, объём ограничен числом строк.",
@@ -2341,6 +2351,11 @@ class AppStrings {
           "Chat kiriting (masalan @roommateuz).",
       "admin_telegram_sync_invalid_import_user":
           "Foydalanuvchi ID musbat son yoki bo‘sh bo‘lishi kerak.",
+      "admin_area_price_cache_section_title": "E’lon hududi narxlari keshi",
+      "admin_area_price_cache_intro":
+          "Metro bekati, liniya va tuman bo‘yicha median va o‘rtacha narxni qayta hisoblaydi (e’lon tafsilotida). Katta Telegram importidan keyin ishga tushiring.",
+      "admin_area_price_cache_run": "Narx keshini yangilash",
+      "admin_area_price_cache_running": "Kesh qayta hisoblanmoqda…",
       "admin_telegram_export_section_title": "Yuklangan xabarlarni yuklab olish",
       "admin_telegram_export_intro":
           "telegram_ingested_messages jadvalidan .jsonl fayl (har qatorda bitta JSON). Telegram chaqiruvi yo‘q. Barcha chatlar, hajm maks. qatorlar bilan cheklangan.",

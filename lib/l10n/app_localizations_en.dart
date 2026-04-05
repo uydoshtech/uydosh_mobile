@@ -1367,6 +1367,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Listing owner user ID must be a positive number or empty.';
 
   @override
+  String get admin_area_price_cache_section_title => 'Listing area price cache';
+
+  @override
+  String get admin_area_price_cache_intro =>
+      'Rebuilds median/mean aggregates per metro station, line, and district (used on listing detail). Run after large Telegram imports.';
+
+  @override
+  String get admin_area_price_cache_run => 'Refresh area price cache';
+
+  @override
+  String get admin_area_price_cache_running => 'Rebuilding cache…';
+
+  @override
   String get admin_panel_section_users => 'Users';
 
   @override

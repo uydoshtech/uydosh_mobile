@@ -2634,6 +2634,30 @@ abstract class AppLocalizations {
   /// **'Listing owner user ID must be a positive number or empty.'**
   String get admin_telegram_sync_invalid_import_user;
 
+  /// No description provided for @admin_area_price_cache_section_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing area price cache'**
+  String get admin_area_price_cache_section_title;
+
+  /// No description provided for @admin_area_price_cache_intro.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuilds median/mean aggregates per metro station, line, and district (used on listing detail). Run after large Telegram imports.'**
+  String get admin_area_price_cache_intro;
+
+  /// No description provided for @admin_area_price_cache_run.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh area price cache'**
+  String get admin_area_price_cache_run;
+
+  /// No description provided for @admin_area_price_cache_running.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuilding cache…'**
+  String get admin_area_price_cache_running;
+
   /// No description provided for @admin_panel_section_users.
   ///
   /// In en, this message translates to:

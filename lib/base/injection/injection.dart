@@ -6,6 +6,7 @@ import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
 import "package:uy_dosh/base/api/public_dio_configurator.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
+import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
@@ -119,6 +120,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IAdminTelegramSyncService>(
     () => AdminTelegramSyncService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IAdminAreaPriceCacheService>(
+    () => AdminAreaPriceCacheService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IListingCreationAnalyticsService>(

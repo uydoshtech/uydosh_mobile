@@ -1377,6 +1377,20 @@ class AppLocalizationsRu extends AppLocalizations {
       'ID пользователя должен быть положительным числом или пустым.';
 
   @override
+  String get admin_area_price_cache_section_title =>
+      'Кэш цен по району объявления';
+
+  @override
+  String get admin_area_price_cache_intro =>
+      'Пересчитывает медиану и среднее по станциям, линиям метро и районам (оринтир на карточке объявления). Запускайте после крупных импортов из Telegram.';
+
+  @override
+  String get admin_area_price_cache_run => 'Обновить кэш цен';
+
+  @override
+  String get admin_area_price_cache_running => 'Пересчёт кэша…';
+
+  @override
   String get admin_panel_section_users => 'Пользователи';
 
   @override

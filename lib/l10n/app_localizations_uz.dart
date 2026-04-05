@@ -1384,6 +1384,20 @@ class AppLocalizationsUz extends AppLocalizations {
       'Foydalanuvchi ID musbat son yoki bo‘sh bo‘lishi kerak.';
 
   @override
+  String get admin_area_price_cache_section_title =>
+      'E’lon hududi narxlari keshi';
+
+  @override
+  String get admin_area_price_cache_intro =>
+      'Metro bekati, liniya va tuman bo‘yicha median va o‘rtacha narxni qayta hisoblaydi (e’lon tafsilotida). Katta Telegram importidan keyin ishga tushiring.';
+
+  @override
+  String get admin_area_price_cache_run => 'Narx keshini yangilash';
+
+  @override
+  String get admin_area_price_cache_running => 'Kesh qayta hisoblanmoqda…';
+
+  @override
   String get admin_panel_section_users => 'Foydalanuvchilar';
 
   @override
