@@ -6,7 +6,6 @@ import "package:flutter/services.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/services/uydosh_vector_mark_watermark_raster.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -37,17 +36,15 @@ class _PhotoPickerState extends State<PhotoPicker> {
   final ImagePicker _picker = ImagePicker();
   bool _isProcessingImage = false;
 
-  /// Raster is cached inside [UydoshVectorMarkWatermarkRaster] (with [cacheVersion] busting).
-  /// Do not fall back to [app_logo.png] — that asset is the full app icon with a blue plate.
-  Future<Uint8List?> _loadWatermarkPng() async {
-    try {
-      return await UydoshVectorMarkWatermarkRaster.pngBytes();
-    } catch (e, st) {
-      if (kDebugMode) {
-        debugPrint("Vector mark watermark raster failed: $e\n$st");
-      }
-      return null;
-    }
+  static Uint8List? _cachedWatermarkBytes;
+
+  Future<Uint8List> _loadWatermarkBytes() async {
+    if (_cachedWatermarkBytes != null) return _cachedWatermarkBytes!;
+    final data = await rootBundle.load("assets/icon/app_logo.png");
+    _cachedWatermarkBytes = Uint8List.fromList(
+      data.buffer.asUint8List().toList(),
+    );
+    return _cachedWatermarkBytes!;
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -74,15 +71,12 @@ class _PhotoPickerState extends State<PhotoPicker> {
 
             try {
               final newPhotos = List<String>.from(widget.selectedPhotos);
-              final watermarkBytes = await _loadWatermarkPng();
+              final watermarkBytes = await _loadWatermarkBytes();
 
               // Process images in parallel for faster gallery selection
               final results = await Future.wait(
                 imagesToProcess.map((image) async {
                   try {
-                    if (watermarkBytes == null) {
-                      return image.path;
-                    }
                     final watermarkedFile = await WatermarkService.addWatermark(
                       File(image.path),
                       watermarkImageBytes: watermarkBytes,
@@ -131,16 +125,13 @@ class _PhotoPickerState extends State<PhotoPicker> {
             });
 
             try {
-              final watermarkBytes = await _loadWatermarkPng();
-              final outPath = watermarkBytes == null
-                  ? image.path
-                  : (await WatermarkService.addWatermark(
-                      File(image.path),
-                      watermarkImageBytes: watermarkBytes,
-                    ))
-                      .path;
+              final watermarkBytes = await _loadWatermarkBytes();
+              final watermarkedFile = await WatermarkService.addWatermark(
+                File(image.path),
+                watermarkImageBytes: watermarkBytes,
+              );
               final newPhotos = List<String>.from(widget.selectedPhotos);
-              newPhotos.add(outPath);
+              newPhotos.add(watermarkedFile.path);
               widget.onPhotosChanged(newPhotos);
             } catch (e) {
               if (kDebugMode) {
