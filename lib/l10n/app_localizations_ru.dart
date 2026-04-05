@@ -1278,14 +1278,14 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось сохранить настройку';
 
   @override
-  String get admin_panel_section_telegram_sync => 'Telegram: загрузка';
+  String get admin_panel_section_telegram_sync => 'Импорт данных';
 
   @override
-  String get admin_telegram_sync_title => 'Telegram: загрузка';
+  String get admin_telegram_sync_title => 'Импорт данных';
 
   @override
   String get admin_telegram_sync_intro =>
-      'Запускает на сервере тот же синхрон, что и npm run telegram:sync. Нужна сессия Telegram на хосте API (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.';
+      'Импортирует объявления из Telegram‑канала в базу (тот же процесс, что npm run telegram:sync на сервере). На хосте API нужна сессия Telegram (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.';
 
   @override
   String get admin_telegram_sync_chat_label => 'Чат';
@@ -1341,7 +1341,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_telegram_sync_invalid_chat_limit =>
-      'Укажите чат и положительный лимит.';
+      'Укажите чат (например @roommateuz).';
 
   @override
   String get admin_telegram_sync_invalid_import_user =>

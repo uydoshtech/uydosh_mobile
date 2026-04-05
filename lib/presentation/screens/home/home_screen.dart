@@ -33,7 +33,6 @@ import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.da
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _HomeScreenData {
-
   const _HomeScreenData({
     required this.isLoading,
     required this.hasError,
@@ -86,7 +85,6 @@ class _HomeScreenData {
 }
 
 class HomeScreen extends StatefulWidget {
-
   const HomeScreen({
     super.key,
     this.listingTypeId,
@@ -111,6 +109,7 @@ class HomeScreen extends StatefulWidget {
   final bool? privateRoom;
   final bool isSearchMode;
   final bool useExplicitFiltersOnly;
+
   /// True when this HomeScreen is the active tab in main navigation (index 0).
   /// Used to ensure tutorials run only when user is on home screen.
   final bool isHomeTabActive;
@@ -135,10 +134,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // Create optimized scroll listener with throttling and reset capability
     final scrollListenerData =
         ScrollUtils.createThrottledScrollListenerWithReset(
-          scrollController: _scrollController,
-          onLoadMore: _loadMoreListings,
-          shouldLoadMore: _shouldLoadMore,
-        );
+      scrollController: _scrollController,
+      onLoadMore: _loadMoreListings,
+      shouldLoadMore: _shouldLoadMore,
+    );
 
     _throttledScrollListener = scrollListenerData.listener;
     _resetScrollLoadingState = scrollListenerData.resetLoadingState;
@@ -183,7 +182,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   void _onOnboardingStateChanged() {
     if (mounted && OnboardingState().showOnboarding) {
       // Only schedule tutorial when home tab is active and screen is visible
-      if (widget.isHomeTabActive && (ModalRoute.of(context)?.isCurrent ?? false)) {
+      if (widget.isHomeTabActive &&
+          (ModalRoute.of(context)?.isCurrent ?? false)) {
         Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
       }
     }
@@ -194,9 +194,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   void _maybeShowSearchTutorial() {
     if (!mounted) return;
     if (!widget.isHomeTabActive) return; // Only when home tab is active
-    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return; // Only when home route is visible
+    if (!(ModalRoute.of(context)?.isCurrent ?? false))
+      return; // Only when home route is visible
     if (widget.isSearchMode) return; // Only on home browse, not search results
-    if (!AuthenticationState().isAuthenticated) return; // Only when user is logged in
+    if (!AuthenticationState().isAuthenticated)
+      return; // Only when user is logged in
     if (OnboardingState().showOnboarding &&
         !TutorialState().hasCompletedSearchTutorial) {
       _showSearchTutorial();
@@ -323,15 +325,25 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Refresh listings when returning to home screen
   void _refreshListings() {
     try {
-      final bloc = context.read<ListingsBloc>();
+      _dispatchFeedRefresh();
+    } catch (e) {
+      debugPrint("Error refreshing listings: $e");
+    }
+  }
 
-      if (widget.isSearchMode) {
-        // Use search filters for search mode
-        _dispatchSearch(isRefresh: true);
-      } else {
-        // Use default search for home mode
-        bloc.add(const ListingsEvent.searchListings(isRefresh: true));
-      }
+  void _dispatchFeedRefresh() {
+    if (widget.isSearchMode) {
+      _dispatchSearch(isRefresh: true);
+    } else {
+      context.read<ListingsBloc>().add(
+            const ListingsEvent.searchListings(isRefresh: true),
+          );
+    }
+  }
+
+  Future<void> _onFeedPullRefresh() async {
+    try {
+      _dispatchFeedRefresh();
     } catch (e) {
       debugPrint("Error refreshing listings: $e");
     }
@@ -393,41 +405,36 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               );
             },
             child: BlocSelector<ListingsBloc, ListingsState, _HomeScreenData>(
-              selector:
-                  (state) => state.map(
-                    initial:
-                        (_) => const _HomeScreenData(
-                          isLoading: false,
-                          hasError: false,
-                          errorMessage: "",
-                          listings: [],
-                          hasMore: false,
-                        ),
-                    loading:
-                        (_) => const _HomeScreenData(
-                          isLoading: true,
-                          hasError: false,
-                          errorMessage: "",
-                          listings: [],
-                          hasMore: false,
-                        ),
-                    loaded:
-                        (loadedState) => _HomeScreenData(
-                          isLoading: false,
-                          hasError: false,
-                          errorMessage: "",
-                          listings: loadedState.listings,
-                          hasMore: loadedState.hasMore,
-                        ),
-                    error:
-                        (errorState) => _HomeScreenData(
-                          isLoading: false,
-                          hasError: true,
-                          errorMessage: errorState.message,
-                          listings: [],
-                          hasMore: false,
-                        ),
-                  ),
+              selector: (state) => state.map(
+                initial: (_) => const _HomeScreenData(
+                  isLoading: false,
+                  hasError: false,
+                  errorMessage: "",
+                  listings: [],
+                  hasMore: false,
+                ),
+                loading: (_) => const _HomeScreenData(
+                  isLoading: true,
+                  hasError: false,
+                  errorMessage: "",
+                  listings: [],
+                  hasMore: false,
+                ),
+                loaded: (loadedState) => _HomeScreenData(
+                  isLoading: false,
+                  hasError: false,
+                  errorMessage: "",
+                  listings: loadedState.listings,
+                  hasMore: loadedState.hasMore,
+                ),
+                error: (errorState) => _HomeScreenData(
+                  isLoading: false,
+                  hasError: true,
+                  errorMessage: errorState.message,
+                  listings: [],
+                  hasMore: false,
+                ),
+              ),
               builder: (context, data) {
                 if (data.isLoading) {
                   return _buildLoadingState();
@@ -548,31 +555,40 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Widget _buildLoadedState(List<Listing> listings, bool hasMore) {
     if (listings.isEmpty) {
-      return CommonStateBuilder(
-        isLoading: false,
-        hasError: false,
-        isEmpty: true,
-        emptyMessage: L10n.get("no_listings_found"),
-        emptySubtitle: L10n.get("try_refreshing"),
-        emptyIcon: Icons.home_outlined,
-        child: Container(), // This won"t be shown when empty
+      return RefreshIndicator(
+        color: _getRefreshIndicatorColor(),
+        backgroundColor: _getRefreshIndicatorBackgroundColor(),
+        onRefresh: _onFeedPullRefresh,
+        child: PullToRefreshStretchHaptics(
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                sliver: SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: CommonStateBuilder(
+                    isLoading: false,
+                    hasError: false,
+                    isEmpty: true,
+                    emptyMessage: L10n.get("no_listings_found"),
+                    emptySubtitle: L10n.get("try_refreshing"),
+                    emptyIcon: Icons.home_outlined,
+                    child: Container(), // This won"t be shown when empty
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     return RefreshIndicator(
       color: _getRefreshIndicatorColor(),
       backgroundColor: _getRefreshIndicatorBackgroundColor(),
-      onRefresh: () async {
-        // Refresh listings (pull haptics: [PullToRefreshStretchHaptics])
-        if (widget.isSearchMode) {
-          // Use search filters for search mode
-          _dispatchSearch(isRefresh: true);
-        } else {
-          // Use default search for home mode
-          final bloc = context.read<ListingsBloc>();
-          bloc.add(const ListingsEvent.searchListings(isRefresh: true));
-        }
-      },
+      onRefresh: _onFeedPullRefresh,
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
           itemCount: listings.length,
@@ -583,10 +599,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               listing: listing,
               forceFavorite:
                   false, // Home screen listings don"t force favorite state
-              showHeartIcon:
-                  false, // Don"t show heart icon on home screen
-              onFavoriteRemoved:
-                  null, // No callback needed for home screen
+              showHeartIcon: false, // Don"t show heart icon on home screen
+              onFavoriteRemoved: null, // No callback needed for home screen
             );
           },
           controller: _scrollController,
@@ -596,7 +610,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           showLoadMoreIndicator: hasMore,
           hasMore: hasMore,
           loadMoreIndicator: _buildLoadMoreIndicator(),
-          cacheExtent: 500, // Larger cache for smoother scrolling of large tiles
+          cacheExtent:
+              500, // Larger cache for smoother scrolling of large tiles
         ),
       ),
     );
@@ -656,25 +671,22 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   PreferredSizeWidget _buildSearchAppBar() {
     return AppBar(
       title: BlocSelector<ListingsBloc, ListingsState, int?>(
-        selector:
-            (state) => state.map(
-              initial: (_) => null,
-              loading: (_) => null,
-              loaded: (loadedState) => loadedState.listings.length,
-              error: (_) => null,
-            ),
+        selector: (state) => state.map(
+          initial: (_) => null,
+          loading: (_) => null,
+          loaded: (loadedState) => loadedState.listings.length,
+          error: (_) => null,
+        ),
         builder: (context, count) {
           final baseTitle = L10n.get("search_results");
-          final titleText =
-              count == null ? baseTitle : "$baseTitle ($count)";
+          final titleText = count == null ? baseTitle : "$baseTitle ($count)";
           return Text(
             titleText,
             style: Theme.of(context).appBarTheme.titleTextStyle,
           );
         },
       ),
-      backgroundColor:
-          Theme.of(context).appBarTheme.backgroundColor ??
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
           (ThemeState().isBlueTheme
               ? BlueThemeColors.surface
               : Theme.of(context).colorScheme.primary),
@@ -703,8 +715,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final listingsBloc = context.read<ListingsBloc>();
 
     // When opened from metro map with only station: use station-only API (no transfer expansion, no other filters)
-    final isStationOnlyFromMap =
-        widget.useExplicitFiltersOnly &&
+    final isStationOnlyFromMap = widget.useExplicitFiltersOnly &&
         widget.subwayStationId != null &&
         widget.listingTypeId == null &&
         widget.locationId == null &&
@@ -724,38 +735,30 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       return;
     }
 
-    final listingTypeId =
-        widget.useExplicitFiltersOnly
-            ? widget.listingTypeId
-            : _searchFiltersState.selectedListingTypeId;
-    final locationId =
-        widget.useExplicitFiltersOnly
-            ? widget.locationId
-            : _searchFiltersState.selectedLocationIndex;
-    final subwayStationId =
-        widget.useExplicitFiltersOnly
-            ? widget.subwayStationId
-            : _searchFiltersState.selectedStationId;
-    final subwayLineId =
-        widget.useExplicitFiltersOnly
-            ? widget.subwayLineId
-            : _searchFiltersState.selectedSubwayLine;
-    final gender =
-        widget.useExplicitFiltersOnly
-            ? widget.gender
-            : _searchFiltersState.selectedGender;
-    final minPrice =
-        widget.useExplicitFiltersOnly
-            ? widget.minPrice
-            : _searchFiltersState.minPrice;
-    final maxPrice =
-        widget.useExplicitFiltersOnly
-            ? widget.maxPrice
-            : _searchFiltersState.maxPrice;
-    final privateRoom =
-        widget.useExplicitFiltersOnly
-            ? widget.privateRoom
-            : _searchFiltersState.privateRoom;
+    final listingTypeId = widget.useExplicitFiltersOnly
+        ? widget.listingTypeId
+        : _searchFiltersState.selectedListingTypeId;
+    final locationId = widget.useExplicitFiltersOnly
+        ? widget.locationId
+        : _searchFiltersState.selectedLocationIndex;
+    final subwayStationId = widget.useExplicitFiltersOnly
+        ? widget.subwayStationId
+        : _searchFiltersState.selectedStationId;
+    final subwayLineId = widget.useExplicitFiltersOnly
+        ? widget.subwayLineId
+        : _searchFiltersState.selectedSubwayLine;
+    final gender = widget.useExplicitFiltersOnly
+        ? widget.gender
+        : _searchFiltersState.selectedGender;
+    final minPrice = widget.useExplicitFiltersOnly
+        ? widget.minPrice
+        : _searchFiltersState.minPrice;
+    final maxPrice = widget.useExplicitFiltersOnly
+        ? widget.maxPrice
+        : _searchFiltersState.maxPrice;
+    final privateRoom = widget.useExplicitFiltersOnly
+        ? widget.privateRoom
+        : _searchFiltersState.privateRoom;
 
     // Debug logging to see what values are being passed
     logger.d(

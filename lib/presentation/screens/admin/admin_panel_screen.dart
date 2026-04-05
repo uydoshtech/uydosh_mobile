@@ -199,7 +199,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             iconColor: iconColor,
             children: [
               _AdminMenuRow(
-                icon: Icons.telegram,
+                icon: Icons.import_export,
                 titleKey: "admin_panel_section_telegram_sync",
                 iconColor: iconColor,
                 onTap: () {

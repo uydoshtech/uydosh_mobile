@@ -19,20 +19,25 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   /// Default listing owner after Telegram sync (Uydoshtech@gmail.com in production).
   static const int _kDefaultListingOwnerUserId = 86;
 
+  /// Preset sync sizes (matches admin UX: small counts, then round hundreds).
+  static const List<int> _kMessageLimitChoices = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    20, 30, 50, 100, 200, 500, 1000,
+  ];
+
   static const BorderRadius _kFieldBorderRadius =
       BorderRadius.all(Radius.circular(8));
 
   final IAdminTelegramSyncService _service = getIt<IAdminTelegramSyncService>();
   final IAdminUserService _adminUserService = getIt<IAdminUserService>();
   final _chatController = TextEditingController(text: "@roommateuz");
-  final _limitController = TextEditingController(text: "6");
-  final _exportChatKeyController = TextEditingController();
   final _exportMaxRowsController = TextEditingController(text: "100000");
 
   final List<AdminUser> _adminUsers = [];
   bool _loadingAdmins = true;
   String? _adminsError;
   int? _selectedImportUserId;
+  int _selectedMessageLimit = 6;
 
   bool _newestFirst = true;
   bool _skipListingImport = false;
@@ -50,8 +55,6 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   @override
   void dispose() {
     _chatController.dispose();
-    _limitController.dispose();
-    _exportChatKeyController.dispose();
     _exportMaxRowsController.dispose();
     super.dispose();
   }
@@ -105,10 +108,9 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
 
   Future<void> _run() async {
     final chat = _chatController.text.trim();
-    final limit = int.tryParse(_limitController.text.trim());
     final importUserId = _selectedImportUserId;
 
-    if (chat.isEmpty || limit == null || limit < 1) {
+    if (chat.isEmpty) {
       setState(() {
         _errorText = L10n.get("admin_telegram_sync_invalid_chat_limit");
         _resultText = null;
@@ -125,7 +127,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     try {
       final r = await _service.runSync(
         chat: chat,
-        limit: limit,
+        limit: _selectedMessageLimit,
         newestFirst: _newestFirst,
         skipListingImport: _skipListingImport,
         importUserId: importUserId,
@@ -200,9 +202,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
       _errorText = null;
     });
     try {
-      final filter = _exportChatKeyController.text.trim();
       await _service.downloadIngestedExport(
-        chatKeyFilter: filter.isEmpty ? null : filter,
+        chatKeyFilter: null,
         maxRows: maxRows,
       );
       if (!mounted) return;
@@ -276,7 +277,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     final fieldStyle = isBlue
         ? const TextStyle(color: BlueThemeColors.textPrimary, fontSize: 16)
         : null;
-    final syncButtonStyle = isBlue
+    final primaryFullWidthStyle = isBlue
         ? FilledButton.styleFrom(
             backgroundColor: BlueThemeColors.buttonPrimary,
             foregroundColor: BlueThemeColors.textPrimary,
@@ -353,7 +354,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                 fontSize: 12,
               ),
             ),
-            TextButton.icon(
+            FilledButton.icon(
+              style: primaryFullWidthStyle,
               onPressed: _loadAdmins,
               icon: const Icon(Icons.refresh),
               label: Text(L10n.get("admin_telegram_sync_admins_retry")),
@@ -418,19 +420,35 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                 : (v) => setState(() => _skipListingImport = v),
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _limitController,
-            style: fieldStyle,
+          DropdownButtonFormField<int>(
+            // ignore: deprecated_member_use
+            value: _selectedMessageLimit,
+            items: _kMessageLimitChoices
+                .map(
+                  (n) => DropdownMenuItem<int>(
+                    value: n,
+                    child: Text("$n"),
+                  ),
+                )
+                .toList(),
+            onChanged: _running
+                ? null
+                : (v) {
+                    if (v == null) return;
+                    setState(() => _selectedMessageLimit = v);
+                  },
             decoration: _fieldDecoration(
               context,
               labelText: L10n.get("admin_telegram_sync_limit_label"),
             ),
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            style: fieldStyle,
+            isExpanded: true,
+            dropdownColor: isBlue ? BlueThemeColors.surface : null,
+            iconEnabledColor: isBlue ? BlueThemeColors.textPrimary : null,
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
-            style: syncButtonStyle,
+            style: primaryFullWidthStyle,
             onPressed: _running ? null : _run,
             icon: _running
                 ? SizedBox(
@@ -486,17 +504,6 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           ),
           const SizedBox(height: 16),
           TextField(
-            controller: _exportChatKeyController,
-            style: fieldStyle,
-            decoration: _fieldDecoration(
-              context,
-              labelText: L10n.get("admin_telegram_export_chat_key_label"),
-            ),
-            autocorrect: false,
-            enabled: !_exporting,
-          ),
-          const SizedBox(height: 12),
-          TextField(
             controller: _exportMaxRowsController,
             style: fieldStyle,
             decoration: _fieldDecoration(
@@ -508,7 +515,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
             enabled: !_exporting,
           ),
           const SizedBox(height: 16),
-          OutlinedButton.icon(
+          FilledButton.icon(
+            style: primaryFullWidthStyle,
             onPressed: (_running || _exporting) ? null : _downloadExport,
             icon: _exporting
                 ? SizedBox(
@@ -516,7 +524,9 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: isBlue
+                          ? BlueThemeColors.textPrimary
+                          : Theme.of(context).colorScheme.onPrimary,
                     ),
                   )
                 : const Icon(Icons.download_outlined),
@@ -524,15 +534,6 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
               _exporting
                   ? L10n.get("admin_telegram_export_running")
                   : L10n.get("admin_telegram_export_download"),
-            ),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 48),
-              foregroundColor: isBlue ? BlueThemeColors.textPrimary : null,
-              side: BorderSide(
-                color: isBlue
-                    ? BlueThemeColors.textSecondary
-                    : Theme.of(context).colorScheme.outline,
-              ),
             ),
           ),
         ],

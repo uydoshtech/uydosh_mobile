@@ -1269,14 +1269,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_content_moderation_save_error => 'Could not save setting';
 
   @override
-  String get admin_panel_section_telegram_sync => 'Telegram ingest';
+  String get admin_panel_section_telegram_sync => 'Data import';
 
   @override
-  String get admin_telegram_sync_title => 'Telegram ingest';
+  String get admin_telegram_sync_title => 'Data import';
 
   @override
   String get admin_telegram_sync_intro =>
-      'Runs the same sync as npm run telegram:sync on the server. The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.';
+      'Imports listing data from a Telegram channel into the database (same flow as npm run telegram:sync on the server). The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.';
 
   @override
   String get admin_telegram_sync_chat_label => 'Chat';
@@ -1331,7 +1331,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_telegram_sync_invalid_chat_limit =>
-      'Enter a chat and a positive limit.';
+      'Enter a chat (e.g. @roommateuz).';
 
   @override
   String get admin_telegram_sync_invalid_import_user =>

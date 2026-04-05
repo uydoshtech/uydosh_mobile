@@ -519,10 +519,10 @@ class AppStrings {
       "admin_content_moderation_error": "Could not load moderation settings",
       "admin_content_moderation_save_error": "Could not save setting",
 
-      "admin_panel_section_telegram_sync": "Telegram ingest",
-      "admin_telegram_sync_title": "Telegram ingest",
+      "admin_panel_section_telegram_sync": "Data import",
+      "admin_telegram_sync_title": "Data import",
       "admin_telegram_sync_intro":
-          "Runs the same sync as npm run telegram:sync on the server. The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.",
+          "Imports listing data from a Telegram channel into the database (same flow as npm run telegram:sync on the server). The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_limit_label": "Message limit",
       "admin_telegram_sync_import_user_label": "Listing owner user ID",
@@ -543,13 +543,12 @@ class AppStrings {
       "admin_telegram_sync_sync_section": "DB sync",
       "admin_telegram_sync_listing_section": "Listing import",
       "admin_telegram_sync_invalid_chat_limit":
-          "Enter a chat and a positive limit.",
+          "Enter a chat (e.g. @roommateuz).",
       "admin_telegram_sync_invalid_import_user":
           "Listing owner user ID must be a positive number or empty.",
       "admin_telegram_export_section_title": "Download ingested messages",
       "admin_telegram_export_intro":
-          "Exports rows from telegram_ingested_messages as a .jsonl text file (one JSON object per line). No Telegram calls. Use chat_key from the sync result to filter one channel, or leave empty for all chats (still capped by max rows).",
-      "admin_telegram_export_chat_key_label": "chat_key filter (optional)",
+          "Exports rows from telegram_ingested_messages as a .jsonl text file (one JSON object per line). No Telegram calls. Output includes all chats, capped by max rows.",
       "admin_telegram_export_max_rows_label": "Max rows",
       "admin_telegram_export_download": "Download export",
       "admin_telegram_export_running": "Preparing download…",
@@ -1413,10 +1412,10 @@ class AppStrings {
       "admin_content_moderation_error": "Не удалось загрузить настройки модерации",
       "admin_content_moderation_save_error": "Не удалось сохранить настройку",
 
-      "admin_panel_section_telegram_sync": "Telegram: загрузка",
-      "admin_telegram_sync_title": "Telegram: загрузка",
+      "admin_panel_section_telegram_sync": "Импорт данных",
+      "admin_telegram_sync_title": "Импорт данных",
       "admin_telegram_sync_intro":
-          "Запускает на сервере тот же синхрон, что и npm run telegram:sync. Нужна сессия Telegram на хосте API (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.",
+          "Импортирует объявления из Telegram‑канала в базу (тот же процесс, что npm run telegram:sync на сервере). На хосте API нужна сессия Telegram (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.",
       "admin_telegram_sync_chat_label": "Чат",
       "admin_telegram_sync_limit_label": "Лимит сообщений",
       "admin_telegram_sync_import_user_label": "ID владельца объявлений",
@@ -1437,13 +1436,12 @@ class AppStrings {
       "admin_telegram_sync_sync_section": "Синк БД",
       "admin_telegram_sync_listing_section": "Импорт объявлений",
       "admin_telegram_sync_invalid_chat_limit":
-          "Укажите чат и положительный лимит.",
+          "Укажите чат (например @roommateuz).",
       "admin_telegram_sync_invalid_import_user":
           "ID пользователя должен быть положительным числом или пустым.",
       "admin_telegram_export_section_title": "Скачать загруженные сообщения",
       "admin_telegram_export_intro":
-          "Экспорт строк из telegram_ingested_messages в файл .jsonl (по одному JSON на строку). Без вызовов Telegram. Укажите chat_key из результата синка для одного канала или оставьте пустым для всех чатов (лимит по числу строк).",
-      "admin_telegram_export_chat_key_label": "Фильтр chat_key (необязательно)",
+          "Экспорт строк из telegram_ingested_messages в файл .jsonl (по одному JSON на строку). Без вызовов Telegram. Все чаты, объём ограничен числом строк.",
       "admin_telegram_export_max_rows_label": "Макс. строк",
       "admin_telegram_export_download": "Скачать экспорт",
       "admin_telegram_export_running": "Готовим файл…",
@@ -2317,10 +2315,10 @@ class AppStrings {
       "admin_content_moderation_error": "Moderatsiya sozlamalari yuklanmadi",
       "admin_content_moderation_save_error": "Sozlama saqlanmadi",
 
-      "admin_panel_section_telegram_sync": "Telegram yuklash",
-      "admin_telegram_sync_title": "Telegram yuklash",
+      "admin_panel_section_telegram_sync": "Maʼlumot importi",
+      "admin_telegram_sync_title": "Maʼlumot importi",
       "admin_telegram_sync_intro":
-          "Serverda npm run telegram:sync bilan bir xil sinxronni ishga tushiradi. API serverda Telegram sessiyasi bo‘lishi kerak (TELEGRAM_SESSION_STRING yoki .telegram_session). Katta limit proksi taymautlarida uzilishi mumkin.",
+          "Telegram kanalidan e’lonlarni bazaga import qiladi (serverda npm run telegram:sync bilan bir xil jarayon). API serverda Telegram sessiyasi bo‘lishi kerak (TELEGRAM_SESSION_STRING yoki .telegram_session). Katta limit proksi taymautlarida uzilishi mumkin.",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_limit_label": "Xabar limiti",
       "admin_telegram_sync_import_user_label": "E’lon egasi user ID",
@@ -2339,13 +2337,13 @@ class AppStrings {
       "admin_telegram_sync_result_header": "Natija",
       "admin_telegram_sync_sync_section": "DB sinxron",
       "admin_telegram_sync_listing_section": "E’lon importi",
-      "admin_telegram_sync_invalid_chat_limit": "Chat va musbat limit kiriting.",
+      "admin_telegram_sync_invalid_chat_limit":
+          "Chat kiriting (masalan @roommateuz).",
       "admin_telegram_sync_invalid_import_user":
           "Foydalanuvchi ID musbat son yoki bo‘sh bo‘lishi kerak.",
       "admin_telegram_export_section_title": "Yuklangan xabarlarni yuklab olish",
       "admin_telegram_export_intro":
-          "telegram_ingested_messages jadvalidan .jsonl fayl (har qatorda bitta JSON). Telegram chaqiruvi yo‘q. Sinxron natijasidagi chat_key bilan bitta kanalni filtrlash mumkin; bo‘sh qoldirsangiz — barcha chatlar (maks. qatorlar bilan cheklangan).",
-      "admin_telegram_export_chat_key_label": "chat_key filtri (ixtiyoriy)",
+          "telegram_ingested_messages jadvalidan .jsonl fayl (har qatorda bitta JSON). Telegram chaqiruvi yo‘q. Barcha chatlar, hajm maks. qatorlar bilan cheklangan.",
       "admin_telegram_export_max_rows_label": "Maks. qatorlar",
       "admin_telegram_export_download": "Eksportni yuklab olish",
       "admin_telegram_export_running": "Fayl tayyorlanmoqda…",

@@ -1285,14 +1285,14 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_content_moderation_save_error => 'Sozlama saqlanmadi';
 
   @override
-  String get admin_panel_section_telegram_sync => 'Telegram yuklash';
+  String get admin_panel_section_telegram_sync => 'Maʼlumot importi';
 
   @override
-  String get admin_telegram_sync_title => 'Telegram yuklash';
+  String get admin_telegram_sync_title => 'Maʼlumot importi';
 
   @override
   String get admin_telegram_sync_intro =>
-      'Serverda npm run telegram:sync bilan bir xil sinxronni ishga tushiradi. API serverda Telegram sessiyasi bo‘lishi kerak (TELEGRAM_SESSION_STRING yoki .telegram_session). Katta limit proksi taymautlarida uzilishi mumkin.';
+      'Telegram kanalidan e’lonlarni bazaga import qiladi (serverda npm run telegram:sync bilan bir xil jarayon). API serverda Telegram sessiyasi bo‘lishi kerak (TELEGRAM_SESSION_STRING yoki .telegram_session). Katta limit proksi taymautlarida uzilishi mumkin.';
 
   @override
   String get admin_telegram_sync_chat_label => 'Chat';
@@ -1348,7 +1348,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_telegram_sync_invalid_chat_limit =>
-      'Chat va musbat limit kiriting.';
+      'Chat kiriting (masalan @roommateuz).';
 
   @override
   String get admin_telegram_sync_invalid_import_user =>

@@ -2467,19 +2467,19 @@ abstract class AppLocalizations {
   /// No description provided for @admin_panel_section_telegram_sync.
   ///
   /// In en, this message translates to:
-  /// **'Telegram ingest'**
+  /// **'Data import'**
   String get admin_panel_section_telegram_sync;
 
   /// No description provided for @admin_telegram_sync_title.
   ///
   /// In en, this message translates to:
-  /// **'Telegram ingest'**
+  /// **'Data import'**
   String get admin_telegram_sync_title;
 
   /// No description provided for @admin_telegram_sync_intro.
   ///
   /// In en, this message translates to:
-  /// **'Runs the same sync as npm run telegram:sync on the server. The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.'**
+  /// **'Imports listing data from a Telegram channel into the database (same flow as npm run telegram:sync on the server). The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.'**
   String get admin_telegram_sync_intro;
 
   /// No description provided for @admin_telegram_sync_chat_label.
@@ -2581,7 +2581,7 @@ abstract class AppLocalizations {
   /// No description provided for @admin_telegram_sync_invalid_chat_limit.
   ///
   /// In en, this message translates to:
-  /// **'Enter a chat and a positive limit.'**
+  /// **'Enter a chat (e.g. @roommateuz).'**
   String get admin_telegram_sync_invalid_chat_limit;
 
   /// No description provided for @admin_telegram_sync_invalid_import_user.
