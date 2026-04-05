@@ -1,13 +1,21 @@
 import "package:flutter/material.dart";
 import "package:flutter_roomplan/flutter_roomplan.dart";
+import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+
+const _kRoomScanExampleAssets = <String>[
+  "assets/images/room_scan_examples/example_1.png",
+  "assets/images/room_scan_examples/example_2.png",
+  "assets/images/room_scan_examples/example_3.png",
+];
 
 /// RoomPlan (LiDAR) capture → upload USDZ to [point_cloud_url] on the listing.
 class RoomPlanScanScreen extends StatefulWidget {
@@ -21,8 +29,15 @@ class RoomPlanScanScreen extends StatefulWidget {
 
 class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
   final _roomPlan = FlutterRoomplan();
+  final PageController _examplePageController = PageController();
   bool _uploading = false;
   bool _starting = false;
+
+  @override
+  void dispose() {
+    _examplePageController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -137,18 +152,11 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
 
         final loading = _uploading || _starting;
 
+        final colorScheme = Theme.of(context).colorScheme;
+
         return Scaffold(
-          appBar: AppBar(
-            title: Text(L10n.get("room_scan_title")),
-            actions: [
-              TextButton(
-                onPressed:
-                    loading ? null : () => Navigator.of(context).pop(false),
-                child: Text(L10n.get("skip")),
-              ),
-            ],
-          ),
-          body: Padding(
+          appBar: AppBar(title: Text(L10n.get("room_scan_title"))),
+          body: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -157,6 +165,50 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
                   L10n.get("room_scan_instructions"),
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
+                if (!_uploading) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    L10n.get("room_scan_examples_label"),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Semantics(
+                    label: L10n.get("room_scan_examples_label"),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: PageView.builder(
+                          controller: _examplePageController,
+                          itemCount: _kRoomScanExampleAssets.length,
+                          itemBuilder: (context, index) {
+                            return Image.asset(
+                              _kRoomScanExampleAssets[index],
+                              fit: BoxFit.cover,
+                              gaplessPlayback: true,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: SmoothPageIndicator(
+                      controller: _examplePageController,
+                      count: _kRoomScanExampleAssets.length,
+                      effect: WormEffect(
+                        dotHeight: 8,
+                        dotWidth: 8,
+                        spacing: 8,
+                        dotColor: colorScheme.outline.withValues(alpha: 0.35),
+                        activeDotColor: colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 if (_uploading)
                   Column(
@@ -166,13 +218,21 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
                       Text(L10n.get("room_scan_uploading")),
                     ],
                   )
-                else
+                else ...[
                   PrimaryButton(
                     onPressed: loading ? null : _startScan,
                     isLoading: _starting,
                     isDisabled: loading,
                     child: Text(L10n.get("room_scan_start")),
                   ),
+                  const SizedBox(height: 16),
+                  GhostButtonFactory.text(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    text: L10n.get("skip"),
+                    width: double.infinity,
+                    isDisabled: loading,
+                  ),
+                ],
               ],
             ),
           ),

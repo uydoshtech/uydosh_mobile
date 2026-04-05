@@ -204,6 +204,7 @@
   "room_scan_not_supported": "3D room scan requires an iPhone or iPad with LiDAR.",
   "room_scan_disabled_globally": "3D room scanning is turned off in app settings. It may be available again later.",
   "add_room_scan_3d": "Add 3D room scan",
+  "room_scan_examples_label": "Example scans",
   "skip": "Skip",
   "listing_updated_success": "Listing updated successfully",
   "profile_completed_success": "Profile completed successfully!",

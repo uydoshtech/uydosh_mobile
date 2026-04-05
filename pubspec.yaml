@@ -135,6 +135,7 @@ flutter:
     - assets/icon/
     - assets/icon/components/
     - assets/images/
+    - assets/images/room_scan_examples/
     - assets/map_elements/
     - assets/map_elements/airport.svg
     - assets/sounds/

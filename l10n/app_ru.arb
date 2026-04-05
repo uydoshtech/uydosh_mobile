@@ -196,6 +196,7 @@
   "room_scan_not_supported": "3D-скан требует iPhone или iPad с LiDAR.",
   "room_scan_disabled_globally": "3D-сканирование комнаты отключено в настройках приложения. Позже оно может снова стать доступным.",
   "add_room_scan_3d": "Добавить 3D-скан комнаты",
+  "room_scan_examples_label": "Примеры сканов",
   "skip": "Пропустить",
   "listing_updated_success": "Объявление успешно обновлено",
   "profile_completed_success": "Профиль успешно завершен!",

@@ -892,6 +892,12 @@ abstract class AppLocalizations {
   /// **'Add 3D room scan'**
   String get add_room_scan_3d;
 
+  /// No description provided for @room_scan_examples_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Example scans'**
+  String get room_scan_examples_label;
+
   /// No description provided for @skip.
   ///
   /// In en, this message translates to:
