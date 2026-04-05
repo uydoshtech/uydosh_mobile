@@ -7,6 +7,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
@@ -352,9 +353,12 @@ class ConversationCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (conversation.listingTitle != null) ...[
+            if (conversation.listingTitle != null ||
+                (conversation.listingTypeId != null &&
+                    (conversation.listingTypeId == 1 ||
+                        conversation.listingTypeId == 2))) ...[
               Text(
-                conversation.listingTitle!,
+                resolvedConversationListingTitle(conversation),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),

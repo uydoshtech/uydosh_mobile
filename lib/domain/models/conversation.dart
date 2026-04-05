@@ -37,6 +37,8 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
     // Summary data
     @JsonKey(name: "listing_title") String? listingTitle,
+    @JsonKey(name: "listing_type_id") int? listingTypeId,
+    @JsonKey(name: "listing_gender") int? listingGender,
     @JsonKey(name: "listing_price") int? listingPrice,
     @JsonKey(name: "other_user_name") String? otherUserName,
     @JsonKey(name: "other_user_avatar") String? otherUserAvatar,

@@ -529,6 +529,10 @@ mixin _$ConversationSummary {
       throw _privateConstructorUsedError; // Summary data
   @JsonKey(name: "listing_title")
   String? get listingTitle => throw _privateConstructorUsedError;
+  @JsonKey(name: "listing_type_id")
+  int? get listingTypeId => throw _privateConstructorUsedError;
+  @JsonKey(name: "listing_gender")
+  int? get listingGender => throw _privateConstructorUsedError;
   @JsonKey(name: "listing_price")
   int? get listingPrice => throw _privateConstructorUsedError;
   @JsonKey(name: "other_user_name")
@@ -595,6 +599,8 @@ abstract class $ConversationSummaryCopyWith<$Res> {
       @JsonKey(name: "last_message_content") String? lastMessageContent,
       @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
       @JsonKey(name: "listing_title") String? listingTitle,
+      @JsonKey(name: "listing_type_id") int? listingTypeId,
+      @JsonKey(name: "listing_gender") int? listingGender,
       @JsonKey(name: "listing_price") int? listingPrice,
       @JsonKey(name: "other_user_name") String? otherUserName,
       @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
@@ -641,6 +647,8 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
     Object? lastMessageContent = freezed,
     Object? lastMessageSenderId = freezed,
     Object? listingTitle = freezed,
+    Object? listingTypeId = freezed,
+    Object? listingGender = freezed,
     Object? listingPrice = freezed,
     Object? otherUserName = freezed,
     Object? otherUserAvatar = freezed,
@@ -705,6 +713,14 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
           ? _value.listingTitle
           : listingTitle // ignore: cast_nullable_to_non_nullable
               as String?,
+      listingTypeId: freezed == listingTypeId
+          ? _value.listingTypeId
+          : listingTypeId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingGender: freezed == listingGender
+          ? _value.listingGender
+          : listingGender // ignore: cast_nullable_to_non_nullable
+              as int?,
       listingPrice: freezed == listingPrice
           ? _value.listingPrice
           : listingPrice // ignore: cast_nullable_to_non_nullable
@@ -801,6 +817,8 @@ abstract class _$$ConversationSummaryImplCopyWith<$Res>
       @JsonKey(name: "last_message_content") String? lastMessageContent,
       @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
       @JsonKey(name: "listing_title") String? listingTitle,
+      @JsonKey(name: "listing_type_id") int? listingTypeId,
+      @JsonKey(name: "listing_gender") int? listingGender,
       @JsonKey(name: "listing_price") int? listingPrice,
       @JsonKey(name: "other_user_name") String? otherUserName,
       @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
@@ -845,6 +863,8 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
     Object? lastMessageContent = freezed,
     Object? lastMessageSenderId = freezed,
     Object? listingTitle = freezed,
+    Object? listingTypeId = freezed,
+    Object? listingGender = freezed,
     Object? listingPrice = freezed,
     Object? otherUserName = freezed,
     Object? otherUserAvatar = freezed,
@@ -909,6 +929,14 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
           ? _value.listingTitle
           : listingTitle // ignore: cast_nullable_to_non_nullable
               as String?,
+      listingTypeId: freezed == listingTypeId
+          ? _value.listingTypeId
+          : listingTypeId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      listingGender: freezed == listingGender
+          ? _value.listingGender
+          : listingGender // ignore: cast_nullable_to_non_nullable
+              as int?,
       listingPrice: freezed == listingPrice
           ? _value.listingPrice
           : listingPrice // ignore: cast_nullable_to_non_nullable
@@ -1000,6 +1028,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
       @JsonKey(name: "last_message_content") this.lastMessageContent,
       @JsonKey(name: "last_message_sender_id") this.lastMessageSenderId,
       @JsonKey(name: "listing_title") this.listingTitle,
+      @JsonKey(name: "listing_type_id") this.listingTypeId,
+      @JsonKey(name: "listing_gender") this.listingGender,
       @JsonKey(name: "listing_price") this.listingPrice,
       @JsonKey(name: "other_user_name") this.otherUserName,
       @JsonKey(name: "other_user_avatar") this.otherUserAvatar,
@@ -1055,6 +1085,12 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @override
   @JsonKey(name: "listing_title")
   final String? listingTitle;
+  @override
+  @JsonKey(name: "listing_type_id")
+  final int? listingTypeId;
+  @override
+  @JsonKey(name: "listing_gender")
+  final int? listingGender;
   @override
   @JsonKey(name: "listing_price")
   final int? listingPrice;
@@ -1113,7 +1149,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
 
   @override
   String toString() {
-    return 'ConversationSummary(id: $id, listingId: $listingId, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, listingTitle: $listingTitle, listingPrice: $listingPrice, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
+    return 'ConversationSummary(id: $id, listingId: $listingId, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
   }
 
   @override
@@ -1142,6 +1178,10 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
                 other.lastMessageSenderId == lastMessageSenderId) &&
             (identical(other.listingTitle, listingTitle) ||
                 other.listingTitle == listingTitle) &&
+            (identical(other.listingTypeId, listingTypeId) ||
+                other.listingTypeId == listingTypeId) &&
+            (identical(other.listingGender, listingGender) ||
+                other.listingGender == listingGender) &&
             (identical(other.listingPrice, listingPrice) ||
                 other.listingPrice == listingPrice) &&
             (identical(other.otherUserName, otherUserName) ||
@@ -1195,6 +1235,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
         lastMessageContent,
         lastMessageSenderId,
         listingTitle,
+        listingTypeId,
+        listingGender,
         listingPrice,
         otherUserName,
         otherUserAvatar,
@@ -1245,6 +1287,8 @@ abstract class _ConversationSummary implements ConversationSummary {
       @JsonKey(name: "last_message_content") final String? lastMessageContent,
       @JsonKey(name: "last_message_sender_id") final int? lastMessageSenderId,
       @JsonKey(name: "listing_title") final String? listingTitle,
+      @JsonKey(name: "listing_type_id") final int? listingTypeId,
+      @JsonKey(name: "listing_gender") final int? listingGender,
       @JsonKey(name: "listing_price") final int? listingPrice,
       @JsonKey(name: "other_user_name") final String? otherUserName,
       @JsonKey(name: "other_user_avatar") final String? otherUserAvatar,
@@ -1306,6 +1350,12 @@ abstract class _ConversationSummary implements ConversationSummary {
   @override
   @JsonKey(name: "listing_title")
   String? get listingTitle;
+  @override
+  @JsonKey(name: "listing_type_id")
+  int? get listingTypeId;
+  @override
+  @JsonKey(name: "listing_gender")
+  int? get listingGender;
   @override
   @JsonKey(name: "listing_price")
   int? get listingPrice;

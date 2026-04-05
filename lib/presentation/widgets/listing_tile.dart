@@ -482,7 +482,17 @@ class _ListingTileState extends State<ListingTile>
                           right: 40,
                         ), // Add right padding to avoid arrow overlap
                         child: Text(
-                          widget.listing.title,
+                          ListingUtils.usesPresetListingTitle(
+                                widget.listing.listingTypeId,
+                              )
+                              ? L10n.get(
+                                  ListingUtils.presetListingTitleL10nKey(
+                                    listingTypeId:
+                                        widget.listing.listingTypeId,
+                                    gender: widget.listing.gender,
+                                  ),
+                                )
+                              : widget.listing.title,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

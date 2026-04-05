@@ -6,6 +6,7 @@ import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_description_translation.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
@@ -188,7 +189,16 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
             if (widget.listingDetail.description == null ||
                 widget.listingDetail.description!.isEmpty)
               Text(
-                widget.listingDetail.title,
+                ListingUtils.usesPresetListingTitle(
+                      widget.listingDetail.listingTypeId,
+                    )
+                    ? L10n.get(
+                        ListingUtils.presetListingTitleL10nKey(
+                          listingTypeId: widget.listingDetail.listingTypeId,
+                          gender: widget.listingDetail.gender,
+                        ),
+                      )
+                    : widget.listingDetail.title,
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -198,7 +208,18 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 widget.listingDetail.description!.isNotEmpty)
               ListingDescriptionTranslation(
                 listingId: widget.listingDetail.id,
-                listingTitle: widget.listingDetail.title,
+                listingTitle:
+                    ListingUtils.usesPresetListingTitle(
+                          widget.listingDetail.listingTypeId,
+                        )
+                        ? L10n.get(
+                            ListingUtils.presetListingTitleL10nKey(
+                              listingTypeId:
+                                  widget.listingDetail.listingTypeId,
+                              gender: widget.listingDetail.gender,
+                            ),
+                          )
+                        : widget.listingDetail.title,
                 listingTitleStyle: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,

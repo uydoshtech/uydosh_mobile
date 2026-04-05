@@ -618,12 +618,21 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   }
 
   String _buildShareText(ListingDetail listingDetail, String language) {
-    final title = _getLocalizedName(
-      nameUz: listingDetail.title,
-      nameRu: listingDetail.title,
-      nameEn: listingDetail.title,
-      language: language,
-    );
+    final title =
+        ListingUtils.usesPresetListingTitle(listingDetail.listingTypeId)
+            ? L10n.getForLanguage(
+                ListingUtils.presetListingTitleL10nKey(
+                  listingTypeId: listingDetail.listingTypeId,
+                  gender: listingDetail.gender,
+                ),
+                language,
+              )
+            : _getLocalizedName(
+                nameUz: listingDetail.title,
+                nameRu: listingDetail.title,
+                nameEn: listingDetail.title,
+                language: language,
+              );
 
     final description = ListingContactRedaction.stripForPublicDisplay(
       listingDetail.description ?? "",

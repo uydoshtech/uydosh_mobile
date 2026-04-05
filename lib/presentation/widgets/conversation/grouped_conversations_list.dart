@@ -5,6 +5,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
@@ -126,7 +127,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         final isExpanded =
             _expandedGroups[listingId] ?? false; // Default to collapsed
         final listingTitle =
-            conversations.first.listingTitle ?? "Listing #$listingId";
+            resolvedConversationListingTitle(conversations.first);
 
         return _buildGroupCard(
           listingId: listingId,

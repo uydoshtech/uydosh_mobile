@@ -21,6 +21,7 @@ import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
@@ -335,29 +336,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   /// Generate title based on listing type and gender
   String _generateTitle() {
-    String titleKey;
-
-    if (_selectedListingTypeId == 2) {
-      // Roommate needed
-      if (_selectedGender == 1) {
-        // Male
-        titleKey = "title_male_roommate";
-      } else {
-        // Female
-        titleKey = "title_female_roommate";
-      }
-    } else {
-      // Room needed
-      if (_selectedGender == 1) {
-        // Male
-        titleKey = "title_male_room";
-      } else {
-        // Female
-        titleKey = "title_female_room";
-      }
-    }
-
-    return L10n.get(titleKey);
+    return L10n.get(
+      ListingUtils.presetListingTitleL10nKey(
+        listingTypeId: _selectedListingTypeId,
+        gender: _selectedGender,
+      ),
+    );
   }
 
   /// Update title field with generated title

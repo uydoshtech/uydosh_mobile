@@ -6,6 +6,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 
 class OutgoingConversationTile extends StatelessWidget {
@@ -85,7 +86,7 @@ class OutgoingConversationTile extends StatelessWidget {
                     ),
                   ),
             title: Text(
-              conversation.listingTitle ?? "Listing #${conversation.listingId}",
+              resolvedConversationListingTitle(conversation),
               style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
