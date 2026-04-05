@@ -1086,12 +1086,7 @@ L10n.get("feature_listing_error",
           value: "profile",
           icon: Icons.person_outline,
           textKey: "profile",
-          onPressed:
-              () => _navigateToProfile(
-                listingDetail.user.id,
-                phoneNumber: listingDetail.contactPhone ??
-                    listingDetail.user.phone,
-              ),
+          onPressed: () => _navigateToProfile(listingDetail.user.id),
           enabled: menuEnabled,
         ),
       );
@@ -1951,11 +1946,8 @@ L10n.get("feature_listing_error",
                       formattedPublicationDate: formattedPub,
                       getLocalizedName: _getLocalizedName,
                       ownerName: pageState.ownerName,
-                      onAuthorTap: () => _navigateToProfile(
-                        listingDetail.user.id,
-                        phoneNumber: listingDetail.contactPhone ??
-                            listingDetail.user.phone,
-                      ),
+                      onAuthorTap: () =>
+                          _navigateToProfile(listingDetail.user.id),
                     ),
                     const SizedBox(height: 8),
                     // Map section

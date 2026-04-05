@@ -57,10 +57,6 @@ mixin _$ListingDetail {
   String? get moveInDate => throw _privateConstructorUsedError;
   @JsonKey(name: "private_room")
   bool? get privateRoom => throw _privateConstructorUsedError;
-
-  /// Parsed from listing text (e.g. Telegram); use for contact when set.
-  @JsonKey(name: "contact_phone")
-  String? get contactPhone => throw _privateConstructorUsedError;
   @JsonKey(name: "point_cloud_url")
   String? get pointCloudUrl => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_station")
@@ -107,7 +103,6 @@ abstract class $ListingDetailCopyWith<$Res> {
       @JsonKey(name: "featured_at") String? featuredAt,
       @JsonKey(name: "move_in_date") String? moveInDate,
       @JsonKey(name: "private_room") bool? privateRoom,
-      @JsonKey(name: "contact_phone") String? contactPhone,
       @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       LocationDetail? location,
@@ -156,7 +151,6 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? featuredAt = freezed,
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
-    Object? contactPhone = freezed,
     Object? pointCloudUrl = freezed,
     Object? subwayStation = freezed,
     Object? location = freezed,
@@ -248,10 +242,6 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
           ? _value.privateRoom
           : privateRoom // ignore: cast_nullable_to_non_nullable
               as bool?,
-      contactPhone: freezed == contactPhone
-          ? _value.contactPhone
-          : contactPhone // ignore: cast_nullable_to_non_nullable
-              as String?,
       pointCloudUrl: freezed == pointCloudUrl
           ? _value.pointCloudUrl
           : pointCloudUrl // ignore: cast_nullable_to_non_nullable
@@ -354,7 +344,6 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       @JsonKey(name: "featured_at") String? featuredAt,
       @JsonKey(name: "move_in_date") String? moveInDate,
       @JsonKey(name: "private_room") bool? privateRoom,
-      @JsonKey(name: "contact_phone") String? contactPhone,
       @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       LocationDetail? location,
@@ -405,7 +394,6 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? featuredAt = freezed,
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
-    Object? contactPhone = freezed,
     Object? pointCloudUrl = freezed,
     Object? subwayStation = freezed,
     Object? location = freezed,
@@ -497,10 +485,6 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           ? _value.privateRoom
           : privateRoom // ignore: cast_nullable_to_non_nullable
               as bool?,
-      contactPhone: freezed == contactPhone
-          ? _value.contactPhone
-          : contactPhone // ignore: cast_nullable_to_non_nullable
-              as String?,
       pointCloudUrl: freezed == pointCloudUrl
           ? _value.pointCloudUrl
           : pointCloudUrl // ignore: cast_nullable_to_non_nullable
@@ -550,7 +534,6 @@ class _$ListingDetailImpl implements _ListingDetail {
       @JsonKey(name: "featured_at") this.featuredAt,
       @JsonKey(name: "move_in_date") this.moveInDate,
       @JsonKey(name: "private_room") this.privateRoom,
-      @JsonKey(name: "contact_phone") this.contactPhone,
       @JsonKey(name: "point_cloud_url") this.pointCloudUrl,
       @JsonKey(name: "subway_station") this.subwayStation,
       this.location,
@@ -620,11 +603,6 @@ class _$ListingDetailImpl implements _ListingDetail {
   @override
   @JsonKey(name: "private_room")
   final bool? privateRoom;
-
-  /// Parsed from listing text (e.g. Telegram); use for contact when set.
-  @override
-  @JsonKey(name: "contact_phone")
-  final String? contactPhone;
   @override
   @JsonKey(name: "point_cloud_url")
   final String? pointCloudUrl;
@@ -655,7 +633,7 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, contactPhone: $contactPhone, pointCloudUrl: $pointCloudUrl, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos)';
   }
 
   @override
@@ -699,8 +677,6 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.moveInDate == moveInDate) &&
             (identical(other.privateRoom, privateRoom) ||
                 other.privateRoom == privateRoom) &&
-            (identical(other.contactPhone, contactPhone) ||
-                other.contactPhone == contactPhone) &&
             (identical(other.pointCloudUrl, pointCloudUrl) ||
                 other.pointCloudUrl == pointCloudUrl) &&
             (identical(other.subwayStation, subwayStation) ||
@@ -737,7 +713,6 @@ class _$ListingDetailImpl implements _ListingDetail {
         featuredAt,
         moveInDate,
         privateRoom,
-        contactPhone,
         pointCloudUrl,
         subwayStation,
         location,
@@ -785,7 +760,6 @@ abstract class _ListingDetail implements ListingDetail {
       @JsonKey(name: "featured_at") final String? featuredAt,
       @JsonKey(name: "move_in_date") final String? moveInDate,
       @JsonKey(name: "private_room") final bool? privateRoom,
-      @JsonKey(name: "contact_phone") final String? contactPhone,
       @JsonKey(name: "point_cloud_url") final String? pointCloudUrl,
       @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
       final LocationDetail? location,
@@ -853,11 +827,6 @@ abstract class _ListingDetail implements ListingDetail {
   @override
   @JsonKey(name: "private_room")
   bool? get privateRoom;
-
-  /// Parsed from listing text (e.g. Telegram); use for contact when set.
-  @override
-  @JsonKey(name: "contact_phone")
-  String? get contactPhone;
   @override
   @JsonKey(name: "point_cloud_url")
   String? get pointCloudUrl;
