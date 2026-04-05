@@ -38,6 +38,7 @@ mixin _$ListingsEvent {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -67,6 +68,7 @@ mixin _$ListingsEvent {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -95,6 +97,7 @@ mixin _$ListingsEvent {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -309,6 +312,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -341,6 +345,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -372,6 +377,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -557,6 +563,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -589,6 +596,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -620,6 +628,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -845,6 +854,7 @@ class _$$FetchListingsBySubwayStationImplImpl
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -878,6 +888,7 @@ class _$$FetchListingsBySubwayStationImplImpl
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -910,6 +921,7 @@ class _$$FetchListingsBySubwayStationImplImpl
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -1140,6 +1152,7 @@ class _$$FetchListingsByLocationImplImpl
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -1173,6 +1186,7 @@ class _$$FetchListingsByLocationImplImpl
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -1205,6 +1219,7 @@ class _$$FetchListingsByLocationImplImpl
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -1311,6 +1326,7 @@ abstract class _$$$SearchListingsImplImplCopyWith<$Res>
       double? minPrice,
       double? maxPrice,
       bool? privateRoom,
+      bool? withPhoto,
       int page,
       int limit,
       bool isActive,
@@ -1338,6 +1354,7 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
     Object? minPrice = freezed,
     Object? maxPrice = freezed,
     Object? privateRoom = freezed,
+    Object? withPhoto = freezed,
     Object? page = null,
     Object? limit = null,
     Object? isActive = null,
@@ -1376,6 +1393,10 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
           ? _value.privateRoom
           : privateRoom // ignore: cast_nullable_to_non_nullable
               as bool?,
+      withPhoto: freezed == withPhoto
+          ? _value.withPhoto
+          : withPhoto // ignore: cast_nullable_to_non_nullable
+              as bool?,
       page: null == page
           ? _value.page
           : page // ignore: cast_nullable_to_non_nullable
@@ -1408,6 +1429,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       this.minPrice,
       this.maxPrice,
       this.privateRoom,
+      this.withPhoto,
       this.page = 1,
       this.limit = 10,
       this.isActive = true,
@@ -1430,6 +1452,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   @override
   final bool? privateRoom;
   @override
+  final bool? withPhoto;
+  @override
   @JsonKey()
   final int page;
   @override
@@ -1444,7 +1468,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
 
   @override
   String toString() {
-    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, locationId: $locationId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh)';
+    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, locationId: $locationId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh)';
   }
 
   @override
@@ -1467,6 +1491,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
                 other.maxPrice == maxPrice) &&
             (identical(other.privateRoom, privateRoom) ||
                 other.privateRoom == privateRoom) &&
+            (identical(other.withPhoto, withPhoto) ||
+                other.withPhoto == withPhoto) &&
             (identical(other.page, page) || other.page == page) &&
             (identical(other.limit, limit) || other.limit == limit) &&
             (identical(other.isActive, isActive) ||
@@ -1486,6 +1512,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       minPrice,
       maxPrice,
       privateRoom,
+      withPhoto,
       page,
       limit,
       isActive,
@@ -1522,6 +1549,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -1539,6 +1567,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         minPrice,
         maxPrice,
         privateRoom,
+        withPhoto,
         page,
         limit,
         isActive,
@@ -1566,6 +1595,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -1582,6 +1612,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         minPrice,
         maxPrice,
         privateRoom,
+        withPhoto,
         page,
         limit,
         isActive,
@@ -1609,6 +1640,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -1627,6 +1659,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
           minPrice,
           maxPrice,
           privateRoom,
+          withPhoto,
           page,
           limit,
           isActive,
@@ -1695,6 +1728,7 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
       final double? minPrice,
       final double? maxPrice,
       final bool? privateRoom,
+      final bool? withPhoto,
       final int page,
       final int limit,
       final bool isActive,
@@ -1708,6 +1742,7 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
   double? get minPrice;
   double? get maxPrice;
   bool? get privateRoom;
+  bool? get withPhoto;
   int get page;
   @override
   int get limit;
@@ -1835,6 +1870,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -1867,6 +1903,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,
@@ -1898,6 +1935,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             double? minPrice,
             double? maxPrice,
             bool? privateRoom,
+            bool? withPhoto,
             int page,
             int limit,
             bool isActive,

@@ -59,6 +59,7 @@ class _AdminSubwayLineHeatmapScreenState
       final minPrice = _searchFiltersState.minPrice;
       final maxPrice = _searchFiltersState.maxPrice;
       final privateRoom = _searchFiltersState.privateRoom;
+      final withPhoto = _searchFiltersState.withPhoto;
       final listingTypeIdParam = listingTypeId > 0 ? listingTypeId : null;
       final genderParam = gender > 0 ? gender : null;
 
@@ -74,6 +75,7 @@ class _AdminSubwayLineHeatmapScreenState
               minPrice: minPrice,
               maxPrice: maxPrice,
               privateRoom: privateRoom,
+              withPhoto: withPhoto,
             );
             return MapEntry(lineId, response.data.length);
           } catch (_) {

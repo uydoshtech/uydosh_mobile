@@ -313,6 +313,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get private_room_only => 'Private Room';
 
   @override
+  String get with_photo => 'With photo';
+
+  @override
   String get conversation_count => 'conversation';
 
   @override

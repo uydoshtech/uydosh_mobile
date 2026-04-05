@@ -95,6 +95,7 @@ class HomeScreen extends StatefulWidget {
     this.minPrice,
     this.maxPrice,
     this.privateRoom,
+    this.withPhoto,
     this.isSearchMode = false,
     this.useExplicitFiltersOnly = false,
     this.isHomeTabActive = true,
@@ -107,6 +108,7 @@ class HomeScreen extends StatefulWidget {
   final double? minPrice;
   final double? maxPrice;
   final bool? privateRoom;
+  final bool? withPhoto;
   final bool isSearchMode;
   final bool useExplicitFiltersOnly;
 
@@ -257,6 +259,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
     if (widget.privateRoom != null) {
       _searchFiltersState.setPrivateRoom(widget.privateRoom!);
+    }
+    if (widget.withPhoto != null) {
+      _searchFiltersState.setWithPhoto(widget.withPhoto!);
     }
   }
 
@@ -717,7 +722,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         widget.gender == null &&
         widget.minPrice == null &&
         widget.maxPrice == null &&
-        widget.privateRoom == null;
+        widget.privateRoom == null &&
+        widget.withPhoto == null;
 
     if (isStationOnlyFromMap) {
       listingsBloc.add(
@@ -753,6 +759,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final privateRoom = widget.useExplicitFiltersOnly
         ? widget.privateRoom
         : _searchFiltersState.privateRoom;
+    final withPhoto = widget.useExplicitFiltersOnly
+        ? widget.withPhoto
+        : _searchFiltersState.withPhoto;
 
     // Debug logging to see what values are being passed
     logger.d(
@@ -772,6 +781,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         minPrice: minPrice,
         maxPrice: maxPrice,
         privateRoom: privateRoom,
+        withPhoto: withPhoto,
         isRefresh: isRefresh,
       ),
     );

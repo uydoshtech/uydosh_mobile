@@ -23,6 +23,7 @@ class SearchFiltersState extends ChangeNotifier {
   double _minPrice = 10.0; // Default min price
   double _maxPrice = 500.0; // Default max price
   bool _privateRoom = false; // Default to false (show all)
+  bool _withPhoto = false;
   bool _isInitialized = false;
   bool _profileDefaultsApplied = false;
 
@@ -35,6 +36,7 @@ class SearchFiltersState extends ChangeNotifier {
   double get minPrice => _minPrice;
   double get maxPrice => _maxPrice;
   bool get privateRoom => _privateRoom;
+  bool get withPhoto => _withPhoto;
   bool get isInitialized => _isInitialized;
 
   // Initialize and load saved search filters from storage
@@ -80,11 +82,13 @@ class SearchFiltersState extends ChangeNotifier {
       // Load private room preference
       _privateRoom = prefs.getBool("search_private_room") ?? false;
 
+      _withPhoto = prefs.getBool("search_with_photo") ?? false;
+
       // Mark whether we need to apply profile defaults (when no saved values)
       _profileDefaultsApplied = savedListingTypeId != null && savedGender != null;
 
       logger.d(
-        "Loaded saved search filters: listingType=$_selectedListingTypeId, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom",
+        "Loaded saved search filters: listingType=$_selectedListingTypeId, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom, withPhoto=$_withPhoto",
       );
     } catch (e) {
       logger.d("Error loading saved search filters: $e");
@@ -341,6 +345,19 @@ class SearchFiltersState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setWithPhoto(bool withPhoto) async {
+    _withPhoto = withPhoto;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool("search_with_photo", withPhoto);
+    } catch (e) {
+      logger.d("Error saving with-photo preference: $e");
+    }
+
+    notifyListeners();
+  }
+
   // Clear all search filters
   Future<void> clearAllFilters() async {
     _selectedListingTypeId = 2;
@@ -353,6 +370,7 @@ class SearchFiltersState extends ChangeNotifier {
     _minPrice = 10.0;
     _maxPrice = 500.0;
     _privateRoom = false;
+    _withPhoto = false;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -365,6 +383,7 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.remove("search_min_price");
       await prefs.remove("search_max_price");
       await prefs.remove("search_private_room");
+      await prefs.remove("search_with_photo");
     } catch (e) {
       logger.d("Error clearing search filters: $e");
     }

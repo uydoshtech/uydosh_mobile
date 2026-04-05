@@ -676,6 +676,12 @@ abstract class AppLocalizations {
   /// **'Private Room'**
   String get private_room_only;
 
+  /// No description provided for @with_photo.
+  ///
+  /// In en, this message translates to:
+  /// **'With photo'**
+  String get with_photo;
+
   /// No description provided for @conversation_count.
   ///
   /// In en, this message translates to:

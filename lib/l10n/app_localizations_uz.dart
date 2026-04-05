@@ -315,6 +315,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get private_room_only => 'Shaxsiy xona';
 
   @override
+  String get with_photo => 'Surat bilan';
+
+  @override
   String get conversation_count => 'suhbat';
 
   @override

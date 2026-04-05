@@ -41,6 +41,7 @@ class ListingsEvent with _$ListingsEvent {
     double? minPrice,
     double? maxPrice,
     bool? privateRoom,
+    bool? withPhoto,
     @Default(1) int page,
     @Default(10) int limit,
     @Default(true) bool isActive,

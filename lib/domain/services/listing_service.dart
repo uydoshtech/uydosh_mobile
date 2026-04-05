@@ -98,6 +98,7 @@ abstract class IListingService {
     double? minPrice,
     double? maxPrice,
     bool? privateRoom,
+    bool? withPhoto,
     int createdWithinDays = 30,
   });
 
@@ -323,6 +324,7 @@ class ListingService implements IListingService {
     double? minPrice,
     double? maxPrice,
     bool? privateRoom,
+    bool? withPhoto,
     int createdWithinDays = 30,
   }) =>
       _searchService.searchListings(
@@ -339,6 +341,7 @@ class ListingService implements IListingService {
         minPrice: minPrice,
         maxPrice: maxPrice,
         privateRoom: privateRoom,
+        withPhoto: withPhoto,
         createdWithinDays: createdWithinDays,
       );
 

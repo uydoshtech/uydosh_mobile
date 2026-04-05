@@ -38,6 +38,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   double? _lastMinPrice;
   double? _lastMaxPrice;
   bool? _lastPrivateRoom;
+  bool? _lastWithPhoto;
   /// When true, load more uses getListingsBySubwayStation (station-only, no transfer expansion)
   bool _stationOnlyMode = false;
 
@@ -197,6 +198,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           minPrice: _lastMinPrice,
           maxPrice: _lastMaxPrice,
           privateRoom: _lastPrivateRoom,
+          withPhoto: _lastWithPhoto,
         );
 
         final newListings = response.data;
@@ -466,9 +468,10 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
             "minPrice": e.minPrice,
             "maxPrice": e.maxPrice,
             "privateRoom": e.privateRoom,
+            "withPhoto": e.withPhoto,
           },
-      fetchUserListings: (e) => null,
-    );
+        fetchUserListings: (e) => null,
+      );
 
     if (searchParams != null) {
       _stationOnlyMode = false;
@@ -480,6 +483,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _lastMinPrice = searchParams["minPrice"] as double?;
       _lastMaxPrice = searchParams["maxPrice"] as double?;
       _lastPrivateRoom = searchParams["privateRoom"] as bool?;
+      _lastWithPhoto = searchParams["withPhoto"] as bool?;
 
       if (isRefresh) {
         getIt<AppAnalyticsService>().logSearchPerformed(
@@ -512,6 +516,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
               "minPrice": e.minPrice,
               "maxPrice": e.maxPrice,
               "privateRoom": e.privateRoom,
+              "withPhoto": e.withPhoto,
             },
         fetchUserListings: (e) => null,
       );
@@ -543,6 +548,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final minPrice = searchParams?["minPrice"] as double?;
       final maxPrice = searchParams?["maxPrice"] as double?;
       final privateRoom = searchParams?["privateRoom"] as bool?;
+      final withPhoto = searchParams?["withPhoto"] as bool?;
 
       logger.d("=== COMPREHENSIVE SEARCH BLOC DEBUG ===");
       logger.d("Listing Type ID: $listingTypeId");
@@ -553,6 +559,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       logger.d("Min Price: $minPrice");
       logger.d("Max Price: $maxPrice");
       logger.d("Private Room: $privateRoom");
+      logger.d("With Photo: $withPhoto");
       logger.d("==========================================");
 
       // Use the new comprehensive search method that includes ALL parameters
@@ -568,6 +575,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         minPrice: minPrice,
         maxPrice: maxPrice,
         privateRoom: privateRoom,
+        withPhoto: withPhoto,
       );
 
       final listings = response.data;

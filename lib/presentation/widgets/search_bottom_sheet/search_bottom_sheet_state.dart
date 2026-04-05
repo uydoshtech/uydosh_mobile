@@ -671,6 +671,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               _searchFiltersState.setPrivateRoom(value);
                               setState(() {});
                             },
+                            onWithPhotoChanged: (value) {
+                              _searchFiltersState.setWithPhoto(value);
+                              setState(() {});
+                            },
                             onSearchPressed: _performSearch,
                           ),
                         ],
@@ -698,6 +702,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     final minPrice = _searchFiltersState.minPrice;
     final maxPrice = _searchFiltersState.maxPrice;
     final privateRoom = _searchFiltersState.privateRoom;
+    final withPhoto = _searchFiltersState.withPhoto;
 
     // Debug logging to see what values are being passed
     logger.d(
@@ -728,6 +733,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   minPrice: minPrice,
                   maxPrice: maxPrice,
                   privateRoom: privateRoom,
+                  withPhoto: withPhoto,
                   isSearchMode: true,
                 ),
               ),
@@ -749,6 +755,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   minPrice: minPrice,
                   maxPrice: maxPrice,
                   privateRoom: privateRoom,
+                  withPhoto: withPhoto,
                   isSearchMode: true,
                 ),
               ),

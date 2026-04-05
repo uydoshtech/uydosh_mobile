@@ -46,15 +46,21 @@ class SearchBottomSheetPrimaryFilters extends StatelessWidget {
   }
 }
 
-/// Secondary filters: price range, private room toggle, search button.
+/// Secondary filters: price range, private room / with-photo toggles, search button.
 class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   const SearchBottomSheetSecondaryFilters({
-    required this.searchFiltersState, required this.onPriceRangeChanged, required this.onPrivateRoomChanged, required this.onSearchPressed, super.key,
+    required this.searchFiltersState,
+    required this.onPriceRangeChanged,
+    required this.onPrivateRoomChanged,
+    required this.onWithPhotoChanged,
+    required this.onSearchPressed,
+    super.key,
   });
 
   final SearchFiltersState searchFiltersState;
   final void Function(double minPrice, double maxPrice) onPriceRangeChanged;
   final void Function(bool value) onPrivateRoomChanged;
+  final void Function(bool value) onWithPhotoChanged;
   final VoidCallback onSearchPressed;
 
   @override
@@ -109,6 +115,38 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
             onChanged: (value) {
               HapticFeedbackUtils.impact();
               onPrivateRoomChanged(value);
+            },
+          ),
+        ),
+        const SizedBox(height: 15),
+
+        DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.colorScheme.outline),
+            borderRadius: BorderRadius.circular(10),
+            color: ThemeState().isBlueTheme
+                ? BlueThemeColors.primary
+                : theme.colorScheme.surfaceContainerHighest,
+          ),
+          child: UydoshToggle(
+            icon: Icons.photo_camera_outlined,
+            title: Text(
+              L10n.get("with_photo"),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight:
+                    searchFiltersState.withPhoto
+                        ? FontWeight.w600
+                        : FontWeight.w400,
+                color: ThemeState().isBlueTheme
+                    ? Colors.white
+                    : Colors.black,
+              ),
+            ),
+            value: searchFiltersState.withPhoto,
+            onChanged: (value) {
+              HapticFeedbackUtils.impact();
+              onWithPhotoChanged(value);
             },
           ),
         ),

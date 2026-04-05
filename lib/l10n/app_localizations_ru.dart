@@ -317,6 +317,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get private_room_only => 'Отдельная комната';
 
   @override
+  String get with_photo => 'С фото';
+
+  @override
   String get conversation_count => 'разговор';
 
   @override

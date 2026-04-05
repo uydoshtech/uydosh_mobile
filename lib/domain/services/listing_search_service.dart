@@ -55,6 +55,7 @@ abstract class IListingSearchService {
     double? minPrice,
     double? maxPrice,
     bool? privateRoom,
+    bool? withPhoto,
     int createdWithinDays = 30,
   });
 
@@ -267,6 +268,7 @@ class ListingSearchService implements IListingSearchService {
     double? minPrice,
     double? maxPrice,
     bool? privateRoom,
+    bool? withPhoto,
     int createdWithinDays = 30,
   }) async {
     final currentLanguage = language ?? LanguageState().currentLanguage;
@@ -313,6 +315,7 @@ class ListingSearchService implements IListingSearchService {
       if (minPrice != null) queryParams["minPrice"] = minPrice;
       if (maxPrice != null) queryParams["maxPrice"] = maxPrice;
       if (privateRoom != null) queryParams["privateRoom"] = privateRoom;
+      if (withPhoto != null) queryParams["withPhoto"] = withPhoto;
 
       logger.d("\x1B[33m=== SEARCH LISTINGS API REQUEST DEBUG ===");
       logger.d("URL: /listings/search");
