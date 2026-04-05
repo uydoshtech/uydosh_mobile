@@ -64,6 +64,8 @@ mixin _$ListingDetail {
   LocationDetail? get location => throw _privateConstructorUsedError;
   List<Amenity>? get amenities => throw _privateConstructorUsedError;
   List<Photo>? get photos => throw _privateConstructorUsedError;
+  @JsonKey(name: "area_price_stats")
+  AreaPriceStats? get areaPriceStats => throw _privateConstructorUsedError;
 
   /// Serializes this ListingDetail to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -107,12 +109,14 @@ abstract class $ListingDetailCopyWith<$Res> {
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       LocationDetail? location,
       List<Amenity>? amenities,
-      List<Photo>? photos});
+      List<Photo>? photos,
+      @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats});
 
   $UserDetailCopyWith<$Res> get user;
   $ListingTypeDetailCopyWith<$Res> get listingType;
   $SubwayStationDetailCopyWith<$Res>? get subwayStation;
   $LocationDetailCopyWith<$Res>? get location;
+  $AreaPriceStatsCopyWith<$Res>? get areaPriceStats;
 }
 
 /// @nodoc
@@ -156,6 +160,7 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? location = freezed,
     Object? amenities = freezed,
     Object? photos = freezed,
+    Object? areaPriceStats = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -262,6 +267,10 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
           ? _value.photos
           : photos // ignore: cast_nullable_to_non_nullable
               as List<Photo>?,
+      areaPriceStats: freezed == areaPriceStats
+          ? _value.areaPriceStats
+          : areaPriceStats // ignore: cast_nullable_to_non_nullable
+              as AreaPriceStats?,
     ) as $Val);
   }
 
@@ -312,6 +321,20 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
       return _then(_value.copyWith(location: value) as $Val);
     });
   }
+
+  /// Create a copy of ListingDetail
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AreaPriceStatsCopyWith<$Res>? get areaPriceStats {
+    if (_value.areaPriceStats == null) {
+      return null;
+    }
+
+    return $AreaPriceStatsCopyWith<$Res>(_value.areaPriceStats!, (value) {
+      return _then(_value.copyWith(areaPriceStats: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -348,7 +371,8 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       LocationDetail? location,
       List<Amenity>? amenities,
-      List<Photo>? photos});
+      List<Photo>? photos,
+      @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats});
 
   @override
   $UserDetailCopyWith<$Res> get user;
@@ -358,6 +382,8 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
   $SubwayStationDetailCopyWith<$Res>? get subwayStation;
   @override
   $LocationDetailCopyWith<$Res>? get location;
+  @override
+  $AreaPriceStatsCopyWith<$Res>? get areaPriceStats;
 }
 
 /// @nodoc
@@ -399,6 +425,7 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? location = freezed,
     Object? amenities = freezed,
     Object? photos = freezed,
+    Object? areaPriceStats = freezed,
   }) {
     return _then(_$ListingDetailImpl(
       id: null == id
@@ -505,6 +532,10 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           ? _value._photos
           : photos // ignore: cast_nullable_to_non_nullable
               as List<Photo>?,
+      areaPriceStats: freezed == areaPriceStats
+          ? _value.areaPriceStats
+          : areaPriceStats // ignore: cast_nullable_to_non_nullable
+              as AreaPriceStats?,
     ));
   }
 }
@@ -538,7 +569,8 @@ class _$ListingDetailImpl implements _ListingDetail {
       @JsonKey(name: "subway_station") this.subwayStation,
       this.location,
       final List<Amenity>? amenities,
-      final List<Photo>? photos})
+      final List<Photo>? photos,
+      @JsonKey(name: "area_price_stats") this.areaPriceStats})
       : _amenities = amenities,
         _photos = photos;
 
@@ -632,8 +664,12 @@ class _$ListingDetailImpl implements _ListingDetail {
   }
 
   @override
+  @JsonKey(name: "area_price_stats")
+  final AreaPriceStats? areaPriceStats;
+
+  @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats)';
   }
 
   @override
@@ -685,7 +721,9 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.location == location) &&
             const DeepCollectionEquality()
                 .equals(other._amenities, _amenities) &&
-            const DeepCollectionEquality().equals(other._photos, _photos));
+            const DeepCollectionEquality().equals(other._photos, _photos) &&
+            (identical(other.areaPriceStats, areaPriceStats) ||
+                other.areaPriceStats == areaPriceStats));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -717,7 +755,8 @@ class _$ListingDetailImpl implements _ListingDetail {
         subwayStation,
         location,
         const DeepCollectionEquality().hash(_amenities),
-        const DeepCollectionEquality().hash(_photos)
+        const DeepCollectionEquality().hash(_photos),
+        areaPriceStats
       ]);
 
   /// Create a copy of ListingDetail
@@ -764,7 +803,9 @@ abstract class _ListingDetail implements ListingDetail {
       @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
       final LocationDetail? location,
       final List<Amenity>? amenities,
-      final List<Photo>? photos}) = _$ListingDetailImpl;
+      final List<Photo>? photos,
+      @JsonKey(name: "area_price_stats")
+      final AreaPriceStats? areaPriceStats}) = _$ListingDetailImpl;
 
   factory _ListingDetail.fromJson(Map<String, dynamic> json) =
       _$ListingDetailImpl.fromJson;
@@ -839,6 +880,9 @@ abstract class _ListingDetail implements ListingDetail {
   List<Amenity>? get amenities;
   @override
   List<Photo>? get photos;
+  @override
+  @JsonKey(name: "area_price_stats")
+  AreaPriceStats? get areaPriceStats;
 
   /// Create a copy of ListingDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -1849,5 +1893,419 @@ abstract class _LocationDetail implements LocationDetail {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LocationDetailImplCopyWith<_$LocationDetailImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+AreaPriceStats _$AreaPriceStatsFromJson(Map<String, dynamic> json) {
+  return _AreaPriceStats.fromJson(json);
+}
+
+/// @nodoc
+mixin _$AreaPriceStats {
+  @JsonKey(name: "subway_station")
+  AreaPriceBenchmark? get subwayStation => throw _privateConstructorUsedError;
+  @JsonKey(name: "location")
+  AreaPriceBenchmark? get location => throw _privateConstructorUsedError;
+
+  /// Serializes this AreaPriceStats to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of AreaPriceStats
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $AreaPriceStatsCopyWith<AreaPriceStats> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AreaPriceStatsCopyWith<$Res> {
+  factory $AreaPriceStatsCopyWith(
+          AreaPriceStats value, $Res Function(AreaPriceStats) then) =
+      _$AreaPriceStatsCopyWithImpl<$Res, AreaPriceStats>;
+  @useResult
+  $Res call(
+      {@JsonKey(name: "subway_station") AreaPriceBenchmark? subwayStation,
+      @JsonKey(name: "location") AreaPriceBenchmark? location});
+
+  $AreaPriceBenchmarkCopyWith<$Res>? get subwayStation;
+  $AreaPriceBenchmarkCopyWith<$Res>? get location;
+}
+
+/// @nodoc
+class _$AreaPriceStatsCopyWithImpl<$Res, $Val extends AreaPriceStats>
+    implements $AreaPriceStatsCopyWith<$Res> {
+  _$AreaPriceStatsCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of AreaPriceStats
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? subwayStation = freezed,
+    Object? location = freezed,
+  }) {
+    return _then(_value.copyWith(
+      subwayStation: freezed == subwayStation
+          ? _value.subwayStation
+          : subwayStation // ignore: cast_nullable_to_non_nullable
+              as AreaPriceBenchmark?,
+      location: freezed == location
+          ? _value.location
+          : location // ignore: cast_nullable_to_non_nullable
+              as AreaPriceBenchmark?,
+    ) as $Val);
+  }
+
+  /// Create a copy of AreaPriceStats
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AreaPriceBenchmarkCopyWith<$Res>? get subwayStation {
+    if (_value.subwayStation == null) {
+      return null;
+    }
+
+    return $AreaPriceBenchmarkCopyWith<$Res>(_value.subwayStation!, (value) {
+      return _then(_value.copyWith(subwayStation: value) as $Val);
+    });
+  }
+
+  /// Create a copy of AreaPriceStats
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AreaPriceBenchmarkCopyWith<$Res>? get location {
+    if (_value.location == null) {
+      return null;
+    }
+
+    return $AreaPriceBenchmarkCopyWith<$Res>(_value.location!, (value) {
+      return _then(_value.copyWith(location: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$AreaPriceStatsImplCopyWith<$Res>
+    implements $AreaPriceStatsCopyWith<$Res> {
+  factory _$$AreaPriceStatsImplCopyWith(_$AreaPriceStatsImpl value,
+          $Res Function(_$AreaPriceStatsImpl) then) =
+      __$$AreaPriceStatsImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@JsonKey(name: "subway_station") AreaPriceBenchmark? subwayStation,
+      @JsonKey(name: "location") AreaPriceBenchmark? location});
+
+  @override
+  $AreaPriceBenchmarkCopyWith<$Res>? get subwayStation;
+  @override
+  $AreaPriceBenchmarkCopyWith<$Res>? get location;
+}
+
+/// @nodoc
+class __$$AreaPriceStatsImplCopyWithImpl<$Res>
+    extends _$AreaPriceStatsCopyWithImpl<$Res, _$AreaPriceStatsImpl>
+    implements _$$AreaPriceStatsImplCopyWith<$Res> {
+  __$$AreaPriceStatsImplCopyWithImpl(
+      _$AreaPriceStatsImpl _value, $Res Function(_$AreaPriceStatsImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AreaPriceStats
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? subwayStation = freezed,
+    Object? location = freezed,
+  }) {
+    return _then(_$AreaPriceStatsImpl(
+      subwayStation: freezed == subwayStation
+          ? _value.subwayStation
+          : subwayStation // ignore: cast_nullable_to_non_nullable
+              as AreaPriceBenchmark?,
+      location: freezed == location
+          ? _value.location
+          : location // ignore: cast_nullable_to_non_nullable
+              as AreaPriceBenchmark?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$AreaPriceStatsImpl implements _AreaPriceStats {
+  const _$AreaPriceStatsImpl(
+      {@JsonKey(name: "subway_station") this.subwayStation,
+      @JsonKey(name: "location") this.location});
+
+  factory _$AreaPriceStatsImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AreaPriceStatsImplFromJson(json);
+
+  @override
+  @JsonKey(name: "subway_station")
+  final AreaPriceBenchmark? subwayStation;
+  @override
+  @JsonKey(name: "location")
+  final AreaPriceBenchmark? location;
+
+  @override
+  String toString() {
+    return 'AreaPriceStats(subwayStation: $subwayStation, location: $location)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AreaPriceStatsImpl &&
+            (identical(other.subwayStation, subwayStation) ||
+                other.subwayStation == subwayStation) &&
+            (identical(other.location, location) ||
+                other.location == location));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, subwayStation, location);
+
+  /// Create a copy of AreaPriceStats
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AreaPriceStatsImplCopyWith<_$AreaPriceStatsImpl> get copyWith =>
+      __$$AreaPriceStatsImplCopyWithImpl<_$AreaPriceStatsImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$AreaPriceStatsImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _AreaPriceStats implements AreaPriceStats {
+  const factory _AreaPriceStats(
+      {@JsonKey(name: "subway_station") final AreaPriceBenchmark? subwayStation,
+      @JsonKey(name: "location")
+      final AreaPriceBenchmark? location}) = _$AreaPriceStatsImpl;
+
+  factory _AreaPriceStats.fromJson(Map<String, dynamic> json) =
+      _$AreaPriceStatsImpl.fromJson;
+
+  @override
+  @JsonKey(name: "subway_station")
+  AreaPriceBenchmark? get subwayStation;
+  @override
+  @JsonKey(name: "location")
+  AreaPriceBenchmark? get location;
+
+  /// Create a copy of AreaPriceStats
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AreaPriceStatsImplCopyWith<_$AreaPriceStatsImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+AreaPriceBenchmark _$AreaPriceBenchmarkFromJson(Map<String, dynamic> json) {
+  return _AreaPriceBenchmark.fromJson(json);
+}
+
+/// @nodoc
+mixin _$AreaPriceBenchmark {
+  int get mean => throw _privateConstructorUsedError;
+  int get median => throw _privateConstructorUsedError;
+  @JsonKey(name: "sample_count")
+  int get sampleCount => throw _privateConstructorUsedError;
+
+  /// Serializes this AreaPriceBenchmark to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of AreaPriceBenchmark
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $AreaPriceBenchmarkCopyWith<AreaPriceBenchmark> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AreaPriceBenchmarkCopyWith<$Res> {
+  factory $AreaPriceBenchmarkCopyWith(
+          AreaPriceBenchmark value, $Res Function(AreaPriceBenchmark) then) =
+      _$AreaPriceBenchmarkCopyWithImpl<$Res, AreaPriceBenchmark>;
+  @useResult
+  $Res call(
+      {int mean, int median, @JsonKey(name: "sample_count") int sampleCount});
+}
+
+/// @nodoc
+class _$AreaPriceBenchmarkCopyWithImpl<$Res, $Val extends AreaPriceBenchmark>
+    implements $AreaPriceBenchmarkCopyWith<$Res> {
+  _$AreaPriceBenchmarkCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of AreaPriceBenchmark
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? mean = null,
+    Object? median = null,
+    Object? sampleCount = null,
+  }) {
+    return _then(_value.copyWith(
+      mean: null == mean
+          ? _value.mean
+          : mean // ignore: cast_nullable_to_non_nullable
+              as int,
+      median: null == median
+          ? _value.median
+          : median // ignore: cast_nullable_to_non_nullable
+              as int,
+      sampleCount: null == sampleCount
+          ? _value.sampleCount
+          : sampleCount // ignore: cast_nullable_to_non_nullable
+              as int,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$AreaPriceBenchmarkImplCopyWith<$Res>
+    implements $AreaPriceBenchmarkCopyWith<$Res> {
+  factory _$$AreaPriceBenchmarkImplCopyWith(_$AreaPriceBenchmarkImpl value,
+          $Res Function(_$AreaPriceBenchmarkImpl) then) =
+      __$$AreaPriceBenchmarkImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {int mean, int median, @JsonKey(name: "sample_count") int sampleCount});
+}
+
+/// @nodoc
+class __$$AreaPriceBenchmarkImplCopyWithImpl<$Res>
+    extends _$AreaPriceBenchmarkCopyWithImpl<$Res, _$AreaPriceBenchmarkImpl>
+    implements _$$AreaPriceBenchmarkImplCopyWith<$Res> {
+  __$$AreaPriceBenchmarkImplCopyWithImpl(_$AreaPriceBenchmarkImpl _value,
+      $Res Function(_$AreaPriceBenchmarkImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AreaPriceBenchmark
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? mean = null,
+    Object? median = null,
+    Object? sampleCount = null,
+  }) {
+    return _then(_$AreaPriceBenchmarkImpl(
+      mean: null == mean
+          ? _value.mean
+          : mean // ignore: cast_nullable_to_non_nullable
+              as int,
+      median: null == median
+          ? _value.median
+          : median // ignore: cast_nullable_to_non_nullable
+              as int,
+      sampleCount: null == sampleCount
+          ? _value.sampleCount
+          : sampleCount // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$AreaPriceBenchmarkImpl implements _AreaPriceBenchmark {
+  const _$AreaPriceBenchmarkImpl(
+      {required this.mean,
+      required this.median,
+      @JsonKey(name: "sample_count") required this.sampleCount});
+
+  factory _$AreaPriceBenchmarkImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AreaPriceBenchmarkImplFromJson(json);
+
+  @override
+  final int mean;
+  @override
+  final int median;
+  @override
+  @JsonKey(name: "sample_count")
+  final int sampleCount;
+
+  @override
+  String toString() {
+    return 'AreaPriceBenchmark(mean: $mean, median: $median, sampleCount: $sampleCount)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AreaPriceBenchmarkImpl &&
+            (identical(other.mean, mean) || other.mean == mean) &&
+            (identical(other.median, median) || other.median == median) &&
+            (identical(other.sampleCount, sampleCount) ||
+                other.sampleCount == sampleCount));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, mean, median, sampleCount);
+
+  /// Create a copy of AreaPriceBenchmark
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AreaPriceBenchmarkImplCopyWith<_$AreaPriceBenchmarkImpl> get copyWith =>
+      __$$AreaPriceBenchmarkImplCopyWithImpl<_$AreaPriceBenchmarkImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$AreaPriceBenchmarkImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _AreaPriceBenchmark implements AreaPriceBenchmark {
+  const factory _AreaPriceBenchmark(
+          {required final int mean,
+          required final int median,
+          @JsonKey(name: "sample_count") required final int sampleCount}) =
+      _$AreaPriceBenchmarkImpl;
+
+  factory _AreaPriceBenchmark.fromJson(Map<String, dynamic> json) =
+      _$AreaPriceBenchmarkImpl.fromJson;
+
+  @override
+  int get mean;
+  @override
+  int get median;
+  @override
+  @JsonKey(name: "sample_count")
+  int get sampleCount;
+
+  /// Create a copy of AreaPriceBenchmark
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AreaPriceBenchmarkImplCopyWith<_$AreaPriceBenchmarkImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

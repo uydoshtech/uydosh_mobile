@@ -330,6 +330,29 @@
   "listing_title_hint": "E'lon sarlavhasini kiriting",
   "listing_description_hint": "E'lon tavsifini kiriting",
   "listing_price_label": "Narxi",
+  "listing_area_price_heading": "Atrofdagi bozor narxi",
+  "listing_area_price_station_line": "«{place}» bekati: median {median} b.y., o‘rtacha {mean} ({count} e’lon)",
+  "@listing_area_price_station_line": {
+    "placeholders": {
+      "place": { "type": "String" },
+      "median": { "type": "String" },
+      "mean": { "type": "String" },
+      "count": { "type": "String" }
+    }
+  },
+  "listing_area_price_location_line": "«{place}» tumanida: median {median} b.y., o‘rtacha {mean} ({count} e’lon)",
+  "@listing_area_price_location_line": {
+    "placeholders": {
+      "place": { "type": "String" },
+      "median": { "type": "String" },
+      "mean": { "type": "String" },
+      "count": { "type": "String" }
+    }
+  },
+  "listing_area_price_footnote": "Shu bekati, shu metro liniyasi yoki shu tuman bo‘yicha boshqa faol e’lonlar (yetarli bo‘lsa xuddi shu tur; bo‘lmasa shu joydagi barcha turlar).",
+  "listing_area_price_insufficient_data": "Hozircha narx bo‘yicha orientir ko‘rsatish uchun yetarli e’lon yo‘q.",
+  "listing_area_price_unknown_station": "Bu metro bekati",
+  "listing_area_price_unknown_district": "Bu tuman",
   "listing_translate_tooltip_en": "Inglizchaga tarjima qilish",
   "listing_translate_tooltip_ru": "Rus tiliga tarjima qilish",
   "listing_translate_tooltip_uz": "O‘zbekchaga tarjima qilish",

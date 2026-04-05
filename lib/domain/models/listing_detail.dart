@@ -29,6 +29,7 @@ class ListingDetail with _$ListingDetail {
     LocationDetail? location,
     List<Amenity>? amenities,
     List<Photo>? photos,
+    @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
   }) = _ListingDetail;
 
   factory ListingDetail.fromJson(Map<String, dynamic> json) =>
@@ -89,4 +90,27 @@ class LocationDetail with _$LocationDetail {
 
   factory LocationDetail.fromJson(Map<String, dynamic> json) =>
       _$LocationDetailFromJson(json);
+}
+
+@freezed
+class AreaPriceStats with _$AreaPriceStats {
+  const factory AreaPriceStats({
+    @JsonKey(name: "subway_station") AreaPriceBenchmark? subwayStation,
+    @JsonKey(name: "location") AreaPriceBenchmark? location,
+  }) = _AreaPriceStats;
+
+  factory AreaPriceStats.fromJson(Map<String, dynamic> json) =>
+      _$AreaPriceStatsFromJson(json);
+}
+
+@freezed
+class AreaPriceBenchmark with _$AreaPriceBenchmark {
+  const factory AreaPriceBenchmark({
+    required int mean,
+    required int median,
+    @JsonKey(name: "sample_count") required int sampleCount,
+  }) = _AreaPriceBenchmark;
+
+  factory AreaPriceBenchmark.fromJson(Map<String, dynamic> json) =>
+      _$AreaPriceBenchmarkFromJson(json);
 }

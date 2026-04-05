@@ -730,6 +730,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_price_label => 'Price';
 
   @override
+  String get listing_area_price_heading => 'Typical rent nearby';
+
+  @override
+  String listing_area_price_station_line(
+      String place, String median, String mean, String count) {
+    return 'At $place: median $median y.e., average $mean ($count listings)';
+  }
+
+  @override
+  String listing_area_price_location_line(
+      String place, String median, String mean, String count) {
+    return 'In $place: median $median y.e., average $mean ($count listings)';
+  }
+
+  @override
+  String get listing_area_price_footnote =>
+      'Based on other active listings at this station, on the same metro line, or in this district (same listing type when there are enough; otherwise all types there).';
+
+  @override
+  String get listing_area_price_insufficient_data =>
+      'Not enough similar listings here yet to show a typical rent range.';
+
+  @override
+  String get listing_area_price_unknown_station => 'This metro station';
+
+  @override
+  String get listing_area_price_unknown_district => 'This district';
+
+  @override
   String get listing_translate_tooltip_en => 'Translate to English';
 
   @override

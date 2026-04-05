@@ -740,6 +740,35 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_price_label => 'Narxi';
 
   @override
+  String get listing_area_price_heading => 'Atrofdagi bozor narxi';
+
+  @override
+  String listing_area_price_station_line(
+      String place, String median, String mean, String count) {
+    return '«$place» bekati: median $median b.y., o‘rtacha $mean ($count e’lon)';
+  }
+
+  @override
+  String listing_area_price_location_line(
+      String place, String median, String mean, String count) {
+    return '«$place» tumanida: median $median b.y., o‘rtacha $mean ($count e’lon)';
+  }
+
+  @override
+  String get listing_area_price_footnote =>
+      'Shu bekati, shu metro liniyasi yoki shu tuman bo‘yicha boshqa faol e’lonlar (yetarli bo‘lsa xuddi shu tur; bo‘lmasa shu joydagi barcha turlar).';
+
+  @override
+  String get listing_area_price_insufficient_data =>
+      'Hozircha narx bo‘yicha orientir ko‘rsatish uchun yetarli e’lon yo‘q.';
+
+  @override
+  String get listing_area_price_unknown_station => 'Bu metro bekati';
+
+  @override
+  String get listing_area_price_unknown_district => 'Bu tuman';
+
+  @override
   String get listing_translate_tooltip_en => 'Inglizchaga tarjima qilish';
 
   @override

@@ -322,6 +322,29 @@
   "listing_title_hint": "Введите заголовок объявления",
   "listing_description_hint": "Введите описание объявления",
   "listing_price_label": "Цена",
+  "listing_area_price_heading": "Ориентир по цене",
+  "listing_area_price_station_line": "У станции «{place}»: медиана {median} у.е., среднее {mean} ({count} объявлений)",
+  "@listing_area_price_station_line": {
+    "placeholders": {
+      "place": { "type": "String" },
+      "median": { "type": "String" },
+      "mean": { "type": "String" },
+      "count": { "type": "String" }
+    }
+  },
+  "listing_area_price_location_line": "В районе «{place}»: медиана {median} у.е., среднее {mean} ({count} объявлений)",
+  "@listing_area_price_location_line": {
+    "placeholders": {
+      "place": { "type": "String" },
+      "median": { "type": "String" },
+      "mean": { "type": "String" },
+      "count": { "type": "String" }
+    }
+  },
+  "listing_area_price_footnote": "По другим активным объявлениям у этой станции, на той же ветке метро или в этом районе (тот же тип, если данных достаточно; иначе все типы там).",
+  "listing_area_price_insufficient_data": "Пока недостаточно похожих объявлений, чтобы показать ориентир по цене.",
+  "listing_area_price_unknown_station": "Эта станция метро",
+  "listing_area_price_unknown_district": "Этот район",
   "listing_translate_tooltip_en": "Перевести на английский",
   "listing_translate_tooltip_ru": "Перевести на русский",
   "listing_translate_tooltip_uz": "Перевести на узбекский",

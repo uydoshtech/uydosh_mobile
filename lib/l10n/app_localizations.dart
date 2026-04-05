@@ -1432,6 +1432,50 @@ abstract class AppLocalizations {
   /// **'Price'**
   String get listing_price_label;
 
+  /// No description provided for @listing_area_price_heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Typical rent nearby'**
+  String get listing_area_price_heading;
+
+  /// No description provided for @listing_area_price_station_line.
+  ///
+  /// In en, this message translates to:
+  /// **'At {place}: median {median} y.e., average {mean} ({count} listings)'**
+  String listing_area_price_station_line(
+      String place, String median, String mean, String count);
+
+  /// No description provided for @listing_area_price_location_line.
+  ///
+  /// In en, this message translates to:
+  /// **'In {place}: median {median} y.e., average {mean} ({count} listings)'**
+  String listing_area_price_location_line(
+      String place, String median, String mean, String count);
+
+  /// No description provided for @listing_area_price_footnote.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on other active listings at this station, on the same metro line, or in this district (same listing type when there are enough; otherwise all types there).'**
+  String get listing_area_price_footnote;
+
+  /// No description provided for @listing_area_price_insufficient_data.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough similar listings here yet to show a typical rent range.'**
+  String get listing_area_price_insufficient_data;
+
+  /// No description provided for @listing_area_price_unknown_station.
+  ///
+  /// In en, this message translates to:
+  /// **'This metro station'**
+  String get listing_area_price_unknown_station;
+
+  /// No description provided for @listing_area_price_unknown_district.
+  ///
+  /// In en, this message translates to:
+  /// **'This district'**
+  String get listing_area_price_unknown_district;
+
   /// No description provided for @listing_translate_tooltip_en.
   ///
   /// In en, this message translates to:

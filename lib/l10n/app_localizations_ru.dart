@@ -735,6 +735,35 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_price_label => 'Цена';
 
   @override
+  String get listing_area_price_heading => 'Ориентир по цене';
+
+  @override
+  String listing_area_price_station_line(
+      String place, String median, String mean, String count) {
+    return 'У станции «$place»: медиана $median у.е., среднее $mean ($count объявлений)';
+  }
+
+  @override
+  String listing_area_price_location_line(
+      String place, String median, String mean, String count) {
+    return 'В районе «$place»: медиана $median у.е., среднее $mean ($count объявлений)';
+  }
+
+  @override
+  String get listing_area_price_footnote =>
+      'По другим активным объявлениям у этой станции, на той же ветке метро или в этом районе (тот же тип, если данных достаточно; иначе все типы там).';
+
+  @override
+  String get listing_area_price_insufficient_data =>
+      'Пока недостаточно похожих объявлений, чтобы показать ориентир по цене.';
+
+  @override
+  String get listing_area_price_unknown_station => 'Эта станция метро';
+
+  @override
+  String get listing_area_price_unknown_district => 'Этот район';
+
+  @override
   String get listing_translate_tooltip_en => 'Перевести на английский';
 
   @override

@@ -56,6 +56,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_map_section.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
@@ -1839,8 +1840,13 @@ L10n.get("feature_listing_error",
       child: Card(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
-          child: ListingDetailMetaBadges(
-            listingDetail: listingDetail,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListingDetailMetaBadges(listingDetail: listingDetail),
+              ListingDetailAreaPriceStats(listingDetail: listingDetail),
+            ],
           ),
         ),
       ),

@@ -44,6 +44,10 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
       photos: (json['photos'] as List<dynamic>?)
           ?.map((e) => Photo.fromJson(e as Map<String, dynamic>))
           .toList(),
+      areaPriceStats: json['area_price_stats'] == null
+          ? null
+          : AreaPriceStats.fromJson(
+              json['area_price_stats'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
@@ -74,6 +78,7 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'location': instance.location,
       'amenities': instance.amenities,
       'photos': instance.photos,
+      'area_price_stats': instance.areaPriceStats,
     };
 
 _$UserDetailImpl _$$UserDetailImplFromJson(Map<String, dynamic> json) =>
@@ -153,4 +158,39 @@ Map<String, dynamic> _$$LocationDetailImplToJson(
       'short_name_uz': instance.shortNameUz,
       'short_name_ru': instance.shortNameRu,
       'short_name_en': instance.shortNameEn,
+    };
+
+_$AreaPriceStatsImpl _$$AreaPriceStatsImplFromJson(Map<String, dynamic> json) =>
+    _$AreaPriceStatsImpl(
+      subwayStation: json['subway_station'] == null
+          ? null
+          : AreaPriceBenchmark.fromJson(
+              json['subway_station'] as Map<String, dynamic>),
+      location: json['location'] == null
+          ? null
+          : AreaPriceBenchmark.fromJson(
+              json['location'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$$AreaPriceStatsImplToJson(
+        _$AreaPriceStatsImpl instance) =>
+    <String, dynamic>{
+      'subway_station': instance.subwayStation,
+      'location': instance.location,
+    };
+
+_$AreaPriceBenchmarkImpl _$$AreaPriceBenchmarkImplFromJson(
+        Map<String, dynamic> json) =>
+    _$AreaPriceBenchmarkImpl(
+      mean: (json['mean'] as num).toInt(),
+      median: (json['median'] as num).toInt(),
+      sampleCount: (json['sample_count'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$$AreaPriceBenchmarkImplToJson(
+        _$AreaPriceBenchmarkImpl instance) =>
+    <String, dynamic>{
+      'mean': instance.mean,
+      'median': instance.median,
+      'sample_count': instance.sampleCount,
     };
