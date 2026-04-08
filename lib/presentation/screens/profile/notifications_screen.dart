@@ -130,10 +130,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _summaryWidget(SearchAlert a, ThemeData theme) {
     final lang = L10n.currentLanguage;
-    final items = <Widget>[];
+    final lines = <Widget>[];
 
+    final topRow = <Widget>[];
     if (a.listingTypeId != null) {
-      items.add(
+      topRow.add(
         ListingTypeBadge(
           listingTypeCode: ListingTypeHelper.getCodeFromId(a.listingTypeId!),
           fontSize: 12,
@@ -141,10 +142,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
       );
     }
+    if (a.gender != null) {
+      final genderText = a.gender == 2 ? L10n.get("female") : L10n.get("male");
+      final genderIcon = a.gender == 2 ? Icons.female : Icons.male;
+      topRow.add(
+        _iconTextBadge(
+          theme: theme,
+          icon: genderIcon,
+          text: genderText,
+          color: a.gender == 2 ? AppColors.genderFemale : AppColors.genderMale,
+        ),
+      );
+    }
+    if (topRow.isNotEmpty) {
+      lines.add(Wrap(spacing: 8, runSpacing: 8, children: topRow));
+    }
 
+    final locationAndMetro = <Widget>[];
     if (a.locationId != null) {
       final name = LocationCache.getLocationName(a.locationId!, lang);
-      items.add(
+      locationAndMetro.add(
         _iconTextBadge(
           theme: theme,
           icon: Icons.location_on_outlined,
@@ -152,10 +169,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           color: AppColors.error,
         ),
       );
-    } else if (a.subwayStationId != null) {
+    }
+    if (a.subwayStationId != null) {
       final station = MetroCache.getStationById(a.subwayStationId!);
       final name = MetroCache.getStationDisplayName(a.subwayStationId!, lang);
-      items.add(
+      locationAndMetro.add(
         _iconTextBadge(
           theme: theme,
           icon: Icons.train,
@@ -167,7 +185,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       );
     } else if (a.subwayLineId != null) {
       final name = MetroCache.getLineName(a.subwayLineId!, lang);
-      items.add(
+      locationAndMetro.add(
         _iconTextBadge(
           theme: theme,
           icon: Icons.train,
@@ -176,22 +194,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
       );
     }
-    if (a.gender != null) {
-      final genderText = a.gender == 2 ? L10n.get("female") : L10n.get("male");
-      final genderIcon = a.gender == 2 ? Icons.female : Icons.male;
-      items.add(
-        _iconTextBadge(
-          theme: theme,
-          icon: genderIcon,
-          text: genderText,
-          color: a.gender == 2 ? AppColors.genderFemale : AppColors.genderMale,
-        ),
-      );
+    if (locationAndMetro.isNotEmpty) {
+      lines.add(Wrap(spacing: 8, runSpacing: 8, children: locationAndMetro));
     }
     if (a.minPrice != null || a.maxPrice != null) {
       final min = (a.minPrice ?? a.maxPrice ?? 0).round();
       final max = (a.maxPrice ?? a.minPrice ?? 0).round();
-      items.add(
+      lines.add(
         PriceRangeBadge(
           minPrice: min,
           maxPrice: max,
@@ -202,7 +211,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       );
     }
     if ((a.privateRoom ?? false) == true) {
-      items.add(
+      lines.add(
         _iconTextBadge(
           theme: theme,
           icon: Icons.lock_outline,
@@ -211,7 +220,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       );
     }
     if ((a.withPhoto ?? false) == true) {
-      items.add(
+      lines.add(
         _iconTextBadge(
           theme: theme,
           icon: Icons.photo_camera_outlined,
@@ -219,13 +228,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
       );
     }
-    if (items.isEmpty) {
+    if (lines.isEmpty) {
       return Text(
         "-",
         style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
       );
     }
-    return Wrap(spacing: 8, runSpacing: 8, children: items);
+
+    const vGap = 10.0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(lines.length, (i) {
+        final w = lines[i];
+        if (i == 0) return w;
+        return Padding(
+          padding: const EdgeInsets.only(top: vGap),
+          child: w,
+        );
+      }),
+    );
   }
 
   @override
@@ -309,8 +330,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  Column(
+                                  Row(
                                     mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Switch.adaptive(
                                         value: a.enabled,
@@ -319,9 +341,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         materialTapTargetSize:
                                             MaterialTapTargetSize.shrinkWrap,
                                       ),
+                                      const SizedBox(width: 4),
                                       IconButton(
                                         tooltip: L10n.get("delete"),
                                         visualDensity: VisualDensity.compact,
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 40,
+                                          minHeight: 40,
+                                        ),
                                         icon: ThemeIcon(
                                           Icons.delete_outline,
                                           color: theme.colorScheme.error,

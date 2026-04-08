@@ -25,6 +25,7 @@ import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
@@ -595,6 +596,34 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => const MessagesInboxScreen(),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                ),
+
+                // Notifications menu item - Only show when user is logged in
+                ListenableBuilder(
+                  listenable: AuthenticationState(),
+                  builder: (context, child) {
+                    final isAuthenticated =
+                        AuthenticationState().isAuthenticated;
+
+                    if (!isAuthenticated) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return _buildMenuItem(
+                      icon: Icons.notifications_none_outlined,
+                      titleKey: "menu_notifications",
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (context.mounted) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const NotificationsScreen(),
                             ),
                           );
                         }
