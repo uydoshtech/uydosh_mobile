@@ -3,7 +3,6 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class SearchFloatingActionButton extends StatelessWidget {
   const SearchFloatingActionButton({
@@ -41,10 +40,11 @@ class SearchFloatingActionButton extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28.0), // More roundish than default
       ),
-      child: ThemeIcon(
+      child: Icon(
         Icons.search,
-        size: (iconSize ?? 25.0) * 1.1,
-      ), // 10% larger icon
+        size: (iconSize ?? 25.0) * 1.1, // 10% larger icon
+        color: foregroundColor ?? Colors.white,
+      ),
     );
   }
 
