@@ -1,6 +1,7 @@
 import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/foundation.dart" show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -9,7 +10,10 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/push/register_fcm_token_request.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 
 /// Background message handler - must be top-level function.
@@ -217,7 +221,15 @@ class PushNotificationService implements IPushNotificationService {
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => ListingDetailScreen(listingId: listingId),
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => ListingDetailBloc(getIt<IListingService>()),
+            ),
+            BlocProvider(create: (_) => ListingDetailPageBloc()),
+          ],
+          child: ListingDetailScreen(listingId: listingId),
+        ),
       ),
     );
   }
