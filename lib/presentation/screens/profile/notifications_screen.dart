@@ -290,76 +290,71 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         final a = _alerts[i];
                         return Card(
                           margin: EdgeInsets.zero,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () {},
-                            child: Padding(
-                              padding: const EdgeInsets.all(14),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2),
-                                    child: ThemeIcon(
-                                      a.enabled
-                                          ? Icons.notifications_active_outlined
-                                          : Icons.notifications_off_outlined,
-                                      color: ThemeState().isBlueTheme
-                                          ? Colors.white
-                                          : (a.enabled
-                                              ? theme.colorScheme.primary
-                                              : theme.colorScheme.onSurfaceVariant),
-                                    ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: ThemeIcon(
+                                    a.enabled
+                                        ? Icons.notifications_active_outlined
+                                        : Icons.notifications_off_outlined,
+                                    color: ThemeState().isBlueTheme
+                                        ? Colors.white
+                                        : (a.enabled
+                                            ? theme.colorScheme.primary
+                                            : theme.colorScheme.onSurfaceVariant),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          L10n.get("search_listings"),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        _summaryWidget(a, theme),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Switch.adaptive(
-                                        value: a.enabled,
-                                        onChanged: (v) =>
-                                            _toggleEnabled(a, v),
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      IconButton(
-                                        tooltip: L10n.get("delete"),
-                                        visualDensity: VisualDensity.compact,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(
-                                          minWidth: 40,
-                                          minHeight: 40,
+                                      Text(
+                                        L10n.get("search_listings"),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 15,
                                         ),
-                                        icon: ThemeIcon(
-                                          Icons.delete_outline,
-                                          color: theme.colorScheme.error,
-                                        ),
-                                        onPressed: () => _deleteAlert(a),
                                       ),
+                                      const SizedBox(height: 10),
+                                      _summaryWidget(a, theme),
                                     ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(width: 8),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Switch.adaptive(
+                                      value: a.enabled,
+                                      onChanged: (v) => _toggleEnabled(a, v),
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    IconButton(
+                                      tooltip: L10n.get("delete"),
+                                      visualDensity: VisualDensity.compact,
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(
+                                        minWidth: 40,
+                                        minHeight: 40,
+                                      ),
+                                      icon: ThemeIcon(
+                                        Icons.delete_outline,
+                                        color: theme.colorScheme.error,
+                                      ),
+                                      onPressed: () => _deleteAlert(a),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         );
