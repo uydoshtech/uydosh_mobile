@@ -1024,6 +1024,12 @@ abstract class AppLocalizations {
   /// **'Search along the entire line <b>{line}</b> through <b>{count}</b> stations'**
   String all_stations_explanation(String line, String count);
 
+  /// No description provided for @entire_line_stations.
+  ///
+  /// In en, this message translates to:
+  /// **'Entire line {line}: {count} stations'**
+  String entire_line_stations(String line, String count);
+
   /// No description provided for @metro_tutorial_search_hint.
   ///
   /// In en, this message translates to:

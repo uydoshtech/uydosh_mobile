@@ -238,6 +238,19 @@
       }
     }
   },
+  "entire_line_stations": "Вся линия {line}: {count} станций",
+  "@entire_line_stations": {
+    "placeholders": {
+      "line": {
+        "type": "String",
+        "example": "Чиланзар"
+      },
+      "count": {
+        "type": "String",
+        "example": "14"
+      }
+    }
+  },
   "metro_tutorial_search_hint": "Поиск по линии метро или по отдельным станциям.",
   "metro_tutorial_line_hint": "Поиск объявлений на всех станциях линий метро",
   "metro_tutorial_station_hint": "Поиск по конкретным станциям метро",

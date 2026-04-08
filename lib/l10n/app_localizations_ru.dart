@@ -514,6 +514,11 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String entire_line_stations(String line, String count) {
+    return 'Вся линия $line: $count станций';
+  }
+
+  @override
   String get metro_tutorial_search_hint =>
       'Поиск по линии метро или по отдельным станциям.';
 

@@ -1,6 +1,7 @@
 // ignore_for_file: eol_at_end_of_file
 
 import "package:flutter/material.dart";
+import "package:dio/dio.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -13,6 +14,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
+import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 class NotificationsScreen extends StatefulWidget {
@@ -45,6 +47,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
+      if (e is DioException && e.response?.statusCode == 401) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("search_alert_login_required"),
+        );
+        return;
+      }
       ToastTheme.showError(context, message: L10n.get("error_generic"));
     }
   }
@@ -97,11 +106,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _iconTextBadge({
     required ThemeData theme,
-    required IconData icon,
+    IconData? icon,
+    Widget? leading,
     required String text,
     Color? color,
   }) {
     final c = color ?? theme.colorScheme.onSurfaceVariant;
+    final resolvedLeading = leading ?? (icon != null ? ThemeIcon(icon, size: 16, color: c) : null);
+    assert(resolvedLeading != null, "Provide either icon or leading");
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
@@ -112,7 +124,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ThemeIcon(icon, size: 16, color: c),
+          resolvedLeading!,
           const SizedBox(width: 6),
           Text(
             text,
@@ -185,12 +197,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       );
     } else if (a.subwayLineId != null) {
       final name = MetroCache.getLineName(a.subwayLineId!, lang);
+      final lineColor = AppColors.getMetroLineColor(a.subwayLineId!);
+      final stationsCount = MetroCache.getStationsForLine(a.subwayLineId!).length;
       locationAndMetro.add(
         _iconTextBadge(
           theme: theme,
-          icon: Icons.train,
-          text: name,
-          color: AppColors.getMetroLineColor(a.subwayLineId!),
+          leading: MLetterIcon(size: 18, color: lineColor),
+          text: L10n.getWithParams(
+            "entire_line_stations",
+            params: {"line": name, "count": "$stationsCount"},
+          ),
+          color: lineColor,
         ),
       );
     }
@@ -263,19 +280,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               onRefresh: _load,
               child: _alerts.isEmpty
                   ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         const SizedBox(height: 48),
                         ThemeIcon(
                           Icons.notifications_none,
                           size: 56,
-                          color: theme.colorScheme.onSurfaceVariant,
+                          color:
+                              ThemeState().isBlueTheme
+                                  ? Colors.white70
+                                  : Colors.black54,
                         ),
                         const SizedBox(height: 12),
                         Center(
                           child: Text(
                             L10n.get("notifications_empty"),
                             style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant,
+                              color:
+                                  ThemeState().isBlueTheme
+                                      ? Colors.white70
+                                      : Colors.black54,
                               fontSize: 15,
                             ),
                           ),
@@ -293,10 +317,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           child: Padding(
                             padding: const EdgeInsets.all(14),
                             child: Row(
+                              // In a ListView item, height constraints are unbounded.
+                              // `stretch` would try to expand children to infinite height.
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2),
+                                Align(
+                                  alignment: Alignment.center,
                                   child: ThemeIcon(
                                     a.enabled
                                         ? Icons.notifications_active_outlined
@@ -314,14 +340,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        L10n.get("search_listings"),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
                                       _summaryWidget(a, theme),
                                     ],
                                   ),

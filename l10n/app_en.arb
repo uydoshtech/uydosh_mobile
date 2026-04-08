@@ -246,6 +246,19 @@
       }
     }
   },
+  "entire_line_stations": "Entire line {line}: {count} stations",
+  "@entire_line_stations": {
+    "placeholders": {
+      "line": {
+        "type": "String",
+        "example": "Chilonzor"
+      },
+      "count": {
+        "type": "String",
+        "example": "14"
+      }
+    }
+  },
   "metro_tutorial_search_hint": "Search along metro line or by individual stations.",
   "metro_tutorial_line_hint": "Search listings on all metro line stations",
   "metro_tutorial_station_hint": "Search by particular metro stations",

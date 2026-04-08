@@ -726,9 +726,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     final locationId = _getSelectedLocationId();
     final subwayStationId = _getSelectedSubwayStationId();
     final subwayLineId =
-        locationId == null &&
-                subwayStationId == null &&
-                _searchFiltersState.selectedSubwayLine > 0
+        subwayStationId == null && _searchFiltersState.selectedSubwayLine > 0
             ? _searchFiltersState.selectedSubwayLine
             : null;
     final gender =

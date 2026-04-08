@@ -517,6 +517,11 @@ class AppLocalizationsUz extends AppLocalizations {
   }
 
   @override
+  String entire_line_stations(String line, String count) {
+    return 'Butun liniya $line: $count bekat';
+  }
+
+  @override
   String get metro_tutorial_search_hint =>
       'Metro liniyasi bo\'ylab yoki alohida bekatlar bo\'yicha qidiruv.';
 

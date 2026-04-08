@@ -217,6 +217,7 @@ class AppStrings {
       "all_stations_count": "All {count} stations",
       "all_stations_explanation":
           "Search along the entire line <b>{line}</b> through <b>{count}</b> stations",
+      "entire_line_stations": "Entire line {line}: {count} stations",
       "metro_tutorial_search_hint":
           "Search along metro line or by individual stations.",
       "metro_tutorial_line_hint": "Search listings on all metro line stations",
@@ -1129,6 +1130,7 @@ class AppStrings {
       "all_stations_count": "Все {count} станций",
       "all_stations_explanation":
           "Поиск вдоль ВСЕЙ линии <b>{line}</b> по <b>{count}</b> станциям",
+      "entire_line_stations": "Вся линия {line}: {count} станций",
       "metro_tutorial_search_hint":
           "Поиск по линии метро или по отдельным станциям.",
       "metro_tutorial_line_hint": "Поиск объявлений на всех станциях линий метро",
@@ -2051,6 +2053,7 @@ class AppStrings {
       "all_stations_count": "Barcha {count} bekatlar",
       "all_stations_explanation":
           "Liniya <b>{line}</b> bo'ylab <b>{count}</b> bekat orqali qidiruv",
+      "entire_line_stations": "Butun liniya {line}: {count} bekat",
       "metro_tutorial_search_hint":
           "Metro liniyasi bo'ylab yoki alohida bekatlar bo'yicha qidiruv.",
       "metro_tutorial_line_hint": "Barcha metro liniyasi stansiyalarida e'lonlarni qidiring",
