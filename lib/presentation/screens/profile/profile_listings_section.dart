@@ -8,6 +8,7 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
@@ -80,6 +81,18 @@ class ProfileListingsSection extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const ViewHistoryScreen(),
+                ),
+              );
+            },
+          ),
+          _buildGroupedMenuItem(
+            context: context,
+            icon: Icons.notifications_none,
+            title: L10n.get("menu_notifications"),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
                 ),
               );
             },

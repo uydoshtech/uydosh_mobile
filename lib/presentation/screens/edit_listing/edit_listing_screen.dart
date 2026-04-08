@@ -644,6 +644,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                       selectedSubwayLine: _selectedSubwayLine,
                       selectedStationIndex: _selectedStationIndex,
                       currentStations: _currentStations,
+                      isLoadingStations: _isLoadingStations,
                       metroLineScrollController: _metroLineScrollController,
                       metroStationScrollController: _metroStationScrollController,
                       onLineChanged: (index) {

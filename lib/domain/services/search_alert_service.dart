@@ -2,6 +2,7 @@ import "package:dio/dio.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/domain/models/search_alert.dart";
 
 class _CreateSearchAlertRequest implements IJsonEncodable {
   _CreateSearchAlertRequest({
@@ -56,6 +57,10 @@ abstract class ISearchAlertService {
     int? subwayLineId,
     int? gender,
   });
+
+  Future<List<SearchAlert>> listAlerts();
+  Future<bool> setAlertEnabled({required int alertId, required bool enabled});
+  Future<bool> deleteAlert({required int alertId});
 }
 
 class SearchAlertService implements ISearchAlertService {
@@ -106,4 +111,66 @@ class SearchAlertService implements ISearchAlertService {
       return "error";
     }
   }
+
+  @override
+  Future<List<SearchAlert>> listAlerts() async {
+    final r = await _oauthApiClient.get<Map<String, dynamic>>(
+      "/users/me/search-alerts",
+      (json) => json as Map<String, dynamic>,
+    );
+    final raw = r["alerts"];
+    if (raw is! List) return <SearchAlert>[];
+    return raw
+        .whereType<Map<String, dynamic>>()
+        .map(SearchAlert.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<bool> setAlertEnabled({required int alertId, required bool enabled}) async {
+    try {
+      await _oauthApiClient.patch<Map<String, dynamic>, _SetEnabledRequest>(
+        "/users/me/search-alerts/$alertId",
+        (json) => json as Map<String, dynamic>,
+        data: _SetEnabledRequest(enabled: enabled),
+      );
+      return true;
+    } catch (e) {
+      logger.d("SearchAlertService: set enabled failed: $e");
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> deleteAlert({required int alertId}) async {
+    try {
+      await _oauthApiClient.delete<Map<String, dynamic>, _EmptyRequest>(
+        "/users/me/search-alerts/$alertId",
+        (json) => json as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
+      return true;
+    } on DioException catch (e) {
+      // Backend returns 204; Dio may treat empty body as null; treat 204 as ok.
+      if (e.response?.statusCode == 204) return true;
+      logger.d("SearchAlertService: delete failed: $e");
+      return false;
+    } catch (e) {
+      logger.d("SearchAlertService: delete failed: $e");
+      return false;
+    }
+  }
+}
+
+class _SetEnabledRequest implements IJsonEncodable {
+  _SetEnabledRequest({required this.enabled});
+  final bool enabled;
+
+  @override
+  Map<String, dynamic> toJson() => {"enabled": enabled};
+}
+
+class _EmptyRequest implements IJsonEncodable {
+  @override
+  Map<String, dynamic> toJson() => {};
 }

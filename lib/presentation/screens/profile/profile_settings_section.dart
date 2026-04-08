@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -185,6 +186,18 @@ List<ActionMenuItem> buildProfileActionMenuItems({
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => const MessagesInboxScreen(),
+          ),
+        );
+      },
+    ),
+    ActionMenuItem(
+      value: "notifications",
+      icon: Icons.notifications_none,
+      textKey: "menu_notifications",
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const NotificationsScreen(),
           ),
         );
       },
