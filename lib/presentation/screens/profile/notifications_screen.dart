@@ -11,6 +11,9 @@ import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -92,30 +95,137 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     "with_photo": a.withPhoto,
   };
 
-  String _summary(SearchAlert a) {
+  Widget _iconTextBadge({
+    required ThemeData theme,
+    required IconData icon,
+    required String text,
+    Color? color,
+  }) {
+    final c = color ?? theme.colorScheme.onSurfaceVariant;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: c.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: c, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemeIcon(icon, size: 16, color: c),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.15,
+              color: c,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryWidget(SearchAlert a, ThemeData theme) {
     final lang = L10n.currentLanguage;
-    final parts = <String>[];
+    final items = <Widget>[];
+
+    if (a.listingTypeId != null) {
+      items.add(
+        ListingTypeBadge(
+          listingTypeCode: ListingTypeHelper.getCodeFromId(a.listingTypeId!),
+          fontSize: 12,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+        ),
+      );
+    }
+
     if (a.locationId != null) {
       final name = LocationCache.getLocationName(a.locationId!, lang);
-      parts.add("${L10n.get("location")}: $name");
+      items.add(
+        _iconTextBadge(
+          theme: theme,
+          icon: Icons.location_on_outlined,
+          text: name,
+          color: AppColors.error,
+        ),
+      );
     } else if (a.subwayStationId != null) {
+      final station = MetroCache.getStationById(a.subwayStationId!);
       final name = MetroCache.getStationDisplayName(a.subwayStationId!, lang);
-      parts.add("${L10n.get("metro")}: $name");
+      items.add(
+        _iconTextBadge(
+          theme: theme,
+          icon: Icons.train,
+          text: name,
+          color: station == null
+              ? theme.colorScheme.onSurfaceVariant
+              : AppColors.getMetroLineColor(station.line),
+        ),
+      );
     } else if (a.subwayLineId != null) {
       final name = MetroCache.getLineName(a.subwayLineId!, lang);
-      parts.add("${L10n.get("metro_line")}: $name");
+      items.add(
+        _iconTextBadge(
+          theme: theme,
+          icon: Icons.train,
+          text: name,
+          color: AppColors.getMetroLineColor(a.subwayLineId!),
+        ),
+      );
     }
-    if (a.gender != null) parts.add("${L10n.get("gender")}: ${a.gender}");
+    if (a.gender != null) {
+      final genderText = a.gender == 2 ? L10n.get("female") : L10n.get("male");
+      final genderIcon = a.gender == 2 ? Icons.female : Icons.male;
+      items.add(
+        _iconTextBadge(
+          theme: theme,
+          icon: genderIcon,
+          text: genderText,
+          color: a.gender == 2 ? AppColors.genderFemale : AppColors.genderMale,
+        ),
+      );
+    }
     if (a.minPrice != null || a.maxPrice != null) {
-      parts.add("${L10n.get("price")}: ${a.minPrice ?? "-"} - ${a.maxPrice ?? "-"}");
+      final min = (a.minPrice ?? a.maxPrice ?? 0).round();
+      final max = (a.maxPrice ?? a.minPrice ?? 0).round();
+      items.add(
+        PriceRangeBadge(
+          minPrice: min,
+          maxPrice: max,
+          currencySymbol: "y.e.",
+          fontSize: 13,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+        ),
+      );
     }
     if ((a.privateRoom ?? false) == true) {
-      parts.add(L10n.get("search_filter_private_room"));
+      items.add(
+        _iconTextBadge(
+          theme: theme,
+          icon: Icons.lock_outline,
+          text: L10n.get("private_room"),
+        ),
+      );
     }
     if ((a.withPhoto ?? false) == true) {
-      parts.add(L10n.get("search_filter_with_photo"));
+      items.add(
+        _iconTextBadge(
+          theme: theme,
+          icon: Icons.photo_camera_outlined,
+          text: L10n.get("search_filter_with_photo"),
+        ),
+      );
     }
-    return parts.isEmpty ? "-" : parts.join(" · ");
+    if (items.isEmpty) {
+      return Text(
+        "-",
+        style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+      );
+    }
+    return Wrap(spacing: 8, runSpacing: 8, children: items);
   }
 
   @override
@@ -134,7 +244,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ? ListView(
                       children: [
                         const SizedBox(height: 48),
-                        Icon(
+                        ThemeIcon(
                           Icons.notifications_none,
                           size: 56,
                           color: theme.colorScheme.onSurfaceVariant,
@@ -158,35 +268,70 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       itemBuilder: (context, i) {
                         final a = _alerts[i];
                         return Card(
-                          elevation: 2,
-                          child: ListTile(
-                            leading: Icon(
-                              a.enabled
-                                  ? Icons.notifications_active_outlined
-                                  : Icons.notifications_off_outlined,
-                              color: a.enabled ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                            ),
-                            title: Text(
-                              L10n.get("search_listings"),
-                              style: const TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            subtitle: Text(_summary(a)),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Switch(
-                                  value: a.enabled,
-                                  onChanged: (v) => _toggleEnabled(a, v),
-                                ),
-                                IconButton(
-                                  tooltip: L10n.get("delete"),
-                                  icon: Icon(
-                                    Icons.delete_outline,
-                                    color: theme.colorScheme.error,
+                          margin: EdgeInsets.zero,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () {},
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: ThemeIcon(
+                                      a.enabled
+                                          ? Icons.notifications_active_outlined
+                                          : Icons.notifications_off_outlined,
+                                      color: ThemeState().isBlueTheme
+                                          ? Colors.white
+                                          : (a.enabled
+                                              ? theme.colorScheme.primary
+                                              : theme.colorScheme.onSurfaceVariant),
+                                    ),
                                   ),
-                                  onPressed: () => _deleteAlert(a),
-                                ),
-                              ],
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          L10n.get("search_listings"),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        _summaryWidget(a, theme),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Switch.adaptive(
+                                        value: a.enabled,
+                                        onChanged: (v) =>
+                                            _toggleEnabled(a, v),
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      IconButton(
+                                        tooltip: L10n.get("delete"),
+                                        visualDensity: VisualDensity.compact,
+                                        icon: ThemeIcon(
+                                          Icons.delete_outline,
+                                          color: theme.colorScheme.error,
+                                        ),
+                                        onPressed: () => _deleteAlert(a),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );

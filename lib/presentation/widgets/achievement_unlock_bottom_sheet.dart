@@ -9,6 +9,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Bottom sheet shown when user unlocks an achievement.
 class AchievementUnlockBottomSheet extends StatefulWidget {
@@ -299,7 +300,7 @@ class _AchievementUnlockBottomSheetState
                   shape: BoxShape.circle,
                   border: badgeBorder,
                 ),
-                child: Icon(
+                child: ThemeIcon(
                   widget.achievement.icon,
                   size: 36,
                   color: iconColor,

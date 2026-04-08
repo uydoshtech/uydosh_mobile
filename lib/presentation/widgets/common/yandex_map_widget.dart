@@ -8,6 +8,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class MapPatternPainter extends CustomPainter {
   @override
@@ -214,7 +215,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 ),
                 const SizedBox(height: 16),
                 // Location pin
-                const Icon(Icons.location_on, color: Colors.red, size: 48),
+                const ThemeIcon(Icons.location_on, color: Colors.red, size: 48),
                 const SizedBox(height: 8),
                 Text(
                   widget.title ?? "Loading Map...",
@@ -235,7 +236,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 if (_retryCount > 0 && _retryCount < _maxRetries)
                   ElevatedButton.icon(
                     onPressed: _retryMapInitialization,
-                    icon: const Icon(Icons.refresh, size: 16),
+                    icon: const ThemeIcon(Icons.refresh, size: 16),
                     label: const Text("Retry"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
@@ -272,7 +273,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.location_on, color: Colors.red, size: 48),
+                const ThemeIcon(Icons.location_on, color: Colors.red, size: 48),
                 const SizedBox(height: 8),
                 Text(
                   widget.title ?? "Location",
@@ -617,7 +618,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.add, color: Colors.black87, size: 24),
+                  child: const ThemeIcon(Icons.add, color: Colors.black87, size: 24),
                 ),
               ),
             ),
@@ -647,7 +648,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: const ThemeIcon(
                     Icons.remove,
                     color: Colors.black87,
                     size: 24,

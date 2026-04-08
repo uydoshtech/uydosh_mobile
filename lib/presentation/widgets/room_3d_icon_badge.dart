@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Compact 3D-room indicator for listing rows (matches detail screen icon).
 class Room3dIconBadge extends StatelessWidget {
@@ -33,7 +34,7 @@ class Room3dIconBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: borderColor, width: 1),
       ),
-      child: Icon(Icons.view_in_ar, color: iconColor, size: size),
+      child: ThemeIcon(Icons.view_in_ar, color: iconColor, size: size),
     );
   }
 }

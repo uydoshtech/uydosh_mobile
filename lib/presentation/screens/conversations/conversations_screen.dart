@@ -94,7 +94,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               HapticFeedbackUtils.impact();
               Navigator.of(context).pop();
             },
-            icon: Icon(
+            icon: ThemeIcon(
               Icons.arrow_back,
               color:
                   Theme.of(context).appBarTheme.foregroundColor ??
@@ -123,7 +123,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             onPressed: () {
               context.read<MessagingBloc>().add(RefreshConversations());
             },
-            icon: Icon(
+            icon: ThemeIcon(
               Icons.refresh,
               color:
                   Theme.of(context).appBarTheme.foregroundColor ??
@@ -145,7 +145,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.error_outline,
             size: 64,
             color: Theme.of(context).colorScheme.error,
@@ -202,7 +202,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.chat_bubble_outline,
             size: 64,
             color: Theme.of(
@@ -320,14 +320,14 @@ class ConversationCard extends StatelessWidget {
                   memCacheHeight: 80,
                   placeholder:
                       (context, url) => Center(
-                        child: Icon(
+                        child: ThemeIcon(
                           Icons.person,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                   errorWidget:
                       (context, url, error) => Center(
-                        child: Icon(
+                        child: ThemeIcon(
                           Icons.person,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
@@ -335,7 +335,7 @@ class ConversationCard extends StatelessWidget {
                 ),
               )
             : CircleAvatar(
-                child: Icon(
+                child: ThemeIcon(
                   Icons.person,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),

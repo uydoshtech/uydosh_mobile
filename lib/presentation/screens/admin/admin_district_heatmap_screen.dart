@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminDistrictHeatmapScreen extends StatefulWidget {
   const AdminDistrictHeatmapScreen({super.key});
@@ -460,7 +461,7 @@ class _AdminDistrictHeatmapScreenState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.error_outline,
             size: 64,
             color: Theme.of(context).colorScheme.error,

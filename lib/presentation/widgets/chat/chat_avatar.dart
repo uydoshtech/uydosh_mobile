@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Reusable chat avatar with initials or person icon.
 /// Used in user messaging (chat) and support chat screens.
@@ -38,7 +39,7 @@ class ChatAvatar extends StatelessWidget {
                   fontSize: 12,
                 ),
               )
-            : Icon(Icons.person, size: 16, color: iconColor),
+            : ThemeIcon(Icons.person, size: 16, color: iconColor),
       ),
     );
   }

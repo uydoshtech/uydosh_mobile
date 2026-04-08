@@ -13,6 +13,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class _MapData {
   const _MapData({
@@ -676,7 +677,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const ThemeIcon(Icons.refresh),
             onPressed: () {
               setState(() {
                 _mapKey = UniqueKey();

@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable settings row with an icon, title, optional subtitle, and a toggle switch.
 /// Used for settings like haptic feedback, onboarding, theme, etc.
@@ -29,7 +30,7 @@ class UydoshToggle extends StatelessWidget {
 
     return ListTile(
       contentPadding: contentPadding,
-      leading: icon != null ? Icon(icon, color: effectiveIconColor) : null,
+      leading: icon != null ? ThemeIcon(icon, color: effectiveIconColor) : null,
       title: title,
       subtitle: subtitle,
       trailing: ThemeToggle(

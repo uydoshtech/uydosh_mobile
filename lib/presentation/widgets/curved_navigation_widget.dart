@@ -1,12 +1,12 @@
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart"
-    show AppColors, BlueThemeColors;
+import "package:uy_dosh/base/constants/app_colors.dart" show AppColors, BlueThemeColors;
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class CustomCurvedNavigationBar extends StatefulWidget {
@@ -76,7 +76,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 28, color: iconColor),
+        ThemeIcon(icon, size: 28, color: iconColor),
         if (!isSelected) ...[
           const SizedBox(height: 2),
           ListenableBuilder(
@@ -132,7 +132,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
         // Use the same structure as other navigation items for consistent positioning
         Stack(
           children: [
-            Icon(
+            ThemeIcon(
               CupertinoIcons.bubble_left_bubble_right,
               size: 28,
               color: iconColor,

@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable dropdown option for [UydoshDropdown].
 class DropdownOption {
@@ -42,7 +43,7 @@ class UydoshDropdown extends StatelessWidget {
       child: Row(
         children: [
           if (icon != null) ...[
-            Icon(
+            ThemeIcon(
               icon,
               color:
                   isBlueTheme
@@ -72,7 +73,7 @@ class UydoshDropdown extends StatelessWidget {
                 value: value,
                 isExpanded: true,
                 elevation: AppTheme.menuPanelElevation,
-                icon: Icon(
+                icon: ThemeIcon(
                   Icons.arrow_drop_down,
                   color:
                       isBlueTheme

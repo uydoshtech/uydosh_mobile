@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class SupportChatScreen extends StatefulWidget {
   const SupportChatScreen({super.key});
@@ -132,7 +133,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            ThemeIcon(
               Icons.error_outline,
               size: 64,
               color: Theme.of(context).colorScheme.error,
@@ -184,7 +185,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
               padding: const EdgeInsets.symmetric(vertical: 32),
               child: Column(
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.support_agent,
                     size: 64,
                     color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
@@ -207,7 +208,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Icon(Icons.add),
+                        : const ThemeIcon(Icons.add),
                     label: Text(L10n.get("contact_support_new")),
                   ),
                 ],
@@ -223,7 +224,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.add),
+                  : const ThemeIcon(Icons.add),
               label: Text(L10n.get("contact_support_new")),
             );
           }
@@ -526,7 +527,7 @@ class _UserSupportChatThreadScreenState
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.access_time,
                 size: 10,
                 color: textColor.withValues(alpha: 0.7),
@@ -541,7 +542,7 @@ class _UserSupportChatThreadScreenState
               ),
               if (isUser) ...[
                 const SizedBox(width: 4),
-                Icon(Icons.check, size: 12, color: Colors.green.shade700),
+                ThemeIcon(Icons.check, size: 12, color: Colors.green.shade700),
               ],
             ],
           ),
@@ -597,7 +598,7 @@ class _UserSupportChatThreadScreenState
                           ),
                         ),
                       )
-                    : Icon(Icons.send, color: themeState.sendButtonColor),
+                    : ThemeIcon(Icons.send, color: themeState.sendButtonColor),
               ),
             ],
           ),

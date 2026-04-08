@@ -23,6 +23,7 @@ import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart"
 import "package:uy_dosh/presentation/widgets/common/profile_toggle_control.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({required this.profile, super.key});
@@ -531,7 +532,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 ),
                               ),
                             )
-                          : const Icon(Icons.save),
+                          : const ThemeIcon(Icons.save),
                       tooltip: L10n.get(
                         "save_changes",
                       ),
@@ -1058,7 +1059,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Icon(
+            ThemeIcon(
               Icons.badge,
               color: isBlueTheme
                   ? Colors.white
@@ -1120,7 +1121,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           controller: controller,
           maxLines: maxLines,
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: theme.colorScheme.onSurfaceVariant),
+            prefixIcon: ThemeIcon(icon, color: theme.colorScheme.onSurfaceVariant),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: theme.colorScheme.outline),
@@ -1258,7 +1259,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: textColor, size: 20),
+                ThemeIcon(icon, color: textColor, size: 20),
                 const SizedBox(width: 10),
                 Flexible(
                   child: Text(
@@ -1350,7 +1351,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              ThemeIcon(
                                                 Icons.location_on,
                                                 color: theme.colorScheme
                                                     .onSurfaceVariant,
@@ -1381,7 +1382,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
                                                   children: [
-                                                    Icon(
+                                                    ThemeIcon(
                                                       Icons.location_on,
                                                       color:
                                                           _getRegionIconColorForIndex(
@@ -1544,7 +1545,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              ThemeIcon(
                                                 Icons.school,
                                                 color: theme.colorScheme
                                                     .onSurfaceVariant,
@@ -1575,7 +1576,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
                                                   children: [
-                                                    Icon(
+                                                    ThemeIcon(
                                                       Icons.school,
                                                       color:
                                                           _getUniversityIconColorForIndex(

@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable component for displaying price information
 /// Handles both badge display and utility functions for price formatting
@@ -58,7 +59,7 @@ class PriceBadge extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (showIcon) ...[
-            Icon(
+            ThemeIcon(
               Icons.attach_money,
               color: color,
               size: fontSize != null ? fontSize! + 2 : 14,

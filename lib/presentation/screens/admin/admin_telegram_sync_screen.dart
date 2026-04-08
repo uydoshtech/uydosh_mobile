@@ -7,6 +7,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminTelegramSyncScreen extends StatefulWidget {
   const AdminTelegramSyncScreen({super.key});
@@ -357,7 +358,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
             FilledButton.icon(
               style: primaryFullWidthStyle,
               onPressed: _loadAdmins,
-              icon: const Icon(Icons.refresh),
+              icon: const ThemeIcon(Icons.refresh),
               label: Text(L10n.get("admin_telegram_sync_admins_retry")),
             ),
           ] else ...[
@@ -461,7 +462,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                           : Theme.of(context).colorScheme.onPrimary,
                     ),
                   )
-                : const Icon(Icons.sync),
+                : const ThemeIcon(Icons.sync),
             label: Text(
               _running
                   ? L10n.get("admin_telegram_sync_running")
@@ -529,7 +530,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                           : Theme.of(context).colorScheme.onPrimary,
                     ),
                   )
-                : const Icon(Icons.download_outlined),
+                : const ThemeIcon(Icons.download_outlined),
             label: Text(
               _exporting
                   ? L10n.get("admin_telegram_export_running")

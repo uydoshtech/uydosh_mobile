@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class PhotoIcon extends StatelessWidget {
   const PhotoIcon({
@@ -27,7 +28,7 @@ class PhotoIcon extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(color: iconColor, width: 1.0),
           ),
-          child: Icon(Icons.camera_alt, color: iconColor, size: size),
+          child: ThemeIcon(Icons.camera_alt, color: iconColor, size: size),
         );
       },
     );

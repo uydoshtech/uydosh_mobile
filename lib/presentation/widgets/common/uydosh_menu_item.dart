@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable navigation/menu row with icon, title, optional subtitle, and trailing arrow.
 /// Used in settings, burger menu, and similar list UIs.
@@ -32,14 +33,14 @@ class UydoshMenuItem extends StatelessWidget {
     final theme = Theme.of(context);
     final effectiveIconColor = iconColor ?? theme.iconTheme.color;
     final effectiveTrailing = trailing ??
-        Icon(
+        ThemeIcon(
           Icons.arrow_forward_ios,
           size: 16,
           color: trailingColor ?? theme.colorScheme.onSurfaceVariant,
         );
 
     return ListTile(
-      leading: Icon(icon, color: effectiveIconColor),
+      leading: ThemeIcon(icon, color: effectiveIconColor),
       title: title,
       subtitle: subtitle,
       trailing: effectiveTrailing,

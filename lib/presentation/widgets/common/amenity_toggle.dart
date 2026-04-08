@@ -7,6 +7,7 @@ import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A selectable amenity chip with icon, localized label, and tap animation.
 /// Used in create/edit listing screens for amenity selection.
@@ -130,7 +131,7 @@ class _AmenityToggleState extends State<AmenityToggle>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  ThemeIcon(
                     _getIcon(widget.amenity),
                     size: 18,
                     color: iconColor,

@@ -6,6 +6,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ProfileStatsSection extends StatelessWidget {
   const ProfileStatsSection({
@@ -61,7 +62,7 @@ class ProfileStatsSection extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16.0, 12, 16.0, 12),
               child: Row(
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.person,
                     size: 24,
                     color: Theme.of(context).colorScheme.onSurface,
@@ -80,7 +81,7 @@ class ProfileStatsSection extends StatelessWidget {
                   AnimatedRotation(
                     turns: expandedSectionIndex == 0 ? 0.5 : 0.0,
                     duration: const Duration(milliseconds: 200),
-                    child: Icon(
+                    child: ThemeIcon(
                       Icons.keyboard_arrow_down,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
@@ -183,7 +184,7 @@ class ProfileStatsSection extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16.0, 12, 16.0, 12),
                 child: Row(
                   children: [
-                    Icon(
+                    ThemeIcon(
                       Icons.spa,
                       size: 24,
                       color: _getLifestyleHeaderColor(),
@@ -202,7 +203,7 @@ class ProfileStatsSection extends StatelessWidget {
                     AnimatedRotation(
                       turns: expandedSectionIndex == 1 ? 0.5 : 0.0,
                       duration: const Duration(milliseconds: 200),
-                      child: Icon(
+                      child: ThemeIcon(
                         Icons.keyboard_arrow_down,
                         color: _getLifestyleHeaderColor(),
                       ),
@@ -378,7 +379,7 @@ class ProfileStatsSection extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(
+        ThemeIcon(
           icon,
           size: 20,
           color: Theme.of(context).colorScheme.onSurface,
@@ -418,7 +419,7 @@ class ProfileStatsSection extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface),
+        ThemeIcon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -458,7 +459,7 @@ class ProfileStatsSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4.0),
         child: Row(
           children: [
-            Icon(
+            ThemeIcon(
               Icons.telegram,
               size: 20,
               color: Theme.of(context).colorScheme.onSurface,
@@ -487,7 +488,7 @@ class ProfileStatsSection extends StatelessWidget {
               ),
             ),
             if (hasTelegram)
-              Icon(
+              ThemeIcon(
                 Icons.arrow_forward_ios,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 16,
@@ -501,7 +502,7 @@ class ProfileStatsSection extends StatelessWidget {
   Widget _buildRatingField(BuildContext context) {
     return Row(
       children: [
-        Icon(
+        ThemeIcon(
           Icons.star,
           color: Theme.of(context).colorScheme.onSurface,
           size: 20,
@@ -520,7 +521,7 @@ class ProfileStatsSection extends StatelessWidget {
               ),
               Row(
                 children: List.generate(5, (index) {
-                  return Icon(
+                  return ThemeIcon(
                     Icons.star,
                     size: 19,
                     color:

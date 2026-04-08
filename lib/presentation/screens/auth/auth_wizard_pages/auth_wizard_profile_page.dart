@@ -5,6 +5,7 @@ import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AuthWizardProfilePage extends StatelessWidget {
   const AuthWizardProfilePage({
@@ -102,7 +103,7 @@ class AuthWizardProfilePage extends StatelessWidget {
                     ),
                   ),
                   contentPadding: const EdgeInsets.all(16),
-                  prefixIcon: Icon(
+                  prefixIcon: ThemeIcon(
                     Icons.person,
                     color: _getOnboardingTextSecondaryColor(context),
                   ),
@@ -325,7 +326,7 @@ class AuthWizardProfilePage extends StatelessWidget {
               textAlign: TextAlign.left,
             ),
             const SizedBox(width: 12),
-            Icon(
+            ThemeIcon(
               icon,
               color: isSelected
                   ? AuthWizardTheme.getSelectedButtonTextColor()
@@ -376,7 +377,7 @@ class AuthWizardProfilePage extends StatelessWidget {
               textAlign: TextAlign.left,
             ),
             const SizedBox(width: 12),
-            Icon(
+            ThemeIcon(
               icon,
               color: isSelected
                   ? AuthWizardTheme.getSelectedButtonTextColor()
@@ -425,7 +426,7 @@ class AuthWizardProfilePage extends StatelessWidget {
               textAlign: TextAlign.left,
             ),
             const SizedBox(width: 12),
-            Icon(
+            ThemeIcon(
               icon,
               color: isSelected
                   ? Colors.black
@@ -459,7 +460,7 @@ class AuthWizardProfilePage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           child: Row(
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.public,
                 color: selectedRegionId != null
                     ? AuthWizardTheme.getSelectedButtonTextColor()
@@ -512,7 +513,7 @@ class AuthWizardProfilePage extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
+              ThemeIcon(
                 selectedRegionId != null
                     ? Icons.check_circle
                     : Icons.arrow_drop_down,
@@ -549,7 +550,7 @@ class AuthWizardProfilePage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           child: Row(
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.school,
                 color: selectedUniversity != null
                     ? AuthWizardTheme.getSelectedButtonTextColor()
@@ -598,7 +599,7 @@ class AuthWizardProfilePage extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
+              ThemeIcon(
                 selectedUniversity != null
                     ? Icons.check_circle
                     : Icons.arrow_drop_down,

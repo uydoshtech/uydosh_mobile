@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminSearchAnalyticsScreen extends StatefulWidget {
   const AdminSearchAnalyticsScreen({super.key});
@@ -242,7 +243,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+              ThemeIcon(icon, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -278,7 +279,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
   ) {
     return Row(
       children: [
-        Icon(icon, size: 22, color: Theme.of(context).colorScheme.onSurface),
+        ThemeIcon(icon, size: 22, color: Theme.of(context).colorScheme.onSurface),
         const SizedBox(width: 8),
         Text(
           L10n.get(titleKey),
@@ -340,7 +341,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         : 0.0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
-      leading: Icon(
+      leading: ThemeIcon(
         Icons.location_on,
         color: (isDark ? Colors.grey[500]! : Colors.grey[600]!)
             .withValues(alpha: 0.5 + intensity * 0.5),
@@ -400,7 +401,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                 children: [
                   Row(
                     children: [
-                      Icon(
+                      ThemeIcon(
                         Icons.train,
                         color: AppColors.getMetroLineColor(item.lineId),
                         size: 22,
@@ -516,7 +517,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            ThemeIcon(
               Icons.error_outline,
               size: 64,
               color: Theme.of(context).colorScheme.error,
@@ -547,7 +548,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: _loadAnalytics,
-              icon: const Icon(Icons.refresh),
+              icon: const ThemeIcon(Icons.refresh),
               label: Text(
 L10n.get("admin_search_analytics_retry"),
               ),

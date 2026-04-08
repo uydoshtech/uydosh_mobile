@@ -9,6 +9,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class _RoleBadge extends StatelessWidget {
   const _RoleBadge({required this.label});
@@ -93,7 +94,7 @@ class ProfileHeaderSection extends StatelessWidget {
                             width: 2,
                           ),
                         ),
-                        child: const Icon(
+                        child: const ThemeIcon(
                           Icons.block,
                           size: 14,
                           color: Colors.white,
@@ -112,7 +113,7 @@ class ProfileHeaderSection extends StatelessWidget {
                           width: 2,
                         ),
                       ),
-                      child: const Icon(
+                      child: const ThemeIcon(
                         Icons.check,
                         size: 14,
                         color: Colors.white,
@@ -205,7 +206,7 @@ class ProfileHeaderSection extends StatelessWidget {
                   child: CircularProgressIndicator(strokeWidth: 3),
                 ),
             errorWidget:
-                (context, url, error) => const Icon(Icons.person, size: 50),
+                (context, url, error) => const ThemeIcon(Icons.person, size: 50),
           ),
         ),
       );
@@ -216,7 +217,7 @@ class ProfileHeaderSection extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(width: 1),
       ),
-      child: const Icon(Icons.person, size: 50),
+      child: const ThemeIcon(Icons.person, size: 50),
     );
   }
 
@@ -262,7 +263,7 @@ class ProfileHeaderSection extends StatelessWidget {
                   ),
                 ),
                 if (isComplete)
-                  Icon(
+                  ThemeIcon(
                     Icons.check_circle,
                     size: 18,
                     color: Theme.of(context).colorScheme.onSurface,

@@ -7,6 +7,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Map section with Yandex Maps for listing detail.
 /// Collapsed by default: shows only location and metro. Tap to expand and show map.
@@ -71,7 +72,7 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
 
       return Row(
         children: [
-          Icon(
+          ThemeIcon(
             Icons.train,
             color: ListingDetailThemeHelper.lineColor(station.line),
             size: 20,
@@ -90,13 +91,13 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
             ),
           ),
           const SizedBox(width: 4),
-          Icon(
+          ThemeIcon(
             Icons.swap_horiz,
             color: ListingDetailThemeHelper.locationTextColor,
             size: 16,
           ),
           const SizedBox(width: 4),
-          Icon(
+          ThemeIcon(
             Icons.train,
             color: ListingDetailThemeHelper.lineColor(connectedStation.line),
             size: 20,
@@ -119,7 +120,7 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
     } else {
       return Row(
         children: [
-          Icon(
+          ThemeIcon(
             Icons.train,
             color: ListingDetailThemeHelper.lineColor(station.line),
             size: 20,
@@ -225,7 +226,7 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
                     HapticFeedbackUtils.impact();
                     widget.onOpenInYandexMaps();
                   },
-                  icon: Icon(
+                  icon: ThemeIcon(
                     Icons.link,
                     size: 18,
                     color: ListingDetailThemeHelper.yandexButtonColor,

@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
@@ -111,7 +112,7 @@ class PrimaryButtonFactory {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: iconSize),
+          ThemeIcon(icon, size: iconSize),
           const SizedBox(width: 8),
           Text(text, style: textStyle),
         ],
@@ -163,7 +164,7 @@ class PrimaryButtonFactory {
       textColor: textColor,
       isLoading: isLoading,
       isDisabled: isDisabled,
-      child: Icon(icon),
+      child: ThemeIcon(icon),
     );
   }
 }

@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class GroupedConversationsList extends StatefulWidget {
 
@@ -240,7 +241,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                       turns: isExpanded ? 0.0 : 0.5,
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
-                      child: Icon(Icons.expand_less, color: iconColor),
+                      child: ThemeIcon(Icons.expand_less, color: iconColor),
                     ),
                   ],
                 ),

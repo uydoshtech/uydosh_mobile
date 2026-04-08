@@ -17,6 +17,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -246,7 +247,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildLanguageMenuItem(BuildContext context) {
     return ListTile(
-      leading: Icon(CupertinoIcons.globe, color: _getIconColor()),
+      leading: ThemeIcon(CupertinoIcons.globe, color: _getIconColor()),
       title: L10n.text(
         "menu_language",
         style: TextStyle(fontWeight: FontWeight.w500, color: _getTextColor()),
@@ -264,7 +265,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         HapticFeedbackUtils.impact();
         _showLanguageDialog(context);
       },
-      trailing: Icon(
+      trailing: ThemeIcon(
         Icons.arrow_forward_ios,
         size: 16,
         color: _getSecondaryIconColor(),
@@ -277,7 +278,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       listenable: ThemeState(),
       builder: (context, child) {
         return ListTile(
-          leading: Icon(Icons.palette, color: _getIconColor()),
+          leading: ThemeIcon(Icons.palette, color: _getIconColor()),
           title: L10n.text(
             "theme",
             style: TextStyle(
@@ -452,7 +453,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       trailing:
           isCurrentLanguage
-              ? Icon(
+              ? ThemeIcon(
                 Icons.check,
                 color:
                     ThemeState().currentTheme == AppTheme.lightTheme
@@ -595,7 +596,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: _getAboutModalTextColor()),
+          ThemeIcon(icon, size: 20, color: _getAboutModalTextColor()),
           const SizedBox(width: 12),
           Expanded(
             child: L10n.text(

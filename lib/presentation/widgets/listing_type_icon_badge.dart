@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A simple icon-only badge for displaying listing type information
 /// Shows only the icon without any text, perfect for compact displays
@@ -28,7 +29,7 @@ class ListingTypeIconBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color, width: 1),
       ),
-      child: Icon(icon, color: color, size: size),
+      child: ThemeIcon(icon, color: color, size: size),
     );
   }
 }

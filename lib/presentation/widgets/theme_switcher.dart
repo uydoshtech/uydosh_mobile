@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Theme switcher widget for selecting app themes
 class ThemeSwitcher extends StatefulWidget {
@@ -86,7 +87,7 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.palette),
+                  const ThemeIcon(Icons.palette),
                   const SizedBox(width: 8),
                   ListenableBuilder(
                     listenable: _themeState,

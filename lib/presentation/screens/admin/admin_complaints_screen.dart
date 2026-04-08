@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminComplaintsScreen extends StatefulWidget {
   const AdminComplaintsScreen({super.key});
@@ -326,7 +327,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.error_outline,
             size: 64,
             color: Theme.of(context).colorScheme.error,
@@ -405,7 +406,7 @@ L10n.get("admin_complaints_empty"),
                       ),
                       _buildStatusChip(context, complaint.status),
                       IconButton(
-                        icon: const Icon(Icons.more_vert),
+                        icon: const ThemeIcon(Icons.more_vert),
                         onPressed: () => _showStatusMenu(complaint),
                       ),
                     ],

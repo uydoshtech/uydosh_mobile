@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminSupportChatScreen extends StatefulWidget {
   const AdminSupportChatScreen({super.key});
@@ -214,7 +215,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.error_outline,
             size: 64,
             color: Theme.of(context).colorScheme.error,
@@ -537,7 +538,7 @@ class _AdminSupportChatThreadScreenState
             foregroundColor: themeState.textColor,
             actions: [
               IconButton(
-                icon: Icon(
+                icon: ThemeIcon(
                   widget.thread.status == "open" ? Icons.check_circle_outline : Icons.lock_open,
                   color: widget.thread.status == "open" ? Colors.green.shade700 : null,
                 ),
@@ -618,7 +619,7 @@ class _AdminSupportChatThreadScreenState
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.access_time,
                 size: 10,
                 color: textColor.withValues(alpha: 0.7),
@@ -633,7 +634,7 @@ class _AdminSupportChatThreadScreenState
               ),
               if (isSupport) ...[
                 const SizedBox(width: 4),
-                Icon(Icons.check, size: 12, color: Colors.green.shade700),
+                ThemeIcon(Icons.check, size: 12, color: Colors.green.shade700),
               ],
             ],
           ),
@@ -689,7 +690,7 @@ class _AdminSupportChatThreadScreenState
                           ),
                         ),
                       )
-                    : Icon(Icons.send, color: themeState.sendButtonColor),
+                    : ThemeIcon(Icons.send, color: themeState.sendButtonColor),
               ),
             ],
           ),

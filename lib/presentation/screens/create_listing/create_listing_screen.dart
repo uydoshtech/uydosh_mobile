@@ -39,6 +39,7 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({super.key, this.showAppBar = false});
@@ -878,7 +879,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                   horizontal: 12,
                                   vertical: 16,
                                 ),
-                                prefixIcon: Icon(
+                                prefixIcon: ThemeIcon(
                                   CupertinoIcons.calendar,
                                   size: 22,
                                   color:
@@ -927,7 +928,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      ThemeIcon(
                         Icons.lock_outline,
                         color:
                             _isPrivateRoom

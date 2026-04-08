@@ -23,6 +23,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
 import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_tile.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({super.key, this.showCustomHeader = true});
@@ -263,7 +264,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               HapticFeedbackUtils.impact();
               Navigator.of(context).pop();
             },
-            icon: Icon(
+            icon: ThemeIcon(
               Icons.arrow_back,
               color:
                   Theme.of(context).appBarTheme.foregroundColor ??
@@ -290,7 +291,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           // Profile button (matching the original design)
           IconButton(
             onPressed: () => context.pushProfile(),
-            icon: Icon(
+            icon: ThemeIcon(
               Icons.person,
               color:
                   Theme.of(context).appBarTheme.foregroundColor ??
@@ -329,7 +330,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                ThemeIcon(
                   isAuthError ? Icons.lock_outline : Icons.error_outline,
                   size: 64,
                   color: isAuthError ? primaryColor : AppColors.error,
@@ -518,7 +519,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        ThemeIcon(
                           Icons.mail,
                           size: 18,
                           color:
@@ -576,7 +577,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        ThemeIcon(
                           Icons.mail,
                           size: 18,
                           color:
@@ -759,7 +760,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              ThemeIcon(
                 type == "incoming" ? Icons.inbox_outlined : Icons.send_outlined,
                 size: 64,
                 color: secondaryTextColor,
@@ -802,7 +803,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.chat_bubble_outline,
                 size: 64,
                 color: secondaryTextColor,

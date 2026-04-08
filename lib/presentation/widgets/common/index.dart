@@ -12,3 +12,5 @@ export "uydosh_menu_item.dart";
 export "uydosh_radio_tile.dart";
 export "uydosh_slider.dart";
 export "uydosh_toggle.dart";
+export "uydosh_icon.dart";
+export "theme_icon.dart";

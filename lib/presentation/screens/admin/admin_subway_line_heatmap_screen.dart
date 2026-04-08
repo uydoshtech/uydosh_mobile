@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminSubwayLineHeatmapScreen extends StatefulWidget {
   const AdminSubwayLineHeatmapScreen({super.key});
@@ -341,7 +342,7 @@ class _AdminSubwayLineHeatmapScreenState
             children: [
               Row(
                 children: [
-                  const Icon(
+                  const ThemeIcon(
                     Icons.train,
                     size: 20,
                     color: Colors.black,
@@ -440,7 +441,7 @@ L10n.get("admin_subway_heatmap_count_label"),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.error_outline,
             size: 64,
             color: Theme.of(context).colorScheme.error,

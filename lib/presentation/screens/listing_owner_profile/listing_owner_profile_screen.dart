@@ -19,6 +19,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ListingOwnerProfileData {
@@ -231,7 +232,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                       // User Name
                       Row(
                         children: [
-                          const Icon(Icons.person, size: 20),
+                          const ThemeIcon(Icons.person, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -262,7 +263,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                       if (profile.gender != null) ...[
                         Row(
                           children: [
-                            Icon(
+                            ThemeIcon(
                               _getGenderIcon(profile.gender!),
                               size: 20,
                               color: _getGenderColor(profile.gender!),
@@ -334,7 +335,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                       // University field
                       Row(
                         children: [
-                          const Icon(Icons.school, size: 20),
+                          const ThemeIcon(Icons.school, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -371,7 +372,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                           profile.preferredLanguage!.isNotEmpty) ...[
                         Row(
                           children: [
-                            const Icon(CupertinoIcons.globe, size: 20),
+                            const ThemeIcon(CupertinoIcons.globe, size: 20),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -405,7 +406,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                       // About Me field
                       Row(
                         children: [
-                          const Icon(Icons.info_outline, size: 20),
+                          const ThemeIcon(Icons.info_outline, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -440,7 +441,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                         const SizedBox(height: 24),
                         Row(
                           children: [
-                            Icon(
+                            ThemeIcon(
                               Icons.star,
                               color: _getPrimaryColor(),
                               size: 20,
@@ -459,7 +460,7 @@ L10n.get("rating"),
                                   ),
                                   Row(
                                     children: List.generate(5, (index) {
-                                      return Icon(
+                                      return ThemeIcon(
                                         Icons.star,
                                         size: 19,
                                         color:
@@ -717,7 +718,7 @@ L10n.get("rating"),
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              Icon(icon, color: _getPrimaryColor(), size: 24),
+              ThemeIcon(icon, color: _getPrimaryColor(), size: 24),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -742,7 +743,7 @@ L10n.get("rating"),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+              const ThemeIcon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
             ],
           ),
         ),
@@ -900,7 +901,7 @@ L10n.get("rating"),
     final raw = profile.avatarUrl?.trim();
     if (raw == null || raw.isEmpty) {
       return const Center(
-        child: Icon(Icons.person, size: 50, color: Colors.white),
+        child: ThemeIcon(Icons.person, size: 50, color: Colors.white),
       );
     }
     final imageUrl = _resolveAvatarUrl(raw);
@@ -922,7 +923,7 @@ L10n.get("rating"),
             ),
         errorWidget:
             (context, url, error) => const Center(
-              child: Icon(Icons.person, size: 50, color: Colors.white),
+              child: ThemeIcon(Icons.person, size: 50, color: Colors.white),
             ),
       ),
     );
@@ -1056,7 +1057,7 @@ L10n.get("rating"),
   }) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface),
+        ThemeIcon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

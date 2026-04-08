@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A theme toggle with sun (light) and moon (dark/blue) icons.
 /// Matches the design: pill-shaped track, circular sliding thumb, moon left / sun right.
@@ -63,7 +64,7 @@ class ThemeToggleSunMoon extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   child: Center(
-                    child: Icon(
+                    child: ThemeIcon(
                       Icons.dark_mode,
                       size: size * 0.5,
                       color: isLight
@@ -78,7 +79,7 @@ class ThemeToggleSunMoon extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   child: Center(
-                    child: Icon(
+                    child: ThemeIcon(
                       Icons.light_mode,
                       size: size * 0.5,
                       color: isLight

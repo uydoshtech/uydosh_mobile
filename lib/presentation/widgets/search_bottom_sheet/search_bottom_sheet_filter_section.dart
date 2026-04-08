@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Primary filters: listing type and gender pickers.
 class SearchBottomSheetPrimaryFilters extends StatelessWidget {
@@ -137,7 +138,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.search, size: 20),
+                const ThemeIcon(Icons.search, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   L10n.get("search"),
@@ -288,7 +289,7 @@ class _NotifySearchAlertButtonState extends State<_NotifySearchAlertButton>
                   RotationTransition(
                     turns: _bellTurns,
                     alignment: Alignment.topCenter,
-                    child: const Icon(
+                    child: const ThemeIcon(
                       Icons.notifications_active_outlined,
                       size: 20,
                     ),
@@ -351,7 +352,7 @@ class _SearchSheetFilterToggle extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: iconColor),
+            ThemeIcon(icon, size: 20, color: iconColor),
             const SizedBox(width: 6),
             Expanded(
               child: Text(

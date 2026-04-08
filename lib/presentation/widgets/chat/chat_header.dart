@@ -3,6 +3,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
 
@@ -43,7 +44,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
           foregroundColor: textColor,
           actions: [
             IconButton(
-              icon: Icon(Icons.refresh, color: textColor),
+              icon: ThemeIcon(Icons.refresh, color: textColor),
               tooltip: L10n.get("refresh"),
               onPressed: onRefresh,
             ),

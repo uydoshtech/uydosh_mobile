@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Complaints warning card for listing detail (shown when listing has complaints).
 class ListingDetailComplaintsCard extends StatelessWidget {
@@ -25,7 +26,7 @@ class ListingDetailComplaintsCard extends StatelessWidget {
             onPressed: onPressed,
             icon: FadeTransition(
               opacity: warningBlinkAnimation,
-              child: const Icon(Icons.report_outlined),
+              child: const ThemeIcon(Icons.report_outlined),
             ),
             label: FadeTransition(
               opacity: warningBlinkAnimation,

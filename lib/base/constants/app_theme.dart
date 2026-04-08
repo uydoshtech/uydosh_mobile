@@ -205,7 +205,11 @@ class AppTheme {
       ),
 
       // Icon theme
-      iconTheme: const IconThemeData(color: BlueThemeColors.iconPrimary, size: 24),
+      iconTheme: const IconThemeData(color: BlueThemeColors.textPrimary, size: 24),
+      primaryIconTheme: const IconThemeData(
+        color: BlueThemeColors.textPrimary,
+        size: 24,
+      ),
 
       // Popup menu theme - White background with blue text and icons
       popupMenuTheme: PopupMenuThemeData(

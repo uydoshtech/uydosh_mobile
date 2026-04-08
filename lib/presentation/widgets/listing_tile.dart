@@ -26,6 +26,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/photo_icon.dart";
 import "package:uy_dosh/presentation/widgets/room_3d_icon_badge.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ListingTile extends StatefulWidget {
   const ListingTile({
@@ -202,7 +203,7 @@ class _ListingTileState extends State<ListingTile>
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                const ThemeIcon(
                                   CupertinoIcons.eye,
                                   size: 16,
                                   color: AppColors.textGrey600,
@@ -443,7 +444,7 @@ class _ListingTileState extends State<ListingTile>
                                                             ),
                                                           ),
                                                         )
-                                                        : Icon(
+                                                        : ThemeIcon(
                                                           isFavorite
                                                               ? Icons.favorite
                                                               : Icons
@@ -539,7 +540,7 @@ class _ListingTileState extends State<ListingTile>
                                     if (widget.listing.location != null) ...[
                                       Row(
                                         children: [
-                                          const Icon(
+                                          const ThemeIcon(
                                             Icons.location_on,
                                             color: AppColors.error,
                                             size: 20,
@@ -597,7 +598,7 @@ class _ListingTileState extends State<ListingTile>
                                                 padding: const EdgeInsets.only(
                                                   right: 8,
                                                 ),
-                                                child: Icon(
+                                                child: ThemeIcon(
                                                   _getAmenityIcon(amenity),
                                                   size: 20,
                                                   color:
@@ -613,7 +614,7 @@ class _ListingTileState extends State<ListingTile>
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      const Icon(
+                                      const ThemeIcon(
                                         CupertinoIcons.money_dollar_circle,
                                         size: 22,
                                         color: Colors.green,
@@ -638,7 +639,7 @@ class _ListingTileState extends State<ListingTile>
                                     builder: (context, child) {
                                       return Row(
                                         children: [
-                                          Icon(
+                                          ThemeIcon(
                                             CupertinoIcons.lock_fill,
                                             size: 20,
                                             color: _getPrivateRoomIconColor(),
@@ -664,7 +665,7 @@ class _ListingTileState extends State<ListingTile>
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Icon(
+                                      ThemeIcon(
                                         CupertinoIcons.square_arrow_right,
                                         size: 22,
                                         color: _getDateTextColor(),
@@ -695,7 +696,7 @@ class _ListingTileState extends State<ListingTile>
                   top: 0,
                   bottom: 0,
                   child: Center(
-                    child: Icon(
+                    child: ThemeIcon(
                       Icons.arrow_forward_ios,
                       size: 24, // 16 * 1.5 = 24
                       color: _getArrowIconColor(),
@@ -1027,7 +1028,7 @@ class _ListingTileState extends State<ListingTile>
 
       return Row(
         children: [
-          Icon(Icons.train, color: _getLineColor(leftStation.line), size: 20),
+          ThemeIcon(Icons.train, color: _getLineColor(leftStation.line), size: 20),
           const SizedBox(width: 4),
           Text(
             _getLocalizedName(
@@ -1038,9 +1039,9 @@ class _ListingTileState extends State<ListingTile>
             style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
           ),
           const SizedBox(width: 4),
-          Icon(Icons.swap_horiz, color: _getLocationTextColor(), size: 16),
+          ThemeIcon(Icons.swap_horiz, color: _getLocationTextColor(), size: 16),
           const SizedBox(width: 4),
-          Icon(Icons.train, color: _getLineColor(rightStation.line), size: 20),
+          ThemeIcon(Icons.train, color: _getLineColor(rightStation.line), size: 20),
           const SizedBox(width: 4),
           Text(
             _getLocalizedName(
@@ -1056,7 +1057,7 @@ class _ListingTileState extends State<ListingTile>
       // Regular station - show normally
       return Row(
         children: [
-          Icon(Icons.train, color: _getLineColor(station.line), size: 20),
+          ThemeIcon(Icons.train, color: _getLineColor(station.line), size: 20),
           const SizedBox(width: 6),
           Expanded(
             child: Text(

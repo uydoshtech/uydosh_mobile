@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ActionDropdownMenu extends StatelessWidget {
   const ActionDropdownMenu({
@@ -68,7 +69,7 @@ class ActionDropdownMenu extends StatelessWidget {
                           ),
                           child: item.iconWidget!,
                         )
-                      : Icon(
+                      : ThemeIcon(
                           item.icon,
                           size: 20,
                           color: effectiveIconColor,
@@ -92,7 +93,7 @@ class ActionDropdownMenu extends StatelessWidget {
         padding: padding,
         child: Tooltip(
           message: tooltip ?? "",
-          child: Icon(
+          child: ThemeIcon(
             icon ?? Icons.more_vert,
             size: iconSize,
             color:
@@ -126,6 +127,6 @@ class ActionMenuItem {
   final Color? iconColor;
   final Color? textColor;
   final bool enabled;
-  /// When provided, used instead of Icon(icon) for the menu item leading widget.
+  /// When provided, used instead of ThemeIcon(icon) for the menu item leading widget.
   final Widget? iconWidget;
 }

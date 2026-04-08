@@ -4,6 +4,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Compact “AI enhance” action for listing description fields (create / edit).
 class ListingDescriptionAiEnhanceButton extends StatefulWidget {
@@ -61,7 +62,7 @@ class _ListingDescriptionAiEnhanceButtonState
   Widget _blinkingSparkleIcon(BuildContext context) {
     return FadeTransition(
       opacity: _sparkleOpacity,
-      child: Icon(Icons.auto_awesome, size: 18, color: _accentColor(context)),
+      child: ThemeIcon(Icons.auto_awesome, size: 18, color: _accentColor(context)),
     );
   }
 

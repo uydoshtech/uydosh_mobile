@@ -19,6 +19,7 @@ import "package:uy_dosh/presentation/blocs/gamification_bloc.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -174,7 +175,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            ThemeIcon(
               Icons.emoji_events_outlined,
               size: 64,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -338,7 +339,7 @@ class _AchievementTile extends StatelessWidget {
             shape: BoxShape.circle,
             border: badgeBorder,
           ),
-          child: Icon(
+          child: ThemeIcon(
             achievement.icon,
             color: iconColor,
           ),
@@ -361,13 +362,13 @@ class _AchievementTile extends StatelessWidget {
           ),
         ),
         trailing: isUnlocked
-            ? Icon(
+            ? ThemeIcon(
                 Icons.check_circle,
                 color: isLight
                     ? Colors.black
                     : (isBlueTheme ? Colors.white : Theme.of(context).colorScheme.primary),
               )
-            : Icon(
+            : ThemeIcon(
                 Icons.lock_outline,
                 color: isBlueTheme
                     ? Colors.white.withValues(alpha: 0.7)

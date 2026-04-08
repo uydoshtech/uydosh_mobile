@@ -6,6 +6,7 @@ import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class PricePicker extends StatelessWidget {
 
@@ -156,12 +157,12 @@ class PricePicker extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.keyboard_arrow_up,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 16,
                   ),
-                  Icon(
+                  ThemeIcon(
                     Icons.keyboard_arrow_down,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 16,

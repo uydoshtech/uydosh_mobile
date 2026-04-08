@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AuthWizardLanguagePage extends StatelessWidget {
   const AuthWizardLanguagePage({
@@ -129,7 +130,7 @@ class AuthWizardLanguagePage extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              Icon(
+              ThemeIcon(
                 Icons.check_circle,
                 color: _getOnboardingTextColor(context),
                 size: 28,

@@ -10,6 +10,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_scree
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminListingCreationAnalyticsScreen extends StatefulWidget {
   const AdminListingCreationAnalyticsScreen({super.key});
@@ -206,7 +207,7 @@ class _AdminListingCreationAnalyticsScreenState
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+              ThemeIcon(icon, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -242,7 +243,7 @@ class _AdminListingCreationAnalyticsScreenState
   ) {
     return Row(
       children: [
-        Icon(icon, size: 22, color: Theme.of(context).colorScheme.onSurface),
+        ThemeIcon(icon, size: 22, color: Theme.of(context).colorScheme.onSurface),
         const SizedBox(width: 8),
         Text(
           L10n.get(titleKey),
@@ -282,7 +283,7 @@ class _AdminListingCreationAnalyticsScreenState
     final isSingleListing = hasListingIds && item.listingIds.length == 1;
     final isMultiListing = hasListingIds && item.listingIds.length > 1;
 
-    final leadingIcon = Icon(
+    final leadingIcon = ThemeIcon(
       Icons.add_circle_outline,
       color: (isDark ? Colors.grey[500]! : Colors.grey[600]!)
           .withValues(alpha: 0.5 + intensity * 0.5),
@@ -327,7 +328,7 @@ class _AdminListingCreationAnalyticsScreenState
               (id) => ListTile(
                 leading: const SizedBox(width: 24),
                 title: Text("Listing #$id"),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const ThemeIcon(Icons.chevron_right),
                 onTap: () => _openListingDetail(id),
               ),
             )
@@ -392,7 +393,7 @@ class _AdminListingCreationAnalyticsScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            ThemeIcon(
               Icons.error_outline,
               size: 64,
               color: Theme.of(context).colorScheme.error,
@@ -423,7 +424,7 @@ class _AdminListingCreationAnalyticsScreenState
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: _loadAnalytics,
-              icon: const Icon(Icons.refresh),
+              icon: const ThemeIcon(Icons.refresh),
               label: Text(
                 L10n.get("admin_listing_creation_analytics_retry"),
               ),

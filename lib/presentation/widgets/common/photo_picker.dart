@@ -10,6 +10,7 @@ import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class PhotoPicker extends StatefulWidget {
   const PhotoPicker({
@@ -224,7 +225,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.camera_alt, size: 28),
+                  leading: const ThemeIcon(Icons.camera_alt, size: 28),
                   title: Text(
                     L10n.get("take_photo"),
                     style: const TextStyle(
@@ -239,7 +240,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.photo_library, size: 28),
+                  leading: const ThemeIcon(Icons.photo_library, size: 28),
                   title: Text(
                     L10n.get("choose_from_gallery"),
                     style: const TextStyle(
@@ -330,7 +331,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                                     ),
                                   ),
                                 )
-                                : const Icon(
+                                : const ThemeIcon(
                                   Icons.add,
                                   color: Colors.white,
                                   size: 20,
@@ -416,7 +417,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      ThemeIcon(
                         Icons.photo_library_outlined,
                         size: 32,
                         color:
@@ -520,7 +521,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
               ),
               child: Padding(
                 padding: EdgeInsets.all(4),
-                child: Icon(Icons.close, color: Colors.white, size: 16),
+                child: ThemeIcon(Icons.close, color: Colors.white, size: 16),
               ),
             ),
           ),

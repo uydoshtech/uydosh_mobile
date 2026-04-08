@@ -24,6 +24,7 @@ import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet/search_bottom_sheet_filter_section.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet/search_bottom_sheet_location_section.dart";

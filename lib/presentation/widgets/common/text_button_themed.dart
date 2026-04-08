@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A themed text button with consistent styling
 class TextButtonThemed extends StatelessWidget {
@@ -66,7 +67,7 @@ class TextButtonThemedFactory {
       style: style,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [Icon(icon), const SizedBox(width: 8), Text(text)],
+        children: [ThemeIcon(icon), const SizedBox(width: 8), Text(text)],
       ),
     );
   }
@@ -82,7 +83,7 @@ class TextButtonThemedFactory {
       onPressed: onPressed,
       padding: padding,
       style: style,
-      child: Icon(icon),
+      child: ThemeIcon(icon),
     );
   }
 }

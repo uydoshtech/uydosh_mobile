@@ -4,6 +4,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Rebuilds server-side area price (MSRP-style) aggregates for listing detail.
 class AdminAreaPriceCacheScreen extends StatefulWidget {
@@ -91,7 +92,7 @@ class _AdminAreaPriceCacheScreenState extends State<AdminAreaPriceCacheScreen> {
                           : Theme.of(context).colorScheme.onPrimary,
                     ),
                   )
-                : const Icon(Icons.analytics_outlined),
+                : const ThemeIcon(Icons.analytics_outlined),
             label: Text(
               _running
                   ? L10n.get("admin_area_price_cache_running")

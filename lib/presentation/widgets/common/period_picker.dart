@@ -4,6 +4,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A rotation spinner (CupertinoPicker wheel) for selecting a time period.
 /// Matches the metro/district picker style: vertical scrollable list in a
@@ -117,7 +118,7 @@ class _PeriodPickerState extends State<PeriodPicker> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          ThemeIcon(
                             days == 0 ? Icons.all_inclusive : Icons.calendar_today,
                             color: theme.colorScheme.onSurfaceVariant,
                             size: 20,
@@ -154,12 +155,12 @@ class _PeriodPickerState extends State<PeriodPicker> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      ThemeIcon(
                         Icons.keyboard_arrow_up,
                         color: theme.colorScheme.onSurfaceVariant,
                         size: 16,
                       ),
-                      Icon(
+                      ThemeIcon(
                         Icons.keyboard_arrow_down,
                         color: theme.colorScheme.onSurfaceVariant,
                         size: 16,

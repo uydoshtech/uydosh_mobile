@@ -5,6 +5,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class MessageBubble extends StatefulWidget {
 
@@ -133,7 +134,7 @@ class _MessageBubbleState extends State<MessageBubble>
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          ThemeIcon(
                             Icons.access_time,
                             size: 10,
                             color: textColor.withValues(alpha: 0.7),
@@ -276,7 +277,7 @@ class _MessageBubbleState extends State<MessageBubble>
   /// Single checkmark = sent, double checkmark = read by recipient
   Widget _buildCheckmarks() {
     final isReadByRecipient = widget.message.isReadByRecipient ?? false;
-    return Icon(
+    return ThemeIcon(
       isReadByRecipient ? Icons.done_all : Icons.check,
       size: 12,
       color: Colors.green.shade700,

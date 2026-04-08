@@ -8,6 +8,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class OutgoingConversationTile extends StatelessWidget {
 
@@ -116,7 +117,7 @@ class OutgoingConversationTile extends StatelessWidget {
                 // Time and user info
                 Row(
                   children: [
-                    Icon(
+                    ThemeIcon(
                       Icons.access_time,
                       size: 12,
                       color: secondaryTextColor,
@@ -167,7 +168,7 @@ class OutgoingConversationTile extends StatelessWidget {
                 ],
                 // Arrow icon
                 if (conversation.lastMessageAt != null)
-                  Icon(
+                  ThemeIcon(
                     Icons.arrow_forward_ios,
                     size: 16,
                     color: iconColor.withValues(alpha: 0.5),

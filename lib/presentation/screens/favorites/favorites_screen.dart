@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -435,7 +436,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.error_outline,
                     size: 80,
                     color: _getEmptyStateIconColor(),
@@ -486,7 +487,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.lock_outline,
                     size: 80,
                     color: _getEmptyStateIconColor(),

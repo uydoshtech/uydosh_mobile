@@ -6,6 +6,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Owner toolbar with view count and promote button for listing detail.
 class ListingDetailOwnerToolbar extends StatelessWidget {
@@ -67,7 +68,7 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
               },
               child: Row(
                 children: [
-                  Icon(
+                  ThemeIcon(
                     CupertinoIcons.eye,
                     size: 18,
                     color: ListingDetailThemeHelper.iconColor,
@@ -101,7 +102,7 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
                       color: ListingDetailThemeHelper.iconColor,
                     ),
                   )
-                : Icon(
+                : ThemeIcon(
                     ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
                         ? CupertinoIcons.arrow_down
                         : CupertinoIcons.arrow_up,

@@ -71,6 +71,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
@@ -1618,7 +1619,7 @@ L10n.get("feature_listing_error",
               Theme.of(context).appBarTheme.foregroundColor ??
               AppColors.textLight,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const ThemeIcon(Icons.arrow_back),
             onPressed: () {
               HapticFeedbackUtils.impact();
               Navigator.of(context).pop();
@@ -1864,7 +1865,7 @@ L10n.get("feature_listing_error",
             padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
             child: Row(
               children: [
-                Icon(
+                ThemeIcon(
                   Icons.view_in_ar,
                   color: ThemeState().isBlueTheme
                       ? BlueThemeColors.textPrimary
@@ -1877,7 +1878,7 @@ L10n.get("feature_listing_error",
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
-                Icon(
+                ThemeIcon(
                   Icons.chevron_right,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),

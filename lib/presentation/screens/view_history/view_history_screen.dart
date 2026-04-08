@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Screen showing listings the user has viewed.
 class ViewHistoryScreen extends StatefulWidget {
@@ -274,7 +275,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.error_outline,
                 size: 80,
                 color: _getEmptyStateIconColor(),
@@ -310,7 +311,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.lock_outline,
                 size: 80,
                 color: _getEmptyStateIconColor(),

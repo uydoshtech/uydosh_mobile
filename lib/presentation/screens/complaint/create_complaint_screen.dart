@@ -50,7 +50,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
           L10n.get("create_complaint"),
         ),
         leading: IconButton(
-          icon: const ThemeIcon(icon: Icons.arrow_back),
+          icon: const ThemeIcon(Icons.arrow_back),
           onPressed: () {
             HapticFeedbackUtils.impact();
             Navigator.of(context).pop();
@@ -145,7 +145,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        const ThemeIcon(
                           Icons.error_outline,
                           size: 64,
                           color: AppColors.error,

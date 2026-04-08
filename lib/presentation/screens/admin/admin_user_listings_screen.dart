@@ -6,6 +6,7 @@ import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminUserListingsScreen extends StatefulWidget {
   const AdminUserListingsScreen({
@@ -169,7 +170,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.error_outline,
             size: 64,
             color: Theme.of(context).colorScheme.error,

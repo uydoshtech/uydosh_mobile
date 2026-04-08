@@ -5,6 +5,7 @@ import "dart:ui" show ImageFilter;
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Photo carousel section for listing detail screen.
 class ListingDetailPhotoSection extends StatelessWidget {
@@ -82,7 +83,7 @@ class ListingDetailPhotoSection extends StatelessWidget {
                                     errorWidget: (context, url, error) =>
                                         Container(
                                       color: Colors.grey[300],
-                                      child: Icon(
+                                      child: ThemeIcon(
                                         Icons.image_not_supported,
                                         color: Colors.grey[600],
                                         size: 48,
@@ -119,7 +120,7 @@ class ListingDetailPhotoSection extends StatelessWidget {
                                           Colors.black.withValues(alpha: 0.6),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: const Icon(
+                                    child: const ThemeIcon(
                                       Icons.fullscreen,
                                       color: Colors.white,
                                       size: 20,

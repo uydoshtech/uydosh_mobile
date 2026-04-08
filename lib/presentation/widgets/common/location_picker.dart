@@ -6,6 +6,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Location picker - uses persistent scroll controller (from parent or own)
 /// so the wheel scrolls smoothly with sound. Same pattern as GenderPicker.
@@ -147,7 +148,7 @@ class _LocationPickerState extends State<LocationPicker> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.location_on, color: iconColor, size: 20),
+                      ThemeIcon(Icons.location_on, color: iconColor, size: 20),
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
@@ -173,7 +174,7 @@ class _LocationPickerState extends State<LocationPicker> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.location_on, color: iconColor, size: 20),
+                        ThemeIcon(Icons.location_on, color: iconColor, size: 20),
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
@@ -191,7 +192,7 @@ class _LocationPickerState extends State<LocationPicker> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          ThemeIcon(
                             Icons.location_on,
                             color:
                                 widget.useColoredIcons
@@ -235,12 +236,12 @@ class _LocationPickerState extends State<LocationPicker> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.keyboard_arrow_up,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 16,
                   ),
-                  Icon(
+                  ThemeIcon(
                     Icons.keyboard_arrow_down,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 16,

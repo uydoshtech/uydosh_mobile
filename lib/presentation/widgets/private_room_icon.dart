@@ -1,6 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class PrivateRoomIcon extends StatelessWidget {
   const PrivateRoomIcon({
@@ -23,7 +24,7 @@ class PrivateRoomIcon extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: _getPrivateRoomBorderColor(), width: 1.0),
       ),
-      child: Icon(
+      child: ThemeIcon(
         CupertinoIcons.lock_fill,
         color: _getPrivateRoomIconColor(),
         size: size,

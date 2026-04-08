@@ -2,6 +2,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class MessagesIconWithDot extends StatelessWidget {
   const MessagesIconWithDot({
@@ -39,7 +40,7 @@ class MessagesIconWithDot extends StatelessWidget {
       child: Stack(
         children: [
           IconButton(
-            icon: Icon(
+            icon: ThemeIcon(
               CupertinoIcons.bubble_left_bubble_right,
               color: iconColor,
               size: iconSize,

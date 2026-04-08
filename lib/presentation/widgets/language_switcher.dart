@@ -8,6 +8,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 // Utility class for language display names
 class LanguageDisplayHelper {
@@ -162,7 +163,7 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(CupertinoIcons.globe),
+                  const ThemeIcon(CupertinoIcons.globe),
                   const SizedBox(width: 8),
                   ListenableBuilder(
                     listenable: _languageState,

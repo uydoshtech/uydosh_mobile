@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A segmented control with pill-shaped buttons, matching the Period selector style.
 /// Used for metro stations, districts, time ranges, and similar single-selection lists.
@@ -76,7 +77,7 @@ class RotationSpinner<T> extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (isSelected) ...[
-                const Icon(Icons.check, size: 16, color: selectedTextColor),
+                const ThemeIcon(Icons.check, size: 16, color: selectedTextColor),
                 const SizedBox(width: 6),
               ],
               Text(

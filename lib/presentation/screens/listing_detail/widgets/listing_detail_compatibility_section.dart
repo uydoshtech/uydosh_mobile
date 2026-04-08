@@ -11,6 +11,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Data class for a compatibility match (same value).
 class CompatibilityMatch {
@@ -196,7 +197,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
         childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         title: Row(
           children: [
-            Icon(
+            ThemeIcon(
               ThemeState().isBlueTheme
                   ? CupertinoIcons.group_solid
                   : CupertinoIcons.group,
@@ -292,7 +293,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
+                          ThemeIcon(
                             _getLifestyleIcon(item.labelKey),
                             size: 20,
                             color: _getDescriptionTextColor(),
@@ -329,7 +330,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
+                          ThemeIcon(
                             _getLifestyleIcon(item.labelKey),
                             size: 20,
                             color: _getDescriptionTextColor(),
@@ -348,7 +349,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                                   ),
                                   WidgetSpan(
                                     alignment: PlaceholderAlignment.middle,
-                                    child: Icon(
+                                    child: ThemeIcon(
                                       Icons.compare_arrows,
                                       size: 16,
                                       color: _getDescriptionTextColor(),
@@ -385,7 +386,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                           HapticFeedbackUtils.impact();
                           onMessage();
                         },
-                        icon: Icon(
+                        icon: ThemeIcon(
                           Icons.chat_bubble_outline,
                           size: 18,
                           color: _getIconColor(),
@@ -414,7 +415,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                           HapticFeedbackUtils.impact();
                           onViewProfile();
                         },
-                        icon: Icon(
+                        icon: ThemeIcon(
                           Icons.person_outline,
                           size: 18,
                           color: _getIconColor(),

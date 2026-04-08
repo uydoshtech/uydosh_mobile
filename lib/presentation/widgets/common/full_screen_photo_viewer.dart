@@ -2,6 +2,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class FullScreenPhotoViewer extends StatefulWidget {
 
@@ -163,7 +164,7 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              ThemeIcon(
                                                 Icons.image_not_supported,
                                                 color: Colors.grey[600],
                                                 size: 64,
@@ -224,7 +225,7 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                           borderRadius:
                                               BorderRadius.circular(20),
                                         ),
-                                        child: const Icon(
+                                        child: const ThemeIcon(
                                           Icons.close,
                                           color: Colors.white,
                                           size: 24,
@@ -295,7 +296,7 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                       ),
                                       borderRadius: BorderRadius.circular(25),
                                     ),
-                                    child: const Icon(
+                                    child: const ThemeIcon(
                                       Icons.chevron_left,
                                       color: Colors.white,
                                       size: 32,
@@ -329,7 +330,7 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                       ),
                                       borderRadius: BorderRadius.circular(25),
                                     ),
-                                    child: const Icon(
+                                    child: const ThemeIcon(
                                       Icons.chevron_right,
                                       color: Colors.white,
                                       size: 32,

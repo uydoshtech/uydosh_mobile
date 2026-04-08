@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart"
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -281,7 +282,7 @@ class _AdminCategoryCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: Row(
                 children: [
-                  Icon(headerIcon, size: 24, color: onSurface),
+                  ThemeIcon(headerIcon, size: 24, color: onSurface),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -296,7 +297,7 @@ class _AdminCategoryCard extends StatelessWidget {
                   AnimatedRotation(
                     turns: expanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 200),
-                    child: Icon(
+                    child: ThemeIcon(
                       Icons.keyboard_arrow_down,
                       color: onSurface,
                     ),
@@ -363,7 +364,7 @@ class _AdminMenuRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Icon(icon, size: 24, color: iconColor),
+            ThemeIcon(icon, size: 24, color: iconColor),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -374,7 +375,7 @@ class _AdminMenuRow extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(
+            ThemeIcon(
               Icons.arrow_forward_ios,
               size: 16,
               color: theme.colorScheme.onSurfaceVariant,

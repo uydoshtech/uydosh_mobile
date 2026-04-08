@@ -5,6 +5,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Listing type picker - same pattern as LocationPicker: uses persistent scroll
 /// controller (from parent or own) so the wheel scrolls smoothly with sound.
@@ -133,7 +134,7 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      ThemeIcon(
                         Icons.people,
                         color: _getListingTypeColor(2),
                         size: 20,
@@ -156,7 +157,7 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      ThemeIcon(
                         Icons.home,
                         color: _getListingTypeColor(1),
                         size: 20,
@@ -180,7 +181,7 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        ThemeIcon(
                           Icons.remove_circle_outline,
                           color: _getListingTypeColor(0),
                           size: 20,
@@ -215,12 +216,12 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.keyboard_arrow_up,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 16,
                   ),
-                  Icon(
+                  ThemeIcon(
                     Icons.keyboard_arrow_down,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 16,

@@ -11,6 +11,7 @@ import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Metro line and station pickers section for the search bottom sheet.
 class SearchBottomSheetMetroSection extends StatelessWidget {
@@ -184,7 +185,7 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      ThemeIcon(
                         Icons.train,
                         color: searchFiltersState.selectedSubwayLine > 0
                             ? _getLineColor(
@@ -221,7 +222,7 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        ThemeIcon(
                           Icons.train,
                           color: _getLineColor(station.line),
                           size: 20,
@@ -247,7 +248,7 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                         ),
                         if (transferInfo != null) ...[
                           const SizedBox(width: 4),
-                          Icon(
+                          ThemeIcon(
                             Icons.train,
                             color: _getLineColor(
                               transferInfo["connectedStationLine"],

@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Shared widgets for displaying conversation/listing info in the messages inbox.
 /// Used by ConversationTile, OutgoingConversationTile, and GroupedConversationsList.
@@ -34,7 +35,7 @@ class ConversationAvatarContent extends StatelessWidget {
       );
     }
 
-    return Icon(Icons.person, color: iconColor);
+    return ThemeIcon(Icons.person, color: iconColor);
   }
 }
 
@@ -89,7 +90,7 @@ class ConversationLocationInfo extends StatelessWidget {
             if (hasLocation) ...[
               Row(
                 children: [
-                  const Icon(
+                  const ThemeIcon(
                     Icons.location_on,
                     color: AppColors.error,
                     size: 16,
@@ -177,7 +178,7 @@ class ConversationSubwayStationDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
+        ThemeIcon(
           Icons.train,
           color: _getLineColor(conversation.subwayStationLine ?? 1),
           size: 16,
@@ -221,7 +222,7 @@ class ConversationPriceDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.attach_money, color: Colors.green, size: 16),
+        const ThemeIcon(Icons.attach_money, color: Colors.green, size: 16),
         const SizedBox(width: 4),
         Expanded(
           child: Text(

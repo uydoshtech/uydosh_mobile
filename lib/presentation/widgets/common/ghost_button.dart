@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class GhostButton extends StatelessWidget {
   const GhostButton({
@@ -152,7 +153,7 @@ class GhostButtonFactory {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: iconColor ?? textColor, size: iconSize),
+          ThemeIcon(icon, color: iconColor ?? textColor, size: iconSize),
           const SizedBox(width: 8),
           Text(text),
         ],
@@ -212,7 +213,7 @@ class GhostButtonFactory {
       borderColor: borderColor,
       iconColor: iconColor,
       isOnboardingButton: isOnboardingButton,
-      child: Icon(icon, color: iconColor),
+      child: ThemeIcon(icon, color: iconColor),
     );
   }
 }

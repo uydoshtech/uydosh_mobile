@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ListingViewsStatsScreen extends StatefulWidget {
   const ListingViewsStatsScreen({
@@ -97,7 +98,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
           style: TextStyle(color: _getTextColor()),
         ),
         leading: IconButton(
-          icon: Icon(CupertinoIcons.back, color: _getIconColor()),
+          icon: ThemeIcon(CupertinoIcons.back, color: _getIconColor()),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -128,7 +129,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    ThemeIcon(
                       CupertinoIcons.exclamationmark_circle,
                       size: 48,
                       color: _getSecondaryTextColor(),
@@ -157,7 +158,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  ThemeIcon(
                     CupertinoIcons.eye,
                     size: 64,
                     color: _getSecondaryTextColor(),
@@ -198,7 +199,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
-                  leading: Icon(
+                  leading: ThemeIcon(
                     CupertinoIcons.eye,
                     color: _getIconColor(),
                     size: 24,

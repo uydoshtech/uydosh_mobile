@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ProfileSettingsSection extends StatelessWidget {
   const ProfileSettingsSection({
@@ -46,7 +47,7 @@ class ProfileSettingsSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.logout,
                 color: Theme.of(context).colorScheme.error,
                 size: 24,
@@ -62,7 +63,7 @@ class ProfileSettingsSection extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
+              ThemeIcon(
                 Icons.arrow_forward_ios,
                 color: Theme.of(context).colorScheme.error,
                 size: 16,
@@ -91,7 +92,7 @@ class ProfileSettingsSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.delete_forever,
                 color: errorColor,
                 size: 24,
@@ -107,7 +108,7 @@ class ProfileSettingsSection extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
+              ThemeIcon(
                 Icons.arrow_forward_ios,
                 color: errorColor,
                 size: 16,

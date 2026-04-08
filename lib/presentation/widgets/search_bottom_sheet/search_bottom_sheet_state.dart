@@ -503,7 +503,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.search,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 24,
@@ -520,7 +520,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(
+                    icon: ThemeIcon(
                       Icons.close,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),

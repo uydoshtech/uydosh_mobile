@@ -6,6 +6,7 @@ import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AuthWizardGoogleSignInPage extends StatelessWidget {
   const AuthWizardGoogleSignInPage({
@@ -93,12 +94,12 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                                     fit: BoxFit.cover,
                                     memCacheWidth: 120,
                                     memCacheHeight: 120,
-                                    placeholder: (context, url) => Icon(
+                                    placeholder: (context, url) => ThemeIcon(
                                       Icons.person,
                                       size: 30,
                                       color: _getOnboardingTextColor(context),
                                     ),
-                                    errorWidget: (context, url, error) => Icon(
+                                    errorWidget: (context, url, error) => ThemeIcon(
                                       Icons.person,
                                       size: 30,
                                       color: _getOnboardingTextColor(context),
@@ -107,7 +108,7 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                                 )
                               : CircleAvatar(
                                   radius: 30,
-                                  child: Icon(
+                                  child: ThemeIcon(
                                     Icons.person,
                                     size: 30,
                                     color: _getOnboardingTextColor(context),

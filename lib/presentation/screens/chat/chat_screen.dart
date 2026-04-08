@@ -37,6 +37,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ChatScreen extends StatefulWidget {
 
@@ -370,7 +371,7 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.error_outline,
             size: 64,
             color: Theme.of(context).colorScheme.error,
@@ -468,7 +469,7 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.chat_bubble_outline,
                 size: 64,
                 color: Theme.of(
@@ -631,12 +632,12 @@ class _ChatScreenState extends State<ChatScreen> {
           fit: BoxFit.cover,
           memCacheWidth: 48,
           memCacheHeight: 48,
-          placeholder: (context, url) => const Icon(Icons.person, size: 20),
-          errorWidget: (context, url, error) => const Icon(Icons.person, size: 20),
+          placeholder: (context, url) => const ThemeIcon(Icons.person, size: 20),
+          errorWidget: (context, url, error) => const ThemeIcon(Icons.person, size: 20),
         ),
       );
     }
-    return const Icon(Icons.person, size: 20);
+    return const ThemeIcon(Icons.person, size: 20);
   }
 
   int? _getOtherUserIdFromMessages() {

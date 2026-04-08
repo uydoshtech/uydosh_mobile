@@ -55,7 +55,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
           },
         ),
         leading: IconButton(
-          icon: const ThemeIcon(icon: Icons.arrow_back),
+          icon: const ThemeIcon(Icons.arrow_back),
           onPressed: () {
             HapticFeedbackUtils.impact();
             Navigator.of(context).pop();
@@ -127,7 +127,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
               return Card(
                 child: ListTile(
                   leading: const ThemeIcon(
-                    icon: Icons.report_outlined,
+                    Icons.report_outlined,
                     size: 28,
                     color: AppColors.error,
                   ),
@@ -232,7 +232,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       children: [
         Row(
           children: [
-            const Icon(
+            const ThemeIcon(
               Icons.calendar_today_outlined,
               size: 16,
               color: AppColors.textGrey,
@@ -289,7 +289,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+          const ThemeIcon(Icons.error_outline, size: 64, color: AppColors.error),
           const SizedBox(height: 16),
           Text(
             message,

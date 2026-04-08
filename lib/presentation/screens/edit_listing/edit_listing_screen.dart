@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class EditListingScreen extends StatefulWidget {
 
@@ -546,7 +547,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
         foregroundColor:
             theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
         leading: IconButton(
-          icon: Icon(
+          icon: ThemeIcon(
             Icons.arrow_back,
             color:
                 theme.appBarTheme.foregroundColor ??
@@ -977,7 +978,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                                   horizontal: 12,
                                                   vertical: 16,
                                                 ),
-                                            prefixIcon: Icon(
+                                            prefixIcon: ThemeIcon(
                                               CupertinoIcons.calendar,
                                               size: 22,
                                               color:
@@ -1033,7 +1034,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
+                                  ThemeIcon(
                                     Icons.lock_outline,
                                     color:
                                         _isPrivateRoom
@@ -1149,7 +1150,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     ),
                                   );
                                 },
-                                icon: const Icon(Icons.view_in_ar),
+                                icon: const ThemeIcon(Icons.view_in_ar),
                                 label: Text(L10n.get("add_room_scan_3d")),
                               ),
                             ),

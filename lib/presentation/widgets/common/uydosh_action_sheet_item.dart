@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable action sheet / bottom sheet list tile with optional icon and title.
 /// Used for modal action menus (e.g. admin complaint status).
@@ -17,7 +18,7 @@ class UydoshActionSheetItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: icon != null ? Icon(icon) : null,
+      leading: icon != null ? ThemeIcon(icon) : null,
       title: title,
       onTap: onTap,
     );

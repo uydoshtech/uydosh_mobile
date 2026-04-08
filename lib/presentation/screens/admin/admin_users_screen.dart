@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_user_detail_screen.dart
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -222,7 +223,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.error_outline,
             size: 64,
             color: Theme.of(context).colorScheme.error,
@@ -369,7 +370,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             ],
                           ),
                         ),
-                        Icon(
+                        ThemeIcon(
                           Icons.arrow_forward_ios,
                           size: 16,
                           color:
@@ -427,7 +428,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                         padding: const EdgeInsets.only(top: 4),
                         child: Row(
                           children: [
-                            Icon(
+                            ThemeIcon(
                               Icons.block,
                               color: Theme.of(context).colorScheme.error,
                               size: 16,

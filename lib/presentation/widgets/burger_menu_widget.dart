@@ -32,6 +32,7 @@ import "package:uy_dosh/presentation/screens/view_history/view_history_screen.da
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _BurgerMenuProfileData {
@@ -867,12 +868,12 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
               ),
           errorWidget:
               (context, url, error) =>
-                  Icon(Icons.person, color: _getBorderColor(), size: 40),
+                  ThemeIcon(Icons.person, color: _getBorderColor(), size: 40),
         ),
       );
     }
 
     // Fallback to standard person icon
-    return Icon(Icons.person, color: _getBorderColor(), size: 40);
+    return ThemeIcon(Icons.person, color: _getBorderColor(), size: 40);
   }
 }

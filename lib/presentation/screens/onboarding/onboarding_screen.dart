@@ -13,6 +13,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -423,7 +424,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 Positioned(
                   bottom: 20,
                   left: 20,
-                  child: Icon(
+                  child: ThemeIcon(
                     Icons.home,
                     color: houseIconColor,
                     size: 60,
@@ -447,7 +448,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         ),
                       ],
                     ),
-                    child: Icon(
+                    child: ThemeIcon(
                       Icons.search,
                       color:
                           onboardingColors
@@ -501,7 +502,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: const ThemeIcon(
                       Icons.favorite,
                       color:
                           AppColors
@@ -543,7 +544,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   children: [
                     // Main train icon
                     Center(
-                      child: Icon(page.icon, size: 120, color: page.color),
+                      child: ThemeIcon(page.icon, size: 120, color: page.color),
                     ),
                     // Train tracks (subtle background)
                     Positioned(
@@ -585,7 +586,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   width: 2,
                 ),
               ),
-              child: Icon(page.icon, size: 90, color: page.color),
+              child: ThemeIcon(page.icon, size: 90, color: page.color),
             ),
           );
         },
@@ -632,7 +633,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         borderRadius: BorderRadius.circular(60),
         border: Border.all(color: page.color.withValues(alpha: 0.3), width: 2),
       ),
-      child: Icon(page.icon, size: 60, color: page.color),
+      child: ThemeIcon(page.icon, size: 60, color: page.color),
     );
   }
 

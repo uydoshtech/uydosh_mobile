@@ -12,6 +12,7 @@ import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class PhotoUploader extends StatefulWidget {
 
@@ -189,7 +190,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     horizontal: 24.0,
                     vertical: 16.0,
                   ),
-                  leading: const Icon(
+                  leading: const ThemeIcon(
                     Icons.camera_alt_outlined,
                     size: 30, // Increased from 20 to 30 (1.5x)
                   ),
@@ -211,7 +212,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     horizontal: 24.0,
                     vertical: 16.0,
                   ),
-                  leading: const Icon(
+                  leading: const ThemeIcon(
                     Icons.photo_library_outlined,
                     size: 30, // Increased from 20 to 30 (1.5x)
                   ),
@@ -382,7 +383,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                               color: theme.colorScheme.primary,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(
+                            child: const ThemeIcon(
                               Icons.add,
                               color: Colors.white,
                               size: 20,
@@ -511,7 +512,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                       color: ThemeState().isBlueTheme
                           ? BlueThemeColors.surface
                           : Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: Icon(
+                      child: ThemeIcon(
                         Icons.broken_image,
                         color: Theme.of(
                           context,
@@ -591,7 +592,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                               ),
                             ),
                           )
-                          : const Icon(
+                          : const ThemeIcon(
                             Icons.close,
                             color: Colors.white,
                             size: 16,
@@ -647,7 +648,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     color: ThemeState().isBlueTheme
                         ? BlueThemeColors.surface
                         : Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: Icon(
+                    child: ThemeIcon(
                       Icons.broken_image,
                       color: Theme.of(
                         context,
@@ -672,7 +673,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     color: Colors.red.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close, color: Colors.white, size: 16),
+                  child: const ThemeIcon(Icons.close, color: Colors.white, size: 16),
                 ),
               ),
             ),

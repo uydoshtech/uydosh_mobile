@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
   const AdminUserDetailScreen({required this.user, super.key});
@@ -50,7 +51,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const ThemeIcon(Icons.arrow_back),
             onPressed: _popWithResult,
           ),
         ),
@@ -118,7 +119,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             if (blocked) ...[
               Row(
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.block,
                     color: Theme.of(context).colorScheme.error,
                     size: 24,
@@ -160,7 +161,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                           width: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.lock_open),
+                      : const ThemeIcon(Icons.lock_open),
                   label: Text(
                     L10n.get("admin_user_detail_unblock"),
                   ),
@@ -177,7 +178,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                           width: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.block),
+                      : const ThemeIcon(Icons.block),
                   label: Text(
                     L10n.get("admin_user_detail_block"),
                   ),
@@ -228,7 +229,7 @@ L10n.get("admin_user_detail_block_until"),
 : L10n.get("admin_user_detail_block_permanent"),
                   ),
                   trailing: IconButton(
-                    icon: const Icon(Icons.calendar_today),
+                    icon: const ThemeIcon(Icons.calendar_today),
                     onPressed: () async {
                       final date = await showDatePicker(
                         context: context,
@@ -393,11 +394,11 @@ L10n.get("admin_user_detail_block_permanent"),
       child: Column(
         children: [
           ListTile(
-            leading: const Icon(Icons.list_alt),
+            leading: const ThemeIcon(Icons.list_alt),
             title: Text(
               L10n.get("admin_user_detail_view_listings"),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            trailing: const ThemeIcon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -412,11 +413,11 @@ L10n.get("admin_user_detail_block_permanent"),
           ),
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.report_problem),
+            leading: const ThemeIcon(Icons.report_problem),
             title: Text(
               L10n.get("admin_user_detail_view_complaints"),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            trailing: const ThemeIcon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(

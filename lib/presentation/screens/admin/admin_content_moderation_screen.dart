@@ -5,6 +5,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminContentModerationScreen extends StatefulWidget {
   const AdminContentModerationScreen({super.key});
@@ -218,7 +219,7 @@ class _AdminContentModerationScreenState
                   height: 24,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(Icons.blur_on_outlined),
+              : const ThemeIcon(Icons.blur_on_outlined),
         ),
         const SizedBox(height: 16),
         SwitchListTile(
@@ -238,7 +239,7 @@ class _AdminContentModerationScreenState
                   height: 24,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(Icons.auto_awesome_outlined),
+              : const ThemeIcon(Icons.auto_awesome_outlined),
         ),
         const SizedBox(height: 16),
         SwitchListTile(
@@ -258,7 +259,7 @@ class _AdminContentModerationScreenState
                   height: 24,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(Icons.view_in_ar),
+              : const ThemeIcon(Icons.view_in_ar),
         ),
       ],
     );

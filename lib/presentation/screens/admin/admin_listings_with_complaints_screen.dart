@@ -10,6 +10,7 @@ import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminListingsWithComplaintsScreen extends StatefulWidget {
   const AdminListingsWithComplaintsScreen({super.key});
@@ -328,7 +329,7 @@ class _AdminListingsWithComplaintsScreenState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ThemeIcon(
             Icons.error_outline,
             size: 64,
             color: Theme.of(context).colorScheme.error,
@@ -390,7 +391,7 @@ class _AdminListingsWithComplaintsScreenState
               borderRadius: BorderRadius.circular(12),
             ),
             child: ListTile(
-              leading: Icon(
+              leading: ThemeIcon(
                 Icons.home_work_outlined,
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -414,7 +415,7 @@ class _AdminListingsWithComplaintsScreenState
                   if (group.latestDate != null) const SizedBox.shrink(),
                 ],
               ),
-              trailing: Icon(
+              trailing: ThemeIcon(
                 Icons.arrow_forward_ios,
                 size: 16,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -478,7 +479,7 @@ class _AdminListingsWithComplaintsScreenState
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Icon(
+              child: ThemeIcon(
                 Icons.circle,
                 size: 6,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -5,6 +5,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Gender picker - same pattern as LocationPicker: uses persistent scroll
 /// controller (from parent or own) so the wheel scrolls smoothly with sound.
@@ -132,7 +133,7 @@ class _GenderPickerState extends State<GenderPicker> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.male, color: _getGenderColor(1), size: 22),
+                      ThemeIcon(Icons.male, color: _getGenderColor(1), size: 22),
                       const SizedBox(width: 6),
                       Flexible(
                         child: L10n.text(
@@ -151,7 +152,7 @@ class _GenderPickerState extends State<GenderPicker> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.female, color: _getGenderColor(2), size: 22),
+                      ThemeIcon(Icons.female, color: _getGenderColor(2), size: 22),
                       const SizedBox(width: 6),
                       Flexible(
                         child: L10n.text(
@@ -171,7 +172,7 @@ class _GenderPickerState extends State<GenderPicker> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        ThemeIcon(
                           Icons.remove_circle_outline,
                           color: _getGenderColor(0),
                           size: 20,
@@ -206,12 +207,12 @@ class _GenderPickerState extends State<GenderPicker> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.keyboard_arrow_up,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 16,
                   ),
-                  Icon(
+                  ThemeIcon(
                     Icons.keyboard_arrow_down,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 16,

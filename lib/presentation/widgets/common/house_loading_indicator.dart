@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A loading indicator that displays a rotating house icon
 /// Perfect for real estate and housing apps when loading listings or responses
@@ -107,7 +108,7 @@ class _HouseLoadingIndicatorState extends State<HouseLoadingIndicator>
       builder: (context, child) {
         return Transform.rotate(
           angle: _rotationAnimation.value * 2 * 3.14159, // Full 360° rotation
-          child: Icon(Icons.home, size: effectiveSize, color: effectiveColor),
+          child: ThemeIcon(Icons.home, size: effectiveSize, color: effectiveColor),
         );
       },
     );

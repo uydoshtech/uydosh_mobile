@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Widget for switching between different app themes
 class ThemeSwitcherWidget extends StatefulWidget {
@@ -187,7 +188,7 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
               width: isSelected ? 2 : 1,
             ),
           ),
-          child: Icon(
+          child: ThemeIcon(
             Icons.palette,
             color:
                 themeName == AppTheme.lightTheme ? Colors.black : Colors.white,
@@ -231,7 +232,7 @@ class ThemeSwitcherButton extends StatelessWidget {
         final actualCurrentTheme = currentTheme ?? themeState.currentTheme;
 
         return IconButton(
-          icon: const Icon(Icons.palette),
+          icon: const ThemeIcon(Icons.palette),
           onPressed: () {
             _showThemeDialog(context, actualCurrentTheme);
           },

@@ -32,6 +32,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AuthWizardScreen extends StatefulWidget {
   const AuthWizardScreen({
@@ -1034,7 +1035,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: Icon(
+                        icon: ThemeIcon(
                           Icons.close,
                           color: _getOnboardingTextColor(context),
                         ),

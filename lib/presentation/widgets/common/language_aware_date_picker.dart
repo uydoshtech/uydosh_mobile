@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class LanguageAwareDatePicker {
   static Future<DateTime?> showDatePicker({
@@ -247,7 +248,7 @@ class _LanguageAwareDatePickerDialogState
                           )
                           ? _previousMonth
                           : null,
-                  icon: Icon(
+                  icon: ThemeIcon(
                     Icons.chevron_left,
                     color:
                         currentMonth.isAfter(
@@ -285,7 +286,7 @@ class _LanguageAwareDatePickerDialogState
                           )
                           ? _nextMonth
                           : null,
-                  icon: Icon(
+                  icon: ThemeIcon(
                     Icons.chevron_right,
                     color:
                         currentMonth.isBefore(

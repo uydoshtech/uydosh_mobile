@@ -504,7 +504,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.home, size: 64, color: _getHomeIconColor()),
+          ThemeIcon(Icons.home, size: 64, color: _getHomeIconColor()),
           const SizedBox(height: 16),
           L10n.text(
             "welcome_title",
@@ -529,7 +529,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off, size: 64, color: _getHomeIconColor()),
+          ThemeIcon(Icons.search_off, size: 64, color: _getHomeIconColor()),
           const SizedBox(height: 16),
           L10n.text(
             "no_search_results",
@@ -693,7 +693,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           Theme.of(context).appBarTheme.foregroundColor ?? Colors.white,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
+        icon: const ThemeIcon(Icons.arrow_back),
         onPressed: () {
           HapticFeedbackUtils.impact();
           if (Navigator.of(context).canPop()) {

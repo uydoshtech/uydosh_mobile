@@ -4,6 +4,7 @@ import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable component for displaying listing type information
 /// Handles both badge display and utility functions for listing types
@@ -41,7 +42,7 @@ class ListingTypeBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (showIcon) ...[
-            Icon(icon, color: color, size: 18),
+            ThemeIcon(icon, color: color, size: 18),
             if (showText) const SizedBox(width: 4),
           ],
           if (showText)
@@ -211,7 +212,7 @@ class ListingTypeDropdown extends StatelessWidget {
               value: type["code"],
               child: Row(
                 children: [
-                  Icon(type["icon"], color: type["color"], size: 20),
+                  ThemeIcon(type["icon"], color: type["color"], size: 20),
                   const SizedBox(width: 8),
                   Text(type["text"]),
                 ],

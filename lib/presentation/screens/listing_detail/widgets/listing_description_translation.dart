@@ -14,6 +14,7 @@ import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 enum _TranslationTarget { original, en, ru, uz }
 
@@ -190,7 +191,7 @@ class _ListingDescriptionTranslationState
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  ThemeIcon(
                     Icons.phone,
                     size: (widget.textStyle.fontSize ?? 16) + 1,
                     color: linkColor,
@@ -449,7 +450,7 @@ class _ListingDescriptionTranslationState
               border: Border.all(color: borderColor, width: 1),
               color: fillColor,
             ),
-            child: Icon(
+            child: ThemeIcon(
               Icons.article_outlined,
               size: 16,
               color: iconColor,

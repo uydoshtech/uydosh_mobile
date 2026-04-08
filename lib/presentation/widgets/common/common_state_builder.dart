@@ -5,6 +5,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class CommonStateBuilder extends StatelessWidget {
   const CommonStateBuilder({
@@ -112,7 +113,7 @@ class CommonStateBuilder extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(50),
             ),
-            child: const Icon(
+            child: const ThemeIcon(
               Icons.error_outline,
               size: 48,
               color: AppColors.textLight,
@@ -152,7 +153,7 @@ class CommonStateBuilder extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: AppColors.textGrey400),
+          ThemeIcon(icon, size: 64, color: AppColors.textGrey400),
           const SizedBox(height: 16),
           Text(
             message,

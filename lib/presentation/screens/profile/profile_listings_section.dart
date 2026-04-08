@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ProfileListingsSection extends StatelessWidget {
   const ProfileListingsSection({
@@ -141,7 +142,7 @@ class ProfileListingsSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
         child: Row(
           children: [
-            Icon(
+            ThemeIcon(
               icon,
               color:
                   ThemeState().isBlueTheme
@@ -160,7 +161,7 @@ class ProfileListingsSection extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(
+            ThemeIcon(
               Icons.arrow_forward_ios,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
               size: 16,
@@ -187,7 +188,7 @@ class ProfileListingsSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.admin_panel_settings,
                 color:
                     ThemeState().isBlueTheme
@@ -206,7 +207,7 @@ class ProfileListingsSection extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
+              ThemeIcon(
                 Icons.arrow_forward_ios,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 16,
@@ -240,7 +241,7 @@ class ProfileListingsSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
-              Icon(
+              ThemeIcon(
                 Icons.home_work,
                 color:
                     ThemeState().isBlueTheme
@@ -259,7 +260,7 @@ class ProfileListingsSection extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
+              ThemeIcon(
                 Icons.arrow_forward_ios,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 16,

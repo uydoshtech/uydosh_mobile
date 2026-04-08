@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable card with a list tile (icon, title, optional trailing arrow).
 /// Used for section navigation (e.g. admin panel).
@@ -30,14 +31,14 @@ class UydoshCardTile extends StatelessWidget {
         borderRadius: borderRadius ?? BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: Icon(
+        leading: ThemeIcon(
           icon,
           color: isDark ? Colors.white : Colors.black,
         ),
         title: title,
         trailing:
             onTap != null
-                ? Icon(
+                ? ThemeIcon(
                   Icons.arrow_forward_ios,
                   size: 16,
                   color: theme.colorScheme.onSurfaceVariant,

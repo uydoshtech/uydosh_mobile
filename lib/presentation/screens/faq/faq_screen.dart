@@ -6,6 +6,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class FaqScreen extends StatefulWidget {
   const FaqScreen({super.key});
@@ -271,7 +272,7 @@ class _FaqScreenState extends State<FaqScreen> {
                   AnimatedRotation(
                     turns: isExpanded ? 0.5 : 0.0,
                     duration: const Duration(milliseconds: 200),
-                    child: Icon(
+                    child: ThemeIcon(
                       Icons.keyboard_arrow_down,
                       color: _getIconColor(),
                     ),

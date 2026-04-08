@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ChatMessageInput extends StatelessWidget {
 
@@ -71,7 +72,7 @@ class ChatMessageInput extends StatelessWidget {
                             ),
                           ),
                         )
-                        : Icon(Icons.send, color: sendButtonColor),
+                        : ThemeIcon(Icons.send, color: sendButtonColor),
               ),
             ],
           ),

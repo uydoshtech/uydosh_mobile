@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AppRouter {
   /// Global key for the profile icon in the app bar, used by the search tutorial.
@@ -261,7 +262,7 @@ class _MainNavigationState extends State<MainNavigation>
                       final themeState = ThemeState();
                       final iconColor =
                           themeState.isBlueTheme ? Colors.white : Colors.black;
-                      return Icon(
+                      return ThemeIcon(
                         Icons.person,
                         color: iconColor,
                         size: 22,
@@ -520,7 +521,7 @@ class _MainNavigationState extends State<MainNavigation>
                                   }
                                 });
                           },
-                          icon: Icon(
+                          icon: ThemeIcon(
                             Icons.person,
                             color: borderColor, // Same color as border
                             size: 24,
@@ -565,7 +566,7 @@ class _MainNavigationState extends State<MainNavigation>
                             HapticFeedbackUtils.impact();
                             context.pushProfile();
                           },
-                          icon: Icon(Icons.person, color: iconColor, size: 28),
+                          icon: ThemeIcon(Icons.person, color: iconColor, size: 28),
                           tooltip: L10n.get("profile"),
                         ),
                         if (needsCompletion)
