@@ -16,6 +16,7 @@ class ListingFormMetroSection extends StatelessWidget {
     required this.selectedSubwayLine,
     required this.selectedStationIndex,
     required this.currentStations,
+    required this.isLoadingStations,
     required this.metroLineScrollController,
     required this.metroStationScrollController,
     required this.onLineChanged,
@@ -27,6 +28,7 @@ class ListingFormMetroSection extends StatelessWidget {
   final int selectedSubwayLine;
   final int selectedStationIndex;
   final List<SubwayStation> currentStations;
+  final bool isLoadingStations;
   final FixedExtentScrollController? metroLineScrollController;
   final FixedExtentScrollController? metroStationScrollController;
   final void Function(int lineIndex) onLineChanged;
@@ -159,7 +161,54 @@ class ListingFormMetroSection extends StatelessWidget {
   }
 
   Widget _buildStationPicker(BuildContext context) {
-    if (selectedSubwayLine > 0 && currentStations.isNotEmpty) {
+    if (selectedSubwayLine <= 0) {
+      return _buildStationPlaceholder(
+        context,
+        text: L10n.get("select_metro_line_title"),
+      );
+    }
+
+    if (isLoadingStations) {
+      return _buildStationPlaceholder(
+        context,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              L10n.get("loading"),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: ThemeState().isLightTheme
+                    ? Colors.black.withOpacity(0.7)
+                    : Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (currentStations.isEmpty) {
+      return _buildStationPlaceholder(
+        context,
+        text: L10n.get("select_metro_line_title"),
+      );
+    }
+
+    if (currentStations.isNotEmpty) {
       return Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
@@ -241,6 +290,17 @@ class ListingFormMetroSection extends StatelessWidget {
       );
     }
 
+    return _buildStationPlaceholder(
+      context,
+      text: L10n.get("select_metro_line_title"),
+    );
+  }
+
+  Widget _buildStationPlaceholder(
+    BuildContext context, {
+    String? text,
+    Widget? child,
+  }) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
@@ -251,22 +311,24 @@ class ListingFormMetroSection extends StatelessWidget {
       ),
       height: 80,
       child: Center(
-        child: Text(
-          L10n.get("select_metro_line_title"),
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: ThemeState().isLightTheme
-                ? Colors.black.withOpacity(0.7)
-                : Theme.of(context)
-                    .colorScheme
-                    .onSurfaceVariant
-                    .withOpacity(0.7),
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
+        child:
+            child ??
+            Text(
+              text ?? "",
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: ThemeState().isLightTheme
+                    ? Colors.black.withOpacity(0.7)
+                    : Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
       ),
     );
   }

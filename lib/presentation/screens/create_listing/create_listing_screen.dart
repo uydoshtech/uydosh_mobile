@@ -558,6 +558,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           selectedSubwayLine: _selectedSubwayLine,
           selectedStationIndex: _selectedStationIndex,
           currentStations: _currentStations,
+          isLoadingStations: _isLoadingStations,
           metroLineScrollController: _metroLineScrollController,
           metroStationScrollController: _metroStationScrollController,
           onLineChanged: (index) {
