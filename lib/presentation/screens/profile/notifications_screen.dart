@@ -126,13 +126,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         children: [
           resolvedLeading!,
           const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.15,
-              color: c,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.15,
+                color: c,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
