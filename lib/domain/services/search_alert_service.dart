@@ -144,14 +144,14 @@ class SearchAlertService implements ISearchAlertService {
   @override
   Future<bool> deleteAlert({required int alertId}) async {
     try {
-      await _oauthApiClient.delete<Map<String, dynamic>, _EmptyRequest>(
+      await _oauthApiClient.delete<bool, _EmptyRequest>(
         "/users/me/search-alerts/$alertId",
-        (json) => json as Map<String, dynamic>,
+        (_) => true,
         data: _EmptyRequest(),
       );
       return true;
     } on DioException catch (e) {
-      // Backend returns 204; Dio may treat empty body as null; treat 204 as ok.
+      // Backend returns 204; treat it as ok.
       if (e.response?.statusCode == 204) return true;
       logger.d("SearchAlertService: delete failed: $e");
       return false;
