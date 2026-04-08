@@ -1918,7 +1918,9 @@ L10n.get("feature_listing_error",
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 36.0),
+                // Tight top: global [CardTheme.margin] is all(8); photo [ListingDetailPhotoSection]
+                // is wrapped with zero top margin so the carousel sits closer to the app bar.
+                padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 36.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1936,13 +1938,20 @@ L10n.get("feature_listing_error",
                     // Photo carousel (own tile); type / gender / price in a separate tile below
                     if (listingDetail.photos != null &&
                         listingDetail.photos!.isNotEmpty) ...[
-                      ListingDetailPhotoSection(
-                        photos: listingDetail.photos!,
-                        orderedPhotos: _getOrderedPhotos(listingDetail.photos!)
-                            .cast<Photo>(),
-                        pageController: _pageController,
-                        buildPhotoUrl: _buildPhotoUrl,
-                        onPhotoTap: _openFullScreenPhotoViewer,
+                      Theme(
+                        data: Theme.of(context).copyWith(
+                          cardTheme: Theme.of(context).cardTheme.copyWith(
+                            margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                          ),
+                        ),
+                        child: ListingDetailPhotoSection(
+                          photos: listingDetail.photos!,
+                          orderedPhotos: _getOrderedPhotos(listingDetail.photos!)
+                              .cast<Photo>(),
+                          pageController: _pageController,
+                          buildPhotoUrl: _buildPhotoUrl,
+                          onPhotoTap: _openFullScreenPhotoViewer,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       _metaBadgesTile(listingDetail),

@@ -29,7 +29,7 @@ class ListingDetailPhotoSection extends StatelessWidget {
       width: double.infinity,
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(5, 10, 5, 5),
+          padding: const EdgeInsets.fromLTRB(5, 6, 5, 5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
