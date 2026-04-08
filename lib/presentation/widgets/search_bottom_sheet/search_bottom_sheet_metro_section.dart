@@ -41,9 +41,6 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
           child: TutorialTargetWrapper(
             key: metroLineTutorialKey,
             child: Container(
-              key: ValueKey(
-                "metro_line_picker_${searchFiltersState.selectedLocationIndex}",
-              ),
               decoration: BoxDecoration(
                 color: ThemeState().isBlueTheme
                     ? BlueThemeColors.surface

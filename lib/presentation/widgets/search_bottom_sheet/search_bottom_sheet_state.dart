@@ -7,7 +7,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   final GlobalKey<TutorialTargetWrapperState> _metroStationTutorialKey =
       GlobalKey<TutorialTargetWrapperState>();
   List<SubwayStation> _currentStations = [];
-  final List<Location> _currentLocations = [];
   FixedExtentScrollController? _stationPickerController;
   FixedExtentScrollController? _metroLineScrollController;
   FixedExtentScrollController? _locationScrollController;
@@ -32,9 +31,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     _metroLineScrollController = FixedExtentScrollController(
       initialItem: _searchFiltersState.selectedSubwayLine,
     );
-    _locationScrollController = FixedExtentScrollController(
-      initialItem: _getInitialLocationItem(),
-    );
+    // Position is synced in [LocationPicker] once locations load (controller
+    // is created before the async locations list exists).
+    _locationScrollController = FixedExtentScrollController();
 
     // Initialize blink timer
     _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
@@ -194,22 +193,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     return null;
   }
 
-  int _getInitialLocationItem() {
-    // If no location is selected, return 0 (first item: "Select location")
-    if (_searchFiltersState.selectedLocationIndex <= 0) {
-      return 0;
-    }
-
-    // Find the index of the selected location ID in the wheel picker
-    final selectedLocationId = _searchFiltersState.selectedLocationIndex;
-    final locationIndex = _currentLocations.indexWhere(
-      (location) => location.id == selectedLocationId,
-    );
-
-    // Return the wheel picker index (0 = "Select location", 1 = first location, etc.)
-    return locationIndex >= 0 ? locationIndex + 1 : 0;
-  }
-
   int _getLocationIndexFromId(int locationId, List<Location> locations) {
     // If no location is selected, return -1 (unselected)
     if (locationId <= 0) {
@@ -300,6 +283,21 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   /// Resets all metro-related filters (line and station) to their initial state
   /// and forces a rebuild of the wheel pickers to ensure proper visual reset
   void _resetMetroPickers() {
+    void syncPickerScrollToStart() {
+      if (!mounted) return;
+      final lineCtrl = _metroLineScrollController;
+      if (lineCtrl != null && lineCtrl.hasClients && lineCtrl.selectedItem != 0) {
+        lineCtrl.jumpToItem(0);
+      }
+      final stationCtrl = _stationPickerController;
+      if (stationCtrl != null &&
+          stationCtrl.hasClients &&
+          stationCtrl.selectedItem != 0) {
+        stationCtrl.jumpToItem(0);
+      }
+    }
+
+    syncPickerScrollToStart();
     setState(() {
       _searchFiltersState.setSubwayLine(0);
       _searchFiltersState.setStationIndex(0);
@@ -308,6 +306,19 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     });
     _resetWheelPickerControllers();
     _forceRebuildWheelPickers();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      syncPickerScrollToStart();
+    });
+  }
+
+  /// Clears metro only when the user had a line/station active — avoids flicker
+  /// while scrolling the district wheel with metro already at default.
+  void _resetMetroPickersIfNeeded() {
+    if (_searchFiltersState.selectedSubwayLine > 0 ||
+        _searchFiltersState.selectedStationId > 0 ||
+        _currentStations.isNotEmpty) {
+      _resetMetroPickers();
+    }
   }
 
   void _forceRebuildWheelPickers() {
@@ -362,6 +373,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   }
 
   void _onStationsLoaded(List<SubwayStation> stations) {
+    if (_searchFiltersState.selectedSubwayLine <= 0) {
+      return;
+    }
     logger.d(
       "DEBUG: _onStationsLoaded called with ${stations.length} stations",
     );
@@ -572,7 +586,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                 }
                               });
                             },
-                            onMetroReset: _resetMetroPickers,
+                            onMetroReset: _resetMetroPickersIfNeeded,
                           ),
                           const SizedBox(height: 8),
                           Center(

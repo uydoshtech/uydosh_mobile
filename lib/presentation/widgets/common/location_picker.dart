@@ -55,32 +55,68 @@ class LocationPicker extends StatefulWidget {
 class _LocationPickerState extends State<LocationPicker> {
   FixedExtentScrollController? _ownScrollController;
 
-  int get _pickerInitialItem => widget.selectedLocationIndex + 1;
+  int get _pickerInitialItem {
+    if (widget.locations.isEmpty) return 0;
+    final maxWheelIndex = widget.locations.length;
+    return (widget.selectedLocationIndex + 1).clamp(0, maxWheelIndex);
+  }
 
   FixedExtentScrollController get _effectiveController {
     if (widget.scrollController != null) {
       return widget.scrollController!;
     }
     _ownScrollController ??= FixedExtentScrollController(
-      initialItem: _pickerInitialItem.clamp(0, 999),
+      initialItem: _pickerInitialItem,
     );
     return _ownScrollController!;
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncExternalScrollToSelection();
+    });
+  }
+
+  /// Parent-owned controllers are often created before [locations] exist; align
+  /// scroll offset with [selectedLocationIndex] once the wheel is mounted.
+  void _syncExternalScrollToSelection() {
+    if (!mounted) return;
+    final c = widget.scrollController;
+    if (c == null || !c.hasClients || widget.locations.isEmpty) return;
+    final target = _pickerInitialItem;
+    if (c.selectedItem != target) {
+      c.jumpToItem(target);
+    }
+  }
+
+  @override
   void didUpdateWidget(LocationPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.scrollController == null &&
-        oldWidget.selectedLocationIndex != widget.selectedLocationIndex &&
-        (_ownScrollController?.hasClients ?? false)) {
-      final target = _pickerInitialItem.clamp(0, 999);
-      if (target != _ownScrollController!.selectedItem) {
-        _ownScrollController!.animateToItem(
-          target,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-        );
+    if (widget.scrollController == null) {
+      final locationsLengthChanged =
+          oldWidget.locations.length != widget.locations.length;
+      if ((oldWidget.selectedLocationIndex != widget.selectedLocationIndex ||
+              locationsLengthChanged) &&
+          (_ownScrollController?.hasClients ?? false)) {
+        final maxIdx =
+            widget.locations.isEmpty ? 0 : widget.locations.length;
+        final target = (widget.selectedLocationIndex + 1).clamp(0, maxIdx);
+        if (target != _ownScrollController!.selectedItem) {
+          _ownScrollController!.animateToItem(
+            target,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+          );
+        }
       }
+    } else if (oldWidget.selectedLocationIndex !=
+            widget.selectedLocationIndex ||
+        oldWidget.locations.length != widget.locations.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _syncExternalScrollToSelection();
+      });
     }
   }
 
