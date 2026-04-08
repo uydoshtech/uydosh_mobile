@@ -2105,6 +2105,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search => 'Search';
 
   @override
+  String get search_alert_notify_me => 'Notify me';
+
+  @override
+  String get search_alert_login_required =>
+      'Sign in to get notifications for this search.';
+
+  @override
+  String get search_alert_created =>
+      'You will be notified when matching listings are posted.';
+
+  @override
+  String get search_alert_failed => 'Could not save this alert. Try again.';
+
+  @override
+  String get search_alert_permission =>
+      'Enable notifications in settings to receive alerts.';
+
+  @override
   String get tutorial_search_title => 'Search for listings';
 
   @override

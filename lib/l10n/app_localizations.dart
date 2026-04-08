@@ -4044,6 +4044,36 @@ abstract class AppLocalizations {
   /// **'Search'**
   String get search;
 
+  /// No description provided for @search_alert_notify_me.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify me'**
+  String get search_alert_notify_me;
+
+  /// No description provided for @search_alert_login_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to get notifications for this search.'**
+  String get search_alert_login_required;
+
+  /// No description provided for @search_alert_created.
+  ///
+  /// In en, this message translates to:
+  /// **'You will be notified when matching listings are posted.'**
+  String get search_alert_created;
+
+  /// No description provided for @search_alert_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save this alert. Try again.'**
+  String get search_alert_failed;
+
+  /// No description provided for @search_alert_permission.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications in settings to receive alerts.'**
+  String get search_alert_permission;
+
   /// No description provided for @tutorial_search_title.
   ///
   /// In en, this message translates to:

@@ -2120,6 +2120,25 @@ class AppLocalizationsRu extends AppLocalizations {
   String get search => 'Поиск';
 
   @override
+  String get search_alert_notify_me => 'Уведомлять';
+
+  @override
+  String get search_alert_login_required =>
+      'Войдите, чтобы получать уведомления по этому поиску.';
+
+  @override
+  String get search_alert_created =>
+      'Мы сообщим, когда появятся подходящие объявления.';
+
+  @override
+  String get search_alert_failed =>
+      'Не удалось сохранить оповещение. Попробуйте снова.';
+
+  @override
+  String get search_alert_permission =>
+      'Включите уведомления в настройках, чтобы получать оповещения.';
+
+  @override
   String get tutorial_search_title => 'Поиск объявлений';
 
   @override

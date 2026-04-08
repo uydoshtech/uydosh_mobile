@@ -24,6 +24,7 @@ import "package:uy_dosh/domain/services/otp_service_impl.dart";
 import "package:uy_dosh/domain/services/public_app_settings_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
+import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/support_chat_service.dart";
@@ -112,6 +113,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<ISearchAnalyticsService>(
     () => SearchAnalyticsService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<ISearchAlertService>(
+    () => SearchAlertService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IAdminContentModerationSettingsService>(

@@ -54,6 +54,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
     required this.onPrivateRoomChanged,
     required this.onWithPhotoChanged,
     required this.onSearchPressed,
+    required this.onNotifyPressed,
     super.key,
   });
 
@@ -62,6 +63,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   final void Function(bool value) onPrivateRoomChanged;
   final void Function(bool value) onWithPhotoChanged;
   final VoidCallback onSearchPressed;
+  final VoidCallback onNotifyPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +120,28 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20),
+
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: onNotifyPressed,
+            icon: const Icon(Icons.notifications_active_outlined, size: 20),
+            label: Text(
+              L10n.get("search_alert_notify_me"),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
 
         // Search button
         SizedBox(

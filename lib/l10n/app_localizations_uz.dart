@@ -2141,6 +2141,24 @@ class AppLocalizationsUz extends AppLocalizations {
   String get search => 'Qidirish';
 
   @override
+  String get search_alert_notify_me => 'Xabar berilsin';
+
+  @override
+  String get search_alert_login_required =>
+      'Bu qidiruv bo\'yicha bildirishnomalar uchun tizimga kiring.';
+
+  @override
+  String get search_alert_created => 'Mos e\'lonlar chiqqanda xabar beramiz.';
+
+  @override
+  String get search_alert_failed =>
+      'Bildirishnomani saqlab bo\'lmadi. Qayta urinib ko\'ring.';
+
+  @override
+  String get search_alert_permission =>
+      'Bildirishnomalar uchun sozlamalarda ruxsat bering.';
+
+  @override
   String get tutorial_search_title => 'E\'lonlarni qidirish';
 
   @override

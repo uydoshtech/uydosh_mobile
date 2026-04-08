@@ -676,6 +676,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               setState(() {});
                             },
                             onSearchPressed: _performSearch,
+                            onNotifyPressed: _subscribeToSearchAlerts,
                           ),
                         ],
                       ),
@@ -688,6 +689,77 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         ),
       ),
     );
+  }
+
+  Future<void> _subscribeToSearchAlerts() async {
+    HapticFeedbackUtils.impact();
+    if (!AuthenticationState().isAuthenticated) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("search_alert_login_required"),
+      );
+      return;
+    }
+
+    final push = getIt<IPushNotificationService>();
+    if (push.isSupported) {
+      final status = await push.getNotificationStatus();
+      if (status == AuthorizationStatus.denied) {
+        if (!mounted) return;
+        ToastTheme.showError(
+          context,
+          message: L10n.get("search_alert_permission"),
+        );
+        return;
+      }
+      if (status != AuthorizationStatus.authorized &&
+          status != AuthorizationStatus.provisional) {
+        final granted = await push.requestPermissionAndRegister();
+        if (!granted) return;
+      } else {
+        await push.registerTokenWithBackend();
+      }
+    }
+
+    final listingTypeId = _searchFiltersState.selectedListingTypeId;
+    final locationId = _getSelectedLocationId();
+    final subwayStationId = _getSelectedSubwayStationId();
+    final subwayLineId =
+        locationId == null &&
+                subwayStationId == null &&
+                _searchFiltersState.selectedSubwayLine > 0
+            ? _searchFiltersState.selectedSubwayLine
+            : null;
+    final gender =
+        _searchFiltersState.selectedGender > 0
+            ? _searchFiltersState.selectedGender
+            : null;
+
+    final err = await getIt<ISearchAlertService>().createAlertForCurrentSearch(
+      listingTypeId: listingTypeId,
+      locationId: locationId,
+      subwayStationId: subwayStationId,
+      subwayLineId: subwayLineId,
+      gender: gender,
+      minPrice: _searchFiltersState.minPrice,
+      maxPrice: _searchFiltersState.maxPrice,
+      privateRoomOnly: _searchFiltersState.privateRoom,
+      withPhotoOnly: _searchFiltersState.withPhoto,
+    );
+
+    if (!mounted) return;
+    if (err == null) {
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("search_alert_created"),
+      );
+    } else {
+      ToastTheme.showError(
+        context,
+        message: err == "error" ? L10n.get("search_alert_failed") : err,
+      );
+    }
   }
 
   void _performSearch() {

@@ -843,6 +843,14 @@ class AppStrings {
       "search_listings": "Search Listings",
 
       "search": "Search",
+      "search_alert_notify_me": "Notify me",
+      "search_alert_login_required":
+          "Sign in to get notifications for this search.",
+      "search_alert_created":
+          "You will be notified when matching listings are posted.",
+      "search_alert_failed": "Could not save this alert. Try again.",
+      "search_alert_permission":
+          "Enable notifications in settings to receive alerts.",
       "tutorial_search_title": "Search for listings",
       "tutorial_search_description":
           "Tap here to filter listings by location, price, room type, and more.",
@@ -1750,6 +1758,15 @@ class AppStrings {
       "search_listings": "Поиск объявлений",
 
       "search": "Поиск",
+      "search_alert_notify_me": "Уведомлять",
+      "search_alert_login_required":
+          "Войдите, чтобы получать уведомления по этому поиску.",
+      "search_alert_created":
+          "Мы сообщим, когда появятся подходящие объявления.",
+      "search_alert_failed":
+          "Не удалось сохранить оповещение. Попробуйте снова.",
+      "search_alert_permission":
+          "Включите уведомления в настройках, чтобы получать оповещения.",
       "tutorial_search_title": "Поиск объявлений",
       "tutorial_search_description":
           "Нажмите здесь, чтобы фильтровать объявления по району, цене, типу комнаты и другим параметрам.",
@@ -2664,6 +2681,14 @@ class AppStrings {
       "search_listings": "E'lonlarni qidirish",
 
       "search": "Qidirish",
+      "search_alert_notify_me": "Xabar berilsin",
+      "search_alert_login_required":
+          "Bu qidiruv bo'yicha bildirishnomalar uchun tizimga kiring.",
+      "search_alert_created": "Mos e'lonlar chiqqanda xabar beramiz.",
+      "search_alert_failed":
+          "Bildirishnomani saqlab bo'lmadi. Qayta urinib ko'ring.",
+      "search_alert_permission":
+          "Bildirishnomalar uchun sozlamalarda ruxsat bering.",
       "tutorial_search_title": "E'lonlarni qidirish",
       "tutorial_search_description":
           "E'lonlarni tuman, narx, xona turi va boshqa parametrlar bo'yicha filtrlash uchun bosing.",

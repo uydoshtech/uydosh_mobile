@@ -10,6 +10,7 @@ import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/push/register_fcm_token_request.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 
 /// Background message handler - must be top-level function.
 @pragma("vm:entry-point")
@@ -153,13 +154,22 @@ class PushNotificationService implements IPushNotificationService {
 
   void _handleNotificationTap(RemoteMessage message) {
     logger.d("📲 FCM notification tapped: ${message.data}");
-    _navigateToMessageIfApplicable(message);
+    _routeFromNotification(message);
   }
 
   void _handleNewMessageNotification(RemoteMessage message) {
     final data = message.data;
     if (data["type"] != "new_message") return;
     UnreadMessagesState().incrementUnreadCount();
+  }
+
+  void _routeFromNotification(RemoteMessage message) {
+    final type = message.data["type"] ?? "";
+    if (type == "new_message") {
+      _navigateToMessageIfApplicable(message);
+    } else if (type == "search_match") {
+      _navigateToListingFromSearchAlert(message);
+    }
   }
 
   void _navigateToMessageIfApplicable(RemoteMessage message) {
@@ -196,12 +206,28 @@ class PushNotificationService implements IPushNotificationService {
     );
   }
 
+  void _navigateToListingFromSearchAlert(RemoteMessage message) {
+    final listingId = int.tryParse(message.data["listingId"] ?? "");
+    if (listingId == null || listingId <= 0) return;
+
+    if (!getIt.isRegistered<GlobalKey<NavigatorState>>()) return;
+    final navigatorKey = getIt<GlobalKey<NavigatorState>>();
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ListingDetailScreen(listingId: listingId),
+      ),
+    );
+  }
+
   @override
   void handlePendingNotificationTap() {
     final pending = _pendingNotificationTap;
     _pendingNotificationTap = null;
     if (pending != null) {
-      _navigateToMessageIfApplicable(pending);
+      _routeFromNotification(pending);
     }
   }
 
