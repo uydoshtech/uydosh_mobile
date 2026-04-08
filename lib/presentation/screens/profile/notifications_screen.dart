@@ -117,7 +117,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: c.withValues(alpha: 0.1),
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: c, width: 1),
       ),
@@ -322,22 +322,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           child: Padding(
                             padding: const EdgeInsets.all(14),
                             child: Row(
-                              // In a ListView item, height constraints are unbounded.
-                              // `stretch` would try to expand children to infinite height.
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: ThemeIcon(
-                                    a.enabled
-                                        ? Icons.notifications_active_outlined
-                                        : Icons.notifications_off_outlined,
-                                    color: ThemeState().isBlueTheme
-                                        ? Colors.white
-                                        : (a.enabled
-                                            ? theme.colorScheme.primary
-                                            : theme.colorScheme.onSurfaceVariant),
-                                  ),
+                                ThemeIcon(
+                                  a.enabled
+                                      ? Icons.notifications_active_outlined
+                                      : Icons.notifications_off_outlined,
+                                  color: ThemeState().isBlueTheme
+                                      ? Colors.white
+                                      : (a.enabled
+                                          ? theme.colorScheme.primary
+                                          : theme.colorScheme.onSurfaceVariant),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -352,7 +347,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 const SizedBox(width: 8),
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Switch.adaptive(
                                       value: a.enabled,
