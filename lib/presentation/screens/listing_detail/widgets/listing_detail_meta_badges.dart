@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -36,6 +38,18 @@ class ListingDetailMetaBadges extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final priceActiveColor =
+        isBlueTheme ? Colors.white : AppColors.statusActive;
+    final priceInactiveColor =
+        isBlueTheme ? Colors.white : AppColors.statusInactive;
+    final priceBadgeBg =
+        isBlueTheme
+            ? (listingDetail.isActive
+                ? AppColors.statusActive
+                : AppColors.statusInactive)
+            : Colors.white;
+
     return Wrap(
       spacing: 12,
       runSpacing: 8,
@@ -93,9 +107,9 @@ class ListingDetailMetaBadges extends StatelessWidget {
           fontSize: 13,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           currencySymbol: "y.e.",
-          // Keep existing layout; just make fill slightly tinted.
-          useTintBackground: true,
-          tintAlpha: 0.12,
+          activeColor: priceActiveColor,
+          inactiveColor: priceInactiveColor,
+          badgeBackgroundColor: priceBadgeBg,
         ),
       ],
     );

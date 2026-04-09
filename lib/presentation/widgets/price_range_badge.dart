@@ -19,6 +19,7 @@ class PriceRangeBadge extends StatelessWidget {
     this.currencySymbol,
     this.activeColor,
     this.inactiveColor,
+    this.badgeBackgroundColor,
     this.useTintBackground = false,
     this.tintAlpha = 0.12,
   });
@@ -33,6 +34,9 @@ class PriceRangeBadge extends StatelessWidget {
   final String? currencySymbol;
   final Color? activeColor;
   final Color? inactiveColor;
+
+  /// When set, used as the container fill instead of [useTintBackground] / theme defaults.
+  final Color? badgeBackgroundColor;
 
   /// When true, background is a light tint of the badge [color] (same idea as [ListingTypeBadge]).
   final bool useTintBackground;
@@ -54,9 +58,10 @@ class PriceRangeBadge extends StatelessWidget {
             : PriceRangeHelper.formatPriceRange(minPrice, maxPrice);
     final currency = currencySymbol ?? "\$";
     final backgroundColor =
-        useTintBackground
-            ? color.withValues(alpha: tintAlpha)
-            : themeState.priceBadgeBackgroundColor;
+        badgeBackgroundColor ??
+            (useTintBackground
+                ? color.withValues(alpha: tintAlpha)
+                : themeState.priceBadgeBackgroundColor);
 
     return Container(
       padding:
