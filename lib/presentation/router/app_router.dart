@@ -473,6 +473,29 @@ class _MainNavigationState extends State<MainNavigation>
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: _getAppBarTitle(),
         actions: [
+          IconButton(
+            tooltip: L10n.get("menu_notifications"),
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              if (!AuthenticationState().isAuthenticated) {
+                context.pushReplaceAuthWizard();
+                return;
+              }
+              context.pushNotifications();
+            },
+            icon: ListenableBuilder(
+              listenable: ThemeState(),
+              builder: (context, _) {
+                final iconColor =
+                    ThemeState().isBlueTheme ? Colors.white : Colors.black;
+                return ThemeIcon(
+                  Icons.notifications_none_outlined,
+                  color: iconColor,
+                  size: 26,
+                );
+              },
+            ),
+          ),
           // Profile button on the right side with proper margin
           Padding(
             padding: const EdgeInsets.only(right: 16.0),

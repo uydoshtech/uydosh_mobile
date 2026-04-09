@@ -7,6 +7,7 @@ import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 
 /// Navigation helpers to reduce duplication of Navigator.push / MaterialPageRoute.
@@ -80,6 +81,13 @@ extension NavigatorExtensions on BuildContext {
   void pushProfile() {
     Navigator.of(this).push(
       MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
+    );
+  }
+
+  /// Push search notifications (saved search alerts) screen.
+  void pushNotifications() {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(builder: (_) => const NotificationsScreen()),
     );
   }
 
