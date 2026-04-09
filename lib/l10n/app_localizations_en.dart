@@ -1640,6 +1640,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_user_detail_view_complaints => 'View complaints';
 
   @override
+  String get admin_user_detail_view_alerts => 'View user filters';
+
+  @override
   String get admin_user_detail_block_title => 'Block status';
 
   @override
@@ -1692,6 +1695,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_user_listings_error => 'Failed to load listings';
+
+  @override
+  String get admin_user_alerts_title => 'User filters';
+
+  @override
+  String get admin_user_alerts_empty => 'No filters found';
 
   @override
   String get admin_complaints_title => 'Complaints';

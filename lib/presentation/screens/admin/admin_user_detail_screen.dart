@@ -7,6 +7,7 @@ import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_user_search_alerts_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -45,28 +46,28 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   Widget build(BuildContext context) {
     final canSave = _selectedRole != null && _selectedRole != _currentRole;
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            L10n.get("admin_user_detail_title"),
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          leading: IconButton(
-            icon: const ThemeIcon(Icons.arrow_back),
-            onPressed: _popWithResult,
-          ),
+      appBar: AppBar(
+        title: Text(
+          L10n.get("admin_user_detail_title"),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _buildInfoCard(context),
-            const SizedBox(height: 12),
-            _buildBlockCard(context),
-            const SizedBox(height: 12),
-            _buildRoleCard(context, canSave: canSave),
-            const SizedBox(height: 12),
-            _buildActionsCard(context),
-          ],
+        leading: IconButton(
+          icon: const ThemeIcon(Icons.arrow_back),
+          onPressed: _popWithResult,
         ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildInfoCard(context),
+          const SizedBox(height: 12),
+          _buildBlockCard(context),
+          const SizedBox(height: 12),
+          _buildRoleCard(context, canSave: canSave),
+          const SizedBox(height: 12),
+          _buildActionsCard(context),
+        ],
+      ),
     );
   }
 
@@ -80,8 +81,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _currentUser.email ??
-                  L10n.get("not_specified"),
+              _currentUser.email ?? L10n.get("not_specified"),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -184,7 +184,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Theme.of(context).colorScheme.error,
-                    side: BorderSide(color: Theme.of(context).colorScheme.error),
+                    side:
+                        BorderSide(color: Theme.of(context).colorScheme.error),
                   ),
                 ),
               ),
@@ -221,19 +222,20 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                 const SizedBox(height: 16),
                 ListTile(
                   title: Text(
-L10n.get("admin_user_detail_block_until"),
+                    L10n.get("admin_user_detail_block_until"),
                   ),
                   subtitle: Text(
                     blockedUntil != null
                         ? blockedUntil!.toIso8601String().split("T")[0]
-: L10n.get("admin_user_detail_block_permanent"),
+                        : L10n.get("admin_user_detail_block_permanent"),
                   ),
                   trailing: IconButton(
                     icon: const ThemeIcon(Icons.calendar_today),
                     onPressed: () async {
                       final date = await showDatePicker(
                         context: context,
-                        initialDate: DateTime.now().add(const Duration(days: 7)),
+                        initialDate:
+                            DateTime.now().add(const Duration(days: 7)),
                         firstDate: DateTime.now(),
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
@@ -246,7 +248,7 @@ L10n.get("admin_user_detail_block_until"),
                 TextButton(
                   onPressed: () => setDialogState(() => blockedUntil = null),
                   child: Text(
-L10n.get("admin_user_detail_block_permanent"),
+                    L10n.get("admin_user_detail_block_permanent"),
                   ),
                 ),
               ],
@@ -339,16 +341,17 @@ L10n.get("admin_user_detail_block_permanent"),
               key: ValueKey(_currentUser.id),
               initialValue: _selectedRole,
               elevation: AppTheme.menuPanelElevation,
-              items:
-                  _roleOptions(context)
-                      .map(
-                        (item) => DropdownMenuItem<String?>(
-                          value: item.value,
-                          child: Text(item.label),
-                        ),
-                      )
-                      .toList(),
-              onChanged: _saving ? null : (value) => setState(() => _selectedRole = value),
+              items: _roleOptions(context)
+                  .map(
+                    (item) => DropdownMenuItem<String?>(
+                      value: item.value,
+                      child: Text(item.label),
+                    ),
+                  )
+                  .toList(),
+              onChanged: _saving
+                  ? null
+                  : (value) => setState(() => _selectedRole = value),
               style: ThemeState().isBlueTheme
                   ? Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.black87,
@@ -369,16 +372,15 @@ L10n.get("admin_user_detail_block_permanent"),
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: !_saving && canSave ? _updateRole : null,
-                child:
-                    _saving
-                        ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                        : Text(
-                          L10n.get("admin_user_detail_role_save"),
-                        ),
+                child: _saving
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(
+                        L10n.get("admin_user_detail_role_save"),
+                      ),
               ),
             ),
           ],
@@ -402,11 +404,10 @@ L10n.get("admin_user_detail_block_permanent"),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder:
-                      (context) => AdminUserListingsScreen(
-                        userId: _currentUser.id,
-                        userEmail: _currentUser.email,
-                      ),
+                  builder: (context) => AdminUserListingsScreen(
+                    userId: _currentUser.id,
+                    userEmail: _currentUser.email,
+                  ),
                 ),
               );
             },
@@ -421,11 +422,28 @@ L10n.get("admin_user_detail_block_permanent"),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder:
-                      (context) => AdminUserComplaintsScreen(
-                        userId: _currentUser.id,
-                        userEmail: _currentUser.email,
-                      ),
+                  builder: (context) => AdminUserComplaintsScreen(
+                    userId: _currentUser.id,
+                    userEmail: _currentUser.email,
+                  ),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const ThemeIcon(Icons.filter_alt_outlined),
+            title: Text(
+              L10n.get("admin_user_detail_view_alerts"),
+            ),
+            trailing: const ThemeIcon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => AdminUserSearchAlertsScreen(
+                    userId: _currentUser.id,
+                    userEmail: _currentUser.email,
+                  ),
                 ),
               );
             },

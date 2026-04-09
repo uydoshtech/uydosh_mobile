@@ -1653,6 +1653,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_user_detail_view_complaints => 'Жалобы пользователя';
 
   @override
+  String get admin_user_detail_view_alerts => 'Фильтры пользователя';
+
+  @override
   String get admin_user_detail_block_title => 'Блокировка';
 
   @override
@@ -1706,6 +1709,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_user_listings_error => 'Не удалось загрузить объявления';
+
+  @override
+  String get admin_user_alerts_title => 'Фильтры пользователя';
+
+  @override
+  String get admin_user_alerts_empty => 'Фильтров не найдено';
 
   @override
   String get admin_complaints_title => 'Жалобы';
