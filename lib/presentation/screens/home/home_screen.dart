@@ -1219,23 +1219,30 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
     final idleEnabled = _animationSettings.bellIdleEnabled;
     final tapEnabled = _animationSettings.bellTapEnabled;
 
-    return GhostButton(
-      onPressed: widget.onPressed == null ? null : _handlePressed,
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 21),
-      borderRadius: BorderRadius.circular(10),
-      borderWidth: isBlueTheme ? 1.5 : 2.0,
-      borderColor: isBlueTheme ? Colors.white.withValues(alpha: 0.14) : null,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 30,
-            height: 30,
-            child: Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth > 0 && constraints.maxWidth < 360;
+        final padding = isNarrow
+            ? const EdgeInsets.symmetric(horizontal: 18, vertical: 18)
+            : const EdgeInsets.symmetric(horizontal: 32, vertical: 21);
+
+        return GhostButton(
+          onPressed: widget.onPressed == null ? null : _handlePressed,
+          padding: padding,
+          borderRadius: BorderRadius.circular(10),
+          borderWidth: isBlueTheme ? 1.5 : 2.0,
+          borderColor: isBlueTheme ? Colors.white.withValues(alpha: 0.14) : null,
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 30,
+                height: 30,
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
                     if (tapEnabled)
                       AnimatedBuilder(
                         animation: _controller,
@@ -1264,7 +1271,8 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
                     AnimatedBuilder(
                       animation: Listenable.merge([_idleController, _controller]),
                       builder: (context, child) {
-                        final turns = (idleEnabled ? _idleBellTurns.value : 0.0) +
+                        final turns =
+                            (idleEnabled ? _idleBellTurns.value : 0.0) +
                             (tapEnabled ? _bellTurns.value : 0.0);
                         return Transform.rotate(
                           angle: turns * 2 * math.pi,
@@ -1277,16 +1285,23 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
                         size: 24,
                       ),
                     ),
-              ],
-            ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  widget.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Text(
-            widget.label,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
