@@ -366,7 +366,6 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                     )
                   : Theme.of(context).popupMenuTheme.color,
               decoration: InputDecoration(
-                labelText: L10n.get("admin_user_detail_role_label"),
                 border: const OutlineInputBorder(),
               ),
             ),
