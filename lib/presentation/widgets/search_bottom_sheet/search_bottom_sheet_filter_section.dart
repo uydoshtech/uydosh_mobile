@@ -240,12 +240,14 @@ class _NotifySearchAlertButtonState extends State<_NotifySearchAlertButton>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final ringColor = theme.colorScheme.primary;
+    final isBlueTheme = ThemeState().isBlueTheme;
 
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
         onPressed: _handlePressed,
         style: OutlinedButton.styleFrom(
+          foregroundColor: isBlueTheme ? BlueThemeColors.textPrimary : null,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),

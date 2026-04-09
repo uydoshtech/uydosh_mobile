@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/cache/location_cache.dart";
+import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -15,6 +17,8 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
+import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/main.dart";
@@ -26,8 +30,11 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
@@ -123,6 +130,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
+  bool _isCreatingSearchAlert = false;
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
@@ -535,51 +543,327 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Widget _buildEmptySearchState() {
     return _buildPullToRefreshAroundFillChild(
       Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ThemeIcon(Icons.search_off, size: 64, color: _getHomeIconColor()),
-          const SizedBox(height: 16),
-          L10n.text(
-            "no_search_results",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: _getWelcomeTitleColor(),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ThemeIcon(
+                  Icons.search_off,
+                  size: 64,
+                  color: _getHomeIconColor(),
+                ),
+                const SizedBox(height: 16),
+                L10n.text(
+                  "no_search_results",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: _getWelcomeTitleColor(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildEmptySearchCriteriaSummary(),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          L10n.text(
-            "try_refining_search",
-            style: TextStyle(fontSize: 16, color: _getWelcomeSubtitleColor()),
-          ),
-          const SizedBox(height: 24),
-          GhostButtonFactory.iconText(
-            onPressed: () {
-              _searchFiltersState.applyProfileValuesForSearchSheet().then((_) {
-                if (!context.mounted) return;
-                SearchBottomSheetWidget.show(
-                  context,
-                  replaceCurrentRoute: true,
-                  openedFromHomeScreen: widget.isHomeTabActive,
-                  currentListingTypeId:
-                      _searchFiltersState.selectedListingTypeId,
-                  currentLocationId: _searchFiltersState.selectedLocationIndex,
-                  currentSubwayStationId: _searchFiltersState.selectedStationId,
-                  currentSubwayLineId: _searchFiltersState.selectedSubwayLine,
-                  currentGender: _searchFiltersState.selectedGender,
-                  currentMinPrice: _searchFiltersState.minPrice,
-                  currentMaxPrice: _searchFiltersState.maxPrice,
-                );
-              });
-            },
-            icon: Icons.search,
-            text: L10n.get("refine_search"),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            textStyle: const TextStyle(fontSize: 16),
+          // Keep actions above the floating "lens" button.
+          Padding(
+            padding: const EdgeInsets.only(bottom: 90),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: GhostButtonFactory.iconText(
+                    onPressed: () {
+                      _searchFiltersState.applyProfileValuesForSearchSheet()
+                          .then((_) {
+                        if (!context.mounted) return;
+                        SearchBottomSheetWidget.show(
+                          context,
+                          replaceCurrentRoute: true,
+                          openedFromHomeScreen: widget.isHomeTabActive,
+                          currentListingTypeId:
+                              _searchFiltersState.selectedListingTypeId,
+                          currentLocationId:
+                              _searchFiltersState.selectedLocationIndex,
+                          currentSubwayStationId:
+                              _searchFiltersState.selectedStationId,
+                          currentSubwayLineId:
+                              _searchFiltersState.selectedSubwayLine,
+                          currentGender: _searchFiltersState.selectedGender,
+                          currentMinPrice: _searchFiltersState.minPrice,
+                          currentMaxPrice: _searchFiltersState.maxPrice,
+                        );
+                      });
+                    },
+                    icon: Icons.search,
+                    text: L10n.get("refine_search"),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: GhostButtonFactory.iconText(
+                    onPressed: _isCreatingSearchAlert
+                        ? null
+                        : _subscribeToSearchAlerts,
+                    icon: Icons.notifications_active_outlined,
+                    text: L10n.get("search_alert_notify_me"),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildEmptySearchCriteriaSummary() {
+    final theme = Theme.of(context);
+    final lang = L10n.currentLanguage;
+
+    final listingTypeId = widget.useExplicitFiltersOnly
+        ? (widget.listingTypeId ?? _searchFiltersState.selectedListingTypeId)
+        : _searchFiltersState.selectedListingTypeId;
+    final locationId = widget.useExplicitFiltersOnly
+        ? widget.locationId
+        : _searchFiltersState.selectedLocationIndex;
+    final subwayStationId = widget.useExplicitFiltersOnly
+        ? widget.subwayStationId
+        : _searchFiltersState.selectedStationId;
+    final subwayLineId = widget.useExplicitFiltersOnly
+        ? widget.subwayLineId
+        : _searchFiltersState.selectedSubwayLine;
+    final gender = widget.useExplicitFiltersOnly
+        ? widget.gender
+        : _searchFiltersState.selectedGender;
+    final minPrice = widget.useExplicitFiltersOnly
+        ? (widget.minPrice ?? 10.0)
+        : _searchFiltersState.minPrice;
+    final maxPrice = widget.useExplicitFiltersOnly
+        ? (widget.maxPrice ?? 500.0)
+        : _searchFiltersState.maxPrice;
+    final privateRoom = widget.useExplicitFiltersOnly
+        ? (widget.privateRoom ?? false)
+        : _searchFiltersState.privateRoom;
+    final withPhoto = widget.useExplicitFiltersOnly
+        ? (widget.withPhoto ?? false)
+        : _searchFiltersState.withPhoto;
+
+    final chips = <Widget>[];
+
+    chips.add(
+      ListingTypeBadge(
+        listingTypeCode: listingTypeId == 1 ? "room_needed" : "roommate_needed",
+        fontSize: 13,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      ),
+    );
+
+    if (locationId != null && locationId > 0) {
+      chips.add(
+        _criteriaChip(
+          icon: Icons.location_on_outlined,
+          text: LocationCache.getLocationShortName(locationId, lang),
+          color: AppColors.error,
+        ),
+      );
+    }
+
+    if (subwayStationId != null && subwayStationId > 0) {
+      final station = MetroCache.getStationById(subwayStationId);
+      chips.add(
+        _criteriaChip(
+          icon: Icons.train,
+          text: MetroCache.getStationDisplayName(subwayStationId, lang),
+          color: station == null
+              ? theme.colorScheme.onSurfaceVariant
+              : AppColors.getMetroLineColor(station.line),
+        ),
+      );
+    } else if (subwayLineId != null && subwayLineId > 0) {
+      chips.add(
+        _criteriaChip(
+          icon: Icons.train_outlined,
+          text: MetroCache.getLineName(subwayLineId, lang),
+          color: AppColors.getMetroLineColor(subwayLineId),
+        ),
+      );
+    }
+
+    if (gender != null && (gender == 1 || gender == 2)) {
+      chips.add(
+        _criteriaChip(
+          icon: gender == 2 ? Icons.female : Icons.male,
+          text: gender == 2 ? L10n.get("female") : L10n.get("male"),
+          color: gender == 2 ? AppColors.genderFemale : AppColors.genderMale,
+        ),
+      );
+    }
+
+    chips.add(
+      PriceRangeBadge(
+        minPrice: minPrice.round(),
+        maxPrice: maxPrice.round(),
+        showCurrency: true,
+        showIcon: false,
+        isActive: true,
+        currencySymbol: "y.e.",
+        fontSize: 13,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        activeColor: AppColors.statusActive,
+      ),
+    );
+
+    if (privateRoom) {
+      chips.add(
+        _criteriaChip(
+          icon: Icons.lock_outline,
+          text: L10n.get("private_room"),
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+    if (withPhoto) {
+      chips.add(
+        _criteriaChip(
+          icon: Icons.photo_camera_outlined,
+          text: L10n.get("search_filter_with_photo"),
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
+        children: chips,
+      ),
+    );
+  }
+
+  Widget _criteriaChip({
+    required IconData icon,
+    required String text,
+    required Color color,
+  }) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemeIcon(icon, size: 18, color: color),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.15,
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _subscribeToSearchAlerts() async {
+    if (!mounted) return;
+
+    if (!AuthenticationState().isAuthenticated) {
+      ToastTheme.showError(
+        context,
+        message: L10n.get("search_alert_login_required"),
+      );
+      return;
+    }
+
+    setState(() => _isCreatingSearchAlert = true);
+    try {
+      // Match the same filters we use for search dispatch (with safe fallbacks).
+      final listingTypeId = widget.useExplicitFiltersOnly
+          ? (widget.listingTypeId ?? _searchFiltersState.selectedListingTypeId)
+          : _searchFiltersState.selectedListingTypeId;
+      final locationId = widget.useExplicitFiltersOnly
+          ? widget.locationId
+          : _searchFiltersState.selectedLocationIndex;
+      final subwayStationId = widget.useExplicitFiltersOnly
+          ? widget.subwayStationId
+          : _searchFiltersState.selectedStationId;
+      final subwayLineId = widget.useExplicitFiltersOnly
+          ? widget.subwayLineId
+          : _searchFiltersState.selectedSubwayLine;
+      final gender = widget.useExplicitFiltersOnly
+          ? widget.gender
+          : _searchFiltersState.selectedGender;
+      final minPrice =
+          widget.useExplicitFiltersOnly ? (widget.minPrice ?? 10.0) : _searchFiltersState.minPrice;
+      final maxPrice =
+          widget.useExplicitFiltersOnly ? (widget.maxPrice ?? 500.0) : _searchFiltersState.maxPrice;
+      final privateRoom = widget.useExplicitFiltersOnly
+          ? (widget.privateRoom ?? false)
+          : _searchFiltersState.privateRoom;
+      final withPhoto = widget.useExplicitFiltersOnly
+          ? (widget.withPhoto ?? false)
+          : _searchFiltersState.withPhoto;
+
+      final err = await getIt<ISearchAlertService>().createAlertForCurrentSearch(
+        listingTypeId: listingTypeId,
+        locationId: locationId,
+        subwayStationId: subwayStationId,
+        subwayLineId: subwayLineId,
+        gender: gender,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        privateRoomOnly: privateRoom,
+        withPhotoOnly: withPhoto,
+      );
+
+      if (!mounted) return;
+
+      if (err != null) {
+        ToastTheme.showError(
+          context,
+          message: err == "error" ? L10n.get("search_alert_failed") : err,
+        );
+        return;
+      }
+
+      // Ensure notifications are enabled (or guide user to settings).
+      final push = getIt<IPushNotificationService>();
+      if (push.isSupported) {
+        final ok = await push.requestPermissionAndRegister();
+        if (!mounted) return;
+        if (!ok) {
+          ToastTheme.showWarning(
+            context,
+            message: L10n.get("search_alert_permission"),
+          );
+        }
+      }
+
+      ToastTheme.showSuccess(context, message: L10n.get("search_alert_created"));
+    } finally {
+      if (mounted) {
+        setState(() => _isCreatingSearchAlert = false);
+      }
+    }
   }
 
   Widget _buildLoadingState() {
