@@ -21,6 +21,7 @@ import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
@@ -100,6 +101,7 @@ void main() async {
       OnboardingState().initialize(),
       TutorialState().initialize(),
       HapticFeedbackState().initialize(),
+      AnimationSettingsState().initialize(),
       SearchFiltersState().initialize(),
       ThemeState().initialize(),
       ClientGeminiListingUiConfig.load(),

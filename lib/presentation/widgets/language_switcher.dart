@@ -6,6 +6,7 @@ import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -135,49 +136,64 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
             Theme.of(context).appBarTheme.backgroundColor ??
             Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          PopupMenuButton<String>(
-            onSelected: _changeLanguage,
-            itemBuilder:
-                (context) => [
-                  PopupMenuItem(
-                    value: "uz",
-                    child: Text(
-                      LanguageDisplayHelper.getLanguageDisplayName("uz"),
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: "ru",
-                    child: Text(
-                      LanguageDisplayHelper.getLanguageDisplayName("ru"),
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: "en",
-                    child: Text(
-                      LanguageDisplayHelper.getLanguageDisplayName("en"),
-                    ),
-                  ),
-                ],
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const ThemeIcon(CupertinoIcons.globe),
-                  const SizedBox(width: 8),
-                  ListenableBuilder(
-                    listenable: _languageState,
-                    builder: (context, child) {
-                      return Text(
-                        LanguageDisplayHelper.getLanguageDisplayName(
-                          _languageState.currentLanguage,
+          ListenableBuilder(
+            listenable: AnimationSettingsState(),
+            builder: (context, _) {
+              final enableMotion = AnimationSettingsState().uiAnimationsEnabled;
+              final style =
+                  enableMotion
+                      ? null
+                      : const AnimationStyle(
+                          duration: Duration.zero,
+                          reverseDuration: Duration.zero,
+                        );
+
+              return PopupMenuButton<String>(
+                onSelected: _changeLanguage,
+                popUpAnimationStyle: style,
+                itemBuilder:
+                    (context) => [
+                      PopupMenuItem(
+                        value: "uz",
+                        child: Text(
+                          LanguageDisplayHelper.getLanguageDisplayName("uz"),
                         ),
-                      );
-                    },
+                      ),
+                      PopupMenuItem(
+                        value: "ru",
+                        child: Text(
+                          LanguageDisplayHelper.getLanguageDisplayName("ru"),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: "en",
+                        child: Text(
+                          LanguageDisplayHelper.getLanguageDisplayName("en"),
+                        ),
+                      ),
+                    ],
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const ThemeIcon(CupertinoIcons.globe),
+                      const SizedBox(width: 8),
+                      ListenableBuilder(
+                        listenable: _languageState,
+                        builder: (context, child) {
+                          return Text(
+                            LanguageDisplayHelper.getLanguageDisplayName(
+                              _languageState.currentLanguage,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ],
       ),

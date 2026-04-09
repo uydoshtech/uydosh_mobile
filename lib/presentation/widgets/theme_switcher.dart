@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -35,69 +36,84 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
         foregroundColor:
             Theme.of(context).appBarTheme.foregroundColor ?? Colors.white,
         actions: [
-          PopupMenuButton<String>(
-            onSelected: _changeTheme,
-            itemBuilder:
-                (context) => [
-                  PopupMenuItem(
-                    value: AppTheme.lightTheme,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
+          ListenableBuilder(
+            listenable: AnimationSettingsState(),
+            builder: (context, _) {
+              final enableMotion = AnimationSettingsState().uiAnimationsEnabled;
+              final style =
+                  enableMotion
+                      ? null
+                      : const AnimationStyle(
+                          duration: Duration.zero,
+                          reverseDuration: Duration.zero,
+                        );
+
+              return PopupMenuButton<String>(
+                onSelected: _changeTheme,
+                popUpAnimationStyle: style,
+                itemBuilder:
+                    (context) => [
+                      PopupMenuItem(
+                        value: AppTheme.lightTheme,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              L10n.get("light_theme"),
+                              style: Theme.of(context).popupMenuTheme.textStyle,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          L10n.get("light_theme"),
-                          style: Theme.of(context).popupMenuTheme.textStyle,
+                      ),
+                      PopupMenuItem(
+                        value: AppTheme.blueTheme,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              L10n.get("blue_theme"),
+                              style: Theme.of(context).popupMenuTheme.textStyle,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const ThemeIcon(Icons.palette),
+                      const SizedBox(width: 8),
+                      ListenableBuilder(
+                        listenable: _themeState,
+                        builder: (context, child) {
+                          return Text(_themeState.currentThemeDisplayName);
+                        },
+                      ),
+                    ],
                   ),
-                  PopupMenuItem(
-                    value: AppTheme.blueTheme,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          L10n.get("blue_theme"),
-                          style: Theme.of(context).popupMenuTheme.textStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const ThemeIcon(Icons.palette),
-                  const SizedBox(width: 8),
-                  ListenableBuilder(
-                    listenable: _themeState,
-                    builder: (context, child) {
-                      return Text(_themeState.currentThemeDisplayName);
-                    },
-                  ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ],
       ),

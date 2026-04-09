@@ -7,6 +7,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -368,50 +369,65 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: PopupMenuButton<String>(
-              enabled: !_loading && !_bulkWorking,
-              icon: const ThemeIcon(Icons.more_vert),
-              onSelected: (value) {
-                switch (value) {
-                  case "disable_all":
-                    _disableAllAlerts();
-                    break;
-                  case "delete_all":
-                    _deleteAllAlerts();
-                    break;
-                }
+            child: ListenableBuilder(
+              listenable: AnimationSettingsState(),
+              builder: (context, _) {
+                final enableMotion = AnimationSettingsState().uiAnimationsEnabled;
+                final style =
+                    enableMotion
+                        ? null
+                        : const AnimationStyle(
+                            duration: Duration.zero,
+                            reverseDuration: Duration.zero,
+                          );
+
+                return PopupMenuButton<String>(
+                  enabled: !_loading && !_bulkWorking,
+                  icon: const ThemeIcon(Icons.more_vert),
+                  popUpAnimationStyle: style,
+                  onSelected: (value) {
+                    switch (value) {
+                      case "disable_all":
+                        _disableAllAlerts();
+                        break;
+                      case "delete_all":
+                        _deleteAllAlerts();
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: "disable_all",
+                      enabled: _alerts.isNotEmpty,
+                      child: Row(
+                        children: [
+                          const ThemeIcon(
+                            Icons.notifications_off_outlined,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(L10n.get("notifications_disable_all")),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: "delete_all",
+                      enabled: _alerts.isNotEmpty,
+                      child: Row(
+                        children: [
+                          ThemeIcon(
+                            Icons.delete_outline,
+                            size: 20,
+                            color: theme.colorScheme.error,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(L10n.get("notifications_delete_all")),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
               },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: "disable_all",
-                  enabled: _alerts.isNotEmpty,
-                  child: Row(
-                    children: [
-                      const ThemeIcon(
-                        Icons.notifications_off_outlined,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      Text(L10n.get("notifications_disable_all")),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: "delete_all",
-                  enabled: _alerts.isNotEmpty,
-                  child: Row(
-                    children: [
-                      ThemeIcon(
-                        Icons.delete_outline,
-                        size: 20,
-                        color: theme.colorScheme.error,
-                      ),
-                      const SizedBox(width: 10),
-                      Text(L10n.get("notifications_delete_all")),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ),
           if (_bulkWorking)

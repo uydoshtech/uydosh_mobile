@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -24,86 +25,101 @@ class ActionDropdownMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      onOpened: HapticFeedbackUtils.impact,
-      onSelected: (value) {
-        HapticFeedbackUtils.impact();
-        final item = items.firstWhere((item) => item.value == value);
-        if (!item.enabled) {
-          return;
-        }
-        item.onPressed();
-      },
-      color: Theme.of(context).popupMenuTheme.color,
-      itemBuilder: (context) {
-        return items.map((item) {
-          final baseTextStyle = Theme.of(context).popupMenuTheme.textStyle;
-          final disabledColor = Theme.of(context).disabledColor;
-          final effectiveTextColor =
-              item.enabled
-                  ? (item.textColor ?? baseTextStyle?.color)
-                  : disabledColor;
-          final effectiveTextStyle =
-              (baseTextStyle ?? const TextStyle()).copyWith(
-                color: effectiveTextColor,
+    return ListenableBuilder(
+      listenable: AnimationSettingsState(),
+      builder: (context, _) {
+        final enableMotion = AnimationSettingsState().uiAnimationsEnabled;
+        final style =
+            enableMotion
+                ? null
+                : const AnimationStyle(
+                    duration: Duration.zero,
+                    reverseDuration: Duration.zero,
+                  );
+
+        return PopupMenuButton<String>(
+          onOpened: HapticFeedbackUtils.impact,
+          onSelected: (value) {
+            HapticFeedbackUtils.impact();
+            final item = items.firstWhere((item) => item.value == value);
+            if (!item.enabled) {
+              return;
+            }
+            item.onPressed();
+          },
+          color: Theme.of(context).popupMenuTheme.color,
+          popUpAnimationStyle: style,
+          itemBuilder: (context) {
+            return items.map((item) {
+              final baseTextStyle = Theme.of(context).popupMenuTheme.textStyle;
+              final disabledColor = Theme.of(context).disabledColor;
+              final effectiveTextColor =
+                  item.enabled
+                      ? (item.textColor ?? baseTextStyle?.color)
+                      : disabledColor;
+              final effectiveTextStyle =
+                  (baseTextStyle ?? const TextStyle()).copyWith(
+                    color: effectiveTextColor,
+                  );
+
+              final effectiveIconColor =
+                  item.enabled
+                      ? (item.iconColor ?? baseTextStyle?.color)
+                      : disabledColor;
+
+              return PopupMenuItem<String>(
+                value: item.value,
+                enabled: item.enabled,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: item.iconWidget != null
+                          ? IconTheme(
+                              data: IconThemeData(
+                                color: effectiveIconColor,
+                                size: 20,
+                              ),
+                              child: item.iconWidget!,
+                            )
+                          : ThemeIcon(
+                              item.icon,
+                              size: 20,
+                              color: effectiveIconColor,
+                            ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: L10n.text(
+                        item.textKey,
+                        context: context,
+                        style: effectiveTextStyle,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               );
-
-          final effectiveIconColor =
-              item.enabled
-                  ? (item.iconColor ?? baseTextStyle?.color)
-                  : disabledColor;
-
-          return PopupMenuItem<String>(
-            value: item.value,
-            enabled: item.enabled,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: item.iconWidget != null
-                      ? IconTheme(
-                          data: IconThemeData(
-                            color: effectiveIconColor,
-                            size: 20,
-                          ),
-                          child: item.iconWidget!,
-                        )
-                      : ThemeIcon(
-                          item.icon,
-                          size: 20,
-                          color: effectiveIconColor,
-                        ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: L10n.text(
-                    item.textKey,
-                    context: context,
-                    style: effectiveTextStyle,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+            }).toList();
+          },
+          child: Padding(
+            padding: padding,
+            child: Tooltip(
+              message: tooltip ?? "",
+              child: ThemeIcon(
+                icon ?? Icons.more_vert,
+                size: iconSize,
+                color:
+                    iconColor ??
+                    (ThemeState().isBlueTheme
+                        ? Colors.white
+                        : Theme.of(context).iconTheme.color),
+              ),
             ),
-          );
-        }).toList();
-      },
-      child: Padding(
-        padding: padding,
-        child: Tooltip(
-          message: tooltip ?? "",
-          child: ThemeIcon(
-            icon ?? Icons.more_vert,
-            size: iconSize,
-            color:
-                iconColor ??
-                (ThemeState().isBlueTheme
-                    ? Colors.white
-                    : Theme.of(context).iconTheme.color),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

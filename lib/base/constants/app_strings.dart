@@ -386,6 +386,14 @@ class AppStrings {
       "onboarding_toggle_description": "Show welcome screens",
       "haptic_feedback": "Haptic feedback",
       "haptic_feedback_description": "Vibration for taps and gestures",
+      "ui_animations": "UI animations",
+      "ui_animations_description": "Motion effects like pulsing and swinging",
+      "ui_animation_search_pulse": "Search button pulse",
+      "ui_animation_search_pulse_description": "Pulsing highlight around search button",
+      "ui_animation_bell_idle": "Bell idle swing",
+      "ui_animation_bell_idle_description": "Subtle swinging while visible",
+      "ui_animation_bell_tap": "Bell tap animation",
+      "ui_animation_bell_tap_description": "Ring + swing on tap",
 
       // ===== LANGUAGE & LOCALIZATION =====
       "current_language": "English",
@@ -1309,6 +1317,14 @@ class AppStrings {
       "onboarding_toggle_description": "Показать приветствие",
       "haptic_feedback": "Виброотклик",
       "haptic_feedback_description": "Вибрация при нажатиях и жестах",
+      "ui_animations": "Анимации интерфейса",
+      "ui_animations_description": "Эффекты движения: пульсация и качание",
+      "ui_animation_search_pulse": "Пульсация кнопки поиска",
+      "ui_animation_search_pulse_description": "Подсветка вокруг кнопки поиска",
+      "ui_animation_bell_idle": "Качание колокольчика",
+      "ui_animation_bell_idle_description": "Лёгкое качание, пока видно",
+      "ui_animation_bell_tap": "Анимация колокольчика при тапе",
+      "ui_animation_bell_tap_description": "Кольцо + качание при нажатии",
 
       // ===== LANGUAGE & LOCALIZATION =====
       "current_language": "Русский",
@@ -2245,6 +2261,14 @@ class AppStrings {
       "haptic_feedback": "Haptik javob",
       "haptic_feedback_description":
           "Bosish va jestlar uchun tebranish",
+      "ui_animations": "Interfeys animatsiyalari",
+      "ui_animations_description": "Pulsatsiya va tebranish kabi effektlar",
+      "ui_animation_search_pulse": "Qidiruv tugmasi pulsatsiyasi",
+      "ui_animation_search_pulse_description": "Qidiruv tugmasi atrofida pulsatsiya",
+      "ui_animation_bell_idle": "Qo‘ng‘iroq tebranishi",
+      "ui_animation_bell_idle_description": "Ko‘rinib turganda yengil tebranish",
+      "ui_animation_bell_tap": "Qo‘ng‘iroq bosish animatsiyasi",
+      "ui_animation_bell_tap_description": "Bosilganda halqa + tebranish",
 
       // ===== LANGUAGE & LOCALIZATION =====
       "current_language": "O'zbekcha",

@@ -1,6 +1,7 @@
+import "dart:math" as math;
+
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "dart:math" as math;
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -9,6 +10,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
@@ -471,21 +473,26 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             bottom: 30, // Moved down a bit from 100
             child: TutorialTargetWrapper(
               key: _searchButtonTutorialKey,
-              child: PulsingBorderWrapper(
-                enabled: true, // pulse on both home + search empty state
-                scaleTo: 1.14,
-                haloColor: ThemeState().isBlueTheme
-                    ? Colors.white.withValues(alpha: 0.18)
-                    : Colors.black.withValues(alpha: 0.24),
-                haloBlurRadius: ThemeState().isBlueTheme ? 18 : 32,
-                haloSpreadRadius: ThemeState().isBlueTheme ? 0.5 : 1.8,
-                padding: const EdgeInsets.all(2),
-                child: SearchFloatingActionButton(
-                  searchFiltersState: _searchFiltersState,
-                  replaceCurrentRoute: widget.isSearchMode,
-                  openedFromHomeScreen: widget.isHomeTabActive,
-                  elevation: ThemeState().isBlueTheme ? null : 8,
-                ),
+              child: ListenableBuilder(
+                listenable: AnimationSettingsState(),
+                builder: (context, _) {
+                  return PulsingBorderWrapper(
+                    enabled: AnimationSettingsState().searchPulseEnabled,
+                    scaleTo: 1.14,
+                    haloColor: ThemeState().isBlueTheme
+                        ? Colors.white.withValues(alpha: 0.18)
+                        : Colors.black.withValues(alpha: 0.24),
+                    haloBlurRadius: ThemeState().isBlueTheme ? 18 : 32,
+                    haloSpreadRadius: ThemeState().isBlueTheme ? 0.5 : 1.8,
+                    padding: const EdgeInsets.all(2),
+                    child: SearchFloatingActionButton(
+                      searchFiltersState: _searchFiltersState,
+                      replaceCurrentRoute: widget.isSearchMode,
+                      openedFromHomeScreen: widget.isHomeTabActive,
+                      elevation: ThemeState().isBlueTheme ? null : 8,
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -1104,14 +1111,16 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
   late final Animation<double> _ringOpacity;
   late final AnimationController _idleController;
   late final Animation<double> _idleBellTurns;
+  late final AnimationSettingsState _animationSettings;
 
   @override
   void initState() {
     super.initState();
+    _animationSettings = AnimationSettingsState();
     _idleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 960),
-    )..repeat(reverse: true);
+    );
     _idleBellTurns = Tween<double>(begin: -0.012, end: 0.012).animate(
       CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
     );
@@ -1158,10 +1167,35 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
         curve: const Interval(0, 0.88, curve: Curves.easeOut),
       ),
     );
+
+    _animationSettings.addListener(_syncFromSettings);
+    _syncFromSettings();
+  }
+
+  void _syncFromSettings() {
+    if (!mounted) return;
+    final idleEnabled = _animationSettings.bellIdleEnabled;
+    if (idleEnabled) {
+      if (!_idleController.isAnimating) {
+        _idleController.repeat(reverse: true);
+      }
+    } else {
+      _idleController.stop();
+      _idleController.value = 0;
+    }
+
+    final tapEnabled = _animationSettings.bellTapEnabled;
+    if (!tapEnabled) {
+      _controller.stop();
+      _controller.value = 0;
+    }
+
+    setState(() {});
   }
 
   @override
   void dispose() {
+    _animationSettings.removeListener(_syncFromSettings);
     _controller.dispose();
     _idleController.dispose();
     super.dispose();
@@ -1169,7 +1203,9 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
 
   void _handlePressed() {
     if (widget.onPressed == null) return;
-    _controller.forward(from: 0);
+    if (_animationSettings.bellTapEnabled) {
+      _controller.forward(from: 0);
+    }
     widget.onPressed!();
   }
 
@@ -1178,6 +1214,7 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
     final theme = Theme.of(context);
     final ringColor = theme.colorScheme.primary;
     final isBlueTheme = ThemeState().isBlueTheme;
+    final tapEnabled = _animationSettings.bellTapEnabled;
 
     return GhostButton(
       onPressed: widget.onPressed == null ? null : _handlePressed,
@@ -1196,45 +1233,47 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
               alignment: Alignment.center,
               clipBehavior: Clip.none,
               children: [
-                AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return IgnorePointer(
-                      child: Opacity(
-                        opacity: _ringOpacity.value.clamp(0.0, 1.0),
-                        child: Transform.scale(
-                          scale: _ringScale.value,
-                          child: Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: ringColor.withValues(alpha: 0.85),
-                                width: 1.5,
+                    if (tapEnabled)
+                      AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return IgnorePointer(
+                            child: Opacity(
+                              opacity: _ringOpacity.value.clamp(0.0, 1.0),
+                              child: Transform.scale(
+                                scale: _ringScale.value,
+                                child: Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: ringColor.withValues(alpha: 0.85),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                AnimatedBuilder(
-                  animation: Listenable.merge([_idleController, _controller]),
-                  builder: (context, child) {
-                    final turns = _idleBellTurns.value + _bellTurns.value;
-                    return Transform.rotate(
-                      angle: turns * 2 * math.pi,
-                      alignment: Alignment.topCenter,
-                      child: child,
-                    );
-                  },
-                  child: const ThemeIcon(
-                    Icons.notifications_active,
-                    size: 24,
-                  ),
-                ),
+                    AnimatedBuilder(
+                      animation: Listenable.merge([_idleController, _controller]),
+                      builder: (context, child) {
+                        final turns = _idleBellTurns.value +
+                            (tapEnabled ? _bellTurns.value : 0.0);
+                        return Transform.rotate(
+                          angle: turns * 2 * math.pi,
+                          alignment: Alignment.topCenter,
+                          child: child,
+                        );
+                      },
+                      child: const ThemeIcon(
+                        Icons.notifications_active,
+                        size: 24,
+                      ),
+                    ),
               ],
             ),
           ),
