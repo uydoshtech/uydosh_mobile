@@ -1,9 +1,12 @@
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
@@ -38,7 +41,9 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   bool _loadingAdmins = true;
   String? _adminsError;
   int? _selectedImportUserId;
-  int _selectedMessageLimit = 6;
+  int _selectedMessageLimit = 20;
+
+  late final FixedExtentScrollController _messageLimitScrollController;
 
   bool _newestFirst = true;
   bool _skipListingImport = false;
@@ -50,11 +55,16 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   @override
   void initState() {
     super.initState();
+    final limitIndex = _kMessageLimitChoices.indexOf(_selectedMessageLimit);
+    _messageLimitScrollController = FixedExtentScrollController(
+      initialItem: limitIndex >= 0 ? limitIndex : 0,
+    );
     _loadAdmins();
   }
 
   @override
   void dispose() {
+    _messageLimitScrollController.dispose();
     _chatController.dispose();
     _exportMaxRowsController.dispose();
     super.dispose();
@@ -421,31 +431,66 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                 : (v) => setState(() => _skipListingImport = v),
           ),
           const SizedBox(height: 16),
-          DropdownButtonFormField<int>(
-            // ignore: deprecated_member_use
-            value: _selectedMessageLimit,
-            items: _kMessageLimitChoices
-                .map(
-                  (n) => DropdownMenuItem<int>(
-                    value: n,
-                    child: Text("$n"),
-                  ),
-                )
-                .toList(),
-            onChanged: _running
-                ? null
-                : (v) {
-                    if (v == null) return;
-                    setState(() => _selectedMessageLimit = v);
-                  },
-            decoration: _fieldDecoration(
-              context,
-              labelText: L10n.get("admin_telegram_sync_limit_label"),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              L10n.get("admin_telegram_sync_limit_label"),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: isBlue
+                    ? BlueThemeColors.textSecondary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
-            style: fieldStyle,
-            isExpanded: true,
-            dropdownColor: isBlue ? BlueThemeColors.surface : null,
-            iconEnabledColor: isBlue ? BlueThemeColors.textPrimary : null,
+          ),
+          const SizedBox(height: 8),
+          IgnorePointer(
+            ignoring: _running,
+            child: Opacity(
+              opacity: _running ? 0.5 : 1,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isBlue
+                      ? BlueThemeColors.surface
+                      : Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+                height: 80,
+                child: CupertinoPicker(
+                  itemExtent: 40,
+                  scrollController: _messageLimitScrollController,
+                  onSelectedItemChanged: (index) {
+                    HapticFeedbackUtils.impact();
+                    SendSoundUtils.playSelectionSound();
+                    setState(() {
+                      _selectedMessageLimit = _kMessageLimitChoices[index];
+                    });
+                  },
+                  children: _kMessageLimitChoices
+                      .map(
+                        (n) => Center(
+                          child: Text(
+                            "$n",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isBlue
+                                  ? BlueThemeColors.textPrimary
+                                  : (ThemeState().isLightTheme
+                                      ? Colors.black
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
