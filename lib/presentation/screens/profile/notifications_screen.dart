@@ -1,7 +1,7 @@
 // ignore_for_file: eol_at_end_of_file
 
-import "package:flutter/material.dart";
 import "package:dio/dio.dart";
+import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -11,11 +11,12 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -349,7 +350,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Switch.adaptive(
+                                    ThemeToggle(
                                       value: a.enabled,
                                       onChanged: (v) => _toggleEnabled(a, v),
                                       materialTapTargetSize:
