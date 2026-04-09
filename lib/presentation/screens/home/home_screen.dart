@@ -30,6 +30,7 @@ import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
+import "package:uy_dosh/presentation/widgets/common/pulsing_border_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
@@ -470,10 +471,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             bottom: 30, // Moved down a bit from 100
             child: TutorialTargetWrapper(
               key: _searchButtonTutorialKey,
-              child: SearchFloatingActionButton(
-                searchFiltersState: _searchFiltersState,
-                replaceCurrentRoute: widget.isSearchMode,
-                openedFromHomeScreen: widget.isHomeTabActive,
+              child: PulsingBorderWrapper(
+                enabled: true, // pulse on both home + search empty state
+                scaleTo: 1.14,
+                haloColor: ThemeState().isBlueTheme
+                    ? Colors.white.withValues(alpha: 0.18)
+                    : Colors.black.withValues(alpha: 0.24),
+                haloBlurRadius: ThemeState().isBlueTheme ? 18 : 32,
+                haloSpreadRadius: ThemeState().isBlueTheme ? 0.5 : 1.8,
+                padding: const EdgeInsets.all(2),
+                child: SearchFloatingActionButton(
+                  searchFiltersState: _searchFiltersState,
+                  replaceCurrentRoute: widget.isSearchMode,
+                  openedFromHomeScreen: widget.isHomeTabActive,
+                  elevation: ThemeState().isBlueTheme ? null : 8,
+                ),
               ),
             ),
           ),
@@ -562,7 +574,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     color: _getWelcomeTitleColor(),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 36),
                 _buildEmptySearchCriteriaSummary(),
                 const SizedBox(height: 22),
                 Padding(
@@ -1098,7 +1110,7 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
     super.initState();
     _idleController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 960),
     )..repeat(reverse: true);
     _idleBellTurns = Tween<double>(begin: -0.012, end: 0.012).animate(
       CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
@@ -1106,7 +1118,7 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 780),
+      duration: const Duration(milliseconds: 624),
     );
     _bellTurns = TweenSequence<double>([
       TweenSequenceItem(
@@ -1219,7 +1231,7 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
                     );
                   },
                   child: const ThemeIcon(
-                    Icons.notifications_active_outlined,
+                    Icons.notifications_active,
                     size: 24,
                   ),
                 ),
