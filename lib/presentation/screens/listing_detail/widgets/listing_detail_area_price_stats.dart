@@ -10,6 +10,61 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
 
   final ListingDetail listingDetail;
 
+  Color? _priceIndicatorColor(ThemeData theme, AreaPriceBenchmark benchmark) {
+    if (benchmark.median <= 0) return null;
+
+    final ratio = listingDetail.price / benchmark.median;
+    if (ratio <= 0.9) return Colors.green.shade400;
+    if (ratio <= 1.1) return Colors.amber.shade400;
+    return theme.colorScheme.error;
+  }
+
+  Widget _priceIndicatorDot(
+    BuildContext context, {
+    required AreaPriceBenchmark benchmark,
+  }) {
+    final theme = Theme.of(context);
+    final color = _priceIndicatorColor(theme, benchmark);
+    if (color == null) return const SizedBox.shrink();
+
+    return Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: theme.colorScheme.surface,
+          width: 1.0,
+        ),
+      ),
+    );
+  }
+
+  Widget _benchmarkRow(
+    BuildContext context, {
+    required AreaPriceBenchmark benchmark,
+    required String text,
+  }) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 3),
+          child: _priceIndicatorDot(context, benchmark: benchmark),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: theme.textTheme.bodySmall?.copyWith(height: 1.35),
+          ),
+        ),
+      ],
+    );
+  }
+
   String? _stationPlaceName(BuildContext context) {
     final s = listingDetail.subwayStation;
     if (s == null) return null;
@@ -45,24 +100,11 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
 
     final station = stats.subwayStation;
     final district = stats.location;
-    final hasGeo =
-        listingDetail.subwayStationId != null || listingDetail.locationId != null;
 
     if (station == null && district == null) {
-      if (!hasGeo) return const SizedBox.shrink();
-      return _section(
-        context,
-        body: Text(
-          context.l10n.listing_area_price_insufficient_data,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                height: 1.35,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
-    final theme = Theme.of(context);
     final l10n = context.l10n;
     final stationName =
         _stationPlaceName(context) ?? l10n.listing_area_price_unknown_station;
@@ -72,26 +114,28 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (station != null) ...[
-            Text(
-              l10n.listing_area_price_station_line(
+            _benchmarkRow(
+              context,
+              benchmark: station,
+              text: l10n.listing_area_price_station_line(
                 stationName,
                 "${station.median}",
                 "${station.mean}",
                 "${station.sampleCount}",
               ),
-              style: theme.textTheme.bodySmall?.copyWith(height: 1.35),
             ),
             if (district != null) const SizedBox(height: 6),
           ],
           if (district != null)
-            Text(
-              l10n.listing_area_price_location_line(
+            _benchmarkRow(
+              context,
+              benchmark: district,
+              text: l10n.listing_area_price_location_line(
                 _districtPlaceName() ?? l10n.listing_area_price_unknown_district,
                 "${district.median}",
                 "${district.mean}",
                 "${district.sampleCount}",
               ),
-              style: theme.textTheme.bodySmall?.copyWith(height: 1.35),
             ),
         ],
       ),
