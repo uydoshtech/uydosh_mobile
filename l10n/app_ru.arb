@@ -340,21 +340,19 @@
   "listing_description_hint": "Введите описание объявления",
   "listing_price_label": "Цена",
   "listing_area_price_heading": "Ориентир по цене",
-  "listing_area_price_station_line": "У станции «{place}»: медиана {median} у.е., среднее {mean} ({count} объявлений)",
+  "listing_area_price_station_line": "У станции «{place}»: медиана {median} у.е. ({count} объявлений)",
   "@listing_area_price_station_line": {
     "placeholders": {
       "place": { "type": "String" },
       "median": { "type": "String" },
-      "mean": { "type": "String" },
       "count": { "type": "String" }
     }
   },
-  "listing_area_price_location_line": "В районе «{place}»: медиана {median} у.е., среднее {mean} ({count} объявлений)",
+  "listing_area_price_location_line": "В районе «{place}»: медиана {median} у.е. ({count} объявлений)",
   "@listing_area_price_location_line": {
     "placeholders": {
       "place": { "type": "String" },
       "median": { "type": "String" },
-      "mean": { "type": "String" },
       "count": { "type": "String" }
     }
   },
@@ -544,7 +542,6 @@
   "admin_panel_section_telegram_sync": "Импорт данных",
   "admin_panel_section_area_price_cache": "Ориентиры по ценам",
   "admin_telegram_sync_title": "Импорт данных",
-  "admin_telegram_sync_intro": "Импортирует объявления из Telegram‑канала в базу (тот же процесс, что npm run telegram:sync на сервере). На хосте API нужна сессия Telegram (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.",
   "admin_telegram_sync_chat_label": "Чат",
   "admin_telegram_sync_limit_label": "Лимит сообщений",
   "admin_telegram_sync_import_user_label": "ID владельца объявлений",

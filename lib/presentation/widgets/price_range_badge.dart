@@ -13,6 +13,7 @@ class PriceRangeBadge extends StatelessWidget {
     required this.minPrice, required this.maxPrice, super.key,
     this.showCurrency = true,
     this.showIcon = false,
+    this.iconSize,
     this.fontSize,
     this.padding,
     this.isActive = true,
@@ -28,6 +29,9 @@ class PriceRangeBadge extends StatelessWidget {
   final int maxPrice;
   final bool showCurrency;
   final bool showIcon;
+
+  /// When null and [showIcon] is true, uses [fontSize] + 2 if [fontSize] is set, else 14.
+  final double? iconSize;
   final double? fontSize;
   final EdgeInsets? padding;
   final bool isActive;
@@ -77,9 +81,9 @@ class PriceRangeBadge extends StatelessWidget {
         children: [
           if (showIcon) ...[
             ThemeIcon(
-              Icons.attach_money,
+              Icons.payments,
               color: color,
-              size: fontSize != null ? fontSize! + 2 : 14,
+              size: iconSize ?? (fontSize != null ? fontSize! + 2 : 14),
             ),
             if (showCurrency) const SizedBox(width: 2),
           ],

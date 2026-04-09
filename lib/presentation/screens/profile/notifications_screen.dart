@@ -250,6 +250,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       lines.add(Wrap(spacing: 8, runSpacing: 8, children: topRow));
     }
 
+    if (a.minPrice != null || a.maxPrice != null) {
+      final min = (a.minPrice ?? a.maxPrice ?? 0).round();
+      final max = (a.maxPrice ?? a.minPrice ?? 0).round();
+      lines.add(
+        PriceRangeBadge(
+          minPrice: min,
+          maxPrice: max,
+          currencySymbol: "y.e.",
+          showIcon: true,
+          iconSize: 18,
+          fontSize: 13,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+        ),
+      );
+    }
+
     final locationAndMetro = <Widget>[];
     if (a.locationId != null) {
       final name = LocationCache.getLocationName(a.locationId!, lang);
@@ -299,19 +315,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
     if (locationAndMetro.isNotEmpty) {
       lines.add(Wrap(spacing: 8, runSpacing: 8, children: locationAndMetro));
-    }
-    if (a.minPrice != null || a.maxPrice != null) {
-      final min = (a.minPrice ?? a.maxPrice ?? 0).round();
-      final max = (a.maxPrice ?? a.minPrice ?? 0).round();
-      lines.add(
-        PriceRangeBadge(
-          minPrice: min,
-          maxPrice: max,
-          currencySymbol: "y.e.",
-          fontSize: 13,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
-        ),
-      );
     }
     if ((a.privateRoom ?? false) == true) {
       lines.add(

@@ -761,14 +761,14 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String listing_area_price_station_line(
-      String place, String median, String mean, String count) {
-    return '«$place» bekati: median $median b.y., o‘rtacha $mean ($count e’lon)';
+      String place, String median, String count) {
+    return '«$place» bekati: median $median b.y. ($count e’lon)';
   }
 
   @override
   String listing_area_price_location_line(
-      String place, String median, String mean, String count) {
-    return '«$place» tumanida: median $median b.y., o‘rtacha $mean ($count e’lon)';
+      String place, String median, String count) {
+    return '«$place» tumanida: median $median b.y. ($count e’lon)';
   }
 
   @override
@@ -1335,10 +1335,6 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_telegram_sync_title => 'Maʼlumot importi';
-
-  @override
-  String get admin_telegram_sync_intro =>
-      'Telegram kanalidan e’lonlarni bazaga import qiladi (serverda npm run telegram:sync bilan bir xil jarayon). API serverda Telegram sessiyasi bo‘lishi kerak (TELEGRAM_SESSION_STRING yoki .telegram_session). Katta limit proksi taymautlarida uzilishi mumkin.';
 
   @override
   String get admin_telegram_sync_chat_label => 'Chat';

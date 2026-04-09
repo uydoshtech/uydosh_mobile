@@ -465,7 +465,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                   color: ListingDetailThemeHelper.descriptionTextColor,
                 ),
               ),
-            if (widget.listingDetail.privateRoom != null) ...[
+            if (widget.listingDetail.privateRoom == true) ...[
               const SizedBox(height: 8),
               Row(
                 children: [

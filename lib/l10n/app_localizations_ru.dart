@@ -756,14 +756,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String listing_area_price_station_line(
-      String place, String median, String mean, String count) {
-    return 'У станции «$place»: медиана $median у.е., среднее $mean ($count объявлений)';
+      String place, String median, String count) {
+    return 'У станции «$place»: медиана $median у.е. ($count объявлений)';
   }
 
   @override
   String listing_area_price_location_line(
-      String place, String median, String mean, String count) {
-    return 'В районе «$place»: медиана $median у.е., среднее $mean ($count объявлений)';
+      String place, String median, String count) {
+    return 'В районе «$place»: медиана $median у.е. ($count объявлений)';
   }
 
   @override
@@ -1327,10 +1327,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_telegram_sync_title => 'Импорт данных';
-
-  @override
-  String get admin_telegram_sync_intro =>
-      'Импортирует объявления из Telegram‑канала в базу (тот же процесс, что npm run telegram:sync на сервере). На хосте API нужна сессия Telegram (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.';
 
   @override
   String get admin_telegram_sync_chat_label => 'Чат';

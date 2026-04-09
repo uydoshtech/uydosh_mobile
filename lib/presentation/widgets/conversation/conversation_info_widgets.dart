@@ -222,7 +222,7 @@ class ConversationPriceDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const ThemeIcon(Icons.attach_money, color: Colors.green, size: 16),
+        const ThemeIcon(Icons.payments, color: Colors.green, size: 16),
         const SizedBox(width: 4),
         Expanded(
           child: Text(

@@ -348,21 +348,19 @@
   "listing_description_hint": "Enter listing description",
   "listing_price_label": "Price",
   "listing_area_price_heading": "Typical rent nearby",
-  "listing_area_price_station_line": "At {place}: median {median} y.e., average {mean} ({count} listings)",
+  "listing_area_price_station_line": "At {place}: median {median} y.e. ({count} listings)",
   "@listing_area_price_station_line": {
     "placeholders": {
       "place": { "type": "String" },
       "median": { "type": "String" },
-      "mean": { "type": "String" },
       "count": { "type": "String" }
     }
   },
-  "listing_area_price_location_line": "In {place}: median {median} y.e., average {mean} ({count} listings)",
+  "listing_area_price_location_line": "In {place}: median {median} y.e. ({count} listings)",
   "@listing_area_price_location_line": {
     "placeholders": {
       "place": { "type": "String" },
       "median": { "type": "String" },
-      "mean": { "type": "String" },
       "count": { "type": "String" }
     }
   },
@@ -552,7 +550,6 @@
   "admin_panel_section_telegram_sync": "Data import",
   "admin_panel_section_area_price_cache": "Listing price benchmarks",
   "admin_telegram_sync_title": "Data import",
-  "admin_telegram_sync_intro": "Imports listing data from a Telegram channel into the database (same flow as npm run telegram:sync on the server). The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.",
   "admin_telegram_sync_chat_label": "Chat",
   "admin_telegram_sync_limit_label": "Message limit",
   "admin_telegram_sync_import_user_label": "Listing owner user ID",

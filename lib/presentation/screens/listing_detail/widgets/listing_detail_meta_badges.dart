@@ -104,6 +104,8 @@ class ListingDetailMetaBadges extends StatelessWidget {
           minPrice: listingDetail.price,
           maxPrice: listingDetail.price,
           isActive: listingDetail.isActive,
+          showIcon: true,
+          iconSize: 18,
           fontSize: 13,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           currencySymbol: "y.e.",

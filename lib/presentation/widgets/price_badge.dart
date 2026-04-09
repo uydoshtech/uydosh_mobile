@@ -60,7 +60,7 @@ class PriceBadge extends StatelessWidget {
         children: [
           if (showIcon) ...[
             ThemeIcon(
-              Icons.attach_money,
+              Icons.payments,
               color: color,
               size: fontSize != null ? fontSize! + 2 : 14,
             ),

@@ -751,14 +751,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String listing_area_price_station_line(
-      String place, String median, String mean, String count) {
-    return 'At $place: median $median y.e., average $mean ($count listings)';
+      String place, String median, String count) {
+    return 'At $place: median $median y.e. ($count listings)';
   }
 
   @override
   String listing_area_price_location_line(
-      String place, String median, String mean, String count) {
-    return 'In $place: median $median y.e., average $mean ($count listings)';
+      String place, String median, String count) {
+    return 'In $place: median $median y.e. ($count listings)';
   }
 
   @override
@@ -1318,10 +1318,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_telegram_sync_title => 'Data import';
-
-  @override
-  String get admin_telegram_sync_intro =>
-      'Imports listing data from a Telegram channel into the database (same flow as npm run telegram:sync on the server). The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.';
 
   @override
   String get admin_telegram_sync_chat_label => 'Chat';

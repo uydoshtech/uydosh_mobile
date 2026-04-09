@@ -1471,16 +1471,16 @@ abstract class AppLocalizations {
   /// No description provided for @listing_area_price_station_line.
   ///
   /// In en, this message translates to:
-  /// **'At {place}: median {median} y.e., average {mean} ({count} listings)'**
+  /// **'At {place}: median {median} y.e. ({count} listings)'**
   String listing_area_price_station_line(
-      String place, String median, String mean, String count);
+      String place, String median, String count);
 
   /// No description provided for @listing_area_price_location_line.
   ///
   /// In en, this message translates to:
-  /// **'In {place}: median {median} y.e., average {mean} ({count} listings)'**
+  /// **'In {place}: median {median} y.e. ({count} listings)'**
   String listing_area_price_location_line(
-      String place, String median, String mean, String count);
+      String place, String median, String count);
 
   /// No description provided for @listing_area_price_insufficient_data.
   ///
@@ -2549,12 +2549,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data import'**
   String get admin_telegram_sync_title;
-
-  /// No description provided for @admin_telegram_sync_intro.
-  ///
-  /// In en, this message translates to:
-  /// **'Imports listing data from a Telegram channel into the database (same flow as npm run telegram:sync on the server). The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.'**
-  String get admin_telegram_sync_intro;
 
   /// No description provided for @admin_telegram_sync_chat_label.
   ///

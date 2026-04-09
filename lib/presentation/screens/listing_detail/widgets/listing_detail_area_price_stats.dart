@@ -14,8 +14,8 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
     if (benchmark.median <= 0) return null;
 
     final ratio = listingDetail.price / benchmark.median;
-    if (ratio <= 0.9) return Colors.green.shade400;
-    if (ratio <= 1.1) return Colors.amber.shade400;
+    if (ratio <= 1.1) return Colors.green.shade400;
+    if (ratio <= 1.35) return Colors.amber.shade700;
     return theme.colorScheme.error;
   }
 
@@ -120,7 +120,6 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
               text: l10n.listing_area_price_station_line(
                 stationName,
                 "${station.median}",
-                "${station.mean}",
                 "${station.sampleCount}",
               ),
             ),
@@ -133,7 +132,6 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
               text: l10n.listing_area_price_location_line(
                 _districtPlaceName() ?? l10n.listing_area_price_unknown_district,
                 "${district.median}",
-                "${district.mean}",
                 "${district.sampleCount}",
               ),
             ),

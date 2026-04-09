@@ -550,8 +550,6 @@ class AppStrings {
       "admin_panel_section_telegram_sync": "Data import",
       "admin_panel_section_area_price_cache": "Listing price benchmarks",
       "admin_telegram_sync_title": "Data import",
-      "admin_telegram_sync_intro":
-          "Imports listing data from a Telegram channel into the database (same flow as npm run telegram:sync on the server). The API host must have a valid Telegram session (TELEGRAM_SESSION_STRING or .telegram_session). Large limits may time out behind proxies.",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_limit_label": "Message limit",
       "admin_telegram_sync_import_user_label": "Listing owner user ID",
@@ -1503,8 +1501,6 @@ class AppStrings {
       "admin_panel_section_telegram_sync": "Импорт данных",
       "admin_panel_section_area_price_cache": "Ориентиры по ценам",
       "admin_telegram_sync_title": "Импорт данных",
-      "admin_telegram_sync_intro":
-          "Импортирует объявления из Telegram‑канала в базу (тот же процесс, что npm run telegram:sync на сервере). На хосте API нужна сессия Telegram (TELEGRAM_SESSION_STRING или .telegram_session). Большой limit может не успеть из‑за таймаутов прокси.",
       "admin_telegram_sync_chat_label": "Чат",
       "admin_telegram_sync_limit_label": "Лимит сообщений",
       "admin_telegram_sync_import_user_label": "ID владельца объявлений",
@@ -2467,8 +2463,6 @@ class AppStrings {
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
       "admin_panel_section_area_price_cache": "Narx bo‘yicha orientirlar",
       "admin_telegram_sync_title": "Maʼlumot importi",
-      "admin_telegram_sync_intro":
-          "Telegram kanalidan e’lonlarni bazaga import qiladi (serverda npm run telegram:sync bilan bir xil jarayon). API serverda Telegram sessiyasi bo‘lishi kerak (TELEGRAM_SESSION_STRING yoki .telegram_session). Katta limit proksi taymautlarida uzilishi mumkin.",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_limit_label": "Xabar limiti",
       "admin_telegram_sync_import_user_label": "E’lon egasi user ID",
