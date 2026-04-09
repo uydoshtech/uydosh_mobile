@@ -24,7 +24,7 @@ class ListingDetailContentCard extends StatefulWidget {
     required this.currentLanguage,
     required this.getLocalizedName,
     this.onOpenInYandexMaps,
-    this.mapSectionKey,
+    this.detailScrollController,
     this.formatMoveInDate,
     this.formattedMoveInDate,
     this.formattedPublicationDate,
@@ -39,7 +39,9 @@ class ListingDetailContentCard extends StatefulWidget {
   final String? ownerName;
   final VoidCallback? onAuthorTap;
   final VoidCallback? onOpenInYandexMaps;
-  final GlobalKey? mapSectionKey;
+  /// Parent [SingleChildScrollView] — used to scroll to the bottom when the
+  /// inline location map is expanded.
+  final ScrollController? detailScrollController;
   /// Pre-formatted move-in date (avoids DateTime.parse in build).
   final String? formattedMoveInDate;
   /// Pre-formatted publication date (avoids DateTime.parse in build).
@@ -64,18 +66,21 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     HapticFeedbackUtils.impact();
     if (!isExpanded) return;
 
+    final scroll = widget.detailScrollController;
+    if (scroll == null) return;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 350), () {
         if (!mounted) return;
-        final ctx = widget.mapSectionKey?.currentContext;
-        if (ctx != null && ctx.mounted) {
-          Scrollable.ensureVisible(
-            ctx,
-            alignment: 1.0,
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (!scroll.hasClients) return;
+          scroll.animateTo(
+            scroll.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
           );
-        }
+        });
       });
     });
   }
@@ -342,7 +347,6 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     );
 
     return Container(
-      key: widget.mapSectionKey,
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
