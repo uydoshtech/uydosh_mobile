@@ -166,18 +166,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             iconColor: iconColor,
             children: [
               _AdminMenuRow(
-                icon: Icons.subway,
-                titleKey: "admin_panel_section_subway_map",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AdminSubwayMapScreen(),
-                    ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
                 icon: Icons.analytics_outlined,
                 titleKey: "admin_panel_section_search_analytics",
                 iconColor: iconColor,
