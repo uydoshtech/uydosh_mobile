@@ -519,6 +519,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             "welcome_subtitle",
             style: TextStyle(fontSize: 16, color: _getWelcomeSubtitleColor()),
           ),
+          const SizedBox(height: 24),
+          GhostButtonFactory.iconText(
+            onPressed: _dispatchFeedRefresh,
+            icon: Icons.refresh,
+            text: L10n.get("refresh"),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            textStyle: const TextStyle(fontSize: 16),
+          ),
         ],
       ),
     );
