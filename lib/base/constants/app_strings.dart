@@ -95,6 +95,15 @@ class AppStrings {
       "menu_messages": "Messages",
       "menu_notifications": "Notifications",
       "notifications_empty": "No saved alerts yet.",
+      "notifications_disable_all": "Disable all notifications",
+      "notifications_delete_all": "Delete all notifications",
+      "notifications_disable_all_title": "Disable all notifications?",
+      "notifications_disable_all_message":
+          "This will turn off all saved search alerts. You can enable them again later.",
+      "notifications_delete_all_title": "Delete all notifications?",
+      "notifications_delete_all_message":
+          "This will permanently delete all saved search alerts. This action cannot be undone.",
+      "disable": "Disable",
       "type_message": "Type a message...",
       "conversation_created": "Conversation started",
       "conversation_failed": "Failed to start conversation",
@@ -846,11 +855,12 @@ class AppStrings {
       "search_listings": "Search Listings",
 
       "search": "Search",
-      "search_alert_notify_me": "Notify me",
+      "search_alert_notify_me": "Notify about these listings",
       "search_alert_login_required":
           "Sign in to get notifications for this search.",
       "search_alert_created":
           "You will be notified when matching listings are posted.",
+      "search_alert_already_exists": "This alert was added before.",
       "search_alert_failed": "Could not save this alert. Try again.",
       "search_alert_permission":
           "Enable notifications in settings to receive alerts.",
@@ -1005,6 +1015,15 @@ class AppStrings {
       "menu_messages": "Сообщения",
       "menu_notifications": "Уведомления",
       "notifications_empty": "Пока нет сохранённых оповещений.",
+      "notifications_disable_all": "Отключить все уведомления",
+      "notifications_delete_all": "Удалить все уведомления",
+      "notifications_disable_all_title": "Отключить все уведомления?",
+      "notifications_disable_all_message":
+          "Это выключит все сохранённые оповещения о поиске. Позже их можно включить снова.",
+      "notifications_delete_all_title": "Удалить все уведомления?",
+      "notifications_delete_all_message":
+          "Это навсегда удалит все сохранённые оповещения о поиске. Это действие нельзя отменить.",
+      "disable": "Отключить",
       "type_message": "Введите сообщение...",
       "conversation_created": "Разговор начат",
       "conversation_failed": "Не удалось начать разговор",
@@ -1764,11 +1783,12 @@ class AppStrings {
       "search_listings": "Поиск объявлений",
 
       "search": "Поиск",
-      "search_alert_notify_me": "Уведомлять",
+      "search_alert_notify_me": "Уведомить о таких объявлениях",
       "search_alert_login_required":
           "Войдите, чтобы получать уведомления по этому поиску.",
       "search_alert_created":
           "Мы сообщим, когда появятся подходящие объявления.",
+      "search_alert_already_exists": "Это уведомление уже было добавлено.",
       "search_alert_failed":
           "Не удалось сохранить оповещение. Попробуйте снова.",
       "search_alert_permission":
@@ -1925,6 +1945,15 @@ class AppStrings {
       "menu_messages": "Xabarlar",
       "menu_notifications": "Bildirishnomalar",
       "notifications_empty": "Hozircha saqlangan bildirishnomalar yo'q.",
+      "notifications_disable_all": "Barcha bildirishnomalarni o‘chirish",
+      "notifications_delete_all": "Barcha bildirishnomalarni o‘chirib tashlash",
+      "notifications_disable_all_title": "Barcha bildirishnomalar o‘chirilsinmi?",
+      "notifications_disable_all_message":
+          "Bu barcha saqlangan qidiruv ogohlantirishlarini o‘chiradi. Keyinroq yana yoqishingiz mumkin.",
+      "notifications_delete_all_title": "Barcha bildirishnomalar o‘chirib tashlansinmi?",
+      "notifications_delete_all_message":
+          "Bu barcha saqlangan qidiruv ogohlantirishlarini butunlay o‘chirib tashlaydi. Bu amalni bekor qilib bo‘lmaydi.",
+      "disable": "O‘chirish",
       "type_message": "Xabar yozing...",
       "conversation_created": "Suhbat boshlandi",
       "conversation_failed": "Suhbat boshlanmadi",
@@ -2690,10 +2719,11 @@ class AppStrings {
       "search_listings": "E'lonlarni qidirish",
 
       "search": "Qidirish",
-      "search_alert_notify_me": "Xabar berilsin",
+      "search_alert_notify_me": "Shu kabi e'lonlar haqida xabar berilsin",
       "search_alert_login_required":
           "Bu qidiruv bo'yicha bildirishnomalar uchun tizimga kiring.",
       "search_alert_created": "Mos e'lonlar chiqqanda xabar beramiz.",
+      "search_alert_already_exists": "Bu bildirishnoma avval ham qo'shilgan.",
       "search_alert_failed":
           "Bildirishnomani saqlab bo'lmadi. Qayta urinib ko'ring.",
       "search_alert_permission":

@@ -68,6 +68,8 @@ class SearchAlertService implements ISearchAlertService {
 
   final IOAuthApiClient _oauthApiClient;
 
+  static const String alreadyExistsErrorToken = "already_exists";
+
   @override
   Future<String?> createAlertForCurrentSearch({
     required int listingTypeId,
@@ -93,11 +95,17 @@ class SearchAlertService implements ISearchAlertService {
         gender: gender,
       );
 
-      await _oauthApiClient.post<Map<String, dynamic>, _CreateSearchAlertRequest>(
+      final r = await _oauthApiClient.post<Map<String, dynamic>, _CreateSearchAlertRequest>(
         "/users/me/search-alerts",
         (json) => json as Map<String, dynamic>,
         data: data,
       );
+
+      final created = r["created"];
+      if (created is bool && created == false) {
+        return alreadyExistsErrorToken;
+      }
+
       return null;
     } on DioException catch (e) {
       final body = e.response?.data;

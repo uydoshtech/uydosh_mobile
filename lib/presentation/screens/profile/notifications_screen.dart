@@ -10,6 +10,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -28,6 +29,7 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _loading = true;
+  bool _bulkWorking = false;
   List<SearchAlert> _alerts = const [];
 
   @override
@@ -88,6 +90,77 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       return;
     }
     setState(() => _alerts = _alerts.where((x) => x.id != a.id).toList());
+  }
+
+  Future<void> _disableAllAlerts() async {
+    if (_bulkWorking) return;
+    if (_alerts.isEmpty) return;
+
+    final confirmed = await CommonConfirmationDialogs.showGenericConfirmation(
+      context: context,
+      titleKey: "notifications_disable_all_title",
+      messageKey: "notifications_disable_all_message",
+      confirmButtonKey: "disable",
+      isDestructive: false,
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _bulkWorking = true);
+    try {
+      var failed = 0;
+      for (final a in _alerts) {
+        if (a.enabled == false) continue;
+        final ok = await getIt<ISearchAlertService>().setAlertEnabled(
+          alertId: a.id,
+          enabled: false,
+        );
+        if (!ok) failed++;
+      }
+      if (!mounted) return;
+
+      if (failed > 0) {
+        ToastTheme.showError(context, message: L10n.get("error_generic"));
+      }
+
+      setState(() {
+        _alerts = _alerts
+            .map((x) => SearchAlert.fromJson(_toJson(x, enabled: false)))
+            .toList();
+      });
+    } finally {
+      if (mounted) setState(() => _bulkWorking = false);
+    }
+  }
+
+  Future<void> _deleteAllAlerts() async {
+    if (_bulkWorking) return;
+    if (_alerts.isEmpty) return;
+
+    final confirmed = await CommonConfirmationDialogs.showDeleteConfirmation(
+      context: context,
+      titleKey: "notifications_delete_all_title",
+      messageKey: "notifications_delete_all_message",
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _bulkWorking = true);
+    try {
+      var failed = 0;
+      for (final a in List<SearchAlert>.from(_alerts)) {
+        final ok = await getIt<ISearchAlertService>().deleteAlert(alertId: a.id);
+        if (!ok) failed++;
+      }
+      if (!mounted) return;
+
+      if (failed > 0) {
+        ToastTheme.showError(context, message: L10n.get("error_generic"));
+        await _load();
+        return;
+      }
+      setState(() => _alerts = const []);
+    } finally {
+      if (mounted) setState(() => _bulkWorking = false);
+    }
   }
 
   Map<String, dynamic> _toJson(SearchAlert a, {bool? enabled}) => {
@@ -189,18 +262,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       );
     }
     if (a.subwayStationId != null) {
-      final station = MetroCache.getStationById(a.subwayStationId!);
-      final name = MetroCache.getStationDisplayName(a.subwayStationId!, lang);
-      locationAndMetro.add(
-        _iconTextBadge(
-          theme: theme,
-          icon: Icons.train,
-          text: name,
-          color: station == null
-              ? theme.colorScheme.onSurfaceVariant
-              : AppColors.getMetroLineColor(station.line),
-        ),
-      );
+      final stationId = a.subwayStationId!;
+      if (stationId > 0) {
+        final station = MetroCache.getStationById(stationId);
+        final name = MetroCache.getStationDisplayName(stationId, lang);
+        // Avoid rendering an "empty" metro badge when cache can't resolve the id.
+        if (name.trim().isNotEmpty) {
+          locationAndMetro.add(
+            _iconTextBadge(
+              theme: theme,
+              icon: Icons.train,
+              text: name,
+              color: station == null
+                  ? theme.colorScheme.onSurfaceVariant
+                  : AppColors.getMetroLineColor(station.line),
+            ),
+          );
+        }
+      }
     } else if (a.subwayLineId != null) {
       final name = MetroCache.getLineName(a.subwayLineId!, lang);
       final lineColor = AppColors.getMetroLineColor(a.subwayLineId!);
@@ -275,10 +354,76 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+
+    final cardBorderColor = isBlueTheme
+        ? Colors.white.withValues(alpha: 0.16)
+        : (theme.brightness == Brightness.dark
+            ? Colors.white.withValues(alpha: 0.10)
+            : Colors.black.withValues(alpha: 0.08));
 
     return Scaffold(
       appBar: AppBar(
         title: Text(L10n.get("menu_notifications")),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: PopupMenuButton<String>(
+              enabled: !_loading && !_bulkWorking,
+              icon: const ThemeIcon(Icons.more_vert),
+              onSelected: (value) {
+                switch (value) {
+                  case "disable_all":
+                    _disableAllAlerts();
+                    break;
+                  case "delete_all":
+                    _deleteAllAlerts();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: "disable_all",
+                  enabled: _alerts.isNotEmpty,
+                  child: Row(
+                    children: [
+                      const ThemeIcon(
+                        Icons.notifications_off_outlined,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(L10n.get("notifications_disable_all")),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: "delete_all",
+                  enabled: _alerts.isNotEmpty,
+                  child: Row(
+                    children: [
+                      ThemeIcon(
+                        Icons.delete_outline,
+                        size: 20,
+                        color: theme.colorScheme.error,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(L10n.get("notifications_delete_all")),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_bulkWorking)
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+        ],
       ),
       body: _loading
           ? const Center(child: HouseLoadingIndicator())
@@ -320,6 +465,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         final a = _alerts[i];
                         return Card(
                           margin: EdgeInsets.zero,
+                          elevation: 0,
+                          color: theme.colorScheme.surface,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            side: BorderSide(color: cardBorderColor, width: 1),
+                          ),
                           child: Padding(
                             padding: const EdgeInsets.all(14),
                             child: Row(
@@ -345,33 +496,39 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    ThemeToggle(
-                                      value: a.enabled,
-                                      onChanged: (v) => _toggleEnabled(a, v),
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    IconButton(
-                                      tooltip: L10n.get("delete"),
-                                      visualDensity: VisualDensity.compact,
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(
-                                        minWidth: 40,
-                                        minHeight: 40,
+                                const SizedBox(width: 6),
+                                Padding(
+                                  // Pull the controls slightly away from the card edge.
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      ThemeToggle(
+                                        value: a.enabled,
+                                        onChanged: (v) => _toggleEnabled(a, v),
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
                                       ),
-                                      icon: ThemeIcon(
-                                        Icons.delete_outline,
-                                        color: theme.colorScheme.error,
+                                      const SizedBox(width: 6),
+                                      IconButton(
+                                        tooltip: L10n.get("delete"),
+                                        visualDensity: VisualDensity.compact,
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 44,
+                                          minHeight: 44,
+                                        ),
+                                        icon: ThemeIcon(
+                                          Icons.delete_outline,
+                                          size: 32, // ~30% larger than default
+                                          color: theme.colorScheme.error,
+                                        ),
+                                        onPressed: () => _deleteAlert(a),
                                       ),
-                                      onPressed: () => _deleteAlert(a),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),

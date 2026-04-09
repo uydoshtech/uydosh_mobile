@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "dart:math" as math;
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -35,7 +36,6 @@ import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
-import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -562,57 +562,22 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     color: _getWelcomeTitleColor(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
                 _buildEmptySearchCriteriaSummary(),
-              ],
-            ),
-          ),
-          // Keep actions above the floating "lens" button.
-          Padding(
-            padding: const EdgeInsets.only(bottom: 90),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: GhostButtonFactory.iconText(
-                    onPressed: () {
-                      _searchFiltersState.applyProfileValuesForSearchSheet()
-                          .then((_) {
-                        if (!context.mounted) return;
-                        SearchBottomSheetWidget.show(
-                          context,
-                          replaceCurrentRoute: true,
-                          openedFromHomeScreen: widget.isHomeTabActive,
-                          currentListingTypeId:
-                              _searchFiltersState.selectedListingTypeId,
-                          currentLocationId:
-                              _searchFiltersState.selectedLocationIndex,
-                          currentSubwayStationId:
-                              _searchFiltersState.selectedStationId,
-                          currentSubwayLineId:
-                              _searchFiltersState.selectedSubwayLine,
-                          currentGender: _searchFiltersState.selectedGender,
-                          currentMinPrice: _searchFiltersState.minPrice,
-                          currentMaxPrice: _searchFiltersState.maxPrice,
-                        );
-                      });
-                    },
-                    icon: Icons.search,
-                    text: L10n.get("refine_search"),
+                const SizedBox(height: 22),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: _NotifySearchAlertGhostButton(
+                      label: L10n.get("search_alert_notify_me"),
+                      onPressed: _isCreatingSearchAlert
+                          ? null
+                          : _subscribeToSearchAlerts,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: GhostButtonFactory.iconText(
-                    onPressed: _isCreatingSearchAlert
-                        ? null
-                        : _subscribeToSearchAlerts,
-                    icon: Icons.notifications_active_outlined,
-                    text: L10n.get("search_alert_notify_me"),
-                  ),
-                ),
+                const SizedBox(height: 110),
               ],
             ),
           ),
@@ -841,10 +806,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       if (!mounted) return;
 
       if (err != null) {
-        ToastTheme.showError(
-          context,
-          message: err == "error" ? L10n.get("search_alert_failed") : err,
-        );
+        if (err == SearchAlertService.alreadyExistsErrorToken) {
+          ToastTheme.showSuccess(
+            context,
+            message: L10n.get("search_alert_already_exists"),
+          );
+        } else {
+          ToastTheme.showError(
+            context,
+            message: err == "error" ? L10n.get("search_alert_failed") : err,
+          );
+        }
         return;
       }
 
@@ -1094,5 +1066,173 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       }
       return sum;
     });
+  }
+}
+
+/// Notify-me control: expanding ring + bell wiggle on tap.
+class _NotifySearchAlertGhostButton extends StatefulWidget {
+  const _NotifySearchAlertGhostButton({
+    required this.label,
+    required this.onPressed,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  State<_NotifySearchAlertGhostButton> createState() =>
+      _NotifySearchAlertGhostButtonState();
+}
+
+class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostButton>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _bellTurns;
+  late final Animation<double> _ringScale;
+  late final Animation<double> _ringOpacity;
+  late final AnimationController _idleController;
+  late final Animation<double> _idleBellTurns;
+
+  @override
+  void initState() {
+    super.initState();
+    _idleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _idleBellTurns = Tween<double>(begin: -0.012, end: 0.012).animate(
+      CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
+    );
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 780),
+    );
+    _bellTurns = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0, end: 0.1).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 22,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.1, end: -0.09).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 24,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -0.09, end: 0.055).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 24,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.055, end: 0).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 30,
+      ),
+    ]).animate(_controller);
+    _ringScale = Tween<double>(begin: 1, end: 2.15).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0, 0.72, curve: Curves.easeOut),
+      ),
+    );
+    _ringOpacity = Tween<double>(begin: 0.5, end: 0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0, 0.88, curve: Curves.easeOut),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _idleController.dispose();
+    super.dispose();
+  }
+
+  void _handlePressed() {
+    if (widget.onPressed == null) return;
+    _controller.forward(from: 0);
+    widget.onPressed!();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final ringColor = theme.colorScheme.primary;
+    final isBlueTheme = ThemeState().isBlueTheme;
+
+    return GhostButton(
+      onPressed: widget.onPressed == null ? null : _handlePressed,
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 21),
+      borderRadius: BorderRadius.circular(10),
+      borderWidth: isBlueTheme ? 1.5 : 2.0,
+      borderColor: isBlueTheme ? Colors.white.withValues(alpha: 0.14) : null,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 30,
+            height: 30,
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return IgnorePointer(
+                      child: Opacity(
+                        opacity: _ringOpacity.value.clamp(0.0, 1.0),
+                        child: Transform.scale(
+                          scale: _ringScale.value,
+                          child: Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: ringColor.withValues(alpha: 0.85),
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                AnimatedBuilder(
+                  animation: Listenable.merge([_idleController, _controller]),
+                  builder: (context, child) {
+                    final turns = _idleBellTurns.value + _bellTurns.value;
+                    return Transform.rotate(
+                      angle: turns * 2 * math.pi,
+                      alignment: Alignment.topCenter,
+                      child: child,
+                    );
+                  },
+                  child: const ThemeIcon(
+                    Icons.notifications_active_outlined,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            widget.label,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
   }
 }
