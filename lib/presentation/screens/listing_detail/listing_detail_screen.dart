@@ -55,7 +55,6 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_map_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
@@ -1787,32 +1786,6 @@ L10n.get("feature_listing_error",
     );
   }
 
-  List<Widget> _buildMapSection(
-    ListingDetail listingDetail, {
-    required String currentLanguage,
-    required String Function({
-      required String language, String? nameUz,
-      String? nameRu,
-      String? nameEn,
-    }) getLocalizedName,
-  }) {
-    final hasMap = listingDetail.location != null ||
-        listingDetail.subwayStation != null;
-
-    if (!hasMap) return [];
-
-    return [
-      ListingDetailMapSection(
-        listingDetail: listingDetail,
-        currentLanguage: currentLanguage,
-        getLocalizedName: getLocalizedName,
-        sectionKey: _mapSectionKey,
-        onOpenInYandexMaps: () =>
-            _confirmOpenInYandexMaps(listingDetail),
-      ),
-    ];
-  }
-
   Widget? _buildCompatibilitySection(
     ListingDetail listingDetail,
     ListingDetailPageState pageState,
@@ -1974,16 +1947,13 @@ L10n.get("feature_listing_error",
                       formattedPublicationDate: formattedPub,
                       getLocalizedName: _getLocalizedName,
                       ownerName: pageState.ownerName,
+                      mapSectionKey: _mapSectionKey,
+                      onOpenInYandexMaps: () =>
+                          _confirmOpenInYandexMaps(listingDetail),
                       onAuthorTap: () =>
                           _navigateToProfile(listingDetail.user.id),
                     ),
                     const SizedBox(height: 8),
-                    // Map section
-                    ..._buildMapSection(
-                      listingDetail,
-                      currentLanguage: currentLanguage,
-                      getLocalizedName: _getLocalizedName,
-                    ),
                     // Compatibility section (below map, in scroll flow)
                     ...() {
                       final section = compatibilitySection;

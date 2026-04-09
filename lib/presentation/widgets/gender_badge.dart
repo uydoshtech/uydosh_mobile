@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class GenderBadge extends StatelessWidget {
@@ -19,10 +18,7 @@ class GenderBadge extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color:
-            ThemeState().isLightTheme
-                ? null
-                : _getGenderColor(gender).withValues(alpha: 0.1),
+        color: _getGenderColor(gender).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: _getGenderColor(gender), width: 1.0),
       ),

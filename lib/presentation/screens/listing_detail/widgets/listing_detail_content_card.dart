@@ -1,9 +1,12 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
@@ -11,6 +14,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_description_translation.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 /// Main content card for listing detail (header, title, description, location, amenities, dates).
@@ -19,6 +23,8 @@ class ListingDetailContentCard extends StatefulWidget {
     required this.listingDetail,
     required this.currentLanguage,
     required this.getLocalizedName,
+    this.onOpenInYandexMaps,
+    this.mapSectionKey,
     this.formatMoveInDate,
     this.formattedMoveInDate,
     this.formattedPublicationDate,
@@ -32,6 +38,8 @@ class ListingDetailContentCard extends StatefulWidget {
   final String currentLanguage;
   final String? ownerName;
   final VoidCallback? onAuthorTap;
+  final VoidCallback? onOpenInYandexMaps;
+  final GlobalKey? mapSectionKey;
   /// Pre-formatted move-in date (avoids DateTime.parse in build).
   final String? formattedMoveInDate;
   /// Pre-formatted publication date (avoids DateTime.parse in build).
@@ -52,6 +60,26 @@ class ListingDetailContentCard extends StatefulWidget {
 }
 
 class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
+  void _onMapExpansionChanged(bool isExpanded) {
+    HapticFeedbackUtils.impact();
+    if (!isExpanded) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (!mounted) return;
+        final ctx = widget.mapSectionKey?.currentContext;
+        if (ctx != null && ctx.mounted) {
+          Scrollable.ensureVisible(
+            ctx,
+            alignment: 1.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    });
+  }
+
   String _getAmenityLocalizedName(Amenity amenity) {
     switch (widget.currentLanguage) {
       case "ru":
@@ -172,6 +200,210 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
           icon: _getAmenityIcon(amenity),
           size: 18,
           color: ListingDetailThemeHelper.amenityIconColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubwayStationDisplay(SubwayStationDetail station) {
+    final transferInfo = MetroCache.getTransferStationInfo(station.id);
+
+    if (transferInfo != null) {
+      final connectedStation = SubwayStationDetail(
+        id: transferInfo["connectedStationId"] as int,
+        nameUz: transferInfo["connectedStationName"] as String,
+        nameRu: transferInfo["connectedStationNameRu"] as String,
+        nameEn: transferInfo["connectedStationNameEn"] as String,
+        line: transferInfo["connectedStationLine"] as int,
+      );
+
+      return Row(
+        children: [
+          ThemeIcon(
+            Icons.train,
+            color: ListingDetailThemeHelper.lineColor(station.line),
+            size: 20,
+          ),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              widget.getLocalizedName(
+                nameUz: station.nameUz,
+                nameRu: station.nameRu,
+                nameEn: station.nameEn,
+                language: widget.currentLanguage,
+              ),
+              style: TextStyle(
+                fontSize: 15,
+                color: ListingDetailThemeHelper.locationTextColor,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 4),
+          ThemeIcon(
+            Icons.swap_horiz,
+            color: ListingDetailThemeHelper.locationTextColor,
+            size: 16,
+          ),
+          const SizedBox(width: 4),
+          ThemeIcon(
+            Icons.train,
+            color: ListingDetailThemeHelper.lineColor(connectedStation.line),
+            size: 20,
+          ),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              widget.getLocalizedName(
+                nameUz: connectedStation.nameUz,
+                nameRu: connectedStation.nameRu,
+                nameEn: connectedStation.nameEn,
+                language: widget.currentLanguage,
+              ),
+              style: TextStyle(
+                fontSize: 15,
+                color: ListingDetailThemeHelper.locationTextColor,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        ThemeIcon(
+          Icons.train,
+          color: ListingDetailThemeHelper.lineColor(station.line),
+          size: 20,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            widget.getLocalizedName(
+              nameUz: station.nameUz,
+              nameRu: station.nameRu,
+              nameEn: station.nameEn,
+              language: widget.currentLanguage,
+            ),
+            style: TextStyle(
+              fontSize: 15,
+              color: ListingDetailThemeHelper.locationTextColor,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInlineLocationMapSection() {
+    final hasLocation = widget.listingDetail.location != null;
+    final hasSubway = widget.listingDetail.subwayStation != null;
+    final hasMap = hasLocation || hasSubway;
+    final canOpen = widget.onOpenInYandexMaps != null;
+
+    if (!hasMap) return const SizedBox.shrink();
+
+    final title = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (hasSubway) _buildSubwayStationDisplay(widget.listingDetail.subwayStation!),
+        if (hasSubway && hasLocation) const SizedBox(height: 8),
+        if (hasLocation)
+          Row(
+            children: [
+              ThemeIconFactory.detail(
+                icon: Icons.location_on,
+                color: Colors.red,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  widget.getLocalizedName(
+                    nameUz: widget.listingDetail.location!.nameUz,
+                    nameRu: widget.listingDetail.location!.nameRu,
+                    nameEn: widget.listingDetail.location!.nameEn,
+                    language: widget.currentLanguage,
+                  ),
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: ListingDetailThemeHelper.locationTextColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+
+    return Container(
+      key: widget.mapSectionKey,
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.35),
+          ),
+        ),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: false,
+          onExpansionChanged: _onMapExpansionChanged,
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(top: 12),
+          iconColor: ListingDetailThemeHelper.locationTextColor,
+          collapsedIconColor: ListingDetailThemeHelper.locationTextColor,
+          title: title,
+          children: [
+            YandexMapWidget(
+              apiKey: AppConfig.yandexMapsApiKey,
+              height: 250,
+              listingDetail: widget.listingDetail,
+            ),
+            if (canOpen) ...[
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton.icon(
+                  onPressed: () {
+                    HapticFeedbackUtils.impact();
+                    widget.onOpenInYandexMaps?.call();
+                  },
+                  icon: ThemeIcon(
+                    Icons.link,
+                    size: 18,
+                    color: ListingDetailThemeHelper.yandexButtonColor,
+                  ),
+                  label: Text(
+                    L10n.get("open_in_yandex_maps"),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: ListingDetailThemeHelper.yandexButtonColor,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                        color: ListingDetailThemeHelper.yandexButtonColor,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -410,6 +642,11 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                         ),
                       ],
             ),
+            if (widget.listingDetail.location != null ||
+                widget.listingDetail.subwayStation != null) ...[
+              const SizedBox(height: 16),
+              _buildInlineLocationMapSection(),
+            ],
           ],
         ),
       ),

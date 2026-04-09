@@ -51,7 +51,7 @@ class ListingTypeBadge extends StatelessWidget {
               style: TextStyle(
                 color: color,
                 fontSize: fontSize ?? 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
         ],

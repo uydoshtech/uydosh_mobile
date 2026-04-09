@@ -700,6 +700,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           icon: gender == 2 ? Icons.female : Icons.male,
           text: gender == 2 ? L10n.get("female") : L10n.get("male"),
           color: gender == 2 ? AppColors.genderFemale : AppColors.genderMale,
+          tintAlpha: 0.12,
         ),
       );
     }
@@ -715,6 +716,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         fontSize: 13,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         activeColor: AppColors.statusActive,
+        useTintBackground: true,
+        tintAlpha: 0.12,
       ),
     );
 
@@ -752,12 +755,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     required IconData icon,
     required String text,
     required Color color,
+    double tintAlpha = 0.1,
   }) {
-    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: color.withValues(alpha: tintAlpha),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color, width: 1),
       ),
@@ -774,8 +777,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             style: TextStyle(
               fontSize: 13,
               height: 1.15,
-              color: theme.colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
+              color: color,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

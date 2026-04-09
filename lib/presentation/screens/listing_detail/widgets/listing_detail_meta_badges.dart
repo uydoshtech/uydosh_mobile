@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -51,11 +50,10 @@ class ListingDetailMetaBadges extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: ThemeState().isLightTheme
-                  ? null
-                  : ListingDetailThemeHelper.genderColor(
-                      listingDetail.gender!,
-                    ).withValues(alpha: 0.1),
+              // Keep existing layout; just make fill slightly tinted (also in light theme).
+              color: ListingDetailThemeHelper.genderColor(
+                listingDetail.gender!,
+              ).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: ListingDetailThemeHelper.genderColor(
@@ -95,6 +93,9 @@ class ListingDetailMetaBadges extends StatelessWidget {
           fontSize: 13,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           currencySymbol: "y.e.",
+          // Keep existing layout; just make fill slightly tinted.
+          useTintBackground: true,
+          tintAlpha: 0.12,
         ),
       ],
     );
