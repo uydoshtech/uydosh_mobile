@@ -964,7 +964,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         ),
         builder: (context, count) {
           final baseTitle = L10n.get("search_results");
-          final titleText = count == null ? baseTitle : "$baseTitle ($count)";
+          final titleText =
+              (count == null || count <= 0) ? baseTitle : "$baseTitle: $count";
           return Text(
             titleText,
             style: Theme.of(context).appBarTheme.titleTextStyle,
@@ -1181,7 +1182,8 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
       }
     } else {
       _idleController.stop();
-      _idleController.value = 0;
+      // 0 maps to tween begin (slightly rotated). Keep midpoint as "rest" angle.
+      _idleController.value = 0.5;
     }
 
     final tapEnabled = _animationSettings.bellTapEnabled;
@@ -1214,6 +1216,7 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
     final theme = Theme.of(context);
     final ringColor = theme.colorScheme.primary;
     final isBlueTheme = ThemeState().isBlueTheme;
+    final idleEnabled = _animationSettings.bellIdleEnabled;
     final tapEnabled = _animationSettings.bellTapEnabled;
 
     return GhostButton(
@@ -1261,7 +1264,7 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
                     AnimatedBuilder(
                       animation: Listenable.merge([_idleController, _controller]),
                       builder: (context, child) {
-                        final turns = _idleBellTurns.value +
+                        final turns = (idleEnabled ? _idleBellTurns.value : 0.0) +
                             (tapEnabled ? _bellTurns.value : 0.0);
                         return Transform.rotate(
                           angle: turns * 2 * math.pi,
