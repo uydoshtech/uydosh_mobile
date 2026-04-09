@@ -369,36 +369,15 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
             if (canOpen) ...[
               const SizedBox(height: 16),
               Center(
-                child: TextButton.icon(
-                  onPressed: () {
-                    HapticFeedbackUtils.impact();
-                    widget.onOpenInYandexMaps?.call();
-                  },
-                  icon: ThemeIcon(
-                    Icons.link,
-                    size: 18,
-                    color: ListingDetailThemeHelper.yandexButtonColor,
-                  ),
-                  label: Text(
-                    L10n.get("open_in_yandex_maps"),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: ListingDetailThemeHelper.yandexButtonColor,
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(
-                        color: ListingDetailThemeHelper.yandexButtonColor,
-                        width: 1,
-                      ),
-                    ),
+                child: UydoshLinkButton(
+                  text: L10n.get("open_in_yandex_maps"),
+                  onPressed: () => widget.onOpenInYandexMaps?.call(),
+                  color: ListingDetailThemeHelper.yandexButtonColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
                   ),
                 ),
               ),

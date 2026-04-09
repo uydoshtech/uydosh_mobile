@@ -7,7 +7,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 /// Map section with Yandex Maps for listing detail.
 /// Collapsed by default: shows only location and metro. Tap to expand and show map.
@@ -221,36 +221,15 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
               ),
               const SizedBox(height: 16),
               Center(
-                child: TextButton.icon(
-                  onPressed: () {
-                    HapticFeedbackUtils.impact();
-                    widget.onOpenInYandexMaps();
-                  },
-                  icon: ThemeIcon(
-                    Icons.link,
-                    size: 18,
-                    color: ListingDetailThemeHelper.yandexButtonColor,
-                  ),
-                  label: Text(
-                    L10n.get("open_in_yandex_maps"),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: ListingDetailThemeHelper.yandexButtonColor,
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(
-                        color: ListingDetailThemeHelper.yandexButtonColor,
-                        width: 1,
-                      ),
-                    ),
+                child: UydoshLinkButton(
+                  text: L10n.get("open_in_yandex_maps"),
+                  onPressed: widget.onOpenInYandexMaps,
+                  color: ListingDetailThemeHelper.yandexButtonColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
                   ),
                 ),
               ),
