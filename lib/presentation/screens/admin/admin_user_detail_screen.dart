@@ -178,7 +178,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                           width: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const ThemeIcon(Icons.block),
+                      : ThemeIcon(
+                          Icons.block,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                   label: Text(
                     L10n.get("admin_user_detail_block"),
                   ),

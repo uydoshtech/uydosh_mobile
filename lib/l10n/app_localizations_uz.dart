@@ -1668,7 +1668,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_user_detail_view_complaints => 'Shikoyatlarni ko\'rish';
 
   @override
-  String get admin_user_detail_view_alerts => 'Filtrlarni ko\'rish';
+  String get admin_user_detail_view_alerts => 'Ogohlantirishlarni ko\'rish';
 
   @override
   String get admin_user_detail_block_title => 'Bloklash';
@@ -1726,10 +1726,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_user_listings_error => 'E\'lonlarni yuklashda xatolik';
 
   @override
-  String get admin_user_alerts_title => 'Foydalanuvchi filtrlari';
+  String get admin_user_alerts_title => 'Foydalanuvchi ogohlantirishlari';
 
   @override
-  String get admin_user_alerts_empty => 'Filtrlar topilmadi';
+  String get admin_user_alerts_empty => 'Ogohlantirishlar topilmadi';
 
   @override
   String get admin_complaints_title => 'Shikoyatlar';

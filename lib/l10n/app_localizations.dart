@@ -3153,7 +3153,7 @@ abstract class AppLocalizations {
   /// No description provided for @admin_user_detail_view_alerts.
   ///
   /// In en, this message translates to:
-  /// **'View user filters'**
+  /// **'View user alerts'**
   String get admin_user_detail_view_alerts;
 
   /// No description provided for @admin_user_detail_block_title.
@@ -3267,13 +3267,13 @@ abstract class AppLocalizations {
   /// No description provided for @admin_user_alerts_title.
   ///
   /// In en, this message translates to:
-  /// **'User filters'**
+  /// **'User alerts'**
   String get admin_user_alerts_title;
 
   /// No description provided for @admin_user_alerts_empty.
   ///
   /// In en, this message translates to:
-  /// **'No filters found'**
+  /// **'No alerts found'**
   String get admin_user_alerts_empty;
 
   /// No description provided for @admin_complaints_title.

@@ -253,10 +253,12 @@ class AppStrings {
 
       "view_profile": "Profile",
       "deactivate_listing": "Deactivate",
-      "deactivate_listing_confirmation": "Are you sure you want to deactivate this listing? It will no longer be visible to other users.",
+      "deactivate_listing_confirmation":
+          "Are you sure you want to deactivate this listing? It will no longer be visible to other users.",
       "deactivate": "Deactivate",
       "activate_listing": "Activate Listing",
-      "activate_listing_confirmation": "Are you sure you want to activate this listing? It will become visible to other users.",
+      "activate_listing_confirmation":
+          "Are you sure you want to activate this listing? It will become visible to other users.",
       "activate": "Activate",
       "listing_active": "Active",
       "listing_inactive": "Inactive",
@@ -331,7 +333,8 @@ class AppStrings {
       "listing_translation_unavailable": "Translation unavailable.",
       "listing_ai_enhance": "Improve description with AI",
       "listing_ai_enhance_empty": "Enter a description first.",
-      "listing_ai_enhance_unavailable": "AI enhancement isn’t available on this device.",
+      "listing_ai_enhance_unavailable":
+          "AI enhancement isn’t available on this device.",
       "listing_ai_enhance_error": "Couldn’t improve the text. Try again.",
 
       "listing_type_roommate_needed": "Need Roommate",
@@ -389,7 +392,8 @@ class AppStrings {
       "ui_animations": "UI animations",
       "ui_animations_description": "Motion effects like pulsing and swinging",
       "ui_animation_search_pulse": "Search button pulse",
-      "ui_animation_search_pulse_description": "Pulsing highlight around search button",
+      "ui_animation_search_pulse_description":
+          "Pulsing highlight around search button",
       "ui_animation_bell_idle": "Bell idle swing",
       "ui_animation_bell_idle_description": "Subtle swinging while visible",
       "ui_animation_bell_tap": "Bell tap animation",
@@ -530,13 +534,15 @@ class AppStrings {
       "admin_content_moderation_title": "Client configuration",
       "admin_content_moderation_description":
           "Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).",
-      "admin_client_config_hide_gemini_listing_ui": "Hide translation & AI improve",
+      "admin_client_config_hide_gemini_listing_ui":
+          "Hide translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
           "Hides description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).",
       "admin_client_config_disable_lidar_room_scan": "Turn off LiDAR room scan",
       "admin_client_config_disable_lidar_room_scan_description":
           "Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).",
-      "admin_content_moderation_blur_enabled": "Detect and blur offensive photos",
+      "admin_content_moderation_blur_enabled":
+          "Detect and blur offensive photos",
       "admin_content_moderation_loading": "Loading moderation settings...",
       "admin_content_moderation_error": "Could not load moderation settings",
       "admin_content_moderation_save_error": "Could not save setting",
@@ -584,7 +590,8 @@ class AppStrings {
       "admin_telegram_export_running": "Preparing download…",
       "admin_telegram_export_invalid_max_rows":
           "Max rows must be between 1 and 500000.",
-      "admin_telegram_export_done": "Export ready — use the share sheet or browser download.",
+      "admin_telegram_export_done":
+          "Export ready — use the share sheet or browser download.",
       "admin_panel_section_users": "Users",
       "admin_panel_section_support_chat": "Support chat",
       "admin_panel_section_complaints": "Complaints",
@@ -625,7 +632,8 @@ class AppStrings {
       "admin_listing_creation_analytics_today": "Today",
       "admin_listing_creation_analytics_week": "This week",
       "admin_listing_creation_analytics_by_day": "Listings by day",
-      "admin_listing_creation_analytics_no_data": "No listing data in this period",
+      "admin_listing_creation_analytics_no_data":
+          "No listing data in this period",
 
       "admin_district_heatmap_title": "District heat map",
       "admin_district_heatmap_description":
@@ -673,6 +681,7 @@ class AppStrings {
       "admin_user_detail_role_updated": "Role updated",
       "admin_user_detail_view_listings": "View listings",
       "admin_user_detail_view_complaints": "View complaints",
+      "admin_user_detail_view_alerts": "View user alerts",
       "admin_user_detail_block_title": "Block status",
       "admin_user_detail_block": "Block user",
       "admin_user_detail_unblock": "Unblock",
@@ -692,6 +701,8 @@ class AppStrings {
       "admin_user_listings_user": "User",
       "admin_user_listings_empty": "No listings found",
       "admin_user_listings_error": "Failed to load listings",
+      "admin_user_alerts_title": "User alerts",
+      "admin_user_alerts_empty": "No alerts found",
 
       "admin_complaints_title": "Complaints",
       "admin_complaints_loading": "Loading complaints...",
@@ -732,36 +743,44 @@ class AppStrings {
       "admin_support_chat_reopen_thread": "Reopen thread",
       "admin_support_chat_closed": "Thread closed",
       "admin_support_chat_reopened": "Thread reopened",
-      "admin_support_chat_thread_closed": "This thread is closed. Reopen to reply.",
+      "admin_support_chat_thread_closed":
+          "This thread is closed. Reopen to reply.",
 
       "contact_support_title": "Contact Support",
       "contact_support_loading": "Loading...",
       "contact_support_error": "Failed to load support",
-      "contact_support_empty": "No support conversations yet. Start a new one to get help.",
+      "contact_support_empty":
+          "No support conversations yet. Start a new one to get help.",
       "contact_support_new": "New conversation",
       "contact_support_message_hint": "Type your message...",
       "admin_listing_complaints_title": "Listings with complaints",
       "admin_listing_complaints_empty": "No listings with complaints",
-      "admin_listing_complaints_error": "Failed to load listings with complaints",
+      "admin_listing_complaints_error":
+          "Failed to load listings with complaints",
       "admin_listing_complaints_last_reported": "Last complaint",
       "admin_listing_complaints_categories": "Complaints",
       "admin_listing_complaints_categories_empty": "No complaint categories",
 
       // ===== FAQ CONTENT =====
       "faq_question": "How to negotiate with roommates and avoid conflicts?",
-      "faq_answer": "Living together is always about respect and the ability to negotiate. Here are some simple rules that will help maintain peace and friendship:\n\nNoise\nAgree on \"quiet hours\". For music — headphones, for calls — hallway or street. It's convenient to hang a schedule so everyone knows when someone has study or rest time.\n\nGuests\nWarn each other in advance. A good rule is certain days for guests and days for quiet.\n\nEmotions\nDon't accumulate irritation. Speak calmly and immediately if something bothers you. And it's better to release extra stress at the gym or on a run.\n\nCommon activities\nSometimes it's useful to do something together: go to the movies, take a walk, have a \"cleaning to music\". Shared memories strengthen friendship.\n\nCleaning and household\nDivide responsibilities — someone mops the floor, someone takes out the trash. The main thing is to negotiate and respect personal boundaries. Don't touch other people's things without permission.\n\nCommunication\nUse \"I-messages\": instead of \"you annoy me\" it's better to say \"it's hard for me to concentrate when loud music is playing\".\n\nConflict resolution\nTry to discuss everything calmly, listening to each other. Conflict is an opportunity to find a common solution, not an enemy.\n\nFood\nYou can agree on joint purchases or start a \"common shelf\" for treats.\n\nOrder and quiet\nCleaning schedule is your best friend. And if you need to concentrate — you can go to the library or coworking, or turn on the \"quiet hour\" rule again.",
+      "faq_answer":
+          "Living together is always about respect and the ability to negotiate. Here are some simple rules that will help maintain peace and friendship:\n\nNoise\nAgree on \"quiet hours\". For music — headphones, for calls — hallway or street. It's convenient to hang a schedule so everyone knows when someone has study or rest time.\n\nGuests\nWarn each other in advance. A good rule is certain days for guests and days for quiet.\n\nEmotions\nDon't accumulate irritation. Speak calmly and immediately if something bothers you. And it's better to release extra stress at the gym or on a run.\n\nCommon activities\nSometimes it's useful to do something together: go to the movies, take a walk, have a \"cleaning to music\". Shared memories strengthen friendship.\n\nCleaning and household\nDivide responsibilities — someone mops the floor, someone takes out the trash. The main thing is to negotiate and respect personal boundaries. Don't touch other people's things without permission.\n\nCommunication\nUse \"I-messages\": instead of \"you annoy me\" it's better to say \"it's hard for me to concentrate when loud music is playing\".\n\nConflict resolution\nTry to discuss everything calmly, listening to each other. Conflict is an opportunity to find a common solution, not an enemy.\n\nFood\nYou can agree on joint purchases or start a \"common shelf\" for treats.\n\nOrder and quiet\nCleaning schedule is your best friend. And if you need to concentrate — you can go to the library or coworking, or turn on the \"quiet hour\" rule again.",
 
       "faq_question_2": "Utility debts and how to avoid them",
-      "faq_answer_2": "Sometimes along with the apartment, the tenant gets utility debts as a \"gift\". As a result — disconnected electricity or water, and the landlord is in no hurry to pay. The tenant is left to choose: move out with losses or pay off the debt at their own expense.\n\nTo avoid such situations:\n\nCheck before signing\nBefore signing the contract, ask the owner for receipts or a report on paid utility bills.\n\nWritten agreement\nIf there is still a debt and you are ready to pay it, be sure to draw up a written agreement: the amount of the debt will be credited to future rent.\n\nThis way you will save both money and peace of mind.",
+      "faq_answer_2":
+          "Sometimes along with the apartment, the tenant gets utility debts as a \"gift\". As a result — disconnected electricity or water, and the landlord is in no hurry to pay. The tenant is left to choose: move out with losses or pay off the debt at their own expense.\n\nTo avoid such situations:\n\nCheck before signing\nBefore signing the contract, ask the owner for receipts or a report on paid utility bills.\n\nWritten agreement\nIf there is still a debt and you are ready to pay it, be sure to draw up a written agreement: the amount of the debt will be credited to future rent.\n\nThis way you will save both money and peace of mind.",
 
       "faq_question_3": "Promised repairs take three years to wait",
-      "faq_answer_3": "Often when renting housing, the owner promises to fix problems in the apartment, buy household appliances and furniture. All this he undertakes to fulfill immediately after moving in. However, time passes, and the problems remain. To avoid becoming a hostage to such a situation, the tenant should include special conditions in the rental agreement.\n\nAlso, oral agreements about repairs by the tenant and the obligation not to charge rent during the work are often violated. For example, you renovate the apartment at your own expense and don't pay rent for several months. However, some landlords \"forget\" about the agreements and demand payment for accommodation. Often the parties have disagreements about the cost of finishing, and sometimes the matter even comes to court.\n\nTherefore, you should discuss all aspects of the repair, take them into account in the rental agreement, as well as draw up an estimate and sign it.",
+      "faq_answer_3":
+          "Often when renting housing, the owner promises to fix problems in the apartment, buy household appliances and furniture. All this he undertakes to fulfill immediately after moving in. However, time passes, and the problems remain. To avoid becoming a hostage to such a situation, the tenant should include special conditions in the rental agreement.\n\nAlso, oral agreements about repairs by the tenant and the obligation not to charge rent during the work are often violated. For example, you renovate the apartment at your own expense and don't pay rent for several months. However, some landlords \"forget\" about the agreements and demand payment for accommodation. Often the parties have disagreements about the cost of finishing, and sometimes the matter even comes to court.\n\nTherefore, you should discuss all aspects of the repair, take them into account in the rental agreement, as well as draw up an estimate and sign it.",
 
       "faq_question_4": "You are no longer my friend",
-      "faq_answer_4": "Often when renting housing to relatives or friends, no contract is concluded. At the same time, many scandals and disputes occur precisely between relatives and friends who accepted promises and obligations for rent verbally. Therefore, it is better to conclude a contract, even if you are renting an apartment from your uncle or close friend.\n\nThere are cases when apartments are rented by proxy, which states: the principal gives the authorized person the right to rent out his apartment. \"But the power of attorney does not specify that the authorized person also has the right to receive rent. A situation may occur: the tenant regularly pays the rent to the authorized person, but one day the owner of the living space appears and demands that the tenant pay for the past period of residence in the apartment.\" In this case, you should carefully study the documents, and if the power of attorney does not specify the right to receive rent, discuss this point.",
+      "faq_answer_4":
+          "Often when renting housing to relatives or friends, no contract is concluded. At the same time, many scandals and disputes occur precisely between relatives and friends who accepted promises and obligations for rent verbally. Therefore, it is better to conclude a contract, even if you are renting an apartment from your uncle or close friend.\n\nThere are cases when apartments are rented by proxy, which states: the principal gives the authorized person the right to rent out his apartment. \"But the power of attorney does not specify that the authorized person also has the right to receive rent. A situation may occur: the tenant regularly pays the rent to the authorized person, but one day the owner of the living space appears and demands that the tenant pay for the past period of residence in the apartment.\" In this case, you should carefully study the documents, and if the power of attorney does not specify the right to receive rent, discuss this point.",
 
       "faq_question_5": "Safety guide for renters and neighbors",
-      "faq_answer_5": "Sometimes unpleasant situations happen not only on our platform. Unfortunately, inadequate or troubled people are everywhere. Therefore, it is important to remember simple safety rules.\n\n🙏 The main thing is your safety!\n\nBefore the meeting\n• Arrange meetings only during the day.\n• Try to choose crowded places — cafes, shopping centers, courtyards with cameras.\n• Tell friends or relatives where you are going and who you are meeting.\n\nDuring the meeting\n• If possible, don't come alone.\n• Don't hand over money and documents \"hand to hand\" until the contract is signed.\n• Save correspondence and photos/scans of documents — this is your protection.\n\nIf you feel threatened\n• Immediately stop the meeting and leave.\n• Don't be afraid to say \"no\" and break off communication.\n• In case of obvious danger — call 102 or contact the nearest police station.\n\nOn the UyDosh platform\n• Use the verification system — verified profiles reduce risk.\n• Report suspicious ads and behavior to moderators.\n• Remember: it's better to be safe than sorry.\n\n❤️ Take care of yourself and each other!",
+      "faq_answer_5":
+          "Sometimes unpleasant situations happen not only on our platform. Unfortunately, inadequate or troubled people are everywhere. Therefore, it is important to remember simple safety rules.\n\n🙏 The main thing is your safety!\n\nBefore the meeting\n• Arrange meetings only during the day.\n• Try to choose crowded places — cafes, shopping centers, courtyards with cameras.\n• Tell friends or relatives where you are going and who you are meeting.\n\nDuring the meeting\n• If possible, don't come alone.\n• Don't hand over money and documents \"hand to hand\" until the contract is signed.\n• Save correspondence and photos/scans of documents — this is your protection.\n\nIf you feel threatened\n• Immediately stop the meeting and leave.\n• Don't be afraid to say \"no\" and break off communication.\n• In case of obvious danger — call 102 or contact the nearest police station.\n\nOn the UyDosh platform\n• Use the verification system — verified profiles reduce risk.\n• Report suspicious ads and behavior to moderators.\n• Remember: it's better to be safe than sorry.\n\n❤️ Take care of yourself and each other!",
 
       // ===== LOGOUT & SESSION =====
       "logout_confirmation": "Logout Confirmation",
@@ -1107,8 +1126,7 @@ class AppStrings {
       "room_scan_uploading": "Загрузка…",
       "room_scan_success": "3D-скан сохранён",
       "room_scan_error": "Не удалось сохранить скан. Попробуйте снова.",
-      "room_scan_not_supported":
-          "3D-скан требует iPhone или iPad с LiDAR.",
+      "room_scan_not_supported": "3D-скан требует iPhone или iPad с LiDAR.",
       "room_scan_disabled_globally":
           "3D-сканирование комнаты отключено в настройках приложения. Позже оно может снова стать доступным.",
       "add_room_scan_3d": "Добавить 3D-скан комнаты",
@@ -1160,7 +1178,8 @@ class AppStrings {
       "entire_line_stations": "Вся линия {line}: {count} станций",
       "metro_tutorial_search_hint":
           "Поиск по линии метро или по отдельным станциям.",
-      "metro_tutorial_line_hint": "Поиск объявлений на всех станциях линий метро",
+      "metro_tutorial_line_hint":
+          "Поиск объявлений на всех станциях линий метро",
       "metro_tutorial_station_hint": "Поиск по конкретным станциям метро",
       "metro_tutorial_tap_to_continue": "Нажмите, чтобы продолжить",
       "select_region": "Выберите область",
@@ -1185,10 +1204,12 @@ class AppStrings {
 
       "view_profile": "Профиль",
       "deactivate_listing": "Деактивировать",
-      "deactivate_listing_confirmation": "Вы уверены, что хотите деактивировать это объявление? Оно больше не будет видно другим пользователям.",
+      "deactivate_listing_confirmation":
+          "Вы уверены, что хотите деактивировать это объявление? Оно больше не будет видно другим пользователям.",
       "deactivate": "Деактивировать",
       "activate_listing": "Активировать объявление",
-      "activate_listing_confirmation": "Вы уверены, что хотите активировать это объявление? Оно станет видно другим пользователям.",
+      "activate_listing_confirmation":
+          "Вы уверены, что хотите активировать это объявление? Оно станет видно другим пользователям.",
       "activate": "Активировать",
       "listing_active": "Активно",
       "listing_inactive": "Неактивно",
@@ -1264,7 +1285,8 @@ class AppStrings {
       "listing_ai_enhance": "Улучшить описание с AI",
       "listing_ai_enhance_empty": "Сначала введите описание.",
       "listing_ai_enhance_unavailable": "Улучшение с AI недоступно.",
-      "listing_ai_enhance_error": "Не удалось улучшить текст. Попробуйте снова.",
+      "listing_ai_enhance_error":
+          "Не удалось улучшить текст. Попробуйте снова.",
 
       "listing_type_roommate_needed": "Ищу соседа",
       "listing_type_room_needed": "Ищу жилье",
@@ -1349,7 +1371,8 @@ class AppStrings {
       "about_me": "Обо мне",
       "telegram": "Telegram",
       "open_in_telegram": "Открыть в Telegram",
-      "open_in_telegram_confirmation": "Telegram откроется в приложении или браузере.",
+      "open_in_telegram_confirmation":
+          "Telegram откроется в приложении или браузере.",
 
       // New profile fields
       "employed": "Работаю",
@@ -1462,15 +1485,19 @@ class AppStrings {
       "admin_content_moderation_title": "Настройки клиента",
       "admin_content_moderation_description":
           "Модерация фото (сервер): если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).",
-      "admin_client_config_hide_gemini_listing_ui": "Скрыть перевод и улучшение ИИ",
+      "admin_client_config_hide_gemini_listing_ui":
+          "Скрыть перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
           "Скрывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Действует для всех пользователей и устройств (хранится на сервере).",
-      "admin_client_config_disable_lidar_room_scan": "Отключить сканирование LiDAR",
+      "admin_client_config_disable_lidar_room_scan":
+          "Отключить сканирование LiDAR",
       "admin_client_config_disable_lidar_room_scan_description":
           "Скрывает шаг добавления скана после создания объявления, кнопку при редактировании и блокирует загрузку сканов. Действует для всех пользователей и устройств (хранится на сервере).",
-      "admin_content_moderation_blur_enabled": "Проверять и размывать нежелательные фото",
+      "admin_content_moderation_blur_enabled":
+          "Проверять и размывать нежелательные фото",
       "admin_content_moderation_loading": "Загрузка настроек модерации...",
-      "admin_content_moderation_error": "Не удалось загрузить настройки модерации",
+      "admin_content_moderation_error":
+          "Не удалось загрузить настройки модерации",
       "admin_content_moderation_save_error": "Не удалось сохранить настройку",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
@@ -1514,9 +1541,9 @@ class AppStrings {
       "admin_telegram_export_max_rows_label": "Макс. строк",
       "admin_telegram_export_download": "Скачать экспорт",
       "admin_telegram_export_running": "Готовим файл…",
-      "admin_telegram_export_invalid_max_rows":
-          "Макс. строк: от 1 до 500000.",
-      "admin_telegram_export_done": "Файл готов — поделитесь или сохраните из браузера.",
+      "admin_telegram_export_invalid_max_rows": "Макс. строк: от 1 до 500000.",
+      "admin_telegram_export_done":
+          "Файл готов — поделитесь или сохраните из браузера.",
       "admin_panel_section_users": "Пользователи",
       "admin_panel_section_support_chat": "Поддержка",
       "admin_panel_section_complaints": "Жалобы",
@@ -1546,8 +1573,7 @@ class AppStrings {
       "admin_search_analytics_no_districts": "Нет данных по районам",
       "admin_search_analytics_no_lines": "Нет данных по линиям",
 
-      "admin_listing_creation_analytics_title":
-          "Аналитика создания объявлений",
+      "admin_listing_creation_analytics_title": "Аналитика создания объявлений",
       "admin_listing_creation_analytics_loading":
           "Загрузка аналитики создания объявлений...",
       "admin_listing_creation_analytics_error":
@@ -1577,8 +1603,7 @@ class AppStrings {
       "admin_subway_heatmap_title": "Тепловая карта линий метро",
       "admin_subway_heatmap_description":
           "Объявления по линиям метро с цветовой интенсивностью.",
-      "admin_subway_heatmap_loading":
-          "Загрузка статистики по линиям метро...",
+      "admin_subway_heatmap_loading": "Загрузка статистики по линиям метро...",
       "admin_subway_heatmap_error":
           "Не удалось загрузить статистику по линиям метро",
       "admin_subway_heatmap_retry": "Повторить",
@@ -1589,8 +1614,7 @@ class AppStrings {
       "admin_subway_heatmap_no_data": "Нет данных по линиям метро",
 
       "admin_subway_map_title": "Схема метро",
-      "admin_subway_map_description":
-          "Упрощенная схема с линиями и станциями.",
+      "admin_subway_map_description": "Упрощенная схема с линиями и станциями.",
       "error_loading_map": "Не удалось загрузить карту",
 
       "admin_users_title": "Пользователи",
@@ -1610,6 +1634,7 @@ class AppStrings {
       "admin_user_detail_role_updated": "Роль обновлена",
       "admin_user_detail_view_listings": "Объявления пользователя",
       "admin_user_detail_view_complaints": "Жалобы пользователя",
+      "admin_user_detail_view_alerts": "Оповещения пользователя",
       "admin_user_detail_block_title": "Блокировка",
       "admin_user_detail_block": "Заблокировать",
       "admin_user_detail_unblock": "Разблокировать",
@@ -1629,6 +1654,8 @@ class AppStrings {
       "admin_user_listings_user": "Пользователь",
       "admin_user_listings_empty": "Объявления не найдены",
       "admin_user_listings_error": "Не удалось загрузить объявления",
+      "admin_user_alerts_title": "Оповещения пользователя",
+      "admin_user_alerts_empty": "Оповещений не найдено",
 
       "admin_complaints_title": "Жалобы",
       "admin_complaints_loading": "Загрузка жалоб...",
@@ -1668,11 +1695,13 @@ class AppStrings {
       "admin_support_chat_reopen_thread": "Открыть снова",
       "admin_support_chat_closed": "Обращение закрыто",
       "admin_support_chat_reopened": "Обращение открыто",
-      "admin_support_chat_thread_closed": "Обращение закрыто. Откройте, чтобы ответить.",
+      "admin_support_chat_thread_closed":
+          "Обращение закрыто. Откройте, чтобы ответить.",
       "contact_support_title": "Поддержка",
       "contact_support_loading": "Загрузка...",
       "contact_support_error": "Не удалось загрузить поддержку",
-      "contact_support_empty": "Обращений пока нет. Создайте новое, чтобы получить помощь.",
+      "contact_support_empty":
+          "Обращений пока нет. Создайте новое, чтобы получить помощь.",
       "contact_support_new": "Новое обращение",
       "contact_support_message_hint": "Введите сообщение...",
       "admin_listing_complaints_title": "Объявления с жалобами",
@@ -1685,19 +1714,24 @@ class AppStrings {
 
       // ===== FAQ CONTENT =====
       "faq_question": "Как договариваться с соседями и избегать конфликтов?",
-      "faq_answer": "Жить вместе — это всегда про уважение и умение договариваться. Вот несколько простых правил, которые помогут сохранить мир и дружбу:\n\nШум\nДоговоритесь о «тихих часах». Для музыки — наушники, для звонков — коридор или улица. Удобно повесить расписание, чтобы все знали, когда у кого учеба или отдых.\n\nГости\nПредупреждайте друг друга заранее. Хорошее правило — определённые дни для гостей и дни для тишины.\n\nЭмоции\nНе копите раздражение. Говорите спокойно и сразу, если что-то мешает. А лишний стресс лучше выплеснуть в спортзале или на пробежке.\n\nОбщие дела\nИногда полезно что-то делать вместе: сходить в кино, прогуляться, устроить «уборку под музыку». Общие воспоминания укрепляют дружбу.\n\nУборка и быт\nРазделите обязанности — кто-то моет пол, кто-то выносит мусор. Главное — договариваться и уважать личные границы. Чужие вещи без спроса не трогаем.\n\nОбщение\nИспользуйте «я-сообщения»: вместо «ты меня бесишь» лучше сказать «мне тяжело сосредоточиться, когда играет громкая музыка».\n\nРешение конфликтов\nСтарайтесь обсуждать всё спокойно, выслушивая друг друга. Конфликт — это повод найти общее решение, а не врага.\n\nЕда\nМожно договориться о совместных покупках или завести «общую полочку» для вкусняшек.\n\nПорядок и тишина\nГрафик уборки — лучший друг. А если нужно сосредоточиться — можно уйти в библиотеку или коворкинг, либо снова включить правило «тихого часа».",
+      "faq_answer":
+          "Жить вместе — это всегда про уважение и умение договариваться. Вот несколько простых правил, которые помогут сохранить мир и дружбу:\n\nШум\nДоговоритесь о «тихих часах». Для музыки — наушники, для звонков — коридор или улица. Удобно повесить расписание, чтобы все знали, когда у кого учеба или отдых.\n\nГости\nПредупреждайте друг друга заранее. Хорошее правило — определённые дни для гостей и дни для тишины.\n\nЭмоции\nНе копите раздражение. Говорите спокойно и сразу, если что-то мешает. А лишний стресс лучше выплеснуть в спортзале или на пробежке.\n\nОбщие дела\nИногда полезно что-то делать вместе: сходить в кино, прогуляться, устроить «уборку под музыку». Общие воспоминания укрепляют дружбу.\n\nУборка и быт\nРазделите обязанности — кто-то моет пол, кто-то выносит мусор. Главное — договариваться и уважать личные границы. Чужие вещи без спроса не трогаем.\n\nОбщение\nИспользуйте «я-сообщения»: вместо «ты меня бесишь» лучше сказать «мне тяжело сосредоточиться, когда играет громкая музыка».\n\nРешение конфликтов\nСтарайтесь обсуждать всё спокойно, выслушивая друг друга. Конфликт — это повод найти общее решение, а не врага.\n\nЕда\nМожно договориться о совместных покупках или завести «общую полочку» для вкусняшек.\n\nПорядок и тишина\nГрафик уборки — лучший друг. А если нужно сосредоточиться — можно уйти в библиотеку или коворкинг, либо снова включить правило «тихого часа».",
 
       "faq_question_2": "Неожиданный счёт за чужую коммуналку",
-      "faq_answer_2": "Иногда вместе с квартирой жильцу «в подарок» достаются и долги за коммунальные услуги. В итоге — отключённый свет или вода, а арендодатель не спешит платить. Жильцу остаётся выбирать: съезжать с убытками или гасить долг за свой счёт.\n\nЧтобы избежать таких ситуаций:\n\nПроверка перед подписанием\nПеред подписанием договора попросите у хозяина квитанции или отчёт об оплаченных коммунальных платежах.\n\nПисьменное соглашение\nЕсли долг всё-таки есть и вы готовы его оплатить, обязательно оформите письменное соглашение: сумма долга будет зачтена в счёт будущей аренды.\n\nТак вы сохраните и деньги, и спокойствие.",
+      "faq_answer_2":
+          "Иногда вместе с квартирой жильцу «в подарок» достаются и долги за коммунальные услуги. В итоге — отключённый свет или вода, а арендодатель не спешит платить. Жильцу остаётся выбирать: съезжать с убытками или гасить долг за свой счёт.\n\nЧтобы избежать таких ситуаций:\n\nПроверка перед подписанием\nПеред подписанием договора попросите у хозяина квитанции или отчёт об оплаченных коммунальных платежах.\n\nПисьменное соглашение\nЕсли долг всё-таки есть и вы готовы его оплатить, обязательно оформите письменное соглашение: сумма долга будет зачтена в счёт будущей аренды.\n\nТак вы сохраните и деньги, и спокойствие.",
 
       "faq_question_3": "Обещания арендодателя: ремонт, техника, мебель",
-      "faq_answer_3": "Нередко при аренде жилья собственник обещает устранить неисправности в квартире, купить бытовую технику и мебель. Все это он обязуется исполнить сразу после заселения. Однако проходит время, а неисправности так и остаются. Чтобы не стать заложником подобной ситуации, арендатору следует прописать в договоре найма особые условия.\n\nТакже нередко нарушается устная договоренность о выполнении ремонта силами квартиранта и обязательство не взимать арендную плату во время проведения работ. Например, вы делаете ремонт квартиры за свой счет и не платите за аренду несколько месяцев. Однако некоторые арендодатели «забывают» о договоренностях и требуют оплаты проживания. Зачастую у сторон возникают разногласия по поводу стоимости отделки, а иногда дело и вовсе доходит до суда.\n\nПоэтому следует обсудить все моменты ремонта, учесть их в договоре найма, а также составить смету и подписать её.",
+      "faq_answer_3":
+          "Нередко при аренде жилья собственник обещает устранить неисправности в квартире, купить бытовую технику и мебель. Все это он обязуется исполнить сразу после заселения. Однако проходит время, а неисправности так и остаются. Чтобы не стать заложником подобной ситуации, арендатору следует прописать в договоре найма особые условия.\n\nТакже нередко нарушается устная договоренность о выполнении ремонта силами квартиранта и обязательство не взимать арендную плату во время проведения работ. Например, вы делаете ремонт квартиры за свой счет и не платите за аренду несколько месяцев. Однако некоторые арендодатели «забывают» о договоренностях и требуют оплаты проживания. Зачастую у сторон возникают разногласия по поводу стоимости отделки, а иногда дело и вовсе доходит до суда.\n\nПоэтому следует обсудить все моменты ремонта, учесть их в договоре найма, а также составить смету и подписать её.",
 
       "faq_question_4": "О Важности Договора",
-      "faq_answer_4": "Часто при сдаче жилья родственникам или друзьям договор не заключаются. При этом, многие скандалы и разбирательства происходят как раз между родственниками и друзьями, которые приняли обещания и обязательства по аренде на словах. Поэтому лучше заключить договор, даже если вы снимаете квартиру у своего дяди или близкого друга.\n\nЕсть случаи, когда квартиры сдаются по доверенности, где указано: доверитель дает доверенному лицу право сдать его квартиру внаем. «Но в доверенности не прописано, что доверенное лицо имеет также право получать арендную плату. Может произойти ситуация: квартирант исправно вносит арендную сумму доверенному лицу, но однажды появляется собственник жилплощади и требует арендатора оплатить прошедший период проживания в квартире». В данном случае следует тщательно изучать документы, и если в доверенности не указано право на получение арендной платы, обсудить этот пункт.",
+      "faq_answer_4":
+          "Часто при сдаче жилья родственникам или друзьям договор не заключаются. При этом, многие скандалы и разбирательства происходят как раз между родственниками и друзьями, которые приняли обещания и обязательства по аренде на словах. Поэтому лучше заключить договор, даже если вы снимаете квартиру у своего дяди или близкого друга.\n\nЕсть случаи, когда квартиры сдаются по доверенности, где указано: доверитель дает доверенному лицу право сдать его квартиру внаем. «Но в доверенности не прописано, что доверенное лицо имеет также право получать арендную плату. Может произойти ситуация: квартирант исправно вносит арендную сумму доверенному лицу, но однажды появляется собственник жилплощади и требует арендатора оплатить прошедший период проживания в квартире». В данном случае следует тщательно изучать документы, и если в доверенности не указано право на получение арендной платы, обсудить этот пункт.",
 
       "faq_question_5": "Гайд по безопасности для арендаторов и соседей",
-      "faq_answer_5": "Иногда происходят неприятные ситуации не только на нашей платформе. К сожалению, неадекватные или озабоченные люди встречаются везде. Поэтому важно помнить о простых правилах безопасности.\n\n🙏 Главное — ваша безопасность!\n\nПеред встречей\n• Договаривайтесь о встречах только в дневное время.\n• Старайтесь выбирать людные места — кафе, торговый центр, двор с камерами.\n• Сообщите друзьям или родным, куда идёте и с кем встречаетесь.\n\nВо время встречи\n• По возможности приходите не одни.\n• Не передавайте деньги и документы «из рук в руки» до подписания договора.\n• Сохраняйте переписку и фото/сканы документов — это ваша защита.\n\nЕсли чувствуете угрозу\n• Немедленно прекращайте встречу и уходите.\n• Не бойтесь сказать «нет» и оборвать общение.\n• При явной опасности — звоните 102 или обращайтесь в ближайшее отделение РОВД.\n\nНа платформе UyDosh\n• Пользуйтесь системой верификации — проверенные профили снижают риск.\n• Сообщайте модераторам о подозрительных объявлениях и поведении.\n• Помните: лучше перестраховаться, чем потом сожалеть.\n\n❤️ Берегите себя и друг друга!",
+      "faq_answer_5":
+          "Иногда происходят неприятные ситуации не только на нашей платформе. К сожалению, неадекватные или озабоченные люди встречаются везде. Поэтому важно помнить о простых правилах безопасности.\n\n🙏 Главное — ваша безопасность!\n\nПеред встречей\n• Договаривайтесь о встречах только в дневное время.\n• Старайтесь выбирать людные места — кафе, торговый центр, двор с камерами.\n• Сообщите друзьям или родным, куда идёте и с кем встречаетесь.\n\nВо время встречи\n• По возможности приходите не одни.\n• Не передавайте деньги и документы «из рук в руки» до подписания договора.\n• Сохраняйте переписку и фото/сканы документов — это ваша защита.\n\nЕсли чувствуете угрозу\n• Немедленно прекращайте встречу и уходите.\n• Не бойтесь сказать «нет» и оборвать общение.\n• При явной опасности — звоните 102 или обращайтесь в ближайшее отделение РОВД.\n\nНа платформе UyDosh\n• Пользуйтесь системой верификации — проверенные профили снижают риск.\n• Сообщайте модераторам о подозрительных объявлениях и поведении.\n• Помните: лучше перестраховаться, чем потом сожалеть.\n\n❤️ Берегите себя и друг друга!",
 
       // ===== LOGOUT & SESSION =====
       "logout_confirmation": "Подтверждение выхода",
@@ -1748,7 +1782,8 @@ class AppStrings {
       "achievement_sharer": "Поделился",
       "achievement_sharer_desc": "Поделитесь первым объявлением",
       "achievements_empty": "Пока нет достижений",
-      "achievements_empty_desc": "Выполняйте действия, чтобы разблокировать достижения",
+      "achievements_empty_desc":
+          "Выполняйте действия, чтобы разблокировать достижения",
       "achievements_auth_prompt": "Войдите, чтобы просмотреть достижения",
 
       "favorite_toggle_error": "Не удалось обновить статус избранного",
@@ -1963,10 +1998,12 @@ class AppStrings {
       "notifications_empty": "Hozircha saqlangan bildirishnomalar yo'q.",
       "notifications_disable_all": "Barcha bildirishnomalarni o‘chirish",
       "notifications_delete_all": "Barcha bildirishnomalarni o‘chirib tashlash",
-      "notifications_disable_all_title": "Barcha bildirishnomalar o‘chirilsinmi?",
+      "notifications_disable_all_title":
+          "Barcha bildirishnomalar o‘chirilsinmi?",
       "notifications_disable_all_message":
           "Bu barcha saqlangan qidiruv ogohlantirishlarini o‘chiradi. Keyinroq yana yoqishingiz mumkin.",
-      "notifications_delete_all_title": "Barcha bildirishnomalar o‘chirib tashlansinmi?",
+      "notifications_delete_all_title":
+          "Barcha bildirishnomalar o‘chirib tashlansinmi?",
       "notifications_delete_all_message":
           "Bu barcha saqlangan qidiruv ogohlantirishlarini butunlay o‘chirib tashlaydi. Bu amalni bekor qilib bo‘lmaydi.",
       "disable": "O‘chirish",
@@ -2055,8 +2092,7 @@ class AppStrings {
       "room_scan_examples_label": "Skan namunalari",
       "skip": "O'tkazib yuborish",
       "view_room_3d": "3D xonani ko'rish",
-      "room_3d_open_error":
-          "3D modelni ochib bo'lmadi. Internetni tekshiring.",
+      "room_3d_open_error": "3D modelni ochib bo'lmadi. Internetni tekshiring.",
       "room_3d_viewer_title": "3D",
       "room_3d_dimensions_caption":
           "Taxminiy o'lchamlar (to'liq skan chegarasi)",
@@ -2101,8 +2137,10 @@ class AppStrings {
       "entire_line_stations": "Butun liniya {line}: {count} bekat",
       "metro_tutorial_search_hint":
           "Metro liniyasi bo'ylab yoki alohida bekatlar bo'yicha qidiruv.",
-      "metro_tutorial_line_hint": "Barcha metro liniyasi stansiyalarida e'lonlarni qidiring",
-      "metro_tutorial_station_hint": "Muayyan metro stansiyalari bo'yicha qidiruv",
+      "metro_tutorial_line_hint":
+          "Barcha metro liniyasi stansiyalarida e'lonlarni qidiring",
+      "metro_tutorial_station_hint":
+          "Muayyan metro stansiyalari bo'yicha qidiruv",
       "metro_tutorial_tap_to_continue": "Davom etish uchun bosing",
       "select_region": "Tumanni tanlang",
       "select_region_profile_creation_title": "Qayerdansiz?",
@@ -2126,10 +2164,12 @@ class AppStrings {
 
       "view_profile": "Profil",
       "deactivate_listing": "Deaktivlashtirish",
-      "deactivate_listing_confirmation": "Bu e'loni deaktivlashtirishni xohlaysizmi? U boshqa foydalanuvchilarga ko'rinmaydi.",
+      "deactivate_listing_confirmation":
+          "Bu e'loni deaktivlashtirishni xohlaysizmi? U boshqa foydalanuvchilarga ko'rinmaydi.",
       "deactivate": "Deaktivlashtirish",
       "activate_listing": "E'lonni aktivlashtirish",
-      "activate_listing_confirmation": "Bu e'loni aktivlashtirishni xohlaysizmi? U boshqa foydalanuvchilarga ko'rinadi.",
+      "activate_listing_confirmation":
+          "Bu e'loni aktivlashtirishni xohlaysizmi? U boshqa foydalanuvchilarga ko'rinadi.",
       "activate": "Aktivlashtirish",
       "listing_active": "Aktiv",
       "listing_inactive": "Noaktiv",
@@ -2205,7 +2245,8 @@ class AppStrings {
       "listing_ai_enhance": "Tavsifni AI bilan yaxshilash",
       "listing_ai_enhance_empty": "Avval tavsif kiriting.",
       "listing_ai_enhance_unavailable": "AI yaxshilash mavjud emas.",
-      "listing_ai_enhance_error": "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
+      "listing_ai_enhance_error":
+          "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
 
       "listing_type_roommate_needed": "Xonadosh qidiraman",
       "listing_type_room_needed": "Xonadon kerak",
@@ -2259,14 +2300,15 @@ class AppStrings {
       "onboarding_toggle": "Boshlash",
       "onboarding_toggle_description": "Xush kelish ekrani",
       "haptic_feedback": "Haptik javob",
-      "haptic_feedback_description":
-          "Bosish va jestlar uchun tebranish",
+      "haptic_feedback_description": "Bosish va jestlar uchun tebranish",
       "ui_animations": "Interfeys animatsiyalari",
       "ui_animations_description": "Pulsatsiya va tebranish kabi effektlar",
       "ui_animation_search_pulse": "Qidiruv tugmasi pulsatsiyasi",
-      "ui_animation_search_pulse_description": "Qidiruv tugmasi atrofida pulsatsiya",
+      "ui_animation_search_pulse_description":
+          "Qidiruv tugmasi atrofida pulsatsiya",
       "ui_animation_bell_idle": "Qo‘ng‘iroq tebranishi",
-      "ui_animation_bell_idle_description": "Ko‘rinib turganda yengil tebranish",
+      "ui_animation_bell_idle_description":
+          "Ko‘rinib turganda yengil tebranish",
       "ui_animation_bell_tap": "Qo‘ng‘iroq bosish animatsiyasi",
       "ui_animation_bell_tap_description": "Bosilganda halqa + tebranish",
 
@@ -2293,7 +2335,8 @@ class AppStrings {
       "about_me": "Men haqimda",
       "telegram": "Telegram",
       "open_in_telegram": "Telegramda ochish",
-      "open_in_telegram_confirmation": "Telegram ilova yoki brauzerda ochiladi.",
+      "open_in_telegram_confirmation":
+          "Telegram ilova yoki brauzerda ochiladi.",
 
       // New profile fields
       "employed": "Ishlaydi",
@@ -2359,7 +2402,8 @@ class AppStrings {
       "yes_student": "Men talabaman",
       "no_student": "Men talaba emasman",
 
-      "are_you_landlord_or_renter": "Siz ijaraga beruvchimisiz yoki ijarachimisiz?",
+      "are_you_landlord_or_renter":
+          "Siz ijaraga beruvchimisiz yoki ijarachimisiz?",
 
       "selected": "Tanlangan",
 
@@ -2405,14 +2449,18 @@ class AppStrings {
       "admin_content_moderation_title": "Klient sozlamalari",
       "admin_content_moderation_description":
           "Foto moderatsiyasi (server): yoqilganda, yuklangan fotolar nojo'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O'chirilganda tekshirish va xiralashtirish o'tkazilmaydi (AWS Rekognition chaqiruvlari yo'q).",
-      "admin_client_config_hide_gemini_listing_ui": "Tarjima va AI yaxshilashni yashirish",
+      "admin_client_config_hide_gemini_listing_ui":
+          "Tarjima va AI yaxshilashni yashirish",
       "admin_client_config_hide_gemini_listing_ui_description":
           "E'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni yashiradi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
-      "admin_client_config_disable_lidar_room_scan": "LiDAR xona skanini o'chirish",
+      "admin_client_config_disable_lidar_room_scan":
+          "LiDAR xona skanini o'chirish",
       "admin_client_config_disable_lidar_room_scan_description":
           "E'lon yaratilgach skan qo'shish qadamini, tahrirlashdagi skan tugmasini yashiradi va yuklashni bloklaydi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
-      "admin_content_moderation_blur_enabled": "Nojo'ya fotolarni aniqla va xira qil",
-      "admin_content_moderation_loading": "Moderatsiya sozlamalari yuklanmoqda...",
+      "admin_content_moderation_blur_enabled":
+          "Nojo'ya fotolarni aniqla va xira qil",
+      "admin_content_moderation_loading":
+          "Moderatsiya sozlamalari yuklanmoqda...",
       "admin_content_moderation_error": "Moderatsiya sozlamalari yuklanmadi",
       "admin_content_moderation_save_error": "Sozlama saqlanmadi",
 
@@ -2450,7 +2498,8 @@ class AppStrings {
       "admin_area_price_cache_running": "Kesh qayta hisoblanmoqda…",
       "admin_area_price_cache_screen_body":
           "Metro bekati, liniya va tuman bo‘yicha median va o‘rtacha ijarani keshda qayta hisoblaydi (e’lon tafsilotidagi «atrofdagi narx» bloki). Katta Telegram importidan keyin yoki bo‘sh qolsa ishga tushiring.",
-      "admin_telegram_export_section_title": "Yuklangan xabarlarni yuklab olish",
+      "admin_telegram_export_section_title":
+          "Yuklangan xabarlarni yuklab olish",
       "admin_telegram_export_intro":
           "telegram_ingested_messages jadvalidan .jsonl fayl (har qatorda bitta JSON). Telegram chaqiruvi yo‘q. Barcha chatlar, hajm maks. qatorlar bilan cheklangan.",
       "admin_telegram_export_max_rows_label": "Maks. qatorlar",
@@ -2458,7 +2507,8 @@ class AppStrings {
       "admin_telegram_export_running": "Fayl tayyorlanmoqda…",
       "admin_telegram_export_invalid_max_rows":
           "Maks. qatorlar 1 dan 500000 gacha bo‘lishi kerak.",
-      "admin_telegram_export_done": "Tayyor — ulashish oynasi yoki brauzer yuklab olishi.",
+      "admin_telegram_export_done":
+          "Tayyor — ulashish oynasi yoki brauzer yuklab olishi.",
       "admin_panel_section_users": "Foydalanuvchilar",
       "admin_panel_section_support_chat": "Qo'llab-quvvatlash",
       "admin_panel_section_complaints": "Shikoyatlar",
@@ -2507,8 +2557,7 @@ class AppStrings {
       "admin_district_heatmap_description":
           "E'lonlar tumanlar bo'yicha rang zichligi bilan ko'rsatiladi.",
       "admin_district_heatmap_loading": "Tumanlar statistikasi yuklanmoqda...",
-      "admin_district_heatmap_error":
-          "Tumanlar statistikasi yuklanmadi",
+      "admin_district_heatmap_error": "Tumanlar statistikasi yuklanmadi",
       "admin_district_heatmap_retry": "Qayta urinish",
       "admin_district_heatmap_total": "Jami e'lonlar",
       "admin_district_heatmap_max": "Tumandagi maksimum",
@@ -2527,8 +2576,7 @@ class AppStrings {
       "admin_subway_heatmap_max": "Liniyadagi maksimum",
       "admin_subway_heatmap_count_label": "E'lonlar",
       "admin_subway_heatmap_unavailable": "Mavjud emas",
-      "admin_subway_heatmap_no_data":
-          "Metro liniyalari bo'yicha ma'lumot yo'q",
+      "admin_subway_heatmap_no_data": "Metro liniyalari bo'yicha ma'lumot yo'q",
 
       "admin_subway_map_title": "Metro sxemasi",
       "admin_subway_map_description":
@@ -2552,6 +2600,7 @@ class AppStrings {
       "admin_user_detail_role_updated": "Rol yangilandi",
       "admin_user_detail_view_listings": "E'lonlarni ko'rish",
       "admin_user_detail_view_complaints": "Shikoyatlarni ko'rish",
+      "admin_user_detail_view_alerts": "Ogohlantirishlarni ko'rish",
       "admin_user_detail_block_title": "Bloklash",
       "admin_user_detail_block": "Bloklash",
       "admin_user_detail_unblock": "Blokdan chiqarish",
@@ -2571,6 +2620,8 @@ class AppStrings {
       "admin_user_listings_user": "Foydalanuvchi",
       "admin_user_listings_empty": "E'lonlar topilmadi",
       "admin_user_listings_error": "E'lonlarni yuklashda xatolik",
+      "admin_user_alerts_title": "Foydalanuvchi ogohlantirishlari",
+      "admin_user_alerts_empty": "Ogohlantirishlar topilmadi",
 
       "admin_complaints_title": "Shikoyatlar",
       "admin_complaints_loading": "Shikoyatlar yuklanmoqda...",
@@ -2610,11 +2661,13 @@ class AppStrings {
       "admin_support_chat_reopen_thread": "Qayta ochish",
       "admin_support_chat_closed": "Murojaat yopildi",
       "admin_support_chat_reopened": "Murojaat qayta ochildi",
-      "admin_support_chat_thread_closed": "Murojaat yopilgan. Javob berish uchun qayta oching.",
+      "admin_support_chat_thread_closed":
+          "Murojaat yopilgan. Javob berish uchun qayta oching.",
       "contact_support_title": "Qo'llab-quvvatlash",
       "contact_support_loading": "Yuklanmoqda...",
       "contact_support_error": "Qo'llab-quvvatlash yuklanmadi",
-      "contact_support_empty": "Murojaatlar hali yo'q. Yordam olish uchun yangi murojaat yarating.",
+      "contact_support_empty":
+          "Murojaatlar hali yo'q. Yordam olish uchun yangi murojaat yarating.",
       "contact_support_new": "Yangi murojaat",
       "contact_support_message_hint": "Xabaringizni yozing...",
       "admin_listing_complaints_title": "Shikoyatli e'lonlar",
@@ -2627,20 +2680,27 @@ class AppStrings {
           "Shikoyat kategoriyalari yo'q",
 
       // ===== FAQ CONTENT =====
-      "faq_question": "Xonadoshlar bilan qanday kelishish va nizolardan qanday qochish kerak?",
-      "faq_answer": "Birga yashash — bu doimo hurmat va kelishish qobiliyati haqida. Tinchlik va do'stlikni saqlab qolishga yordam beradigan bir nechta oddiy qoidalar:\n\nShovqin\n\"Jimlik soatlari\" haqida kelishingiz. Musiqa uchun — quloqchinlar, qo'ng'iroqlar uchun — koridor yoki ko'cha. Har kimning qachon o'qish yoki dam olish vaqti ekanligini bilishi uchun jadval osish qulay.\n\nMehmonlar\nBir-biringizni oldindan ogohlantiring. Yaxshi qoida — mehmonlar uchun aniq kunlar va jimlik kunlari.\n\nHis-tuyg'ular\nAchchiqlanishni to'plamang. Agar biror narsa bezovta qilsa, tinch va darhol gapiring. Qo'shimcha stressni sport zalida yoki yugurishda chiqarish yaxshiroq.\n\nUmumiy ishlar\nBa'zan biror narsani birga qilish foydali: kinoga borish, sayr qilish, \"musiqa ostida tozalash\" tashkil etish. Umumiy xotiralar do'stlikni mustahkamlaydi.\n\nTozalash va uy ishlari\nMas'uliyatlarni bo'ling — kimdir polni artadi, kimdir axlatni olib chiqadi. Asosiy narsa — kelishish va shaxsiy chegaralarni hurmat qilish. Boshqalarning narsalarini ruxsatsiz tegmang.\n\nMuloqot\n\"Men-mesajlar\"dan foydalaning: \"sen meni jahldor qilasang\" o'rniga \"baland musiqa chalinsa, diqqatni jamlash qiyin\" deyish yaxshiroq.\n\nNizolarni hal qilish\nHamma narsani tinch muhokama qilishga harakat qiling, bir-biringizni tinglang. Nizo — dushman emas, balki umumiy yechim topish imkoniyati.\n\nOvqat\nBirgalikda xarid qilish yoki \"umumiy javon\" ochish haqida kelishishingiz mumkin.\n\nTartib va jimlik\nTozalash jadvali — eng yaxshi do'stingiz. Agar diqqatni jamlash kerak bo'lsa — kutubxonaga yoki kovorkingga borishingiz yoki yana \"jimlik soati\" qoidasini yoqishingiz mumkin.",
+      "faq_question":
+          "Xonadoshlar bilan qanday kelishish va nizolardan qanday qochish kerak?",
+      "faq_answer":
+          "Birga yashash — bu doimo hurmat va kelishish qobiliyati haqida. Tinchlik va do'stlikni saqlab qolishga yordam beradigan bir nechta oddiy qoidalar:\n\nShovqin\n\"Jimlik soatlari\" haqida kelishingiz. Musiqa uchun — quloqchinlar, qo'ng'iroqlar uchun — koridor yoki ko'cha. Har kimning qachon o'qish yoki dam olish vaqti ekanligini bilishi uchun jadval osish qulay.\n\nMehmonlar\nBir-biringizni oldindan ogohlantiring. Yaxshi qoida — mehmonlar uchun aniq kunlar va jimlik kunlari.\n\nHis-tuyg'ular\nAchchiqlanishni to'plamang. Agar biror narsa bezovta qilsa, tinch va darhol gapiring. Qo'shimcha stressni sport zalida yoki yugurishda chiqarish yaxshiroq.\n\nUmumiy ishlar\nBa'zan biror narsani birga qilish foydali: kinoga borish, sayr qilish, \"musiqa ostida tozalash\" tashkil etish. Umumiy xotiralar do'stlikni mustahkamlaydi.\n\nTozalash va uy ishlari\nMas'uliyatlarni bo'ling — kimdir polni artadi, kimdir axlatni olib chiqadi. Asosiy narsa — kelishish va shaxsiy chegaralarni hurmat qilish. Boshqalarning narsalarini ruxsatsiz tegmang.\n\nMuloqot\n\"Men-mesajlar\"dan foydalaning: \"sen meni jahldor qilasang\" o'rniga \"baland musiqa chalinsa, diqqatni jamlash qiyin\" deyish yaxshiroq.\n\nNizolarni hal qilish\nHamma narsani tinch muhokama qilishga harakat qiling, bir-biringizni tinglang. Nizo — dushman emas, balki umumiy yechim topish imkoniyati.\n\nOvqat\nBirgalikda xarid qilish yoki \"umumiy javon\" ochish haqida kelishishingiz mumkin.\n\nTartib va jimlik\nTozalash jadvali — eng yaxshi do'stingiz. Agar diqqatni jamlash kerak bo'lsa — kutubxonaga yoki kovorkingga borishingiz yoki yana \"jimlik soati\" qoidasini yoqishingiz mumkin.",
 
       "faq_question_2": "Kommunal qarzlar va ularni qanday oldini olish",
-      "faq_answer_2": "Ba'zan kvartira bilan birga ijarachiga kommunal xizmatlar bo'yicha qarzlar ham \"sovg'a\" sifatida tushadi. Natijada — o'chirilgan yorug'lik yoki suv, ijaraga beruvchi esa to'lashga shoshilmaydi. Ijarachiga qoladi: zarar bilan ko'chib ketish yoki qarzni o'z hisobidan to'lash.\n\nBunday vaziyatlardan qochish uchun:\n\nImzolashdan oldin tekshirish\nShartnomani imzolashdan oldin xo'jayindan to'langan kommunal to'lovlar bo'yicha kvitansiyalar yoki hisobot so'rang.\n\nYozma kelishuv\nAgar qarz hali ham bo'lsa va uni to'lashga tayyor bo'lsangiz, albatta yozma kelishuv tuzing: qarz summasi kelajakdagi ijara uchun hisobga olinadi.\n\nShunday qilib siz ham pulni, ham tinchlikni saqlab qolasiz.",
+      "faq_answer_2":
+          "Ba'zan kvartira bilan birga ijarachiga kommunal xizmatlar bo'yicha qarzlar ham \"sovg'a\" sifatida tushadi. Natijada — o'chirilgan yorug'lik yoki suv, ijaraga beruvchi esa to'lashga shoshilmaydi. Ijarachiga qoladi: zarar bilan ko'chib ketish yoki qarzni o'z hisobidan to'lash.\n\nBunday vaziyatlardan qochish uchun:\n\nImzolashdan oldin tekshirish\nShartnomani imzolashdan oldin xo'jayindan to'langan kommunal to'lovlar bo'yicha kvitansiyalar yoki hisobot so'rang.\n\nYozma kelishuv\nAgar qarz hali ham bo'lsa va uni to'lashga tayyor bo'lsangiz, albatta yozma kelishuv tuzing: qarz summasi kelajakdagi ijara uchun hisobga olinadi.\n\nShunday qilib siz ham pulni, ham tinchlikni saqlab qolasiz.",
 
       "faq_question_3": "Vad qilingan ta'mirlash uchun uch yil kutish kerak",
-      "faq_answer_3": "Ko'pincha uy ijaraga olishda, xo'jayin kvartira muammolarini hal qilish, maishiy texnika va mebel sotib olishni va'da qiladi. Bularning barchasini u ko'chib kelgandan so'ng darhol bajarishni o'z zimmasiga oladi. Biroq vaqt o'tadi, muammolar qoladi. Bunday vaziyatning garovi bo'lmaslik uchun ijarachi ijaraga olish shartnomasiga maxsus shartlarni kiritishi kerak.\n\nShuningdek, ijarachi tomonidan ta'mirlash va ishlar davomida ijara haqini undirmaslik haqidagi og'zaki kelishuvlar ham tez-tez buziladi. Masalan, siz kvartirani o'z hisobingizdan ta'mirlaysiz va bir necha oy ijara haqini to'lamaysiz. Biroq ba'zi ijaraga beruvchilar kelishuvlarni \"unutib\" qo'yadi va yashash uchun to'lov talab qiladi. Ko'pincha tomonlar bezatish narxi haqida kelishmovchiliklar paydo bo'ladi, ba'zida esa ish sudga ham borga.\n\nShuning uchun ta'mirlashning barcha jihatlarini muhokama qilish, ularni ijaraga olish shartnomasida hisobga olish, shuningdek smeta tuzish va imzolash kerak.",
+      "faq_answer_3":
+          "Ko'pincha uy ijaraga olishda, xo'jayin kvartira muammolarini hal qilish, maishiy texnika va mebel sotib olishni va'da qiladi. Bularning barchasini u ko'chib kelgandan so'ng darhol bajarishni o'z zimmasiga oladi. Biroq vaqt o'tadi, muammolar qoladi. Bunday vaziyatning garovi bo'lmaslik uchun ijarachi ijaraga olish shartnomasiga maxsus shartlarni kiritishi kerak.\n\nShuningdek, ijarachi tomonidan ta'mirlash va ishlar davomida ijara haqini undirmaslik haqidagi og'zaki kelishuvlar ham tez-tez buziladi. Masalan, siz kvartirani o'z hisobingizdan ta'mirlaysiz va bir necha oy ijara haqini to'lamaysiz. Biroq ba'zi ijaraga beruvchilar kelishuvlarni \"unutib\" qo'yadi va yashash uchun to'lov talab qiladi. Ko'pincha tomonlar bezatish narxi haqida kelishmovchiliklar paydo bo'ladi, ba'zida esa ish sudga ham borga.\n\nShuning uchun ta'mirlashning barcha jihatlarini muhokama qilish, ularni ijaraga olish shartnomasida hisobga olish, shuningdek smeta tuzish va imzolash kerak.",
 
       "faq_question_4": "Sen endi mening do'stim emassan",
-      "faq_answer_4": "Ko'pincha uyni qarindoshlar yoki do'stlarga ijaraga berishda shartnoma tuzilmaydi. Shu bilan birga, ko'plab janjallar va tortishuvlar aynan og'zaki ijara va'da va majburiyatlarini qabul qilgan qarindoshlar va do'stlar o'rtasida yuzaga keladi. Shuning uchun shartnoma tuzish yaxshiroq, hatto siz amakivachchangiz yoki yaqin do'stingizdan kvartira ijaraga olsangiz ham.\n\nKvartiralar vasiylik orqali ijaraga beriladigan hollar ham bor, unda ko'rsatilgan: vasiylik beruvchi vasiylik oluvchiga o'z kvartirasini ijaraga berish huquqini beradi. \"Lekin vasiylikda vasiylik oluvchining ijara haqini olish huquqiga ega ekanligi ko'rsatilmagan. Vaziyat yuzaga kelishi mumkin: ijarachi muntazam ravishda ijara summasini vasiylik oluvchiga to'laydi, lekin bir kuni uy-joy egasi paydo bo'lib, ijarachidan kvartira yashash davri uchun to'lov talab qiladi.\" Bunday holda hujjatlarni diqqat bilan o'rganish kerak, va agar vasiylikda ijara haqini olish huquqi ko'rsatilmagan bo'lsa, bu masalani muhokama qilish kerak.",
+      "faq_answer_4":
+          "Ko'pincha uyni qarindoshlar yoki do'stlarga ijaraga berishda shartnoma tuzilmaydi. Shu bilan birga, ko'plab janjallar va tortishuvlar aynan og'zaki ijara va'da va majburiyatlarini qabul qilgan qarindoshlar va do'stlar o'rtasida yuzaga keladi. Shuning uchun shartnoma tuzish yaxshiroq, hatto siz amakivachchangiz yoki yaqin do'stingizdan kvartira ijaraga olsangiz ham.\n\nKvartiralar vasiylik orqali ijaraga beriladigan hollar ham bor, unda ko'rsatilgan: vasiylik beruvchi vasiylik oluvchiga o'z kvartirasini ijaraga berish huquqini beradi. \"Lekin vasiylikda vasiylik oluvchining ijara haqini olish huquqiga ega ekanligi ko'rsatilmagan. Vaziyat yuzaga kelishi mumkin: ijarachi muntazam ravishda ijara summasini vasiylik oluvchiga to'laydi, lekin bir kuni uy-joy egasi paydo bo'lib, ijarachidan kvartira yashash davri uchun to'lov talab qiladi.\" Bunday holda hujjatlarni diqqat bilan o'rganish kerak, va agar vasiylikda ijara haqini olish huquqi ko'rsatilmagan bo'lsa, bu masalani muhokama qilish kerak.",
 
-      "faq_question_5": "Ijarachilar va qo'shnilar uchun xavfsizlik qo'llanmasi",
-      "faq_answer_5": "Ba'zan noqulay vaziyatlar nafaqat bizning platformamizda yuzaga keladi. Afsuski, noto'g'ri yoki muammoli odamlar hamma joyda uchraydi. Shuning uchun oddiy xavfsizlik qoidalarini eslab qolish muhim.\n\n🙏 Asosiy narsa — sizning xavfsizligingiz!\n\nUchrashuvdan oldin\n• Uchrashuvlarni faqat kunduzgi vaqtda rejalashtiring.\n• Ko'p odamli joylarni tanlang — kafe, savdo markazi, kamerali hovli.\n• Do'stlaringiz yoki qarindoshlaringizga qayerga va kim bilan uchrashayotganingizni ayting.\n\nUchrashuv paytida\n• Iloji bo'lsa, yolg'iz keling.\n• Shartnoma imzolanmaguncha pul va hujjatlarni \"qo'ldan qo'liga\" bermang.\n• Yozishmalar va hujjatlar fotosuratlarini/skanlarini saqlang — bu sizning himoyangiz.\n\nAgar tahdid his qilsangiz\n• Darhol uchrashuvni to'xtating va keting.\n• \"Yo'q\" deyishdan va aloqani uzishdan qo'rqmang.\n• Aniq xavf bo'lsa — 102 ga qo'ng'iroq qiling yoki eng yaqin politsiya bo'limiga murojaat qiling.\n\nUyDosh platformasida\n• Tasdiqlash tizimidan foydalaning — tasdiqlangan profillar xavfni kamaytiradi.\n• Shubhali e'lonlar va xatti-harakatlar haqida moderatorlarga xabar bering.\n• Esda tuting: ehtiyot bo'lish, keyin afsuslanishdan yaxshiroq.\n\n❤️ O'zingizni va bir-biringizni asrang!",
+      "faq_question_5":
+          "Ijarachilar va qo'shnilar uchun xavfsizlik qo'llanmasi",
+      "faq_answer_5":
+          "Ba'zan noqulay vaziyatlar nafaqat bizning platformamizda yuzaga keladi. Afsuski, noto'g'ri yoki muammoli odamlar hamma joyda uchraydi. Shuning uchun oddiy xavfsizlik qoidalarini eslab qolish muhim.\n\n🙏 Asosiy narsa — sizning xavfsizligingiz!\n\nUchrashuvdan oldin\n• Uchrashuvlarni faqat kunduzgi vaqtda rejalashtiring.\n• Ko'p odamli joylarni tanlang — kafe, savdo markazi, kamerali hovli.\n• Do'stlaringiz yoki qarindoshlaringizga qayerga va kim bilan uchrashayotganingizni ayting.\n\nUchrashuv paytida\n• Iloji bo'lsa, yolg'iz keling.\n• Shartnoma imzolanmaguncha pul va hujjatlarni \"qo'ldan qo'liga\" bermang.\n• Yozishmalar va hujjatlar fotosuratlarini/skanlarini saqlang — bu sizning himoyangiz.\n\nAgar tahdid his qilsangiz\n• Darhol uchrashuvni to'xtating va keting.\n• \"Yo'q\" deyishdan va aloqani uzishdan qo'rqmang.\n• Aniq xavf bo'lsa — 102 ga qo'ng'iroq qiling yoki eng yaqin politsiya bo'limiga murojaat qiling.\n\nUyDosh platformasida\n• Tasdiqlash tizimidan foydalaning — tasdiqlangan profillar xavfni kamaytiradi.\n• Shubhali e'lonlar va xatti-harakatlar haqida moderatorlarga xabar bering.\n• Esda tuting: ehtiyot bo'lish, keyin afsuslanishdan yaxshiroq.\n\n❤️ O'zingizni va bir-biringizni asrang!",
 
       // ===== LOGOUT & SESSION =====
       "logout_confirmation": "Chiqish tasdiqlash",
@@ -2691,8 +2751,10 @@ class AppStrings {
       "achievement_sharer": "Ulashuvchi",
       "achievement_sharer_desc": "Birinchi e'loningizni ulashing",
       "achievements_empty": "Hali yutuqlar yo'q",
-      "achievements_empty_desc": "Yutuqlarni ochish uchun harakatlarni bajaring",
-      "achievements_auth_prompt": "Yutuqlaringizni ko'rish uchun tizimga kiring",
+      "achievements_empty_desc":
+          "Yutuqlarni ochish uchun harakatlarni bajaring",
+      "achievements_auth_prompt":
+          "Yutuqlaringizni ko'rish uchun tizimga kiring",
 
       "favorite_toggle_error": "Sevimli holatini yangilashda xatolik",
       "favorite_toggle_network_error":
