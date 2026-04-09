@@ -25,6 +25,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   }
 
   final IListingService _listingService;
+  static const Duration _requestTimeout = Duration(seconds: 20);
   int _currentPage = 1;
   bool _hasMore = true;
   List<Listing> _currentListings = [];
@@ -96,7 +97,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         page: page,
         limit: limit,
         isActive: isActive,
-      );
+      ).timeout(_requestTimeout);
 
       final newListings = response.data;
       _hasMore = (page + 1) <= response.totalPages && newListings.isNotEmpty;
@@ -167,7 +168,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           _lastSubwayStationId!,
           page: _currentPage,
           limit: limit,
-        );
+        ).timeout(_requestTimeout);
         _hasMore = listings.length >= limit;
         final updatedListings = [...currentListings, ...listings];
         emit(
@@ -199,7 +200,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           maxPrice: _lastMaxPrice,
           privateRoom: _lastPrivateRoom,
           withPhoto: _lastWithPhoto,
-        );
+        ).timeout(_requestTimeout);
 
         final newListings = response.data;
         _hasMore =
@@ -222,7 +223,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           page: _currentPage,
           limit: limit,
           isActive: isActive,
-        );
+        ).timeout(_requestTimeout);
 
         final newListings = response.data;
         _hasMore =
@@ -326,7 +327,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         subwayStationId,
         page: page,
         limit: limit,
-      );
+      ).timeout(_requestTimeout);
 
       if (isRefresh) {
         _currentListings = listings;
@@ -408,7 +409,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         locationId,
         page: page,
         limit: limit,
-      );
+      ).timeout(_requestTimeout);
 
       if (isRefresh) {
         _currentListings = listings;
@@ -576,7 +577,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         maxPrice: maxPrice,
         privateRoom: privateRoom,
         withPhoto: withPhoto,
-      );
+      ).timeout(_requestTimeout);
 
       final listings = response.data;
 
@@ -647,7 +648,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final response = await _listingService.getUserListings(
         page: page,
         limit: limit,
-      );
+      ).timeout(_requestTimeout);
 
       final listings = response.data;
       _hasMore = (page + 1) <= response.totalPages && listings.isNotEmpty;
