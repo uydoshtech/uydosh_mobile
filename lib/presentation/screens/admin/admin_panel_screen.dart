@@ -143,6 +143,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   );
                 },
               ),
+              _AdminMenuRow(
+                icon: Icons.subway,
+                titleKey: "admin_panel_section_subway_map",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminSubwayMapScreen(),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
           const SizedBox(height: 12),
