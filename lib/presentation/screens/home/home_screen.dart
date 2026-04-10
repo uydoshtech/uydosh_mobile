@@ -786,35 +786,48 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       return;
     }
 
+    // Match the same filters we use for search dispatch (with safe fallbacks).
+    final listingTypeId = widget.useExplicitFiltersOnly
+        ? (widget.listingTypeId ?? _searchFiltersState.selectedListingTypeId)
+        : _searchFiltersState.selectedListingTypeId;
+    final locationId = widget.useExplicitFiltersOnly
+        ? widget.locationId
+        : _searchFiltersState.selectedLocationIndex;
+    final subwayStationId = widget.useExplicitFiltersOnly
+        ? widget.subwayStationId
+        : _searchFiltersState.selectedStationId;
+    final subwayLineId = widget.useExplicitFiltersOnly
+        ? widget.subwayLineId
+        : _searchFiltersState.selectedSubwayLine;
+    final gender = widget.useExplicitFiltersOnly
+        ? widget.gender
+        : _searchFiltersState.selectedGender;
+    final minPrice = widget.useExplicitFiltersOnly
+        ? (widget.minPrice ?? 10.0)
+        : _searchFiltersState.minPrice;
+    final maxPrice = widget.useExplicitFiltersOnly
+        ? (widget.maxPrice ?? 500.0)
+        : _searchFiltersState.maxPrice;
+    final privateRoom = widget.useExplicitFiltersOnly
+        ? (widget.privateRoom ?? false)
+        : _searchFiltersState.privateRoom;
+    final withPhoto = widget.useExplicitFiltersOnly
+        ? (widget.withPhoto ?? false)
+        : _searchFiltersState.withPhoto;
+
+    final hasAnyLocationConstraint = (locationId != null && locationId > 0) ||
+        (subwayLineId != null && subwayLineId > 0) ||
+        (subwayStationId != null && subwayStationId > 0);
+    if (!hasAnyLocationConstraint) {
+      ToastTheme.showError(
+        context,
+        message: L10n.get("search_alert_too_wide"),
+      );
+      return;
+    }
+
     setState(() => _isCreatingSearchAlert = true);
     try {
-      // Match the same filters we use for search dispatch (with safe fallbacks).
-      final listingTypeId = widget.useExplicitFiltersOnly
-          ? (widget.listingTypeId ?? _searchFiltersState.selectedListingTypeId)
-          : _searchFiltersState.selectedListingTypeId;
-      final locationId = widget.useExplicitFiltersOnly
-          ? widget.locationId
-          : _searchFiltersState.selectedLocationIndex;
-      final subwayStationId = widget.useExplicitFiltersOnly
-          ? widget.subwayStationId
-          : _searchFiltersState.selectedStationId;
-      final subwayLineId = widget.useExplicitFiltersOnly
-          ? widget.subwayLineId
-          : _searchFiltersState.selectedSubwayLine;
-      final gender = widget.useExplicitFiltersOnly
-          ? widget.gender
-          : _searchFiltersState.selectedGender;
-      final minPrice =
-          widget.useExplicitFiltersOnly ? (widget.minPrice ?? 10.0) : _searchFiltersState.minPrice;
-      final maxPrice =
-          widget.useExplicitFiltersOnly ? (widget.maxPrice ?? 500.0) : _searchFiltersState.maxPrice;
-      final privateRoom = widget.useExplicitFiltersOnly
-          ? (widget.privateRoom ?? false)
-          : _searchFiltersState.privateRoom;
-      final withPhoto = widget.useExplicitFiltersOnly
-          ? (widget.withPhoto ?? false)
-          : _searchFiltersState.withPhoto;
-
       final err = await getIt<ISearchAlertService>().createAlertForCurrentSearch(
         listingTypeId: listingTypeId,
         locationId: locationId,

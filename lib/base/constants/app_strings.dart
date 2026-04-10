@@ -888,6 +888,8 @@ class AppStrings {
       "search_alert_created":
           "You will be notified when matching listings are posted.",
       "search_alert_already_exists": "This alert was added before.",
+      "search_alert_too_wide":
+          "Please select a district or a metro line/station to save an alert.",
       "search_alert_failed": "Could not save this alert. Try again.",
       "search_alert_permission":
           "Enable notifications in settings to receive alerts.",
@@ -1843,6 +1845,8 @@ class AppStrings {
       "search_alert_created":
           "Мы сообщим, когда появятся подходящие объявления.",
       "search_alert_already_exists": "Это уведомление уже было добавлено.",
+      "search_alert_too_wide":
+          "Чтобы сохранить оповещение, выберите район или линию/станцию метро.",
       "search_alert_failed":
           "Не удалось сохранить оповещение. Попробуйте снова.",
       "search_alert_permission":
@@ -2816,6 +2820,8 @@ class AppStrings {
           "Bu qidiruv bo'yicha bildirishnomalar uchun tizimga kiring.",
       "search_alert_created": "Mos e'lonlar chiqqanda xabar beramiz.",
       "search_alert_already_exists": "Bu bildirishnoma avval ham qo'shilgan.",
+      "search_alert_too_wide":
+          "Bildirishnomani saqlash uchun tuman yoki metro liniyasi/stansiyasini tanlang.",
       "search_alert_failed":
           "Bildirishnomani saqlab bo'lmadi. Qayta urinib ko'ring.",
       "search_alert_permission":
