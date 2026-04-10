@@ -4,6 +4,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 
 class ActionDropdownMenu extends StatelessWidget {
   const ActionDropdownMenu({
@@ -51,12 +52,20 @@ class ActionDropdownMenu extends StatelessWidget {
           popUpAnimationStyle: style,
           itemBuilder: (context) {
             return items.map((item) {
-              final baseTextStyle = Theme.of(context).popupMenuTheme.textStyle;
-              final disabledColor = Theme.of(context).disabledColor;
+              final defaultFg = UydoshPopupMenuColors.itemForeground(
+                context,
+                enabled: item.enabled,
+              );
               final effectiveTextColor =
                   item.enabled
-                      ? (item.textColor ?? baseTextStyle?.color)
-                      : disabledColor;
+                      ? (item.textColor ?? defaultFg)
+                      : defaultFg;
+              final baseTextStyle =
+                  UydoshPopupMenuColors.itemLabelStyle(
+                    context,
+                    enabled: item.enabled,
+                  ) ??
+                  Theme.of(context).popupMenuTheme.textStyle;
               final effectiveTextStyle =
                   (baseTextStyle ?? const TextStyle()).copyWith(
                     color: effectiveTextColor,
@@ -64,8 +73,8 @@ class ActionDropdownMenu extends StatelessWidget {
 
               final effectiveIconColor =
                   item.enabled
-                      ? (item.iconColor ?? baseTextStyle?.color)
-                      : disabledColor;
+                      ? (item.iconColor ?? item.textColor ?? defaultFg)
+                      : defaultFg;
 
               return PopupMenuItem<String>(
                 value: item.value,

@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
@@ -221,30 +222,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (saved != null && saved) {
       await _load();
     }
-  }
-
-  /// Foreground for popup menu rows (M3 uses [PopupMenuThemeData.labelTextStyle]).
-  Color _popupMenuItemColor(BuildContext menuContext, {required bool enabled}) {
-    final pop = Theme.of(menuContext).popupMenuTheme;
-    final states =
-        enabled ? const <WidgetState>{} : <WidgetState>{WidgetState.disabled};
-    final fromLabel = pop.labelTextStyle?.resolve(states);
-    if (fromLabel?.color != null) {
-      return fromLabel!.color!;
-    }
-    final ts = pop.textStyle;
-    final fallback = ts?.color;
-    if (fallback != null) {
-      return enabled ? fallback : fallback.withValues(alpha: 0.38);
-    }
-    return Theme.of(menuContext).colorScheme.primary;
-  }
-
-  TextStyle? _popupMenuItemTextStyle(BuildContext menuContext, {required bool enabled}) {
-    final pop = Theme.of(menuContext).popupMenuTheme;
-    final states =
-        enabled ? const <WidgetState>{} : <WidgetState>{WidgetState.disabled};
-    return pop.labelTextStyle?.resolve(states) ?? pop.textStyle;
   }
 
   Map<String, dynamic> _toJson(SearchAlert a, {bool? enabled}) => {
@@ -487,60 +464,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       PopupMenuItem(
                         value: "disable_all",
                         enabled: enabled,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.notifications_off_outlined,
-                              size: 20,
-                              color: _popupMenuItemColor(
-                                menuContext,
-                                enabled: enabled,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              L10n.get("notifications_disable_all"),
-                              style: _popupMenuItemTextStyle(
-                                menuContext,
-                                enabled: enabled,
-                              ),
-                            ),
-                          ],
+                        child: UydoshPopupMenuItemRow(
+                          icon: Icons.notifications_off_outlined,
+                          text: L10n.get("notifications_disable_all"),
+                          enabled: enabled,
                         ),
                       ),
                       PopupMenuItem(
                         value: "delete_all",
                         enabled: enabled,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete_outline,
-                              size: 20,
-                              color:
-                                  enabled
-                                      ? AppColors.errorDark
-                                      : _popupMenuItemColor(
-                                        menuContext,
-                                        enabled: false,
-                                      ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              L10n.get("notifications_delete_all"),
-                              style:
-                                  enabled
-                                      ? _popupMenuItemTextStyle(
-                                        menuContext,
-                                        enabled: true,
-                                      )?.copyWith(
-                                        color: AppColors.errorDark,
-                                      )
-                                      : _popupMenuItemTextStyle(
-                                        menuContext,
-                                        enabled: false,
-                                      ),
-                            ),
-                          ],
+                        child: UydoshPopupMenuItemRow(
+                          icon: Icons.delete_outline,
+                          text: L10n.get("notifications_delete_all"),
+                          enabled: enabled,
+                          destructive: true,
                         ),
                       ),
                     ];
