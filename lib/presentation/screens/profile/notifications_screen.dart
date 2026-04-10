@@ -483,7 +483,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   },
                   itemBuilder: (menuContext) {
                     final enabled = _alerts.isNotEmpty;
-                    final menuTheme = Theme.of(menuContext);
                     return [
                       PopupMenuItem(
                         value: "disable_all",
@@ -519,8 +518,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               size: 20,
                               color:
                                   enabled
-                                      ? menuTheme.colorScheme.error
-                                      : menuTheme.disabledColor,
+                                      ? AppColors.errorDark
+                                      : _popupMenuItemColor(
+                                        menuContext,
+                                        enabled: false,
+                                      ),
                             ),
                             const SizedBox(width: 10),
                             Text(
@@ -531,7 +533,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         menuContext,
                                         enabled: true,
                                       )?.copyWith(
-                                        color: menuTheme.colorScheme.error,
+                                        color: AppColors.errorDark,
                                       )
                                       : _popupMenuItemTextStyle(
                                         menuContext,
