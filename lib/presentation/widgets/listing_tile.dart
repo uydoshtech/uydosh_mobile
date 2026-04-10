@@ -172,13 +172,55 @@ class _ListingTileState extends State<ListingTile>
         listenable: ThemeState(),
         builder: (context, child) {
           final descriptionSnippet = _descriptionSnippetForPublicTile();
-          final cardWidget = Card(
-          margin: EdgeInsets.zero,
-          child: InkWell(
-            onTap: () => context.pushListingDetail(widget.listing.id),
-            borderRadius: BorderRadius.circular(12),
-            child: Stack(
-              children: [
+          final borderRadius = BorderRadius.circular(12);
+          final scheme = Theme.of(context).colorScheme;
+          final bg = scheme.surface;
+          final darkShadow = Colors.black.withValues(
+            alpha: 
+            Theme.of(context).brightness == Brightness.dark ? 0.45 : 0.20,
+          );
+          final lightShadow = Colors.white.withValues(
+            alpha: 
+            Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.65,
+          );
+
+          final cardWidget = DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.lerp(
+                    bg,
+                    scheme.onSurface,
+                    Theme.of(context).brightness == Brightness.dark
+                        ? 0.06
+                        : 0.03,
+                  )!,
+                  bg,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: lightShadow,
+                  offset: const Offset(-3, -3),
+                  blurRadius: 10,
+                ),
+                BoxShadow(
+                  color: darkShadow,
+                  offset: const Offset(6, 6),
+                  blurRadius: 14,
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => context.pushListingDetail(widget.listing.id),
+                borderRadius: borderRadius,
+                child: Stack(
+                  children: [
                 // Active/Inactive badge and views count in top-right corner (for my listings)
                 if (widget.showActiveStatus)
                   Positioned(
@@ -704,9 +746,10 @@ class _ListingTileState extends State<ListingTile>
                   ),
                 ),
               ],
+                ),
+              ),
             ),
-          ),
-        );
+          );
 
         // Wrap with RGB rotating border if featured
         if (ListingUtils.isCurrentlyFeatured(widget.listing)) {
