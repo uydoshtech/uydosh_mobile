@@ -477,7 +477,7 @@ class _MainNavigationState extends State<MainNavigation>
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: ThreeDPillButton(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               borderRadius: BorderRadius.circular(999),
               onPressed: () {
                 HapticFeedbackUtils.impact();
@@ -553,10 +553,16 @@ class _MainNavigationState extends State<MainNavigation>
                         child: Semantics(
                           label: L10n.get("profile"),
                           button: true,
-                          child: ThemeIcon(
-                            Icons.person,
-                            color: borderColor,
-                            size: 24,
+                          child: SizedBox(
+                            width: 28,
+                            height: 28,
+                            child: Center(
+                              child: ThemeIcon(
+                                Icons.person,
+                                color: borderColor,
+                                size: 26,
+                              ),
+                            ),
                           ),
                         ),
                       );
