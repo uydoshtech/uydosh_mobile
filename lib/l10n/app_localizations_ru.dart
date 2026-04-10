@@ -2149,6 +2149,15 @@ class AppLocalizationsRu extends AppLocalizations {
       'Включите уведомления в настройках, чтобы получать оповещения.';
 
   @override
+  String get search_alert_save => 'Сохранить';
+
+  @override
+  String get search_alert_updated => 'Оповещение обновлено.';
+
+  @override
+  String get notifications_edit_alert_title => 'Изменить оповещение';
+
+  @override
   String get tutorial_search_title => 'Поиск объявлений';
 
   @override

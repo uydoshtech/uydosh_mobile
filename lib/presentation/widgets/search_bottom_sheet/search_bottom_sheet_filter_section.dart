@@ -47,15 +47,16 @@ class SearchBottomSheetPrimaryFilters extends StatelessWidget {
   }
 }
 
-/// Secondary filters: price range, private room / with-photo toggles, search button.
+/// Secondary filters: price range, private room / with-photo toggles, primary action.
 class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   const SearchBottomSheetSecondaryFilters({
     required this.searchFiltersState,
     required this.onPriceRangeChanged,
     required this.onPrivateRoomChanged,
     required this.onWithPhotoChanged,
-    required this.onSearchPressed,
-    required this.onNotifyPressed,
+    required this.onPrimaryPressed,
+    required this.primaryLabelKey,
+    required this.primaryIcon,
     super.key,
   });
 
@@ -63,8 +64,9 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   final void Function(double minPrice, double maxPrice) onPriceRangeChanged;
   final void Function(bool value) onPrivateRoomChanged;
   final void Function(bool value) onWithPhotoChanged;
-  final VoidCallback onSearchPressed;
-  final VoidCallback onNotifyPressed;
+  final VoidCallback onPrimaryPressed;
+  final String primaryLabelKey;
+  final IconData primaryIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -122,20 +124,20 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
         ),
         const SizedBox(height: 20),
 
-        // Search button
+        // Search / save alert
         SizedBox(
           width: double.infinity,
           child: PrimaryButton(
-            onPressed: onSearchPressed,
+            onPressed: onPrimaryPressed,
             padding: const EdgeInsets.symmetric(vertical: 16),
             borderRadius: BorderRadius.circular(10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const ThemeIcon(Icons.search, size: 20),
+                ThemeIcon(primaryIcon, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  L10n.get("search"),
+                  L10n.get(primaryLabelKey),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,

@@ -8,6 +8,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -18,6 +19,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
 
 class NotificationsScreen extends StatefulWidget {
@@ -162,6 +164,87 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     } finally {
       if (mounted) setState(() => _bulkWorking = false);
     }
+  }
+
+  int? _subwayStationIdForBottomSheet(SearchAlert a) {
+    if (a.subwayStationId != null && a.subwayStationId! > 0) {
+      return a.subwayStationId;
+    }
+    final ids = a.subwayStationIds;
+    if (ids != null && ids.isNotEmpty) {
+      return ids.first;
+    }
+    return null;
+  }
+
+  int? _subwayLineIdForBottomSheet(SearchAlert a) {
+    final sid = _subwayStationIdForBottomSheet(a);
+    if (sid != null && sid > 0) {
+      final st = MetroCache.getStationById(sid);
+      if (st != null) {
+        return st.line;
+      }
+    }
+    if (a.subwayLineId != null && a.subwayLineId! > 0) {
+      return a.subwayLineId;
+    }
+    return null;
+  }
+
+  Future<void> _openEditSheet(SearchAlert a) async {
+    if (_bulkWorking) return;
+    final filters = SearchFiltersState();
+    await filters.initialize();
+    if (!mounted) return;
+    final snap = SearchFiltersSnapshot.capture(filters);
+    bool? saved;
+    try {
+      final stationId = _subwayStationIdForBottomSheet(a);
+      final lineId = _subwayLineIdForBottomSheet(a);
+      saved = await SearchBottomSheetWidget.show(
+        context,
+        editingAlertId: a.id,
+        currentListingTypeId: a.listingTypeId ?? 2,
+        currentLocationId: a.locationId,
+        currentSubwayStationId: stationId,
+        currentSubwayLineId: lineId,
+        currentGender: a.gender ?? 1,
+        currentMinPrice: a.minPrice ?? 10,
+        currentMaxPrice: a.maxPrice ?? 500,
+        currentPrivateRoom: a.privateRoom ?? false,
+        currentWithPhoto: a.withPhoto ?? false,
+      );
+    } finally {
+      await filters.restoreToSnapshot(snap);
+    }
+    if (!mounted) return;
+    if (saved != null && saved) {
+      await _load();
+    }
+  }
+
+  /// Foreground for popup menu rows (M3 uses [PopupMenuThemeData.labelTextStyle]).
+  Color _popupMenuItemColor(BuildContext menuContext, {required bool enabled}) {
+    final pop = Theme.of(menuContext).popupMenuTheme;
+    final states =
+        enabled ? const <WidgetState>{} : <WidgetState>{WidgetState.disabled};
+    final fromLabel = pop.labelTextStyle?.resolve(states);
+    if (fromLabel?.color != null) {
+      return fromLabel!.color!;
+    }
+    final ts = pop.textStyle;
+    final fallback = ts?.color;
+    if (fallback != null) {
+      return enabled ? fallback : fallback.withValues(alpha: 0.38);
+    }
+    return Theme.of(menuContext).colorScheme.primary;
+  }
+
+  TextStyle? _popupMenuItemTextStyle(BuildContext menuContext, {required bool enabled}) {
+    final pop = Theme.of(menuContext).popupMenuTheme;
+    final states =
+        enabled ? const <WidgetState>{} : <WidgetState>{WidgetState.disabled};
+    return pop.labelTextStyle?.resolve(states) ?? pop.textStyle;
   }
 
   Map<String, dynamic> _toJson(SearchAlert a, {bool? enabled}) => {
@@ -398,37 +481,68 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         break;
                     }
                   },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: "disable_all",
-                      enabled: _alerts.isNotEmpty,
-                      child: Row(
-                        children: [
-                          const ThemeIcon(
-                            Icons.notifications_off_outlined,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(L10n.get("notifications_disable_all")),
-                        ],
+                  itemBuilder: (menuContext) {
+                    final enabled = _alerts.isNotEmpty;
+                    final menuTheme = Theme.of(menuContext);
+                    return [
+                      PopupMenuItem(
+                        value: "disable_all",
+                        enabled: enabled,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.notifications_off_outlined,
+                              size: 20,
+                              color: _popupMenuItemColor(
+                                menuContext,
+                                enabled: enabled,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              L10n.get("notifications_disable_all"),
+                              style: _popupMenuItemTextStyle(
+                                menuContext,
+                                enabled: enabled,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    PopupMenuItem(
-                      value: "delete_all",
-                      enabled: _alerts.isNotEmpty,
-                      child: Row(
-                        children: [
-                          ThemeIcon(
-                            Icons.delete_outline,
-                            size: 20,
-                            color: theme.colorScheme.error,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(L10n.get("notifications_delete_all")),
-                        ],
+                      PopupMenuItem(
+                        value: "delete_all",
+                        enabled: enabled,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
+                              size: 20,
+                              color:
+                                  enabled
+                                      ? menuTheme.colorScheme.error
+                                      : menuTheme.disabledColor,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              L10n.get("notifications_delete_all"),
+                              style:
+                                  enabled
+                                      ? _popupMenuItemTextStyle(
+                                        menuContext,
+                                        enabled: true,
+                                      )?.copyWith(
+                                        color: menuTheme.colorScheme.error,
+                                      )
+                                      : _popupMenuItemTextStyle(
+                                        menuContext,
+                                        enabled: false,
+                                      ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ];
+                  },
                 );
               },
             ),
@@ -507,12 +621,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      _summaryWidget(a, theme),
-                                    ],
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(10),
+                                      onTap: _bulkWorking ? null : () => _openEditSheet(a),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 4,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _summaryWidget(a, theme),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 6),

@@ -46,30 +46,45 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     // Use the current search parameters to restore the correct state
     if (widget.currentListingTypeId != null) {
-      _searchFiltersState.setListingTypeId(widget.currentListingTypeId!);
+      unawaited(
+        _searchFiltersState.setListingTypeId(widget.currentListingTypeId!),
+      );
     }
 
     if (widget.currentLocationId != null) {
-      _searchFiltersState.setLocationIndex(widget.currentLocationId!);
+      unawaited(_searchFiltersState.setLocationIndex(widget.currentLocationId!));
     }
 
     if (widget.currentSubwayLineId != null) {
-      _searchFiltersState.setSubwayLine(widget.currentSubwayLineId!);
+      unawaited(_searchFiltersState.setSubwayLine(widget.currentSubwayLineId!));
     }
 
     if (widget.currentSubwayStationId != null) {
-      _searchFiltersState.setStationId(widget.currentSubwayStationId!);
+      unawaited(_searchFiltersState.setStationId(widget.currentSubwayStationId!));
     }
 
     if (widget.currentGender != null) {
-      _searchFiltersState.setGender(widget.currentGender!);
+      unawaited(_searchFiltersState.setGender(widget.currentGender!));
     }
 
     // Restore price range if provided
     if (widget.currentMinPrice != null && widget.currentMaxPrice != null) {
-      _searchFiltersState.setPriceRange(
-        widget.currentMinPrice!,
-        widget.currentMaxPrice!,
+      unawaited(
+        _searchFiltersState.setPriceRange(
+          widget.currentMinPrice!,
+          widget.currentMaxPrice!,
+        ),
+      );
+    }
+
+    if (widget.currentPrivateRoom != null) {
+      unawaited(
+        _searchFiltersState.setPrivateRoom(widget.currentPrivateRoom!),
+      );
+    }
+    if (widget.currentWithPhoto != null) {
+      unawaited(
+        _searchFiltersState.setWithPhoto(widget.currentWithPhoto!),
       );
     }
 
@@ -88,8 +103,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     if (widget.currentSubwayLineId != null &&
         widget.currentSubwayLineId! > 0 &&
         widget.currentSubwayStationId == null) {
-      _searchFiltersState.setStationIndex(0);
-      _searchFiltersState.setStationId(0);
+      unawaited(_searchFiltersState.setStationIndex(0));
+      unawaited(_searchFiltersState.setStationId(0));
     }
 
     // Show metro tutorial only when opened from home screen, onboarding toggle is ON,
@@ -98,6 +113,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (!mounted) return;
         if (widget.openedFromHomeScreen &&
+            widget.editingAlertId == null &&
             AuthenticationState().isAuthenticated &&
             OnboardingState().showOnboarding &&
             !TutorialState().hasCompletedMetroTutorial) {
@@ -512,20 +528,26 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               ),
             ),
 
-            // Search header
+            // Search / edit alert header
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
                   ThemeIcon(
-                    Icons.search,
+                    widget.editingAlertId != null
+                        ? Icons.edit_outlined
+                        : Icons.search,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      L10n.get("search_listings"),
+                      L10n.get(
+                        widget.editingAlertId != null
+                            ? "notifications_edit_alert_title"
+                            : "search_listings",
+                      ),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -689,8 +711,18 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               _searchFiltersState.setWithPhoto(value);
                               setState(() {});
                             },
-                            onSearchPressed: _performSearch,
-                            onNotifyPressed: _subscribeToSearchAlerts,
+                            onPrimaryPressed:
+                                widget.editingAlertId != null
+                                    ? _saveSearchAlertEdit
+                                    : _performSearch,
+                            primaryLabelKey:
+                                widget.editingAlertId != null
+                                    ? "search_alert_save"
+                                    : "search",
+                            primaryIcon:
+                                widget.editingAlertId != null
+                                    ? Icons.check
+                                    : Icons.search,
                           ),
                         ],
                       ),
@@ -705,8 +737,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     );
   }
 
-  Future<void> _subscribeToSearchAlerts() async {
+  Future<void> _saveSearchAlertEdit() async {
     HapticFeedbackUtils.impact();
+    final alertId = widget.editingAlertId;
+    if (alertId == null) return;
+
     if (!AuthenticationState().isAuthenticated) {
       if (!mounted) return;
       ToastTheme.showError(
@@ -714,26 +749,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         message: L10n.get("search_alert_login_required"),
       );
       return;
-    }
-
-    final push = getIt<IPushNotificationService>();
-    if (push.isSupported) {
-      final status = await push.getNotificationStatus();
-      if (status == AuthorizationStatus.denied) {
-        if (!mounted) return;
-        ToastTheme.showError(
-          context,
-          message: L10n.get("search_alert_permission"),
-        );
-        return;
-      }
-      if (status != AuthorizationStatus.authorized &&
-          status != AuthorizationStatus.provisional) {
-        final granted = await push.requestPermissionAndRegister();
-        if (!granted) return;
-      } else {
-        await push.registerTokenWithBackend();
-      }
     }
 
     final listingTypeId = _searchFiltersState.selectedListingTypeId;
@@ -748,7 +763,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
             ? _searchFiltersState.selectedGender
             : null;
 
-    final err = await getIt<ISearchAlertService>().createAlertForCurrentSearch(
+    final err = await getIt<ISearchAlertService>().updateAlert(
+      alertId: alertId,
       listingTypeId: listingTypeId,
       locationId: locationId,
       subwayStationId: subwayStationId,
@@ -764,10 +780,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     if (err == null) {
       ToastTheme.showSuccess(
         context,
-        message: L10n.get("search_alert_created"),
+        message: L10n.get("search_alert_updated"),
       );
+      Navigator.pop(context, true);
     } else if (err == SearchAlertService.alreadyExistsErrorToken) {
-      ToastTheme.showSuccess(
+      ToastTheme.showError(
         context,
         message: L10n.get("search_alert_already_exists"),
       );
@@ -780,6 +797,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   }
 
   void _performSearch() {
+    if (widget.editingAlertId != null) return;
     HapticFeedbackUtils.impact();
 
     // Get all current filter values

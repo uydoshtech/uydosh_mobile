@@ -1,3 +1,4 @@
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -7,11 +8,15 @@ import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 class AdminComplaintsScreen extends StatefulWidget {
   const AdminComplaintsScreen({super.key});
@@ -417,11 +422,7 @@ L10n.get("admin_complaints_empty"),
                     labelKey: "admin_complaints_listing_id",
                     value: complaint.listingId.toString(),
                   ),
-                  _buildMetaRow(
-                    context,
-                    labelKey: "admin_complaints_complainant_id",
-                    value: complaint.complainantId.toString(),
-                  ),
+                  _buildComplainantRow(context, complaint),
                   _buildMetaRow(
                     context,
                     labelKey: "admin_complaints_status_label",
@@ -469,6 +470,75 @@ L10n.get("admin_complaints_empty"),
             style: const TextStyle(fontSize: 13),
             maxLines: 5,
             overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _complainantDisplayName(Complaint complaint) {
+    final fromProfile = complaint.complainant?.profile?.name?.trim();
+    if (fromProfile != null && fromProfile.isNotEmpty) {
+      return fromProfile;
+    }
+    final id = complaint.complainantId ?? complaint.complainant?.id;
+    if (id != null) {
+      return id.toString();
+    }
+    return L10n.get("na");
+  }
+
+  int? _complainantUserId(Complaint complaint) =>
+      complaint.complainantId ?? complaint.complainant?.id;
+
+  void _openComplainantProfile(int userId) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => ListingOwnerProfileBloc(getIt<IUserProfileService>()),
+          child: ListingOwnerProfileScreen(userId: userId),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildComplainantRow(BuildContext context, Complaint complaint) {
+    final userId = _complainantUserId(complaint);
+    final linkLabel = _complainantDisplayName(complaint);
+    final linkColor = Theme.of(context).colorScheme.primary;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "${L10n.get("admin_complaints_complainant_id")}: ",
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          Expanded(
+            child:
+                userId != null
+                    ? UydoshLinkButton(
+                      text: linkLabel,
+                      onPressed: () => _openComplainantProfile(userId),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: linkColor,
+                      padding: EdgeInsets.zero,
+                      alignment: Alignment.centerLeft,
+                    )
+                    : Text(
+                      linkLabel,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
           ),
         ],
       ),

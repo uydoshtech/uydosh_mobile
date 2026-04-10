@@ -889,6 +889,9 @@ class AppStrings {
       "search_alert_failed": "Could not save this alert. Try again.",
       "search_alert_permission":
           "Enable notifications in settings to receive alerts.",
+      "search_alert_save": "Save",
+      "search_alert_updated": "Alert updated.",
+      "notifications_edit_alert_title": "Edit alert",
       "tutorial_search_title": "Search for listings",
       "tutorial_search_description":
           "Tap here to filter listings by location, price, room type, and more.",
@@ -1840,6 +1843,9 @@ class AppStrings {
           "Не удалось сохранить оповещение. Попробуйте снова.",
       "search_alert_permission":
           "Включите уведомления в настройках, чтобы получать оповещения.",
+      "search_alert_save": "Сохранить",
+      "search_alert_updated": "Оповещение обновлено.",
+      "notifications_edit_alert_title": "Изменить оповещение",
       "tutorial_search_title": "Поиск объявлений",
       "tutorial_search_description":
           "Нажмите здесь, чтобы фильтровать объявления по району, цене, типу комнаты и другим параметрам.",
@@ -2808,6 +2814,9 @@ class AppStrings {
           "Bildirishnomani saqlab bo'lmadi. Qayta urinib ko'ring.",
       "search_alert_permission":
           "Bildirishnomalar uchun sozlamalarda ruxsat bering.",
+      "search_alert_save": "Saqlash",
+      "search_alert_updated": "Bildirishnoma yangilandi.",
+      "notifications_edit_alert_title": "Bildirishnomani tahrirlash",
       "tutorial_search_title": "E'lonlarni qidirish",
       "tutorial_search_description":
           "E'lonlarni tuman, narx, xona turi va boshqa parametrlar bo'yicha filtrlash uchun bosing.",

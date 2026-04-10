@@ -211,13 +211,27 @@ class AppTheme {
         size: 24,
       ),
 
-      // Popup menu theme - White background with blue text and icons
+      // Popup menu theme - White background with blue text and icons.
+      // Material 3 [PopupMenuItem] uses [labelTextStyle], not [textStyle], for labels;
+      // without this, labels use [ColorScheme.onSurface] (white here) on a light menu.
       popupMenuTheme: PopupMenuThemeData(
         color: Colors.white.withValues(alpha: menuOverlaySurfaceOpacity),
         textStyle: const TextStyle(
           color: BlueThemeColors.primary, // Blue text
           fontSize: 16,
         ),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return TextStyle(
+              color: BlueThemeColors.primary.withValues(alpha: 0.38),
+              fontSize: 16,
+            );
+          }
+          return const TextStyle(
+            color: BlueThemeColors.primary,
+            fontSize: 16,
+          );
+        }),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: menuPanelElevation.toDouble(),
         shadowColor: menuPanelShadowColor,
@@ -408,6 +422,18 @@ class AppTheme {
           color: LightThemeColors.primary, // Light theme primary text
           fontSize: 16,
         ),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return TextStyle(
+              color: LightThemeColors.primary.withValues(alpha: 0.38),
+              fontSize: 16,
+            );
+          }
+          return const TextStyle(
+            color: LightThemeColors.primary,
+            fontSize: 16,
+          );
+        }),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: menuPanelElevation.toDouble(),
         shadowColor: menuPanelShadowColor,
@@ -569,6 +595,18 @@ class AppTheme {
           color: MessagingThemeColors.primary, // Messaging theme primary text
           fontSize: 16,
         ),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return TextStyle(
+              color: MessagingThemeColors.primary.withValues(alpha: 0.38),
+              fontSize: 16,
+            );
+          }
+          return const TextStyle(
+            color: MessagingThemeColors.primary,
+            fontSize: 16,
+          );
+        }),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: menuPanelElevation.toDouble(),
         shadowColor: menuPanelShadowColor,

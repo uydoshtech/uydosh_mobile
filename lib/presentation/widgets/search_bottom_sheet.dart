@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
@@ -15,7 +14,6 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
@@ -42,11 +40,13 @@ part "search_bottom_sheet/search_bottom_sheet_state.dart";
 /// - When location is selected, metro filters are reset
 /// - Wheel pickers are automatically reset to initial positions
 class SearchBottomSheetWidget {
-  /// Shows the search bottom sheet with all available filters
-  static void show(
+  /// Shows the search bottom sheet with all available filters.
+  /// Returns `true` when a search alert was saved from edit mode; otherwise `null`.
+  static Future<bool?> show(
     BuildContext context, {
     bool replaceCurrentRoute = false,
     bool openedFromHomeScreen = false,
+    int? editingAlertId,
     int? currentListingTypeId,
     int? currentLocationId,
     int? currentSubwayStationId,
@@ -54,6 +54,8 @@ class SearchBottomSheetWidget {
     int? currentGender,
     double? currentMinPrice,
     double? currentMaxPrice,
+    bool? currentPrivateRoom,
+    bool? currentWithPhoto,
   }) {
     // Try to get existing blocs from context to avoid redundant fetches
     ListingsBloc? existingListingsBloc;
@@ -69,7 +71,7 @@ class SearchBottomSheetWidget {
       existingLocationsBloc = null;
     }
 
-    showModalBottomSheet(
+    return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -106,6 +108,7 @@ class SearchBottomSheetWidget {
             child: _SearchBottomSheetContent(
               replaceCurrentRoute: replaceCurrentRoute,
               openedFromHomeScreen: openedFromHomeScreen,
+              editingAlertId: editingAlertId,
               currentListingTypeId: currentListingTypeId,
               currentLocationId: currentLocationId,
               currentSubwayStationId: currentSubwayStationId,
@@ -113,6 +116,8 @@ class SearchBottomSheetWidget {
               currentGender: currentGender,
               currentMinPrice: currentMinPrice,
               currentMaxPrice: currentMaxPrice,
+              currentPrivateRoom: currentPrivateRoom,
+              currentWithPhoto: currentWithPhoto,
             ),
           ),
     );
@@ -124,6 +129,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
   const _SearchBottomSheetContent({
     this.replaceCurrentRoute = false,
     this.openedFromHomeScreen = false,
+    this.editingAlertId,
     this.currentListingTypeId,
     this.currentLocationId,
     this.currentSubwayStationId,
@@ -131,9 +137,12 @@ class _SearchBottomSheetContent extends StatefulWidget {
     this.currentGender,
     this.currentMinPrice,
     this.currentMaxPrice,
+    this.currentPrivateRoom,
+    this.currentWithPhoto,
   });
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
+  final int? editingAlertId;
   final int? currentListingTypeId;
   final int? currentLocationId;
   final int? currentSubwayStationId;
@@ -141,6 +150,8 @@ class _SearchBottomSheetContent extends StatefulWidget {
   final int? currentGender;
   final double? currentMinPrice;
   final double? currentMaxPrice;
+  final bool? currentPrivateRoom;
+  final bool? currentWithPhoto;
 
   @override
   State<_SearchBottomSheetContent> createState() =>

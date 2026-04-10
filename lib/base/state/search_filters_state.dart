@@ -390,6 +390,81 @@ class SearchFiltersState extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  /// Restores fields and persisted prefs after a modal temporarily changed filters
+  /// (e.g. editing a search alert).
+  Future<void> restoreToSnapshot(SearchFiltersSnapshot snapshot) async {
+    _selectedListingTypeId = snapshot.selectedListingTypeId;
+    _selectedLocationIndex = snapshot.selectedLocationIndex;
+    _selectedSubwayLine = snapshot.selectedSubwayLine;
+    _selectedStationIndex = snapshot.selectedStationIndex;
+    _selectedStationId = snapshot.selectedStationId;
+    _selectedGender = snapshot.selectedGender;
+    _minPrice = snapshot.minPrice;
+    _maxPrice = snapshot.maxPrice;
+    _privateRoom = snapshot.privateRoom;
+    _withPhoto = snapshot.withPhoto;
+
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt("search_listing_type_id", snapshot.selectedListingTypeId);
+      await prefs.setInt("search_location_index", snapshot.selectedLocationIndex);
+      await prefs.setInt("search_subway_line", snapshot.selectedSubwayLine);
+      await prefs.setInt("search_station_index", snapshot.selectedStationIndex);
+      await prefs.setInt("search_station_id", snapshot.selectedStationId);
+      await prefs.setInt("search_gender", snapshot.selectedGender);
+      await prefs.setDouble("search_min_price", snapshot.minPrice);
+      await prefs.setDouble("search_max_price", snapshot.maxPrice);
+      await prefs.setBool("search_private_room", snapshot.privateRoom);
+      await prefs.setBool("search_with_photo", snapshot.withPhoto);
+    } catch (e) {
+      logger.d("Error restoring search filters snapshot: $e");
+    }
+  }
+}
+
+/// Immutable copy of [SearchFiltersState] for restoring after ephemeral UI.
+class SearchFiltersSnapshot {
+  const SearchFiltersSnapshot({
+    required this.selectedListingTypeId,
+    required this.selectedLocationIndex,
+    required this.selectedSubwayLine,
+    required this.selectedStationIndex,
+    required this.selectedStationId,
+    required this.selectedGender,
+    required this.minPrice,
+    required this.maxPrice,
+    required this.privateRoom,
+    required this.withPhoto,
+  });
+
+  factory SearchFiltersSnapshot.capture(SearchFiltersState s) {
+    return SearchFiltersSnapshot(
+      selectedListingTypeId: s.selectedListingTypeId,
+      selectedLocationIndex: s.selectedLocationIndex,
+      selectedSubwayLine: s.selectedSubwayLine,
+      selectedStationIndex: s.selectedStationIndex,
+      selectedStationId: s.selectedStationId,
+      selectedGender: s.selectedGender,
+      minPrice: s.minPrice,
+      maxPrice: s.maxPrice,
+      privateRoom: s.privateRoom,
+      withPhoto: s.withPhoto,
+    );
+  }
+
+  final int selectedListingTypeId;
+  final int selectedLocationIndex;
+  final int selectedSubwayLine;
+  final int selectedStationIndex;
+  final int selectedStationId;
+  final int selectedGender;
+  final double minPrice;
+  final double maxPrice;
+  final bool privateRoom;
+  final bool withPhoto;
 }
 
 class _EmptyRequest implements IJsonEncodable {

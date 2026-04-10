@@ -9,6 +9,26 @@ String _complaintStatusFromJson(Object? value) =>
     value is String && value.isNotEmpty ? value : "pending";
 
 @freezed
+class ComplaintComplainantProfile with _$ComplaintComplainantProfile {
+  const factory ComplaintComplainantProfile({String? name}) =
+      _ComplaintComplainantProfile;
+
+  factory ComplaintComplainantProfile.fromJson(Map<String, dynamic> json) =>
+      _$ComplaintComplainantProfileFromJson(json);
+}
+
+@freezed
+class ComplaintComplainant with _$ComplaintComplainant {
+  const factory ComplaintComplainant({
+    int? id,
+    ComplaintComplainantProfile? profile,
+  }) = _ComplaintComplainant;
+
+  factory ComplaintComplainant.fromJson(Map<String, dynamic> json) =>
+      _$ComplaintComplainantFromJson(json);
+}
+
+@freezed
 class Complaint with _$Complaint {
   const factory Complaint({
     @JsonKey(
@@ -18,6 +38,7 @@ class Complaint with _$Complaint {
     )
     required String status, int? id,
     @JsonKey(name: "complainant_id") int? complainantId,
+    @JsonKey(name: "complainant") ComplaintComplainant? complainant,
     @JsonKey(name: "listing_id") int? listingId,
     @JsonKey(name: "category_id") int? categoryId,
     @JsonKey(name: "category") ComplaintCategory? category,
