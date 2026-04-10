@@ -13,6 +13,7 @@ import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_description_translation.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
@@ -357,6 +358,8 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
+          backgroundColor: Colors.transparent,
+          collapsedBackgroundColor: Colors.transparent,
           initiallyExpanded: false,
           onExpansionChanged: _onMapExpansionChanged,
           tilePadding: EdgeInsets.zero,
@@ -394,7 +397,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return ListingDetailTileShell(
       child: Padding(
         // Tighter top: reduces gap between image tile and title/description row only.
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),

@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class ThreeDPillButton extends StatefulWidget {
   const ThreeDPillButton({
@@ -31,33 +32,9 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
     final bg = widget.backgroundColor ?? scheme.surface;
     final enabled = widget._enabled;
 
-    final darkShadow = Colors.black.withValues(
-      alpha: Theme.of(context).brightness == Brightness.dark ? 0.45 : 0.20,
-    );
-    final lightShadow = Colors.white.withValues(
-      alpha: Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.65,
-    );
-
     final shadows = _pressed || !enabled
-        ? <BoxShadow>[
-            BoxShadow(
-              color: darkShadow,
-              offset: const Offset(2, 2),
-              blurRadius: 8,
-            ),
-          ]
-        : <BoxShadow>[
-            BoxShadow(
-              color: lightShadow,
-              offset: const Offset(-3, -3),
-              blurRadius: 10,
-            ),
-            BoxShadow(
-              color: darkShadow,
-              offset: const Offset(6, 6),
-              blurRadius: 14,
-            ),
-          ];
+        ? ThreeDSurfaceStyle.pressedShadows(context)
+        : ThreeDSurfaceStyle.elevatedShadows(context);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 90),
@@ -73,20 +50,7 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
             padding: widget.padding,
             decoration: BoxDecoration(
               borderRadius: widget.borderRadius,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.lerp(
-                    bg,
-                    scheme.onSurface,
-                    Theme.of(context).brightness == Brightness.dark
-                        ? 0.06
-                        : 0.03,
-                  )!,
-                  bg,
-                ],
-              ),
+              gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
               boxShadow: shadows,
             ),
             child: Opacity(

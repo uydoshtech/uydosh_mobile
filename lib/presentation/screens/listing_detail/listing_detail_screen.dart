@@ -52,13 +52,14 @@ import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.da
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
@@ -70,7 +71,6 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
@@ -1810,7 +1810,7 @@ L10n.get("feature_listing_error",
   Widget _metaBadgesTile(ListingDetail listingDetail) {
     return SizedBox(
       width: double.infinity,
-      child: Card(
+      child: ListingDetailTileShell(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
           child: Column(
@@ -1829,7 +1829,7 @@ L10n.get("feature_listing_error",
   Widget _room3dTile(ListingDetail listingDetail) {
     return SizedBox(
       width: double.infinity,
-      child: Card(
+      child: ListingDetailTileShell(
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => _openRoom3dViewer(listingDetail),

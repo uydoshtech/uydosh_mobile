@@ -9,9 +9,10 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Data class for a compatibility match (same value).
 class CompatibilityMatch {
@@ -164,9 +165,11 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
 
     final isProfileComplete = ProfileCompletionState().isProfileComplete;
 
-    return Card(
+    return ListingDetailTileShell(
       key: sectionKey,
       child: ExpansionTile(
+        backgroundColor: Colors.transparent,
+        collapsedBackgroundColor: Colors.transparent,
         initiallyExpanded: !isAuthenticated || !isProfileComplete,
         onExpansionChanged: (isExpanded) {
           HapticFeedbackUtils.impact();

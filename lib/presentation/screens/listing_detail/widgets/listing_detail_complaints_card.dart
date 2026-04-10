@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Complaints warning card for listing detail (shown when listing has complaints).
@@ -17,7 +18,7 @@ class ListingDetailComplaintsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return ListingDetailTileShell(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: SizedBox(

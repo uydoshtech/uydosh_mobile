@@ -5,6 +5,7 @@ import "dart:ui" show ImageFilter;
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Photo carousel section for listing detail screen.
@@ -28,7 +29,7 @@ class ListingDetailPhotoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: Card(
+      child: ListingDetailTileShell(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 6, 5, 5),
           child: Column(
