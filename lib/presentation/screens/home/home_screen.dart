@@ -617,6 +617,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     _noResultsAlertTutorialShownThisSession = true;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Give the route a moment to fully appear before measuring the AppBar action.
+      await Future<void>.delayed(const Duration(seconds: 1));
       if (!mounted) return;
       await TutorialState().initialize();
       if (!mounted) return;
