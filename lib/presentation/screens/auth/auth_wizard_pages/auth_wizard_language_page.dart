@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class AuthWizardLanguagePage extends StatelessWidget {
   const AuthWizardLanguagePage({
@@ -9,9 +9,6 @@ class AuthWizardLanguagePage extends StatelessWidget {
 
   final String selectedLanguage;
   final ValueChanged<String> onLanguageSelected;
-
-  Color _getOnboardingTextColor(BuildContext context) =>
-      Theme.of(context).colorScheme.onSurface;
 
   Color _getOnboardingTextSecondaryColor(BuildContext context) =>
       Theme.of(context).colorScheme.onSurfaceVariant;
@@ -73,22 +70,21 @@ class AuthWizardLanguagePage extends StatelessWidget {
     String englishName,
   ) {
     final isSelected = selectedLanguage == languageCode;
+    final scheme = Theme.of(context).colorScheme;
+    final surface = scheme.surface;
+    const borderRadius = BorderRadius.all(Radius.circular(16));
+
     return GestureDetector(
       onTap: () => onLanguageSelected(languageCode),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AuthWizardTheme.getSelectedButtonBackgroundColor()
-              : AuthWizardTheme.getUnselectedButtonBackgroundColor(),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? AuthWizardTheme.getSelectedButtonBorderColor()
-                : AuthWizardTheme.getUnselectedButtonBorderColor(),
-            width: isSelected ? 2 : 1,
-          ),
+          borderRadius: borderRadius,
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+          boxShadow: isSelected
+              ? ThreeDSurfaceStyle.elevatedShadows(context)
+              : ThreeDSurfaceStyle.pressedShadows(context),
         ),
         child: Row(
           children: [
@@ -96,9 +92,7 @@ class AuthWizardLanguagePage extends StatelessWidget {
               flag,
               style: TextStyle(
                 fontSize: 32,
-                color: isSelected
-                    ? _getOnboardingTextColor(context)
-                    : AuthWizardTheme.getUnselectedButtonTextColor(),
+                color: scheme.onSurface,
               ),
             ),
             const SizedBox(width: 20),
@@ -111,9 +105,7 @@ class AuthWizardLanguagePage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: isSelected
-                          ? _getOnboardingTextColor(context)
-                          : AuthWizardTheme.getUnselectedButtonTextColor(),
+                      color: scheme.onSurface,
                     ),
                   ),
                   Text(
@@ -122,8 +114,7 @@ class AuthWizardLanguagePage extends StatelessWidget {
                       fontSize: 14,
                       color: isSelected
                           ? _getOnboardingTextSecondaryColor(context)
-                          : AuthWizardTheme.getUnselectedButtonTextColor()
-                              .withOpacity(0.7),
+                          : scheme.onSurfaceVariant.withValues(alpha: 0.85),
                     ),
                   ),
                 ],
@@ -132,7 +123,7 @@ class AuthWizardLanguagePage extends StatelessWidget {
             if (isSelected)
               ThemeIcon(
                 Icons.check_circle,
-                color: _getOnboardingTextColor(context),
+                color: scheme.onSurface,
                 size: 28,
               ),
           ],

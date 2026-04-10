@@ -4,6 +4,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 
 class ActionDropdownMenu extends StatelessWidget {
@@ -38,7 +39,11 @@ class ActionDropdownMenu extends StatelessWidget {
                     reverseDuration: Duration.zero,
                   );
 
+        final scheme = Theme.of(context).colorScheme;
+        final pillRadius = BorderRadius.circular(999);
+
         return PopupMenuButton<String>(
+          borderRadius: pillRadius,
           onOpened: HapticFeedbackUtils.impact,
           onSelected: (value) {
             HapticFeedbackUtils.impact();
@@ -114,16 +119,29 @@ class ActionDropdownMenu extends StatelessWidget {
           },
           child: Padding(
             padding: padding,
-            child: Tooltip(
-              message: tooltip ?? "",
-              child: ThemeIcon(
-                icon ?? Icons.more_vert,
-                size: iconSize,
-                color:
-                    iconColor ??
-                    (ThemeState().isBlueTheme
-                        ? Colors.white
-                        : Theme.of(context).iconTheme.color),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: pillRadius,
+                gradient: ThreeDSurfaceStyle.surfaceGradient(
+                  context,
+                  scheme.surface,
+                ),
+                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Tooltip(
+                  message: tooltip ?? "",
+                  child: ThemeIcon(
+                    icon ?? Icons.more_vert,
+                    size: iconSize,
+                    color:
+                        iconColor ??
+                        (ThemeState().isBlueTheme
+                            ? Colors.white
+                            : Theme.of(context).iconTheme.color),
+                  ),
+                ),
               ),
             ),
           ),

@@ -13,6 +13,7 @@ import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -29,6 +30,7 @@ import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -338,6 +340,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
                 return Scaffold(
                   appBar: AppBar(
+                    leading: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: ListenableBuilder(
+                          listenable: ThemeState(),
+                          builder: (context, _) {
+                            final iconColor = ThemeState().isBlueTheme
+                                ? Colors.white
+                                : Colors.black;
+                            return ThreeDPillButton(
+                              padding: const EdgeInsets.all(6),
+                              borderRadius: BorderRadius.circular(999),
+                              onPressed: () {
+                                HapticFeedbackUtils.impact();
+                                if (Navigator.of(context).canPop()) {
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              child: Semantics(
+                                label: MaterialLocalizations.of(
+                                  context,
+                                ).backButtonTooltip,
+                                button: true,
+                                child: SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child: Center(
+                                    child: ThemeIcon(
+                                      Icons.arrow_back,
+                                      color: iconColor,
+                                      size: 26,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                     title: Text(
                       L10n.get("profile"),
                       style: const TextStyle(
