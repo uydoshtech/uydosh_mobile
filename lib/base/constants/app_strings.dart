@@ -104,6 +104,7 @@ class AppStrings {
       "notifications_delete_all_message":
           "This will permanently delete all saved search alerts. This action cannot be undone.",
       "disable": "Disable",
+      "enable": "Enable",
       "type_message": "Type a message...",
       "conversation_created": "Conversation started",
       "conversation_failed": "Failed to start conversation",
@@ -1053,6 +1054,7 @@ class AppStrings {
       "notifications_delete_all_message":
           "Это навсегда удалит все сохранённые оповещения о поиске. Это действие нельзя отменить.",
       "disable": "Отключить",
+      "enable": "Включить",
       "type_message": "Введите сообщение...",
       "conversation_created": "Разговор начат",
       "conversation_failed": "Не удалось начать разговор",
@@ -2011,6 +2013,7 @@ class AppStrings {
       "notifications_delete_all_message":
           "Bu barcha saqlangan qidiruv ogohlantirishlarini butunlay o‘chirib tashlaydi. Bu amalni bekor qilib bo‘lmaydi.",
       "disable": "O‘chirish",
+      "enable": "Yoqish",
       "type_message": "Xabar yozing...",
       "conversation_created": "Suhbat boshlandi",
       "conversation_failed": "Suhbat boshlanmadi",
