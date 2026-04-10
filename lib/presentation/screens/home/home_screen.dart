@@ -509,18 +509,23 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       backgroundColor: _getRefreshIndicatorBackgroundColor(),
       onRefresh: _onFeedPullRefresh,
       child: PullToRefreshStretchHaptics(
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverPadding(
+        // Use a single scrollable with a single box child.
+        // This avoids a Flutter web edge-case where swapping sliver vs. box
+        // scrollables during rebuild can trigger a mouse_tracker assertion.
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return ListView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-              sliver: SliverFillRemaining(
-                hasScrollBody: false,
-                child: child,
-              ),
-            ),
-          ],
+              children: [
+                SizedBox(
+                  height: constraints.maxHeight,
+                  child: Center(child: child),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
