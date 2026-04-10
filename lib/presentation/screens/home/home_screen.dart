@@ -94,6 +94,30 @@ class _HomeScreenData {
   }
 }
 
+class _ResolvedSearchFilters {
+  const _ResolvedSearchFilters({
+    required this.listingTypeId,
+    required this.locationId,
+    required this.subwayStationId,
+    required this.subwayLineId,
+    required this.gender,
+    required this.minPrice,
+    required this.maxPrice,
+    required this.privateRoom,
+    required this.withPhoto,
+  });
+
+  final int? listingTypeId;
+  final int? locationId;
+  final int? subwayStationId;
+  final int? subwayLineId;
+  final int? gender;
+  final double? minPrice;
+  final double? maxPrice;
+  final bool? privateRoom;
+  final bool? withPhoto;
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
@@ -229,6 +253,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       profileIconKey: AppRouter.profileIconTutorialKey,
       onComplete: TutorialState().markSearchTutorialCompleted,
     );
+  }
+
+  void _resetLoadMoreState() {
+    _isLoadingMore = false;
+    _resetScrollLoadingState();
   }
 
   void _onHomeRefreshStateChanged() {
@@ -395,6 +424,64 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
+  _ResolvedSearchFilters _resolveSearchFilters({
+    required bool includeSafeFallbacks,
+    required bool explicitNullFallsBackToState,
+  }) {
+    final fromExplicit = widget.useExplicitFiltersOnly;
+
+    final listingTypeId = fromExplicit
+        ? (explicitNullFallsBackToState
+            ? (widget.listingTypeId ??
+                _searchFiltersState.selectedListingTypeId)
+            : widget.listingTypeId)
+        : _searchFiltersState.selectedListingTypeId;
+
+    // For location / metro fields we preserve current behavior: if opened with
+    // explicit filters, we display/use exactly what was provided (nullable).
+    final locationId = fromExplicit
+        ? widget.locationId
+        : _searchFiltersState.selectedLocationIndex;
+    final subwayStationId = fromExplicit
+        ? widget.subwayStationId
+        : _searchFiltersState.selectedStationId;
+    final subwayLineId = fromExplicit
+        ? widget.subwayLineId
+        : _searchFiltersState.selectedSubwayLine;
+    final gender =
+        fromExplicit ? widget.gender : _searchFiltersState.selectedGender;
+
+    final minPrice = fromExplicit
+        ? (includeSafeFallbacks ? (widget.minPrice ?? 10.0) : widget.minPrice)
+        : _searchFiltersState.minPrice;
+    final maxPrice = fromExplicit
+        ? (includeSafeFallbacks ? (widget.maxPrice ?? 500.0) : widget.maxPrice)
+        : _searchFiltersState.maxPrice;
+
+    final privateRoom = fromExplicit
+        ? (includeSafeFallbacks
+            ? (widget.privateRoom ?? false)
+            : widget.privateRoom)
+        : _searchFiltersState.privateRoom;
+    final withPhoto = fromExplicit
+        ? (includeSafeFallbacks
+            ? (widget.withPhoto ?? false)
+            : widget.withPhoto)
+        : _searchFiltersState.withPhoto;
+
+    return _ResolvedSearchFilters(
+      listingTypeId: listingTypeId,
+      locationId: locationId,
+      subwayStationId: subwayStationId,
+      subwayLineId: subwayLineId,
+      gender: gender,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+      privateRoom: privateRoom,
+      withPhoto: withPhoto,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -406,20 +493,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               // Reset loading flag when state changes
               state.map(
                 initial: (_) {
-                  _isLoadingMore = false;
-                  _resetScrollLoadingState();
+                  _resetLoadMoreState();
                 },
                 loading: (_) {
-                  _isLoadingMore = false;
-                  _resetScrollLoadingState();
+                  _resetLoadMoreState();
                 },
                 loaded: (_) {
-                  _isLoadingMore = false;
-                  _resetScrollLoadingState();
+                  _resetLoadMoreState();
                 },
                 error: (_) {
-                  _isLoadingMore = false;
-                  _resetScrollLoadingState();
+                  _resetLoadMoreState();
                 },
               );
             },
@@ -647,81 +730,63 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final theme = Theme.of(context);
     final lang = L10n.currentLanguage;
 
-    final listingTypeId = widget.useExplicitFiltersOnly
-        ? (widget.listingTypeId ?? _searchFiltersState.selectedListingTypeId)
-        : _searchFiltersState.selectedListingTypeId;
-    final locationId = widget.useExplicitFiltersOnly
-        ? widget.locationId
-        : _searchFiltersState.selectedLocationIndex;
-    final subwayStationId = widget.useExplicitFiltersOnly
-        ? widget.subwayStationId
-        : _searchFiltersState.selectedStationId;
-    final subwayLineId = widget.useExplicitFiltersOnly
-        ? widget.subwayLineId
-        : _searchFiltersState.selectedSubwayLine;
-    final gender = widget.useExplicitFiltersOnly
-        ? widget.gender
-        : _searchFiltersState.selectedGender;
-    final minPrice = widget.useExplicitFiltersOnly
-        ? (widget.minPrice ?? 10.0)
-        : _searchFiltersState.minPrice;
-    final maxPrice = widget.useExplicitFiltersOnly
-        ? (widget.maxPrice ?? 500.0)
-        : _searchFiltersState.maxPrice;
-    final privateRoom = widget.useExplicitFiltersOnly
-        ? (widget.privateRoom ?? false)
-        : _searchFiltersState.privateRoom;
-    final withPhoto = widget.useExplicitFiltersOnly
-        ? (widget.withPhoto ?? false)
-        : _searchFiltersState.withPhoto;
+    final filters = _resolveSearchFilters(
+      includeSafeFallbacks: true,
+      explicitNullFallsBackToState: true,
+    );
 
     final chips = <Widget>[];
 
     chips.add(
       ListingTypeBadge(
-        listingTypeCode: listingTypeId == 1 ? "room_needed" : "roommate_needed",
+        listingTypeCode:
+            filters.listingTypeId == 1 ? "room_needed" : "roommate_needed",
         fontSize: 13,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       ),
     );
 
-    if (locationId != null && locationId > 0) {
+    if (filters.locationId != null && filters.locationId! > 0) {
       chips.add(
         _criteriaChip(
           icon: Icons.location_on_outlined,
-          text: LocationCache.getLocationShortName(locationId, lang),
+          text: LocationCache.getLocationShortName(filters.locationId!, lang),
           color: AppColors.error,
         ),
       );
     }
 
-    if (subwayStationId != null && subwayStationId > 0) {
-      final station = MetroCache.getStationById(subwayStationId);
+    if (filters.subwayStationId != null && filters.subwayStationId! > 0) {
+      final station = MetroCache.getStationById(filters.subwayStationId!);
       chips.add(
         _criteriaChip(
           icon: Icons.train,
-          text: MetroCache.getStationDisplayName(subwayStationId, lang),
+          text:
+              MetroCache.getStationDisplayName(filters.subwayStationId!, lang),
           color: station == null
               ? theme.colorScheme.onSurfaceVariant
               : AppColors.getMetroLineColor(station.line),
         ),
       );
-    } else if (subwayLineId != null && subwayLineId > 0) {
+    } else if (filters.subwayLineId != null && filters.subwayLineId! > 0) {
       chips.add(
         _criteriaChip(
           icon: Icons.train_outlined,
-          text: MetroCache.getLineName(subwayLineId, lang),
-          color: AppColors.getMetroLineColor(subwayLineId),
+          text: MetroCache.getLineName(filters.subwayLineId!, lang),
+          color: AppColors.getMetroLineColor(filters.subwayLineId!),
         ),
       );
     }
 
-    if (gender != null && (gender == 1 || gender == 2)) {
+    if (filters.gender != null &&
+        (filters.gender == 1 || filters.gender == 2)) {
       chips.add(
         _criteriaChip(
-          icon: gender == 2 ? Icons.female : Icons.male,
-          text: gender == 2 ? L10n.get("female") : L10n.get("male"),
-          color: gender == 2 ? AppColors.genderFemale : AppColors.genderMale,
+          icon: filters.gender == 2 ? Icons.female : Icons.male,
+          text: filters.gender == 2 ? L10n.get("female") : L10n.get("male"),
+          color: filters.gender == 2
+              ? AppColors.genderFemale
+              : AppColors.genderMale,
           tintAlpha: 0.12,
         ),
       );
@@ -729,8 +794,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     chips.add(
       PriceRangeBadge(
-        minPrice: minPrice.round(),
-        maxPrice: maxPrice.round(),
+        minPrice: (filters.minPrice ?? 10.0).round(),
+        maxPrice: (filters.maxPrice ?? 500.0).round(),
         showCurrency: true,
         showIcon: false,
         isActive: true,
@@ -743,7 +808,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       ),
     );
 
-    if (privateRoom) {
+    if (filters.privateRoom == true) {
       chips.add(
         _criteriaChip(
           icon: Icons.lock_outline,
@@ -752,7 +817,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         ),
       );
     }
-    if (withPhoto) {
+    if (filters.withPhoto == true) {
       chips.add(
         _criteriaChip(
           icon: Icons.photo_camera_outlined,
@@ -819,38 +884,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       return;
     }
 
-    // Match the same filters we use for search dispatch (with safe fallbacks).
-    final listingTypeId = widget.useExplicitFiltersOnly
-        ? (widget.listingTypeId ?? _searchFiltersState.selectedListingTypeId)
-        : _searchFiltersState.selectedListingTypeId;
-    final locationId = widget.useExplicitFiltersOnly
-        ? widget.locationId
-        : _searchFiltersState.selectedLocationIndex;
-    final subwayStationId = widget.useExplicitFiltersOnly
-        ? widget.subwayStationId
-        : _searchFiltersState.selectedStationId;
-    final subwayLineId = widget.useExplicitFiltersOnly
-        ? widget.subwayLineId
-        : _searchFiltersState.selectedSubwayLine;
-    final gender = widget.useExplicitFiltersOnly
-        ? widget.gender
-        : _searchFiltersState.selectedGender;
-    final minPrice = widget.useExplicitFiltersOnly
-        ? (widget.minPrice ?? 10.0)
-        : _searchFiltersState.minPrice;
-    final maxPrice = widget.useExplicitFiltersOnly
-        ? (widget.maxPrice ?? 500.0)
-        : _searchFiltersState.maxPrice;
-    final privateRoom = widget.useExplicitFiltersOnly
-        ? (widget.privateRoom ?? false)
-        : _searchFiltersState.privateRoom;
-    final withPhoto = widget.useExplicitFiltersOnly
-        ? (widget.withPhoto ?? false)
-        : _searchFiltersState.withPhoto;
+    final filters = _resolveSearchFilters(
+      includeSafeFallbacks: true,
+      explicitNullFallsBackToState: true,
+    );
 
-    final hasAnyLocationConstraint = (locationId != null && locationId > 0) ||
-        (subwayLineId != null && subwayLineId > 0) ||
-        (subwayStationId != null && subwayStationId > 0);
+    final hasAnyLocationConstraint =
+        (filters.locationId != null && filters.locationId! > 0) ||
+            (filters.subwayLineId != null && filters.subwayLineId! > 0) ||
+            (filters.subwayStationId != null && filters.subwayStationId! > 0);
     if (!hasAnyLocationConstraint) {
       ToastTheme.showError(
         context,
@@ -861,16 +903,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     setState(() => _isCreatingSearchAlert = true);
     try {
-      final err = await getIt<ISearchAlertService>().createAlertForCurrentSearch(
-        listingTypeId: listingTypeId,
-        locationId: locationId,
-        subwayStationId: subwayStationId,
-        subwayLineId: subwayLineId,
-        gender: gender,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        privateRoomOnly: privateRoom,
-        withPhotoOnly: withPhoto,
+      final err =
+          await getIt<ISearchAlertService>().createAlertForCurrentSearch(
+        listingTypeId:
+            filters.listingTypeId ?? _searchFiltersState.selectedListingTypeId,
+        locationId: filters.locationId,
+        subwayStationId: filters.subwayStationId,
+        subwayLineId: filters.subwayLineId,
+        gender: filters.gender,
+        minPrice: filters.minPrice ?? 10.0,
+        maxPrice: filters.maxPrice ?? 500.0,
+        privateRoomOnly: filters.privateRoom ?? false,
+        withPhotoOnly: filters.withPhoto ?? false,
       );
 
       if (!mounted) return;
@@ -903,7 +947,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         }
       }
 
-      ToastTheme.showSuccess(context, message: L10n.get("search_alert_created"));
+      ToastTheme.showSuccess(context,
+          message: L10n.get("search_alert_created"));
     } finally {
       if (mounted) {
         setState(() => _isCreatingSearchAlert = false);
@@ -1103,53 +1148,30 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       return;
     }
 
-    final listingTypeId = widget.useExplicitFiltersOnly
-        ? widget.listingTypeId
-        : _searchFiltersState.selectedListingTypeId;
-    final locationId = widget.useExplicitFiltersOnly
-        ? widget.locationId
-        : _searchFiltersState.selectedLocationIndex;
-    final subwayStationId = widget.useExplicitFiltersOnly
-        ? widget.subwayStationId
-        : _searchFiltersState.selectedStationId;
-    final subwayLineId = widget.useExplicitFiltersOnly
-        ? widget.subwayLineId
-        : _searchFiltersState.selectedSubwayLine;
-    final gender = widget.useExplicitFiltersOnly
-        ? widget.gender
-        : _searchFiltersState.selectedGender;
-    final minPrice = widget.useExplicitFiltersOnly
-        ? widget.minPrice
-        : _searchFiltersState.minPrice;
-    final maxPrice = widget.useExplicitFiltersOnly
-        ? widget.maxPrice
-        : _searchFiltersState.maxPrice;
-    final privateRoom = widget.useExplicitFiltersOnly
-        ? widget.privateRoom
-        : _searchFiltersState.privateRoom;
-    final withPhoto = widget.useExplicitFiltersOnly
-        ? widget.withPhoto
-        : _searchFiltersState.withPhoto;
+    final filters = _resolveSearchFilters(
+      includeSafeFallbacks: false,
+      explicitNullFallsBackToState: false,
+    );
 
     // Debug logging to see what values are being passed
     logger.d(
-      "HomeScreen._dispatchSearch - subwayStationId: $subwayStationId, subwayLineId: $subwayLineId",
+      "HomeScreen._dispatchSearch - subwayStationId: ${filters.subwayStationId}, subwayLineId: ${filters.subwayLineId}",
     );
     logger.d(
-      "HomeScreen._dispatchSearch - minPrice: $minPrice, maxPrice: $maxPrice",
+      "HomeScreen._dispatchSearch - minPrice: ${filters.minPrice}, maxPrice: ${filters.maxPrice}",
     );
 
     listingsBloc.add(
       ListingsEvent.searchListings(
-        listingTypeId: listingTypeId,
-        locationId: locationId,
-        subwayStationId: subwayStationId,
-        subwayLineId: subwayLineId,
-        gender: gender,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        privateRoom: privateRoom,
-        withPhoto: withPhoto,
+        listingTypeId: filters.listingTypeId,
+        locationId: filters.locationId,
+        subwayStationId: filters.subwayStationId,
+        subwayLineId: filters.subwayLineId,
+        gender: filters.gender,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        privateRoom: filters.privateRoom,
+        withPhoto: filters.withPhoto,
         isRefresh: isRefresh,
       ),
     );
@@ -1185,8 +1207,8 @@ class _NotifySearchAlertGhostButton extends StatefulWidget {
       _NotifySearchAlertGhostButtonState();
 }
 
-class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostButton>
-    with TickerProviderStateMixin {
+class _NotifySearchAlertGhostButtonState
+    extends State<_NotifySearchAlertGhostButton> with TickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _bellTurns;
   late final Animation<double> _ringScale;
@@ -1312,7 +1334,8 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
           padding: padding,
           borderRadius: BorderRadius.circular(10),
           borderWidth: isBlueTheme ? 1.5 : 2.0,
-          borderColor: isBlueTheme ? Colors.white.withValues(alpha: 0.14) : null,
+          borderColor:
+              isBlueTheme ? Colors.white.withValues(alpha: 0.14) : null,
           child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1350,11 +1373,12 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
                         },
                       ),
                     AnimatedBuilder(
-                      animation: Listenable.merge([_idleController, _controller]),
+                      animation:
+                          Listenable.merge([_idleController, _controller]),
                       builder: (context, child) {
                         final turns =
                             (idleEnabled ? _idleBellTurns.value : 0.0) +
-                            (tapEnabled ? _bellTurns.value : 0.0);
+                                (tapEnabled ? _bellTurns.value : 0.0);
                         return Transform.rotate(
                           angle: turns * 2 * math.pi,
                           alignment: Alignment.topCenter,
@@ -1408,7 +1432,8 @@ class _NotifySearchAlertAppBarButton extends StatefulWidget {
 }
 
 class _NotifySearchAlertAppBarButtonState
-    extends State<_NotifySearchAlertAppBarButton> with TickerProviderStateMixin {
+    extends State<_NotifySearchAlertAppBarButton>
+    with TickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _bellTurns;
   late final Animation<double> _ringScale;
@@ -1520,9 +1545,6 @@ class _NotifySearchAlertAppBarButtonState
     final idleEnabled = _animationSettings.bellIdleEnabled;
     final tapEnabled = _animationSettings.bellTapEnabled;
 
-    final badgeBg = widget.iconColor;
-    final badgeFg = widget.appBarBackground;
-
     return IconButton(
       tooltip: widget.tooltip,
       onPressed: _handlePressed,
@@ -1533,31 +1555,6 @@ class _NotifySearchAlertAppBarButtonState
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-            if (tapEnabled)
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return IgnorePointer(
-                    child: Opacity(
-                      opacity: _ringOpacity.value.clamp(0.0, 1.0),
-                      child: Transform.scale(
-                        scale: _ringScale.value,
-                        child: Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: widget.iconColor.withValues(alpha: 0.85),
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
             AnimatedBuilder(
               animation: Listenable.merge([_idleController, _controller]),
               builder: (context, _) {
@@ -1573,24 +1570,6 @@ class _NotifySearchAlertAppBarButtonState
                         Icons.notifications_outlined,
                         size: 24,
                         color: widget.iconColor,
-                      ),
-                    ),
-                    Positioned(
-                      right: -2,
-                      top: -2,
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: badgeBg,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.add,
-                          size: 10,
-                          color: badgeFg,
-                        ),
                       ),
                     ),
                   ],
