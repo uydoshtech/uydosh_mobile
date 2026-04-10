@@ -13,6 +13,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   Timer? _blinkTimer;
   bool _isBlinking = true;
   double? _cachedSheetHeight;
+  bool _metroLineChangedInThisSession = false;
 
   @override
   void initState() {
@@ -409,6 +410,17 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     setState(() {
       _currentStations = stations;
 
+      // If user changed metro line while this sheet is open, never restore a
+      // previously-selected station. Always keep the wheel at item 0 ("Select station").
+      if (_metroLineChangedInThisSession) {
+        _searchFiltersState.setStationIndex(0);
+        _searchFiltersState.setStationId(0);
+        logger.d(
+          "DEBUG: Metro line changed in-session; forcing station reset to 0",
+        );
+        return;
+      }
+
       // Restore station selection based on available data
       if (stations.isNotEmpty) {
         if (widget.currentSubwayStationId != null) {
@@ -634,6 +646,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                             metroStationTutorialKey: _metroStationTutorialKey,
                             getLocalizedName: _getLocalizedName,
                             onSubwayLineChanged: (index) {
+                              _metroLineChangedInThisSession = true;
                               setState(() {
                                 _searchFiltersState.setSubwayLine(index);
                                 if (index > 0) {

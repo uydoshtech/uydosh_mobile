@@ -48,6 +48,9 @@ class SearchTutorialOverlay {
         keyTarget: searchButtonKey,
         alignSkip: Alignment.topRight,
         enableOverlayTab: true,
+        // Match other coachmarks (round spotlight + padding).
+        shape: ShapeLightFocus.Circle,
+        paddingFocus: 10,
         contents: [
           TargetContent(
             align: ContentAlign.top,
@@ -81,6 +84,9 @@ class SearchTutorialOverlay {
           keyTarget: profileIconKey,
           alignSkip: Alignment.topRight,
           enableOverlayTab: true,
+          // Keep spotlight consistent with the search step.
+          shape: ShapeLightFocus.Circle,
+          paddingFocus: 10,
           contents: [
             TargetContent(
               align: ContentAlign.bottom,
@@ -122,7 +128,8 @@ class SearchTutorialOverlay {
       colorShadow: Colors.black,
       opacityShadow: 0.92,
       hideSkip: true,
-      pulseEnable: false,
+      // Match the "spotlight pulse" feel used on other tutorials (e.g. alert bell).
+      pulseEnable: true,
       unFocusAnimationDuration: const Duration(milliseconds: 900),
       onFinish: finishTutorial,
       onSkip: () {
@@ -131,7 +138,8 @@ class SearchTutorialOverlay {
       },
     );
 
-    tutorial.show(context: context);
+    // Use root overlay so AppBar targets (profile icon) align correctly.
+    tutorial.show(context: context, rootOverlay: true);
 
     const targetDuration = Duration(seconds: 4);
 
