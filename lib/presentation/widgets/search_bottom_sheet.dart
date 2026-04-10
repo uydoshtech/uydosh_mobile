@@ -41,12 +41,10 @@ part "search_bottom_sheet/search_bottom_sheet_state.dart";
 /// - Wheel pickers are automatically reset to initial positions
 class SearchBottomSheetWidget {
   /// Shows the search bottom sheet with all available filters.
-  /// Returns `true` when a search alert was saved from edit mode; otherwise `null`.
-  static Future<bool?> show(
+  static Future<void> show(
     BuildContext context, {
     bool replaceCurrentRoute = false,
     bool openedFromHomeScreen = false,
-    int? editingAlertId,
     int? currentListingTypeId,
     int? currentLocationId,
     int? currentSubwayStationId,
@@ -71,7 +69,7 @@ class SearchBottomSheetWidget {
       existingLocationsBloc = null;
     }
 
-    return showModalBottomSheet<bool>(
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -108,7 +106,6 @@ class SearchBottomSheetWidget {
             child: _SearchBottomSheetContent(
               replaceCurrentRoute: replaceCurrentRoute,
               openedFromHomeScreen: openedFromHomeScreen,
-              editingAlertId: editingAlertId,
               currentListingTypeId: currentListingTypeId,
               currentLocationId: currentLocationId,
               currentSubwayStationId: currentSubwayStationId,
@@ -129,7 +126,6 @@ class _SearchBottomSheetContent extends StatefulWidget {
   const _SearchBottomSheetContent({
     this.replaceCurrentRoute = false,
     this.openedFromHomeScreen = false,
-    this.editingAlertId,
     this.currentListingTypeId,
     this.currentLocationId,
     this.currentSubwayStationId,
@@ -142,7 +138,6 @@ class _SearchBottomSheetContent extends StatefulWidget {
   });
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
-  final int? editingAlertId;
   final int? currentListingTypeId;
   final int? currentLocationId;
   final int? currentSubwayStationId;

@@ -2136,13 +2136,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enable notifications in settings to receive alerts.';
 
   @override
-  String get search_alert_save => 'Save';
-
-  @override
   String get search_alert_updated => 'Alert updated.';
-
-  @override
-  String get notifications_edit_alert_title => 'Edit alert';
 
   @override
   String get tutorial_search_title => 'Search for listings';

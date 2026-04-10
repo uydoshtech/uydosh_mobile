@@ -113,7 +113,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (!mounted) return;
         if (widget.openedFromHomeScreen &&
-            widget.editingAlertId == null &&
             AuthenticationState().isAuthenticated &&
             OnboardingState().showOnboarding &&
             !TutorialState().hasCompletedMetroTutorial) {
@@ -528,15 +527,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               ),
             ),
 
-            // Search / edit alert header
+            // Search header
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
                   ThemeIcon(
-                    widget.editingAlertId != null
-                        ? Icons.edit_outlined
-                        : Icons.search,
+                    Icons.search,
                     color: theme.colorScheme.onSurfaceVariant,
                     size: 24,
                   ),
@@ -544,9 +541,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   Expanded(
                     child: Text(
                       L10n.get(
-                        widget.editingAlertId != null
-                            ? "notifications_edit_alert_title"
-                            : "search_listings",
+                        "search_listings",
                       ),
                       style: TextStyle(
                         fontSize: 20,
@@ -711,18 +706,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               _searchFiltersState.setWithPhoto(value);
                               setState(() {});
                             },
-                            onPrimaryPressed:
-                                widget.editingAlertId != null
-                                    ? _saveSearchAlertEdit
-                                    : _performSearch,
-                            primaryLabelKey:
-                                widget.editingAlertId != null
-                                    ? "search_alert_save"
-                                    : "search",
-                            primaryIcon:
-                                widget.editingAlertId != null
-                                    ? Icons.check
-                                    : Icons.search,
+                            onPrimaryPressed: _performSearch,
+                            primaryLabelKey: "search",
+                            primaryIcon: Icons.search,
                           ),
                         ],
                       ),
@@ -737,67 +723,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     );
   }
 
-  Future<void> _saveSearchAlertEdit() async {
-    HapticFeedbackUtils.impact();
-    final alertId = widget.editingAlertId;
-    if (alertId == null) return;
-
-    if (!AuthenticationState().isAuthenticated) {
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("search_alert_login_required"),
-      );
-      return;
-    }
-
-    final listingTypeId = _searchFiltersState.selectedListingTypeId;
-    final locationId = _getSelectedLocationId();
-    final subwayStationId = _getSelectedSubwayStationId();
-    final subwayLineId =
-        subwayStationId == null && _searchFiltersState.selectedSubwayLine > 0
-            ? _searchFiltersState.selectedSubwayLine
-            : null;
-    final gender =
-        _searchFiltersState.selectedGender > 0
-            ? _searchFiltersState.selectedGender
-            : null;
-
-    final err = await getIt<ISearchAlertService>().updateAlert(
-      alertId: alertId,
-      listingTypeId: listingTypeId,
-      locationId: locationId,
-      subwayStationId: subwayStationId,
-      subwayLineId: subwayLineId,
-      gender: gender,
-      minPrice: _searchFiltersState.minPrice,
-      maxPrice: _searchFiltersState.maxPrice,
-      privateRoomOnly: _searchFiltersState.privateRoom,
-      withPhotoOnly: _searchFiltersState.withPhoto,
-    );
-
-    if (!mounted) return;
-    if (err == null) {
-      ToastTheme.showSuccess(
-        context,
-        message: L10n.get("search_alert_updated"),
-      );
-      Navigator.pop(context, true);
-    } else if (err == SearchAlertService.alreadyExistsErrorToken) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("search_alert_already_exists"),
-      );
-    } else {
-      ToastTheme.showError(
-        context,
-        message: err == "error" ? L10n.get("search_alert_failed") : err,
-      );
-    }
-  }
-
   void _performSearch() {
-    if (widget.editingAlertId != null) return;
     HapticFeedbackUtils.impact();
 
     // Get all current filter values

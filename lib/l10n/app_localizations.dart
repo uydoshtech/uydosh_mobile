@@ -4098,23 +4098,11 @@ abstract class AppLocalizations {
   /// **'Enable notifications in settings to receive alerts.'**
   String get search_alert_permission;
 
-  /// No description provided for @search_alert_save.
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get search_alert_save;
-
   /// No description provided for @search_alert_updated.
   ///
   /// In en, this message translates to:
   /// **'Alert updated.'**
   String get search_alert_updated;
-
-  /// No description provided for @notifications_edit_alert_title.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit alert'**
-  String get notifications_edit_alert_title;
 
   /// No description provided for @tutorial_search_title.
   ///

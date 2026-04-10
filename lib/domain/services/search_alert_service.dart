@@ -58,20 +58,6 @@ abstract class ISearchAlertService {
     int? gender,
   });
 
-  /// Updates alert criteria (same shape as create). Returns null on success.
-  Future<String?> updateAlert({
-    required int alertId,
-    required int listingTypeId,
-    required double minPrice,
-    required double maxPrice,
-    required bool privateRoomOnly,
-    required bool withPhotoOnly,
-    int? locationId,
-    int? subwayStationId,
-    int? subwayLineId,
-    int? gender,
-  });
-
   Future<List<SearchAlert>> listAlerts();
   Future<bool> setAlertEnabled({required int alertId, required bool enabled});
   Future<bool> deleteAlert({required int alertId});
@@ -130,56 +116,6 @@ class SearchAlertService implements ISearchAlertService {
       return "error";
     } catch (e) {
       logger.d("SearchAlertService: create failed: $e");
-      return "error";
-    }
-  }
-
-  @override
-  Future<String?> updateAlert({
-    required int alertId,
-    required int listingTypeId,
-    required double minPrice,
-    required double maxPrice,
-    required bool privateRoomOnly,
-    required bool withPhotoOnly,
-    int? locationId,
-    int? subwayStationId,
-    int? subwayLineId,
-    int? gender,
-  }) async {
-    try {
-      final data = _CreateSearchAlertRequest(
-        listingTypeId: listingTypeId,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        privateRoom: privateRoomOnly,
-        withPhoto: withPhotoOnly,
-        locationId: locationId,
-        subwayStationId: subwayStationId,
-        subwayLineId: subwayLineId,
-        gender: gender,
-      );
-
-      await _oauthApiClient.patch<Map<String, dynamic>, _CreateSearchAlertRequest>(
-        "/users/me/search-alerts/$alertId",
-        (json) => json as Map<String, dynamic>,
-        data: data,
-      );
-
-      return null;
-    } on DioException catch (e) {
-      final body = e.response?.data;
-      if (body is Map<String, dynamic> && body["error"] is String) {
-        final err = body["error"] as String;
-        if (err == "identical_alert_exists") {
-          return alreadyExistsErrorToken;
-        }
-        return err;
-      }
-      logger.d("SearchAlertService: update failed: $e");
-      return "error";
-    } catch (e) {
-      logger.d("SearchAlertService: update failed: $e");
       return "error";
     }
   }

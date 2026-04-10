@@ -2172,13 +2172,7 @@ class AppLocalizationsUz extends AppLocalizations {
       'Bildirishnomalar uchun sozlamalarda ruxsat bering.';
 
   @override
-  String get search_alert_save => 'Saqlash';
-
-  @override
   String get search_alert_updated => 'Bildirishnoma yangilandi.';
-
-  @override
-  String get notifications_edit_alert_title => 'Bildirishnomani tahrirlash';
 
   @override
   String get tutorial_search_title => 'E\'lonlarni qidirish';

@@ -8,7 +8,6 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
-import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -20,8 +19,6 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
-import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
-import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -190,38 +187,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       return a.subwayLineId;
     }
     return null;
-  }
-
-  Future<void> _openEditSheet(SearchAlert a) async {
-    if (_bulkWorking) return;
-    final filters = SearchFiltersState();
-    await filters.initialize();
-    if (!mounted) return;
-    final snap = SearchFiltersSnapshot.capture(filters);
-    bool? saved;
-    try {
-      final stationId = _subwayStationIdForBottomSheet(a);
-      final lineId = _subwayLineIdForBottomSheet(a);
-      saved = await SearchBottomSheetWidget.show(
-        context,
-        editingAlertId: a.id,
-        currentListingTypeId: a.listingTypeId ?? 2,
-        currentLocationId: a.locationId,
-        currentSubwayStationId: stationId,
-        currentSubwayLineId: lineId,
-        currentGender: a.gender ?? 1,
-        currentMinPrice: a.minPrice ?? 10,
-        currentMaxPrice: a.maxPrice ?? 500,
-        currentPrivateRoom: a.privateRoom ?? false,
-        currentWithPhoto: a.withPhoto ?? false,
-      );
-    } finally {
-      await filters.restoreToSnapshot(snap);
-    }
-    if (!mounted) return;
-    if (saved != null && saved) {
-      await _load();
-    }
   }
 
   Map<String, dynamic> _toJson(SearchAlert a, {bool? enabled}) => {
@@ -558,8 +523,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               children: [
                                 ThemeIcon(
                                   a.enabled
-                                      ? Icons.notifications_active_outlined
-                                      : Icons.notifications_off_outlined,
+                                      ? Icons.notifications
+                                      : Icons.notifications_none_outlined,
                                   color: ThemeState().isBlueTheme
                                       ? Colors.white
                                       : (a.enabled
@@ -610,9 +575,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             case "toggle":
                                               _toggleEnabled(a, !(a.enabled));
                                               break;
-                                            case "edit":
-                                              _openEditSheet(a);
-                                              break;
                                             case "delete":
                                               _deleteAlert(a);
                                               break;
@@ -632,14 +594,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                                 text: isEnabled
                                                     ? L10n.get("disable")
                                                     : L10n.get("enable"),
-                                                enabled: true,
-                                              ),
-                                            ),
-                                            PopupMenuItem(
-                                              value: "edit",
-                                              child: UydoshPopupMenuItemRow(
-                                                icon: Icons.edit_outlined,
-                                                text: L10n.get("edit"),
                                                 enabled: true,
                                               ),
                                             ),
