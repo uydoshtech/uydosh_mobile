@@ -992,29 +992,28 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16.0),
-          child: IconButton(
-            tooltip: L10n.get("search_alert_notify_me"),
-            onPressed: _isCreatingSearchAlert
-                ? null
-                : () {
+          child: _isCreatingSearchAlert
+              ? SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: appBarFg,
+                  ),
+                )
+              : _NotifySearchAlertAppBarButton(
+                  tooltip: L10n.get("search_alert_notify_me"),
+                  iconColor: appBarFg,
+                  appBarBackground:
+                      Theme.of(context).appBarTheme.backgroundColor ??
+                          (ThemeState().isBlueTheme
+                              ? BlueThemeColors.surface
+                              : Theme.of(context).colorScheme.primary),
+                  onPressed: () {
                     HapticFeedbackUtils.selection();
                     _subscribeToSearchAlerts();
                   },
-            icon:
-                _isCreatingSearchAlert
-                    ? SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: appBarFg,
-                      ),
-                    )
-                    : ThemeIcon(
-                      Icons.notifications_outlined,
-                      color: appBarFg,
-                    ),
-          ),
+                ),
         ),
       ],
     );
@@ -1330,6 +1329,223 @@ class _NotifySearchAlertGhostButtonState extends State<_NotifySearchAlertGhostBu
           ),
         );
       },
+    );
+  }
+}
+
+/// Search results AppBar bell: shows "add alert" (bell + plus) and reuses the
+/// same ring + wiggle animation behavior as the empty-state notify button.
+class _NotifySearchAlertAppBarButton extends StatefulWidget {
+  const _NotifySearchAlertAppBarButton({
+    required this.tooltip,
+    required this.onPressed,
+    required this.iconColor,
+    required this.appBarBackground,
+  });
+
+  final String tooltip;
+  final VoidCallback onPressed;
+  final Color iconColor;
+  final Color appBarBackground;
+
+  @override
+  State<_NotifySearchAlertAppBarButton> createState() =>
+      _NotifySearchAlertAppBarButtonState();
+}
+
+class _NotifySearchAlertAppBarButtonState
+    extends State<_NotifySearchAlertAppBarButton> with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _bellTurns;
+  late final Animation<double> _ringScale;
+  late final Animation<double> _ringOpacity;
+  late final AnimationController _idleController;
+  late final Animation<double> _idleBellTurns;
+  late final AnimationSettingsState _animationSettings;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationSettings = AnimationSettingsState();
+
+    _idleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 960),
+    );
+    _idleBellTurns = Tween<double>(begin: -0.012, end: 0.012).animate(
+      CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
+    );
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 624),
+    );
+    _bellTurns = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0, end: 0.1).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 22,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.1, end: -0.09).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 24,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -0.09, end: 0.055).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 24,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.055, end: 0).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 30,
+      ),
+    ]).animate(_controller);
+
+    _ringScale = Tween<double>(begin: 1, end: 2.15).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0, 0.72, curve: Curves.easeOut),
+      ),
+    );
+    _ringOpacity = Tween<double>(begin: 0.5, end: 0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0, 0.88, curve: Curves.easeOut),
+      ),
+    );
+
+    _animationSettings.addListener(_syncFromSettings);
+    _syncFromSettings();
+  }
+
+  void _syncFromSettings() {
+    if (!mounted) return;
+    final idleEnabled = _animationSettings.bellIdleEnabled;
+    if (idleEnabled) {
+      if (!_idleController.isAnimating) {
+        _idleController.repeat(reverse: true);
+      }
+    } else {
+      _idleController.stop();
+      // 0 maps to tween begin (slightly rotated). Keep midpoint as "rest" angle.
+      _idleController.value = 0.5;
+    }
+
+    final tapEnabled = _animationSettings.bellTapEnabled;
+    if (!tapEnabled) {
+      _controller.stop();
+      _controller.value = 0;
+    }
+
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _animationSettings.removeListener(_syncFromSettings);
+    _controller.dispose();
+    _idleController.dispose();
+    super.dispose();
+  }
+
+  void _handlePressed() {
+    if (_animationSettings.bellTapEnabled) {
+      _controller.forward(from: 0);
+    }
+    widget.onPressed();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final idleEnabled = _animationSettings.bellIdleEnabled;
+    final tapEnabled = _animationSettings.bellTapEnabled;
+
+    final badgeBg = widget.iconColor;
+    final badgeFg = widget.appBarBackground;
+
+    return IconButton(
+      tooltip: widget.tooltip,
+      onPressed: _handlePressed,
+      icon: SizedBox(
+        width: 24,
+        height: 24,
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            if (tapEnabled)
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return IgnorePointer(
+                    child: Opacity(
+                      opacity: _ringOpacity.value.clamp(0.0, 1.0),
+                      child: Transform.scale(
+                        scale: _ringScale.value,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: widget.iconColor.withValues(alpha: 0.85),
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            AnimatedBuilder(
+              animation: Listenable.merge([_idleController, _controller]),
+              builder: (context, _) {
+                final turns = (idleEnabled ? _idleBellTurns.value : 0.0) +
+                    (tapEnabled ? _bellTurns.value : 0.0);
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Transform.rotate(
+                      angle: turns * 2 * math.pi,
+                      alignment: Alignment.topCenter,
+                      child: ThemeIcon(
+                        Icons.notifications_outlined,
+                        size: 24,
+                        color: widget.iconColor,
+                      ),
+                    ),
+                    Positioned(
+                      right: -2,
+                      top: -2,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: badgeBg,
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.add,
+                          size: 10,
+                          color: badgeFg,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
