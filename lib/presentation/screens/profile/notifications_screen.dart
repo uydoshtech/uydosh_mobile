@@ -562,20 +562,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 Expanded(
                                   child: Material(
                                     color: Colors.transparent,
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(10),
-                                      onTap: _bulkWorking ? null : () => _openEditSheet(a),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 4,
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            _summaryWidget(a, theme),
-                                          ],
-                                        ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          _summaryWidget(a, theme),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -584,34 +580,74 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 Padding(
                                   // Pull the controls slightly away from the card edge.
                                   padding: const EdgeInsets.only(right: 6),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      ThemeToggle(
-                                        value: a.enabled,
-                                        onChanged: (v) => _toggleEnabled(a, v),
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      IconButton(
-                                        tooltip: L10n.get("delete"),
-                                        visualDensity: VisualDensity.compact,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(
-                                          minWidth: 44,
-                                          minHeight: 44,
-                                        ),
-                                        icon: ThemeIcon(
-                                          Icons.delete_outline,
-                                          size: 32, // ~30% larger than default
-                                          color: theme.colorScheme.error,
-                                        ),
-                                        onPressed: () => _deleteAlert(a),
-                                      ),
-                                    ],
+                                  child: ListenableBuilder(
+                                    listenable: AnimationSettingsState(),
+                                    builder: (context, _) {
+                                      final enableMotion =
+                                          AnimationSettingsState()
+                                              .uiAnimationsEnabled;
+                                      final style = enableMotion
+                                          ? null
+                                          : const AnimationStyle(
+                                              duration: Duration.zero,
+                                              reverseDuration: Duration.zero,
+                                            );
+
+                                      return PopupMenuButton<String>(
+                                        enabled: !_bulkWorking,
+                                        icon: const ThemeIcon(Icons.more_vert),
+                                        popUpAnimationStyle: style,
+                                        onSelected: (value) {
+                                          switch (value) {
+                                            case "toggle":
+                                              _toggleEnabled(a, !(a.enabled));
+                                              break;
+                                            case "edit":
+                                              _openEditSheet(a);
+                                              break;
+                                            case "delete":
+                                              _deleteAlert(a);
+                                              break;
+                                          }
+                                        },
+                                        itemBuilder: (menuContext) {
+                                          final isEnabled = a.enabled;
+                                          return [
+                                            PopupMenuItem(
+                                              value: "toggle",
+                                              child: UydoshPopupMenuItemRow(
+                                                icon: isEnabled
+                                                    ? Icons
+                                                        .notifications_off_outlined
+                                                    : Icons
+                                                        .notifications_active_outlined,
+                                                text: isEnabled
+                                                    ? L10n.get("disable")
+                                                    : L10n.get("enable"),
+                                                enabled: true,
+                                              ),
+                                            ),
+                                            PopupMenuItem(
+                                              value: "edit",
+                                              child: UydoshPopupMenuItemRow(
+                                                icon: Icons.edit_outlined,
+                                                text: L10n.get("edit"),
+                                                enabled: true,
+                                              ),
+                                            ),
+                                            PopupMenuItem(
+                                              value: "delete",
+                                              child: UydoshPopupMenuItemRow(
+                                                icon: Icons.delete_outline,
+                                                text: L10n.get("delete"),
+                                                enabled: true,
+                                                destructive: true,
+                                              ),
+                                            ),
+                                          ];
+                                        },
+                                      );
+                                    },
                                   ),
                                 ),
                               ],

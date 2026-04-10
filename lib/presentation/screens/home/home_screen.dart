@@ -954,6 +954,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   /// Build search app bar for search mode
   PreferredSizeWidget _buildSearchAppBar() {
+    final appBarFg =
+        Theme.of(context).appBarTheme.foregroundColor ?? Colors.white;
     return AppBar(
       title: BlocSelector<ListingsBloc, ListingsState, int?>(
         selector: (state) => state.map(
@@ -976,8 +978,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           (ThemeState().isBlueTheme
               ? BlueThemeColors.surface
               : Theme.of(context).colorScheme.primary),
-      foregroundColor:
-          Theme.of(context).appBarTheme.foregroundColor ?? Colors.white,
+      foregroundColor: appBarFg,
       elevation: 0,
       leading: IconButton(
         icon: const ThemeIcon(Icons.arrow_back),
@@ -988,7 +989,34 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           }
         },
       ),
-      actions: const [],
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: IconButton(
+            tooltip: L10n.get("search_alert_notify_me"),
+            onPressed: _isCreatingSearchAlert
+                ? null
+                : () {
+                    HapticFeedbackUtils.selection();
+                    _subscribeToSearchAlerts();
+                  },
+            icon:
+                _isCreatingSearchAlert
+                    ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: appBarFg,
+                      ),
+                    )
+                    : ThemeIcon(
+                      Icons.notifications_outlined,
+                      color: appBarFg,
+                    ),
+          ),
+        ),
+      ],
     );
   }
 
