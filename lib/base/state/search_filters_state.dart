@@ -26,6 +26,19 @@ class SearchFiltersState extends ChangeNotifier {
   bool _withPhoto = false;
   bool _isInitialized = false;
   bool _profileDefaultsApplied = false;
+  Future<void> _prefsWriteChain = Future<void>.value();
+
+  /// Serializes SharedPreferences writes to avoid races between un-awaited
+  /// setter calls (common from modal sheets) and later restores.
+  Future<void> _enqueuePrefsWrite(
+    Future<void> Function(SharedPreferences prefs) write,
+  ) {
+    _prefsWriteChain = _prefsWriteChain.then((_) async {
+      final prefs = await SharedPreferences.getInstance();
+      await write(prefs);
+    });
+    return _prefsWriteChain;
+  }
 
   int get selectedListingTypeId => _selectedListingTypeId;
   int get selectedLocationIndex => _selectedLocationIndex;
@@ -218,8 +231,9 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedListingTypeId = listingTypeId;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt("search_listing_type_id", listingTypeId);
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setInt("search_listing_type_id", listingTypeId);
+      });
     } catch (e) {
       logger.d("Error saving listing type ID: $e");
     }
@@ -232,8 +246,9 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedLocationIndex = locationIndex;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt("search_location_index", locationIndex);
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setInt("search_location_index", locationIndex);
+      });
     } catch (e) {
       logger.d("Error saving location index: $e");
     }
@@ -249,11 +264,12 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedSubwayLine = subwayLine;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt("search_subway_line", subwayLine);
-      logger.d(
-        "DEBUG: SearchFiltersState.setSubwayLine - saved to SharedPreferences: $subwayLine",
-      );
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setInt("search_subway_line", subwayLine);
+        logger.d(
+          "DEBUG: SearchFiltersState.setSubwayLine - saved to SharedPreferences: $subwayLine",
+        );
+      });
     } catch (e) {
       logger.d("Error saving subway line: $e");
     }
@@ -269,11 +285,12 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedStationIndex = stationIndex;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt("search_station_index", stationIndex);
-      logger.d(
-        "DEBUG: SearchFiltersState.setStationIndex - saved to SharedPreferences: $stationIndex",
-      );
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setInt("search_station_index", stationIndex);
+        logger.d(
+          "DEBUG: SearchFiltersState.setStationIndex - saved to SharedPreferences: $stationIndex",
+        );
+      });
     } catch (e) {
       logger.d("Error saving station index: $e");
     }
@@ -289,11 +306,12 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedStationId = stationId;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt("search_station_id", stationId);
-      logger.d(
-        "DEBUG: SearchFiltersState.setStationId - saved to SharedPreferences: $stationId",
-      );
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setInt("search_station_id", stationId);
+        logger.d(
+          "DEBUG: SearchFiltersState.setStationId - saved to SharedPreferences: $stationId",
+        );
+      });
     } catch (e) {
       logger.d("Error saving station ID: $e");
     }
@@ -306,8 +324,9 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedGender = gender;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt("search_gender", gender);
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setInt("search_gender", gender);
+      });
     } catch (e) {
       logger.d("Error saving gender: $e");
     }
@@ -321,9 +340,10 @@ class SearchFiltersState extends ChangeNotifier {
     _maxPrice = maxPrice;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble("search_min_price", minPrice);
-      await prefs.setDouble("search_max_price", maxPrice);
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setDouble("search_min_price", minPrice);
+        await prefs.setDouble("search_max_price", maxPrice);
+      });
     } catch (e) {
       logger.d("Error saving price range: $e");
     }
@@ -336,8 +356,9 @@ class SearchFiltersState extends ChangeNotifier {
     _privateRoom = privateRoom;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool("search_private_room", privateRoom);
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setBool("search_private_room", privateRoom);
+      });
     } catch (e) {
       logger.d("Error saving private room preference: $e");
     }
@@ -349,8 +370,9 @@ class SearchFiltersState extends ChangeNotifier {
     _withPhoto = withPhoto;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool("search_with_photo", withPhoto);
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setBool("search_with_photo", withPhoto);
+      });
     } catch (e) {
       logger.d("Error saving with-photo preference: $e");
     }
@@ -408,17 +430,21 @@ class SearchFiltersState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt("search_listing_type_id", snapshot.selectedListingTypeId);
-      await prefs.setInt("search_location_index", snapshot.selectedLocationIndex);
-      await prefs.setInt("search_subway_line", snapshot.selectedSubwayLine);
-      await prefs.setInt("search_station_index", snapshot.selectedStationIndex);
-      await prefs.setInt("search_station_id", snapshot.selectedStationId);
-      await prefs.setInt("search_gender", snapshot.selectedGender);
-      await prefs.setDouble("search_min_price", snapshot.minPrice);
-      await prefs.setDouble("search_max_price", snapshot.maxPrice);
-      await prefs.setBool("search_private_room", snapshot.privateRoom);
-      await prefs.setBool("search_with_photo", snapshot.withPhoto);
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setInt(
+          "search_listing_type_id",
+          snapshot.selectedListingTypeId,
+        );
+        await prefs.setInt("search_location_index", snapshot.selectedLocationIndex);
+        await prefs.setInt("search_subway_line", snapshot.selectedSubwayLine);
+        await prefs.setInt("search_station_index", snapshot.selectedStationIndex);
+        await prefs.setInt("search_station_id", snapshot.selectedStationId);
+        await prefs.setInt("search_gender", snapshot.selectedGender);
+        await prefs.setDouble("search_min_price", snapshot.minPrice);
+        await prefs.setDouble("search_max_price", snapshot.maxPrice);
+        await prefs.setBool("search_private_room", snapshot.privateRoom);
+        await prefs.setBool("search_with_photo", snapshot.withPhoto);
+      });
     } catch (e) {
       logger.d("Error restoring search filters snapshot: $e");
     }

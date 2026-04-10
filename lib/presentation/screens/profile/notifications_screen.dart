@@ -338,29 +338,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
       );
     }
-    if (a.subwayStationId != null) {
-      final stationId = a.subwayStationId!;
-      if (stationId > 0) {
-        final station = MetroCache.getStationById(stationId);
-        final name = MetroCache.getStationDisplayName(stationId, lang);
-        // Avoid rendering an "empty" metro badge when cache can't resolve the id.
-        if (name.trim().isNotEmpty) {
-          locationAndMetro.add(
-            _iconTextBadge(
-              theme: theme,
-              icon: Icons.train,
-              text: name,
-              color: station == null
-                  ? theme.colorScheme.onSurfaceVariant
-                  : AppColors.getMetroLineColor(station.line),
-            ),
-          );
-        }
-      }
-    } else if (a.subwayLineId != null) {
-      final name = MetroCache.getLineName(a.subwayLineId!, lang);
-      final lineColor = AppColors.getMetroLineColor(a.subwayLineId!);
-      final stationsCount = MetroCache.getStationsForLine(a.subwayLineId!).length;
+    // Use the same resolution logic as the edit sheet so the card matches
+    // what the user sees when tapping "Edit".
+    final resolvedStationId = _subwayStationIdForBottomSheet(a);
+    final resolvedLineId = _subwayLineIdForBottomSheet(a);
+
+    // If the alert targets multiple stations (typically "entire line"),
+    // prefer rendering the line badge instead of an arbitrary first station.
+    final hasMultipleStations =
+        a.subwayStationIds != null && (a.subwayStationIds?.length ?? 0) > 1;
+
+    if (resolvedLineId != null && (resolvedStationId == null || hasMultipleStations)) {
+      final name = MetroCache.getLineName(resolvedLineId, lang);
+      final lineColor = AppColors.getMetroLineColor(resolvedLineId);
+      final stationsCount = MetroCache.getStationsForLine(resolvedLineId).length;
       locationAndMetro.add(
         _iconTextBadge(
           theme: theme,
@@ -372,6 +363,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           color: lineColor,
         ),
       );
+    } else if (resolvedStationId != null) {
+      final stationId = resolvedStationId;
+      final station = MetroCache.getStationById(stationId);
+      final name = MetroCache.getStationDisplayName(stationId, lang);
+      // Avoid rendering an "empty" metro badge when cache can't resolve the id.
+      if (name.trim().isNotEmpty) {
+        locationAndMetro.add(
+          _iconTextBadge(
+            theme: theme,
+            icon: Icons.train,
+            text: name,
+            color: station == null
+                ? theme.colorScheme.onSurfaceVariant
+                : AppColors.getMetroLineColor(station.line),
+          ),
+        );
+      }
     }
     if (locationAndMetro.isNotEmpty) {
       lines.add(Wrap(spacing: 8, runSpacing: 8, children: locationAndMetro));
