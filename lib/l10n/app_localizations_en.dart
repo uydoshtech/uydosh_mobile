@@ -473,7 +473,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get no_universities_available => 'No universities available';
 
   @override
-  String get no_search_results => 'Nothing found for your query';
+  String get no_search_results => 'No results...';
 
   @override
   String get try_refreshing => 'Try refreshing or check back later';

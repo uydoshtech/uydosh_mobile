@@ -1165,7 +1165,7 @@ class AppStrings {
       "no_locations_available": "Районы недоступны",
 
       "no_universities_available": "Университеты недоступны",
-      "no_search_results": "По вашему запросу ничего не найдено",
+      "no_search_results": "No results...",
       "try_refreshing": "Попробуйте обновить или проверьте позже",
       "try_refining_search": "Попробуйте уточнить критерии поиска",
       "refine_search": "Уточнить поиск",
