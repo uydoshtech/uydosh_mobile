@@ -56,7 +56,7 @@ class MetroTutorialOverlay {
     // Cycle through metro lines 1, 2, 3 every 2 seconds; when we hit line 4,
     // switch to cycling metro stations every 1 second
     var currentLine = 1;
-    var currentStationIndex = 0;
+    var currentStationIndex = 1;
     const lineCycleDuration = Duration(milliseconds: 1000);
     const stationCycleDuration = Duration(milliseconds: 750);
 
@@ -67,17 +67,27 @@ class MetroTutorialOverlay {
         _cycleTimer = null;
         if (onCycleToStation != null && getStationCount != null) {
           isStationPhase.value = true;
+          const maxStationsToShow = 5;
           var stationsShown = 0;
           var ticksWithZeroCount = 0;
           const maxTicksWithZeroCount = 8; // ~6s timeout if stations never load
           _cycleTimer = Timer.periodic(stationCycleDuration, (stationTimer) {
             final count = getStationCount();
-            if (count > 0) {
+            // `count` is expected to include the "unselected" placeholder at 0.
+            // During the tutorial we only want to demonstrate a few stations,
+            // not scroll through the entire list (line 4 can be long).
+            final availableStations = (count - 1).clamp(0, 1 << 30);
+            final stationsToShow = availableStations < maxStationsToShow
+                ? availableStations
+                : maxStationsToShow;
+
+            if (stationsToShow > 0) {
               ticksWithZeroCount = 0;
               onCycleToStation(currentStationIndex);
-              currentStationIndex = (currentStationIndex + 1) % count;
+              currentStationIndex++;
               stationsShown++;
-              if (stationsShown >= count) {
+              if (stationsShown >= stationsToShow ||
+                  currentStationIndex > stationsToShow) {
                 stationTimer.cancel();
                 _cycleTimer = null;
                 finishRequested.value = true;
