@@ -31,6 +31,7 @@ import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -473,27 +474,41 @@ class _MainNavigationState extends State<MainNavigation>
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: _getAppBarTitle(),
         actions: [
-          IconButton(
-            tooltip: L10n.get("menu_notifications"),
-            onPressed: () {
-              HapticFeedbackUtils.impact();
-              if (!AuthenticationState().isAuthenticated) {
-                context.pushReplaceAuthWizard();
-                return;
-              }
-              context.pushNotifications();
-            },
-            icon: ListenableBuilder(
-              listenable: ThemeState(),
-              builder: (context, _) {
-                final iconColor =
-                    ThemeState().isBlueTheme ? Colors.white : Colors.black;
-                return ThemeIcon(
-                  Icons.notifications_none_outlined,
-                  color: iconColor,
-                  size: 26,
-                );
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: ThreeDPillButton(
+              padding: const EdgeInsets.all(8),
+              borderRadius: BorderRadius.circular(999),
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                if (!AuthenticationState().isAuthenticated) {
+                  context.pushReplaceAuthWizard();
+                  return;
+                }
+                context.pushNotifications();
               },
+              child: ListenableBuilder(
+                listenable: ThemeState(),
+                builder: (context, _) {
+                  final iconColor =
+                      ThemeState().isBlueTheme ? Colors.white : Colors.black;
+                  return Semantics(
+                    label: L10n.get("menu_notifications"),
+                    button: true,
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: Center(
+                        child: ThemeIcon(
+                          Icons.notifications_none_outlined,
+                          color: iconColor,
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
           // Profile button on the right side with proper margin
@@ -522,38 +537,26 @@ class _MainNavigationState extends State<MainNavigation>
                             Colors.black; // Black border for light theme
                       }
 
-                      return Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.transparent, // No background
-                          shape: BoxShape.circle,
-                          border: Border.all(color: borderColor, width: 2),
-                        ),
-                        child: IconButton(
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            context.pushReplaceAuthWizard()
-                                .then((_) {
-                                  // After successful authentication, redirect to home screen
-                                  if (mounted) {
-                                    setState(() {
-                                      _currentIndex =
-                                          0; // Navigate to home screen
-                                    });
-                                  }
-                                });
-                          },
-                          icon: ThemeIcon(
+                      return ThreeDPillButton(
+                        padding: const EdgeInsets.all(6),
+                        borderRadius: BorderRadius.circular(999),
+                        onPressed: () {
+                          HapticFeedbackUtils.impact();
+                          context.pushReplaceAuthWizard().then((_) {
+                            if (mounted) {
+                              setState(() {
+                                _currentIndex = 0;
+                              });
+                            }
+                          });
+                        },
+                        child: Semantics(
+                          label: L10n.get("profile"),
+                          button: true,
+                          child: ThemeIcon(
                             Icons.person,
-                            color: borderColor, // Same color as border
+                            color: borderColor,
                             size: 24,
-                          ),
-                          tooltip: L10n.get("profile"),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 32,
                           ),
                         ),
                       );
@@ -584,13 +587,28 @@ class _MainNavigationState extends State<MainNavigation>
                     return Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        IconButton(
+                        ThreeDPillButton(
+                          padding: const EdgeInsets.all(6),
+                          borderRadius: BorderRadius.circular(999),
                           onPressed: () {
                             HapticFeedbackUtils.impact();
                             context.pushProfile();
                           },
-                          icon: ThemeIcon(Icons.person, color: iconColor, size: 28),
-                          tooltip: L10n.get("profile"),
+                          child: Semantics(
+                            label: L10n.get("profile"),
+                            button: true,
+                            child: SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: Center(
+                                child: ThemeIcon(
+                                  Icons.person,
+                                  color: iconColor,
+                                  size: 28,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                         if (needsCompletion)
                           Positioned(

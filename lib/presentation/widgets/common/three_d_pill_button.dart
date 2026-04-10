@@ -2,9 +2,9 @@ import "package:flutter/material.dart";
 
 class ThreeDPillButton extends StatefulWidget {
   const ThreeDPillButton({
-    super.key,
     required this.child,
-    this.onPressed,
+    required this.onPressed,
+    super.key,
     this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     this.borderRadius = const BorderRadius.all(Radius.circular(999)),
     this.backgroundColor,
@@ -31,8 +31,12 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
     final bg = widget.backgroundColor ?? scheme.surface;
     final enabled = widget._enabled;
 
-    final darkShadow = Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.45 : 0.20);
-    final lightShadow = Colors.white.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.65);
+    final darkShadow = Colors.black.withValues(
+      alpha: Theme.of(context).brightness == Brightness.dark ? 0.45 : 0.20,
+    );
+    final lightShadow = Colors.white.withValues(
+      alpha: Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.65,
+    );
 
     final shadows = _pressed || !enabled
         ? <BoxShadow>[
@@ -73,7 +77,13 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color.lerp(bg, scheme.onSurface, Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.03)!,
+                  Color.lerp(
+                    bg,
+                    scheme.onSurface,
+                    Theme.of(context).brightness == Brightness.dark
+                        ? 0.06
+                        : 0.03,
+                  )!,
                   bg,
                 ],
               ),
