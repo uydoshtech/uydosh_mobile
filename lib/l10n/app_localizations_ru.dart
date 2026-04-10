@@ -476,7 +476,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get no_universities_available => 'Университеты недоступны';
 
   @override
-  String get no_search_results => 'Результаты поиска не найдены';
+  String get no_search_results => 'По вашему запросу ничего не найдено';
 
   @override
   String get try_refreshing => 'Попробуйте обновить или проверьте позже';
@@ -2171,6 +2171,10 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get tutorial_metro_description =>
       'Выберите линию метро, затем станцию для фильтрации по местоположению.';
+
+  @override
+  String get tutorial_alert_bell_description =>
+      'Вы можете добавить уведомление и получать оповещения о новых объявлениях по вашим критериям поиска.';
 
   @override
   String get january => 'Январь';

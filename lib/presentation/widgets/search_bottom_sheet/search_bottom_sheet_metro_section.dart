@@ -167,9 +167,6 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
         children: [
           Expanded(
             child: CupertinoPicker(
-              key: PageStorageKey(
-                "station_picker_${searchFiltersState.selectedSubwayLine}",
-              ),
               itemExtent: 40,
               scrollController: stationPickerController,
               onSelectedItemChanged: (index) {

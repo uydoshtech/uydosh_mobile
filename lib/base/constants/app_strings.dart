@@ -211,7 +211,7 @@ class AppStrings {
       "no_locations_available": "No locations available",
 
       "no_universities_available": "No universities available",
-      "no_search_results": "No search results found",
+      "no_search_results": "Nothing found for your query",
       "try_refreshing": "Try refreshing or check back later",
       "try_refining_search": "Try refining your search criteria",
       "refine_search": "Refine Search",
@@ -902,6 +902,8 @@ class AppStrings {
       "tutorial_got_it": "Got it",
       "tutorial_metro_description":
           "Choose a metro line, then pick a station to filter by location.",
+      "tutorial_alert_bell_description":
+          "You can add an alert and be notified about new listings matching your search criteria.",
 
       // ===== TIME & DATES =====
       "january": "January",
@@ -1163,7 +1165,7 @@ class AppStrings {
       "no_locations_available": "Районы недоступны",
 
       "no_universities_available": "Университеты недоступны",
-      "no_search_results": "Результаты поиска не найдены",
+      "no_search_results": "По вашему запросу ничего не найдено",
       "try_refreshing": "Попробуйте обновить или проверьте позже",
       "try_refining_search": "Попробуйте уточнить критерии поиска",
       "refine_search": "Уточнить поиск",
@@ -1858,6 +1860,8 @@ class AppStrings {
       "tutorial_got_it": "Понятно",
       "tutorial_metro_description":
           "Выберите линию метро, затем станцию для фильтрации по местоположению.",
+      "tutorial_alert_bell_description":
+          "Вы можете добавить уведомление и получать оповещения о новых объявлениях по вашим критериям поиска.",
 
       // ===== TIME & DATES =====
       "january": "Январь",
@@ -2125,7 +2129,7 @@ class AppStrings {
       "no_locations_available": "Tumanlar mavjud emas",
 
       "no_universities_available": "Universitetlar mavjud emas",
-      "no_search_results": "Qidiruv natijalari topilmadi",
+      "no_search_results": "So'rovingiz bo'yicha hech narsa topilmadi",
       "try_refreshing": "Yangilashni sinab ko'ring yoki keyinroq tekshiring",
       "try_refining_search": "Qidiruv mezonlarini aniqlashni sinab ko'ring",
       "refine_search": "Qidiruvni aniqlash",
@@ -2831,6 +2835,8 @@ class AppStrings {
       "tutorial_got_it": "Tushundim",
       "tutorial_metro_description":
           "Metro liniyasini tanlang, keyin joylashuv bo'yicha filtrlash uchun stansiyani tanlang.",
+      "tutorial_alert_bell_description":
+          "Qidiruv mezonlaringizga mos yangi e'lonlar chiqsa, bildirishnoma qo'shib xabardor bo'lib turishingiz mumkin.",
 
       // ===== TIME & DATES =====
       "january": "Yanvar",

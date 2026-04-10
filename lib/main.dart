@@ -94,6 +94,10 @@ void main() async {
     // Configure logging based on environment
     LogConfig.instance.printConfig();
 
+    // Dependency injection must be configured before any startup tasks that use GetIt
+    // (e.g. server-backed client config fetches).
+    await configureDependencies();
+
     // Initialize app states in parallel (independent SharedPreferences/Storage reads)
     await Future.wait([
       LanguageState().initialize(),
@@ -140,7 +144,6 @@ void main() async {
     );
     logger.d("========================================");
 
-    await configureDependencies();
     // Bloc.observer = AppBlocObserver.instance(); // Disabled to reduce logging
 
     getIt<AppAnalyticsService>().logAppOpened(source: "cold_start");

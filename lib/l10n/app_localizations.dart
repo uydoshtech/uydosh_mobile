@@ -961,7 +961,7 @@ abstract class AppLocalizations {
   /// No description provided for @no_search_results.
   ///
   /// In en, this message translates to:
-  /// **'No search results found'**
+  /// **'Nothing found for your query'**
   String get no_search_results;
 
   /// No description provided for @try_refreshing.
@@ -4133,6 +4133,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose a metro line, then pick a station to filter by location.'**
   String get tutorial_metro_description;
+
+  /// No description provided for @tutorial_alert_bell_description.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add an alert and be notified about new listings matching your search criteria.'**
+  String get tutorial_alert_bell_description;
 
   /// No description provided for @january.
   ///

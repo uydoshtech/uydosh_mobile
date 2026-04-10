@@ -473,7 +473,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get no_universities_available => 'No universities available';
 
   @override
-  String get no_search_results => 'No search results found';
+  String get no_search_results => 'Nothing found for your query';
 
   @override
   String get try_refreshing => 'Try refreshing or check back later';
@@ -2155,6 +2155,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutorial_metro_description =>
       'Choose a metro line, then pick a station to filter by location.';
+
+  @override
+  String get tutorial_alert_bell_description =>
+      'You can add an alert and be notified about new listings matching your search criteria.';
 
   @override
   String get january => 'January';

@@ -269,16 +269,21 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       _searchFiltersState.setStationId(0);
     });
 
-    // When changing metro lines, smoothly reset to position 0
-    if (_stationPickerController != null &&
-        _stationPickerController!.hasClients) {
-      logger.d("DEBUG: Metro line changed, smoothly resetting to position 0");
-      _stationPickerController!.animateToItem(
-        0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    void resetStationWheelToZero() {
+      final ctrl = _stationPickerController;
+      if (!mounted || ctrl == null || !ctrl.hasClients) return;
+      if (ctrl.selectedItem != 0) {
+        logger.d("DEBUG: Metro line changed, resetting station wheel to 0");
+        ctrl.jumpToItem(0);
+      }
     }
+
+    // When changing metro lines, force station wheel to 0.
+    // The controller may temporarily have no clients during rebuilds.
+    resetStationWheelToZero();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      resetStationWheelToZero();
+    });
 
     // Trigger the BLoC to fetch stations for the selected line
     context.read<SubwayStationsBloc>().add(

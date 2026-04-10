@@ -32,13 +32,13 @@ import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
-import "package:uy_dosh/presentation/widgets/common/pulsing_border_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -139,6 +139,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
   final GlobalKey<TutorialTargetWrapperState> _searchButtonTutorialKey =
       GlobalKey<TutorialTargetWrapperState>();
+  final GlobalKey<TutorialTargetWrapperState> _alertBellTutorialKey =
+      GlobalKey<TutorialTargetWrapperState>();
+  bool _noResultsAlertTutorialShownThisSession = false;
 
   @override
   void initState() {
@@ -476,15 +479,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               child: ListenableBuilder(
                 listenable: AnimationSettingsState(),
                 builder: (context, _) {
-                  return PulsingBorderWrapper(
+                  return TutorialPulseWrapper(
                     enabled: AnimationSettingsState().searchPulseEnabled,
-                    scaleTo: 1.14,
-                    haloColor: ThemeState().isBlueTheme
-                        ? Colors.white.withValues(alpha: 0.18)
-                        : Colors.black.withValues(alpha: 0.24),
-                    haloBlurRadius: ThemeState().isBlueTheme ? 18 : 32,
-                    haloSpreadRadius: ThemeState().isBlueTheme ? 0.5 : 1.8,
-                    padding: const EdgeInsets.all(2),
+                    variant: TutorialPulseVariant.floatingActionButton,
                     child: SearchFloatingActionButton(
                       searchFiltersState: _searchFiltersState,
                       replaceCurrentRoute: widget.isSearchMode,
@@ -565,6 +562,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildEmptySearchState() {
+    _maybeShowNoResultsAlertBellTutorial();
     return _buildPullToRefreshAroundFillChild(
       Column(
         children: [
@@ -608,6 +606,39 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         ],
       ),
     );
+  }
+
+  void _maybeShowNoResultsAlertBellTutorial() {
+    if (!mounted) return;
+    if (_noResultsAlertTutorialShownThisSession) return;
+    if (!widget.isSearchMode) return;
+    if (!AuthenticationState().isAuthenticated) return;
+
+    _noResultsAlertTutorialShownThisSession = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await TutorialState().initialize();
+      if (!mounted) return;
+      if (TutorialState().hasCompletedAlertBellTutorial) return;
+
+      // The AppBar actions can mount slightly after the body; retry a few times
+      // to ensure the bell target exists before showing the spotlight.
+      for (var attempt = 0; attempt < 5; attempt++) {
+        if (!mounted) return;
+        if (_alertBellTutorialKey.currentContext != null) {
+          AlertBellTutorialOverlay.show(
+            context,
+            alertBellKey: _alertBellTutorialKey,
+            onComplete: () {
+              TutorialState().markAlertBellTutorialCompleted();
+            },
+          );
+          return;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 120));
+      }
+    });
   }
 
   Widget _buildEmptySearchCriteriaSummary() {
@@ -1019,18 +1050,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     color: appBarFg,
                   ),
                 )
-              : _NotifySearchAlertAppBarButton(
-                  tooltip: L10n.get("search_alert_notify_me"),
-                  iconColor: appBarFg,
-                  appBarBackground:
-                      Theme.of(context).appBarTheme.backgroundColor ??
-                          (ThemeState().isBlueTheme
-                              ? BlueThemeColors.surface
-                              : Theme.of(context).colorScheme.primary),
-                  onPressed: () {
-                    HapticFeedbackUtils.selection();
-                    _subscribeToSearchAlerts();
-                  },
+              : TutorialTargetWrapper(
+                  key: _alertBellTutorialKey,
+                  child: _NotifySearchAlertAppBarButton(
+                    tooltip: L10n.get("search_alert_notify_me"),
+                    iconColor: appBarFg,
+                    appBarBackground:
+                        Theme.of(context).appBarTheme.backgroundColor ??
+                            (ThemeState().isBlueTheme
+                                ? BlueThemeColors.surface
+                                : Theme.of(context).colorScheme.primary),
+                    onPressed: () {
+                      HapticFeedbackUtils.selection();
+                      _subscribeToSearchAlerts();
+                    },
+                  ),
                 ),
         ),
       ],

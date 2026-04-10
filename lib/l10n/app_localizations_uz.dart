@@ -477,7 +477,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get no_universities_available => 'Universitetlar mavjud emas';
 
   @override
-  String get no_search_results => 'Qidiruv natijalari topilmadi';
+  String get no_search_results => 'So\'rovingiz bo\'yicha hech narsa topilmadi';
 
   @override
   String get try_refreshing =>
@@ -2191,6 +2191,10 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get tutorial_metro_description =>
       'Metro liniyasini tanlang, keyin joylashuv bo\'yicha filtrlash uchun stansiyani tanlang.';
+
+  @override
+  String get tutorial_alert_bell_description =>
+      'Qidiruv mezonlaringizga mos yangi e\'lonlar chiqsa, bildirishnoma qo\'shib xabardor bo\'lib turishingiz mumkin.';
 
   @override
   String get january => 'Yanvar';
