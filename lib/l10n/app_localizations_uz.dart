@@ -1785,6 +1785,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_complaints_status_updated => 'Holat yangilandi';
 
   @override
+  String get admin_complaints_view_author => 'Foydalanuvchi profili';
+
+  @override
   String get admin_support_chat_title => 'Qo\'llab-quvvatlash';
 
   @override

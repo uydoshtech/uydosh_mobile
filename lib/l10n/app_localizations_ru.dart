@@ -1770,6 +1770,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_complaints_status_updated => 'Статус обновлен';
 
   @override
+  String get admin_complaints_view_author => 'Профиль пользователя';
+
+  @override
   String get admin_support_chat_title => 'Поддержка';
 
   @override

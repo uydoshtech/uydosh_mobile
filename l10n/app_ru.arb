@@ -689,6 +689,7 @@
   "admin_complaints_text": "Описание",
   "admin_complaints_update_status": "Обновить статус",
   "admin_complaints_status_updated": "Статус обновлен",
+  "admin_complaints_view_author": "Профиль пользователя",
   "admin_support_chat_title": "Поддержка",
   "admin_support_chat_loading": "Загрузка обращений...",
   "admin_support_chat_empty": "Обращений пока нет",

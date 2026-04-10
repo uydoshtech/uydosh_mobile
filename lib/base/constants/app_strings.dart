@@ -721,6 +721,7 @@ class AppStrings {
       "admin_complaints_text": "Description",
       "admin_complaints_update_status": "Update status",
       "admin_complaints_status_updated": "Status updated",
+      "admin_complaints_view_author": "View author",
 
       "admin_support_chat_title": "Support chat",
       "admin_support_chat_loading": "Loading support threads...",
@@ -1675,6 +1676,7 @@ class AppStrings {
       "admin_complaints_text": "Описание",
       "admin_complaints_update_status": "Обновить статус",
       "admin_complaints_status_updated": "Статус обновлен",
+      "admin_complaints_view_author": "Профиль пользователя",
       "admin_support_chat_title": "Поддержка",
       "admin_support_chat_loading": "Загрузка обращений...",
       "admin_support_chat_empty": "Обращений пока нет",
@@ -2642,6 +2644,7 @@ class AppStrings {
       "admin_complaints_text": "Tavsif",
       "admin_complaints_update_status": "Holatni yangilash",
       "admin_complaints_status_updated": "Holat yangilandi",
+      "admin_complaints_view_author": "Foydalanuvchi profili",
       "admin_support_chat_title": "Qo'llab-quvvatlash",
       "admin_support_chat_loading": "Murojaatlar yuklanmoqda...",
       "admin_support_chat_empty": "Murojaatlar hali yo'q",

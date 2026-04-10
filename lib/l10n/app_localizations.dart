@@ -3384,6 +3384,12 @@ abstract class AppLocalizations {
   /// **'Status updated'**
   String get admin_complaints_status_updated;
 
+  /// No description provided for @admin_complaints_view_author.
+  ///
+  /// In en, this message translates to:
+  /// **'View author'**
+  String get admin_complaints_view_author;
+
   /// No description provided for @admin_support_chat_title.
   ///
   /// In en, this message translates to:

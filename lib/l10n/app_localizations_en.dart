@@ -1756,6 +1756,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_complaints_status_updated => 'Status updated';
 
   @override
+  String get admin_complaints_view_author => 'View author';
+
+  @override
   String get admin_support_chat_title => 'Support chat';
 
   @override

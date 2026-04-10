@@ -697,6 +697,7 @@
   "admin_complaints_text": "Tavsif",
   "admin_complaints_update_status": "Holatni yangilash",
   "admin_complaints_status_updated": "Holat yangilandi",
+  "admin_complaints_view_author": "Foydalanuvchi profili",
   "admin_support_chat_title": "Qo'llab-quvvatlash",
   "admin_support_chat_loading": "Murojaatlar yuklanmoqda...",
   "admin_support_chat_empty": "Murojaatlar hali yo'q",

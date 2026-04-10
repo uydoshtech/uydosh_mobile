@@ -1,5 +1,5 @@
-import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -10,12 +10,13 @@ import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 class AdminComplaintsScreen extends StatefulWidget {
@@ -417,11 +418,7 @@ L10n.get("admin_complaints_empty"),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  _buildMetaRow(
-                    context,
-                    labelKey: "admin_complaints_listing_id",
-                    value: complaint.listingId.toString(),
-                  ),
+                  _buildListingIdRow(context, complaint),
                   _buildComplainantRow(context, complaint),
                   _buildMetaRow(
                     context,
@@ -502,46 +499,97 @@ L10n.get("admin_complaints_empty"),
     );
   }
 
-  Widget _buildComplainantRow(BuildContext context, Complaint complaint) {
+  void _openComplainantFromMenu(Complaint complaint) {
     final userId = _complainantUserId(complaint);
-    final linkLabel = _complainantDisplayName(complaint);
-    final linkColor = Theme.of(context).colorScheme.primary;
+    if (userId == null || userId <= 0) {
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_generic"),
+      );
+      return;
+    }
+    if (!mounted) return;
+    _openComplainantProfile(userId);
+  }
 
+  /// Same underlined link treatment as listing-detail meta (readable on blue theme).
+  Widget _buildLinkLabeledValue(
+    BuildContext context, {
+    required String labelKey,
+    required String valueText,
+    VoidCallback? onPressed,
+  }) {
+    final linkColor = ListingDetailThemeHelper.dateTextColor;
     return Padding(
       padding: const EdgeInsets.only(top: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Wrap(
+        spacing: 0,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text(
-            "${L10n.get("admin_complaints_complainant_id")}: ",
+            "${L10n.get(labelKey)}: ",
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: linkColor,
             ),
           ),
-          Expanded(
-            child:
-                userId != null
-                    ? UydoshLinkButton(
-                      text: linkLabel,
-                      onPressed: () => _openComplainantProfile(userId),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: linkColor,
-                      padding: EdgeInsets.zero,
-                      alignment: Alignment.centerLeft,
-                    )
-                    : Text(
-                      linkLabel,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+          if (onPressed != null)
+            Theme(
+              data: Theme.of(context).copyWith(
+                textButtonTheme: TextButtonThemeData(
+                  style: ButtonStyle(
+                    foregroundColor: WidgetStatePropertyAll<Color?>(linkColor),
+                    overlayColor: WidgetStateProperty.all<Color?>(
+                      Colors.transparent,
                     ),
-          ),
+                    splashFactory: NoSplash.splashFactory,
+                  ),
+                ),
+              ),
+              child: UydoshLinkButton(
+                text: valueText,
+                onPressed: onPressed,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: linkColor,
+                padding: EdgeInsets.zero,
+                alignment: Alignment.centerLeft,
+              ),
+            )
+          else
+            Text(
+              valueText,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: linkColor,
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  Widget _buildListingIdRow(BuildContext context, Complaint complaint) {
+    final id = complaint.listingId;
+    final valid = id != null && id > 0;
+    return _buildLinkLabeledValue(
+      context,
+      labelKey: "admin_complaints_listing_id",
+      valueText: valid ? "$id" : L10n.get("na"),
+      onPressed: valid ? () => _openListing(id) : null,
+    );
+  }
+
+  Widget _buildComplainantRow(BuildContext context, Complaint complaint) {
+    final userId = _complainantUserId(complaint);
+    return _buildLinkLabeledValue(
+      context,
+      labelKey: "admin_complaints_complainant_id",
+      valueText: _complainantDisplayName(complaint),
+      onPressed:
+          userId != null ? () => _openComplainantProfile(userId) : null,
     );
   }
 
@@ -661,6 +709,16 @@ L10n.get("admin_complaints_empty"),
                 onTap: () {
                   Navigator.of(context).pop();
                   _openListing(complaint.listingId);
+                },
+              ),
+              UydoshActionSheetItem(
+                icon: Icons.person_outline,
+                title: Text(
+                  L10n.get("admin_complaints_view_author"),
+                ),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _openComplainantFromMenu(complaint);
                 },
               ),
               const Divider(height: 1),

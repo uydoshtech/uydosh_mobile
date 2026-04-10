@@ -697,6 +697,7 @@
   "admin_complaints_text": "Description",
   "admin_complaints_update_status": "Update status",
   "admin_complaints_status_updated": "Status updated",
+  "admin_complaints_view_author": "View author",
   "admin_support_chat_title": "Support chat",
   "admin_support_chat_loading": "Loading support threads...",
   "admin_support_chat_empty": "No support threads yet",
