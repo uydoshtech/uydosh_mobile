@@ -477,7 +477,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get no_universities_available => 'Universitetlar mavjud emas';
 
   @override
-  String get no_search_results => 'So\'rovingiz bo\'yicha hech narsa topilmadi';
+  String get no_search_results => 'Natija topilmadi...';
 
   @override
   String get try_refreshing =>

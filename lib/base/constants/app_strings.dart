@@ -211,7 +211,7 @@ class AppStrings {
       "no_locations_available": "No locations available",
 
       "no_universities_available": "No universities available",
-      "no_search_results": "Nothing found for your query",
+      "no_search_results": "No results...",
       "try_refreshing": "Try refreshing or check back later",
       "try_refining_search": "Try refining your search criteria",
       "refine_search": "Refine Search",
@@ -1165,7 +1165,7 @@ class AppStrings {
       "no_locations_available": "Районы недоступны",
 
       "no_universities_available": "Университеты недоступны",
-      "no_search_results": "No results...",
+      "no_search_results": "Нет результатов...",
       "try_refreshing": "Попробуйте обновить или проверьте позже",
       "try_refining_search": "Попробуйте уточнить критерии поиска",
       "refine_search": "Уточнить поиск",
@@ -2129,7 +2129,7 @@ class AppStrings {
       "no_locations_available": "Tumanlar mavjud emas",
 
       "no_universities_available": "Universitetlar mavjud emas",
-      "no_search_results": "So'rovingiz bo'yicha hech narsa topilmadi",
+      "no_search_results": "Natija topilmadi...",
       "try_refreshing": "Yangilashni sinab ko'ring yoki keyinroq tekshiring",
       "try_refining_search": "Qidiruv mezonlarini aniqlashni sinab ko'ring",
       "refine_search": "Qidiruvni aniqlash",
