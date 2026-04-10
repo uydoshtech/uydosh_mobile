@@ -11,6 +11,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -206,9 +207,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _iconTextBadge({
     required ThemeData theme,
-    IconData? icon,
+    required String text, IconData? icon,
     Widget? leading,
-    required String text,
     Color? color,
   }) {
     final c = color ?? theme.colorScheme.onSurfaceVariant;
@@ -391,13 +391,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isBlueTheme = ThemeState().isBlueTheme;
-
-    final cardBorderColor = isBlueTheme
-        ? Colors.white.withValues(alpha: 0.16)
-        : (theme.brightness == Brightness.dark
-            ? Colors.white.withValues(alpha: 0.10)
-            : Colors.black.withValues(alpha: 0.08));
 
     return Scaffold(
       appBar: AppBar(
@@ -422,13 +415,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   icon: const ThemeIcon(Icons.more_vert),
                   popUpAnimationStyle: style,
                   onSelected: (value) {
-                    switch (value) {
-                      case "disable_all":
-                        _disableAllAlerts();
-                        break;
-                      case "delete_all":
-                        _deleteAllAlerts();
-                        break;
+                    if (value == "disable_all") {
+                      _disableAllAlerts();
+                    } else if (value == "delete_all") {
+                      _deleteAllAlerts();
                     }
                   },
                   itemBuilder: (menuContext) {
@@ -508,111 +498,114 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, i) {
                         final a = _alerts[i];
-                        return Card(
-                          margin: EdgeInsets.zero,
-                          elevation: 0,
-                          color: theme.colorScheme.surface,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            side: BorderSide(color: cardBorderColor, width: 1),
+                        return Theme(
+                          data: theme.copyWith(
+                            cardTheme: theme.cardTheme.copyWith(
+                              margin: EdgeInsets.zero,
+                              elevation: 0,
+                              surfaceTintColor: Colors.transparent,
+                              color: theme.colorScheme.surface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                ThemeIcon(
-                                  a.enabled
-                                      ? Icons.notifications
-                                      : Icons.notifications_none_outlined,
-                                  color: ThemeState().isBlueTheme
-                                      ? Colors.white
-                                      : (a.enabled
-                                          ? theme.colorScheme.primary
-                                          : theme.colorScheme.onSurfaceVariant),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 4,
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          _summaryWidget(a, theme),
-                                        ],
+                          child: ListingDetailTileShell(
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  ThemeIcon(
+                                    a.enabled
+                                        ? Icons.notifications
+                                        : Icons.notifications_none_outlined,
+                                    color: ThemeState().isBlueTheme
+                                        ? Colors.white
+                                        : (a.enabled
+                                            ? theme.colorScheme.primary
+                                            : theme.colorScheme.onSurfaceVariant),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 4,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _summaryWidget(a, theme),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 6),
-                                Padding(
-                                  // Pull the controls slightly away from the card edge.
-                                  padding: const EdgeInsets.only(right: 6),
-                                  child: ListenableBuilder(
-                                    listenable: AnimationSettingsState(),
-                                    builder: (context, _) {
-                                      final enableMotion =
-                                          AnimationSettingsState()
-                                              .uiAnimationsEnabled;
-                                      final style = enableMotion
-                                          ? null
-                                          : const AnimationStyle(
-                                              duration: Duration.zero,
-                                              reverseDuration: Duration.zero,
-                                            );
+                                  const SizedBox(width: 6),
+                                  Padding(
+                                    // Pull the controls slightly away from the card edge.
+                                    padding: const EdgeInsets.only(right: 6),
+                                    child: ListenableBuilder(
+                                      listenable: AnimationSettingsState(),
+                                      builder: (context, _) {
+                                        final enableMotion =
+                                            AnimationSettingsState()
+                                                .uiAnimationsEnabled;
+                                        final style = enableMotion
+                                            ? null
+                                            : const AnimationStyle(
+                                                duration: Duration.zero,
+                                                reverseDuration: Duration.zero,
+                                              );
 
-                                      return PopupMenuButton<String>(
-                                        enabled: !_bulkWorking,
-                                        icon: const ThemeIcon(Icons.more_vert),
-                                        popUpAnimationStyle: style,
-                                        onSelected: (value) {
-                                          switch (value) {
-                                            case "toggle":
-                                              _toggleEnabled(a, !(a.enabled));
-                                              break;
-                                            case "delete":
+                                        return PopupMenuButton<String>(
+                                          enabled: !_bulkWorking,
+                                          icon: const ThemeIcon(Icons.more_vert),
+                                          popUpAnimationStyle: style,
+                                          onSelected: (value) {
+                                            if (value == "toggle") {
+                                              _toggleEnabled(a, !a.enabled);
+                                            } else if (value == "delete") {
                                               _deleteAlert(a);
-                                              break;
-                                          }
-                                        },
-                                        itemBuilder: (menuContext) {
-                                          final isEnabled = a.enabled;
-                                          return [
-                                            PopupMenuItem(
-                                              value: "toggle",
-                                              child: UydoshPopupMenuItemRow(
-                                                icon: isEnabled
-                                                    ? Icons
-                                                        .notifications_off_outlined
-                                                    : Icons
-                                                        .notifications_active_outlined,
-                                                text: isEnabled
-                                                    ? L10n.get("disable")
-                                                    : L10n.get("enable"),
-                                                enabled: true,
+                                            }
+                                          },
+                                          itemBuilder: (menuContext) {
+                                            final isEnabled = a.enabled;
+                                            return [
+                                              PopupMenuItem(
+                                                value: "toggle",
+                                                child: UydoshPopupMenuItemRow(
+                                                  icon: isEnabled
+                                                      ? Icons
+                                                          .notifications_off_outlined
+                                                      : Icons
+                                                          .notifications_active_outlined,
+                                                  text: isEnabled
+                                                      ? L10n.get("disable")
+                                                      : L10n.get("enable"),
+                                                  enabled: true,
+                                                ),
                                               ),
-                                            ),
-                                            PopupMenuItem(
-                                              value: "delete",
-                                              child: UydoshPopupMenuItemRow(
-                                                icon: Icons.delete_outline,
-                                                text: L10n.get("delete"),
-                                                enabled: true,
-                                                destructive: true,
+                                              PopupMenuItem(
+                                                value: "delete",
+                                                child: UydoshPopupMenuItemRow(
+                                                  icon: Icons.delete_outline,
+                                                  text: L10n.get("delete"),
+                                                  enabled: true,
+                                                  destructive: true,
+                                                ),
                                               ),
-                                            ),
-                                          ];
-                                        },
-                                      );
-                                    },
+                                            ];
+                                          },
+                                        );
+                                      },
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         );

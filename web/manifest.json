@@ -1,11 +1,11 @@
 {
     "name": "UyDosh",
-    "short_name": "uy_dosh",
+    "short_name": "UyDosh",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "UyDosh",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

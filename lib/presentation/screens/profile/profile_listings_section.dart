@@ -7,6 +7,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
@@ -16,11 +17,34 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ProfileListingsSection extends StatelessWidget {
   const ProfileListingsSection({
-    required this.userRole, required this.onAchievementsOpened, super.key,
+    required this.userRole,
+    required this.onAchievementsOpened,
+    super.key,
   });
 
   final String? userRole;
   final VoidCallback? onAchievementsOpened;
+
+  Widget _threeDProfileTile(BuildContext context, {required Widget child}) {
+    final theme = Theme.of(context);
+    return Theme(
+      data: theme.copyWith(
+        cardTheme: theme.cardTheme.copyWith(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          color: theme.colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      child: ListingDetailTileShell(
+        clipBehavior: Clip.antiAlias,
+        child: child,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +65,8 @@ class ProfileListingsSection extends StatelessWidget {
   }
 
   Widget _buildGroupedMenuCard(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return _threeDProfileTile(
+      context,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -144,10 +167,9 @@ class ProfileListingsSection extends StatelessWidget {
           children: [
             ThemeIcon(
               icon,
-              color:
-                  ThemeState().isBlueTheme
-                      ? Colors.white
-                      : Theme.of(context).colorScheme.primary,
+              color: ThemeState().isBlueTheme
+                  ? Colors.white
+                  : Theme.of(context).colorScheme.primary,
               size: 24,
             ),
             const SizedBox(width: 16),
@@ -173,9 +195,8 @@ class ProfileListingsSection extends StatelessWidget {
   }
 
   Widget _buildAdminPanelButton(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return _threeDProfileTile(
+      context,
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(
@@ -190,10 +211,9 @@ class ProfileListingsSection extends StatelessWidget {
             children: [
               ThemeIcon(
                 Icons.admin_panel_settings,
-                color:
-                    ThemeState().isBlueTheme
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.primary,
+                color: ThemeState().isBlueTheme
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.primary,
                 size: 24,
               ),
               const SizedBox(width: 16),
@@ -220,16 +240,14 @@ class ProfileListingsSection extends StatelessWidget {
   }
 
   Widget _buildManagePropertyButton(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return _threeDProfileTile(
+      context,
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => BlocProvider(
-                create: (context) =>
-                    ListingsBloc(getIt<IListingService>()),
+                create: (context) => ListingsBloc(getIt<IListingService>()),
                 child: const UserListingsScreen(),
               ),
             ),
@@ -243,10 +261,9 @@ class ProfileListingsSection extends StatelessWidget {
             children: [
               ThemeIcon(
                 Icons.home_work,
-                color:
-                    ThemeState().isBlueTheme
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.primary,
+                color: ThemeState().isBlueTheme
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.primary,
                 size: 24,
               ),
               const SizedBox(width: 16),

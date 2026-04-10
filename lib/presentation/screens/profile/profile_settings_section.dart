@@ -8,20 +8,70 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 class ProfileSettingsSection extends StatelessWidget {
   const ProfileSettingsSection({
-    required this.onLogout, required this.onDeleteAccount, super.key,
+    required this.onLogout,
+    required this.onDeleteAccount,
+    super.key,
   });
 
   final VoidCallback onLogout;
   final VoidCallback onDeleteAccount;
+
+  Widget _threeDProfileTile(BuildContext context, {required Widget child}) {
+    final theme = Theme.of(context);
+    return Theme(
+      data: theme.copyWith(
+        cardTheme: theme.cardTheme.copyWith(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          color: theme.colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      child: ListingDetailTileShell(
+        clipBehavior: Clip.antiAlias,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _threeDProfileTileWithErrorBorder(
+    BuildContext context, {
+    required Color borderColor,
+    required Widget child,
+  }) {
+    final theme = Theme.of(context);
+    return Theme(
+      data: theme.copyWith(
+        cardTheme: theme.cardTheme.copyWith(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          color: theme.colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: borderColor, width: 2),
+          ),
+        ),
+      ),
+      child: ListingDetailTileShell(
+        clipBehavior: Clip.antiAlias,
+        child: child,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +86,8 @@ class ProfileSettingsSection extends StatelessWidget {
   }
 
   Widget _buildLogoutButton(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return _threeDProfileTile(
+      context,
       child: InkWell(
         onTap: onLogout,
         borderRadius: BorderRadius.circular(12),
@@ -77,13 +126,9 @@ class ProfileSettingsSection extends StatelessWidget {
 
   Widget _buildDeleteAccountButton(BuildContext context) {
     final errorColor = Theme.of(context).colorScheme.error;
-    return Card(
-      elevation: 4,
-      color: Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: errorColor, width: 2),
-      ),
+    return _threeDProfileTileWithErrorBorder(
+      context,
+      borderColor: errorColor,
       child: InkWell(
         onTap: onDeleteAccount,
         borderRadius: BorderRadius.circular(12),
@@ -141,34 +186,28 @@ List<ActionMenuItem> buildProfileActionMenuItems({
             final currentState = context.read<CurrentUserProfileBloc>().state;
             final cachedProfile = cachedUserProfile;
             currentState.map(
-              initial:
-                  (_) =>
-                      cachedProfile != null
-                          ? onEditProfile(cachedProfile)
-                          : ToastTheme.showInfo(
-                            context,
-                            message: L10n.get("profile_not_loaded_yet"),
-                          ),
-              loading:
-                  (_) =>
-                      cachedProfile != null
-                          ? onEditProfile(cachedProfile)
-                          : ToastTheme.showInfo(
-                            context,
-                            message: L10n.get("profile_still_loading"),
-                          ),
+              initial: (_) => cachedProfile != null
+                  ? onEditProfile(cachedProfile)
+                  : ToastTheme.showInfo(
+                      context,
+                      message: L10n.get("profile_not_loaded_yet"),
+                    ),
+              loading: (_) => cachedProfile != null
+                  ? onEditProfile(cachedProfile)
+                  : ToastTheme.showInfo(
+                      context,
+                      message: L10n.get("profile_still_loading"),
+                    ),
               loaded: (loadedState) async {
                 await onEditProfile(loadedState.profile);
               },
-              error:
-                  (errorState) =>
-                      cachedProfile != null
-                          ? onEditProfile(cachedProfile)
-                          : ToastTheme.showError(
-                            context,
-                            message: L10n.get("error_with_message")
-                                .replaceAll("{message}", errorState.message),
-                          ),
+              error: (errorState) => cachedProfile != null
+                  ? onEditProfile(cachedProfile)
+                  : ToastTheme.showError(
+                      context,
+                      message: L10n.get("error_with_message")
+                          .replaceAll("{message}", errorState.message),
+                    ),
             );
           } catch (e) {
             ToastTheme.showError(
@@ -210,11 +249,10 @@ List<ActionMenuItem> buildProfileActionMenuItems({
       onPressed: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder:
-                (context) => BlocProvider(
-                  create: (context) => ListingsBloc(getIt<IListingService>()),
-                  child: const UserListingsScreen(),
-                ),
+            builder: (context) => BlocProvider(
+              create: (context) => ListingsBloc(getIt<IListingService>()),
+              child: const UserListingsScreen(),
+            ),
           ),
         );
       },

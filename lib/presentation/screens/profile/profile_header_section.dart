@@ -7,9 +7,10 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
-import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 class _RoleBadge extends StatelessWidget {
   const _RoleBadge({required this.label});
@@ -22,9 +23,7 @@ class _RoleBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: isBlueTheme
-            ? BlueThemeColors.buttonPrimary
-            : Colors.black,
+        color: isBlueTheme ? BlueThemeColors.buttonPrimary : Colors.black,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
@@ -41,7 +40,15 @@ class _RoleBadge extends StatelessWidget {
 
 class ProfileHeaderSection extends StatelessWidget {
   const ProfileHeaderSection({
-    required this.profile, required this.cachedGoogleDisplayName, required this.cachedGooglePhotoUrl, required this.userRole, required this.userRoleLoaded, required this.userBlocked, required this.getRoleLabel, required this.onEditProfile, super.key,
+    required this.profile,
+    required this.cachedGoogleDisplayName,
+    required this.cachedGooglePhotoUrl,
+    required this.userRole,
+    required this.userRoleLoaded,
+    required this.userBlocked,
+    required this.getRoleLabel,
+    required this.onEditProfile,
+    super.key,
   });
 
   final UserProfile profile;
@@ -55,8 +62,7 @@ class ProfileHeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isComplete =
-        ProfileCompletionState.completionPercent(profile) >= 100;
+    final isComplete = ProfileCompletionState.completionPercent(profile) >= 100;
 
     return Column(
       children: [
@@ -143,9 +149,7 @@ class ProfileHeaderSection extends StatelessWidget {
             ],
           ),
         ),
-
         const SizedBox(height: 8),
-
         if (!isComplete) ...[
           _buildProfileCompletionCard(context, profile, isComplete),
           const SizedBox(height: 4),
@@ -201,12 +205,11 @@ class ProfileHeaderSection extends StatelessWidget {
             memCacheHeight: 200,
             fadeInDuration: const Duration(milliseconds: 300),
             fadeInCurve: Curves.easeOut,
-            placeholder:
-                (context, url) => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 3),
-                ),
-            errorWidget:
-                (context, url, error) => const ThemeIcon(Icons.person, size: 50),
+            placeholder: (context, url) => const Center(
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+            errorWidget: (context, url, error) =>
+                const ThemeIcon(Icons.person, size: 50),
           ),
         ),
       );
@@ -226,92 +229,103 @@ class ProfileHeaderSection extends StatelessWidget {
     UserProfile profile,
     bool isComplete,
   ) {
-    final completionPercent =
-        ProfileCompletionState.completionPercent(profile);
+    final completionPercent = ProfileCompletionState.completionPercent(profile);
     final completionFraction = completionPercent / 100;
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (!isComplete) ...[
-                  const SizedBox(
-                    width: 10,
-                    height: 10,
-                    child: BlinkingDotWidget(
-                      color: Colors.green,
-                      size: 10,
-                      duration: Duration(milliseconds: 1000),
+    final theme = Theme.of(context);
+    return Theme(
+      data: theme.copyWith(
+        cardTheme: theme.cardTheme.copyWith(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          color: theme.colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      child: ListingDetailTileShell(
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (!isComplete) ...[
+                    const SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: BlinkingDotWidget(
+                        color: Colors.green,
+                        size: 10,
+                        duration: Duration(milliseconds: 1000),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(
+                      L10n.get("profile_completion"),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                ],
-                Expanded(
-                  child: Text(
-                    L10n.get("profile_completion"),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  if (isComplete)
+                    ThemeIcon(
+                      Icons.check_circle,
+                      size: 18,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
-                  ),
-                ),
-                if (isComplete)
-                  ThemeIcon(
-                    Icons.check_circle,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              L10n.get("profile_completion_hint"),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: completionFraction,
-                minHeight: 8,
-                backgroundColor:
-                    Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).progressIndicatorTheme.color ??
-                      Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "$completionPercent%",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            if (!userBlocked) ...[
               const SizedBox(height: 8),
-              UydoshLinkButton(
-                text: L10n.get("complete_profile"),
-                onPressed: onEditProfile,
-                outlined: true,
+              Text(
+                L10n.get("profile_completion_hint"),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: completionFraction,
+                  minHeight: 8,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).progressIndicatorTheme.color ??
+                        Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "$completionPercent%",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              if (!userBlocked) ...[
+                const SizedBox(height: 8),
+                UydoshLinkButton(
+                  text: L10n.get("complete_profile"),
+                  onPressed: onEditProfile,
+                  outlined: true,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

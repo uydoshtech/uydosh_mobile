@@ -8,6 +8,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/admin_user_search_alert_service.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
@@ -63,9 +64,8 @@ class _AdminUserSearchAlertsScreenState
 
   Widget _iconTextBadge({
     required ThemeData theme,
-    IconData? icon,
+    required String text, IconData? icon,
     Widget? leading,
-    required String text,
     Color? color,
   }) {
     final c = color ?? theme.colorScheme.onSurfaceVariant;
@@ -244,12 +244,6 @@ class _AdminUserSearchAlertsScreenState
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
 
-    final cardBorderColor = isBlueTheme
-        ? Colors.white.withValues(alpha: 0.16)
-        : (theme.brightness == Brightness.dark
-            ? Colors.white.withValues(alpha: 0.10)
-            : Colors.black.withValues(alpha: 0.08));
-
     return Scaffold(
       appBar: AppBar(
         title: Text(L10n.get("admin_user_alerts_title")),
@@ -287,32 +281,38 @@ class _AdminUserSearchAlertsScreenState
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, i) {
                         final a = _alerts[i];
-                        return Card(
-                          margin: EdgeInsets.zero,
-                          elevation: 0,
-                          color: theme.colorScheme.surface,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            side: BorderSide(color: cardBorderColor, width: 1),
+                        return Theme(
+                          data: theme.copyWith(
+                            cardTheme: theme.cardTheme.copyWith(
+                              margin: EdgeInsets.zero,
+                              elevation: 0,
+                              surfaceTintColor: Colors.transparent,
+                              color: theme.colorScheme.surface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ThemeIcon(
-                                  a.enabled
-                                      ? Icons.notifications_active_outlined
-                                      : Icons.notifications_off_outlined,
-                                  color: isBlueTheme
-                                      ? Colors.white
-                                      : (a.enabled
-                                          ? theme.colorScheme.primary
-                                          : theme.colorScheme.onSurfaceVariant),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(child: _summaryWidget(a, theme)),
-                              ],
+                          child: ListingDetailTileShell(
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ThemeIcon(
+                                    a.enabled
+                                        ? Icons.notifications_active_outlined
+                                        : Icons.notifications_off_outlined,
+                                    color: isBlueTheme
+                                        ? Colors.white
+                                        : (a.enabled
+                                            ? theme.colorScheme.primary
+                                            : theme.colorScheme.onSurfaceVariant),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(child: _summaryWidget(a, theme)),
+                                ],
+                              ),
                             ),
                           ),
                         );
