@@ -6,6 +6,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Owner toolbar with view count and promote button for listing detail.
@@ -15,9 +16,9 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
     required this.viewCount,
     required this.isLoadingViewCount,
     required this.isToggling,
-  required this.onToggleFeature,
-  super.key,
-});
+    required this.onToggleFeature,
+    super.key,
+  });
 
   final ListingDetail listingDetail;
   final int? viewCount;
@@ -55,8 +56,8 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
               ],
             )
           else if (viewCount != null)
-            GestureDetector(
-              onTap: () {
+            ThreeDPillButton(
+              onPressed: () {
                 HapticFeedbackUtils.impact();
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -67,6 +68,7 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
                 );
               },
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   ThemeIcon(
                     CupertinoIcons.eye,
@@ -91,10 +93,13 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
           else
             const SizedBox.shrink(),
           const Spacer(),
-          TextButton.icon(
+          ThreeDPillButton(
             onPressed: isToggling ? null : onToggleFeature,
-            icon: isToggling
-                ? SizedBox(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isToggling)
+                  SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
@@ -102,29 +107,28 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
                       color: ListingDetailThemeHelper.iconColor,
                     ),
                   )
-                : ThemeIcon(
+                else
+                  ThemeIcon(
                     ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
                         ? CupertinoIcons.arrow_down
                         : CupertinoIcons.arrow_up,
                     size: 16,
                     color: ListingDetailThemeHelper.iconColor,
                   ),
-            label: Text(
-              L10n.get(
-                ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
-                    ? "remove_from_top"
-                    : "promote_listing",
-              ),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: ListingDetailThemeHelper.iconColor,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                const SizedBox(width: 8),
+                Text(
+                  L10n.get(
+                    ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
+                        ? "remove_from_top"
+                        : "promote_listing",
+                  ),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: ListingDetailThemeHelper.iconColor,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

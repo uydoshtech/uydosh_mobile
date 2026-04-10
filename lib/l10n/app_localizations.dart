@@ -961,7 +961,7 @@ abstract class AppLocalizations {
   /// No description provided for @no_search_results.
   ///
   /// In en, this message translates to:
-  /// **'Nothing found for your query'**
+  /// **'No results...'**
   String get no_search_results;
 
   /// No description provided for @try_refreshing.
