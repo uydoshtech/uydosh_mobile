@@ -56,7 +56,7 @@ extension ThemeHelper on ThemeState {
 
   /// Card background color
   Color get cardColor {
-    if (isLightTheme) return Colors.white;
+    if (isLightTheme) return LightThemeColors.messagesConversationTile;
     if (isBlueTheme) return BlueThemeColors.card;
     return Colors.white;
   }

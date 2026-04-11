@@ -156,8 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _getTextColor(),
           ),
         ),
-        centerTitle: false, // Move title to the left, closer to back button
-        titleSpacing: 0, // Remove extra spacing between back button and title
+        centerTitle: true,
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         elevation: 0,

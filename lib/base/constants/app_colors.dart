@@ -717,6 +717,8 @@ class LightThemeColors {
   ); // Very light gray disabled button
 
   // Card Colors - Light theme cards
+  /// Conversation rows on the messages screen (neutral gray tile on white).
+  static const Color messagesConversationTile = Color(0xFFF2F2F2);
   static const Color cardBackground = Color(
     0xFFFFFFFF,
   ); // White card background
