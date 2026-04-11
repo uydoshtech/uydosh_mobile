@@ -83,8 +83,8 @@ class AuthWizardLanguagePage extends StatelessWidget {
           borderRadius: borderRadius,
           gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
           boxShadow: isSelected
-              ? ThreeDSurfaceStyle.elevatedShadows(context)
-              : ThreeDSurfaceStyle.pressedShadows(context),
+              ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+              : ThreeDSurfaceStyle.elevatedShadows(context),
         ),
         child: Row(
           children: [

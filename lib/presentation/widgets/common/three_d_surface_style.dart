@@ -33,6 +33,23 @@ abstract final class ThreeDSurfaceStyle {
         ),
       ];
 
+  /// Recessed / “pressed” look (e.g. selected language card). Uses negative
+  /// [BoxShadow.spreadRadius] so shadows read as inside the rounded rect.
+  static List<BoxShadow> insetRecessedShadows(BuildContext context) => [
+        BoxShadow(
+          color: _darkShadowColor(context),
+          offset: const Offset(4, 4),
+          blurRadius: 12,
+          spreadRadius: -6,
+        ),
+        BoxShadow(
+          color: _lightShadowColor(context),
+          offset: const Offset(-4, -4),
+          blurRadius: 12,
+          spreadRadius: -6,
+        ),
+      ];
+
   static LinearGradient surfaceGradient(BuildContext context, Color bg) {
     final scheme = Theme.of(context).colorScheme;
     return LinearGradient(
