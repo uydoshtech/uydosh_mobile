@@ -26,9 +26,20 @@ import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class MessagesInboxScreen extends StatefulWidget {
-  const MessagesInboxScreen({super.key, this.showCustomHeader = true});
+  const MessagesInboxScreen({
+    super.key,
+    this.showCustomHeader = true,
+    /// When non-null, used with [MainNavigation]'s bottom bar: may refresh when
+    /// the user switches to this tab (IndexedStack keeps the widget mounted).
+    /// Refetch runs only if [UnreadMessagesState] reports unread (e.g. green dot).
+    this.mainTabSelected,
+  });
 
   final bool showCustomHeader;
+
+  /// `true` when this screen is the selected main tab; `null` when opened
+  /// from the drawer or another route (tab visibility does not apply).
+  final bool? mainTabSelected;
 
   @override
   State<MessagesInboxScreen> createState() => _MessagesInboxScreenState();
@@ -51,6 +62,21 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
     // Listen for authentication state changes to refresh conversations when user logs in
     AuthenticationState().addListener(_onAuthenticationStateChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant MessagesInboxScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.mainTabSelected != true) {
+      return;
+    }
+    if (oldWidget.mainTabSelected ?? false) {
+      return;
+    }
+    if (!UnreadMessagesState().hasUnreadMessages) {
+      return;
+    }
+    _loadConversations();
   }
 
   Future<void> _initializeUser() async {

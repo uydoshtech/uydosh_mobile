@@ -1088,31 +1088,23 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16.0),
-          child: _isCreatingSearchAlert
-              ? SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: appBarFg,
-                  ),
-                )
-              : TutorialTargetWrapper(
-                  key: _alertBellTutorialKey,
-                  child: _NotifySearchAlertAppBarButton(
-                    tooltip: L10n.get("search_alert_notify_me"),
-                    iconColor: appBarFg,
-                    appBarBackground:
-                        Theme.of(context).appBarTheme.backgroundColor ??
-                            (ThemeState().isBlueTheme
-                                ? BlueThemeColors.surface
-                                : Theme.of(context).colorScheme.primary),
-                    onPressed: () {
-                      HapticFeedbackUtils.selection();
-                      _subscribeToSearchAlerts();
-                    },
-                  ),
-                ),
+          child: TutorialTargetWrapper(
+            key: _alertBellTutorialKey,
+            child: _NotifySearchAlertAppBarButton(
+              tooltip: L10n.get("search_alert_notify_me"),
+              iconColor: appBarFg,
+              enabled: !_isCreatingSearchAlert,
+              appBarBackground:
+                  Theme.of(context).appBarTheme.backgroundColor ??
+                      (ThemeState().isBlueTheme
+                          ? BlueThemeColors.surface
+                          : Theme.of(context).colorScheme.primary),
+              onPressed: () {
+                HapticFeedbackUtils.selection();
+                _subscribeToSearchAlerts();
+              },
+            ),
+          ),
         ),
       ],
     );
@@ -1419,12 +1411,14 @@ class _NotifySearchAlertAppBarButton extends StatefulWidget {
     required this.onPressed,
     required this.iconColor,
     required this.appBarBackground,
+    this.enabled = true,
   });
 
   final String tooltip;
   final VoidCallback onPressed;
   final Color iconColor;
   final Color appBarBackground;
+  final bool enabled;
 
   @override
   State<_NotifySearchAlertAppBarButton> createState() =>
@@ -1534,6 +1528,7 @@ class _NotifySearchAlertAppBarButtonState
   }
 
   void _handlePressed() {
+    if (!widget.enabled) return;
     if (_animationSettings.bellTapEnabled) {
       _controller.forward(from: 0);
     }
@@ -1547,7 +1542,11 @@ class _NotifySearchAlertAppBarButtonState
 
     return IconButton(
       tooltip: widget.tooltip,
-      onPressed: _handlePressed,
+      onPressed: widget.enabled ? _handlePressed : null,
+      style: IconButton.styleFrom(
+        foregroundColor: widget.iconColor,
+        disabledForegroundColor: widget.iconColor,
+      ),
       icon: SizedBox(
         width: 24,
         height: 24,

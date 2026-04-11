@@ -385,8 +385,9 @@ class _MainNavigationState extends State<MainNavigation>
         child: HomeScreen(isHomeTabActive: _currentIndex == 0),
       ),
       const FavoritesScreen(),
-      const MessagesInboxScreen(
+      MessagesInboxScreen(
         showCustomHeader: false,
+        mainTabSelected: _currentIndex == 2,
       ), // Conversations screen at index 2
     ];
 
@@ -466,6 +467,46 @@ class _MainNavigationState extends State<MainNavigation>
     }
   }
 
+  /// Shared 3D chrome for app bar icon-only actions (drawer, notifications, profile).
+  Widget _threeDAppBarIconButton({
+    required IconData iconData,
+    required VoidCallback onPressed,
+    required String semanticsLabel,
+    double iconSize = 26,
+    BorderRadius borderRadius = const BorderRadius.all(Radius.circular(999)),
+  }) {
+    return ThreeDPillButton(
+      padding: const EdgeInsets.all(6),
+      borderRadius: borderRadius,
+      onPressed: () {
+        HapticFeedbackUtils.impact();
+        onPressed();
+      },
+      child: ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, _) {
+          final iconColor =
+              ThemeState().isBlueTheme ? Colors.white : Colors.black;
+          return Semantics(
+            label: semanticsLabel,
+            button: true,
+            child: SizedBox(
+              width: 28,
+              height: 28,
+              child: Center(
+                child: ThemeIcon(
+                  iconData,
+                  color: iconColor,
+                  size: iconSize,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -474,42 +515,36 @@ class _MainNavigationState extends State<MainNavigation>
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: _getAppBarTitle(),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: Align(
+            alignment: Alignment.center,
+            child: Builder(
+              builder: (scaffoldContext) {
+                return _threeDAppBarIconButton(
+                  iconData: Icons.menu,
+                  onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
+                  semanticsLabel:
+                      MaterialLocalizations.of(context).openAppDrawerTooltip,
+                  borderRadius: BorderRadius.circular(12),
+                );
+              },
+            ),
+          ),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: ThreeDPillButton(
-              padding: const EdgeInsets.all(6),
-              borderRadius: BorderRadius.circular(999),
+            child: _threeDAppBarIconButton(
+              iconData: Icons.notifications_none_outlined,
               onPressed: () {
-                HapticFeedbackUtils.impact();
                 if (!AuthenticationState().isAuthenticated) {
                   context.pushReplaceAuthWizard();
                   return;
                 }
                 context.pushNotifications();
               },
-              child: ListenableBuilder(
-                listenable: ThemeState(),
-                builder: (context, _) {
-                  final iconColor =
-                      ThemeState().isBlueTheme ? Colors.white : Colors.black;
-                  return Semantics(
-                    label: L10n.get("menu_notifications"),
-                    button: true,
-                    child: SizedBox(
-                      width: 28,
-                      height: 28,
-                      child: Center(
-                        child: ThemeIcon(
-                          Icons.notifications_none_outlined,
-                          color: iconColor,
-                          size: 26,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+              semanticsLabel: L10n.get("menu_notifications"),
             ),
           ),
           // Profile button on the right side with proper margin
@@ -524,50 +559,18 @@ class _MainNavigationState extends State<MainNavigation>
 
                 // Show themed circle when user is not authenticated
                 if (!isAuthenticated) {
-                  return ListenableBuilder(
-                    listenable: ThemeState(),
-                    builder: (context, child) {
-                      final themeState = ThemeState();
-                      Color borderColor;
-
-                      if (themeState.isBlueTheme) {
-                        borderColor =
-                            Colors.white; // White border for blue theme
-                      } else {
-                        borderColor =
-                            Colors.black; // Black border for light theme
-                      }
-
-                      return ThreeDPillButton(
-                        padding: const EdgeInsets.all(6),
-                        borderRadius: BorderRadius.circular(999),
-                        onPressed: () {
-                          HapticFeedbackUtils.impact();
-                          context.pushReplaceAuthWizard().then((_) {
-                            if (mounted) {
-                              setState(() {
-                                _currentIndex = 0;
-                              });
-                            }
+                  return _threeDAppBarIconButton(
+                    iconData: Icons.person,
+                    onPressed: () {
+                      context.pushReplaceAuthWizard().then((_) {
+                        if (mounted) {
+                          setState(() {
+                            _currentIndex = 0;
                           });
-                        },
-                        child: Semantics(
-                          label: L10n.get("profile"),
-                          button: true,
-                          child: SizedBox(
-                            width: 28,
-                            height: 28,
-                            child: Center(
-                              child: ThemeIcon(
-                                Icons.person,
-                                color: borderColor,
-                                size: 26,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
+                        }
+                      });
                     },
+                    semanticsLabel: L10n.get("profile"),
                   );
                 }
 
@@ -578,44 +581,17 @@ class _MainNavigationState extends State<MainNavigation>
                     ProfileCompletionState(),
                   ]),
                   builder: (context, child) {
-                    final themeState = ThemeState();
-                    Color iconColor;
-
-                    if (themeState.isBlueTheme) {
-                      iconColor =
-                          Colors.white; // White icon for blue theme
-                    } else {
-                      iconColor = Colors.black; // Black icon for light theme
-                    }
-
                     final needsCompletion =
                         ProfileCompletionState().needsProfileCompletion;
 
                     return Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        ThreeDPillButton(
-                          padding: const EdgeInsets.all(6),
-                          borderRadius: BorderRadius.circular(999),
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            context.pushProfile();
-                          },
-                          child: Semantics(
-                            label: L10n.get("profile"),
-                            button: true,
-                            child: SizedBox(
-                              width: 28,
-                              height: 28,
-                              child: Center(
-                                child: ThemeIcon(
-                                  Icons.person,
-                                  color: iconColor,
-                                  size: 28,
-                                ),
-                              ),
-                            ),
-                          ),
+                        _threeDAppBarIconButton(
+                          iconData: Icons.person,
+                          onPressed: () => context.pushProfile(),
+                          semanticsLabel: L10n.get("profile"),
+                          iconSize: 28,
                         ),
                         if (needsCompletion)
                           Positioned(
