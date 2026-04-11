@@ -30,12 +30,13 @@ import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.d
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class EditListingScreen extends StatefulWidget {
 
@@ -709,6 +710,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                     // Description Field
                     Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                        context,
+                        theme: theme,
+                        showErrorBorder: _showDescriptionError,
+                      ),
                       child: TextFormField(
                         controller: _descriptionController,
                         onChanged: (value) {
@@ -730,55 +737,29 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     : Colors.grey[400],
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color:
-                                  _showDescriptionError
-                                      ? Colors.red
-                                      : (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? theme.colorScheme.outline
-                                          : Colors.grey[600]!),
-                            ),
+                            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                            borderSide: BorderSide.none,
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color:
-                                  _showDescriptionError
-                                      ? Colors.red
-                                      : (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? theme.colorScheme.outline
-                                          : Colors.grey[600]!),
-                            ),
+                            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                            borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color:
-                                  _showDescriptionError
-                                      ? Colors.red
-                                      : _getBorderColor(),
-                              width: 2,
-                            ),
+                            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                            borderSide: _showDescriptionError
+                                ? BorderSide.none
+                                : BorderSide(color: _getBorderColor(), width: 2),
                           ),
                           errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Colors.red,
-                              width: 2,
-                            ),
+                            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                            borderSide: BorderSide.none,
                           ),
                           focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Colors.red,
-                              width: 2,
-                            ),
+                            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                            borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: _getControlBackgroundColor(),
+                          fillColor: Colors.transparent,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 12,
@@ -1010,18 +991,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
                         const SizedBox(width: 12),
                         // Private Room Toggle (50% width)
                         Expanded(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color:
-                                    Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? theme.colorScheme.outline
-                                        : Colors.grey[600]!,
-                              ),
-                              color:
-                                  _getControlBackgroundColor(),
+                          child: Container(
+                            clipBehavior: Clip.antiAlias,
+                            decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                              context,
+                              theme: theme,
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(

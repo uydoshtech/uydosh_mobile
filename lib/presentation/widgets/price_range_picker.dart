@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class PriceRangePicker extends StatefulWidget {
   const PriceRangePicker({
@@ -84,14 +85,6 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
       return theme.colorScheme.primary; // Default theme color
     }
 
-    // Get the appropriate background color
-    Color getBackgroundColor() {
-      if (themeState.isBlueTheme) {
-        return BlueThemeColors.primary; // Dark blue background for blue theme
-      }
-      return Colors.white; // White background for default theme
-    }
-
     // Get the appropriate text color
     Color getTextColor() {
       if (themeState.isBlueTheme) {
@@ -101,7 +94,6 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
     }
 
     final sliderColor = getSliderColor();
-    final backgroundColor = getBackgroundColor();
     final textColor = getTextColor();
 
     // Inactive track: use lighter color in blue theme for visibility on dark background
@@ -114,10 +106,10 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
+      clipBehavior: Clip.antiAlias,
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+        context,
+        theme: theme,
       ),
       child: Row(
         children: [

@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -7,9 +6,10 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Primary filters: listing type and gender pickers.
 class SearchBottomSheetPrimaryFilters extends StatelessWidget {
@@ -70,25 +70,14 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Price Range
-        DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(color: theme.colorScheme.outline),
-            borderRadius: BorderRadius.circular(10),
-            color: ThemeState().isBlueTheme
-                ? BlueThemeColors.surface
-                : theme.colorScheme.surfaceContainerHighest,
-          ),
-          child: PriceRangePicker(
-            initialMinPrice: searchFiltersState.minPrice,
-            initialMaxPrice: searchFiltersState.maxPrice,
-            onPriceRangeChanged: onPriceRangeChanged,
-          ),
+        // Price Range ([PriceRangePicker] already uses 3D plate chrome)
+        PriceRangePicker(
+          initialMinPrice: searchFiltersState.minPrice,
+          initialMaxPrice: searchFiltersState.maxPrice,
+          onPriceRangeChanged: onPriceRangeChanged,
         ),
         const SizedBox(height: 15),
 
@@ -175,13 +164,11 @@ class _SearchSheetFilterToggle extends StatelessWidget {
     final fg = onBlue ? Colors.white : Colors.black;
     final iconColor = onBlue ? Colors.white : theme.iconTheme.color;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: theme.colorScheme.outline),
-        borderRadius: BorderRadius.circular(10),
-        color: onBlue
-            ? BlueThemeColors.primary
-            : theme.colorScheme.surfaceContainerHighest,
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+        context,
+        theme: theme,
       ),
       child: Padding(
         padding: const EdgeInsetsDirectional.only(
