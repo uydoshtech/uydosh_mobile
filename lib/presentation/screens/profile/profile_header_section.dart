@@ -10,6 +10,7 @@ import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 class _RoleBadge extends StatelessWidget {
@@ -72,20 +73,7 @@ class ProfileHeaderSection extends StatelessWidget {
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  if (isComplete && !userBlocked)
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.success,
-                          width: 3,
-                        ),
-                      ),
-                      child: _buildProfileAvatar(context),
-                    )
-                  else
-                    _buildProfileAvatar(context),
+                  _buildProfileAvatar(context),
                   if (userBlocked)
                     Tooltip(
                       message: L10n.get("admin_user_detail_blocked"),
@@ -161,27 +149,18 @@ class ProfileHeaderSection extends StatelessWidget {
   }
 
   Widget _buildProfileAvatar(BuildContext context) {
+    final surface = Theme.of(context).colorScheme.surface;
     return Container(
       width: 100,
       height: 100,
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        borderRadius: const BorderRadius.all(Radius.circular(999)),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       ),
-      child: _buildProfilePicture(context),
+      child: ClipOval(
+        child: _buildProfilePicture(context),
+      ),
     );
   }
 
@@ -190,37 +169,37 @@ class ProfileHeaderSection extends StatelessWidget {
     final photoUrl = cachedGooglePhotoUrl ?? currentUser?.photoURL;
 
     if (photoUrl != null) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(width: 1),
-        ),
-        child: ClipOval(
-          child: CachedNetworkImage(
-            imageUrl: photoUrl,
-            width: 100,
-            height: 100,
-            fit: BoxFit.cover,
-            memCacheWidth: 200,
-            memCacheHeight: 200,
-            fadeInDuration: const Duration(milliseconds: 300),
-            fadeInCurve: Curves.easeOut,
-            placeholder: (context, url) => const Center(
-              child: CircularProgressIndicator(strokeWidth: 3),
+      return CachedNetworkImage(
+        imageUrl: photoUrl,
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
+        memCacheWidth: 200,
+        memCacheHeight: 200,
+        fadeInDuration: const Duration(milliseconds: 300),
+        fadeInCurve: Curves.easeOut,
+        placeholder:
+            (context, url) => Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
-            errorWidget: (context, url, error) =>
-                const ThemeIcon(Icons.person, size: 50),
-          ),
-        ),
+        errorWidget:
+            (context, url, error) => ThemeIcon(
+              Icons.person,
+              size: 50,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
       );
     }
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(width: 1),
+    return Center(
+      child: ThemeIcon(
+        Icons.person,
+        size: 50,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
-      child: const ThemeIcon(Icons.person, size: 50),
     );
   }
 

@@ -32,7 +32,7 @@ import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.
 import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 
@@ -79,7 +79,6 @@ class BurgerMenuWidget extends StatefulWidget {
 class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   String? _cachedGoogleDisplayName;
   String? _cachedGooglePhotoUrl;
-  bool _profileAvatarPressed = false;
   // Theme-aware color helper methods
   Color _getTextColor() {
     final currentTheme = ThemeState().currentTheme;
@@ -235,58 +234,31 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                       child: Center(
                         child: Column(
                           children: [
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 90),
-                              transform: Matrix4.translationValues(
-                                0,
-                                _profileAvatarPressed ? 2 : 0,
-                                0,
+                            ThreeDPillButton(
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(999),
                               ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  onHighlightChanged:
-                                      (highlighted) => setState(
-                                        () => _profileAvatarPressed =
-                                            highlighted,
-                                      ),
-                                  onTap: () {
-                                    HapticFeedbackUtils.impact();
-                                    Navigator.pop(context);
-                                    if (context.mounted) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  const ProfileScreen(),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 90),
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient:
-                                          ThreeDSurfaceStyle.surfaceGradient(
-                                            context,
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.surface,
-                                          ),
-                                      boxShadow:
-                                          _profileAvatarPressed
-                                              ? ThreeDSurfaceStyle
-                                                  .pressedShadows(context)
-                                              : ThreeDSurfaceStyle
-                                                  .elevatedShadows(context),
+                              padding: EdgeInsets.zero,
+                              onPressed: () {
+                                HapticFeedbackUtils.impact();
+                                Navigator.pop(context);
+                                if (context.mounted) {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => const ProfileScreen(),
                                     ),
-                                    child: ClipOval(
-                                      child: _buildProfilePicture(),
-                                    ),
+                                  );
+                                }
+                              },
+                              child: Semantics(
+                                label: L10n.get("profile"),
+                                button: true,
+                                child: SizedBox(
+                                  width: 80,
+                                  height: 80,
+                                  child: ClipOval(
+                                    child: _buildProfilePicture(),
                                   ),
                                 ),
                               ),
