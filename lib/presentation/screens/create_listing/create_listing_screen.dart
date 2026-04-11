@@ -476,7 +476,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -510,9 +510,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(
-          height: 0,
-        ), // Reduced from 16 to 0 to remove space between header and selection containers
         // Listing Type and Gender Selection - Side by Side
         Container(
           child: Row(

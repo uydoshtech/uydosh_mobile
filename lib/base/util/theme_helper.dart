@@ -2,24 +2,39 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 
-/// Extension on [ThemeState] providing theme-aware color helpers.
-/// Use these instead of duplicating _getThemeAware* logic across screens and widgets.
-extension ThemeHelper on ThemeState {
-  /// Screen/scaffold background color
-  Color get backgroundColor {
-    // Match [appBarBackgroundColor] on light theme so scaffold + AppBar share one
-    // canvas (avoids a visible seam under the bar, e.g. on chat).
+/// Resolves the shared “screen canvas” fill from theme flags only (no [ThemeState]
+/// singleton). [ThemeHelper.backgroundColor] and [ThemeHelper.appBarBackgroundColor]
+/// both delegate here so scaffold and custom AppBars cannot drift to different
+/// colors (e.g. a seam under the chat header).
+@immutable
+class ThemePalette {
+  const ThemePalette({
+    required this.isLightTheme,
+    required this.isBlueTheme,
+  });
+
+  final bool isLightTheme;
+  final bool isBlueTheme;
+
+  /// One color for [Scaffold.backgroundColor] and app chrome that sits flush with it.
+  Color get screenCanvasColor {
     if (isLightTheme) return LightThemeColors.surface;
     if (isBlueTheme) return BlueThemeColors.background;
     return LightThemeColors.surface;
   }
+}
+
+/// Extension on [ThemeState] providing theme-aware color helpers.
+/// Use these instead of duplicating _getThemeAware* logic across screens and widgets.
+extension ThemeHelper on ThemeState {
+  ThemePalette get _palette =>
+      ThemePalette(isLightTheme: isLightTheme, isBlueTheme: isBlueTheme);
+
+  /// Screen/scaffold background color
+  Color get backgroundColor => _palette.screenCanvasColor;
 
   /// AppBar background color
-  Color get appBarBackgroundColor {
-    if (isLightTheme) return Colors.white;
-    if (isBlueTheme) return BlueThemeColors.background;
-    return Colors.white;
-  }
+  Color get appBarBackgroundColor => _palette.screenCanvasColor;
 
   /// Primary text color
   Color get textColor {
