@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class PrimaryButton extends StatefulWidget {
@@ -63,6 +62,19 @@ class _PrimaryButtonState extends State<PrimaryButton> {
     final pad =
         widget.padding ??
         const EdgeInsets.symmetric(horizontal: 32, vertical: 16);
+    // Match ElevatedButton label metrics (pre–3d-styles); ambient DefaultTextStyle
+    // (e.g. body text with a tall line height) was inflating perceived button height.
+    final labelStyle =
+        Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: fg,
+              height: 1.0,
+            ) ??
+            TextStyle(
+              color: fg,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              height: 1.0,
+            );
 
     return SizedBox(
       width: widget.width,
@@ -89,7 +101,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
                 child: Opacity(
                   opacity: _enabled ? 1 : 0.55,
                   child: DefaultTextStyle.merge(
-                    style: TextStyle(color: fg),
+                    style: labelStyle,
                     child: IconTheme.merge(
                       data: IconThemeData(color: fg),
                       child:
@@ -142,7 +154,7 @@ class PrimaryButtonFactory {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ThemeIcon(icon, size: iconSize),
+          Icon(icon, size: iconSize),
           const SizedBox(width: 8),
           Text(text, style: textStyle),
         ],
@@ -192,7 +204,7 @@ class PrimaryButtonFactory {
       textColor: textColor,
       isLoading: isLoading,
       isDisabled: isDisabled,
-      child: ThemeIcon(icon),
+      child: Icon(icon),
     );
   }
 }
