@@ -54,10 +54,10 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     final shadows = _pressed
         ? ThreeDSurfaceStyle.pressedShadows(context)
         : [
-            ..._fabOuterHaloShadows(
+            ...ThreeDSurfaceStyle.floatingOrbHaloShadows(
+              context,
               base,
-              depthScale,
-              theme.brightness,
+              depthScale: depthScale,
             ),
             ...ThreeDSurfaceStyle.elevatedShadows(context),
           ];
@@ -92,19 +92,8 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            center: const Alignment(-0.55, -0.62),
-                            radius: 1.05,
-                            colors: [
-                              Colors.white.withValues(
-                                alpha: theme.brightness == Brightness.dark
-                                    ? 0.22
-                                    : 0.45,
-                              ),
-                              Colors.white.withValues(alpha: 0.06),
-                              Colors.transparent,
-                            ],
-                            stops: const [0.0, 0.28, 0.52],
+                          gradient: ThreeDSurfaceStyle.surfaceRadialHighlightGradient(
+                            theme.brightness,
                           ),
                         ),
                       ),
@@ -143,30 +132,4 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
       );
     });
   }
-}
-
-/// Soft colored glow behind the face (backlit halo), strongest top-left — same
-/// idea as tutorial halos on app bar actions, tuned for the primary pill.
-List<BoxShadow> _fabOuterHaloShadows(
-  Color base,
-  double depthScale,
-  Brightness brightness,
-) {
-  final isDark = brightness == Brightness.dark;
-  final cool = Color.lerp(base, const Color(0xFF9EB7E8), 0.42)!;
-  return [
-    BoxShadow(
-      color: cool.withValues(alpha: isDark ? 0.38 : 0.22),
-      blurRadius: 26 * depthScale,
-      spreadRadius: 1.8 * depthScale,
-      offset: Offset(-5 * depthScale, -5 * depthScale),
-    ),
-    BoxShadow(
-      color: Color.lerp(base, Colors.white, 0.5)!
-          .withValues(alpha: isDark ? 0.16 : 0.12),
-      blurRadius: 16 * depthScale,
-      spreadRadius: 0.5 * depthScale,
-      offset: Offset(-2 * depthScale, -3 * depthScale),
-    ),
-  ];
 }

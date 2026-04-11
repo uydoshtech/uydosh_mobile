@@ -1618,96 +1618,97 @@ L10n.get("feature_listing_error",
           foregroundColor:
               Theme.of(context).appBarTheme.foregroundColor ??
               AppColors.textLight,
+          centerTitle: true,
           leading: ThreeDAppBarIconButton.backLeading(
             context,
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: Row(
-            children: [
-              // Title on the left
-              Expanded(
-                child: L10n.text(
-                  "listing_details",
-                  style: Theme.of(context).appBarTheme.titleTextStyle,
-                ),
-              ),
-              // Icons on the right side of the title
-              BlocSelector<
-                ListingDetailBloc,
-                ListingDetailState,
-                _ListingDetailIconsData
-              >(
-                selector:
-                    (state) => state.map(
-                      initial:
-                          (_) => const _ListingDetailIconsData(
-                            isLoading: true,
-                            hasError: false,
-                            errorMessage: "",
-                            listingDetail: null,
-                          ),
-                      loading:
-                          (_) => const _ListingDetailIconsData(
-                            isLoading: true,
-                            hasError: false,
-                            errorMessage: "",
-                            listingDetail: null,
-                          ),
-                      loaded:
-                          (loadedState) => _ListingDetailIconsData(
-                            isLoading: false,
-                            hasError: false,
-                            errorMessage: "",
-                            listingDetail: loadedState.listingDetail,
-                          ),
-                      error:
-                          (errorState) => _ListingDetailIconsData(
-                            isLoading: false,
-                            hasError: true,
-                            errorMessage: errorState.message,
-                            listingDetail: null,
-                          ),
-                    ),
-                builder: (context, data) {
-                  if (data.isLoading || data.listingDetail == null) {
-                    return const SizedBox.shrink(); // No icons while loading
-                  }
+          title: L10n.text(
+            "listing_details",
+            style: Theme.of(context).appBarTheme.titleTextStyle,
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            SizedBox(
+              width: kToolbarHeight,
+              child: Center(
+                child: BlocSelector<
+                  ListingDetailBloc,
+                  ListingDetailState,
+                  _ListingDetailIconsData
+                >(
+                  selector:
+                      (state) => state.map(
+                        initial:
+                            (_) => const _ListingDetailIconsData(
+                              isLoading: true,
+                              hasError: false,
+                              errorMessage: "",
+                              listingDetail: null,
+                            ),
+                        loading:
+                            (_) => const _ListingDetailIconsData(
+                              isLoading: true,
+                              hasError: false,
+                              errorMessage: "",
+                              listingDetail: null,
+                            ),
+                        loaded:
+                            (loadedState) => _ListingDetailIconsData(
+                              isLoading: false,
+                              hasError: false,
+                              errorMessage: "",
+                              listingDetail: loadedState.listingDetail,
+                            ),
+                        error:
+                            (errorState) => _ListingDetailIconsData(
+                              isLoading: false,
+                              hasError: true,
+                              errorMessage: errorState.message,
+                              listingDetail: null,
+                            ),
+                      ),
+                  builder: (context, data) {
+                    if (data.isLoading || data.listingDetail == null) {
+                      return const SizedBox.shrink();
+                    }
 
-                  final listingDetail = data.listingDetail!;
-                  return ListenableBuilder(
-                    listenable: Listenable.merge([
-                      AuthenticationState(),
-                      FavoritesState().listenableFor(widget.listingId),
-                    ]),
-                    builder: (context, _) {
-                      final isAuthenticated =
-                          AuthenticationState().isAuthenticated;
-                      if (!isAuthenticated) {
-                        return ActionDropdownMenu(
-                          items: _buildActionMenuItems(
-                            listingDetail,
-                            isAdmin: false,
-                          ),
-                        );
-                      }
-                      return FutureBuilder<String?>(
-                        future: _userRoleFuture,
-                        builder: (context, snapshot) {
-                          final isAdmin = snapshot.data == "admin";
+                    final listingDetail = data.listingDetail!;
+                    return ListenableBuilder(
+                      listenable: Listenable.merge([
+                        AuthenticationState(),
+                        FavoritesState().listenableFor(widget.listingId),
+                      ]),
+                      builder: (context, _) {
+                        final isAuthenticated =
+                            AuthenticationState().isAuthenticated;
+                        if (!isAuthenticated) {
                           return ActionDropdownMenu(
                             items: _buildActionMenuItems(
                               listingDetail,
-                              isAdmin: isAdmin,
+                              isAdmin: false,
                             ),
                           );
-                        },
-                      );
-                    },
-                  );
-                },
+                        }
+                        return FutureBuilder<String?>(
+                          future: _userRoleFuture,
+                          builder: (context, snapshot) {
+                            final isAdmin = snapshot.data == "admin";
+                            return ActionDropdownMenu(
+                              items: _buildActionMenuItems(
+                                listingDetail,
+                                isAdmin: isAdmin,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
           automaticallyImplyLeading: false,
         ),
         body: BlocSelector<

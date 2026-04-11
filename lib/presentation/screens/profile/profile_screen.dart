@@ -406,7 +406,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _openEditProfileScreen(context, profile),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
 
               ProfileStatsSection(
                 profile: profile,
@@ -419,12 +419,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 getLocalizedUniversityName: _getLocalizedUniversityName,
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 24),
               ProfileListingsSection(
                 userRole: _userRole,
                 onAchievementsOpened: () => setState(() {}),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 24),
               ProfileSettingsSection(
                 onLogout: () => _showLogoutDialog(context),
                 onDeleteAccount: () => _showDeleteAccountDialog(context),

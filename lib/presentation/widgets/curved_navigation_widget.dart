@@ -7,6 +7,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class CustomCurvedNavigationBar extends StatefulWidget {
@@ -36,9 +37,9 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
       index: _getAdjustedIndex(widget.currentIndex, widget.isAuthenticated),
       height: 70.0,
       color: _getCurvedColor(context), // Theme-dependent curved color
-      buttonBackgroundColor: _getButtonBackgroundColor(
-        context,
-      ), // Theme-dependent button color
+      // Active “disk” is drawn by [_CurvedNavActiveOrb] on the selected item;
+      // keep the package [Material] transparent so gradients/shadows show.
+      buttonBackgroundColor: Colors.transparent,
       backgroundColor: _getBackgroundColor(
         context,
       ), // Theme-dependent background color
@@ -73,10 +74,18 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     final textColor =
         isDisabled ? _getDisabledColor(context) : _getTextColor(context);
 
+    final iconWidget = ThemeIcon(icon, size: 28, color: iconColor);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ThemeIcon(icon, size: 28, color: iconColor),
+        if (isSelected)
+          _CurvedNavActiveOrb(
+            baseColor: _getButtonBackgroundColor(context),
+            child: iconWidget,
+          )
+        else
+          iconWidget,
         if (!isSelected) ...[
           const SizedBox(height: 2),
           ListenableBuilder(
@@ -126,32 +135,55 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     final iconColor = isSelected ? Colors.white : _getIconColor(context);
     final textColor = isSelected ? Colors.white : _getTextColor(context);
 
+    final bubbleIcon = ThemeIcon(
+      CupertinoIcons.bubble_left_bubble_right,
+      size: 28,
+      color: iconColor,
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Use the same structure as other navigation items for consistent positioning
-        Stack(
-          children: [
-            ThemeIcon(
-              CupertinoIcons.bubble_left_bubble_right,
-              size: 28,
-              color: iconColor,
+        if (isSelected)
+          _CurvedNavActiveOrb(
+            baseColor: _getButtonBackgroundColor(context),
+            child: Stack(
+              children: [
+                bubbleIcon,
+                if (widget.hasUnreadMessages)
+                  const Positioned(
+                    right: 0,
+                    top: 0,
+                    child: BlinkingDotWidget(
+                      color: AppColors.success,
+                      size: 13,
+                      duration: Duration(milliseconds: 750),
+                      borderColor: Colors.white,
+                      borderWidth: 2,
+                    ),
+                  ),
+              ],
             ),
-            // Blinking green dot indicator for unread messages
-            if (widget.hasUnreadMessages)
-              const Positioned(
-                right: 0,
-                top: 0,
-                child: BlinkingDotWidget(
-                  color: AppColors.success,
-                  size: 13,
-                  duration: Duration(milliseconds: 750),
-                  borderColor: Colors.white,
-                  borderWidth: 2,
+          )
+        else
+          Stack(
+            children: [
+              bubbleIcon,
+              if (widget.hasUnreadMessages)
+                const Positioned(
+                  right: 0,
+                  top: 0,
+                  child: BlinkingDotWidget(
+                    color: AppColors.success,
+                    size: 13,
+                    duration: Duration(milliseconds: 750),
+                    borderColor: Colors.white,
+                    borderWidth: 2,
+                  ),
                 ),
-              ),
-          ],
-        ),
+            ],
+          ),
         if (!isSelected) ...[
           const SizedBox(height: 2),
           ListenableBuilder(
@@ -305,5 +337,65 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
       // Dark themes - use semi-transparent white for disabled state
       return AppColors.textLight.withValues(alpha: 0.4);
     }
+  }
+}
+
+/// Orb gradient + neumorphic depth + specular wash (no outer halo — unlike FAB).
+///
+/// Diameter matches the stock bar (28px icon + 8px [Padding] on each side ≈ 44).
+/// Slight downward shift brings the disk back toward the curved bar like pre-3D.
+class _CurvedNavActiveOrb extends StatelessWidget {
+  const _CurvedNavActiveOrb({
+    required this.baseColor,
+    required this.child,
+  });
+
+  final Color baseColor;
+  final Widget child;
+
+  static const double _diameter = 44;
+
+  /// Nudges the active disk toward the menu curve (package [Material] read smaller).
+  static const double _nudgeTowardCurveY = 10;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Transform.translate(
+      offset: const Offset(0, _nudgeTowardCurveY),
+      child: SizedBox(
+        width: _diameter,
+        height: _diameter,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: ThreeDSurfaceStyle.surfaceGradient(
+                    context,
+                    baseColor,
+                  ),
+                  boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: ThreeDSurfaceStyle.surfaceRadialHighlightGradient(
+                    theme.brightness,
+                  ),
+                ),
+              ),
+            ),
+            Center(child: child),
+          ],
+        ),
+      ),
+    );
   }
 }
