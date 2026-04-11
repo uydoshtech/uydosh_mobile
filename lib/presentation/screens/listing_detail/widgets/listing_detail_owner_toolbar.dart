@@ -32,30 +32,7 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
       child: Row(
         children: [
-          if (isLoadingViewCount && viewCount == null)
-            Row(
-              children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: ListingDetailThemeHelper.iconColor,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "...",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: ListingDetailThemeHelper.secondaryTextColorFromContext(
-                      context,
-                    ),
-                  ),
-                ),
-              ],
-            )
-          else if (viewCount != null)
+          if ((isLoadingViewCount && viewCount == null) || viewCount != null)
             ThreeDPillButton(
               onPressed: () {
                 HapticFeedbackUtils.impact();
@@ -76,17 +53,26 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
                     color: ListingDetailThemeHelper.iconColor,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    L10n.get("listing_views_by_others")
-                        .replaceAll("{count}", viewCount.toString()),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: ListingDetailThemeHelper.secondaryTextColorFromContext(
-                        context,
+                  if (viewCount != null)
+                    Text(
+                      L10n.get("listing_views_by_others")
+                          .replaceAll("{count}", viewCount.toString()),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: ListingDetailThemeHelper
+                            .secondaryTextColorFromContext(context),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: ListingDetailThemeHelper.iconColor,
                       ),
                     ),
-                  ),
                 ],
               ),
             )
