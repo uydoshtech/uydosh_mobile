@@ -7,9 +7,11 @@ import "package:uy_dosh/base/state/theme_state.dart";
 extension ThemeHelper on ThemeState {
   /// Screen/scaffold background color
   Color get backgroundColor {
-    if (isLightTheme) return Colors.white;
+    // Match [appBarBackgroundColor] on light theme so scaffold + AppBar share one
+    // canvas (avoids a visible seam under the bar, e.g. on chat).
+    if (isLightTheme) return LightThemeColors.surface;
     if (isBlueTheme) return BlueThemeColors.background;
-    return Colors.white;
+    return LightThemeColors.surface;
   }
 
   /// AppBar background color
