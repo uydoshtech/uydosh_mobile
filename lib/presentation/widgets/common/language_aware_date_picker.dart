@@ -1,9 +1,11 @@
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 
 class LanguageAwareDatePicker {
   static Future<DateTime?> showDatePicker({
@@ -149,6 +151,14 @@ class _LanguageAwareDatePickerDialogState
   void _cancel() {
     HapticFeedbackUtils.impact();
     Navigator.of(context).pop();
+  }
+
+  /// Matches listing detail owner toolbar pill labels (views / promote).
+  Color _pillAccentColor(BuildContext context) {
+    final themeState = ThemeState();
+    if (themeState.isLightTheme) return Colors.black;
+    if (themeState.isBlueTheme) return Colors.white;
+    return AppColors.primary;
   }
 
   List<DateTime> _getDaysInMonth(DateTime month) {
@@ -403,38 +413,56 @@ class _LanguageAwareDatePickerDialogState
 
             const SizedBox(height: 20),
 
-            // Action buttons
+            // Action buttons (same pill style as listing detail views / promote)
             Row(
               children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: _cancel,
-                    child: Text(
-                      widget.cancelText ??
-                          L10n.get("cancel"),
-                      style: TextStyle(
-                        color:
-                            themeState.isBlueTheme
-                                ? MessagingThemeColors.textOnCardSecondary
-                                : null,
+                ThreeDPillButton(
+                  onPressed: _cancel,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ThemeIcon(
+                        CupertinoIcons.xmark,
+                        size: 16,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: themeState.isBlueTheme ? 0.85 : 0.7,
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 6),
+                      Text(
+                        widget.cancelText ?? L10n.get("cancel"),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: themeState.isBlueTheme ? 0.9 : 0.7,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextButton(
-                    onPressed: _confirm,
-                    child: Text(
-                      widget.confirmText ??
-                          L10n.get("ok"),
-                      style: TextStyle(
-                        color:
-                            themeState.isBlueTheme
-                                ? BlueThemeColors.textPrimary
-                                : theme.colorScheme.primary,
+                const Spacer(),
+                ThreeDPillButton(
+                  onPressed: _confirm,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ThemeIcon(
+                        CupertinoIcons.checkmark,
+                        size: 16,
+                        color: _pillAccentColor(context),
                       ),
-                    ),
+                      const SizedBox(width: 6),
+                      Text(
+                        widget.confirmText ?? L10n.get("ok"),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: _pillAccentColor(context),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
