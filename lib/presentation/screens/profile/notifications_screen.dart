@@ -8,6 +8,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
@@ -17,11 +18,11 @@ import "package:uy_dosh/presentation/widgets/common/the_dot_drop_menu_button.dar
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -491,7 +492,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               margin: EdgeInsets.zero,
                               elevation: 0,
                               surfaceTintColor: Colors.transparent,
-                              color: theme.colorScheme.surface,
+                              color: ThemeState().isBlueTheme
+                                  ? BlueThemeColors.surface
+                                  : theme.colorScheme.surface,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -583,9 +586,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       },
                     ),
             ),
-      backgroundColor: ThemeState().isBlueTheme
-          ? BlueThemeColors.surface
-          : theme.colorScheme.surface,
+      backgroundColor: ThemeState().backgroundColor,
     );
   }
 }
