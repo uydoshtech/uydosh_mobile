@@ -1411,7 +1411,7 @@ abstract class AppLocalizations {
   /// No description provided for @promote_listing.
   ///
   /// In en, this message translates to:
-  /// **'Promote'**
+  /// **'Boost to top'**
   String get promote_listing;
 
   /// No description provided for @remove_from_top.

@@ -330,7 +330,7 @@
   "listing_views_stats_title": "Статистика просмотров",
   "listing_views_stats_empty": "Пока нет просмотров",
   "error_loading_view_stats": "Ошибка загрузки статистики просмотров",
-  "promote_listing": "Поднять",
+  "promote_listing": "Поднять в топ",
   "remove_from_top": "Убрать с верха",
   "feature_listing_success": "Объявление поднято вверх",
   "unfeature_listing_success": "Объявление убрано с верха",

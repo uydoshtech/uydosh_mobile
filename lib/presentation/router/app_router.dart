@@ -538,7 +538,7 @@ class _MainNavigationState extends State<MainNavigation>
                 if (!isAuthenticated) {
                   return _threeDAppBarIconButton(
                     borderRadius: const BorderRadius.all(Radius.circular(999)),
-                    iconData: Icons.person,
+                    iconData: Icons.person_outline,
                     onPressed: () {
                       context.pushReplaceAuthWizard().then((_) {
                         if (mounted) {
@@ -569,7 +569,7 @@ class _MainNavigationState extends State<MainNavigation>
                           borderRadius: const BorderRadius.all(
                             Radius.circular(999),
                           ),
-                          iconData: Icons.person,
+                          iconData: Icons.person_outline,
                           onPressed: () => context.pushProfile(),
                           semanticsLabel: L10n.get("profile"),
                           iconSize: 28,

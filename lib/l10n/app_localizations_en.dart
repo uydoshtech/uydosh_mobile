@@ -719,7 +719,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get error_loading_view_stats => 'Error loading view statistics';
 
   @override
-  String get promote_listing => 'Promote';
+  String get promote_listing => 'Boost to top';
 
   @override
   String get remove_from_top => 'Remove from top';

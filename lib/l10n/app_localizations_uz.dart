@@ -729,7 +729,7 @@ class AppLocalizationsUz extends AppLocalizations {
       'Ko\'rish statistikasini yuklashda xatolik';
 
   @override
-  String get promote_listing => 'Yuqoriga chiqarish';
+  String get promote_listing => 'Topga chiqarish';
 
   @override
   String get remove_from_top => 'Yuqoridan olib tashlash';

@@ -724,7 +724,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Ошибка загрузки статистики просмотров';
 
   @override
-  String get promote_listing => 'Поднять';
+  String get promote_listing => 'Поднять в топ';
 
   @override
   String get remove_from_top => 'Убрать с верха';
