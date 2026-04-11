@@ -239,10 +239,10 @@ class AppTheme {
         menuPadding: popupMenuPadding,
       ),
 
-      // Drawer theme
+      // Drawer theme — match chat / card tiles (ThemePalette.cardColor)
       drawerTheme: const DrawerThemeData(
-        backgroundColor: Color(0xFF1A1A1A), // Dark almost black color
-        surfaceTintColor: BlueThemeColors.primary,
+        backgroundColor: BlueThemeColors.card,
+        surfaceTintColor: Colors.transparent,
       ),
 
       // Text theme

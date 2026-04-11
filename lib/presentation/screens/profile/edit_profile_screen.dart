@@ -21,11 +21,12 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_toggle_control.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({required this.profile, super.key});
@@ -1285,7 +1286,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildRegionSelector(BuildContext context) {
     final theme = Theme.of(context);
-    final isBlueTheme = ThemeState().isBlueTheme;
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
@@ -1302,12 +1302,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 8),
             Container(
-              decoration: BoxDecoration(
-                color: isBlueTheme
-                    ? BlueThemeColors.surface
-                    : theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: theme.colorScheme.outline),
+              decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                context,
+                theme: theme,
               ),
               height: 80,
               child: Row(
@@ -1332,6 +1329,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 )
                               : _regionScrollController != null
                                   ? CupertinoPicker(
+                                      backgroundColor: Colors.transparent,
                                       itemExtent: 40,
                                       scrollController: _regionScrollController,
                                       onSelectedItemChanged: (index) {
@@ -1476,7 +1474,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildUniversitySelector(BuildContext context) {
     final theme = Theme.of(context);
-    final isBlueTheme = ThemeState().isBlueTheme;
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
@@ -1493,12 +1490,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 8),
             Container(
-              decoration: BoxDecoration(
-                color: isBlueTheme
-                    ? BlueThemeColors.surface
-                    : theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: theme.colorScheme.outline),
+              decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                context,
+                theme: theme,
               ),
               height: 120,
               child: Row(
@@ -1523,6 +1517,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 )
                               : _universityScrollController != null
                                   ? CupertinoPicker(
+                                      backgroundColor: Colors.transparent,
                                       itemExtent: 50,
                                       scrollController:
                                           _universityScrollController,

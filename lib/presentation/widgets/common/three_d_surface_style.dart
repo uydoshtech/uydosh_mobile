@@ -65,4 +65,36 @@ abstract final class ThreeDSurfaceStyle {
       ],
     );
   }
+
+  /// Same corner radius as [ThreeDAppBarIconButton.kDefaultSquareRadius].
+  static const double wheelPickerCornerRadius = 12;
+
+  static const BorderRadius wheelPickerPlateRadius = BorderRadius.all(
+    Radius.circular(wheelPickerCornerRadius),
+  );
+
+  /// Right strip inside wheel rows (arrow column) — matches plate corners.
+  static const BorderRadius wheelPickerPlateArrowStripBorderRadius =
+      BorderRadius.only(
+        topRight: Radius.circular(wheelPickerCornerRadius),
+        bottomRight: Radius.circular(wheelPickerCornerRadius),
+      );
+
+  /// Outer chrome for [CupertinoPicker] wheels: same gradient + shadows as [ThreeDPillButton].
+  static BoxDecoration wheelPickerPlateDecoration(
+    BuildContext context, {
+    ThemeData? theme,
+    bool showErrorBorder = false,
+  }) {
+    final t = theme ?? Theme.of(context);
+    final plateBase = t.colorScheme.surface;
+    return BoxDecoration(
+      borderRadius: wheelPickerPlateRadius,
+      gradient: surfaceGradient(context, plateBase),
+      boxShadow: elevatedShadows(context),
+      border: showErrorBorder
+          ? Border.all(color: t.colorScheme.error, width: 1.5)
+          : null,
+    );
+  }
 }

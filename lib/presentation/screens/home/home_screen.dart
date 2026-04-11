@@ -490,6 +490,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return Scaffold(
       appBar: widget.isSearchMode ? _buildSearchAppBar() : null,
       body: Stack(
+        clipBehavior: Clip.none,
         children: [
           BlocListener<ListingsBloc, ListingsState>(
             listener: (context, state) {
@@ -1651,7 +1652,7 @@ class _NotifySearchAlertAppBarButtonState
             label: widget.tooltip,
             button: true,
             child: ThreeDPillButton(
-              borderRadius: ThreeDAppBarIconButton.kDefaultSquareRadius,
+              borderRadius: const BorderRadius.all(Radius.circular(999)),
               padding: const EdgeInsets.all(6),
               onPressed: widget.enabled ? _handlePressed : null,
               child: SizedBox(

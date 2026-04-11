@@ -10,8 +10,9 @@ import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminTelegramSyncScreen extends StatefulWidget {
@@ -516,19 +517,13 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                     child: Opacity(
                       opacity: _running ? 0.5 : 1,
                       child: Container(
-                        decoration: BoxDecoration(
-                          color: isBlue
-                              ? BlueThemeColors.surface
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
+                        decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                          context,
+                          theme: Theme.of(context),
                         ),
                         height: 80,
                         child: CupertinoPicker(
+                          backgroundColor: Colors.transparent,
                           itemExtent: 40,
                           scrollController: _messageLimitScrollController,
                           onSelectedItemChanged: (index) {

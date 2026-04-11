@@ -1,12 +1,12 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Data class for BlocSelector to reduce unnecessary rebuilds
 class _LocationPickerData {
@@ -86,13 +86,13 @@ class SearchBottomSheetLocationSection extends StatelessWidget {
       ),
       builder: (context, data) {
         if (data.isLoading) {
-          return _buildLocationWheelPlaceholder(theme, isLoading: true);
+          return _buildLocationWheelPlaceholder(context, theme, isLoading: true);
         }
         if (data.hasError) {
-          return _buildLocationWheelPlaceholder(theme);
+          return _buildLocationWheelPlaceholder(context, theme);
         }
         if (data.locations.isEmpty) {
-          return _buildLocationWheelPlaceholder(theme);
+          return _buildLocationWheelPlaceholder(context, theme);
         }
         return LocationPicker(
           locations: data.locations,
@@ -121,18 +121,12 @@ class SearchBottomSheetLocationSection extends StatelessWidget {
   }
 
   static Widget _buildLocationWheelPlaceholder(
+    BuildContext context,
     ThemeData theme, {
     bool isLoading = false,
   }) {
-    final controlBg = ThemeState().isBlueTheme
-        ? BlueThemeColors.surface
-        : theme.colorScheme.surfaceContainerHighest;
     return Container(
-      decoration: BoxDecoration(
-        color: controlBg,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: theme.colorScheme.outline),
-      ),
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(context, theme: theme),
       height: 80,
       child: isLoading
           ? Center(

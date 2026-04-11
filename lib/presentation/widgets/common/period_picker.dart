@@ -5,6 +5,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// A rotation spinner (CupertinoPicker wheel) for selecting a time period.
 /// Matches the metro/district picker style: vertical scrollable list in a
@@ -94,18 +95,13 @@ class _PeriodPickerState extends State<PeriodPicker> {
           const SizedBox(height: 12),
         ],
         Container(
-          decoration: BoxDecoration(
-            color: theme.brightness == Brightness.dark
-                ? theme.colorScheme.surfaceContainerHighest
-                : Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: theme.colorScheme.outline),
-          ),
+          decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(context, theme: theme),
           height: widget.height,
           child: Row(
             children: [
               Expanded(
                 child: CupertinoPicker(
+                  backgroundColor: Colors.transparent,
                   itemExtent: widget.itemExtent,
                   scrollController: _scrollController,
                   onSelectedItemChanged: (index) {
@@ -147,10 +143,8 @@ class _PeriodPickerState extends State<PeriodPicker> {
                   width: 24,
                   decoration: BoxDecoration(
                     color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(12),
-                      bottomRight: Radius.circular(12),
-                    ),
+                    borderRadius:
+                        ThreeDSurfaceStyle.wheelPickerPlateArrowStripBorderRadius,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

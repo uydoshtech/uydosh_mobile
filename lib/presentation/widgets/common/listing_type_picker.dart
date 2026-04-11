@@ -6,6 +6,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Listing type picker - same pattern as LocationPicker: uses persistent scroll
 /// controller (from parent or own) so the wheel scrolls smoothly with sound.
@@ -105,22 +106,15 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isBlueTheme = ThemeState().isBlueTheme;
-    final backgroundColor =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
-    final borderColor = theme.colorScheme.outline;
 
     return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: borderColor),
-      ),
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(context, theme: theme),
       height: widget.height,
       child: Row(
         children: [
           Expanded(
             child: CupertinoPicker(
+              backgroundColor: Colors.transparent,
               itemExtent: widget.itemExtent,
               scrollController: _effectiveController,
               onSelectedItemChanged: (index) {
@@ -208,10 +202,8 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
               width: 24,
               decoration: BoxDecoration(
                 color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
-                ),
+                borderRadius:
+                    ThreeDSurfaceStyle.wheelPickerPlateArrowStripBorderRadius,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -1,12 +1,12 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Location picker - uses persistent scroll controller (from parent or own)
 /// so the wheel scrolls smoothly with sound. Same pattern as GenderPicker.
@@ -126,110 +126,18 @@ class _LocationPickerState extends State<LocationPicker> {
     super.dispose();
   }
 
-  static const BorderRadius _plateRadius = BorderRadius.all(Radius.circular(10));
-
-  /// Raised control surface: soft gradient, beveled edges, and cast shadow.
-  BoxDecoration _locationPickerPlateDecoration({
-    required ThemeData theme,
-    required Color baseSurface,
-    required bool isBlueTheme,
-    required bool showError,
-  }) {
-    if (showError) {
-      return BoxDecoration(
-        borderRadius: _plateRadius,
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color.lerp(baseSurface, Colors.white, isBlueTheme ? 0.12 : 0.22)!,
-            baseSurface,
-            Color.lerp(baseSurface, Colors.black, isBlueTheme ? 0.2 : 0.06)!,
-          ],
-          stops: const [0.0, 0.55, 1.0],
-        ),
-        border: Border.all(color: theme.colorScheme.error, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isBlueTheme ? 0.42 : 0.1),
-            offset: const Offset(0, 3),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isBlueTheme ? 0.28 : 0.05),
-            offset: const Offset(0, 5),
-            blurRadius: 8,
-            spreadRadius: -1,
-          ),
-        ],
-      );
-    }
-
-    final topLeftEdge = Color.lerp(
-      baseSurface,
-      Colors.white,
-      isBlueTheme ? 0.22 : 0.65,
-    )!.withValues(alpha: isBlueTheme ? 0.55 : 0.95);
-    final bottomRightEdge = Color.lerp(
-      baseSurface,
-      Colors.black,
-      isBlueTheme ? 0.45 : 0.18,
-    )!;
-
-    return BoxDecoration(
-      borderRadius: _plateRadius,
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color.lerp(baseSurface, Colors.white, isBlueTheme ? 0.14 : 0.38)!,
-          baseSurface,
-          Color.lerp(baseSurface, Colors.black, isBlueTheme ? 0.22 : 0.07)!,
-        ],
-        stops: const [0.0, 0.48, 1.0],
-      ),
-      border: Border(
-        top: BorderSide(color: topLeftEdge, width: 1),
-        left: BorderSide(color: topLeftEdge, width: 1),
-        right: BorderSide(
-          color: bottomRightEdge.withValues(alpha: isBlueTheme ? 0.65 : 0.35),
-          width: 1,
-        ),
-        bottom: BorderSide(
-          color: bottomRightEdge.withValues(alpha: isBlueTheme ? 0.9 : 0.5),
-          width: 2,
-        ),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: isBlueTheme ? 0.48 : 0.12),
-          offset: const Offset(0, 3),
-          blurRadius: 0,
-        ),
-        BoxShadow(
-          color: Colors.black.withValues(alpha: isBlueTheme ? 0.32 : 0.06),
-          offset: const Offset(0, 5),
-          blurRadius: 10,
-          spreadRadius: -1,
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final displayLocations = widget.locations;
     final isBlueTheme = ThemeState().isBlueTheme;
-    final backgroundColor =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
     final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
     final iconColor = theme.colorScheme.onSurfaceVariant;
 
-    final plateDecoration = _locationPickerPlateDecoration(
+    final plateDecoration = ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+      context,
       theme: theme,
-      baseSurface: backgroundColor,
-      isBlueTheme: isBlueTheme,
-      showError: widget.showError,
+      showErrorBorder: widget.showError,
     );
 
     if (widget.isLoading) {
@@ -355,10 +263,7 @@ class _LocationPickerState extends State<LocationPicker> {
               width: 24,
               decoration: BoxDecoration(
                 color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
-                ),
+                borderRadius: ThreeDSurfaceStyle.wheelPickerPlateArrowStripBorderRadius,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

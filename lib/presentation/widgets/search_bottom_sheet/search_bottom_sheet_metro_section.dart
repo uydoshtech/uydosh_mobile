@@ -8,10 +8,11 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Metro line and station pickers section for the search bottom sheet.
 class SearchBottomSheetMetroSection extends StatelessWidget {
@@ -41,18 +42,16 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
           child: TutorialTargetWrapper(
             key: metroLineTutorialKey,
             child: Container(
-              decoration: BoxDecoration(
-                color: ThemeState().isBlueTheme
-                    ? BlueThemeColors.surface
-                    : theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: theme.colorScheme.outline),
+              decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                context,
+                theme: theme,
               ),
               height: 80,
               child: Row(
                 children: [
                   Expanded(
                     child: CupertinoPicker(
+                      backgroundColor: Colors.transparent,
                       itemExtent: 40,
                       scrollController: metroLineScrollController,
                       onSelectedItemChanged: (index) {
@@ -146,7 +145,7 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
             child: searchFiltersState.selectedSubwayLine > 0 &&
                     currentStations.isNotEmpty
                 ? _buildMetroStationPicker(context, theme)
-                : _buildMetroStationPlaceholder(theme),
+                : _buildMetroStationPlaceholder(context, theme),
           ),
         ),
       ],
@@ -155,18 +154,16 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
 
   Widget _buildMetroStationPicker(BuildContext context, ThemeData theme) {
     return Container(
-      decoration: BoxDecoration(
-        color: ThemeState().isBlueTheme
-            ? BlueThemeColors.surface
-            : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: theme.colorScheme.outline),
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+        context,
+        theme: theme,
       ),
       height: 80,
       child: Row(
         children: [
           Expanded(
             child: CupertinoPicker(
+              backgroundColor: Colors.transparent,
               itemExtent: 40,
               scrollController: stationPickerController,
               onSelectedItemChanged: (index) {
@@ -262,15 +259,11 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildMetroStationPlaceholder(ThemeData theme) {
+  Widget _buildMetroStationPlaceholder(BuildContext context, ThemeData theme) {
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: theme.colorScheme.outline),
-        color: (ThemeState().isBlueTheme
-                ? BlueThemeColors.surface
-                : theme.colorScheme.surfaceContainerHighest)
-            .withValues(alpha: 0.5),
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+        context,
+        theme: theme,
       ),
       height: 80,
       child: Center(

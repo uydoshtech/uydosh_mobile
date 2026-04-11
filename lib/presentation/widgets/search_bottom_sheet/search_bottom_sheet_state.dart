@@ -567,12 +567,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: ThemeIcon(
-                      Icons.close,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                  ThreeDAppBarIconButton(
+                    iconData: Icons.close,
                     onPressed: () => Navigator.pop(context),
+                    semanticsLabel:
+                        MaterialLocalizations.of(context).closeButtonTooltip,
+                    borderRadius:
+                        const BorderRadius.all(Radius.circular(999)),
                   ),
                 ],
               ),

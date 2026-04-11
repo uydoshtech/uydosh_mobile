@@ -8,6 +8,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 /// Metro line and station selection for create/edit listing forms.
@@ -56,15 +57,6 @@ class ListingFormMetroSection extends StatelessWidget {
     }
   }
 
-  Color _getControlBackgroundColor(BuildContext context) {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.surface;
-    }
-    return Theme.of(context).brightness == Brightness.dark
-        ? Theme.of(context).colorScheme.surfaceContainerHighest
-        : Colors.white;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -81,21 +73,18 @@ class ListingFormMetroSection extends StatelessWidget {
   }
 
   Widget _buildLinePicker(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      decoration: BoxDecoration(
-        color: ThemeState().isBlueTheme
-            ? BlueThemeColors.surface
-            : Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-        ),
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+        context,
+        theme: theme,
       ),
       height: 80,
       child: Row(
         children: [
           Expanded(
             child: CupertinoPicker(
+              backgroundColor: Colors.transparent,
               itemExtent: 40,
               scrollController: metroLineScrollController,
               onSelectedItemChanged: (index) {
@@ -211,20 +200,16 @@ class ListingFormMetroSection extends StatelessWidget {
 
     if (currentStations.isNotEmpty) {
       return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline,
-          ),
-          color: ThemeState().isBlueTheme
-              ? BlueThemeColors.surface
-              : Theme.of(context).colorScheme.surfaceContainerHighest,
+        decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+          context,
+          theme: Theme.of(context),
         ),
         height: 80,
         child: Row(
           children: [
             Expanded(
               child: CupertinoPicker(
+                backgroundColor: Colors.transparent,
                 itemExtent: 40,
                 scrollController: metroStationScrollController,
                 onSelectedItemChanged: (index) {
@@ -303,12 +288,9 @@ class ListingFormMetroSection extends StatelessWidget {
     Widget? child,
   }) {
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-        ),
-        color: _getControlBackgroundColor(context).withValues(alpha: 0.5),
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+        context,
+        theme: Theme.of(context),
       ),
       height: 80,
       child: Center(

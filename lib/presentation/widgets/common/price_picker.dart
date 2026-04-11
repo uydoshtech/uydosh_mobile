@@ -7,6 +7,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class PricePicker extends StatelessWidget {
 
@@ -16,7 +17,6 @@ class PricePicker extends StatelessWidget {
     this.useThemeColors = true,
     this.isRequired = false,
     this.height = 80,
-    this.borderRadius = 10,
     this.enableHapticFeedback = true,
     this.showArrows = true,
   });
@@ -34,9 +34,6 @@ class PricePicker extends StatelessWidget {
 
   /// Custom height for the picker container (default: 80)
   final double height;
-
-  /// Custom border radius (default: 10)
-  final double borderRadius;
 
   /// Whether to show haptic feedback (default: true)
   final bool enableHapticFeedback;
@@ -78,9 +75,6 @@ class PricePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Use the same styling as listing type picker
-    final backgroundColor = theme.colorScheme.surfaceContainerHighest;
-    final borderColor = theme.colorScheme.outline;
     // Use black font for light theme, theme-aware color otherwise
     final textColor =
         ThemeState().isLightTheme
@@ -91,16 +85,13 @@ class PricePicker extends StatelessWidget {
     final initialIndex = ((selectedPrice ~/ 10) - 1).clamp(0, 49);
 
     return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: borderColor),
-      ),
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(context, theme: theme),
       height: height,
       child: Row(
         children: [
           Expanded(
             child: CupertinoPicker(
+              backgroundColor: Colors.transparent,
               itemExtent: 40,
               scrollController: FixedExtentScrollController(
                 initialItem: initialIndex,
@@ -149,10 +140,8 @@ class PricePicker extends StatelessWidget {
               width: 24,
               decoration: BoxDecoration(
                 color: theme.colorScheme.outline.withOpacity(0.1),
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
-                ),
+                borderRadius:
+                    ThreeDSurfaceStyle.wheelPickerPlateArrowStripBorderRadius,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
