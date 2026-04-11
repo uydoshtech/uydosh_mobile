@@ -1,8 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/amenities_cache.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/amenity_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Amenities selection section for create/edit listing forms.
 /// Wraps [AmenityToggle] chips in a styled container.
@@ -18,26 +17,14 @@ class ListingFormAmenitiesSection extends StatelessWidget {
   final void Function(int amenityId) onAmenityToggled;
   final VoidCallback onDismissKeyboard;
 
-  Color _getControlBackgroundColor(BuildContext context) {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.surface;
-    }
-    return Theme.of(context).brightness == Brightness.dark
-        ? Theme.of(context).colorScheme.surfaceContainerHighest
-        : Colors.white;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Theme.of(context).colorScheme.outline
-              : AppColors.borderGrey600,
-        ),
-        color: _getControlBackgroundColor(context),
+    final theme = Theme.of(context);
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+        context,
+        theme: theme,
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),

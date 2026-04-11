@@ -11,8 +11,9 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 class PhotoUploader extends StatefulWidget {
 
@@ -323,10 +324,6 @@ class _PhotoUploaderState extends State<PhotoUploader>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final controlBgColor = ThemeState().isBlueTheme
-        ? BlueThemeColors.surface
-        : theme.colorScheme.surfaceContainerHighest;
-
     // Compute once per build instead of per item (avoids O(n²))
     final (_, orderedToOriginalIndex) =
         _getOrderedExistingPhotosWithIndices();
@@ -337,11 +334,11 @@ class _PhotoUploaderState extends State<PhotoUploader>
         .firstOrNull
         ?.id ?? 0;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: theme.colorScheme.outline),
-        color: controlBgColor,
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+        context,
+        theme: theme,
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -358,10 +355,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color:
-                          theme.brightness == Brightness.dark
-                              ? theme.colorScheme.onSurfaceVariant
-                              : Colors.black,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -369,27 +363,41 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   AnimatedBuilder(
                     animation: _scaleAnimation,
                     builder: (context, child) {
+                      final addBtnRadius = BorderRadius.circular(10);
                       return Transform.scale(
                         scale: _scaleAnimation.value,
-                        child: IconButton(
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            _triggerScaleAnimation();
-                            _showImageSourceDialog();
-                          },
-                          icon: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const ThemeIcon(
-                              Icons.add,
-                              color: Colors.white,
-                              size: 20,
+                        child: Tooltip(
+                          message: L10n.get("add_photo"),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                HapticFeedbackUtils.impact();
+                                _triggerScaleAnimation();
+                                _showImageSourceDialog();
+                              },
+                              borderRadius: addBtnRadius,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  borderRadius: addBtnRadius,
+                                  gradient: ThreeDSurfaceStyle.surfaceGradient(
+                                    context,
+                                    theme.colorScheme.primary,
+                                  ),
+                                  boxShadow:
+                                      ThreeDSurfaceStyle.elevatedShadows(
+                                    context,
+                                  ),
+                                ),
+                                child: const ThemeIcon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
                             ),
                           ),
-                          tooltip: L10n.get("add_photo"),
                         ),
                       );
                     },

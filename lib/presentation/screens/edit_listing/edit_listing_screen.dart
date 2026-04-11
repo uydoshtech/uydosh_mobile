@@ -390,15 +390,6 @@ class _EditListingScreenState extends State<EditListingScreen> {
     FocusScope.of(context).unfocus();
   }
 
-  Color _getControlBackgroundColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.surface;
-    }
-    return Theme.of(context).brightness == Brightness.dark
-        ? Theme.of(context).colorScheme.surfaceContainerHighest
-        : Colors.white;
-  }
-
   // Theme-dependent color method for borders
   Color _getBorderColor() {
     if (ThemeState().isBlueTheme) {
@@ -826,6 +817,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             "quick_question_move_in_date",
                             builder:
                                 (hintText) => Container(
+                                  clipBehavior: Clip.antiAlias,
+                                  decoration:
+                                      ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                                    context,
+                                    theme: theme,
+                                  ),
                                   child: ValueListenableBuilder<
                                     TextEditingValue
                                   >(
@@ -910,46 +907,25 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                             hintStyle: hintStyle,
                                             hintMaxLines: 2,
                                             border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              borderSide: BorderSide(
-                                                color:
-                                                    Theme.of(
-                                                              context,
-                                                            ).brightness ==
-                                                            Brightness.dark
-                                                        ? theme
-                                                            .colorScheme
-                                                            .outline
-                                                        : Colors.grey[600]!,
-                                              ),
+                                              borderRadius: ThreeDSurfaceStyle
+                                                  .wheelPickerPlateRadius,
+                                              borderSide: BorderSide.none,
                                             ),
                                             enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              borderSide: BorderSide(
-                                                color:
-                                                    Theme.of(
-                                                              context,
-                                                            ).brightness ==
-                                                            Brightness.dark
-                                                        ? theme
-                                                            .colorScheme
-                                                            .outline
-                                                        : Colors.grey[600]!,
-                                              ),
+                                              borderRadius: ThreeDSurfaceStyle
+                                                  .wheelPickerPlateRadius,
+                                              borderSide: BorderSide.none,
                                             ),
                                             focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
+                                              borderRadius: ThreeDSurfaceStyle
+                                                  .wheelPickerPlateRadius,
                                               borderSide: BorderSide(
                                                 color: _getBorderColor(),
                                                 width: 2,
                                               ),
                                             ),
                                             filled: true,
-                                            fillColor:
-                                                _getControlBackgroundColor(),
+                                            fillColor: Colors.transparent,
                                             contentPadding:
                                                 const EdgeInsets.symmetric(
                                                   horizontal: 12,

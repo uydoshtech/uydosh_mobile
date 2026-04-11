@@ -2,8 +2,9 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
-class PrimaryButton extends StatelessWidget {
+class PrimaryButton extends StatefulWidget {
   const PrimaryButton({
     required this.onPressed,
     required this.child,
@@ -24,69 +25,98 @@ class PrimaryButton extends StatelessWidget {
   final double? width;
   final double? height;
   final BorderRadius? borderRadius;
-  final Color? textColor; // Optional text color parameter
-  final TextStyle? textStyle; // Optional text style parameter
+  final Color? textColor;
+  final TextStyle? textStyle;
   final bool isLoading;
   final bool isDisabled;
 
   @override
+  State<PrimaryButton> createState() => _PrimaryButtonState();
+}
+
+class _PrimaryButtonState extends State<PrimaryButton> {
+  bool _pressed = false;
+
+  Color _backgroundColor() {
+    if (ThemeState().isLightTheme) {
+      return Colors.black;
+    }
+    return BlueThemeColors.buttonPrimary;
+  }
+
+  Color _foregroundColor() {
+    return widget.textColor ?? Colors.white;
+  }
+
+  bool get _enabled =>
+      widget.onPressed != null && !widget.isDisabled && !widget.isLoading;
+
+  @override
   Widget build(BuildContext context) {
+    final bg = _backgroundColor();
+    final fg = _foregroundColor();
+    final radius = widget.borderRadius ?? BorderRadius.circular(8);
+    final shadows =
+        !_enabled || _pressed
+            ? ThreeDSurfaceStyle.pressedShadows(context)
+            : ThreeDSurfaceStyle.elevatedShadows(context);
+    final pad =
+        widget.padding ??
+        const EdgeInsets.symmetric(horizontal: 32, vertical: 16);
+
     return SizedBox(
-      width: width,
-      height: height,
-      child: ElevatedButton(
-        onPressed: (isDisabled || isLoading) ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _getBackgroundColor(),
-          foregroundColor: textColor ?? _getTextColor(),
-          padding:
-              padding ??
-              const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          side: _getBorderSide(),
-          shape: RoundedRectangleBorder(
-            borderRadius: borderRadius ?? BorderRadius.circular(8),
-          ),
-          elevation: 2,
-        ),
-        child:
-            isLoading
-                ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      textColor ?? _getTextColor(),
+      width: widget.width,
+      height: widget.height,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 90),
+        transform: Matrix4.translationValues(0, _pressed && _enabled ? 2 : 0, 0),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: _enabled ? widget.onPressed : null,
+            onHighlightChanged:
+                _enabled ? (v) => setState(() => _pressed = v) : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 90),
+              padding: pad,
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
+                boxShadow: shadows,
+              ),
+              child: Center(
+                child: Opacity(
+                  opacity: _enabled ? 1 : 0.55,
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(color: fg),
+                    child: IconTheme.merge(
+                      data: IconThemeData(color: fg),
+                      child:
+                          widget.isLoading
+                              ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(fg),
+                                ),
+                              )
+                              : widget.child,
                     ),
                   ),
-                )
-                : child,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
-
-  // Theme-dependent color method for button background
-  Color _getBackgroundColor() {
-    if (ThemeState().isLightTheme) {
-      return Colors.black; // Black for light theme
-    }
-    return BlueThemeColors.buttonPrimary; // Blue for non-light themes
-  }
-
-  // Always use white text for solid appearance
-  Color _getTextColor() {
-    return Colors.white;
-  }
-
-  // Theme-dependent border method
-  BorderSide? _getBorderSide() {
-    return null; // No border for other themes
-  }
 }
 
-// Convenience factory for common button patterns
+/// Convenience factory for common button patterns
 class PrimaryButtonFactory {
-  // Icon + Text button
   static Widget iconText({
     required VoidCallback? onPressed,
     required IconData icon,
@@ -120,7 +150,6 @@ class PrimaryButtonFactory {
     );
   }
 
-  // Text only button
   static Widget text({
     required VoidCallback? onPressed,
     required String text,
@@ -145,7 +174,6 @@ class PrimaryButtonFactory {
     );
   }
 
-  // Icon only button
   static Widget icon({
     required VoidCallback? onPressed,
     required IconData icon,

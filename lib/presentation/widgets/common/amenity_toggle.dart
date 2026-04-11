@@ -6,8 +6,9 @@ import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// A selectable amenity chip with icon, localized label, and tap animation.
 /// Used in create/edit listing screens for amenity selection.
@@ -86,15 +87,13 @@ class _AmenityToggleState extends State<AmenityToggle>
     final isSelected = widget.isSelected;
     final isBlueTheme = ThemeState().isBlueTheme;
 
-    // Blue theme: brighter accent for selected chips with subtle glow
-    final backgroundColor = isBlueTheme
-        ? (isSelected ? BlueThemeColors.buttonPrimary : BlueThemeColors.surface)
-        : (isSelected ? theme.colorScheme.primary : Colors.grey[200]!);
-    final borderColor = isBlueTheme
-        ? (isSelected
-            ? BlueThemeColors.textPrimary.withValues(alpha: 0.4)
-            : theme.colorScheme.outline)
-        : (isSelected ? theme.colorScheme.primary : Colors.grey[400]!);
+    final chipBase = isSelected
+        ? (isBlueTheme
+            ? BlueThemeColors.buttonPrimary
+            : theme.colorScheme.primary)
+        : (isBlueTheme
+            ? BlueThemeColors.card
+            : theme.colorScheme.surfaceContainerHighest);
     final iconColor = isBlueTheme
         ? (isSelected ? BlueThemeColors.textPrimary : theme.colorScheme.onSurfaceVariant)
         : (isSelected ? theme.colorScheme.onPrimary : Colors.grey[600]!);
@@ -109,24 +108,15 @@ class _AmenityToggleState extends State<AmenityToggle>
           scale: _scaleAnimation.value,
           child: InkWell(
             onTap: _handleTap,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: backgroundColor,
-                border: Border.all(color: borderColor, width: isBlueTheme && isSelected ? 1.5 : 1),
-                boxShadow: isBlueTheme && isSelected
-                    ? [
-                        BoxShadow(
-                          color: BlueThemeColors.buttonPrimary.withValues(alpha: 0.35),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
+                borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                gradient: ThreeDSurfaceStyle.surfaceGradient(context, chipBase),
+                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

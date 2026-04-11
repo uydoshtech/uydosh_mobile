@@ -398,16 +398,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
   }
 
-  // Theme-dependent color for control backgrounds (inputs, cards, sections)
-  Color _getControlBackgroundColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.surface;
-    }
-    return Theme.of(context).brightness == Brightness.dark
-        ? Theme.of(context).colorScheme.surfaceContainerHighest
-        : Colors.white;
-  }
-
   // Theme-dependent color method for borders
   Color _getBorderColor() {
     if (ThemeState().isBlueTheme) {
@@ -731,6 +721,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 ),
               ),
         ),
+        const SizedBox(height: 16),
         // Amenities Section
         ListingFormAmenitiesSection(
           selectedAmenityIds: _selectedAmenityIds,
@@ -757,6 +748,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 "quick_question_move_in_date",
                 builder:
                     (hintText) => Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                        context,
+                        theme: Theme.of(context),
+                      ),
                       child: ValueListenableBuilder<TextEditingValue>(
                         valueListenable: _moveInDateController,
                         builder: (context, value, child) {
@@ -830,38 +826,25 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                 hintStyle: hintStyle,
                                 hintMaxLines: 2,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide(
-                                    color:
-                                        Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Theme.of(
-                                              context,
-                                            ).colorScheme.outline
-                                            : Colors.grey[600]!,
-                                  ),
+                                  borderRadius:
+                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                  borderSide: BorderSide.none,
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide(
-                                    color:
-                                        Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Theme.of(
-                                              context,
-                                            ).colorScheme.outline
-                                            : Colors.grey[600]!,
-                                  ),
+                                  borderRadius:
+                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                  borderSide: BorderSide.none,
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius:
+                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
                                   borderSide: BorderSide(
                                     color: _getBorderColor(),
                                     width: 2,
                                   ),
                                 ),
                                 filled: true,
-                                fillColor: _getControlBackgroundColor(),
+                                fillColor: Colors.transparent,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 16,
