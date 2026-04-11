@@ -121,9 +121,8 @@ class AuthWizardLanguagePage extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              ThemeIcon(
-                Icons.check_circle,
-                color: scheme.onSurface,
+              const ThemeIcon(
+                Icons.check,
                 size: 28,
               ),
           ],
