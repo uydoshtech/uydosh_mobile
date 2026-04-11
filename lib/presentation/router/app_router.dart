@@ -470,6 +470,7 @@ class _MainNavigationState extends State<MainNavigation>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        clipBehavior: Clip.none,
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: _getAppBarTitle(),
