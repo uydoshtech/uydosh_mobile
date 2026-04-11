@@ -20,6 +20,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ListingOwnerProfileData {
@@ -87,7 +88,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
       listenable: ThemeState(),
       builder: (context, child) {
         return Scaffold(
-          appBar: AppBar(
+          appBar: UydoshAppBar(
             leading: ThreeDAppBarIconButton.backLeading(context),
             title: L10n.text(
               "profile",

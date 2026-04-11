@@ -41,6 +41,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({super.key, this.showAppBar = false});
@@ -441,7 +442,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return Scaffold(
       appBar:
           widget.showAppBar
-              ? AppBar(
+              ? UydoshAppBar(
                 leading: ThreeDAppBarIconButton.backLeading(context),
                 title: L10n.text(
                   "create_listing_title",

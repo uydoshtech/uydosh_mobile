@@ -14,6 +14,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminSupportChatScreen extends StatefulWidget {
   const AdminSupportChatScreen({super.key});
@@ -128,7 +129,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_support_chat_title"),
@@ -527,7 +528,7 @@ class _AdminSupportChatThreadScreenState
         final themeState = ThemeState();
         return Scaffold(
           backgroundColor: themeState.backgroundColor,
-          appBar: AppBar(
+          appBar: UydoshAppBar(
             leading: ThreeDAppBarIconButton.backLeading(context),
             title: Text(
               widget.thread.displayTitle,

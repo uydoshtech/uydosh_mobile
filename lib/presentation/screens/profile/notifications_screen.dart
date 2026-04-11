@@ -7,20 +7,21 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/the_dot_drop_menu_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -394,60 +395,44 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(L10n.get("menu_notifications")),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: ListenableBuilder(
-              listenable: AnimationSettingsState(),
-              builder: (context, _) {
-                final enableMotion = AnimationSettingsState().uiAnimationsEnabled;
-                final style =
-                    enableMotion
-                        ? null
-                        : const AnimationStyle(
-                            duration: Duration.zero,
-                            reverseDuration: Duration.zero,
-                          );
-
-                return PopupMenuButton<String>(
-                  enabled: !_loading && !_bulkWorking,
-                  icon: const ThemeIcon(Icons.more_vert),
-                  popUpAnimationStyle: style,
-                  onSelected: (value) {
-                    if (value == "disable_all") {
-                      _disableAllAlerts();
-                    } else if (value == "delete_all") {
-                      _deleteAllAlerts();
-                    }
-                  },
-                  itemBuilder: (menuContext) {
-                    final enabled = _alerts.isNotEmpty;
-                    return [
-                      PopupMenuItem(
-                        value: "disable_all",
-                        enabled: enabled,
-                        child: UydoshPopupMenuItemRow(
-                          icon: Icons.notifications_off_outlined,
-                          text: L10n.get("notifications_disable_all"),
-                          enabled: enabled,
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: "delete_all",
-                        enabled: enabled,
-                        child: UydoshPopupMenuItemRow(
-                          icon: Icons.delete_outline,
-                          text: L10n.get("notifications_delete_all"),
-                          enabled: enabled,
-                          destructive: true,
-                        ),
-                      ),
-                    ];
-                  },
-                );
+            child: TheDotDropMenuButton<String>(
+              enabled: !_loading && !_bulkWorking,
+              onSelected: (value) {
+                if (value == "disable_all") {
+                  _disableAllAlerts();
+                } else if (value == "delete_all") {
+                  _deleteAllAlerts();
+                }
+              },
+              itemBuilder: (menuContext) {
+                final enabled = _alerts.isNotEmpty;
+                return [
+                  PopupMenuItem(
+                    value: "disable_all",
+                    enabled: enabled,
+                    child: UydoshPopupMenuItemRow(
+                      icon: Icons.notifications_off_outlined,
+                      text: L10n.get("notifications_disable_all"),
+                      enabled: enabled,
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: "delete_all",
+                    enabled: enabled,
+                    child: UydoshPopupMenuItemRow(
+                      icon: Icons.delete_outline,
+                      text: L10n.get("notifications_delete_all"),
+                      enabled: enabled,
+                      destructive: true,
+                    ),
+                  ),
+                ];
               },
             ),
           ),
@@ -550,59 +535,43 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   Padding(
                                     // Pull the controls slightly away from the card edge.
                                     padding: const EdgeInsets.only(right: 6),
-                                    child: ListenableBuilder(
-                                      listenable: AnimationSettingsState(),
-                                      builder: (context, _) {
-                                        final enableMotion =
-                                            AnimationSettingsState()
-                                                .uiAnimationsEnabled;
-                                        final style = enableMotion
-                                            ? null
-                                            : const AnimationStyle(
-                                                duration: Duration.zero,
-                                                reverseDuration: Duration.zero,
-                                              );
-
-                                        return PopupMenuButton<String>(
-                                          enabled: !_bulkWorking,
-                                          icon: const ThemeIcon(Icons.more_vert),
-                                          popUpAnimationStyle: style,
-                                          onSelected: (value) {
-                                            if (value == "toggle") {
-                                              _toggleEnabled(a, !a.enabled);
-                                            } else if (value == "delete") {
-                                              _deleteAlert(a);
-                                            }
-                                          },
-                                          itemBuilder: (menuContext) {
-                                            final isEnabled = a.enabled;
-                                            return [
-                                              PopupMenuItem(
-                                                value: "toggle",
-                                                child: UydoshPopupMenuItemRow(
-                                                  icon: isEnabled
-                                                      ? Icons
-                                                          .notifications_off_outlined
-                                                      : Icons
-                                                          .notifications_active_outlined,
-                                                  text: isEnabled
-                                                      ? L10n.get("disable")
-                                                      : L10n.get("enable"),
-                                                  enabled: true,
-                                                ),
-                                              ),
-                                              PopupMenuItem(
-                                                value: "delete",
-                                                child: UydoshPopupMenuItemRow(
-                                                  icon: Icons.delete_outline,
-                                                  text: L10n.get("delete"),
-                                                  enabled: true,
-                                                  destructive: true,
-                                                ),
-                                              ),
-                                            ];
-                                          },
-                                        );
+                                    child: TheDotDropMenuButton<String>(
+                                      enabled: !_bulkWorking,
+                                      padding: EdgeInsets.zero,
+                                      onSelected: (value) {
+                                        if (value == "toggle") {
+                                          _toggleEnabled(a, !a.enabled);
+                                        } else if (value == "delete") {
+                                          _deleteAlert(a);
+                                        }
+                                      },
+                                      itemBuilder: (menuContext) {
+                                        final isEnabled = a.enabled;
+                                        return [
+                                          PopupMenuItem(
+                                            value: "toggle",
+                                            child: UydoshPopupMenuItemRow(
+                                              icon: isEnabled
+                                                  ? Icons
+                                                      .notifications_off_outlined
+                                                  : Icons
+                                                      .notifications_active_outlined,
+                                              text: isEnabled
+                                                  ? L10n.get("disable")
+                                                  : L10n.get("enable"),
+                                              enabled: true,
+                                            ),
+                                          ),
+                                          PopupMenuItem(
+                                            value: "delete",
+                                            child: UydoshPopupMenuItemRow(
+                                              icon: Icons.delete_outline,
+                                              text: L10n.get("delete"),
+                                              enabled: true,
+                                              destructive: true,
+                                            ),
+                                          ),
+                                        ];
                                       },
                                     ),
                                   ),

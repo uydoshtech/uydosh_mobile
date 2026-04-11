@@ -5,6 +5,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 /// Theme switcher widget for selecting app themes
 class ThemeSwitcher extends StatefulWidget {
@@ -26,7 +27,7 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("select_theme"),

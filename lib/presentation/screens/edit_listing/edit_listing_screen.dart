@@ -35,6 +35,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class EditListingScreen extends StatefulWidget {
 
@@ -538,7 +539,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       canPop: _allowPopWithoutConfirm || !_isFormDirty(),
       onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         title: L10n.text(
           "edit_listing",
           style: theme.appBarTheme.titleTextStyle,

@@ -19,6 +19,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminComplaintsScreen extends StatefulWidget {
   const AdminComplaintsScreen({super.key});
@@ -180,7 +181,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_complaints_title"),

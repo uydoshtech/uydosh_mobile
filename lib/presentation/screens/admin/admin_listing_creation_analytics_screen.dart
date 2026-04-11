@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminListingCreationAnalyticsScreen extends StatefulWidget {
   const AdminListingCreationAnalyticsScreen({super.key});
@@ -81,7 +82,7 @@ class _AdminListingCreationAnalyticsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_listing_creation_analytics_title"),

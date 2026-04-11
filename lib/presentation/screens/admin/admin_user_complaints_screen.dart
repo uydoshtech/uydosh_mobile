@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dar
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminUserComplaintsScreen extends StatefulWidget {
   const AdminUserComplaintsScreen({
@@ -124,7 +125,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_user_complaints_title"),

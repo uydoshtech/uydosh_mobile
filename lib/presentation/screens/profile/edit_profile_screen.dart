@@ -25,6 +25,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({required this.profile, super.key});
@@ -504,7 +505,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           canPop: !_isFormDirty(),
           onPopInvokedWithResult: _onPopInvoked,
           child: Scaffold(
-            appBar: AppBar(
+            appBar: UydoshAppBar(
               leading: ThreeDAppBarIconButton.backLeading(context),
               title: Text(
                 L10n.get("edit_profile"),

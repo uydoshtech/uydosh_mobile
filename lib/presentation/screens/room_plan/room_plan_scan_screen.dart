@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 const _kRoomScanExampleAssets = <String>[
   "assets/images/room_scan_examples/example_1.png",
@@ -123,7 +124,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
       builder: (context, lidarDisabled, _) {
         if (!isIOSDevice) {
           return Scaffold(
-            appBar: AppBar(
+            appBar: UydoshAppBar(
               leading: ThreeDAppBarIconButton.backLeading(context),
               title: Text(L10n.get("room_scan_title")),
             ),
@@ -141,7 +142,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
 
         if (lidarDisabled) {
           return Scaffold(
-            appBar: AppBar(
+            appBar: UydoshAppBar(
               leading: ThreeDAppBarIconButton.backLeading(context),
               title: Text(L10n.get("room_scan_title")),
             ),
@@ -162,7 +163,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
         final colorScheme = Theme.of(context).colorScheme;
 
         return Scaffold(
-          appBar: AppBar(
+          appBar: UydoshAppBar(
             leading: ThreeDAppBarIconButton.backLeading(context),
             title: Text(L10n.get("room_scan_title")),
           ),

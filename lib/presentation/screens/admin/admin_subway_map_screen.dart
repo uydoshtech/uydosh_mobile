@@ -15,6 +15,7 @@ import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class _MapData {
   const _MapData({
@@ -653,7 +654,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     return Theme(
       data: AppTheme.getTheme(AppTheme.lightTheme),
       child: Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_subway_map_title"),

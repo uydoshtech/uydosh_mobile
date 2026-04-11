@@ -5,6 +5,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
 
@@ -30,7 +31,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
         final appBarBackgroundColor = themeState.appBarBackgroundColor;
         final textColor = themeState.textColor;
 
-        return AppBar(
+        return UydoshAppBar(
           title: Row(
             children: [
               Expanded(

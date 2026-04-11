@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class CreateComplaintScreen extends StatefulWidget {
 
@@ -45,7 +46,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         title: Text(
           L10n.get("create_complaint"),
         ),

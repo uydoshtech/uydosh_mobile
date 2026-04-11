@@ -11,6 +11,7 @@ import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 // Utility class for language display names
 class LanguageDisplayHelper {
@@ -128,7 +129,7 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           "Language Test",

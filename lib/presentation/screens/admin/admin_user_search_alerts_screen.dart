@@ -15,6 +15,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminUserSearchAlertsScreen extends StatefulWidget {
   const AdminUserSearchAlertsScreen({
@@ -246,7 +247,7 @@ class _AdminUserSearchAlertsScreenState
     final isBlueTheme = ThemeState().isBlueTheme;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(L10n.get("admin_user_alerts_title")),
       ),

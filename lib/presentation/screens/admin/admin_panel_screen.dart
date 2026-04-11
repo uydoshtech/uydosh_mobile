@@ -15,6 +15,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.da
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -45,7 +46,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final iconColor = isDark ? Colors.white : Colors.black;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_panel_title"),

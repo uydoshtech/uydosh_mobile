@@ -72,6 +72,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
@@ -1612,7 +1613,7 @@ L10n.get("feature_listing_error",
         );
       },
       child: Scaffold(
-        appBar: AppBar(
+        appBar: UydoshAppBar(
           backgroundColor: _getAppBarBackgroundColor(),
           foregroundColor:
               Theme.of(context).appBarTheme.foregroundColor ??

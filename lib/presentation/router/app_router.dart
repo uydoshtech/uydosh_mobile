@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
@@ -487,8 +488,7 @@ class _MainNavigationState extends State<MainNavigation>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        clipBehavior: Clip.none,
+      appBar: UydoshAppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: _getAppBarTitle(),

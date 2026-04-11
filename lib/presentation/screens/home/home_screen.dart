@@ -1053,7 +1053,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   PreferredSizeWidget _buildSearchAppBar() {
     final appBarFg =
         Theme.of(context).appBarTheme.foregroundColor ?? Colors.white;
-    return AppBar(
+    return UydoshAppBar(
       title: BlocSelector<ListingsBloc, ListingsState, int?>(
         selector: (state) => state.map(
           initial: (_) => null,

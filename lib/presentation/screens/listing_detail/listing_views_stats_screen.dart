@@ -10,6 +10,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class ListingViewsStatsScreen extends StatefulWidget {
   const ListingViewsStatsScreen({
@@ -93,7 +94,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         title: Text(
           L10n.get("listing_views_stats_title"),
           style: TextStyle(color: _getTextColor()),

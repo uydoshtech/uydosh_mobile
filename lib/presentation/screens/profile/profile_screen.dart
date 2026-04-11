@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ProfileScreenData {
@@ -339,7 +340,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 }
                 return Scaffold(
-                  appBar: AppBar(
+                  appBar: UydoshAppBar(
                     leading: ThreeDAppBarIconButton.backLeading(
                       context,
                       onPressed: () {

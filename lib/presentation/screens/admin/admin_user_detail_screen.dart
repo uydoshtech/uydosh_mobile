@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_user_search_alerts_scre
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
   const AdminUserDetailScreen({required this.user, super.key});
@@ -47,7 +48,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   Widget build(BuildContext context) {
     final canSave = _selectedRole != null && _selectedRole != _currentRole;
     return Scaffold(
-      appBar: AppBar(
+      appBar: UydoshAppBar(
         title: Text(
           L10n.get("admin_user_detail_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

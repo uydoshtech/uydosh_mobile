@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 /// Toolbar height for [MainNavigation] and [CommonAppBar]. In-body headers that
 /// mimic an app bar should use this so they match the home tab bar.
@@ -38,7 +39,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
             ? ThreeDAppBarIconButton.backLeading(context)
             : null);
 
-    return AppBar(
+    return UydoshAppBar(
       title:
           centerTitle
               ? Text(
