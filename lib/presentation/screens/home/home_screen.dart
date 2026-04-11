@@ -34,6 +34,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
@@ -159,6 +160,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
   bool _isCreatingSearchAlert = false;
+  int _searchAlertCelebrationTick = 0;
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
@@ -935,6 +937,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         return;
       }
 
+      if (mounted) {
+        setState(() => _searchAlertCelebrationTick++);
+      }
+
       // Ensure notifications are enabled (or guide user to settings).
       final push = getIt<IPushNotificationService>();
       if (push.isSupported) {
@@ -1092,17 +1098,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             key: _alertBellTutorialKey,
             child: _NotifySearchAlertAppBarButton(
               tooltip: L10n.get("search_alert_notify_me"),
-              iconColor: appBarFg,
               enabled: !_isCreatingSearchAlert,
-              appBarBackground:
-                  Theme.of(context).appBarTheme.backgroundColor ??
-                      (ThemeState().isBlueTheme
-                          ? BlueThemeColors.surface
-                          : Theme.of(context).colorScheme.primary),
-              onPressed: () {
-                HapticFeedbackUtils.selection();
-                _subscribeToSearchAlerts();
-              },
+              celebrationTick: _searchAlertCelebrationTick,
+              onPressed: _subscribeToSearchAlerts,
             ),
           ),
         ),
@@ -1403,21 +1401,19 @@ class _NotifySearchAlertGhostButtonState
   }
 }
 
-/// Search results AppBar bell: shows "add alert" (bell + plus) and reuses the
-/// same ring + wiggle animation behavior as the empty-state notify button.
+/// Search results AppBar only: 3D pill, `Icons.add_alert`, tap ring + wiggle,
+/// and a stronger celebration when an alert is saved.
 class _NotifySearchAlertAppBarButton extends StatefulWidget {
   const _NotifySearchAlertAppBarButton({
     required this.tooltip,
     required this.onPressed,
-    required this.iconColor,
-    required this.appBarBackground,
+    required this.celebrationTick,
     this.enabled = true,
   });
 
   final String tooltip;
   final VoidCallback onPressed;
-  final Color iconColor;
-  final Color appBarBackground;
+  final int celebrationTick;
   final bool enabled;
 
   @override
@@ -1434,6 +1430,11 @@ class _NotifySearchAlertAppBarButtonState
   late final Animation<double> _ringOpacity;
   late final AnimationController _idleController;
   late final Animation<double> _idleBellTurns;
+  late final AnimationController _savedController;
+  late final Animation<double> _savedBellTurns;
+  late final Animation<double> _savedScale;
+  late final Animation<double> _savedRingScale;
+  late final Animation<double> _savedRingOpacity;
   late final AnimationSettingsState _animationSettings;
 
   @override
@@ -1493,8 +1494,90 @@ class _NotifySearchAlertAppBarButtonState
       ),
     );
 
+    _savedController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 920),
+    );
+    _savedBellTurns = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0, end: 0.16).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 18,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.16, end: -0.14).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 20,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -0.14, end: 0.11).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 22,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.11, end: -0.065).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 20,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -0.065, end: 0).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 20,
+      ),
+    ]).animate(_savedController);
+
+    _savedScale = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1, end: 1.16).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 28,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.16, end: 0.97).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 18,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.97, end: 1).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 54,
+      ),
+    ]).animate(_savedController);
+
+    _savedRingScale = Tween<double>(begin: 1, end: 2.35).animate(
+      CurvedAnimation(
+        parent: _savedController,
+        curve: const Interval(0.08, 0.82, curve: Curves.easeOut),
+      ),
+    );
+    _savedRingOpacity = Tween<double>(begin: 0.58, end: 0).animate(
+      CurvedAnimation(
+        parent: _savedController,
+        curve: const Interval(0.08, 1, curve: Curves.easeOut),
+      ),
+    );
+
     _animationSettings.addListener(_syncFromSettings);
     _syncFromSettings();
+  }
+
+  @override
+  void didUpdateWidget(covariant _NotifySearchAlertAppBarButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.celebrationTick != oldWidget.celebrationTick &&
+        widget.celebrationTick > 0 &&
+        _animationSettings.bellTapEnabled) {
+      HapticFeedbackUtils.selection();
+      _savedController.forward(from: 0);
+    }
   }
 
   void _syncFromSettings() {
@@ -1506,7 +1589,6 @@ class _NotifySearchAlertAppBarButtonState
       }
     } else {
       _idleController.stop();
-      // 0 maps to tween begin (slightly rotated). Keep midpoint as "rest" angle.
       _idleController.value = 0.5;
     }
 
@@ -1514,6 +1596,8 @@ class _NotifySearchAlertAppBarButtonState
     if (!tapEnabled) {
       _controller.stop();
       _controller.value = 0;
+      _savedController.stop();
+      _savedController.value = 0;
     }
 
     setState(() {});
@@ -1524,60 +1608,140 @@ class _NotifySearchAlertAppBarButtonState
     _animationSettings.removeListener(_syncFromSettings);
     _controller.dispose();
     _idleController.dispose();
+    _savedController.dispose();
     super.dispose();
   }
 
   void _handlePressed() {
     if (!widget.enabled) return;
+    HapticFeedbackUtils.impact();
     if (_animationSettings.bellTapEnabled) {
       _controller.forward(from: 0);
     }
     widget.onPressed();
   }
 
+  Color _iconColor() =>
+      ThemeState().isBlueTheme ? Colors.white : Colors.black;
+
+  Widget _addAlertIcon(Color iconColor) {
+    return Center(
+      child: ThemeIcon(
+        Icons.add_alert,
+        size: 24,
+        color: iconColor,
+        useThemeColor: false,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final idleEnabled = _animationSettings.bellIdleEnabled;
     final tapEnabled = _animationSettings.bellTapEnabled;
+    final ringColor = Theme.of(context).colorScheme.primary;
 
-    return IconButton(
-      tooltip: widget.tooltip,
-      onPressed: widget.enabled ? _handlePressed : null,
-      style: IconButton.styleFrom(
-        foregroundColor: widget.iconColor,
-        disabledForegroundColor: widget.iconColor,
-      ),
-      icon: SizedBox(
-        width: 24,
-        height: 24,
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            AnimatedBuilder(
-              animation: Listenable.merge([_idleController, _controller]),
-              builder: (context, _) {
-                final turns = (idleEnabled ? _idleBellTurns.value : 0.0) +
-                    (tapEnabled ? _bellTurns.value : 0.0);
-                return Stack(
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final iconColor = _iconColor();
+        return Tooltip(
+          message: widget.tooltip,
+          child: Semantics(
+            label: widget.tooltip,
+            button: true,
+            child: ThreeDPillButton(
+              borderRadius: ThreeDAppBarIconButton.kDefaultSquareRadius,
+              padding: const EdgeInsets.all(6),
+              onPressed: widget.enabled ? _handlePressed : null,
+              child: SizedBox(
+                width: 28,
+                height: 28,
+                child: Stack(
+                  alignment: Alignment.center,
                   clipBehavior: Clip.none,
                   children: [
-                    Transform.rotate(
-                      angle: turns * 2 * math.pi,
-                      alignment: Alignment.topCenter,
-                      child: ThemeIcon(
-                        Icons.notifications_outlined,
-                        size: 24,
-                        color: widget.iconColor,
+                    if (tapEnabled)
+                      AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, _) {
+                          return IgnorePointer(
+                            child: Opacity(
+                              opacity: _ringOpacity.value.clamp(0.0, 1.0),
+                              child: Transform.scale(
+                                scale: _ringScale.value,
+                                child: Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: ringColor.withValues(alpha: 0.85),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
+                    if (tapEnabled)
+                      AnimatedBuilder(
+                        animation: _savedController,
+                        builder: (context, _) {
+                          return IgnorePointer(
+                            child: Opacity(
+                              opacity:
+                                  _savedRingOpacity.value.clamp(0.0, 1.0),
+                              child: Transform.scale(
+                                scale: _savedRingScale.value,
+                                child: Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.success
+                                          .withValues(alpha: 0.9),
+                                      width: 1.75,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    AnimatedBuilder(
+                      animation: Listenable.merge([
+                        _idleController,
+                        _controller,
+                        _savedController,
+                      ]),
+                      builder: (context, _) {
+                        final turns = (idleEnabled ? _idleBellTurns.value : 0.0) +
+                            (tapEnabled ? _bellTurns.value : 0.0) +
+                            (tapEnabled ? _savedBellTurns.value : 0.0);
+                        final scale =
+                            tapEnabled ? _savedScale.value : 1.0;
+                        return Transform.scale(
+                          scale: scale,
+                          child: Transform.rotate(
+                            angle: turns * 2 * math.pi,
+                            alignment: Alignment.topCenter,
+                            child: _addAlertIcon(iconColor),
+                          ),
+                        );
+                      },
                     ),
                   ],
-                );
-              },
+                ),
+              ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

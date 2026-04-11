@@ -126,6 +126,95 @@ class _LocationPickerState extends State<LocationPicker> {
     super.dispose();
   }
 
+  static const BorderRadius _plateRadius = BorderRadius.all(Radius.circular(10));
+
+  /// Raised control surface: soft gradient, beveled edges, and cast shadow.
+  BoxDecoration _locationPickerPlateDecoration({
+    required ThemeData theme,
+    required Color baseSurface,
+    required bool isBlueTheme,
+    required bool showError,
+  }) {
+    if (showError) {
+      return BoxDecoration(
+        borderRadius: _plateRadius,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.lerp(baseSurface, Colors.white, isBlueTheme ? 0.12 : 0.22)!,
+            baseSurface,
+            Color.lerp(baseSurface, Colors.black, isBlueTheme ? 0.2 : 0.06)!,
+          ],
+          stops: const [0.0, 0.55, 1.0],
+        ),
+        border: Border.all(color: theme.colorScheme.error, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isBlueTheme ? 0.42 : 0.1),
+            offset: const Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isBlueTheme ? 0.28 : 0.05),
+            offset: const Offset(0, 5),
+            blurRadius: 8,
+            spreadRadius: -1,
+          ),
+        ],
+      );
+    }
+
+    final topLeftEdge = Color.lerp(
+      baseSurface,
+      Colors.white,
+      isBlueTheme ? 0.22 : 0.65,
+    )!.withValues(alpha: isBlueTheme ? 0.55 : 0.95);
+    final bottomRightEdge = Color.lerp(
+      baseSurface,
+      Colors.black,
+      isBlueTheme ? 0.45 : 0.18,
+    )!;
+
+    return BoxDecoration(
+      borderRadius: _plateRadius,
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color.lerp(baseSurface, Colors.white, isBlueTheme ? 0.14 : 0.38)!,
+          baseSurface,
+          Color.lerp(baseSurface, Colors.black, isBlueTheme ? 0.22 : 0.07)!,
+        ],
+        stops: const [0.0, 0.48, 1.0],
+      ),
+      border: Border(
+        top: BorderSide(color: topLeftEdge, width: 1),
+        left: BorderSide(color: topLeftEdge, width: 1),
+        right: BorderSide(
+          color: bottomRightEdge.withValues(alpha: isBlueTheme ? 0.65 : 0.35),
+          width: 1,
+        ),
+        bottom: BorderSide(
+          color: bottomRightEdge.withValues(alpha: isBlueTheme ? 0.9 : 0.5),
+          width: 2,
+        ),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: isBlueTheme ? 0.48 : 0.12),
+          offset: const Offset(0, 3),
+          blurRadius: 0,
+        ),
+        BoxShadow(
+          color: Colors.black.withValues(alpha: isBlueTheme ? 0.32 : 0.06),
+          offset: const Offset(0, 5),
+          blurRadius: 10,
+          spreadRadius: -1,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -133,40 +222,42 @@ class _LocationPickerState extends State<LocationPicker> {
     final isBlueTheme = ThemeState().isBlueTheme;
     final backgroundColor =
         isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
-    final borderColor = theme.colorScheme.outline;
     final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
     final iconColor = theme.colorScheme.onSurfaceVariant;
 
+    final plateDecoration = _locationPickerPlateDecoration(
+      theme: theme,
+      baseSurface: backgroundColor,
+      isBlueTheme: isBlueTheme,
+      showError: widget.showError,
+    );
+
     if (widget.isLoading) {
-      return Container(
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: widget.showError ? theme.colorScheme.error : borderColor,
-          ),
-        ),
+      return _PickerChrome(
         height: widget.height,
+        decoration: plateDecoration,
         child: Center(
           child: CircularProgressIndicator(color: theme.colorScheme.primary),
         ),
       );
     }
 
-    return Container(
+    final selectionOverlayFill =
+        theme.colorScheme.onSurface.withValues(alpha: isBlueTheme ? 0.14 : 0.07);
+
+    return _PickerChrome(
       key: widget.containerKey != null ? ValueKey(widget.containerKey) : null,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: widget.showError ? theme.colorScheme.error : borderColor,
-        ),
-      ),
       height: widget.height,
+      decoration: plateDecoration,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
             child: CupertinoPicker(
+              backgroundColor: Colors.transparent,
+              selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+                background: selectionOverlayFill,
+              ),
               itemExtent: widget.itemExtent,
               scrollController: _effectiveController,
               onSelectedItemChanged: (index) {
@@ -263,7 +354,7 @@ class _LocationPickerState extends State<LocationPicker> {
             Container(
               width: 24,
               decoration: BoxDecoration(
-                color: theme.colorScheme.outline.withOpacity(0.1),
+                color: theme.colorScheme.outline.withValues(alpha: 0.1),
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(10),
                   bottomRight: Radius.circular(10),
@@ -318,5 +409,38 @@ class _LocationPickerState extends State<LocationPicker> {
       default:
         return location.shortName ?? "";
     }
+  }
+}
+
+/// 3D plate behind the wheel: keeps chrome out of the picker subtree and uses
+/// [Stack.clipBehavior] none so ListWheelScrollView paint is not hard-clipped.
+class _PickerChrome extends StatelessWidget {
+  const _PickerChrome({
+    required this.height,
+    required this.decoration,
+    required this.child,
+    super.key,
+  });
+
+  final double height;
+  final BoxDecoration decoration;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: Stack(
+        clipBehavior: Clip.none,
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: decoration,
+            child: const SizedBox.expand(),
+          ),
+          child,
+        ],
+      ),
+    );
   }
 }

@@ -464,8 +464,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       builder: (context, child) {
         final themeState = ThemeState();
         final primaryColor = themeState.primaryColor;
-        final textColor = themeState.textColor;
-        final secondaryTextColor = themeState.secondaryTextColor;
         final cardColor = themeState.cardColor;
 
         return Container(
@@ -475,8 +473,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             incomingCount: _getUnreadCount(incoming),
             outgoingCount: _getUnreadCount(outgoing),
             primaryColor: primaryColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
             cardColor: cardColor,
           ),
         );
@@ -489,12 +485,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     required int incomingCount,
     required int outgoingCount,
     required Color primaryColor,
-    required Color textColor,
-    required Color secondaryTextColor,
     required Color cardColor,
   }) {
     final themeState = ThemeState();
-    final selectedBorderColor = themeState.selectedTabBorderColor;
     final selectedTextColor = themeState.selectedTabTextColor;
     final unselectedTextColor = themeState.unselectedTabTextColor;
 
@@ -504,10 +497,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         borderRadius: BorderRadius.circular(24),
         gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardColor),
         boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-        border: Border.all(
-          color: secondaryTextColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
       ),
       child: Stack(
         children: [
@@ -522,7 +511,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             child: Container(
               width:
                   (MediaQuery.of(context).size.width - 32 - 4) /
-                  2, // Account for padding and borders
+                  2, // Parent horizontal padding (16*2) and thumb inset (2*2)
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(22),
                 gradient: ThreeDSurfaceStyle.surfaceGradient(
@@ -530,7 +519,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   primaryColor,
                 ),
                 boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-                border: Border.all(color: selectedBorderColor, width: 1),
               ),
             ),
           ),
