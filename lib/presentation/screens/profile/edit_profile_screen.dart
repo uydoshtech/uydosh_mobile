@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_toggle_control.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -504,6 +505,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onPopInvokedWithResult: _onPopInvoked,
           child: Scaffold(
             appBar: AppBar(
+              leading: ThreeDAppBarIconButton.backLeading(context),
               title: Text(
                 L10n.get("edit_profile"),
                 style: theme.appBarTheme.titleTextStyle,

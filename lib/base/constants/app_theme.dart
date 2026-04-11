@@ -89,6 +89,7 @@ class AppTheme {
         foregroundColor: BlueThemeColors.textPrimary,
         elevation: 0,
         centerTitle: true,
+        toolbarHeight: kToolbarHeight,
         surfaceTintColor:
             Colors.transparent, // Disable surface tint to prevent color changes
         scrolledUnderElevation: 0, // Prevent elevation changes on scroll
@@ -325,6 +326,7 @@ class AppTheme {
             LightThemeColors.textPrimary, // Black text on light background
         elevation: 1, // Slight elevation for light theme
         centerTitle: true,
+        toolbarHeight: kToolbarHeight,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         titleTextStyle: TextStyle(
@@ -511,6 +513,7 @@ class AppTheme {
         foregroundColor: MessagingThemeColors.appBarForeground,
         elevation: 0,
         centerTitle: true,
+        toolbarHeight: kToolbarHeight,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
       ),

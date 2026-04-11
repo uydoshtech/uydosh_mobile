@@ -4,7 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
@@ -49,12 +49,9 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
         title: Text(
           L10n.get("create_complaint"),
         ),
-        leading: IconButton(
-          icon: const ThemeIcon(Icons.arrow_back),
-          onPressed: () {
-            HapticFeedbackUtils.impact();
-            Navigator.of(context).pop();
-          },
+        leading: ThreeDAppBarIconButton.backLeading(
+          context,
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: BlocListener<ComplaintBloc, ComplaintState>(

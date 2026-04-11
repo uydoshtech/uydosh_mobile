@@ -1,19 +1,48 @@
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
+
+/// Converts a blur radius in logical pixels to a sigma value for [MaskFilter.blur]
+/// (same mapping as Flutter’s material shadows).
+double _blurRadiusToSigma(double radius) {
+  if (radius <= 0) {
+    return 0;
+  }
+  return radius * 0.57735 + 0.5;
+}
+
+void _paintPathDropShadow(Canvas canvas, Path path, BoxShadow shadow) {
+  if (shadow.color.a == 0) {
+    return;
+  }
+  canvas.save();
+  canvas.translate(shadow.offset.dx, shadow.offset.dy);
+  canvas.drawPath(
+    path,
+    Paint()
+      ..color = shadow.color
+      ..isAntiAlias = true
+      ..maskFilter = MaskFilter.blur(
+        BlurStyle.normal,
+        _blurRadiusToSigma(shadow.blurRadius),
+      ),
+  );
+  canvas.restore();
+}
 
 /// Custom painter for the bubble with integrated tail pointing towards user avatar.
 class BubbleWithTailPainter extends CustomPainter {
-
   BubbleWithTailPainter({
-    required this.color,
+    required this.fillGradient,
     required this.borderColor,
-    required this.shadowColor,
+    required this.elevationShadows,
     required this.tailPointsRight,
     this.hasBorder = false,
     this.radius = 18,
   });
-  final Color color;
+
+  final LinearGradient fillGradient;
   final Color borderColor;
-  final Color shadowColor;
+  final List<BoxShadow> elevationShadows;
   final bool hasBorder;
   final bool tailPointsRight;
   final double radius;
@@ -62,10 +91,18 @@ class BubbleWithTailPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final path = _createBubblePath(size);
-    canvas.drawShadow(path, shadowColor, 6, true);
+    final bounds = path.getBounds();
+
+    for (final shadow in elevationShadows) {
+      _paintPathDropShadow(canvas, path, shadow);
+    }
+
     canvas.drawPath(
       path,
-      Paint()..color = color..style = PaintingStyle.fill,
+      Paint()
+        ..shader = fillGradient.createShader(bounds)
+        ..isAntiAlias = true
+        ..style = PaintingStyle.fill,
     );
     if (hasBorder) {
       canvas.drawPath(
@@ -73,16 +110,18 @@ class BubbleWithTailPainter extends CustomPainter {
         Paint()
           ..color = borderColor
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1,
+          ..strokeWidth = 1
+          ..isAntiAlias = true,
       );
     }
   }
 
   @override
   bool shouldRepaint(covariant BubbleWithTailPainter oldDelegate) =>
-      color != oldDelegate.color ||
+      fillGradient != oldDelegate.fillGradient ||
       borderColor != oldDelegate.borderColor ||
-      shadowColor != oldDelegate.shadowColor ||
+      !listEquals(elevationShadows, oldDelegate.elevationShadows) ||
       tailPointsRight != oldDelegate.tailPointsRight ||
-      hasBorder != oldDelegate.hasBorder;
+      hasBorder != oldDelegate.hasBorder ||
+      radius != oldDelegate.radius;
 }

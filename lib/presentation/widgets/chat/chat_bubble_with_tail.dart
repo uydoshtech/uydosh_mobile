@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/chat/bubble_with_tail_painter.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Reusable chat bubble with tail, matching chat/support message styling.
 /// Used in user messaging (chat) and support chat screens.
@@ -29,15 +30,17 @@ class ChatBubbleWithTail extends StatelessWidget {
         final borderColor = themeState.isLightTheme || themeState.isBlueTheme
             ? Colors.grey[300]!
             : Colors.grey[600]!;
-        final shadowColor = themeState.isLightTheme
-            ? Colors.black.withValues(alpha: 0.12)
-            : Colors.black.withValues(alpha: 0.18);
+        final fillGradient = ThreeDSurfaceStyle.surfaceGradient(
+          context,
+          bubbleColor,
+        );
+        final elevationShadows = ThreeDSurfaceStyle.elevatedShadows(context);
 
         return CustomPaint(
           painter: BubbleWithTailPainter(
-            color: bubbleColor,
+            fillGradient: fillGradient,
             borderColor: isFromCurrentUser ? borderColor : Colors.transparent,
-            shadowColor: shadowColor,
+            elevationShadows: elevationShadows,
             tailPointsRight: isFromCurrentUser,
             hasBorder: isFromCurrentUser,
             radius: 18,

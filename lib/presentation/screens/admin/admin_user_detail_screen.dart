@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.
 import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_search_alerts_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
@@ -51,8 +52,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           L10n.get("admin_user_detail_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        leading: IconButton(
-          icon: const ThemeIcon(Icons.arrow_back),
+        leading: ThreeDAppBarIconButton.backLeading(
+          context,
           onPressed: _popWithResult,
         ),
       ),

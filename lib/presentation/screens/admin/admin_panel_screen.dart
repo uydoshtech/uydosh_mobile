@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart"
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminPanelScreen extends StatefulWidget {
@@ -45,6 +46,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_panel_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

@@ -68,7 +68,7 @@ import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dar
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
@@ -1617,44 +1617,9 @@ L10n.get("feature_listing_error",
           foregroundColor:
               Theme.of(context).appBarTheme.foregroundColor ??
               AppColors.textLight,
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Align(
-              alignment: Alignment.center,
-              child: ListenableBuilder(
-                listenable: ThemeState(),
-                builder: (context, _) {
-                  final iconColor =
-                      Theme.of(context).appBarTheme.foregroundColor ??
-                      AppColors.textLight;
-                  return ThreeDPillButton(
-                    padding: const EdgeInsets.all(6),
-                    borderRadius: BorderRadius.circular(999),
-                    onPressed: () {
-                      HapticFeedbackUtils.impact();
-                      Navigator.of(context).pop();
-                    },
-                    child: Semantics(
-                      label: MaterialLocalizations.of(
-                        context,
-                      ).backButtonTooltip,
-                      button: true,
-                      child: SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: Center(
-                          child: ThemeIcon(
-                            Icons.arrow_back,
-                            color: iconColor,
-                            size: 26,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+          leading: ThreeDAppBarIconButton.backLeading(
+            context,
+            onPressed: () => Navigator.of(context).pop(),
           ),
           title: Row(
             children: [

@@ -6,6 +6,7 @@ import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminUserListingsScreen extends StatefulWidget {
@@ -119,6 +120,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
     final titleWithCount = "$title ($headerCount)";
     return Scaffold(
       appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           titleWithCount,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

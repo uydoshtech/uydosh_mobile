@@ -6,6 +6,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class FaqScreen extends StatefulWidget {
@@ -97,6 +98,7 @@ class _FaqScreenState extends State<FaqScreen> {
     return Scaffold(
       backgroundColor: _getBackgroundColor(),
       appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: Text(

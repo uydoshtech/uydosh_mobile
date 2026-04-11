@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminDistrictHeatmapScreen extends StatefulWidget {
@@ -141,6 +142,7 @@ class _AdminDistrictHeatmapScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_district_heatmap_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

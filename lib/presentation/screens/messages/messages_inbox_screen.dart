@@ -18,12 +18,15 @@ import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
 import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_tile.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({
@@ -269,8 +272,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   }
 
   Widget _buildCustomHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+    return DecoratedBox(
       decoration: BoxDecoration(
         color:
             Theme.of(context).appBarTheme.backgroundColor ??
@@ -282,49 +284,44 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           ),
         ),
       ),
-      child: Row(
-        children: [
-          // Back button
-          IconButton(
-            onPressed: () {
-              HapticFeedbackUtils.impact();
-              Navigator.of(context).pop();
-            },
-            icon: ThemeIcon(
-              Icons.arrow_back,
-              color:
-                  Theme.of(context).appBarTheme.foregroundColor ??
-                  Theme.of(context).colorScheme.onSurface,
+      child: SizedBox(
+        height: standardAppBarToolbarHeight,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ThreeDAppBarIconButton.backLeading(context),
+            // Title
+            Expanded(
+              child: Text(
+                L10n.get("messages"),
+                style:
+                    Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ) ??
+                    TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
-          // Title
-          Expanded(
-            child: Text(
-              L10n.get("messages"),
-              style:
-                  Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ) ??
-                  TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-              textAlign: TextAlign.center,
+            // Profile button (matching the original design)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                onPressed: () => context.pushProfile(),
+                icon: ThemeIcon(
+                  Icons.person,
+                  color:
+                      Theme.of(context).appBarTheme.foregroundColor ??
+                      Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
             ),
-          ),
-          // Profile button (matching the original design)
-          IconButton(
-            onPressed: () => context.pushProfile(),
-            icon: ThemeIcon(
-              Icons.person,
-              color:
-                  Theme.of(context).appBarTheme.foregroundColor ??
-                  Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -474,6 +471,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         return Container(
           padding: const EdgeInsets.all(16),
           child: _buildToggleSwitch(
+            context,
             incomingCount: _getUnreadCount(incoming),
             outgoingCount: _getUnreadCount(outgoing),
             primaryColor: primaryColor,
@@ -486,7 +484,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     );
   }
 
-  Widget _buildToggleSwitch({
+  Widget _buildToggleSwitch(
+    BuildContext context, {
     required int incomingCount,
     required int outgoingCount,
     required Color primaryColor,
@@ -502,8 +501,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: cardColor,
         borderRadius: BorderRadius.circular(24),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardColor),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
         border: Border.all(
           color: secondaryTextColor.withValues(alpha: 0.3),
           width: 1,
@@ -524,8 +524,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   (MediaQuery.of(context).size.width - 32 - 4) /
                   2, // Account for padding and borders
               decoration: BoxDecoration(
-                color: primaryColor,
                 borderRadius: BorderRadius.circular(22),
+                gradient: ThreeDSurfaceStyle.surfaceGradient(
+                  context,
+                  primaryColor,
+                ),
+                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
                 border: Border.all(color: selectedBorderColor, width: 1),
               ),
             ),

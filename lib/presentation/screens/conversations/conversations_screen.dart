@@ -3,14 +3,14 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
-import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 
 class ConversationsScreen extends StatefulWidget {
   const ConversationsScreen({super.key});
@@ -73,8 +73,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
   }
 
   Widget _buildCustomHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+    return DecoratedBox(
       decoration: BoxDecoration(
         color:
             Theme.of(context).appBarTheme.backgroundColor ??
@@ -86,52 +85,47 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           ),
         ),
       ),
-      child: Row(
-        children: [
-          // Back button
-          IconButton(
-            onPressed: () {
-              HapticFeedbackUtils.impact();
-              Navigator.of(context).pop();
-            },
-            icon: ThemeIcon(
-              Icons.arrow_back,
-              color:
-                  Theme.of(context).appBarTheme.foregroundColor ??
-                  Theme.of(context).colorScheme.onSurface,
+      child: SizedBox(
+        height: standardAppBarToolbarHeight,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ThreeDAppBarIconButton.backLeading(context),
+            // Title
+            Expanded(
+              child: Text(
+                L10n.get("conversations"),
+                style:
+                    Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ) ??
+                    TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
-          // Title
-          Expanded(
-            child: Text(
-              L10n.get("conversations"),
-              style:
-                  Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ) ??
-                  TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-              textAlign: TextAlign.center,
+            // Refresh button
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                onPressed: () {
+                  context.read<MessagingBloc>().add(RefreshConversations());
+                },
+                icon: ThemeIcon(
+                  Icons.refresh,
+                  color:
+                      Theme.of(context).appBarTheme.foregroundColor ??
+                      Theme.of(context).colorScheme.onSurface,
+                ),
+                tooltip: L10n.get("refresh"),
+              ),
             ),
-          ),
-          // Refresh button
-          IconButton(
-            onPressed: () {
-              context.read<MessagingBloc>().add(RefreshConversations());
-            },
-            icon: ThemeIcon(
-              Icons.refresh,
-              color:
-                  Theme.of(context).appBarTheme.foregroundColor ??
-                  Theme.of(context).colorScheme.onSurface,
-            ),
-            tooltip: L10n.get("refresh"),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

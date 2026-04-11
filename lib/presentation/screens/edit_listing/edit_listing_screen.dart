@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class EditListingScreen extends StatefulWidget {
@@ -546,18 +547,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
             theme.appBarTheme.backgroundColor ?? theme.colorScheme.primary,
         foregroundColor:
             theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
-        leading: IconButton(
-          icon: ThemeIcon(
-            Icons.arrow_back,
-            color:
-                theme.appBarTheme.foregroundColor ??
-                theme.colorScheme.onPrimary,
-          ),
-          onPressed: () async {
-            HapticFeedbackUtils.impact();
+        leading: ThreeDAppBarIconButton.backLeading(
+          context,
+          onPressed: () {
             // Use maybePop so PopScope (unsaved changes) is respected; imperative
             // Navigator.pop bypasses Route.popDisposition and always removes the route.
-            await Navigator.of(context).maybePop();
+            Navigator.of(context).maybePop();
           },
         ),
         actions: [

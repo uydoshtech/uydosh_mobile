@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_user_detail_screen.dart
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminUsersScreen extends StatefulWidget {
@@ -202,6 +203,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_users_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

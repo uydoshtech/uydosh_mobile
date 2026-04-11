@@ -4,6 +4,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Rebuilds server-side area price (MSRP-style) aggregates for listing detail.
@@ -63,6 +64,7 @@ class _AdminAreaPriceCacheScreenState extends State<AdminAreaPriceCacheScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_area_price_cache_section_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

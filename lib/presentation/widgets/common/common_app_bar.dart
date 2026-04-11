@@ -1,5 +1,10 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+
+/// Toolbar height for [MainNavigation] and [CommonAppBar]. In-body headers that
+/// mimic an app bar should use this so they match the home tab bar.
+const double standardAppBarToolbarHeight = kToolbarHeight;
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CommonAppBar({
@@ -26,6 +31,13 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final injectDefaultBack = showBackButton && leading == null;
+    final effectiveLeading =
+        leading ??
+        (injectDefaultBack
+            ? ThreeDAppBarIconButton.backLeading(context)
+            : null);
+
     return AppBar(
       title:
           centerTitle
@@ -66,13 +78,14 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
           Theme.of(context).appBarTheme.foregroundColor ??
           AppColors.textLight,
       elevation: elevation ?? 0,
-      automaticallyImplyLeading: automaticallyImplyLeading && showBackButton,
-      leading: leading,
+      automaticallyImplyLeading:
+          automaticallyImplyLeading && showBackButton && !injectDefaultBack,
+      leading: effectiveLeading,
       actions: actions,
       centerTitle: centerTitle,
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(standardAppBarToolbarHeight);
 }

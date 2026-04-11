@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class SupportChatScreen extends StatefulWidget {
@@ -103,6 +104,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
         return Scaffold(
           backgroundColor: themeState.backgroundColor,
           appBar: AppBar(
+            leading: ThreeDAppBarIconButton.backLeading(context),
             title: Text(
               L10n.get("contact_support_title"),
               style: TextStyle(
@@ -446,6 +448,7 @@ class _UserSupportChatThreadScreenState
         return Scaffold(
           backgroundColor: themeState.backgroundColor,
           appBar: AppBar(
+            leading: ThreeDAppBarIconButton.backLeading(context),
             title: Text(
               L10n.get("contact_support_title"),
               style: TextStyle(

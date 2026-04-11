@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
@@ -1076,10 +1077,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               : Theme.of(context).colorScheme.primary),
       foregroundColor: appBarFg,
       elevation: 0,
-      leading: IconButton(
-        icon: const ThemeIcon(Icons.arrow_back),
+      leading: ThreeDAppBarIconButton.backLeading(
+        context,
         onPressed: () {
-          HapticFeedbackUtils.impact();
           if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           }

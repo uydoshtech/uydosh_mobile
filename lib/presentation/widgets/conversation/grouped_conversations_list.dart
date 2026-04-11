@@ -7,14 +7,16 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class GroupedConversationsList extends StatefulWidget {
-
   const GroupedConversationsList({
-    required this.conversations, required this.onConversationTap, super.key,
+    required this.conversations,
+    required this.onConversationTap,
+    super.key,
     this.currentUserId,
   });
   final List<ConversationSummary> conversations;
@@ -44,13 +46,11 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     groupedConversations.forEach((listingId, conversations) {
       conversations.sort((a, b) {
         // Check if conversations have unread messages
-        final aHasUnread =
-            a.unreadCount != null &&
+        final aHasUnread = a.unreadCount != null &&
             a.unreadCount! > 0 &&
             widget.currentUserId != null &&
             a.lastMessageSenderId != widget.currentUserId;
-        final bHasUnread =
-            b.unreadCount != null &&
+        final bHasUnread = b.unreadCount != null &&
             b.unreadCount! > 0 &&
             widget.currentUserId != null &&
             b.lastMessageSenderId != widget.currentUserId;
@@ -67,40 +67,38 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     });
 
     // Get sorted listing IDs: groups with unread messages first, then by most recent conversation
-    final sortedListingIds =
-        groupedConversations.keys.toList()..sort((a, b) {
-          final aConversations = groupedConversations[a]!;
-          final bConversations = groupedConversations[b]!;
+    final sortedListingIds = groupedConversations.keys.toList()
+      ..sort((a, b) {
+        final aConversations = groupedConversations[a]!;
+        final bConversations = groupedConversations[b]!;
 
-          // Check if groups have any unread messages
-          final aHasUnread = aConversations.any(
-            (conv) =>
-                conv.unreadCount != null &&
-                conv.unreadCount! > 0 &&
-                widget.currentUserId != null &&
-                conv.lastMessageSenderId != widget.currentUserId,
-          );
-          final bHasUnread = bConversations.any(
-            (conv) =>
-                conv.unreadCount != null &&
-                conv.unreadCount! > 0 &&
-                widget.currentUserId != null &&
-                conv.lastMessageSenderId != widget.currentUserId,
-          );
+        // Check if groups have any unread messages
+        final aHasUnread = aConversations.any(
+          (conv) =>
+              conv.unreadCount != null &&
+              conv.unreadCount! > 0 &&
+              widget.currentUserId != null &&
+              conv.lastMessageSenderId != widget.currentUserId,
+        );
+        final bHasUnread = bConversations.any(
+          (conv) =>
+              conv.unreadCount != null &&
+              conv.unreadCount! > 0 &&
+              widget.currentUserId != null &&
+              conv.lastMessageSenderId != widget.currentUserId,
+        );
 
-          // If one group has unread and the other doesn't, prioritize the one with unread
-          if (aHasUnread && !bHasUnread) return -1;
-          if (!aHasUnread && bHasUnread) return 1;
+        // If one group has unread and the other doesn't, prioritize the one with unread
+        if (aHasUnread && !bHasUnread) return -1;
+        if (!aHasUnread && bHasUnread) return 1;
 
-          // If both groups have same unread status, sort by most recent conversation
-          final aLatest =
-              aConversations.first.lastMessageAt ??
-              aConversations.first.updatedAt;
-          final bLatest =
-              bConversations.first.lastMessageAt ??
-              bConversations.first.updatedAt;
-          return bLatest.compareTo(aLatest);
-        });
+        // If both groups have same unread status, sort by most recent conversation
+        final aLatest = aConversations.first.lastMessageAt ??
+            aConversations.first.updatedAt;
+        final bLatest = bConversations.first.lastMessageAt ??
+            bConversations.first.updatedAt;
+        return bLatest.compareTo(aLatest);
+      });
 
     // Auto-expand the first group with unread messages
     if (sortedListingIds.isNotEmpty) {
@@ -157,23 +155,17 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
 
         // Get location and metro station info from the first conversation
         final firstConversation = conversations.first;
-        final hasLocation =
-            firstConversation.locationNameUz != null ||
+        final hasLocation = firstConversation.locationNameUz != null ||
             firstConversation.locationNameRu != null ||
             firstConversation.locationNameEn != null;
         final hasSubwayStation =
             firstConversation.subwayStationNameUz != null ||
-            firstConversation.subwayStationNameRu != null ||
-            firstConversation.subwayStationNameEn != null;
+                firstConversation.subwayStationNameRu != null ||
+                firstConversation.subwayStationNameEn != null;
 
-        return Card(
+        return ThreeDElevatedSurface(
+          baseColor: cardColor,
           margin: const EdgeInsets.only(bottom: 16),
-          color: cardColor,
-          elevation: 6,
-          shadowColor: Colors.black.withValues(alpha: 0.15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
           child: Column(
             children: [
               // Group header
@@ -250,25 +242,23 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
               AnimatedSize(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                child:
-                    isExpanded
-                        ? Column(
-                          children: [
-                            const Divider(height: 1),
-                            ...conversations.map(
-                              (conversation) => ConversationTile(
-                                conversation: conversation,
-                                currentUserId: widget.currentUserId,
-                                onTap:
-                                    () =>
-                                        widget.onConversationTap(conversation),
-                                isGrouped:
-                                    true, // Add this parameter to style differently
-                              ),
+                child: isExpanded
+                    ? Column(
+                        children: [
+                          const Divider(height: 1),
+                          ...conversations.map(
+                            (conversation) => ConversationTile(
+                              conversation: conversation,
+                              currentUserId: widget.currentUserId,
+                              onTap: () =>
+                                  widget.onConversationTap(conversation),
+                              isGrouped:
+                                  true, // Add this parameter to style differently
                             ),
-                          ],
-                        )
-                        : const SizedBox.shrink(),
+                          ),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
               ),
             ],
           ),
@@ -288,5 +278,4 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
       return sum;
     });
   }
-
 }

@@ -7,13 +7,15 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
-import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 
 class OutgoingConversationTile extends StatelessWidget {
-
   const OutgoingConversationTile({
-    required this.conversation, required this.onTap, super.key,
+    required this.conversation,
+    required this.onTap,
+    super.key,
     this.currentUserId,
   });
   final ConversationSummary conversation;
@@ -34,23 +36,16 @@ class OutgoingConversationTile extends StatelessWidget {
         final avatarIconColor = themeState.avatarIconColor;
 
         // Check if we have location or metro station data
-        final hasLocation =
-            conversation.locationNameUz != null ||
+        final hasLocation = conversation.locationNameUz != null ||
             conversation.locationNameRu != null ||
             conversation.locationNameEn != null;
-        final hasSubwayStation =
-            conversation.subwayStationNameUz != null ||
+        final hasSubwayStation = conversation.subwayStationNameUz != null ||
             conversation.subwayStationNameRu != null ||
             conversation.subwayStationNameEn != null;
 
-        return Card(
+        return ThreeDElevatedSurface(
+          baseColor: cardColor,
           margin: const EdgeInsets.only(bottom: 16),
-          color: cardColor,
-          elevation: 6,
-          shadowColor: Colors.black.withValues(alpha: 0.15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
           child: ListTile(
             onTap: onTap,
             leading: conversation.otherUserAvatar != null
@@ -62,21 +57,19 @@ class OutgoingConversationTile extends StatelessWidget {
                       fit: BoxFit.cover,
                       memCacheWidth: 80,
                       memCacheHeight: 80,
-                      placeholder:
-                          (context, url) => Center(
-                            child: ConversationAvatarContent(
-                              conversation: conversation,
-                              iconColor: avatarIconColor,
-                            ),
-                          ),
-                      errorWidget:
-                          (context, url, error) => CircleAvatar(
-                            backgroundColor: avatarColor,
-                            child: ConversationAvatarContent(
-                              conversation: conversation,
-                              iconColor: avatarIconColor,
-                            ),
-                          ),
+                      placeholder: (context, url) => Center(
+                        child: ConversationAvatarContent(
+                          conversation: conversation,
+                          iconColor: avatarIconColor,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => CircleAvatar(
+                        backgroundColor: avatarColor,
+                        child: ConversationAvatarContent(
+                          conversation: conversation,
+                          iconColor: avatarIconColor,
+                        ),
+                      ),
                     ),
                   )
                 : CircleAvatar(
@@ -150,19 +143,18 @@ class OutgoingConversationTile extends StatelessWidget {
                           AppColors.success, // Keep green for unread indicator
                       shape: BoxShape.circle,
                     ),
-                    child:
-                        conversation.unreadCount! > 1
-                            ? Center(
-                              child: Text(
-                                "${conversation.unreadCount!}",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                    child: conversation.unreadCount! > 1
+                        ? Center(
+                            child: Text(
+                              "${conversation.unreadCount!}",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
                               ),
-                            )
-                            : null,
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 8),
                 ],

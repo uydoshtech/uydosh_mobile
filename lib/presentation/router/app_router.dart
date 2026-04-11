@@ -31,10 +31,10 @@ import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AppRouter {
   /// Global key for the profile icon in the app bar, used by the search tutorial.
@@ -473,37 +473,14 @@ class _MainNavigationState extends State<MainNavigation>
     required VoidCallback onPressed,
     required String semanticsLabel,
     double iconSize = 26,
-    BorderRadius borderRadius = const BorderRadius.all(Radius.circular(999)),
+    BorderRadius? borderRadius,
   }) {
-    return ThreeDPillButton(
-      padding: const EdgeInsets.all(6),
+    return ThreeDAppBarIconButton(
+      iconData: iconData,
+      onPressed: onPressed,
+      semanticsLabel: semanticsLabel,
+      iconSize: iconSize,
       borderRadius: borderRadius,
-      onPressed: () {
-        HapticFeedbackUtils.impact();
-        onPressed();
-      },
-      child: ListenableBuilder(
-        listenable: ThemeState(),
-        builder: (context, _) {
-          final iconColor =
-              ThemeState().isBlueTheme ? Colors.white : Colors.black;
-          return Semantics(
-            label: semanticsLabel,
-            button: true,
-            child: SizedBox(
-              width: 28,
-              height: 28,
-              child: Center(
-                child: ThemeIcon(
-                  iconData,
-                  color: iconColor,
-                  size: iconSize,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
     );
   }
 
@@ -526,7 +503,6 @@ class _MainNavigationState extends State<MainNavigation>
                   onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
                   semanticsLabel:
                       MaterialLocalizations.of(context).openAppDrawerTooltip,
-                  borderRadius: BorderRadius.circular(12),
                 );
               },
             ),
@@ -536,6 +512,7 @@ class _MainNavigationState extends State<MainNavigation>
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: _threeDAppBarIconButton(
+              borderRadius: const BorderRadius.all(Radius.circular(999)),
               iconData: Icons.notifications_none_outlined,
               onPressed: () {
                 if (!AuthenticationState().isAuthenticated) {
@@ -560,6 +537,7 @@ class _MainNavigationState extends State<MainNavigation>
                 // Show themed circle when user is not authenticated
                 if (!isAuthenticated) {
                   return _threeDAppBarIconButton(
+                    borderRadius: const BorderRadius.all(Radius.circular(999)),
                     iconData: Icons.person,
                     onPressed: () {
                       context.pushReplaceAuthWizard().then((_) {
@@ -588,6 +566,9 @@ class _MainNavigationState extends State<MainNavigation>
                       clipBehavior: Clip.none,
                       children: [
                         _threeDAppBarIconButton(
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(999),
+                          ),
                           iconData: Icons.person,
                           onPressed: () => context.pushProfile(),
                           semanticsLabel: L10n.get("profile"),

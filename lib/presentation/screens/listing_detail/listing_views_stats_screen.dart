@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ListingViewsStatsScreen extends StatefulWidget {
@@ -97,8 +98,8 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
           L10n.get("listing_views_stats_title"),
           style: TextStyle(color: _getTextColor()),
         ),
-        leading: IconButton(
-          icon: ThemeIcon(CupertinoIcons.back, color: _getIconColor()),
+        leading: ThreeDAppBarIconButton.backLeading(
+          context,
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,

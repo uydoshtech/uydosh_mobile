@@ -30,7 +30,7 @@ import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -340,46 +340,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
                 return Scaffold(
                   appBar: AppBar(
-                    leading: Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: ListenableBuilder(
-                          listenable: ThemeState(),
-                          builder: (context, _) {
-                            final iconColor = ThemeState().isBlueTheme
-                                ? Colors.white
-                                : Colors.black;
-                            return ThreeDPillButton(
-                              padding: const EdgeInsets.all(6),
-                              borderRadius: BorderRadius.circular(999),
-                              onPressed: () {
-                                HapticFeedbackUtils.impact();
-                                if (Navigator.of(context).canPop()) {
-                                  Navigator.of(context).pop();
-                                }
-                              },
-                              child: Semantics(
-                                label: MaterialLocalizations.of(
-                                  context,
-                                ).backButtonTooltip,
-                                button: true,
-                                child: SizedBox(
-                                  width: 28,
-                                  height: 28,
-                                  child: Center(
-                                    child: ThemeIcon(
-                                      Icons.arrow_back,
-                                      color: iconColor,
-                                      size: 26,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                    leading: ThreeDAppBarIconButton.backLeading(
+                      context,
+                      onPressed: () {
+                        if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                      },
                     ),
                     title: Text(
                       L10n.get("profile"),

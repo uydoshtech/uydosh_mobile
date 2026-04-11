@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AdminSupportChatScreen extends StatefulWidget {
@@ -128,6 +129,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
           L10n.get("admin_support_chat_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -526,6 +528,7 @@ class _AdminSupportChatThreadScreenState
         return Scaffold(
           backgroundColor: themeState.backgroundColor,
           appBar: AppBar(
+            leading: ThreeDAppBarIconButton.backLeading(context),
             title: Text(
               widget.thread.displayTitle,
               style: TextStyle(
