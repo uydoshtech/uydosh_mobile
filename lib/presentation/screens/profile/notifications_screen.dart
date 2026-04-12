@@ -1,6 +1,7 @@
 // ignore_for_file: eol_at_end_of_file
 
 import "package:dio/dio.dart";
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
@@ -31,7 +32,6 @@ class NotificationsScreen extends StatefulWidget {
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
-
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _loading = true;
@@ -153,7 +153,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       var failed = 0;
       for (final a in List<SearchAlert>.from(_alerts)) {
-        final ok = await getIt<ISearchAlertService>().deleteAlert(alertId: a.id);
+        final ok =
+            await getIt<ISearchAlertService>().deleteAlert(alertId: a.id);
         if (!ok) failed++;
       }
       if (!mounted) return;
@@ -195,28 +196,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Map<String, dynamic> _toJson(SearchAlert a, {bool? enabled}) => {
-    "id": a.id,
-    "enabled": enabled ?? a.enabled,
-    "listing_type_id": a.listingTypeId,
-    "location_id": a.locationId,
-    "subway_station_id": a.subwayStationId,
-    "subway_station_ids": a.subwayStationIds,
-    "subway_line_id": a.subwayLineId,
-    "gender": a.gender,
-    "min_price": a.minPrice,
-    "max_price": a.maxPrice,
-    "private_room": a.privateRoom,
-    "with_photo": a.withPhoto,
-  };
+        "id": a.id,
+        "enabled": enabled ?? a.enabled,
+        "listing_type_id": a.listingTypeId,
+        "location_id": a.locationId,
+        "subway_station_id": a.subwayStationId,
+        "subway_station_ids": a.subwayStationIds,
+        "subway_line_id": a.subwayLineId,
+        "gender": a.gender,
+        "min_price": a.minPrice,
+        "max_price": a.maxPrice,
+        "private_room": a.privateRoom,
+        "with_photo": a.withPhoto,
+      };
 
   Widget _iconTextBadge({
     required ThemeData theme,
-    required String text, IconData? icon,
+    required String text,
+    IconData? icon,
     Widget? leading,
     Color? color,
   }) {
     final c = color ?? theme.colorScheme.onSurfaceVariant;
-    final resolvedLeading = leading ?? (icon != null ? ThemeIcon(icon, size: 16, color: c) : null);
+    final resolvedLeading =
+        leading ?? (icon != null ? ThemeIcon(icon, size: 16, color: c) : null);
     assert(resolvedLeading != null, "Provide either icon or leading");
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -317,10 +320,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final hasMultipleStations =
         a.subwayStationIds != null && (a.subwayStationIds?.length ?? 0) > 1;
 
-    if (resolvedLineId != null && (resolvedStationId == null || hasMultipleStations)) {
+    if (resolvedLineId != null &&
+        (resolvedStationId == null || hasMultipleStations)) {
       final name = MetroCache.getLineName(resolvedLineId, lang);
       final lineColor = AppColors.getMetroLineColor(resolvedLineId);
-      final stationsCount = MetroCache.getStationsForLine(resolvedLineId).length;
+      final stationsCount =
+          MetroCache.getStationsForLine(resolvedLineId).length;
       locationAndMetro.add(
         _iconTextBadge(
           theme: theme,
@@ -461,20 +466,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ThemeIcon(
                           Icons.notifications_none,
                           size: 56,
-                          color:
-                              ThemeState().isBlueTheme
-                                  ? Colors.white70
-                                  : Colors.black54,
+                          color: ThemeState().isBlueTheme
+                              ? Colors.white70
+                              : Colors.black54,
                         ),
                         const SizedBox(height: 12),
                         Center(
                           child: Text(
                             L10n.get("notifications_empty"),
                             style: TextStyle(
-                              color:
-                                  ThemeState().isBlueTheme
-                                      ? Colors.white70
-                                      : Colors.black54,
+                              color: ThemeState().isBlueTheme
+                                  ? Colors.white70
+                                  : Colors.black54,
                               fontSize: 15,
                             ),
                           ),
@@ -504,43 +507,53 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           child: ListingDetailTileShell(
                             child: Padding(
                               padding: const EdgeInsets.all(14),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                              child: Stack(
+                                clipBehavior: Clip.none,
                                 children: [
-                                  ThemeIcon(
-                                    a.enabled
-                                        ? Icons.notifications
-                                        : Icons.notifications_none_outlined,
-                                    color: ThemeState().isBlueTheme
-                                        ? Colors.white
-                                        : (a.enabled
-                                            ? theme.colorScheme.primary
-                                            : theme.colorScheme.onSurfaceVariant),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 4,
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            _summaryWidget(a, theme),
-                                          ],
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      ThemeIcon(
+                                        a.enabled
+                                            ? Icons.notifications
+                                            : Icons.notifications_none_outlined,
+                                        color: ThemeState().isBlueTheme
+                                            ? Colors.white
+                                            : (a.enabled
+                                                ? theme.colorScheme.primary
+                                                : theme.colorScheme
+                                                    .onSurfaceVariant),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                              0,
+                                              4,
+                                              48,
+                                              4,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                _summaryWidget(a, theme),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 6),
-                                  Padding(
-                                    // Pull the controls slightly away from the card edge.
-                                    padding: const EdgeInsets.only(right: 6),
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
                                     child: TheDotDropMenuButton<String>(
                                       enabled: !_bulkWorking,
+                                      icon: CupertinoIcons.pencil_circle,
                                       padding: EdgeInsets.zero,
                                       onSelected: (value) {
                                         if (value == "toggle") {
@@ -591,4 +604,3 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 }
-
