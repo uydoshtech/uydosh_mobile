@@ -373,6 +373,11 @@ class _ListingDescriptionTranslationState
         ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.85)
         : ListingDetailThemeHelper.amenityChipBorderColor.withValues(alpha: 0.45);
 
+    // Blue theme primary matches the card background — spinner would disappear.
+    final progressColor = ThemeState().isBlueTheme
+        ? ListingDetailThemeHelper.iconColor
+        : Theme.of(context).colorScheme.primary;
+
     return Tooltip(
       message: L10n.get(tooltipKey),
       child: Material(
@@ -401,7 +406,7 @@ class _ListingDescriptionTranslationState
                     height: 14,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: progressColor,
                     ),
                   )
                 : Text(flagEmoji, style: const TextStyle(fontSize: 16)),

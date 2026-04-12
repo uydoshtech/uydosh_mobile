@@ -123,7 +123,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ThemeIcon(primaryIcon, size: 20),
+                Icon(primaryIcon, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   L10n.get(primaryLabelKey),
