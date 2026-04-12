@@ -10,12 +10,13 @@ import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/admin_user_search_alert_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar_refresh_button.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminUserSearchAlertsScreen extends StatefulWidget {
   const AdminUserSearchAlertsScreen({
@@ -250,6 +251,17 @@ class _AdminUserSearchAlertsScreenState
       appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(L10n.get("admin_user_alerts_title")),
+        actions: [
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 16),
+            child: Center(
+              child: UydoshAppBarRefreshButton(
+                enabled: !_loading,
+                onPressed: _load,
+              ),
+            ),
+          ),
+        ],
       ),
       body: _loading
           ? const Center(child: HouseLoadingIndicator())

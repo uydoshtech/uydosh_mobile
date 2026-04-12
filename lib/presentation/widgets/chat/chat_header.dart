@@ -3,9 +3,8 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar_refresh_button.dart";
 
 class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
 
@@ -48,24 +47,8 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
             Padding(
               padding: const EdgeInsetsDirectional.only(end: 8),
               child: Center(
-                child: ThreeDElevatedSurface(
-                  baseColor: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(999),
-                  child: Tooltip(
-                    message: L10n.get("refresh"),
-                    child: InkWell(
-                      onTap: onRefresh,
-                      customBorder: const CircleBorder(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: ThemeIcon(
-                          Icons.refresh,
-                          color: textColor,
-                          size: 28,
-                        ),
-                      ),
-                    ),
-                  ),
+                child: UydoshAppBarRefreshButton(
+                  onPressed: onRefresh,
                 ),
               ),
             ),
