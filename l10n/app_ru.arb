@@ -130,7 +130,6 @@
   "no_incoming_conversations": "Нет входящих разговоров",
   "no_outgoing_conversations": "Нет исходящих разговоров",
   "no_incoming_conversations_description": "Вы еще не получили сообщений о ваших объявлениях",
-  "no_outgoing_conversations_description": "Вы еще не начали разговоры о других объявлениях",
   "retry": "Повторить",
   "back_to_listing": "Вернуться к объявлению",
   "load_more": "Загрузить еще",

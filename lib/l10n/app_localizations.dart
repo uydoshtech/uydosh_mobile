@@ -736,12 +736,6 @@ abstract class AppLocalizations {
   /// **'You haven\'t received any messages about your listings yet'**
   String get no_incoming_conversations_description;
 
-  /// No description provided for @no_outgoing_conversations_description.
-  ///
-  /// In en, this message translates to:
-  /// **'You haven\'t started any conversations about other listings yet'**
-  String get no_outgoing_conversations_description;
-
   /// No description provided for @retry.
   ///
   /// In en, this message translates to:

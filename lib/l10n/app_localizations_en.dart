@@ -344,10 +344,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'You haven\'t received any messages about your listings yet';
 
   @override
-  String get no_outgoing_conversations_description =>
-      'You haven\'t started any conversations about other listings yet';
-
-  @override
   String get retry => 'Retry';
 
   @override

@@ -130,7 +130,6 @@
   "no_incoming_conversations": "Kiruvchi suhbatlar yo'q",
   "no_outgoing_conversations": "Chiquvchi suhbatlar yo'q",
   "no_incoming_conversations_description": "Sizning e'lonlaringiz haqida hali xabar olmadingiz",
-  "no_outgoing_conversations_description": "Boshqa e'lonlar haqida hali suhbat boshlamadingiz",
   "retry": "Qayta urinish",
   "back_to_listing": "E'longa qaytish",
   "load_more": "Ko'proq yuklash",

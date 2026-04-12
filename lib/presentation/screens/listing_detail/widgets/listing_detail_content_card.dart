@@ -193,7 +193,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
         details.globalPosition,
       ),
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.fromLTRB(6, 7, 6, 7),
         decoration: BoxDecoration(
           color: ListingDetailThemeHelper.amenityChipBackgroundColor,
           borderRadius: BorderRadius.circular(16),

@@ -346,10 +346,6 @@ class AppLocalizationsUz extends AppLocalizations {
       'Sizning e\'lonlaringiz haqida hali xabar olmadingiz';
 
   @override
-  String get no_outgoing_conversations_description =>
-      'Boshqa e\'lonlar haqida hali suhbat boshlamadingiz';
-
-  @override
   String get retry => 'Qayta urinish';
 
   @override

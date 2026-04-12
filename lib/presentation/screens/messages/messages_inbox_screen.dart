@@ -794,14 +794,14 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   color: textColor,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                type == "incoming"
-                    ? L10n.get("no_incoming_conversations_description")
-                    : L10n.get("no_outgoing_conversations_description"),
-                style: TextStyle(fontSize: 16, color: secondaryTextColor),
-                textAlign: TextAlign.center,
-              ),
+              if (type == "incoming") ...[
+                const SizedBox(height: 8),
+                Text(
+                  L10n.get("no_incoming_conversations_description"),
+                  style: TextStyle(fontSize: 16, color: secondaryTextColor),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         );

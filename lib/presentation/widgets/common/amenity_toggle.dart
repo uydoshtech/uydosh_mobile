@@ -112,7 +112,7 @@ class _AmenityToggleState extends State<AmenityToggle>
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               decoration: BoxDecoration(
                 borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
                 gradient: ThreeDSurfaceStyle.surfaceGradient(context, chipBase),

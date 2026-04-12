@@ -348,10 +348,6 @@ class AppLocalizationsRu extends AppLocalizations {
       'Вы еще не получили сообщений о ваших объявлениях';
 
   @override
-  String get no_outgoing_conversations_description =>
-      'Вы еще не начали разговоры о других объявлениях';
-
-  @override
   String get retry => 'Повторить';
 
   @override

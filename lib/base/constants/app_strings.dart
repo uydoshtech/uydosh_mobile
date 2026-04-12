@@ -150,8 +150,6 @@ class AppStrings {
       "no_outgoing_conversations": "No outgoing conversations",
       "no_incoming_conversations_description":
           "You haven't received any messages about your listings yet",
-      "no_outgoing_conversations_description":
-          "You haven't started any conversations about other listings yet",
       "retry": "Retry",
       "back_to_listing": "Back to listing",
       "load_more": "Load More",
@@ -1101,8 +1099,6 @@ class AppStrings {
       "no_outgoing_conversations": "Нет исходящих разговоров",
       "no_incoming_conversations_description":
           "Вы еще не получили сообщений о ваших объявлениях",
-      "no_outgoing_conversations_description":
-          "Вы еще не начали разговоры о других объявлениях",
       "retry": "Повторить",
       "back_to_listing": "Вернуться к объявлению",
       "load_more": "Загрузить еще",
@@ -2063,8 +2059,6 @@ class AppStrings {
       "no_outgoing_conversations": "Chiquvchi suhbatlar yo'q",
       "no_incoming_conversations_description":
           "Sizning e'lonlaringiz haqida hali xabar olmadingiz",
-      "no_outgoing_conversations_description":
-          "Boshqa e'lonlar haqida hali suhbat boshlamadingiz",
       "retry": "Qayta urinish",
       "back_to_listing": "E'longa qaytish",
       "load_more": "Ko'proq yuklash",
