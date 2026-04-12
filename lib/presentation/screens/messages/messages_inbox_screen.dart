@@ -25,6 +25,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
 import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_tile.dart";
 
@@ -438,7 +439,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         _buildTabButtons(incomingConversations, outgoingConversations),
         // Tab content
         Expanded(
-          child: RefreshIndicator(
+          child: UydoshRefreshIndicator(
             onRefresh: () async {
               _loadConversations();
             },

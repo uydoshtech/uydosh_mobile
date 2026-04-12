@@ -11,10 +11,11 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 
 class SupportChatScreen extends StatefulWidget {
   const SupportChatScreen({super.key});
@@ -177,7 +178,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
   Widget _buildContent(BuildContext context) {
     final itemCount = _threads.isEmpty ? 1 : 1 + _threads.length;
-    return RefreshIndicator(
+    return UydoshRefreshIndicator(
       onRefresh: _fetchThreads,
       child: CommonListView(
         padding: const EdgeInsets.all(16),

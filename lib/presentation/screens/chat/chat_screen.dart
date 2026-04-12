@@ -35,9 +35,10 @@ import "package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ChatScreen extends StatefulWidget {
 
@@ -401,7 +402,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildMessagesList(List<Message> messages) {
     if (messages.isEmpty) {
-      return RefreshIndicator(
+      return UydoshRefreshIndicator(
         onRefresh: () async {
           context.read<MessagingBloc>().add(
                 RefreshMessages(conversationId: widget.conversationId),

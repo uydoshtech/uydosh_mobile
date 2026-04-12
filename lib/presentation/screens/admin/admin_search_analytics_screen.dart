@@ -7,10 +7,11 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminSearchAnalyticsScreen extends StatefulWidget {
   const AdminSearchAnalyticsScreen({super.key});
@@ -100,7 +101,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
               text: L10n.get("admin_search_analytics_loading"),
             );
           }
-          return RefreshIndicator(
+          return UydoshRefreshIndicator(
             onRefresh: _loadAnalytics,
             child: CustomScrollView(
               slivers: [

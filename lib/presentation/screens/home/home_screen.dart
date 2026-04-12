@@ -5,7 +5,6 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -20,10 +19,10 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
-import "package:uy_dosh/domain/services/push_notification_service.dart";
-import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
+import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
@@ -585,12 +584,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
-  /// Scrollable wrapper so [RefreshIndicator] works when content is shorter than
+  /// Scrollable wrapper so pull-to-refresh works when content is shorter than
   /// the viewport (welcome / empty states).
   Widget _buildPullToRefreshAroundFillChild(Widget child) {
-    return RefreshIndicator(
-      color: _getRefreshIndicatorColor(),
-      backgroundColor: _getRefreshIndicatorBackgroundColor(),
+    return UydoshRefreshIndicator(
       onRefresh: _onFeedPullRefresh,
       child: PullToRefreshStretchHaptics(
         // Use a single scrollable with a single box child.
@@ -974,9 +971,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadedState(List<Listing> listings, bool hasMore) {
-    return RefreshIndicator(
-      color: _getRefreshIndicatorColor(),
-      backgroundColor: _getRefreshIndicatorBackgroundColor(),
+    return UydoshRefreshIndicator(
       onRefresh: _onFeedPullRefresh,
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
@@ -995,7 +990,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           controller: _scrollController,
           padding: const EdgeInsets.all(16.0),
           showRefreshIndicator:
-              false, // Already handled by RefreshIndicator wrapper
+              false, // Already handled by UydoshRefreshIndicator wrapper
           showLoadMoreIndicator: hasMore,
           hasMore: hasMore,
           loadMoreIndicator: _buildLoadMoreIndicator(),
@@ -1032,28 +1027,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Color _getWelcomeSubtitleColor() {
     return Theme.of(context).textTheme.bodyLarge?.color ?? Colors.grey;
-  }
-
-  /// Get the color for the refresh indicator arrow and progress
-  Color _getRefreshIndicatorColor() {
-    final currentTheme = ThemeState().currentTheme;
-    if (currentTheme == AppTheme.blueTheme) {
-      return Colors.white; // White arrow for blue theme
-    }
-    return Theme.of(
-      context,
-    ).colorScheme.primary; // Default theme color for light theme
-  }
-
-  /// Get the background color for the refresh indicator
-  Color _getRefreshIndicatorBackgroundColor() {
-    final currentTheme = ThemeState().currentTheme;
-    if (currentTheme == AppTheme.blueTheme) {
-      return Colors.white.withValues(
-        alpha: 0.2,
-      ); // Semi-transparent white background
-    }
-    return Colors.transparent; // Transparent background for light theme
   }
 
   /// Build search app bar for search mode

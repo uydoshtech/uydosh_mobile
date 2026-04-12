@@ -9,10 +9,11 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminListingCreationAnalyticsScreen extends StatefulWidget {
   const AdminListingCreationAnalyticsScreen({super.key});
@@ -100,7 +101,7 @@ class _AdminListingCreationAnalyticsScreenState
               text: L10n.get("admin_listing_creation_analytics_loading"),
             );
           }
-          return RefreshIndicator(
+          return UydoshRefreshIndicator(
             onRefresh: _loadAnalytics,
             child: CustomScrollView(
               slivers: [

@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -200,7 +201,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
               return _buildEmptyState();
             }
 
-            return RefreshIndicator(
+            return UydoshRefreshIndicator(
               onRefresh: _onRefresh,
               child: CommonListView(
                 controller: _scrollController,

@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -19,9 +18,9 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -312,9 +311,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       return _buildEmptyState();
     }
 
-    return RefreshIndicator(
-      color: _getRefreshIndicatorColor(),
-      backgroundColor: _getRefreshIndicatorBackgroundColor(),
+    return UydoshRefreshIndicator(
       onRefresh: () => _loadFavoriteListings(isRefresh: true),
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
@@ -383,9 +380,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildEmptyState() {
-    return RefreshIndicator(
-      color: _getRefreshIndicatorColor(),
-      backgroundColor: _getRefreshIndicatorBackgroundColor(),
+    return UydoshRefreshIndicator(
       onRefresh: () => _loadFavoriteListings(isRefresh: true),
       child: PullToRefreshStretchHaptics(
         child: CustomScrollView(
@@ -521,22 +516,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
           ),
     );
-  }
-
-  Color _getRefreshIndicatorColor() {
-    final currentTheme = ThemeState().currentTheme;
-    if (currentTheme == AppTheme.blueTheme) {
-      return Colors.white;
-    }
-    return Theme.of(context).colorScheme.primary;
-  }
-
-  Color _getRefreshIndicatorBackgroundColor() {
-    final currentTheme = ThemeState().currentTheme;
-    if (currentTheme == AppTheme.blueTheme) {
-      return Colors.white.withValues(alpha: 0.2);
-    }
-    return Colors.transparent;
   }
 
   // Theme-dependent color method for loading indicators

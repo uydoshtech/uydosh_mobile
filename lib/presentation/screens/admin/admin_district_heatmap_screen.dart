@@ -11,10 +11,11 @@ import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminDistrictHeatmapScreen extends StatefulWidget {
   const AdminDistrictHeatmapScreen({super.key});
@@ -159,7 +160,7 @@ class _AdminDistrictHeatmapScreenState
             return _buildEmptyState(context);
           }
           final sortedLocations = _getSortedLocations();
-          return RefreshIndicator(
+          return UydoshRefreshIndicator(
             onRefresh: _loadCounts,
             child: CustomScrollView(
               slivers: [

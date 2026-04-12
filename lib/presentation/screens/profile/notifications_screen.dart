@@ -19,8 +19,8 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar_refresh_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
@@ -402,15 +402,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         title: Text(L10n.get("menu_notifications")),
         actions: [
           Padding(
-            padding: const EdgeInsetsDirectional.only(end: 8),
-            child: Center(
-              child: UydoshAppBarRefreshButton(
-                enabled: !_bulkWorking,
-                onPressed: _load,
-              ),
-            ),
-          ),
-          Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: TheDotDropMenuButton<String>(
               enabled: !_loading && !_bulkWorking,
@@ -460,7 +451,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       body: _loading
           ? const Center(child: HouseLoadingIndicator())
-          : RefreshIndicator(
+          : UydoshRefreshIndicator(
               onRefresh: _load,
               child: _alerts.isEmpty
                   ? ListView(

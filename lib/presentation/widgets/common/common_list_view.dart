@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 
 class CommonListView extends StatelessWidget {
   /// Use [children] for small pre-built lists (e.g. loading skeletons).
@@ -113,7 +114,7 @@ class CommonListView extends StatelessWidget {
     );
 
     if (showRefreshIndicator && onRefresh != null) {
-      return RefreshIndicator(onRefresh: onRefresh!, child: listView);
+      return UydoshRefreshIndicator(onRefresh: onRefresh!, child: listView);
     }
 
     return listView;
