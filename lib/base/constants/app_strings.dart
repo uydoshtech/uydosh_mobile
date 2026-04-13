@@ -889,6 +889,10 @@ class AppStrings {
       "search_alert_too_wide":
           "Please select a district or a metro line/station to save an alert.",
       "search_alert_failed": "Could not save this alert. Try again.",
+      "search_alert_station_already_covered":
+          "This station is already included in your alerts.",
+      "search_alert_station_already_covered_by_line":
+          "Station {station} is already covered by your {line} line alert.",
       "search_alert_permission":
           "Enable notifications in settings to receive alerts.",
       "search_alert_updated": "Alert updated.",
@@ -1845,6 +1849,10 @@ class AppStrings {
           "Чтобы сохранить оповещение, выберите район или линию/станцию метро.",
       "search_alert_failed":
           "Не удалось сохранить оповещение. Попробуйте снова.",
+      "search_alert_station_already_covered":
+          "Эта станция уже входит в ваши оповещения.",
+      "search_alert_station_already_covered_by_line":
+          "Станция {station} уже входит в ваше оповещение по линии {line}.",
       "search_alert_permission":
           "Включите уведомления в настройках, чтобы получать оповещения.",
       "search_alert_updated": "Оповещение обновлено.",
@@ -2818,6 +2826,10 @@ class AppStrings {
           "Bildirishnomani saqlash uchun tuman yoki metro liniyasi/stansiyasini tanlang.",
       "search_alert_failed":
           "Bildirishnomani saqlab bo'lmadi. Qayta urinib ko'ring.",
+      "search_alert_station_already_covered":
+          "Bu bekat allaqachon bildirishnomalaringizga kiradi.",
+      "search_alert_station_already_covered_by_line":
+          "{station} bekati allaqachon {line} liniyasi bo‘yicha bildirishnomangizga kiradi.",
       "search_alert_permission":
           "Bildirishnomalar uchun sozlamalarda ruxsat bering.",
       "search_alert_updated": "Bildirishnoma yangilandi.",

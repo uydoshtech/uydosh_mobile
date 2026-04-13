@@ -7,7 +7,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// App-wide three-dot overflow control: circular 3D surface + popup menu,
 /// matching listing detail / profile app bar styling.
-class TheDotDropMenuButton<T> extends StatelessWidget {
+class TheDotDropMenuButton<T> extends StatefulWidget {
   const TheDotDropMenuButton({
     required this.itemBuilder,
     super.key,
@@ -34,6 +34,20 @@ class TheDotDropMenuButton<T> extends StatelessWidget {
   final Offset? offset;
 
   @override
+  State<TheDotDropMenuButton<T>> createState() =>
+      _TheDotDropMenuButtonState<T>();
+}
+
+class _TheDotDropMenuButtonState<T> extends State<TheDotDropMenuButton<T>> {
+  bool _pressed = false;
+
+  void _setPressed(bool v) {
+    if (!mounted) return;
+    if (_pressed == v) return;
+    setState(() => _pressed = v);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: AnimationSettingsState(),
@@ -51,44 +65,54 @@ class TheDotDropMenuButton<T> extends StatelessWidget {
         final pillRadius = BorderRadius.circular(999);
 
         return PopupMenuButton<T>(
-          enabled: enabled,
-          initialValue: initialValue,
-          offset: offset ?? Offset.zero,
+          enabled: widget.enabled,
+          initialValue: widget.initialValue,
+          offset: widget.offset ?? Offset.zero,
           borderRadius: pillRadius,
           onOpened: HapticFeedbackUtils.impact,
           onSelected:
-              onSelected == null
+              widget.onSelected == null
                   ? null
                   : (value) {
                     HapticFeedbackUtils.impact();
-                    onSelected!(value);
+                    widget.onSelected!(value);
                   },
           color: Theme.of(context).popupMenuTheme.color,
           popUpAnimationStyle: style,
-          itemBuilder: itemBuilder,
-          child: Padding(
-            padding: padding,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: pillRadius,
-                gradient: ThreeDSurfaceStyle.surfaceGradient(
-                  context,
-                  scheme.surface,
+          itemBuilder: widget.itemBuilder,
+          child: Listener(
+            onPointerDown: (_) => _setPressed(true),
+            onPointerUp: (_) => _setPressed(false),
+            onPointerCancel: (_) => _setPressed(false),
+            child: Padding(
+              padding: widget.padding,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 90),
+                transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+                decoration: BoxDecoration(
+                  borderRadius: pillRadius,
+                  gradient: ThreeDSurfaceStyle.surfaceGradient(
+                    context,
+                    scheme.surface,
+                  ),
+                  boxShadow:
+                      _pressed || !widget.enabled
+                          ? ThreeDSurfaceStyle.pressedShadows(context)
+                          : ThreeDSurfaceStyle.elevatedShadows(context),
                 ),
-                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Tooltip(
-                  message: tooltip ?? "",
-                  child: ThemeIcon(
-                    icon,
-                    size: iconSize,
-                    color:
-                        iconColor ??
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Tooltip(
+                    message: widget.tooltip ?? "",
+                    child: ThemeIcon(
+                      widget.icon,
+                      size: widget.iconSize,
+                      color:
+                          widget.iconColor ??
                         (ThemeState().isBlueTheme
                             ? Colors.white
                             : Theme.of(context).iconTheme.color),
+                    ),
                   ),
                 ),
               ),

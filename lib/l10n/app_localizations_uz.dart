@@ -2164,6 +2164,16 @@ class AppLocalizationsUz extends AppLocalizations {
       'Bildirishnomani saqlab bo\'lmadi. Qayta urinib ko\'ring.';
 
   @override
+  String get search_alert_station_already_covered =>
+      'Bu bekat allaqachon bildirishnomalaringizga kiradi.';
+
+  @override
+  String search_alert_station_already_covered_by_line(
+      String station, String line) {
+    return '$station bekati allaqachon $line liniyasi bo‘yicha bildirishnomangizga kiradi.';
+  }
+
+  @override
   String get search_alert_permission =>
       'Bildirishnomalar uchun sozlamalarda ruxsat bering.';
 

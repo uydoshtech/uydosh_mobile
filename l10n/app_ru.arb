@@ -806,6 +806,14 @@
   "search_alert_login_required": "Войдите, чтобы получать уведомления по этому поиску.",
   "search_alert_created": "Мы сообщим, когда появятся подходящие объявления.",
   "search_alert_failed": "Не удалось сохранить оповещение. Попробуйте снова.",
+  "search_alert_station_already_covered": "Эта станция уже входит в ваши оповещения.",
+  "search_alert_station_already_covered_by_line": "Станция {station} уже входит в ваше оповещение по линии {line}.",
+  "@search_alert_station_already_covered_by_line": {
+    "placeholders": {
+      "station": { "type": "String", "example": "Пахтакор" },
+      "line": { "type": "String", "example": "Чиланзар" }
+    }
+  },
   "search_alert_permission": "Включите уведомления в настройках, чтобы получать оповещения.",
   "search_alert_updated": "Оповещение обновлено.",
   "tutorial_search_title": "Поиск объявлений",

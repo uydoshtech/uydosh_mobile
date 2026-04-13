@@ -4086,6 +4086,19 @@ abstract class AppLocalizations {
   /// **'Could not save this alert. Try again.'**
   String get search_alert_failed;
 
+  /// No description provided for @search_alert_station_already_covered.
+  ///
+  /// In en, this message translates to:
+  /// **'This station is already included in your alerts.'**
+  String get search_alert_station_already_covered;
+
+  /// No description provided for @search_alert_station_already_covered_by_line.
+  ///
+  /// In en, this message translates to:
+  /// **'Station {station} is already covered by your {line} line alert.'**
+  String search_alert_station_already_covered_by_line(
+      String station, String line);
+
   /// No description provided for @search_alert_permission.
   ///
   /// In en, this message translates to:

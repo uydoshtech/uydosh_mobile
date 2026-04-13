@@ -814,6 +814,14 @@
   "search_alert_login_required": "Bu qidiruv bo'yicha bildirishnomalar uchun tizimga kiring.",
   "search_alert_created": "Mos e'lonlar chiqqanda xabar beramiz.",
   "search_alert_failed": "Bildirishnomani saqlab bo'lmadi. Qayta urinib ko'ring.",
+  "search_alert_station_already_covered": "Bu bekat allaqachon bildirishnomalaringizga kiradi.",
+  "search_alert_station_already_covered_by_line": "{station} bekati allaqachon {line} liniyasi bo‘yicha bildirishnomangizga kiradi.",
+  "@search_alert_station_already_covered_by_line": {
+    "placeholders": {
+      "station": { "type": "String", "example": "Paxtakor" },
+      "line": { "type": "String", "example": "Chilonzor" }
+    }
+  },
   "search_alert_permission": "Bildirishnomalar uchun sozlamalarda ruxsat bering.",
   "search_alert_updated": "Bildirishnoma yangilandi.",
   "tutorial_search_title": "E'lonlarni qidirish",

@@ -814,6 +814,14 @@
   "search_alert_login_required": "Sign in to get notifications for this search.",
   "search_alert_created": "You will be notified when matching listings are posted.",
   "search_alert_failed": "Could not save this alert. Try again.",
+  "search_alert_station_already_covered": "This station is already included in your alerts.",
+  "search_alert_station_already_covered_by_line": "Station {station} is already covered by your {line} line alert.",
+  "@search_alert_station_already_covered_by_line": {
+    "placeholders": {
+      "station": { "type": "String", "example": "Paxtakor" },
+      "line": { "type": "String", "example": "Chilonzor" }
+    }
+  },
   "search_alert_permission": "Enable notifications in settings to receive alerts.",
   "search_alert_updated": "Alert updated.",
   "tutorial_search_title": "Search for listings",

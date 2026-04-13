@@ -2128,6 +2128,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search_alert_failed => 'Could not save this alert. Try again.';
 
   @override
+  String get search_alert_station_already_covered =>
+      'This station is already included in your alerts.';
+
+  @override
+  String search_alert_station_already_covered_by_line(
+      String station, String line) {
+    return 'Station $station is already covered by your $line line alert.';
+  }
+
+  @override
   String get search_alert_permission =>
       'Enable notifications in settings to receive alerts.';
 

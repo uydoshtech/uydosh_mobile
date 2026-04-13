@@ -904,6 +904,54 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     setState(() => _isCreatingSearchAlert = true);
     try {
+      // Prevent creating a station-level alert when the user already has a
+      // broader alert that covers the same station (e.g. an "entire line"
+      // alert).
+      final stationId = filters.subwayStationId;
+      if (stationId != null && stationId > 0) {
+        final alerts = await getIt<ISearchAlertService>().listAlerts();
+        if (!mounted) return;
+
+        final station = MetroCache.getStationById(stationId);
+        final stationLineId = station?.line;
+
+        final coveredByExisting = alerts.any((a) {
+          final ids = a.subwayStationIds;
+          if (ids != null && ids.contains(stationId)) return true;
+
+          if (stationLineId == null) return false;
+
+          // Consider a "line" alert if it targets the line and doesn't
+          // explicitly target a single station.
+          final isLineAlert =
+              a.subwayLineId != null &&
+              a.subwayLineId == stationLineId &&
+              (a.subwayStationId == null || a.subwayStationId! <= 0) &&
+              (ids == null || ids.length > 1);
+          return isLineAlert;
+        });
+
+        if (coveredByExisting) {
+          final lang = L10n.currentLanguage;
+          final stationName =
+              MetroCache.getStationDisplayName(stationId, lang).trim();
+          final lineName = stationLineId == null
+              ? ""
+              : MetroCache.getLineName(stationLineId, lang).trim();
+
+          ToastTheme.showWarning(
+            context,
+            message: (stationName.isEmpty || lineName.isEmpty)
+                ? L10n.get("search_alert_station_already_covered")
+                : L10n.getWithParams(
+                    "search_alert_station_already_covered_by_line",
+                    params: {"station": stationName, "line": lineName},
+                  ),
+          );
+          return;
+        }
+      }
+
       final err =
           await getIt<ISearchAlertService>().createAlertForCurrentSearch(
         listingTypeId:

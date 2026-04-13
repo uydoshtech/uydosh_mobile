@@ -3,6 +3,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/support_chat_message.dart";
 import "package:uy_dosh/domain/models/support_chat_thread.dart";
@@ -13,6 +14,8 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
@@ -570,40 +573,49 @@ class _UserSupportChatThreadScreenState
           child: Row(
             children: [
               Expanded(
-                child: TextField(
+                child: ThreeDTextField(
                   controller: _messageController,
-                  style: const TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: L10n.get("contact_support_message_hint"),
-                    hintStyle: TextStyle(color: Colors.grey[600]),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
+                  hintText: L10n.get("contact_support_message_hint"),
+                  backgroundColor: themeState.inputBackgroundColor,
                   maxLines: 3,
                   minLines: 1,
+                  textCapitalization: TextCapitalization.sentences,
+                  textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _sendMessage(),
                 ),
               ),
               const SizedBox(width: 8),
-              IconButton(
-                onPressed: _isSending ? null : _sendMessage,
-                icon: _isSending
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            themeState.sendButtonColor,
-                          ),
-                        ),
-                      )
-                    : ThemeIcon(Icons.send, color: themeState.sendButtonColor),
+              ThreeDPillButton(
+                onPressed:
+                    _isSending
+                        ? null
+                        : () {
+                          HapticFeedbackUtils.impact();
+                          _sendMessage();
+                        },
+                padding: const EdgeInsets.all(10),
+                child: SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: Center(
+                    child:
+                        _isSending
+                            ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  themeState.sendButtonColor,
+                                ),
+                              ),
+                            )
+                            : ThemeIcon(
+                              Icons.send,
+                              color: themeState.sendButtonColor,
+                            ),
+                  ),
+                ),
               ),
             ],
           ),

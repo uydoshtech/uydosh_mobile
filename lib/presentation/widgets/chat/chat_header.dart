@@ -3,6 +3,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar_refresh_button.dart";
 
@@ -31,6 +32,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
         final textColor = themeState.textColor;
 
         return UydoshAppBar(
+          leading: ThreeDAppBarIconButton.backLeading(context),
           title: Row(
             children: [
               Expanded(

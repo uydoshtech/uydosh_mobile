@@ -2,7 +2,10 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 
 class ChatMessageInput extends StatelessWidget {
 
@@ -35,44 +38,44 @@ class ChatMessageInput extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: TextField(
+                child: ThreeDTextField(
                   controller: controller,
-                  style: const TextStyle(
-                    color: Colors.black, // Always use black text for visibility
-                  ),
-                  decoration: InputDecoration(
-                    hintText: L10n.get("type_message"),
-                    hintStyle: TextStyle(
-                      color: Colors.grey[600], // Grey hint text
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
+                  hintText: L10n.get("type_message"),
+                  backgroundColor: inputBackgroundColor,
                   maxLines: null,
                   textCapitalization: TextCapitalization.sentences,
+                  textInputAction: TextInputAction.newline,
                 ),
               ),
               const SizedBox(width: 8),
-              IconButton(
-                onPressed: isSendingMessage ? null : onSend,
-                icon:
+              ThreeDPillButton(
+                onPressed:
                     isSendingMessage
-                        ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              sendButtonColor,
-                            ),
-                          ),
-                        )
-                        : ThemeIcon(Icons.send, color: sendButtonColor),
+                        ? null
+                        : () {
+                          HapticFeedbackUtils.impact();
+                          onSend();
+                        },
+                padding: const EdgeInsets.all(10),
+                child: SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: Center(
+                    child:
+                        isSendingMessage
+                            ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  sendButtonColor,
+                                ),
+                              ),
+                            )
+                            : ThemeIcon(Icons.send, color: sendButtonColor),
+                  ),
+                ),
               ),
             ],
           ),

@@ -546,51 +546,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ThemeIcon(
-                          Icons.mail,
-                          size: 18,
-                          color:
-                              _selectedTabIndex == 0
-                                  ? selectedTextColor
-                                  : unselectedTextColor,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          L10n.get("incoming"),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                _selectedTabIndex == 0
-                                    ? selectedTextColor
-                                    : unselectedTextColor,
-                          ),
-                        ),
-                        if (incomingCount > 0) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 20,
-                            height: 20,
-                            decoration: const BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                "$incomingCount",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                    child: _ToggleTabContent(
+                      isSelected: _selectedTabIndex == 0,
+                      label: L10n.get("incoming"),
+                      badgeCount: incomingCount,
+                      selectedTextColor: selectedTextColor,
+                      unselectedTextColor: unselectedTextColor,
                     ),
                   ),
                 ),
@@ -607,51 +568,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ThemeIcon(
-                          Icons.mail,
-                          size: 18,
-                          color:
-                              _selectedTabIndex == 1
-                                  ? selectedTextColor
-                                  : unselectedTextColor,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          L10n.get("outgoing"),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                _selectedTabIndex == 1
-                                    ? selectedTextColor
-                                    : unselectedTextColor,
-                          ),
-                        ),
-                        if (outgoingCount > 0) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 20,
-                            height: 20,
-                            decoration: const BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                "$outgoingCount",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                    child: _ToggleTabContent(
+                      isSelected: _selectedTabIndex == 1,
+                      label: L10n.get("outgoing"),
+                      badgeCount: outgoingCount,
+                      selectedTextColor: selectedTextColor,
+                      unselectedTextColor: unselectedTextColor,
                     ),
                   ),
                 ),
@@ -860,6 +782,86 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           ),
         );
       },
+    );
+  }
+}
+
+class _ToggleTabContent extends StatelessWidget {
+  const _ToggleTabContent({
+    required this.isSelected,
+    required this.label,
+    required this.badgeCount,
+    required this.selectedTextColor,
+    required this.unselectedTextColor,
+  });
+
+  final bool isSelected;
+  final String label;
+  final int badgeCount;
+  final Color selectedTextColor;
+  final Color unselectedTextColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final targetColor = isSelected ? selectedTextColor : unselectedTextColor;
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeInOut,
+      opacity: isSelected ? 1.0 : 0.82,
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        scale: isSelected ? 1.0 : 0.96,
+        child: AnimatedSlide(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          offset: isSelected ? Offset.zero : const Offset(0, 0.06),
+          child: Center(
+            child: DefaultTextStyle(
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: targetColor,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ThemeIcon(Icons.mail, size: 18, color: targetColor),
+                  const SizedBox(width: 8),
+                  Text(label),
+                  if (badgeCount > 0) ...[
+                    const SizedBox(width: 8),
+                    AnimatedScale(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                      scale: isSelected ? 1.0 : 0.96,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: const BoxDecoration(
+                          color: AppColors.success,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            "$badgeCount",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

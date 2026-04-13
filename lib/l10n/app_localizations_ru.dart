@@ -2144,6 +2144,16 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось сохранить оповещение. Попробуйте снова.';
 
   @override
+  String get search_alert_station_already_covered =>
+      'Эта станция уже входит в ваши оповещения.';
+
+  @override
+  String search_alert_station_already_covered_by_line(
+      String station, String line) {
+    return 'Станция $station уже входит в ваше оповещение по линии $line.';
+  }
+
+  @override
   String get search_alert_permission =>
       'Включите уведомления в настройках, чтобы получать оповещения.';
 

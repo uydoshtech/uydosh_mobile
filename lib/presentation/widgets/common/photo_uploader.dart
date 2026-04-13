@@ -1,6 +1,7 @@
 import "dart:io";
 
 import "package:cached_network_image/cached_network_image.dart";
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -215,6 +216,22 @@ class _PhotoUploaderState extends State<PhotoUploader>
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                ThemeIcon(
+                  CupertinoIcons.photo,
+                  size: 48,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Photos ${(widget.existingPhotos.length + widget.selectedPhotos.length).clamp(0, widget.maxPhotos)} / ${widget.maxPhotos}",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
                   child: ThreeDPillButton(
