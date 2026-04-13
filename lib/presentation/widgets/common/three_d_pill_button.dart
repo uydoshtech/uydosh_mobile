@@ -9,6 +9,7 @@ class ThreeDPillButton extends StatefulWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     this.borderRadius = const BorderRadius.all(Radius.circular(999)),
     this.backgroundColor,
+    this.borderSide,
   });
 
   final Widget child;
@@ -16,6 +17,7 @@ class ThreeDPillButton extends StatefulWidget {
   final EdgeInsets padding;
   final BorderRadius borderRadius;
   final Color? backgroundColor;
+  final BorderSide? borderSide;
 
   bool get _enabled => onPressed != null;
 
@@ -52,6 +54,8 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
               borderRadius: widget.borderRadius,
               gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
               boxShadow: shadows,
+              border:
+                  widget.borderSide == null ? null : Border.fromBorderSide(widget.borderSide!),
             ),
             child: Opacity(
               opacity: enabled ? 1 : 0.55,

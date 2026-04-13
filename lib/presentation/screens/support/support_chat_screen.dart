@@ -564,11 +564,17 @@ class _UserSupportChatThreadScreenState
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
+        final scheme = Theme.of(context).colorScheme;
         final inputFieldBg = themeState.inputBackgroundColor;
         final inputFieldBrightness = ThemeData.estimateBrightnessForColor(inputFieldBg);
         final inputFieldTextColor =
             inputFieldBrightness == Brightness.dark ? Colors.white : Colors.black;
         final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
+        final sendButtonBase = Color.lerp(
+          scheme.surface,
+          scheme.onSurface,
+          themeState.isBlueTheme ? 0.06 : 0.02,
+        )!;
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           decoration: BoxDecoration(
@@ -602,6 +608,11 @@ class _UserSupportChatThreadScreenState
                           _sendMessage();
                         },
                 padding: const EdgeInsets.all(10),
+                backgroundColor: sendButtonBase,
+                borderSide: BorderSide(
+                  color: scheme.onSurface.withValues(alpha: 0.06),
+                  width: 1,
+                ),
                 child: SizedBox(
                   width: 28,
                   height: 28,

@@ -32,6 +32,12 @@ class ChatMessageInput extends StatelessWidget {
         final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
         final sendButtonColor = themeState.sendButtonColor;
         final borderColor = themeState.borderColor;
+        final scheme = Theme.of(context).colorScheme;
+        final sendButtonBase = Color.lerp(
+          scheme.surface,
+          scheme.onSurface,
+          themeState.isBlueTheme ? 0.06 : 0.02,
+        )!;
 
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -64,6 +70,11 @@ class ChatMessageInput extends StatelessWidget {
                           onSend();
                         },
                 padding: const EdgeInsets.all(10),
+                backgroundColor: sendButtonBase,
+                borderSide: BorderSide(
+                  color: scheme.onSurface.withValues(alpha: 0.06),
+                  width: 1,
+                ),
                 child: SizedBox(
                   width: 28,
                   height: 28,
