@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -21,18 +22,22 @@ class ChatAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final diameter = 32.0;
     final hasInitials = initials != null && initials!.trim().isNotEmpty;
+    final isBlueTheme = ThemeState().isBlueTheme;
 
     // Match the profile avatar's 3D chrome: gradient + neumorphic shadows.
     // Keep a subtle tint difference so "me" reads distinct.
     final surface = Theme.of(context).colorScheme.surface;
     final onSurface = Theme.of(context).colorScheme.onSurface;
-    final base = isCurrentUser
-        ? Color.lerp(surface, onSurface, 0.06)!
-        : Color.lerp(surface, onSurface, 0.02)!;
-    final initialsColor = Theme.of(context).colorScheme.onSurface;
-    final personIconColor = (!isCurrentUser && !hasInitials)
-        ? Colors.black
-        : Theme.of(context).colorScheme.onSurface;
+    final primary = Theme.of(context).colorScheme.primary;
+
+    // Blue theme: other person's avatar is white face with blue glyphs.
+    final base = (!isCurrentUser && isBlueTheme)
+        ? Colors.white
+        : (isCurrentUser
+              ? Color.lerp(surface, onSurface, 0.06)!
+              : Color.lerp(surface, onSurface, 0.02)!);
+    final glyphColor =
+        (!isCurrentUser && isBlueTheme) ? primary : Theme.of(context).colorScheme.onSurface;
 
     return SizedBox(
       width: diameter,
@@ -53,13 +58,13 @@ class ChatAvatar extends StatelessWidget {
                 ? Text(
                     initials!.trim(),
                     style: TextStyle(
-                      color: initialsColor,
+                      color: glyphColor,
                       fontWeight: FontWeight.w800,
                       fontSize: 12,
                       letterSpacing: 0.3,
                     ),
                   )
-                : ThemeIcon(Icons.person, size: 16, color: personIconColor),
+                : ThemeIcon(Icons.person, size: 16, color: glyphColor),
           ),
         ),
       ),
