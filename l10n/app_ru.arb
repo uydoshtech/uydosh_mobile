@@ -526,7 +526,7 @@
   "admin_panel_category_management": "Пользователи и модерация",
   "admin_panel_category_maps": "Карты",
   "admin_panel_category_analytics": "Аналитика",
-  "admin_panel_category_settings": "Настройки",
+  "admin_panel_category_settings": "Настройки приложения",
   "admin_panel_section_content_moderation": "Настройки клиента",
   "admin_content_moderation_title": "Настройки клиента",
   "admin_content_moderation_description": "Модерация фото (сервер): если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).",

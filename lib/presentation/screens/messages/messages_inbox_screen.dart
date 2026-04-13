@@ -729,7 +729,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ThemeIcon(
-                type == "incoming" ? Icons.inbox_outlined : Icons.send_outlined,
+                type == "incoming" ? Icons.inbox_outlined : Icons.mail_outline,
                 size: 64,
                 color: secondaryTextColor,
               ),

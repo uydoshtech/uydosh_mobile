@@ -22,21 +22,20 @@ class _AdminAreaPriceCacheScreenState extends State<AdminAreaPriceCacheScreen> {
       getIt<IAdminAreaPriceCacheService>();
 
   bool _running = false;
-  String? _resultText;
+  AreaPriceCacheRefreshResult? _result;
   String? _errorText;
 
   Future<void> _run() async {
     setState(() {
       _running = true;
       _errorText = null;
-      _resultText = null;
+      _result = null;
     });
     try {
       final r = await _service.refreshCache();
       if (!mounted) return;
       setState(() {
-        _resultText =
-            "durationMs=${r.durationMs}, cache_rows=${r.rowCount}, source_listings=${r.listingCount}";
+        _result = r;
         _running = false;
       });
     } catch (e) {
@@ -51,6 +50,9 @@ class _AdminAreaPriceCacheScreenState extends State<AdminAreaPriceCacheScreen> {
   @override
   Widget build(BuildContext context) {
     final isBlue = ThemeState().isBlueTheme;
+    final finePrintStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        );
     final primaryFullWidthStyle = isBlue
         ? FilledButton.styleFrom(
             backgroundColor: BlueThemeColors.buttonPrimary,
@@ -109,7 +111,7 @@ class _AdminAreaPriceCacheScreenState extends State<AdminAreaPriceCacheScreen> {
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ],
-          if (_resultText != null) ...[
+          if (_result != null) ...[
             const SizedBox(height: 24),
             Text(
               L10n.get("admin_telegram_sync_result_header"),
@@ -118,7 +120,18 @@ class _AdminAreaPriceCacheScreenState extends State<AdminAreaPriceCacheScreen> {
                   ),
             ),
             const SizedBox(height: 8),
-            SelectableText(_resultText!),
+            SelectableText(
+              "• Duration: ${_result!.durationMs} ms",
+              style: finePrintStyle,
+            ),
+            SelectableText(
+              "• Cache rows: ${_result!.rowCount}",
+              style: finePrintStyle,
+            ),
+            SelectableText(
+              "• Source listings: ${_result!.listingCount}",
+              style: finePrintStyle,
+            ),
           ],
         ],
       ),

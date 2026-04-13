@@ -1263,7 +1263,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_panel_category_analytics => 'Analytics';
 
   @override
-  String get admin_panel_category_settings => 'Settings';
+  String get admin_panel_category_settings => 'Application Settings';
 
   @override
   String get admin_panel_section_content_moderation => 'Client configuration';

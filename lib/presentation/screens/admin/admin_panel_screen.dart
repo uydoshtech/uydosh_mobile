@@ -228,7 +228,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 },
               ),
               _AdminMenuRow(
-                icon: Icons.settings_outlined,
+                icon: Icons.tune_outlined,
                 titleKey: "admin_panel_section_content_moderation",
                 iconColor: iconColor,
                 onTap: () {

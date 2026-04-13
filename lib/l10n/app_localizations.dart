@@ -2457,7 +2457,7 @@ abstract class AppLocalizations {
   /// No description provided for @admin_panel_category_settings.
   ///
   /// In en, this message translates to:
-  /// **'Settings'**
+  /// **'Application Settings'**
   String get admin_panel_category_settings;
 
   /// No description provided for @admin_panel_section_content_moderation.

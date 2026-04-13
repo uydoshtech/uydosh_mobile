@@ -534,7 +534,7 @@
   "admin_panel_category_management": "Users & moderation",
   "admin_panel_category_maps": "Maps",
   "admin_panel_category_analytics": "Analytics",
-  "admin_panel_category_settings": "Settings",
+  "admin_panel_category_settings": "Application Settings",
   "admin_panel_section_content_moderation": "Client configuration",
   "admin_content_moderation_title": "Client configuration",
   "admin_content_moderation_description": "Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).",

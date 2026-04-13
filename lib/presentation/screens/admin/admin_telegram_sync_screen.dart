@@ -52,7 +52,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   bool _skipListingImport = false;
   bool _running = false;
   bool _exporting = false;
-  String? _resultText;
+  TelegramSyncRunResult? _lastResult;
   String? _errorText;
 
   @override
@@ -127,7 +127,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     if (chat.isEmpty) {
       setState(() {
         _errorText = L10n.get("admin_telegram_sync_invalid_chat_limit");
-        _resultText = null;
+        _lastResult = null;
       });
       return;
     }
@@ -135,7 +135,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     setState(() {
       _running = true;
       _errorText = null;
-      _resultText = null;
+      _lastResult = null;
     });
 
     try {
@@ -147,51 +147,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         importUserId: importUserId,
       );
       if (!mounted) return;
-      final buf = StringBuffer();
-      buf.writeln(L10n.get("admin_telegram_sync_sync_section"));
-      buf.writeln(
-        "scanned=${r.sync.scanned}, skippedNoPeer=${r.sync.skippedNoPeer}, "
-        "skippedBroadcast=${r.sync.skippedBroadcast}, batches=${r.sync.batches}",
-      );
-      buf.writeln(
-        "duplicatePolicy=${r.sync.duplicatePolicy}, chatKey=${r.sync.chatKey ?? "—"}",
-      );
-      final idScope = r.sync.syncedTelegramMessageIdsCount;
-      if (idScope != null) {
-        buf.writeln("syncedTelegramMessageIdsCount=$idScope");
-      }
-      if (r.sync.missingIds.isNotEmpty) {
-        buf.writeln("missingIds=${r.sync.missingIds.join(", ")}");
-      }
-      if (r.listingImportNote != null) {
-        buf.writeln();
-        buf.writeln(r.listingImportNote);
-      }
-      final li = r.listingImport;
-      if (li != null) {
-        buf.writeln();
-        buf.writeln(L10n.get("admin_telegram_sync_listing_section"));
-        final scoped = li.scopedToTelegramMessageIds;
-        if (scoped != null) {
-          buf.writeln("scopedToTelegramMessageIds=$scoped");
-        }
-        buf.writeln(
-          "groups=${li.groupsTotal}, created=${li.imported}, "
-          "skippedEmpty=${li.skippedEmpty}, skippedBroadcast=${li.skippedBroadcast}, "
-          "skippedNoType=${li.skippedNoListingType}, skippedFailed=${li.skippedFailed}",
-        );
-        if (li.errors.isNotEmpty) {
-          buf.writeln("errors:");
-          for (final e in li.errors.take(12)) {
-            buf.writeln("  • $e");
-          }
-          if (li.errors.length > 12) {
-            buf.writeln("  … (${li.errors.length - 12} more)");
-          }
-        }
-      }
       setState(() {
-        _resultText = buf.toString();
+        _lastResult = r;
         _running = false;
       });
     } catch (e) {
@@ -236,6 +193,127 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         });
       }
     }
+  }
+
+  Widget _bulletLine(
+    String text, {
+    EdgeInsetsGeometry padding = const EdgeInsets.only(bottom: 6),
+    double indent = 0,
+  }) {
+    final theme = Theme.of(context);
+    final bulletColor = theme.colorScheme.onSurfaceVariant;
+    const discSize = 6.0;
+
+    return Padding(
+      padding: padding,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: indent),
+          Padding(
+            padding: const EdgeInsets.only(top: 7),
+            child: Container(
+              width: discSize,
+              height: discSize,
+              decoration: BoxDecoration(color: bulletColor, shape: BoxShape.circle),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: SelectableText(text)),
+        ],
+      ),
+    );
+  }
+
+  Widget _resultView(TelegramSyncRunResult r) {
+    final theme = Theme.of(context);
+    final li = r.listingImport;
+    final created = li?.imported ?? 0;
+
+    final sectionTitleStyle = theme.textTheme.bodyMedium?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+
+    final dbSyncSection = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SelectableText(
+          L10n.get("admin_telegram_sync_sync_section"),
+          style: sectionTitleStyle,
+        ),
+        const SizedBox(height: 8),
+        _bulletLine("scanned=${r.sync.scanned}"),
+        _bulletLine("created=$created"),
+        _bulletLine("skippedNoPeer=${r.sync.skippedNoPeer}"),
+        _bulletLine("skippedBroadcast=${r.sync.skippedBroadcast}"),
+      ],
+    );
+
+    final listingImportSection = li == null
+        ? const SizedBox.shrink()
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SelectableText(
+                L10n.get("admin_telegram_sync_listing_section"),
+                style: sectionTitleStyle,
+              ),
+              const SizedBox(height: 8),
+              _bulletLine("created=${li.imported}"),
+              _bulletLine("skippedEmpty=${li.skippedEmpty}"),
+              _bulletLine("skippedBroadcast=${li.skippedBroadcast}"),
+              _bulletLine("skippedNoType=${li.skippedNoListingType}"),
+              _bulletLine("skippedFailed=${li.skippedFailed}"),
+              if (li.errors.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                SelectableText("errors:", style: sectionTitleStyle),
+                const SizedBox(height: 6),
+                ...li.errors.take(12).map((e) => _bulletLine(e, indent: 12)),
+                if (li.errors.length > 12)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12, top: 2),
+                    child: SelectableText("… (${li.errors.length - 12} more)"),
+                  ),
+              ],
+            ],
+          );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (li == null) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              dbSyncSection,
+            ],
+          );
+        }
+
+        // Prefer true 2-column layout on phones/tablets. On very narrow widths,
+        // fall back to a single column to avoid cramped/overflowing bullets.
+        const gap = 24.0;
+        final maxWidth = constraints.maxWidth;
+        if (maxWidth < 320) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              dbSyncSection,
+              const SizedBox(height: 12),
+              listingImportSection,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: dbSyncSection),
+            const SizedBox(width: gap),
+            Expanded(child: listingImportSection),
+          ],
+        );
+      },
+    );
   }
 
   /// Blue theme uses white [InputDecorationTheme.fillColor] with white label styles
@@ -353,7 +431,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            clipBehavior: Clip.antiAlias,
+            // Don't clip: TextField floating labels can extend upward slightly.
+            clipBehavior: Clip.none,
             child: Theme(
               data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
               child: ExpansionTile(
@@ -369,7 +448,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                 ),
                 tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                // Extra top padding prevents any label overlap in tight layouts.
+                childrenPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 title: _expansionSectionTitle(
                   context,
                   title: L10n.get("admin_telegram_sync_title"),
@@ -579,16 +659,9 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                           : L10n.get("admin_telegram_sync_run"),
                     ),
                   ),
-                  if (_resultText != null) ...[
+                  if (_lastResult != null) ...[
                     const SizedBox(height: 20),
-                    Text(
-                      L10n.get("admin_telegram_sync_result_header"),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    SelectableText(_resultText!),
+                    _resultView(_lastResult!),
                   ],
                 ],
               ),
