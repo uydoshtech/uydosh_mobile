@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -70,7 +72,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   int _defaultListingTypeFromProfile = 2; // Profile-based default for reset
   int _selectedGender = 1;
   int _defaultGenderFromProfile = 1; // Profile-based default for reset
-  double _price = 50.0;
+  /// Roommate listing (type 2): single rent amount.
+  double _roommatePrice = 50.0;
+  /// Room-needed listing (type 1): budget range (API still stores one `price`).
+  double _roomBudgetMin = 50.0;
+  double _roomBudgetMax = 150.0;
+
+  static const double _priceSliderMin = 10.0;
+  static const double _priceSliderMax = 500.0;
+
+  bool get _pricePickerSingleHandle => _selectedListingTypeId == 2;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -338,6 +349,30 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     FocusScope.of(context).unfocus();
   }
 
+  /// When switching to "room needed", seed a sensible range from the scalar rent.
+  void _deriveBudgetRangeFromRoommatePrice() {
+    final s = _roommatePrice.clamp(_priceSliderMin, _priceSliderMax);
+    final hi = math.min(_priceSliderMax, math.max(s + 40, s + 10));
+    final lo = math.max(_priceSliderMin, s - 40);
+    _roomBudgetMin = lo >= hi ? math.max(_priceSliderMin, hi - 50) : lo;
+    _roomBudgetMax = hi;
+  }
+
+  /// When switching to "roommate needed", collapse range to a single value.
+  void _deriveRoommatePriceFromBudget() {
+    final mid = (_roomBudgetMin + _roomBudgetMax) / 2;
+    _roommatePrice =
+        ((mid / 10).round() * 10.0).clamp(_priceSliderMin, _priceSliderMax);
+  }
+
+  int _priceForCreateRequest() {
+    if (_selectedListingTypeId == 2) {
+      return _roommatePrice.round();
+    }
+    // Backend listing row has a single `price`; use midpoint of budget range.
+    return ((_roomBudgetMin + _roomBudgetMax) / 2).round();
+  }
+
   /// Generate title based on listing type and gender
   String _generateTitle() {
     return L10n.get(
@@ -512,11 +547,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   scrollController: _listingTypeScrollController,
                   onListingTypeChanged: (listingTypeId) {
                     setState(() {
+                      final prevType = _selectedListingTypeId;
                       _selectedListingTypeId = listingTypeId;
                       // Clear photos when switching to "room needed" (listingTypeId == 1)
                       if (listingTypeId == 1) {
                         _selectedPhotos.clear();
                         _primaryPhotoIndex = null;
+                      }
+                      if (prevType == 2 && listingTypeId == 1) {
+                        _deriveBudgetRangeFromRoommatePrice();
+                      } else if (prevType == 1 && listingTypeId == 2) {
+                        _deriveRoommatePriceFromBudget();
                       }
                     });
                     _updateTitle();
@@ -595,17 +636,24 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           showArrows: false,
         ),
         const SizedBox(height: 10), // Space between location and price range
-        // Price Field - Single handle, stored as both min and max
         PriceRangePicker(
-          minPrice: 10.0,
-          maxPrice: 500.0,
-          initialMinPrice: _price,
-          initialMaxPrice: _price,
-          useSinglePrice: true,
+          key: ValueKey<int>(_selectedListingTypeId),
+          minPrice: _priceSliderMin,
+          maxPrice: _priceSliderMax,
+          initialMinPrice:
+              _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMin,
+          initialMaxPrice:
+              _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMax,
+          useSinglePrice: _pricePickerSingleHandle,
           onPriceRangeChanged: (minPrice, maxPrice) {
             _dismissKeyboard();
             setState(() {
-              _price = minPrice; // Same value for both in single mode
+              if (_pricePickerSingleHandle) {
+                _roommatePrice = minPrice;
+              } else {
+                _roomBudgetMin = minPrice;
+                _roomBudgetMax = maxPrice;
+              }
             });
           },
         ),
@@ -1131,7 +1179,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       logger.d("Request Body:");
       logger.d("  title: \"${_titleController.text.trim()}\"");
       logger.d("  listingTypeId: $listingTypeId");
-      logger.d("  price: $_price");
+      logger.d(
+        "  price: ${_priceForCreateRequest()} "
+        "(${_pricePickerSingleHandle ? "scalar $_roommatePrice" : "range $_roomBudgetMin-$_roomBudgetMax"})",
+      );
       logger.d("  description: \"${_descriptionController.text.trim()}\"");
       logger.d(
         "  subwayStationId: ${selectedStation?.id ?? "null (optional)"}",
@@ -1169,7 +1220,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       final createdListing = await listingService.createListing(
         title: _titleController.text.trim(),
         listingTypeId: listingTypeId,
-        price: _price.round(),
+        price: _priceForCreateRequest(),
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
         locationId: selectedLocation.id,
@@ -1222,7 +1273,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       setState(() {
         _selectedListingTypeId = _defaultListingTypeFromProfile;
         _selectedGender = _defaultGenderFromProfile;
-        _price = 50.0;
+        _roommatePrice = 50.0;
+        _roomBudgetMin = 50.0;
+        _roomBudgetMax = 150.0;
         _selectedSubwayLine = 0;
         _selectedStationIndex = 0;
         _selectedLocationIndex = -1;
