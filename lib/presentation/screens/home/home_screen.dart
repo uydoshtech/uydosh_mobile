@@ -1061,6 +1061,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       hasError: true,
       isEmpty: false,
       errorMessage: message,
+      errorAction: ThreeDPillButton(
+        onPressed: _dispatchFeedRefresh,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const ThemeIcon(Icons.refresh, size: 18),
+            const SizedBox(width: 8),
+            Text(L10n.get("retry"), style: const TextStyle(fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
       child: Container(), // This won"t be shown when there"s an error
     );
   }

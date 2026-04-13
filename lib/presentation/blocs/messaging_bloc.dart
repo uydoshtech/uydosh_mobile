@@ -2,6 +2,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
@@ -165,7 +166,9 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
           ),
         );
       } else {
-        emit(MessagingError(message: errorMessage));
+        emit(
+          MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)),
+        );
       }
     }
   }
@@ -192,7 +195,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         ),
       );
     } catch (e) {
-      emit(MessagingError(message: e.toString()));
+      emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
     }
   }
 
@@ -210,7 +213,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
 
       emit(ConversationCreated(conversation: conversation));
     } catch (e) {
-      emit(MessagingError(message: e.toString()));
+      emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
     }
   }
 
@@ -255,7 +258,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
       logger.d("❌ [MessagingBloc] Error fetching messages: $e");
       logger.d("❌ [MessagingBloc] Error type: ${e.runtimeType}");
       logger.d("❌ [MessagingBloc] Error details: $e");
-      emit(MessagingError(message: e.toString()));
+      emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
     }
   }
 
@@ -283,7 +286,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
 
       emit(MessageSent(message: message));
     } catch (e) {
-      emit(MessagingError(message: e.toString()));
+      emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
     }
   }
 
@@ -316,7 +319,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         ),
       );
     } catch (e) {
-      emit(MessagingError(message: e.toString()));
+      emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
     }
   }
 
@@ -353,7 +356,9 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
           ),
         );
       } else {
-        emit(MessagingError(message: errorMessage));
+        emit(
+          MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)),
+        );
       }
     }
   }

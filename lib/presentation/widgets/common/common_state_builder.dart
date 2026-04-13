@@ -11,6 +11,7 @@ class CommonStateBuilder extends StatelessWidget {
   const CommonStateBuilder({
     required this.isLoading, required this.hasError, required this.isEmpty, required this.child, super.key,
     this.errorMessage,
+    this.errorAction,
     this.emptyMessage,
     this.emptySubtitle,
     this.emptyIcon,
@@ -25,6 +26,7 @@ class CommonStateBuilder extends StatelessWidget {
   final bool isLoading;
   final bool hasError;
   final String? errorMessage;
+  final Widget? errorAction;
   final bool isEmpty;
   final String? emptyMessage;
   final String? emptySubtitle;
@@ -103,21 +105,10 @@ class CommonStateBuilder extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.warning, AppColors.favoriteActive],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: const ThemeIcon(
-              Icons.error_outline,
-              size: 48,
-              color: AppColors.textLight,
-            ),
+          const ThemeIcon(
+            Icons.error_outline,
+            size: 64,
+            color: AppColors.error,
           ),
           const SizedBox(height: 24),
           Text(
@@ -125,7 +116,7 @@ class CommonStateBuilder extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: AppColors.getThemeAwareTextColor(context),
+              color: AppColors.error,
             ),
           ),
           const SizedBox(height: 12),
@@ -137,6 +128,7 @@ class CommonStateBuilder extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
+          if (errorAction != null) ...[const SizedBox(height: 20), errorAction!],
         ],
       ),
     );

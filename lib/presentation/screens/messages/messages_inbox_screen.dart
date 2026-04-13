@@ -25,6 +25,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
@@ -395,14 +396,26 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     text: "Log In Again",
                   ),
                 ] else ...[
-                  ElevatedButton(
+                  ThreeDPillButton(
                     onPressed: _loadConversations,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: buttonColor,
-                      foregroundColor: buttonTextColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
                     ),
-                    child: Text(
-                      L10n.get("retry"),
+                    backgroundColor: buttonColor,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ThemeIcon(Icons.refresh, size: 18, color: buttonTextColor),
+                        const SizedBox(width: 8),
+                        Text(
+                          L10n.get("retry"),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: buttonTextColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

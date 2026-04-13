@@ -182,7 +182,7 @@ class MessagingService implements IMessagingService {
         );
       }
     } catch (e) {
-      throw Exception("Failed to fetch conversations: $e");
+      throw Exception("Failed to fetch conversations");
     }
   }
 
@@ -240,7 +240,7 @@ class MessagingService implements IMessagingService {
         totalPages: totalPages,
       );
     } catch (e) {
-      throw Exception("Failed to fetch participant conversations: $e");
+      throw Exception("Failed to fetch participant conversations");
     }
   }
 
@@ -255,7 +255,7 @@ class MessagingService implements IMessagingService {
       );
       return response;
     } catch (e) {
-      throw Exception("Failed to fetch conversation: $e");
+      throw Exception("Failed to fetch conversation");
     }
   }
 
@@ -292,7 +292,7 @@ class MessagingService implements IMessagingService {
 
       return response;
     } catch (e) {
-      throw Exception("Failed to create conversation: $e");
+      throw Exception("Failed to create conversation");
     }
   }
 
@@ -305,7 +305,7 @@ class MessagingService implements IMessagingService {
         data: _EmptyRequest(),
       );
     } catch (e) {
-      throw Exception("Failed to delete conversation: $e");
+      throw Exception("Failed to delete conversation");
     }
   }
 
@@ -401,7 +401,7 @@ class MessagingService implements IMessagingService {
         );
       }
 
-      throw Exception("Failed to fetch messages: $e");
+      throw Exception("Failed to fetch messages");
     }
   }
 
@@ -447,9 +447,9 @@ class MessagingService implements IMessagingService {
           throw Exception("USER_BLOCKED");
         }
       }
-      throw Exception("Failed to send message: $e");
+      throw Exception("Failed to send message");
     } catch (e) {
-      throw Exception("Failed to send message: $e");
+      throw Exception("Failed to send message");
     }
   }
 
@@ -476,9 +476,9 @@ class MessagingService implements IMessagingService {
           throw Exception("USER_BLOCKED");
         }
       }
-      throw Exception("Failed to edit message: $e");
+      throw Exception("Failed to edit message");
     } catch (e) {
-      throw Exception("Failed to edit message: $e");
+      throw Exception("Failed to edit message");
     }
   }
 
@@ -499,9 +499,9 @@ class MessagingService implements IMessagingService {
           throw Exception("USER_BLOCKED");
         }
       }
-      throw Exception("Failed to delete message: $e");
+      throw Exception("Failed to delete message");
     } catch (e) {
-      throw Exception("Failed to delete message: $e");
+      throw Exception("Failed to delete message");
     }
   }
 
@@ -516,7 +516,7 @@ class MessagingService implements IMessagingService {
         data: request,
       );
     } catch (e) {
-      throw Exception("Failed to mark messages as read: $e");
+      throw Exception("Failed to mark messages as read");
     }
   }
 
@@ -531,7 +531,7 @@ class MessagingService implements IMessagingService {
       );
       return response.count;
     } catch (e) {
-      throw Exception("Failed to get unread message count: $e");
+      throw Exception("Failed to get unread message count");
     }
   }
 
@@ -554,7 +554,7 @@ class MessagingService implements IMessagingService {
         mimeType: mimeType,
       );
     } catch (e) {
-      throw Exception("Failed to upload attachment: $e");
+      throw Exception("Failed to upload attachment");
     }
   }
 
@@ -582,7 +582,7 @@ class MessagingService implements IMessagingService {
           );
       return response;
     } catch (e) {
-      throw Exception("Failed to upload attachment: $e");
+      throw Exception("Failed to upload attachment");
     }
   }
 
@@ -595,7 +595,7 @@ class MessagingService implements IMessagingService {
         data: _EmptyRequest(),
       );
     } catch (e) {
-      throw Exception("Failed to delete attachment: $e");
+      throw Exception("Failed to delete attachment");
     }
   }
 
