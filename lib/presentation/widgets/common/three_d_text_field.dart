@@ -16,6 +16,9 @@ class ThreeDTextField extends StatefulWidget {
     this.contentPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     this.borderRadius = const BorderRadius.all(Radius.circular(24)),
     this.backgroundColor,
+    this.textColor,
+    this.hintColor,
+    this.cursorColor,
   });
 
   final TextEditingController controller;
@@ -31,6 +34,9 @@ class ThreeDTextField extends StatefulWidget {
   final EdgeInsets contentPadding;
   final BorderRadius borderRadius;
   final Color? backgroundColor;
+  final Color? textColor;
+  final Color? hintColor;
+  final Color? cursorColor;
 
   @override
   State<ThreeDTextField> createState() => _ThreeDTextFieldState();
@@ -82,6 +88,14 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
     // - absolutely no hard outline on focus
     final outerBg = Color.lerp(bgBase, scheme.onSurface, isDark ? 0.06 : 0.02)!;
     final innerBg = Color.lerp(outerBg, scheme.onSurface, isDark ? 0.10 : 0.03)!;
+
+    final innerBrightness = ThemeData.estimateBrightnessForColor(innerBg);
+    final fallbackTextColor =
+        innerBrightness == Brightness.dark ? Colors.white : Colors.black;
+    final effectiveTextColor = widget.textColor ?? fallbackTextColor;
+    final effectiveHintColor = widget.hintColor ??
+        effectiveTextColor.withValues(alpha: innerBrightness == Brightness.dark ? 0.7 : 0.65);
+    final effectiveCursorColor = widget.cursorColor ?? effectiveTextColor;
 
     final outerDarkA = isDark ? (focused ? 0.18 : 0.24) : (focused ? 0.08 : 0.12);
     final outerLightA = isDark ? 0.05 : 0.75;
@@ -158,10 +172,11 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
                   focusNode: _focusNode,
                   autofocus: widget.autofocus,
                   enabled: widget.enabled,
-                  style: const TextStyle(color: Colors.black),
+                  cursorColor: effectiveCursorColor,
+                  style: TextStyle(color: effectiveTextColor),
                   decoration: InputDecoration(
                     hintText: widget.hintText,
-                    hintStyle: TextStyle(color: Colors.grey[600]),
+                    hintStyle: TextStyle(color: effectiveHintColor),
                     border: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     enabledBorder: InputBorder.none,

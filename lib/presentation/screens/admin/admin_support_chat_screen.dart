@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
@@ -35,7 +36,6 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
   final int _pageSize = 20;
   bool _hasMore = true;
   String? _statusFilter;
-  int _total = 0;
 
   @override
   void initState() {
@@ -86,7 +86,6 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
           _threads.clear();
           _threads.addAll(response.threads);
         }
-        _total = response.total;
         _hasMore = response.threads.length >= _pageSize;
         if (_hasMore) {
           _pageNumber = (loadMore ? _pageNumber : 1) + 1;
@@ -652,31 +651,31 @@ class _AdminSupportChatThreadScreenState
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
+        final inputFieldBg = themeState.inputBackgroundColor;
+        final inputFieldBrightness = ThemeData.estimateBrightnessForColor(inputFieldBg);
+        final inputFieldTextColor =
+            inputFieldBrightness == Brightness.dark ? Colors.white : Colors.black;
+        final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           decoration: BoxDecoration(
-            color: themeState.inputBackgroundColor,
+            color: themeState.chatInputBarBackgroundColor,
             border: Border(top: BorderSide(color: themeState.borderColor)),
           ),
           child: Row(
             children: [
               Expanded(
-                child: TextField(
+                child: ThreeDTextField(
                   controller: _messageController,
-                  style: const TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: L10n.get("admin_support_chat_reply_hint"),
-                    hintStyle: TextStyle(color: Colors.grey[600]),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
+                  hintText: L10n.get("admin_support_chat_reply_hint"),
+                  backgroundColor: inputFieldBg,
+                  textColor: inputFieldTextColor,
+                  hintColor: inputFieldHintColor,
+                  cursorColor: inputFieldTextColor,
                   maxLines: 3,
                   minLines: 1,
+                  textCapitalization: TextCapitalization.sentences,
+                  textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _sendMessage(),
                 ),
               ),

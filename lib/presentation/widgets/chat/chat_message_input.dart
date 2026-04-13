@@ -26,13 +26,17 @@ class ChatMessageInput extends StatelessWidget {
       builder: (context, child) {
         final themeState = ThemeState();
         final inputBackgroundColor = themeState.inputBackgroundColor;
+        final inputFieldBrightness = ThemeData.estimateBrightnessForColor(inputBackgroundColor);
+        final inputFieldTextColor =
+            inputFieldBrightness == Brightness.dark ? Colors.white : Colors.black;
+        final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
         final sendButtonColor = themeState.sendButtonColor;
         final borderColor = themeState.borderColor;
 
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           decoration: BoxDecoration(
-            color: inputBackgroundColor,
+            color: themeState.chatInputBarBackgroundColor,
             border: Border(top: BorderSide(color: borderColor)),
           ),
           child: Row(
@@ -42,6 +46,9 @@ class ChatMessageInput extends StatelessWidget {
                   controller: controller,
                   hintText: L10n.get("type_message"),
                   backgroundColor: inputBackgroundColor,
+                  textColor: inputFieldTextColor,
+                  hintColor: inputFieldHintColor,
+                  cursorColor: inputFieldTextColor,
                   maxLines: null,
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.newline,

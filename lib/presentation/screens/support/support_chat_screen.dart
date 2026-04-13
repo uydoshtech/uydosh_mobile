@@ -564,10 +564,15 @@ class _UserSupportChatThreadScreenState
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
+        final inputFieldBg = themeState.inputBackgroundColor;
+        final inputFieldBrightness = ThemeData.estimateBrightnessForColor(inputFieldBg);
+        final inputFieldTextColor =
+            inputFieldBrightness == Brightness.dark ? Colors.white : Colors.black;
+        final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           decoration: BoxDecoration(
-            color: themeState.inputBackgroundColor,
+            color: themeState.chatInputBarBackgroundColor,
             border: Border(top: BorderSide(color: themeState.borderColor)),
           ),
           child: Row(
@@ -576,7 +581,10 @@ class _UserSupportChatThreadScreenState
                 child: ThreeDTextField(
                   controller: _messageController,
                   hintText: L10n.get("contact_support_message_hint"),
-                  backgroundColor: themeState.inputBackgroundColor,
+                  backgroundColor: inputFieldBg,
+                  textColor: inputFieldTextColor,
+                  hintColor: inputFieldHintColor,
+                  cursorColor: inputFieldTextColor,
                   maxLines: 3,
                   minLines: 1,
                   textCapitalization: TextCapitalization.sentences,

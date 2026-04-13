@@ -137,6 +137,13 @@ extension ThemeHelper on ThemeState {
   /// Input field background color
   Color get inputBackgroundColor {
     if (isLightTheme) return Colors.white;
+    if (isBlueTheme) return BlueThemeColors.inputBackground;
+    return Colors.white;
+  }
+
+  /// Chat input bar background (container behind the field).
+  Color get chatInputBarBackgroundColor {
+    if (isLightTheme) return Colors.white;
     if (isBlueTheme) return BlueThemeColors.background;
     return Colors.white;
   }
