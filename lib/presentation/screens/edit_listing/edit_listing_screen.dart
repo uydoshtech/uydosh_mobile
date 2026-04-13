@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_secti
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -1016,15 +1017,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       ],
                                     ),
                                   ),
-                                  Switch(
+                                  NeumorphicToggle(
                                     value: _isPrivateRoom,
-                                    onChanged: (value) {
-                                      HapticFeedbackUtils.impact();
-                                      setState(() {
-                                        _isPrivateRoom = value;
-                                      });
-                                    },
-                                    activeThumbColor: _getBorderColor(),
+                                    activeAccentColor: _getBorderColor(),
                                     activeTrackColor: _getBorderColor()
                                         .withValues(alpha: 0.3),
                                     inactiveThumbColor:
@@ -1032,13 +1027,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                                 Brightness.dark
                                             ? theme.colorScheme.onSurfaceVariant
                                                 .withOpacity(0.7)
-                                            : Colors.grey[600],
+                                            : Colors.grey.shade600,
                                     inactiveTrackColor:
                                         Theme.of(context).brightness ==
                                                 Brightness.dark
                                             ? theme.colorScheme.onSurfaceVariant
                                                 .withOpacity(0.3)
-                                            : Colors.grey[300],
+                                            : Colors.grey.shade300,
+                                    onChanged: (value) {
+                                      HapticFeedbackUtils.impact();
+                                      setState(() {
+                                        _isPrivateRoom = value;
+                                      });
+                                    },
                                   ),
                                 ],
                               ),
