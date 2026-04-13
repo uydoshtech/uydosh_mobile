@@ -5,6 +5,7 @@ import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -12,6 +13,7 @@ import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
@@ -54,6 +56,10 @@ class _PhotoUploaderState extends State<PhotoUploader>
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
 
+  // Optional animation controller for the + icon rotation (90°)
+  late AnimationController _rotateController;
+  late Animation<double> _rotateTurns;
+
   @override
   void initState() {
     super.initState();
@@ -68,11 +74,20 @@ class _PhotoUploaderState extends State<PhotoUploader>
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
       CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
     );
+
+    _rotateController = AnimationController(
+      duration: const Duration(milliseconds: 260),
+      vsync: this,
+    );
+    _rotateTurns = Tween<double>(begin: 0.0, end: 0.5).animate(
+      CurvedAnimation(parent: _rotateController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
     _scaleController.dispose();
+    _rotateController.dispose();
     super.dispose();
   }
 
@@ -81,6 +96,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
     // Scale up and then back down
     _scaleController.forward().then((_) {
       _scaleController.reverse();
+    });
+  }
+
+  void _triggerPlusRotateAnimationIfEnabled() {
+    if (!AnimationSettingsState().uiAnimationsEnabled) return;
+    _rotateController.forward(from: 0).then((_) {
+      if (!mounted) return;
+      _rotateController.reverse();
     });
   }
 
@@ -179,59 +202,93 @@ class _PhotoUploaderState extends State<PhotoUploader>
   void _showImageSourceDialog() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder: (context) {
+        final theme = Theme.of(context);
+        final sheetHeight = MediaQuery.sizeOf(context).height * 0.35;
         return SafeArea(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 24.0),
+          child: SizedBox(
+            height: sheetHeight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 24.0,
-                    vertical: 16.0,
-                  ),
-                  leading: const ThemeIcon(
-                    Icons.camera_alt_outlined,
-                    size: 30, // Increased from 20 to 30 (1.5x)
-                  ),
-                  title: Text(
-                    L10n.get("take_photo"),
-                    style: const TextStyle(
-                      fontSize: 18, // Increased from 12 to 18 (1.5x)
-                      fontWeight: FontWeight.w500,
+                SizedBox(
+                  width: double.infinity,
+                  child: ThreeDPillButton(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
+                    backgroundColor: theme.colorScheme.surface,
+                    onPressed: () {
+                      HapticFeedbackUtils.impact();
+                      Navigator.of(context).pop();
+                      _pickImage(ImageSource.camera);
+                    },
+                    child: Row(
+                      children: [
+                        const ThemeIcon(
+                          Icons.camera_alt_outlined,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            L10n.get("take_photo"),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  onTap: () {
-                    HapticFeedbackUtils.impact();
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.camera);
-                  },
                 ),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 24.0,
-                    vertical: 16.0,
-                  ),
-                  leading: const ThemeIcon(
-                    Icons.photo_library_outlined,
-                    size: 30, // Increased from 20 to 30 (1.5x)
-                  ),
-                  title: Text(
-                    L10n.get("choose_from_gallery"),
-                    style: const TextStyle(
-                      fontSize: 18, // Increased from 12 to 18 (1.5x)
-                      fontWeight: FontWeight.w500,
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ThreeDPillButton(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
+                    backgroundColor: theme.colorScheme.surface,
+                    onPressed: () {
+                      HapticFeedbackUtils.impact();
+                      Navigator.of(context).pop();
+                      _pickImage(ImageSource.gallery);
+                    },
+                    child: Row(
+                      children: [
+                        const ThemeIcon(
+                          Icons.photo_library_outlined,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            L10n.get("choose_from_gallery"),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  onTap: () {
-                    HapticFeedbackUtils.impact();
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.gallery);
-                  },
                 ),
               ],
             ),
+          ),
           ),
         );
       },
@@ -363,39 +420,39 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   AnimatedBuilder(
                     animation: _scaleAnimation,
                     builder: (context, child) {
-                      final addBtnRadius = BorderRadius.circular(10);
+                      final isLightTheme = ThemeState().isLightTheme;
+                      final addButtonBaseColor =
+                          isLightTheme
+                              ? theme.colorScheme.surface
+                              : theme.colorScheme.primary;
+                      final addIconColor =
+                          isLightTheme ? Colors.black : Colors.white;
                       return Transform.scale(
                         scale: _scaleAnimation.value,
                         child: Tooltip(
                           message: L10n.get("add_photo"),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                HapticFeedbackUtils.impact();
-                                _triggerScaleAnimation();
-                                _showImageSourceDialog();
+                          child: ThreeDPillButton(
+                            padding: const EdgeInsets.all(8),
+                            borderRadius: BorderRadius.circular(10),
+                            backgroundColor: addButtonBaseColor,
+                            onPressed: () {
+                              HapticFeedbackUtils.impact();
+                              _triggerScaleAnimation();
+                              _triggerPlusRotateAnimationIfEnabled();
+                              _showImageSourceDialog();
+                            },
+                            child: AnimatedBuilder(
+                              animation: _rotateTurns,
+                              builder: (context, _) {
+                                return RotationTransition(
+                                  turns: _rotateTurns,
+                                  child: ThemeIcon(
+                                    Icons.add,
+                                    color: addIconColor,
+                                    size: 20,
+                                  ),
+                                );
                               },
-                              borderRadius: addBtnRadius,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  borderRadius: addBtnRadius,
-                                  gradient: ThreeDSurfaceStyle.surfaceGradient(
-                                    context,
-                                    theme.colorScheme.primary,
-                                  ),
-                                  boxShadow:
-                                      ThreeDSurfaceStyle.elevatedShadows(
-                                    context,
-                                  ),
-                                ),
-                                child: const ThemeIcon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
                             ),
                           ),
                         ),

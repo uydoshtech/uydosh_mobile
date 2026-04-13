@@ -22,6 +22,7 @@ import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -150,6 +151,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     if (mounted) {
       context.read<MessagingBloc>().add(RefreshConversations());
     }
+  }
+
+  Future<void> _onInboxPullRefresh() async {
+    _loadConversations();
   }
 
   /// Show cached conversations if available, otherwise loading - prevents blink during refresh
@@ -440,16 +445,19 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         // Tab content
         Expanded(
           child: UydoshRefreshIndicator(
-            onRefresh: () async {
-              _loadConversations();
-            },
-            child:
-                _selectedTabIndex == 0
-                    ? _buildConversationsList(incomingConversations, "incoming")
-                    : _buildConversationsList(
-                      outgoingConversations,
-                      "outgoing",
-                    ),
+            onRefresh: _onInboxPullRefresh,
+            child: PullToRefreshStretchHaptics(
+              child:
+                  _selectedTabIndex == 0
+                      ? _buildConversationsList(
+                        incomingConversations,
+                        "incoming",
+                      )
+                      : _buildConversationsList(
+                        outgoingConversations,
+                        "outgoing",
+                      ),
+            ),
           ),
         ),
       ],
@@ -529,7 +537,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               // Incoming button
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _selectedTabIndex = 0),
+                  onTap: () {
+                    HapticFeedbackUtils.selection();
+                    setState(() => _selectedTabIndex = 0);
+                  },
                   child: Container(
                     height: 48,
                     decoration: BoxDecoration(
@@ -587,7 +598,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               // Outgoing button
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _selectedTabIndex = 1),
+                  onTap: () {
+                    HapticFeedbackUtils.selection();
+                    setState(() => _selectedTabIndex = 1);
+                  },
                   child: Container(
                     height: 48,
                     decoration: BoxDecoration(
