@@ -154,14 +154,14 @@ class ToastTheme {
       _showRollingToast(
         context,
         message: message,
-        backgroundColor: AppColors.primary,
+        backgroundColor: BlueThemeColors.primaryLight,
         duration: duration ?? _defaultDuration,
       );
     } else {
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppColors.primary,
+        backgroundColor: BlueThemeColors.primaryLight,
         duration: duration ?? _defaultDuration,
       );
     }
@@ -176,7 +176,7 @@ class ToastTheme {
     _showSnackBar(
       context,
       message: message,
-      backgroundColor: AppColors.primary,
+      backgroundColor: BlueThemeColors.primaryLight,
       duration: duration ?? _defaultDuration,
     );
   }

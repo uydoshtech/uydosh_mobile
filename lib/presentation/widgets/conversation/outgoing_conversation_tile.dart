@@ -34,8 +34,8 @@ class OutgoingConversationTile extends StatelessWidget {
         final iconColor = themeState.cardIconColor;
         final avatarColor = themeState.avatarColor;
         final avatarIconColor = themeState.avatarIconColor;
+        final outlineVariant = Theme.of(context).colorScheme.outlineVariant;
 
-        // Check if we have location or metro station data
         final hasLocation = conversation.locationNameUz != null ||
             conversation.locationNameRu != null ||
             conversation.locationNameEn != null;
@@ -43,128 +43,163 @@ class OutgoingConversationTile extends StatelessWidget {
             conversation.subwayStationNameRu != null ||
             conversation.subwayStationNameEn != null;
 
-        return ThreeDElevatedSurface(
-          baseColor: cardColor,
-          margin: const EdgeInsets.only(bottom: 16),
-          child: ListTile(
-            onTap: onTap,
-            leading: conversation.otherUserAvatar != null
-                ? ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: conversation.otherUserAvatar!,
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 80,
-                      memCacheHeight: 80,
-                      placeholder: (context, url) => Center(
-                        child: ConversationAvatarContent(
-                          conversation: conversation,
-                          iconColor: avatarIconColor,
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => CircleAvatar(
-                        backgroundColor: avatarColor,
-                        child: ConversationAvatarContent(
-                          conversation: conversation,
-                          iconColor: avatarIconColor,
-                        ),
-                      ),
+        final avatarLeading = conversation.otherUserAvatar != null
+            ? ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: conversation.otherUserAvatar!,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 80,
+                  memCacheHeight: 80,
+                  placeholder: (context, url) => Center(
+                    child: ConversationAvatarContent(
+                      conversation: conversation,
+                      iconColor: avatarIconColor,
                     ),
-                  )
-                : CircleAvatar(
+                  ),
+                  errorWidget: (context, url, error) => CircleAvatar(
                     backgroundColor: avatarColor,
                     child: ConversationAvatarContent(
                       conversation: conversation,
                       iconColor: avatarIconColor,
                     ),
                   ),
-            title: Text(
-              resolvedConversationListingTitle(conversation),
-              style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Location and Metro Station Information
-                if (hasLocation || hasSubwayStation) ...[
-                  ConversationLocationInfo(
-                    conversation: conversation,
-                    textColor: secondaryTextColor,
-                    showPrice: true,
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                // Last message content
-                if (conversation.lastMessageContent != null) ...[
-                  Text(
-                    conversation.lastMessageContent!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: secondaryTextColor),
-                  ),
-                  const SizedBox(height: 4),
-                ],
-                // Time and user info
-                Row(
-                  children: [
-                    ThemeIcon(
-                      Icons.access_time,
-                      size: 12,
-                      color: secondaryTextColor,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatTime(
-                        context,
-                        conversation.lastMessageAt ?? conversation.updatedAt,
-                      ),
-                      style: TextStyle(fontSize: 12, color: secondaryTextColor),
-                    ),
-                  ],
                 ),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
+              )
+            : CircleAvatar(
+                backgroundColor: avatarColor,
+                child: ConversationAvatarContent(
+                  conversation: conversation,
+                  iconColor: avatarIconColor,
+                ),
+              );
+
+        return ThreeDElevatedSurface(
+          baseColor: cardColor,
+          useFlatHighlightColor: true,
+          margin: const EdgeInsets.only(bottom: 16),
+          child: InkWell(
+            onTap: onTap,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Unread indicator - only show if there are unread messages AND current user is the addressee (not the sender)
-                if (conversation.unreadCount != null &&
-                    conversation.unreadCount! > 0 &&
-                    currentUserId != null &&
-                    conversation.lastMessageSenderId != currentUserId) ...[
-                  Container(
-                    width: conversation.unreadCount! > 1 ? 20 : 12,
-                    height: conversation.unreadCount! > 1 ? 20 : 12,
-                    decoration: const BoxDecoration(
-                      color:
-                          AppColors.success, // Keep green for unread indicator
-                      shape: BoxShape.circle,
-                    ),
-                    child: conversation.unreadCount! > 1
-                        ? Center(
-                            child: Text(
-                              "${conversation.unreadCount!}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        resolvedConversationListingTitle(conversation),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (hasLocation || hasSubwayStation) ...[
+                        const SizedBox(height: 8),
+                        ConversationLocationInfo(
+                          conversation: conversation,
+                          textColor: secondaryTextColor,
+                          showPrice: true,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: outlineVariant),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      avatarLeading,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (conversation.lastMessageContent != null) ...[
+                              Text(
+                                conversation.lastMessageContent!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: secondaryTextColor),
                               ),
+                              const SizedBox(height: 4),
+                            ],
+                            Row(
+                              children: [
+                                ThemeIcon(
+                                  Icons.access_time,
+                                  size: 12,
+                                  color: secondaryTextColor,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _formatTime(
+                                    context,
+                                    conversation.lastMessageAt ??
+                                        conversation.updatedAt,
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: secondaryTextColor,
+                                  ),
+                                ),
+                              ],
                             ),
-                          )
-                        : null,
+                          ],
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (conversation.unreadCount != null &&
+                              conversation.unreadCount! > 0 &&
+                              currentUserId != null &&
+                              conversation.lastMessageSenderId !=
+                                  currentUserId) ...[
+                            Container(
+                              width: conversation.unreadCount! > 1 ? 20 : 12,
+                              height: conversation.unreadCount! > 1 ? 20 : 12,
+                              decoration: const BoxDecoration(
+                                color: AppColors.success,
+                                shape: BoxShape.circle,
+                              ),
+                              child: conversation.unreadCount! > 1
+                                  ? Center(
+                                      child: Text(
+                                        "${conversation.unreadCount!}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          if (conversation.lastMessageAt != null)
+                            ThemeIcon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: iconColor.withValues(alpha: 0.5),
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                ],
-                // Arrow icon
-                if (conversation.lastMessageAt != null)
-                  ThemeIcon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: iconColor.withValues(alpha: 0.5),
-                  ),
+                ),
               ],
             ),
           ),

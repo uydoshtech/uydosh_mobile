@@ -30,7 +30,7 @@ class ThemeIcon extends StatelessWidget {
         return Icon(
           icon,
           size: size,
-          color: _resolveColor(theme),
+          color: _resolveColor(context, theme),
           semanticLabel: semanticLabel,
           textDirection: textDirection,
         );
@@ -38,9 +38,13 @@ class ThemeIcon extends StatelessWidget {
     );
   }
 
-  Color? _resolveColor(ThemeData theme) {
+  Color? _resolveColor(BuildContext context, ThemeData theme) {
     if (color != null) return color;
     if (!useThemeColor) return Colors.grey;
+
+    // Allow widgets like PopupMenu to override icon color via [IconTheme].
+    final inheritedIconColor = IconTheme.of(context).color;
+    if (inheritedIconColor != null) return inheritedIconColor;
 
     if (ThemeState().isBlueTheme) return Colors.white;
     if (ThemeState().isLightTheme) return Colors.black87;

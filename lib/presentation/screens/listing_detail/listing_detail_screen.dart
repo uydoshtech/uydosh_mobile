@@ -95,7 +95,7 @@ class _ListingDetailIconsData {
         other.isLoading == isLoading &&
         other.hasError == hasError &&
         other.errorMessage == errorMessage &&
-        other.listingDetail?.id == listingDetail?.id;
+        other.listingDetail == listingDetail;
   }
 
   @override
@@ -103,7 +103,7 @@ class _ListingDetailIconsData {
     return isLoading.hashCode ^
         hasError.hashCode ^
         errorMessage.hashCode ^
-        (listingDetail?.id ?? 0).hashCode;
+        listingDetail.hashCode;
   }
 }
 
@@ -127,7 +127,7 @@ class _ListingDetailBodyData {
         other.isLoading == isLoading &&
         other.hasError == hasError &&
         other.errorMessage == errorMessage &&
-        other.listingDetail?.id == listingDetail?.id;
+        other.listingDetail == listingDetail;
   }
 
   @override
@@ -135,7 +135,7 @@ class _ListingDetailBodyData {
     return isLoading.hashCode ^
         hasError.hashCode ^
         errorMessage.hashCode ^
-        (listingDetail?.id ?? 0).hashCode;
+        listingDetail.hashCode;
   }
 }
 

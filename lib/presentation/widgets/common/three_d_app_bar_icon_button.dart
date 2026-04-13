@@ -14,6 +14,7 @@ class ThreeDAppBarIconButton extends StatelessWidget {
     required this.semanticsLabel,
     super.key,
     this.iconSize = 26,
+    this.iconWidget,
     this.borderRadius,
     this.padding = const EdgeInsets.all(6),
   });
@@ -27,6 +28,7 @@ class ThreeDAppBarIconButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String semanticsLabel;
   final double iconSize;
+  final Widget? iconWidget;
   final BorderRadius? borderRadius;
   final EdgeInsets padding;
 
@@ -77,11 +79,13 @@ class ThreeDAppBarIconButton extends StatelessWidget {
               width: 28,
               height: 28,
               child: Center(
-                child: ThemeIcon(
-                  iconData,
-                  color: iconColor,
-                  size: iconSize,
-                ),
+                child:
+                    iconWidget ??
+                    ThemeIcon(
+                      iconData,
+                      color: iconColor,
+                      size: iconSize,
+                    ),
               ),
             ),
           );

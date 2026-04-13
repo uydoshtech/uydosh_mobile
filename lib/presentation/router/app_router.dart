@@ -1,5 +1,6 @@
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:firebase_auth/firebase_auth.dart";
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
@@ -475,6 +476,7 @@ class _MainNavigationState extends State<MainNavigation>
     required String semanticsLabel,
     double iconSize = 26,
     BorderRadius? borderRadius,
+    Widget? iconWidget,
   }) {
     return ThreeDAppBarIconButton(
       iconData: iconData,
@@ -482,6 +484,7 @@ class _MainNavigationState extends State<MainNavigation>
       semanticsLabel: semanticsLabel,
       iconSize: iconSize,
       borderRadius: borderRadius,
+      iconWidget: iconWidget,
     );
   }
 
@@ -538,7 +541,7 @@ class _MainNavigationState extends State<MainNavigation>
                 if (!isAuthenticated) {
                   return _threeDAppBarIconButton(
                     borderRadius: const BorderRadius.all(Radius.circular(999)),
-                    iconData: Icons.person_outline,
+                    iconData: CupertinoIcons.person_circle,
                     onPressed: () {
                       context.pushReplaceAuthWizard().then((_) {
                         if (mounted) {
