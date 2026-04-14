@@ -6,7 +6,6 @@ import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -53,59 +52,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
   final ImagePicker _picker = ImagePicker();
   int? _primaryNewPhotoIndex; // Track which new photo is primary
 
-  // Animation controller for the + icon scale (stretch and shrink)
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
-
-  // Optional animation controller for the + icon rotation (90°)
-  late AnimationController _rotateController;
-  late Animation<double> _rotateTurns;
-
   @override
   void initState() {
     super.initState();
-
-    // Initialize scale animation (stretch and shrink like amenities)
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-
-    // Create scale animation that stretches to 1.2 and shrinks back to 1.0
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
-    );
-
-    _rotateController = AnimationController(
-      duration: const Duration(milliseconds: 260),
-      vsync: this,
-    );
-    _rotateTurns = Tween<double>(begin: 0.0, end: 0.5).animate(
-      CurvedAnimation(parent: _rotateController, curve: Curves.easeInOut),
-    );
   }
 
   @override
   void dispose() {
-    _scaleController.dispose();
-    _rotateController.dispose();
     super.dispose();
-  }
-
-  // Method to trigger the scale animation
-  void _triggerScaleAnimation() {
-    // Scale up and then back down
-    _scaleController.forward().then((_) {
-      _scaleController.reverse();
-    });
-  }
-
-  void _triggerPlusRotateAnimationIfEnabled() {
-    if (!AnimationSettingsState().uiAnimationsEnabled) return;
-    _rotateController.forward(from: 0).then((_) {
-      if (!mounted) return;
-      _rotateController.reverse();
-    });
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -441,9 +395,8 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   ),
                 ),
                 if (widget.selectedPhotos.length < widget.maxPhotos)
-                  AnimatedBuilder(
-                    animation: _scaleAnimation,
-                    builder: (context, child) {
+                  Builder(
+                    builder: (context) {
                       final isLightTheme = ThemeState().isLightTheme;
                       final addButtonBaseColor =
                           isLightTheme
@@ -451,33 +404,20 @@ class _PhotoUploaderState extends State<PhotoUploader>
                               : theme.colorScheme.primary;
                       final addIconColor =
                           isLightTheme ? Colors.black : Colors.white;
-                      return Transform.scale(
-                        scale: _scaleAnimation.value,
-                        child: Tooltip(
-                          message: L10n.get("add_photo"),
-                          child: ThreeDPillButton(
-                            padding: const EdgeInsets.all(8),
-                            borderRadius: BorderRadius.circular(10),
-                            backgroundColor: addButtonBaseColor,
-                            onPressed: () {
-                              HapticFeedbackUtils.impact();
-                              _triggerScaleAnimation();
-                              _triggerPlusRotateAnimationIfEnabled();
-                              _showImageSourceDialog();
-                            },
-                            child: AnimatedBuilder(
-                              animation: _rotateTurns,
-                              builder: (context, _) {
-                                return RotationTransition(
-                                  turns: _rotateTurns,
-                                  child: ThemeIcon(
-                                    Icons.add,
-                                    color: addIconColor,
-                                    size: 20,
-                                  ),
-                                );
-                              },
-                            ),
+                      return Tooltip(
+                        message: L10n.get("add_photo"),
+                        child: ThreeDPillButton(
+                          padding: const EdgeInsets.all(8),
+                          borderRadius: BorderRadius.circular(10),
+                          backgroundColor: addButtonBaseColor,
+                          onPressed: () {
+                            HapticFeedbackUtils.impact();
+                            _showImageSourceDialog();
+                          },
+                          child: ThemeIcon(
+                            Icons.add,
+                            color: addIconColor,
+                            size: 20,
                           ),
                         ),
                       );

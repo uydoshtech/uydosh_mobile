@@ -15,8 +15,8 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 /// - ToastTheme.showInfo(context, message: "Here"s some information")
 class ToastTheme {
   static const Duration _defaultDuration = Duration(
-    milliseconds: 2000,
-  ); // 2 seconds
+    milliseconds: 3000,
+  ); // 3 seconds
 
   // Keep track of current toast overlay
   static OverlayEntry? _currentToastOverlay;

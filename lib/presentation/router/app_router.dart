@@ -13,7 +13,6 @@ import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
-import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
@@ -26,6 +25,7 @@ import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
@@ -81,7 +81,7 @@ final GlobalKey<_MainNavigationState> mainNavigationKey =
     GlobalKey<_MainNavigationState>();
 
 class _MainNavigationState extends State<MainNavigation>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, RouteAware {
   late int _currentIndex;
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
@@ -89,6 +89,14 @@ class _MainNavigationState extends State<MainNavigation>
   bool _profileCompletionPromptShown = false;
   bool _checkingProfileCompletion = false;
   bool _notificationsBellTutorialShownThisSession = false;
+  bool _notificationsBellTutorialPending = false;
+
+  void _scheduleMaybeShowNotificationsBellTutorial() {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShowNotificationsBellTutorial();
+    });
+  }
 
   @override
   void initState() {
@@ -121,6 +129,11 @@ class _MainNavigationState extends State<MainNavigation>
 
     // Initialize profile completion state from cache when authenticated
     _initProfileCompletionFromCache();
+
+    // If alerts are already active by the time main navigation mounts (or the
+    // listener fired earlier while AppBar target wasn't mounted), ensure we
+    // still attempt to show the tutorial once the AppBar is visible.
+    _scheduleMaybeShowNotificationsBellTutorial();
   }
 
   Future<void> _initProfileCompletionFromCache() async {
@@ -139,11 +152,28 @@ class _MainNavigationState extends State<MainNavigation>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
   void dispose() {
     ActiveSearchAlertsState()
         .removeListener(_maybeShowNotificationsBellTutorial);
+    routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // We became visible again after a pushed route was popped (e.g. back from
+    // search results). Re-attempt tutorials that depend on the main AppBar.
+    _scheduleMaybeShowNotificationsBellTutorial();
   }
 
   @override
@@ -440,6 +470,7 @@ class _MainNavigationState extends State<MainNavigation>
       setState(() {
         _currentIndex = index;
       });
+      _scheduleMaybeShowNotificationsBellTutorial();
       debugPrint(
         "🧭 MainNavigation: Navigation completed, new index: $_currentIndex",
       );
@@ -495,33 +526,50 @@ class _MainNavigationState extends State<MainNavigation>
   void _maybeShowNotificationsBellTutorial() {
     if (!mounted) return;
     if (_notificationsBellTutorialShownThisSession) return;
+    if (_notificationsBellTutorialPending) return;
+    // Only show when the user is actually on the Home tab and the main
+    // navigation route is the visible (top) route.
+    if (_currentIndex != 0) return;
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
     if (!AuthenticationState().isAuthenticated) return;
-    if (!OnboardingState().showOnboarding) return;
     if (!ActiveSearchAlertsState().hasActiveEnabledAlerts) return;
 
-    _notificationsBellTutorialShownThisSession = true;
+    _notificationsBellTutorialPending = true;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Give the app bar action time to mount.
-      await Future<void>.delayed(const Duration(milliseconds: 450));
-      if (!mounted) return;
-
-      await TutorialState().initialize();
-      if (!mounted) return;
-      if (TutorialState().hasCompletedNotificationsBellTutorial) return;
-
-      for (var attempt = 0; attempt < 8; attempt++) {
+      var shown = false;
+      try {
+        // Give the app bar action time to mount.
+        await Future<void>.delayed(const Duration(milliseconds: 450));
         if (!mounted) return;
-        if (AppRouter.notificationsBellTutorialKey.currentContext != null) {
-          AlertBellTutorialOverlay.show(
-            context,
-            alertBellKey: AppRouter.notificationsBellTutorialKey,
-            descriptionKey: "tutorial_notifications_bell_description",
-            onComplete: TutorialState().markNotificationsBellTutorialCompleted,
-          );
-          return;
+
+        await TutorialState().initialize();
+        if (!mounted) return;
+        if (TutorialState().hasCompletedNotificationsBellTutorial) return;
+
+        for (var attempt = 0; attempt < 8; attempt++) {
+          if (!mounted) return;
+          if (AppRouter.notificationsBellTutorialKey.currentContext != null) {
+            _notificationsBellTutorialShownThisSession = true;
+            shown = true;
+            AlertBellTutorialOverlay.show(
+              context,
+              alertBellKey: AppRouter.notificationsBellTutorialKey,
+              descriptionKey: "tutorial_notifications_bell_description",
+              onComplete: TutorialState().markNotificationsBellTutorialCompleted,
+            );
+            return;
+          }
+          await Future<void>.delayed(const Duration(milliseconds: 120));
         }
-        await Future<void>.delayed(const Duration(milliseconds: 120));
+      } finally {
+        // If we failed to show (e.g. bell target not mounted yet), allow a
+        // later retry when state changes again or on subsequent refreshes.
+        if (mounted && !shown) {
+          _notificationsBellTutorialPending = false;
+        } else {
+          _notificationsBellTutorialPending = false;
+        }
       }
     });
   }
@@ -707,6 +755,7 @@ class _MainNavigationState extends State<MainNavigation>
               setState(() {
                 _currentIndex = index;
               });
+              _scheduleMaybeShowNotificationsBellTutorial();
             },
           );
         },
