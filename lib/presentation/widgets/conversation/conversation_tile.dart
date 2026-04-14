@@ -39,6 +39,8 @@ class ConversationTile extends StatelessWidget {
 
         final listTile = ListTile(
           onTap: onTap,
+          // Sit on parent [ThreeDElevatedSurface] gradient instead of a flat fill.
+          tileColor: isGrouped ? Colors.transparent : null,
           leading: conversation.otherUserAvatar != null
               ? ClipOval(
                   child: CachedNetworkImage(
@@ -155,7 +157,7 @@ class ConversationTile extends StatelessWidget {
 
         if (isGrouped) {
           return Material(
-            color: cardColor,
+            color: Colors.transparent,
             child: listTile,
           );
         }
