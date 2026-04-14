@@ -493,18 +493,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: _alerts.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
                       itemBuilder: (context, i) {
                         final a = _alerts[i];
+                        final themeState = ThemeState();
                         return Theme(
                           data: theme.copyWith(
                             cardTheme: theme.cardTheme.copyWith(
                               margin: EdgeInsets.zero,
                               elevation: 0,
                               surfaceTintColor: Colors.transparent,
-                              color: ThemeState().isBlueTheme
-                                  ? BlueThemeColors.surface
-                                  : theme.colorScheme.surface,
+                              color: themeState.isLightTheme
+                                  ? themeState.cardColor
+                                  : (themeState.isBlueTheme
+                                      ? BlueThemeColors.surface
+                                      : theme.colorScheme.surface),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
