@@ -273,3 +273,103 @@ class _WheelPickerPlateContainerState extends State<WheelPickerPlateContainer>
     );
   }
 }
+
+/// 3D plate behind wheel pickers: keeps chrome out of the picker subtree and uses
+/// [Stack.clipBehavior] none so ListWheelScrollView paint is not hard-clipped.
+///
+/// When [showErrorBorder] is true, the error outline gently pulses.
+class WheelPickerPlateChrome extends StatefulWidget {
+  const WheelPickerPlateChrome({
+    required this.height,
+    required this.child,
+    super.key,
+    this.showErrorBorder = false,
+    this.theme,
+  });
+
+  final double height;
+  final Widget child;
+  final bool showErrorBorder;
+  final ThemeData? theme;
+
+  @override
+  State<WheelPickerPlateChrome> createState() => _WheelPickerPlateChromeState();
+}
+
+class _WheelPickerPlateChromeState extends State<WheelPickerPlateChrome>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    );
+    _pulse = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    if (widget.showErrorBorder) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(WheelPickerPlateChrome oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.showErrorBorder != oldWidget.showErrorBorder) {
+      if (widget.showErrorBorder) {
+        _controller.repeat(reverse: true);
+      } else {
+        _controller
+          ..stop()
+          ..reset();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = widget.theme ?? Theme.of(context);
+
+    BoxDecoration decorationFor(double? pulseT) =>
+        ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+          context,
+          theme: t,
+          showErrorBorder: widget.showErrorBorder,
+          errorPulseT: widget.showErrorBorder ? pulseT : null,
+        );
+
+    Widget chrome(BoxDecoration decoration) {
+      return SizedBox(
+        height: widget.height,
+        child: Stack(
+          clipBehavior: Clip.none,
+          fit: StackFit.expand,
+          children: [
+            DecoratedBox(
+              decoration: decoration,
+              child: const SizedBox.expand(),
+            ),
+            widget.child,
+          ],
+        ),
+      );
+    }
+
+    if (!widget.showErrorBorder) {
+      return chrome(decorationFor(null));
+    }
+
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, _) => chrome(decorationFor(_pulse.value)),
+    );
+  }
+}

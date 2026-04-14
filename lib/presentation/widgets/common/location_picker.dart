@@ -134,16 +134,11 @@ class _LocationPickerState extends State<LocationPicker> {
     final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
     final iconColor = theme.colorScheme.onSurfaceVariant;
 
-    final plateDecoration = ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-      context,
-      theme: theme,
-      showErrorBorder: widget.showError,
-    );
-
     if (widget.isLoading) {
-      return _PickerChrome(
+      return WheelPickerPlateChrome(
         height: widget.height,
-        decoration: plateDecoration,
+        theme: theme,
+        showErrorBorder: widget.showError,
         child: Center(
           child: CircularProgressIndicator(color: theme.colorScheme.primary),
         ),
@@ -153,10 +148,11 @@ class _LocationPickerState extends State<LocationPicker> {
     final selectionOverlayFill =
         theme.colorScheme.onSurface.withValues(alpha: isBlueTheme ? 0.14 : 0.07);
 
-    return _PickerChrome(
+    return WheelPickerPlateChrome(
       key: widget.containerKey != null ? ValueKey(widget.containerKey) : null,
       height: widget.height,
-      decoration: plateDecoration,
+      theme: theme,
+      showErrorBorder: widget.showError,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -314,38 +310,5 @@ class _LocationPickerState extends State<LocationPicker> {
       default:
         return location.shortName ?? "";
     }
-  }
-}
-
-/// 3D plate behind the wheel: keeps chrome out of the picker subtree and uses
-/// [Stack.clipBehavior] none so ListWheelScrollView paint is not hard-clipped.
-class _PickerChrome extends StatelessWidget {
-  const _PickerChrome({
-    required this.height,
-    required this.decoration,
-    required this.child,
-    super.key,
-  });
-
-  final double height;
-  final BoxDecoration decoration;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: Stack(
-        clipBehavior: Clip.none,
-        fit: StackFit.expand,
-        children: [
-          DecoratedBox(
-            decoration: decoration,
-            child: const SizedBox.expand(),
-          ),
-          child,
-        ],
-      ),
-    );
   }
 }

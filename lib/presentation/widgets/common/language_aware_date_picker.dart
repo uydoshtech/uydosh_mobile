@@ -1,5 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "dart:math" as math;
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -58,6 +59,7 @@ class _LanguageAwareDatePickerDialogState
     extends State<LanguageAwareDatePickerDialog> {
   late DateTime selectedDate;
   late DateTime currentMonth;
+  int _selectionPulseTick = 0;
 
   @override
   void initState() {
@@ -141,6 +143,7 @@ class _LanguageAwareDatePickerDialogState
     HapticFeedbackUtils.impact();
     setState(() {
       selectedDate = date;
+      _selectionPulseTick++;
     });
   }
 
@@ -369,49 +372,82 @@ class _LanguageAwareDatePickerDialogState
                     ) &&
                     date.isBefore(widget.lastDate.add(const Duration(days: 1)));
 
-                return GestureDetector(
-                  onTap: isSelectable ? () => _selectDate(date) : null,
-                  child: Container(
-                    margin: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? null
-                          : isToday
-                              ? theme.colorScheme.primary.withOpacity(0.1)
-                              : Colors.transparent,
-                      gradient: isSelected
-                          ? ThreeDSurfaceStyle.surfaceGradient(
-                              context,
-                              theme.colorScheme.primary,
-                            )
-                          : null,
-                      boxShadow:
-                          isSelected ? ThreeDSurfaceStyle.elevatedShadows(context) : null,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        date.day.toString(),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color:
-                              isSelected
-                                  ? theme.colorScheme.onPrimary
-                                  : isCurrentMonth
-                                  ? (themeState.isBlueTheme
-                                      ? Colors.white
-                                      : theme.colorScheme.onSurface)
-                                  : (themeState.isBlueTheme
-                                          ? Colors.white
-                                          : theme.colorScheme.onSurface)
-                                      .withOpacity(0.3),
-                          fontWeight:
-                              isSelected || isToday
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                Widget buildDayCell({required bool selected, double pulse = 0.0}) {
+                  final t = pulse.clamp(0.0, 1.0);
+                  final pulseAmount = (t <= 0) ? 0.0 : math.sin(math.pi * t);
+                  final scale = selected ? (1.0 + 0.18 * pulseAmount) : 1.0;
+
+                  final baseShadows =
+                      selected ? ThreeDSurfaceStyle.elevatedShadows(context) : const <BoxShadow>[];
+                  final glowShadows = selected
+                      ? <BoxShadow>[
+                          BoxShadow(
+                            color: theme.colorScheme.primary.withOpacity(
+                              (themeState.isBlueTheme ? 0.45 : 0.30) * pulseAmount,
+                            ),
+                            blurRadius: 18 * pulseAmount,
+                            spreadRadius: 2.5 * pulseAmount,
+                          ),
+                        ]
+                      : const <BoxShadow>[];
+
+                  return Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      margin: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? null
+                            : isToday
+                                ? theme.colorScheme.primary.withOpacity(0.1)
+                                : Colors.transparent,
+                        gradient: selected
+                            ? ThreeDSurfaceStyle.surfaceGradient(
+                                context,
+                                theme.colorScheme.primary,
+                              )
+                            : null,
+                        boxShadow: selected ? [...baseShadows, ...glowShadows] : null,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          date.day.toString(),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: selected
+                                ? theme.colorScheme.onPrimary
+                                : isCurrentMonth
+                                    ? (themeState.isBlueTheme
+                                        ? Colors.white
+                                        : theme.colorScheme.onSurface)
+                                    : (themeState.isBlueTheme
+                                            ? Colors.white
+                                            : theme.colorScheme.onSurface)
+                                        .withOpacity(0.3),
+                            fontWeight:
+                                selected || isToday ? FontWeight.w600 : FontWeight.normal,
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  );
+                }
+
+                return GestureDetector(
+                  onTap: isSelectable ? () => _selectDate(date) : null,
+                  child: isSelected
+                      ? TweenAnimationBuilder<double>(
+                          key: ValueKey<String>(
+                            "${date.year}-${date.month}-${date.day}-$_selectionPulseTick",
+                          ),
+                          tween: Tween<double>(begin: 0.0, end: 1.0),
+                          duration: const Duration(milliseconds: 650),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, t, child) {
+                            return buildDayCell(selected: true, pulse: t);
+                          },
+                        )
+                      : buildDayCell(selected: false),
                 );
               },
             ),
