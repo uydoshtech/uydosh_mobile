@@ -846,6 +846,7 @@
   "tutorial_got_it": "Got it",
   "tutorial_metro_description": "Choose a metro line, then pick a station to filter by location.",
   "tutorial_alert_bell_description": "You can add an alert and be notified about new listings matching your search criteria.",
+  "tutorial_notifications_bell_description": "Your saved alerts are here. Tap the bell to manage them anytime.",
   "january": "January",
   "february": "February",
   "march": "March",

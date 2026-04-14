@@ -2199,6 +2199,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Вы можете добавить уведомление и получать оповещения о новых объявлениях по вашим критериям поиска.';
 
   @override
+  String get tutorial_notifications_bell_description =>
+      'Ваши сохранённые оповещения — здесь. Нажмите на колокольчик, чтобы управлять ими в любое время.';
+
+  @override
   String get january => 'Январь';
 
   @override

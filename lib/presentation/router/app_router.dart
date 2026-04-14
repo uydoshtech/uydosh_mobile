@@ -13,8 +13,10 @@ import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -39,12 +41,17 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 class AppRouter {
   /// Global key for the profile icon in the app bar, used by the search tutorial.
   static final GlobalKey<TutorialTargetWrapperState> profileIconTutorialKey =
       GlobalKey<TutorialTargetWrapperState>();
+
+  /// Global key for the main app bar notifications bell (saved alerts).
+  static final GlobalKey<TutorialTargetWrapperState>
+  notificationsBellTutorialKey = GlobalKey<TutorialTargetWrapperState>();
 
   static Widget buildMainNavigation({bool attachKey = false}) => BlocProvider(
     create: (context) {
@@ -81,6 +88,7 @@ class _MainNavigationState extends State<MainNavigation>
   bool _isAuthenticated = false;
   bool _profileCompletionPromptShown = false;
   bool _checkingProfileCompletion = false;
+  bool _notificationsBellTutorialShownThisSession = false;
 
   @override
   void initState() {
@@ -104,6 +112,9 @@ class _MainNavigationState extends State<MainNavigation>
         _checkAuthenticationStatus();
       }
     });
+
+    // Show notifications bell tutorial once the user has at least one alert.
+    ActiveSearchAlertsState().addListener(_maybeShowNotificationsBellTutorial);
 
     // Check initial authentication status
     _checkAuthenticationStatus();
@@ -129,6 +140,8 @@ class _MainNavigationState extends State<MainNavigation>
 
   @override
   void dispose() {
+    ActiveSearchAlertsState()
+        .removeListener(_maybeShowNotificationsBellTutorial);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -479,6 +492,40 @@ class _MainNavigationState extends State<MainNavigation>
     }
   }
 
+  void _maybeShowNotificationsBellTutorial() {
+    if (!mounted) return;
+    if (_notificationsBellTutorialShownThisSession) return;
+    if (!AuthenticationState().isAuthenticated) return;
+    if (!OnboardingState().showOnboarding) return;
+    if (!ActiveSearchAlertsState().hasActiveEnabledAlerts) return;
+
+    _notificationsBellTutorialShownThisSession = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Give the app bar action time to mount.
+      await Future<void>.delayed(const Duration(milliseconds: 450));
+      if (!mounted) return;
+
+      await TutorialState().initialize();
+      if (!mounted) return;
+      if (TutorialState().hasCompletedNotificationsBellTutorial) return;
+
+      for (var attempt = 0; attempt < 8; attempt++) {
+        if (!mounted) return;
+        if (AppRouter.notificationsBellTutorialKey.currentContext != null) {
+          AlertBellTutorialOverlay.show(
+            context,
+            alertBellKey: AppRouter.notificationsBellTutorialKey,
+            descriptionKey: "tutorial_notifications_bell_description",
+            onComplete: TutorialState().markNotificationsBellTutorialCompleted,
+          );
+          return;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 120));
+      }
+    });
+  }
+
   /// Shared 3D chrome for app bar icon-only actions (drawer, notifications, profile).
   Widget _threeDAppBarIconButton({
     required IconData iconData,
@@ -534,23 +581,27 @@ class _MainNavigationState extends State<MainNavigation>
                 final activeAlerts =
                     signedIn &&
                     ActiveSearchAlertsState().hasActiveEnabledAlerts;
-                return _threeDAppBarIconButton(
-                  borderRadius: const BorderRadius.all(Radius.circular(999)),
-                  iconData:
-                      activeAlerts
-                          ? Icons.notifications
-                          : Icons.notifications_none_outlined,
-                  onPressed: () {
-                    if (!AuthenticationState().isAuthenticated) {
-                      context.pushReplaceAuthWizard();
-                      return;
-                    }
-                    context.pushNotifications();
-                  },
-                  semanticsLabel:
-                      activeAlerts
-                          ? "${L10n.get("menu_notifications")}, ${L10n.get("notifications_appbar_semantics_active_alerts")}"
-                          : L10n.get("menu_notifications"),
+                return TutorialTargetWrapper(
+                  key: AppRouter.notificationsBellTutorialKey,
+                  child: _threeDAppBarIconButton(
+                    borderRadius:
+                        const BorderRadius.all(Radius.circular(999)),
+                    iconData:
+                        activeAlerts
+                            ? Icons.notifications
+                            : Icons.notifications_none_outlined,
+                    onPressed: () {
+                      if (!AuthenticationState().isAuthenticated) {
+                        context.pushReplaceAuthWizard();
+                        return;
+                      }
+                      context.pushNotifications();
+                    },
+                    semanticsLabel:
+                        activeAlerts
+                            ? "${L10n.get("menu_notifications")}, ${L10n.get("notifications_appbar_semantics_active_alerts")}"
+                            : L10n.get("menu_notifications"),
+                  ),
                 );
               },
             ),

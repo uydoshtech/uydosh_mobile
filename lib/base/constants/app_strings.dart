@@ -912,6 +912,8 @@ class AppStrings {
           "Choose a metro line, then pick a station to filter by location.",
       "tutorial_alert_bell_description":
           "You can add an alert and be notified about new listings matching your search criteria.",
+      "tutorial_notifications_bell_description":
+          "Your saved alerts are here. Tap the bell to manage them anytime.",
 
       // ===== TIME & DATES =====
       "january": "January",
@@ -1879,6 +1881,8 @@ class AppStrings {
           "Выберите линию метро, затем станцию для фильтрации по местоположению.",
       "tutorial_alert_bell_description":
           "Вы можете добавить уведомление и получать оповещения о новых объявлениях по вашим критериям поиска.",
+      "tutorial_notifications_bell_description":
+          "Ваши сохранённые оповещения — здесь. Нажмите на колокольчик, чтобы управлять ими в любое время.",
 
       // ===== TIME & DATES =====
       "january": "Январь",
@@ -2863,6 +2867,8 @@ class AppStrings {
           "Metro liniyasini tanlang, keyin joylashuv bo'yicha filtrlash uchun stansiyani tanlang.",
       "tutorial_alert_bell_description":
           "Qidiruv mezonlaringizga mos yangi e'lonlar chiqsa, bildirishnoma qo'shib xabardor bo'lib turishingiz mumkin.",
+      "tutorial_notifications_bell_description":
+          "Saqlangan bildirishnomalaringiz shu yerda. Kolokolchani bosib istalgan payt boshqarishingiz mumkin.",
 
       // ===== TIME & DATES =====
       "january": "Yanvar",

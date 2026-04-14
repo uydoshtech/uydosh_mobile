@@ -2183,6 +2183,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can add an alert and be notified about new listings matching your search criteria.';
 
   @override
+  String get tutorial_notifications_bell_description =>
+      'Your saved alerts are here. Tap the bell to manage them anytime.';
+
+  @override
   String get january => 'January';
 
   @override

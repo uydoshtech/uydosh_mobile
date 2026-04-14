@@ -43,6 +43,7 @@ class AlertBellTutorialOverlay {
   static void show(
     BuildContext context, {
     required GlobalKey<TutorialTargetWrapperState> alertBellKey,
+    String descriptionKey = "tutorial_alert_bell_description",
     VoidCallback? onComplete,
   }) {
     final clampedPosition = _clampedTargetPositionFromKey(
@@ -70,7 +71,7 @@ class AlertBellTutorialOverlay {
             builder: (context, controller) {
               final base = Theme.of(context).textTheme.titleLarge;
               return Text(
-                L10n.get("tutorial_alert_bell_description"),
+                L10n.get(descriptionKey),
                 textAlign: TextAlign.center,
                 style: base?.copyWith(
                       fontSize: 20,

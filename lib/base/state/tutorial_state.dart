@@ -12,11 +12,14 @@ class TutorialState extends ChangeNotifier {
   bool _hasCompletedSearchTutorial = false;
   bool _hasCompletedMetroTutorial = false;
   bool _hasCompletedAlertBellTutorial = false;
+  bool _hasCompletedNotificationsBellTutorial = false;
   bool _isInitialized = false;
 
   bool get hasCompletedSearchTutorial => _hasCompletedSearchTutorial;
   bool get hasCompletedMetroTutorial => _hasCompletedMetroTutorial;
   bool get hasCompletedAlertBellTutorial => _hasCompletedAlertBellTutorial;
+  bool get hasCompletedNotificationsBellTutorial =>
+      _hasCompletedNotificationsBellTutorial;
   bool get isInitialized => _isInitialized;
 
   static const String _keySearchTutorialCompleted =
@@ -25,6 +28,8 @@ class TutorialState extends ChangeNotifier {
       "tutorial_metro_completed";
   static const String _keyAlertBellTutorialCompleted =
       "tutorial_alert_bell_completed";
+  static const String _keyNotificationsBellTutorialCompleted =
+      "tutorial_notifications_bell_completed";
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -37,8 +42,10 @@ class TutorialState extends ChangeNotifier {
           prefs.getBool(_keyMetroTutorialCompleted) ?? false;
       _hasCompletedAlertBellTutorial =
           prefs.getBool(_keyAlertBellTutorialCompleted) ?? false;
+      _hasCompletedNotificationsBellTutorial =
+          prefs.getBool(_keyNotificationsBellTutorialCompleted) ?? false;
       logger.d(
-        "Loaded tutorial state: search=$_hasCompletedSearchTutorial, metro=$_hasCompletedMetroTutorial, alertBell=$_hasCompletedAlertBellTutorial",
+        "Loaded tutorial state: search=$_hasCompletedSearchTutorial, metro=$_hasCompletedMetroTutorial, alertBell=$_hasCompletedAlertBellTutorial, notificationsBell=$_hasCompletedNotificationsBellTutorial",
       );
       _isInitialized = true;
       notifyListeners();
@@ -46,6 +53,7 @@ class TutorialState extends ChangeNotifier {
       logger.d("Error initializing tutorial state: $e");
       _hasCompletedSearchTutorial = false;
       _hasCompletedAlertBellTutorial = false;
+      _hasCompletedNotificationsBellTutorial = false;
       _isInitialized = true;
       notifyListeners();
     }
@@ -96,11 +104,27 @@ class TutorialState extends ChangeNotifier {
     }
   }
 
+  Future<void> markNotificationsBellTutorialCompleted() async {
+    if (_hasCompletedNotificationsBellTutorial) return;
+
+    _hasCompletedNotificationsBellTutorial = true;
+    logger.d("Tutorial: notifications bell step completed");
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyNotificationsBellTutorialCompleted, true);
+    } catch (e) {
+      logger.d("Error saving tutorial state: $e");
+    }
+  }
+
   /// Reset tutorial (e.g. for testing or from settings).
   Future<void> resetTutorial() async {
     _hasCompletedSearchTutorial = false;
     _hasCompletedMetroTutorial = false;
     _hasCompletedAlertBellTutorial = false;
+    _hasCompletedNotificationsBellTutorial = false;
     notifyListeners();
 
     try {
@@ -108,6 +132,7 @@ class TutorialState extends ChangeNotifier {
       await prefs.setBool(_keySearchTutorialCompleted, false);
       await prefs.setBool(_keyMetroTutorialCompleted, false);
       await prefs.setBool(_keyAlertBellTutorialCompleted, false);
+      await prefs.setBool(_keyNotificationsBellTutorialCompleted, false);
       logger.d("Tutorial state reset");
     } catch (e) {
       logger.d("Error resetting tutorial state: $e");

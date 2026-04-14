@@ -2219,6 +2219,10 @@ class AppLocalizationsUz extends AppLocalizations {
       'Qidiruv mezonlaringizga mos yangi e\'lonlar chiqsa, bildirishnoma qo\'shib xabardor bo\'lib turishingiz mumkin.';
 
   @override
+  String get tutorial_notifications_bell_description =>
+      'Saqlangan bildirishnomalaringiz shu yerda. Kolokolchani bosib istalgan payt boshqarishingiz mumkin.';
+
+  @override
   String get january => 'Yanvar';
 
   @override

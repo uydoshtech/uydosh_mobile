@@ -528,6 +528,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               onRefresh: _load,
               child: _alerts.isEmpty
                   ? ListView(
+                      padding: const EdgeInsets.all(16),
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         _alertsExplainer(theme),

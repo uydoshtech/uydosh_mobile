@@ -846,6 +846,7 @@
   "tutorial_got_it": "Tushundim",
   "tutorial_metro_description": "Metro liniyasini tanlang, keyin joylashuv bo'yicha filtrlash uchun stansiyani tanlang.",
   "tutorial_alert_bell_description": "Qidiruv mezonlaringizga mos yangi e'lonlar chiqsa, bildirishnoma qo'shib xabardor bo'lib turishingiz mumkin.",
+  "tutorial_notifications_bell_description": "Saqlangan bildirishnomalaringiz shu yerda. Kolokolchani bosib istalgan payt boshqarishingiz mumkin.",
   "january": "Yanvar",
   "february": "Fevral",
   "march": "Mart",
