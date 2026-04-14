@@ -502,6 +502,18 @@ abstract class AppLocalizations {
   /// **'Messages'**
   String get menu_messages;
 
+  /// No description provided for @notifications_alerts_explainer.
+  ///
+  /// In en, this message translates to:
+  /// **'These are your saved alerts. When new matching listings appear, we’ll send a push notification if it’s enabled in your phone settings.'**
+  String get notifications_alerts_explainer;
+
+  /// No description provided for @notifications_open_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get notifications_open_settings;
+
   /// No description provided for @type_message.
   ///
   /// In en, this message translates to:

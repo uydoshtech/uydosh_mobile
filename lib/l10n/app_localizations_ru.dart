@@ -222,6 +222,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get menu_messages => 'Сообщения';
 
   @override
+  String get notifications_alerts_explainer =>
+      'Здесь показаны ваши сохранённые оповещения. Когда появляются новые подходящие объявления, мы отправим push‑уведомление, если оно включено в настройках телефона.';
+
+  @override
+  String get notifications_open_settings => 'Открыть настройки';
+
+  @override
   String get type_message => 'Введите сообщение...';
 
   @override

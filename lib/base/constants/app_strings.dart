@@ -97,7 +97,8 @@ class AppStrings {
       "notifications_appbar_semantics_active_alerts": "Active search alerts",
       "notifications_empty": "No saved alerts yet.",
       "notifications_alerts_explainer":
-          "Create alerts. When new matching listings appear, we’ll send a push notification if it’s enabled in your phone settings.",
+          "These are your saved alerts. When new matching listings appear, we’ll send a push notification if it’s enabled in your phone settings.",
+      "notifications_open_settings": "Open settings",
       "notifications_disable_all": "Disable all notifications",
       "notifications_delete_all": "Delete all notifications",
       "notifications_disable_all_title": "Disable all notifications?",
@@ -1056,7 +1057,8 @@ class AppStrings {
           "Есть активные оповещения о поиске",
       "notifications_empty": "Пока нет сохранённых оповещений.",
       "notifications_alerts_explainer":
-          "Здесь вы создаёте уведомления. Когда появляются новые подходящие объявления, мы отправим push‑уведомление, если оно включено в настройках телефона.",
+          "Здесь показаны ваши сохранённые оповещения. Когда появляются новые подходящие объявления, мы отправим push‑уведомление, если оно включено в настройках телефона.",
+      "notifications_open_settings": "Открыть настройки",
       "notifications_disable_all": "Отключить все уведомления",
       "notifications_delete_all": "Удалить все уведомления",
       "notifications_disable_all_title": "Отключить все уведомления?",
@@ -2022,7 +2024,8 @@ class AppStrings {
           "Faol qidiruv bildirishnomalari",
       "notifications_empty": "Hozircha saqlangan bildirishnomalar yo'q.",
       "notifications_alerts_explainer":
-          "Bu yerda siz ogohlantirishlar yaratasiz. Mos yangi e’lonlar paydo bo‘lsa, telefon sozlamalarida yoqilgan bo‘lsa, biz push‑bildirishnoma yuboramiz.",
+          "Bu yerda sizning saqlangan ogohlantirishlaringiz ko‘rsatiladi. Mos yangi e’lonlar paydo bo‘lsa, telefon sozlamalarida yoqilgan bo‘lsa, biz push‑bildirishnoma yuboramiz.",
+      "notifications_open_settings": "Sozlamalarni ochish",
       "notifications_disable_all": "Barcha bildirishnomalarni o‘chirish",
       "notifications_delete_all": "Barcha bildirishnomalarni o‘chirib tashlash",
       "notifications_disable_all_title":

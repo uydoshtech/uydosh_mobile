@@ -220,6 +220,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menu_messages => 'Messages';
 
   @override
+  String get notifications_alerts_explainer =>
+      'These are your saved alerts. When new matching listings appear, we’ll send a push notification if it’s enabled in your phone settings.';
+
+  @override
+  String get notifications_open_settings => 'Open settings';
+
+  @override
   String get type_message => 'Type a message...';
 
   @override

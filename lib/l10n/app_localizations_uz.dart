@@ -222,6 +222,13 @@ class AppLocalizationsUz extends AppLocalizations {
   String get menu_messages => 'Xabarlar';
 
   @override
+  String get notifications_alerts_explainer =>
+      'Bu yerda sizning saqlangan ogohlantirishlaringiz ko‘rsatiladi. Mos yangi e’lonlar paydo bo‘lsa, telefon sozlamalarida yoqilgan bo‘lsa, biz push‑bildirishnoma yuboramiz.';
+
+  @override
+  String get notifications_open_settings => 'Sozlamalarni ochish';
+
+  @override
   String get type_message => 'Xabar yozing...';
 
   @override

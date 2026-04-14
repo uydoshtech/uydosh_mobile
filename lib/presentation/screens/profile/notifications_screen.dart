@@ -3,6 +3,7 @@
 import "package:dio/dio.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -47,13 +48,50 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: L10n.text(
-        "notifications_alerts_explainer",
-        style: TextStyle(
-          color: theme.colorScheme.onSurfaceVariant,
-          fontSize: 14,
-          height: 1.25,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: L10n.text(
+                  "notifications_alerts_explainer",
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              onPressed: () async {
+                await openAppSettings();
+              },
+              child: Text(L10n.get("notifications_open_settings")),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -303,14 +341,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
       );
     }
-    if (topRow.isNotEmpty) {
-      lines.add(Wrap(spacing: 8, runSpacing: 8, children: topRow));
-    }
-
     if (a.minPrice != null || a.maxPrice != null) {
       final min = (a.minPrice ?? a.maxPrice ?? 0).round();
       final max = (a.maxPrice ?? a.minPrice ?? 0).round();
-      lines.add(
+      topRow.add(
         PriceRangeBadge(
           minPrice: min,
           maxPrice: max,
@@ -321,6 +355,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
         ),
       );
+    }
+    if (topRow.isNotEmpty) {
+      lines.add(Wrap(spacing: 8, runSpacing: 8, children: topRow));
     }
 
     final locationAndMetro = <Widget>[];
