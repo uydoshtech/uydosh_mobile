@@ -829,6 +829,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_photos_label => 'Фотографии';
 
   @override
+  String listing_photos_count(int current, int max) {
+    return 'Фото $current / $max';
+  }
+
+  @override
   String get delete_photo => 'Удалить фото';
 
   @override

@@ -834,6 +834,11 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_photos_label => 'Rasmlar';
 
   @override
+  String listing_photos_count(int current, int max) {
+    return 'Rasmlar $current / $max';
+  }
+
+  @override
   String get delete_photo => 'Rasmni o\'chirish';
 
   @override

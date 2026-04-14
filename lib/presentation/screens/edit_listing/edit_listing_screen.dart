@@ -701,13 +701,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
                     ), // Space between price range and description
 
                     // Description Field
-                    Container(
-                      clipBehavior: Clip.antiAlias,
-                      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                        context,
-                        theme: theme,
-                        showErrorBorder: _showDescriptionError,
-                      ),
+                    WheelPickerPlateContainer(
+                      showErrorBorder: _showDescriptionError,
+                      theme: theme,
                       child: TextFormField(
                         controller: _descriptionController,
                         onChanged: (value) {
@@ -740,7 +736,13 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
                             borderSide: _showDescriptionError
                                 ? BorderSide.none
-                                : BorderSide(color: _getBorderColor(), width: 2),
+                                : ThemeState().isLightTheme &&
+                                        !ThemeState().isBlueTheme
+                                    ? BorderSide.none
+                                    : BorderSide(
+                                        color: _getBorderColor(),
+                                        width: 2,
+                                      ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
@@ -1123,7 +1125,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                       onDismissKeyboard: _dismissKeyboard,
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 26),
 
                     // Update Button
                     Container(

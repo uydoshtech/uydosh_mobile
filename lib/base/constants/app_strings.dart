@@ -344,6 +344,7 @@ class AppStrings {
       "title_male_room": "#NeedRoom",
       "title_female_room": "#NeedRoom",
       "listing_photos_label": "Photos",
+      "listing_photos_count": "Photos {current} / {max}",
 
       "delete_photo": "Delete Photo",
       "delete_photo_confirmation":
@@ -1304,6 +1305,7 @@ class AppStrings {
       "title_male_room": "#ИщуКомнату",
       "title_female_room": "#ИщуКомнату",
       "listing_photos_label": "Фотографии",
+      "listing_photos_count": "Фото {current} / {max}",
 
       "delete_photo": "Удалить фото",
       "delete_photo_confirmation": "Вы уверены, что хотите удалить это фото?",
@@ -2273,6 +2275,7 @@ class AppStrings {
       "title_male_room": "#YigitXonadonQidiramiz",
       "title_female_room": "#QizXonadonQidiramiz",
       "listing_photos_label": "Rasmlar",
+      "listing_photos_count": "Rasmlar {current} / {max}",
 
       "delete_photo": "Rasmni o'chirish",
       "delete_photo_confirmation": "Bu rasmni o'chirishni xohlaysizmi?",

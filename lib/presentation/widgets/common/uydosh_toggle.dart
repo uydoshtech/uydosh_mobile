@@ -1,9 +1,9 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
-/// A reusable settings row with an icon, title, optional subtitle, and a toggle switch.
-/// Used for settings like haptic feedback, onboarding, theme, etc.
+/// A reusable settings row with an icon, title, optional subtitle, and a neumorphic toggle.
+/// Used for settings like haptic feedback, onboarding, and animations.
 class UydoshToggle extends StatelessWidget {
   const UydoshToggle({
     required this.title,
@@ -33,7 +33,7 @@ class UydoshToggle extends StatelessWidget {
       leading: icon != null ? ThemeIcon(icon, color: effectiveIconColor) : null,
       title: title,
       subtitle: subtitle,
-      trailing: ThemeToggle(
+      trailing: NeumorphicThemeAwareToggle(
         value: value,
         onChanged: onChanged,
       ),

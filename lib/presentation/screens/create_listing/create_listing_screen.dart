@@ -664,13 +664,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         L10n.inputField(
           "listing_description_hint",
           builder:
-              (hintText) => Container(
-                clipBehavior: Clip.antiAlias,
-                decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                  context,
-                  theme: Theme.of(context),
-                  showErrorBorder: _showDescriptionError,
-                ),
+              (hintText) => WheelPickerPlateContainer(
+                showErrorBorder: _showDescriptionError,
+                theme: Theme.of(context),
                 child: TextFormField(
                   controller: _descriptionController,
                   onChanged: (value) {
@@ -702,7 +698,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
                       borderSide: _showDescriptionError
                           ? BorderSide.none
-                          : BorderSide(color: _getBorderColor(), width: 2),
+                          : ThemeState().isLightTheme &&
+                                  !ThemeState().isBlueTheme
+                              ? BorderSide.none
+                              : BorderSide(
+                                  color: _getBorderColor(),
+                                  width: 2,
+                                ),
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
@@ -1038,21 +1040,34 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             isRequired: false,
           ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 29),
 
-        // Submit Button
-        Container(
-          child: PrimaryButtonFactory.iconText(
-            onPressed:
-                _isSubmitting ? null : _submitForm, // Disable when submitting
-            icon: _isSubmitting ? Icons.hourglass_empty : Icons.add,
-            text: L10n.get(
-              _isSubmitting ? "creating_listing" : "create_listing_button",
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            isLoading: _isSubmitting,
-          ),
+        Builder(
+          builder: (context) {
+            final label = Theme.of(context).textTheme.labelLarge;
+            final baseSize = label?.fontSize ?? 14;
+            final textStyle =
+                label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
+                TextStyle(
+                  fontSize: baseSize * 1.2,
+                  height: 1.0,
+                  fontWeight: FontWeight.w500,
+                );
+            return PrimaryButtonFactory.iconText(
+              onPressed: _isSubmitting ? null : _submitForm,
+              icon: _isSubmitting ? Icons.hourglass_empty : Icons.add,
+              text: L10n.get(
+                _isSubmitting ? "creating_listing" : "create_listing_button",
+              ),
+              width: double.infinity,
+              borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              textStyle: textStyle,
+              isLoading: _isSubmitting,
+            );
+          },
         ),
+        const SizedBox(height: 29),
       ],
     );
   }

@@ -384,6 +384,19 @@
   "title_male_room": "#YigitXonadonQidiramiz",
   "title_female_room": "#QizXonadonQidiramiz",
   "listing_photos_label": "Rasmlar",
+  "listing_photos_count": "Rasmlar {current} / {max}",
+  "@listing_photos_count": {
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "example": "0"
+      },
+      "max": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "delete_photo": "Rasmni o'chirish",
   "delete_photo_confirmation": "Bu rasmni o'chirishni xohlaysizmi?",
   "photo_deleted_success": "Rasm muvaffaqiyatli o'chirildi",

@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class PrimaryButton extends StatefulWidget {
@@ -12,6 +12,9 @@ class PrimaryButton extends StatefulWidget {
     this.width,
     this.height,
     this.borderRadius,
+    /// Overrides gradient base; default matches the messages inbox toggle track
+    /// ([ThemeState.cardColor]).
+    this.surfaceGradientBase,
     this.textColor,
     this.textStyle,
     this.isLoading = false,
@@ -24,6 +27,7 @@ class PrimaryButton extends StatefulWidget {
   final double? width;
   final double? height;
   final BorderRadius? borderRadius;
+  final Color? surfaceGradientBase;
   final Color? textColor;
   final TextStyle? textStyle;
   final bool isLoading;
@@ -36,15 +40,13 @@ class PrimaryButton extends StatefulWidget {
 class _PrimaryButtonState extends State<PrimaryButton> {
   bool _pressed = false;
 
-  Color _backgroundColor() {
-    if (ThemeState().isLightTheme) {
-      return Colors.black;
-    }
-    return BlueThemeColors.buttonPrimary;
+  Color _surfaceGradientBase() {
+    return ThemeState().cardColor;
   }
 
   Color _foregroundColor() {
-    return widget.textColor ?? Colors.white;
+    if (widget.textColor != null) return widget.textColor!;
+    return ThemeState().unselectedTabTextColor.withValues(alpha: 0.82);
   }
 
   bool get _enabled =>
@@ -52,7 +54,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
 
   @override
   Widget build(BuildContext context) {
-    final bg = _backgroundColor();
+    final bg = widget.surfaceGradientBase ?? _surfaceGradientBase();
     final fg = _foregroundColor();
     final radius = widget.borderRadius ?? BorderRadius.circular(8);
     final shadows =
@@ -136,6 +138,8 @@ class PrimaryButtonFactory {
     EdgeInsetsGeometry? padding,
     double? width,
     double? height,
+    BorderRadius? borderRadius,
+    Color? surfaceGradientBase,
     Color? textColor,
     TextStyle? textStyle,
     double? iconSize,
@@ -147,6 +151,8 @@ class PrimaryButtonFactory {
       padding: padding,
       width: width,
       height: height,
+      borderRadius: borderRadius,
+      surfaceGradientBase: surfaceGradientBase,
       textColor: textColor,
       textStyle: textStyle,
       isLoading: isLoading,
@@ -168,6 +174,8 @@ class PrimaryButtonFactory {
     EdgeInsetsGeometry? padding,
     double? width,
     double? height,
+    BorderRadius? borderRadius,
+    Color? surfaceGradientBase,
     Color? textColor,
     TextStyle? textStyle,
     bool isLoading = false,
@@ -178,6 +186,8 @@ class PrimaryButtonFactory {
       padding: padding,
       width: width,
       height: height,
+      borderRadius: borderRadius,
+      surfaceGradientBase: surfaceGradientBase,
       textColor: textColor,
       textStyle: textStyle,
       isLoading: isLoading,
@@ -192,6 +202,8 @@ class PrimaryButtonFactory {
     EdgeInsetsGeometry? padding,
     double? width,
     double? height,
+    BorderRadius? borderRadius,
+    Color? surfaceGradientBase,
     Color? textColor,
     bool isLoading = false,
     bool isDisabled = false,
@@ -201,6 +213,8 @@ class PrimaryButtonFactory {
       padding: padding,
       width: width,
       height: height,
+      borderRadius: borderRadius,
+      surfaceGradientBase: surfaceGradientBase,
       textColor: textColor,
       isLoading: isLoading,
       isDisabled: isDisabled,

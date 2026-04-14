@@ -138,20 +138,138 @@ abstract final class ThreeDSurfaceStyle {
       );
 
   /// Outer chrome for [CupertinoPicker] wheels: same gradient + shadows as [ThreeDPillButton].
+  ///
+  /// When [showErrorBorder] is true and [errorPulseT] is set (typically `0`–`1` from an
+  /// [Animation]), the error outline and a soft glow pulse for attention. When
+  /// [errorPulseT] is null, the border is a steady [ColorScheme.error] stroke (legacy).
   static BoxDecoration wheelPickerPlateDecoration(
     BuildContext context, {
     ThemeData? theme,
     bool showErrorBorder = false,
+    double? errorPulseT,
   }) {
     final t = theme ?? Theme.of(context);
     final plateBase = t.colorScheme.surface;
+    final shadows = List<BoxShadow>.from(elevatedShadows(context));
+    Border? border;
+    if (showErrorBorder) {
+      final error = t.colorScheme.error;
+      if (errorPulseT == null) {
+        border = Border.all(color: error, width: 1.5);
+      } else {
+        final p = errorPulseT.clamp(0.0, 1.0);
+        border = Border.all(
+          color: Color.lerp(
+            error.withValues(alpha: 0.38),
+            error,
+            p,
+          )!,
+          width: 1.2 + 0.9 * p,
+        );
+        shadows.add(
+          BoxShadow(
+            color: error.withValues(alpha: 0.07 + 0.26 * p),
+            blurRadius: 2 + 14 * p,
+            spreadRadius: 0.2 + 1.1 * p,
+          ),
+        );
+      }
+    }
     return BoxDecoration(
       borderRadius: wheelPickerPlateRadius,
       gradient: surfaceGradient(context, plateBase),
-      boxShadow: elevatedShadows(context),
-      border: showErrorBorder
-          ? Border.all(color: t.colorScheme.error, width: 1.5)
-          : null,
+      boxShadow: shadows,
+      border: border,
+    );
+  }
+}
+
+/// Raised listing “plate” with optional validation styling. When [showErrorBorder] is
+/// true, the error outline gently pulses.
+class WheelPickerPlateContainer extends StatefulWidget {
+  const WheelPickerPlateContainer({
+    required this.child,
+    super.key,
+    this.showErrorBorder = false,
+    this.theme,
+    this.clipBehavior = Clip.antiAlias,
+  });
+
+  final Widget child;
+  final bool showErrorBorder;
+  final ThemeData? theme;
+  final Clip clipBehavior;
+
+  @override
+  State<WheelPickerPlateContainer> createState() =>
+      _WheelPickerPlateContainerState();
+}
+
+class _WheelPickerPlateContainerState extends State<WheelPickerPlateContainer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    );
+    _pulse = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    if (widget.showErrorBorder) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(WheelPickerPlateContainer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.showErrorBorder != oldWidget.showErrorBorder) {
+      if (widget.showErrorBorder) {
+        _controller.repeat(reverse: true);
+      } else {
+        _controller
+          ..stop()
+          ..reset();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.showErrorBorder) {
+      return Container(
+        clipBehavior: widget.clipBehavior,
+        decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+          context,
+          theme: widget.theme,
+          showErrorBorder: false,
+        ),
+        child: widget.child,
+      );
+    }
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, _) {
+        return Container(
+          clipBehavior: widget.clipBehavior,
+          decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+            context,
+            theme: widget.theme,
+            showErrorBorder: true,
+            errorPulseT: _pulse.value,
+          ),
+          child: widget.child,
+        );
+      },
     );
   }
 }

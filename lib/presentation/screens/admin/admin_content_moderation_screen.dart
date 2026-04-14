@@ -5,8 +5,9 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminContentModerationScreen extends StatefulWidget {
@@ -212,20 +213,30 @@ class _AdminContentModerationScreenState
           ),
         ),
         const SizedBox(height: 24),
-        SwitchListTile(
-          title: Text(L10n.get("admin_content_moderation_blur_enabled")),
-          value: _blurEnabled,
-          onChanged: _isSaving ? null : _onChanged,
-          secondary: _isSaving
+        ListTile(
+          leading: _isSaving
               ? const SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const ThemeIcon(Icons.blur_on_outlined),
+          title: Text(L10n.get("admin_content_moderation_blur_enabled")),
+          trailing: NeumorphicThemeAwareToggle(
+            value: _blurEnabled,
+            enabled: !_isSaving,
+            onChanged: _onChanged,
+          ),
         ),
         const SizedBox(height: 16),
-        SwitchListTile(
+        ListTile(
+          leading: _isSavingGemini
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const ThemeIcon(Icons.auto_awesome_outlined),
           title: Text(L10n.get("admin_client_config_hide_gemini_listing_ui")),
           subtitle: Text(
             L10n.get("admin_client_config_hide_gemini_listing_ui_description"),
@@ -234,18 +245,21 @@ class _AdminContentModerationScreenState
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          value: _geminiListingUiHidden,
-          onChanged: _isSavingGemini ? null : _onGeminiHideChanged,
-          secondary: _isSavingGemini
+          trailing: NeumorphicThemeAwareToggle(
+            value: _geminiListingUiHidden,
+            enabled: !_isSavingGemini,
+            onChanged: _onGeminiHideChanged,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ListTile(
+          leading: _isSavingLidar
               ? const SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const ThemeIcon(Icons.auto_awesome_outlined),
-        ),
-        const SizedBox(height: 16),
-        SwitchListTile(
+              : const ThemeIcon(Icons.view_in_ar),
           title: Text(L10n.get("admin_client_config_disable_lidar_room_scan")),
           subtitle: Text(
             L10n.get("admin_client_config_disable_lidar_room_scan_description"),
@@ -254,15 +268,11 @@ class _AdminContentModerationScreenState
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          value: _lidarRoomScanDisabled,
-          onChanged: _isSavingLidar ? null : _onLidarDisabledChanged,
-          secondary: _isSavingLidar
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const ThemeIcon(Icons.view_in_ar),
+          trailing: NeumorphicThemeAwareToggle(
+            value: _lidarRoomScanDisabled,
+            enabled: !_isSavingLidar,
+            onChanged: _onLidarDisabledChanged,
+          ),
         ),
       ],
     );

@@ -10,6 +10,7 @@ import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -563,21 +564,23 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                     ),
                   ],
                   const SizedBox(height: 8),
-                  SwitchListTile(
+                  ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(L10n.get("admin_telegram_sync_newest_first")),
-                    value: _newestFirst,
-                    onChanged: _running
-                        ? null
-                        : (v) => setState(() => _newestFirst = v),
+                    trailing: NeumorphicThemeAwareToggle(
+                      value: _newestFirst,
+                      enabled: !_running,
+                      onChanged: (v) => setState(() => _newestFirst = v),
+                    ),
                   ),
-                  SwitchListTile(
+                  ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(L10n.get("admin_telegram_sync_skip_listing_import")),
-                    value: _skipListingImport,
-                    onChanged: _running
-                        ? null
-                        : (v) => setState(() => _skipListingImport = v),
+                    trailing: NeumorphicThemeAwareToggle(
+                      value: _skipListingImport,
+                      enabled: !_running,
+                      onChanged: (v) => setState(() => _skipListingImport = v),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Align(

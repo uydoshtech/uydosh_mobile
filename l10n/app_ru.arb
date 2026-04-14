@@ -376,6 +376,19 @@
   "title_male_room": "#ИщуКомнату",
   "title_female_room": "#ИщуКомнату",
   "listing_photos_label": "Фотографии",
+  "listing_photos_count": "Фото {current} / {max}",
+  "@listing_photos_count": {
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "example": "0"
+      },
+      "max": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "delete_photo": "Удалить фото",
   "delete_photo_confirmation": "Вы уверены, что хотите удалить это фото?",
   "photo_deleted_success": "Фото успешно удалено",

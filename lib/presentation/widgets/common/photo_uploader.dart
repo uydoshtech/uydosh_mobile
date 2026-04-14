@@ -223,7 +223,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  "Photos ${(widget.existingPhotos.length + widget.selectedPhotos.length).clamp(0, widget.maxPhotos)} / ${widget.maxPhotos}",
+                  L10n.getWithParams(
+                    "listing_photos_count",
+                    params: {
+                      "current":
+                          "${(widget.existingPhotos.length + widget.selectedPhotos.length).clamp(0, widget.maxPhotos)}",
+                      "max": "${widget.maxPhotos}",
+                    },
+                  ),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

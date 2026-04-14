@@ -1602,6 +1602,12 @@ abstract class AppLocalizations {
   /// **'Photos'**
   String get listing_photos_label;
 
+  /// No description provided for @listing_photos_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos {current} / {max}'**
+  String listing_photos_count(int current, int max);
+
   /// No description provided for @delete_photo.
   ///
   /// In en, this message translates to:

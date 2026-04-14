@@ -1,9 +1,11 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
-class GhostButton extends StatelessWidget {
+class GhostButton extends StatefulWidget {
   const GhostButton({
     required this.onPressed,
     required this.child,
@@ -38,84 +40,121 @@ class GhostButton extends StatelessWidget {
   final bool isOnboardingButton;
 
   @override
+  State<GhostButton> createState() => _GhostButtonState();
+}
+
+class _GhostButtonState extends State<GhostButton> {
+  bool _pressed = false;
+
+  Color _surfaceGradientBase() => ThemeState().cardColor;
+
+  bool get _enabled =>
+      widget.onPressed != null && !widget.isDisabled && !widget.isLoading;
+
+  Color _getTextColor() {
+    if (widget.textColor != null) {
+      return widget.textColor!;
+    }
+    if (ThemeState().isLightTheme) {
+      return Colors.black;
+    } else if (ThemeState().isBlueTheme) {
+      return Colors.white;
+    } else {
+      return Colors.white;
+    }
+  }
+
+  Color _getBorderColor() {
+    if (widget.borderColor != null) {
+      return widget.borderColor!;
+    }
+    if (ThemeState().isLightTheme) {
+      return Colors.black;
+    } else if (ThemeState().isBlueTheme) {
+      return BlueThemeColors.buttonPrimary;
+    } else {
+      return BlueThemeColors.buttonPrimary;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final radius = widget.borderRadius ?? BorderRadius.circular(8);
+    final shadows =
+        !_enabled || _pressed
+            ? ThreeDSurfaceStyle.pressedShadows(context)
+            : ThreeDSurfaceStyle.elevatedShadows(context);
+    final bg = _surfaceGradientBase();
+    final fg = _getTextColor();
+    final pad =
+        widget.padding ??
+        const EdgeInsets.symmetric(horizontal: 32, vertical: 16);
+    final baseLabel =
+        Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: fg,
+              height: 1.0,
+            ) ??
+        TextStyle(
+          color: fg,
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          height: 1.0,
+        );
+    final labelStyle =
+        widget.textStyle != null ? baseLabel.merge(widget.textStyle) : baseLabel;
+
     return SizedBox(
-      width: width,
-      height: height,
-      child: ElevatedButton(
-        onPressed: (isDisabled || isLoading) ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _getBackgroundColor(),
-          foregroundColor: _getTextColor(),
-          padding:
-              padding ??
-              const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          side: BorderSide(color: _getBorderColor(), width: borderWidth),
-          shape: RoundedRectangleBorder(
-            borderRadius: borderRadius ?? BorderRadius.circular(8),
-          ),
-          elevation: 0,
-          textStyle: textStyle ?? const TextStyle(fontSize: 18),
-        ),
-        child:
-            isLoading
-                ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(_getTextColor()),
+      width: widget.width,
+      height: widget.height,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 90),
+        transform: Matrix4.translationValues(0, _pressed && _enabled ? 2 : 0, 0),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: _enabled ? widget.onPressed : null,
+            onHighlightChanged:
+                _enabled ? (v) => setState(() => _pressed = v) : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 90),
+              padding: pad,
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
+                border: Border.all(
+                  color: _getBorderColor(),
+                  width: widget.borderWidth,
+                ),
+                boxShadow: shadows,
+              ),
+              child: Center(
+                child: Opacity(
+                  opacity: _enabled ? 1 : 0.55,
+                  child: DefaultTextStyle.merge(
+                    style: labelStyle,
+                    child: IconTheme.merge(
+                      data: IconThemeData(color: fg),
+                      child:
+                          widget.isLoading
+                              ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(fg),
+                                ),
+                              )
+                              : widget.child,
+                    ),
                   ),
-                )
-                : child,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
-  }
-
-  // Theme-dependent color method for button background
-  Color _getBackgroundColor() {
-    if (ThemeState().isLightTheme) {
-      return Colors.transparent; // Transparent for light theme (ghost button)
-    } else if (ThemeState().isBlueTheme) {
-      return Colors.transparent; // Transparent for blue theme (ghost button)
-    } else {
-      return Colors.transparent; // Default to transparent
-    }
-  }
-
-  // Theme-dependent color method for button text and icon
-  Color _getTextColor() {
-    // Use custom text color if provided
-    if (textColor != null) {
-      return textColor!;
-    }
-
-    // Otherwise use theme-dependent color
-    if (ThemeState().isLightTheme) {
-      return Colors.black; // Black text for light theme (ghost button)
-    } else if (ThemeState().isBlueTheme) {
-      return Colors.white; // White text for blue theme (ghost button)
-    } else {
-      return Colors.white; // Default to white text
-    }
-  }
-
-  // Theme-dependent color method for button border
-  Color _getBorderColor() {
-    // Use custom border color if provided
-    if (borderColor != null) {
-      return borderColor!;
-    }
-
-    // Otherwise use theme-dependent color
-    if (ThemeState().isLightTheme) {
-      return Colors.black; // Black border for light theme (ghost button)
-    } else if (ThemeState().isBlueTheme) {
-      return BlueThemeColors
-          .buttonPrimary; // Blue border for blue theme (ghost button)
-    } else {
-      return BlueThemeColors.buttonPrimary; // Default border color
-    }
   }
 }
 

@@ -105,6 +105,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
     }
 
     return Container(
+      margin: const EdgeInsets.all(5),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       clipBehavior: Clip.antiAlias,
       decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(

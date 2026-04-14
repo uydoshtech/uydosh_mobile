@@ -384,6 +384,19 @@
   "title_male_room": "#NeedRoom",
   "title_female_room": "#NeedRoom",
   "listing_photos_label": "Photos",
+  "listing_photos_count": "Photos {current} / {max}",
+  "@listing_photos_count": {
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "example": "0"
+      },
+      "max": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "delete_photo": "Delete Photo",
   "delete_photo_confirmation": "Are you sure you want to delete this photo?",
   "photo_deleted_success": "Photo deleted successfully",

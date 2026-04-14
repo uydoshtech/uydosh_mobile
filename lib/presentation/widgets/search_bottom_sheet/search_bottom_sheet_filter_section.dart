@@ -5,11 +5,11 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
-import "package:uy_dosh/presentation/widgets/theme_toggle.dart";
 
 /// Primary filters: listing type and gender pickers.
 class SearchBottomSheetPrimaryFilters extends StatelessWidget {
@@ -195,10 +195,9 @@ class _SearchSheetFilterToggle extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            ThemeToggle(
+            NeumorphicThemeAwareToggle(
               value: value,
               onChanged: onChanged,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ],
         ),
