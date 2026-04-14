@@ -1578,6 +1578,30 @@ abstract class AppLocalizations {
   /// **'Couldn’t improve the text. Try again.'**
   String get listing_ai_enhance_error;
 
+  /// No description provided for @listing_description_template_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get listing_description_template_label;
+
+  /// No description provided for @listing_description_template_room_needed.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for a room/flatshare.\nFormat: (private/shared).\nTimeline: (move-in + duration).\nMust-haves: (quiet/guests/pets).'**
+  String get listing_description_template_room_needed;
+
+  /// No description provided for @listing_description_template_roommate_needed_male.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for a male roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).'**
+  String get listing_description_template_roommate_needed_male;
+
+  /// No description provided for @listing_description_template_roommate_needed_female.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for a female roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).'**
+  String get listing_description_template_roommate_needed_female;
+
   /// No description provided for @listing_type_roommate_needed.
   ///
   /// In en, this message translates to:

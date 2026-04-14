@@ -340,6 +340,13 @@ class AppStrings {
       "listing_ai_enhance_unavailable":
           "AI enhancement isn’t available on this device.",
       "listing_ai_enhance_error": "Couldn’t improve the text. Try again.",
+      "listing_description_template_label": "Template",
+      "listing_description_template_room_needed":
+          "Looking for a room/flatshare.\nFormat: (private/shared).\nTimeline: (move-in + duration).\nMust-haves: (quiet/guests/pets).",
+      "listing_description_template_roommate_needed_male":
+          "Looking for a male roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).",
+      "listing_description_template_roommate_needed_female":
+          "Looking for a female roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).",
 
       "listing_type_roommate_needed": "Need Roommate",
       "listing_type_room_needed": "Need Room",
@@ -1307,6 +1314,13 @@ class AppStrings {
       "listing_ai_enhance_unavailable": "Улучшение с AI недоступно.",
       "listing_ai_enhance_error":
           "Не удалось улучшить текст. Попробуйте снова.",
+      "listing_description_template_label": "Шаблон",
+      "listing_description_template_room_needed":
+          "Ищу комнату/подселение.\nФормат: (отдельная/подселение).\nСрок: (заезд + на сколько).\nВажно: (тихо/гости/животные).",
+      "listing_description_template_roommate_needed_male":
+          "Ищу соседа.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).",
+      "listing_description_template_roommate_needed_female":
+          "Ищу соседку.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).",
 
       "listing_type_roommate_needed": "Ищу соседа",
       "listing_type_room_needed": "Ищу жилье",
@@ -2283,6 +2297,13 @@ class AppStrings {
       "listing_ai_enhance_unavailable": "AI yaxshilash mavjud emas.",
       "listing_ai_enhance_error":
           "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
+      "listing_description_template_label": "Shablon",
+      "listing_description_template_room_needed":
+          "Xona/qo‘shilish qidiryapman.\nFormat: (alohida/qo‘shilish).\nMuddat: (kirish sanasi + qancha).\nMuhim: (tinchlik/mehmon/uy hayvoni).",
+      "listing_description_template_roommate_needed_male":
+          "Qo‘shni yigit qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).",
+      "listing_description_template_roommate_needed_female":
+          "Qo‘shni qiz qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).",
 
       "listing_type_roommate_needed": "Xonadosh qidiraman",
       "listing_type_room_needed": "Xonadon kerak",

@@ -5,6 +5,7 @@ import "package:flutter/material.dart";
 import "package:tutorial_coach_mark/tutorial_coach_mark.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.dart";
 
 /// One-step spotlight that points users to the "add alert" bell in search results.
 class AlertBellTutorialOverlay {
@@ -46,6 +47,9 @@ class AlertBellTutorialOverlay {
     String descriptionKey = "tutorial_alert_bell_description",
     VoidCallback? onComplete,
   }) {
+    // Prevent multiple simultaneous tutorial overlays.
+    TutorialOverlayManager().dismissActive();
+
     final clampedPosition = _clampedTargetPositionFromKey(
       context,
       alertBellKey,
@@ -97,7 +101,8 @@ class AlertBellTutorialOverlay {
       onComplete?.call();
     }
 
-    final tutorial = TutorialCoachMark(
+    late final TutorialCoachMark tutorial;
+    tutorial = TutorialCoachMark(
       targets: targets,
       colorShadow: Colors.black,
       opacityShadow: 0.92,
@@ -105,12 +110,18 @@ class AlertBellTutorialOverlay {
       // Match the "spotlight pulse" feel used elsewhere (home tutorial).
       pulseEnable: true,
       unFocusAnimationDuration: const Duration(milliseconds: 900),
-      onFinish: finishTutorial,
+      onFinish: () {
+        finishTutorial();
+        TutorialOverlayManager().clearIfActive(tutorial);
+      },
       onSkip: () {
         finishTutorial();
+        TutorialOverlayManager().clearIfActive(tutorial);
         return true;
       },
     );
+
+    TutorialOverlayManager().setActive(tutorial);
 
     // Use the root overlay so the AppBar action target position is computed
     // in the same coordinate space as the tutorial overlay.

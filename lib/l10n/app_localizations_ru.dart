@@ -819,6 +819,21 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось улучшить текст. Попробуйте снова.';
 
   @override
+  String get listing_description_template_label => 'Шаблон';
+
+  @override
+  String get listing_description_template_room_needed =>
+      'Ищу комнату/подселение.\nФормат: (отдельная/подселение).\nСрок: (заезд + на сколько).\nВажно: (тихо/гости/животные).';
+
+  @override
+  String get listing_description_template_roommate_needed_male =>
+      'Ищу соседа.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).';
+
+  @override
+  String get listing_description_template_roommate_needed_female =>
+      'Ищу соседку.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).';
+
+  @override
   String get listing_type_roommate_needed => 'Ищу соседа';
 
   @override

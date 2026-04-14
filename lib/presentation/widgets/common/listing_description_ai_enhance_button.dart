@@ -115,28 +115,12 @@ class _ListingDescriptionAiEnhanceButtonState
     }
   }
 
-  /// Label with a dashed line drawn below the text (not [TextDecoration], so the gap is controllable).
+  /// Label text for the “AI enhance” action.
   Widget _buildEnhanceLabel(BuildContext context) {
     final accent = _accentColor(context);
     final base = Theme.of(context).textTheme.labelLarge;
     final textStyle = (base ?? const TextStyle()).copyWith(color: accent);
-    final lineColor = accent.withValues(alpha: 0.85);
-    return IntrinsicWidth(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(L10n.get("listing_ai_enhance"), style: textStyle),
-          const SizedBox(height: 1),
-          SizedBox(
-            height: 2,
-            child: CustomPaint(
-              painter: _AiEnhanceDashedUnderlinePainter(color: lineColor),
-            ),
-          ),
-        ],
-      ),
-    );
+    return Text(L10n.get("listing_ai_enhance"), style: textStyle);
   }
 
   @override
@@ -228,31 +212,3 @@ class _ListingDescriptionAiEnhanceButtonState
   }
 }
 
-class _AiEnhanceDashedUnderlinePainter extends CustomPainter {
-  _AiEnhanceDashedUnderlinePainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..color = color
-          ..strokeWidth = 1.1
-          ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.round;
-    final y = size.height / 2;
-    const dash = 4.0;
-    const gap = 3.0;
-    var x = 0.0;
-    while (x < size.width) {
-      final end = (x + dash).clamp(0.0, size.width);
-      canvas.drawLine(Offset(x, y), Offset(end, y), paint);
-      x += dash + gap;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _AiEnhanceDashedUnderlinePainter oldDelegate) =>
-      oldDelegate.color != color;
-}

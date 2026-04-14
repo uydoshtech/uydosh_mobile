@@ -42,6 +42,7 @@ import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _HomeScreenData {
@@ -323,6 +324,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   @override
   void dispose() {
+    // If a tutorial is currently showing and we leave the screen, make sure it
+    // cannot linger into the next route (which can result in two overlays).
+    TutorialOverlayManager().dismissActive();
     routeObserver.unsubscribe(this);
     OnboardingState().removeListener(_onOnboardingStateChanged);
     HomeRefreshState().removeListener(_onHomeRefreshStateChanged);
@@ -344,6 +348,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   void didPushNext() {
     // Called when navigating away from this screen
     debugPrint("🏠 HomeScreen: Navigating away from home screen");
+    TutorialOverlayManager().dismissActive();
   }
 
   @override

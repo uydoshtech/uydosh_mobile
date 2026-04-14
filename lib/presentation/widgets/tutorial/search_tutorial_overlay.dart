@@ -3,6 +3,7 @@ import "dart:async";
 import "package:flutter/material.dart";
 import "package:tutorial_coach_mark/tutorial_coach_mark.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.dart";
 
 /// Wraps a widget to provide a [GlobalKey] for tutorial coach mark targeting.
 /// Use this to wrap UI elements that should be highlighted during tutorials.
@@ -42,6 +43,9 @@ class SearchTutorialOverlay {
     GlobalKey<TutorialTargetWrapperState>? profileIconKey,
     VoidCallback? onComplete,
   }) {
+    // Prevent multiple simultaneous tutorial overlays.
+    TutorialOverlayManager().dismissActive();
+
     final targets = [
       TargetFocus(
         identify: "search_button",
@@ -123,7 +127,8 @@ class SearchTutorialOverlay {
       onComplete?.call();
     }
 
-    final tutorial = TutorialCoachMark(
+    late final TutorialCoachMark tutorial;
+    tutorial = TutorialCoachMark(
       targets: targets,
       colorShadow: Colors.black,
       opacityShadow: 0.92,
@@ -131,12 +136,18 @@ class SearchTutorialOverlay {
       // Match the "spotlight pulse" feel used on other tutorials (e.g. alert bell).
       pulseEnable: true,
       unFocusAnimationDuration: const Duration(milliseconds: 900),
-      onFinish: finishTutorial,
+      onFinish: () {
+        finishTutorial();
+        TutorialOverlayManager().clearIfActive(tutorial);
+      },
       onSkip: () {
         finishTutorial();
+        TutorialOverlayManager().clearIfActive(tutorial);
         return true;
       },
     );
+
+    TutorialOverlayManager().setActive(tutorial);
 
     // Use root overlay so AppBar targets (profile icon) align correctly.
     tutorial.show(context: context, rootOverlay: true);

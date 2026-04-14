@@ -824,6 +824,21 @@ class AppLocalizationsUz extends AppLocalizations {
       'Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.';
 
   @override
+  String get listing_description_template_label => 'Shablon';
+
+  @override
+  String get listing_description_template_room_needed =>
+      'Xona/qo‘shilish qidiryapman.\nFormat: (alohida/qo‘shilish).\nMuddat: (kirish sanasi + qancha).\nMuhim: (tinchlik/mehmon/uy hayvoni).';
+
+  @override
+  String get listing_description_template_roommate_needed_male =>
+      'Qo‘shni yigit qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).';
+
+  @override
+  String get listing_description_template_roommate_needed_female =>
+      'Qo‘shni qiz qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).';
+
+  @override
   String get listing_type_roommate_needed => 'Xonadosh qidiraman';
 
   @override

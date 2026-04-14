@@ -32,6 +32,7 @@ import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_template_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
@@ -96,7 +97,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool _showLocationError = false;
 
   static const int _descriptionBaseLines = 4;
-  static const int _descriptionExpandedExtraLines = 2;
+  static const int _descriptionExpandedExtraLines = 3;
   bool _isDescriptionExpanded = false;
 
   // Lists
@@ -729,6 +730,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                               ? Colors.black
                               : Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
+                    minLines:
+                        _descriptionBaseLines +
+                        (_isDescriptionExpanded
+                            ? _descriptionExpandedExtraLines
+                            : 0),
                     maxLines:
                         _descriptionBaseLines +
                         (_isDescriptionExpanded
@@ -760,6 +766,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                           children: [
                             ListingDescriptionAiEnhanceButton(
                               controller: _descriptionController,
+                              inlineWithCounter: true,
+                            ),
+                            const SizedBox(width: 16),
+                            ListingDescriptionTemplateButton(
+                              controller: _descriptionController,
+                              listingTypeId: _selectedListingTypeId,
+                              gender: _selectedGender,
                               inlineWithCounter: true,
                             ),
                             const Spacer(),

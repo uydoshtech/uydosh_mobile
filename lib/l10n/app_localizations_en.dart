@@ -814,6 +814,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn’t improve the text. Try again.';
 
   @override
+  String get listing_description_template_label => 'Template';
+
+  @override
+  String get listing_description_template_room_needed =>
+      'Looking for a room/flatshare.\nFormat: (private/shared).\nTimeline: (move-in + duration).\nMust-haves: (quiet/guests/pets).';
+
+  @override
+  String get listing_description_template_roommate_needed_male =>
+      'Looking for a male roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).';
+
+  @override
+  String get listing_description_template_roommate_needed_female =>
+      'Looking for a female roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).';
+
+  @override
   String get listing_type_roommate_needed => 'Need Roommate';
 
   @override
