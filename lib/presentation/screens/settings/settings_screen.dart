@@ -11,6 +11,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -21,6 +22,7 @@ import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:url_launcher/url_launcher.dart";
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -223,11 +225,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: Icons.privacy_tip,
               titleKey: "menu_privacy_policy",
               onTap: () {
-                _showLegalDialog(
-                  context,
-                  titleKey: "privacy_policy_title",
-                  bodyKey: "privacy_policy_body",
-                );
+                _openPrivacyPolicy(context);
               },
             ),
             _buildMenuItem(
@@ -245,6 +243,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    HapticFeedbackUtils.impact();
+
+    final uri = Uri.tryParse(EnvironmentUtil.privacyPolicy);
+    if (uri == null) {
+      if (context.mounted) {
+        ToastTheme.showError(context, message: L10n.get("error"));
+      }
+      return;
+    }
+
+    final launched = await launchUrl(
+      uri,
+      mode: LaunchMode.inAppBrowserView,
+    );
+
+    if (!launched && context.mounted) {
+      ToastTheme.showError(context, message: L10n.get("error"));
+    }
   }
 
   Widget _buildLanguageMenuItem(BuildContext context) {

@@ -29,7 +29,7 @@ class ListingFormAmenitiesSection extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Wrap(
-          spacing: 12,
+          spacing: 10,
           runSpacing: 12,
           children: AmenitiesCache.getDefaultOrderedAmenities()
               .map(

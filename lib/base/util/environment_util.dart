@@ -24,7 +24,7 @@ abstract class EnvironmentUtil {
 
   static const privacyPolicy = String.fromEnvironment(
     "PRIVACY_POLICY",
-    defaultValue: "URL",
+    defaultValue: "https://uydoshtech.github.io/privacy-policy.html",
   );
 
   static const deleteAccount = String.fromEnvironment(
