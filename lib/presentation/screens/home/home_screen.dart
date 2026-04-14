@@ -9,6 +9,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
@@ -986,6 +987,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       if (mounted) {
         setState(() => _searchAlertCelebrationTick++);
       }
+
+      await ActiveSearchAlertsState().refresh();
 
       // Ensure notifications are enabled (or guide user to settings).
       final push = getIt<IPushNotificationService>();

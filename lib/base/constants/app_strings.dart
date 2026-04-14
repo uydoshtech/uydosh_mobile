@@ -94,6 +94,7 @@ class AppStrings {
       "view_listing": "View Listing",
       "menu_messages": "Messages",
       "menu_notifications": "Notifications",
+      "notifications_appbar_semantics_active_alerts": "Active search alerts",
       "notifications_empty": "No saved alerts yet.",
       "notifications_disable_all": "Disable all notifications",
       "notifications_delete_all": "Delete all notifications",
@@ -1048,6 +1049,8 @@ class AppStrings {
       "view_listing": "Посмотреть объявление",
       "menu_messages": "Сообщения",
       "menu_notifications": "Уведомления",
+      "notifications_appbar_semantics_active_alerts":
+          "Есть активные оповещения о поиске",
       "notifications_empty": "Пока нет сохранённых оповещений.",
       "notifications_disable_all": "Отключить все уведомления",
       "notifications_delete_all": "Удалить все уведомления",
@@ -2009,6 +2012,8 @@ class AppStrings {
       "view_listing": "E'lonni ko'rish",
       "menu_messages": "Xabarlar",
       "menu_notifications": "Bildirishnomalar",
+      "notifications_appbar_semantics_active_alerts":
+          "Faol qidiruv bildirishnomalari",
       "notifications_empty": "Hozircha saqlangan bildirishnomalar yo'q.",
       "notifications_disable_all": "Barcha bildirishnomalarni o‘chirish",
       "notifications_delete_all": "Barcha bildirishnomalarni o‘chirib tashlash",

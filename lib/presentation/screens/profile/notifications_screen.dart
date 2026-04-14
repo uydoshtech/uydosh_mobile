@@ -8,6 +8,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
@@ -53,6 +54,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         _alerts = alerts;
         _loading = false;
       });
+      ActiveSearchAlertsState().syncFromAlerts(alerts);
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
@@ -86,6 +88,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           )
           .toList();
     });
+    ActiveSearchAlertsState().syncFromAlerts(_alerts);
   }
 
   Future<void> _deleteAlert(SearchAlert a) async {
@@ -96,6 +99,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       return;
     }
     setState(() => _alerts = _alerts.where((x) => x.id != a.id).toList());
+    ActiveSearchAlertsState().syncFromAlerts(_alerts);
   }
 
   Future<void> _disableAllAlerts() async {
@@ -133,6 +137,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             .map((x) => SearchAlert.fromJson(_toJson(x, enabled: false)))
             .toList();
       });
+      ActiveSearchAlertsState().syncFromAlerts(_alerts);
     } finally {
       if (mounted) setState(() => _bulkWorking = false);
     }
@@ -165,6 +170,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return;
       }
       setState(() => _alerts = const []);
+      ActiveSearchAlertsState().syncFromAlerts(_alerts);
     } finally {
       if (mounted) setState(() => _bulkWorking = false);
     }

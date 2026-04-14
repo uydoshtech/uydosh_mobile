@@ -1,3 +1,5 @@
+import "dart:async" show unawaited;
+
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/cupertino.dart";
@@ -9,6 +11,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -131,7 +134,11 @@ class _MainNavigationState extends State<MainNavigation>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {}
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isAuthenticated) {
+      unawaited(ActiveSearchAlertsState().refresh());
+    }
+  }
 
   // Check authentication status and adjust current index if needed
   Future<void> _checkAuthenticationStatus() async {
@@ -174,6 +181,8 @@ class _MainNavigationState extends State<MainNavigation>
           });
           _maybeShowProfileCompletionPrompt();
         }
+
+        unawaited(ActiveSearchAlertsState().refresh());
       }
 
       // Check if we need to redirect to auth wizard
@@ -202,6 +211,7 @@ class _MainNavigationState extends State<MainNavigation>
     } catch (e) {
       debugPrint("❌ Auth check error: $e");
       _isAuthenticated = false;
+      unawaited(ActiveSearchAlertsState().refresh());
     }
   }
 
@@ -514,17 +524,35 @@ class _MainNavigationState extends State<MainNavigation>
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: _threeDAppBarIconButton(
-              borderRadius: const BorderRadius.all(Radius.circular(999)),
-              iconData: Icons.notifications_none_outlined,
-              onPressed: () {
-                if (!AuthenticationState().isAuthenticated) {
-                  context.pushReplaceAuthWizard();
-                  return;
-                }
-                context.pushNotifications();
+            child: ListenableBuilder(
+              listenable: Listenable.merge([
+                AuthenticationState(),
+                ActiveSearchAlertsState(),
+              ]),
+              builder: (context, _) {
+                final signedIn = AuthenticationState().isAuthenticated;
+                final activeAlerts =
+                    signedIn &&
+                    ActiveSearchAlertsState().hasActiveEnabledAlerts;
+                return _threeDAppBarIconButton(
+                  borderRadius: const BorderRadius.all(Radius.circular(999)),
+                  iconData:
+                      activeAlerts
+                          ? Icons.notifications
+                          : Icons.notifications_none_outlined,
+                  onPressed: () {
+                    if (!AuthenticationState().isAuthenticated) {
+                      context.pushReplaceAuthWizard();
+                      return;
+                    }
+                    context.pushNotifications();
+                  },
+                  semanticsLabel:
+                      activeAlerts
+                          ? "${L10n.get("menu_notifications")}, ${L10n.get("notifications_appbar_semantics_active_alerts")}"
+                          : L10n.get("menu_notifications"),
+                );
               },
-              semanticsLabel: L10n.get("menu_notifications"),
             ),
           ),
           // Profile button on the right side with proper margin
