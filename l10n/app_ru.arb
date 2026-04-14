@@ -206,6 +206,7 @@
   "favorite_removed_success": "Удалено из избранного",
   "successfully_signed_in_google": "Успешный вход через Google!",
   "no_listings_found": "Объявления не найдены",
+  "my_listings_empty_state": "Вы еще не создали ни одного объявления.",
   "no_locations_available": "Районы недоступны",
   "no_universities_available": "Университеты недоступны",
   "no_search_results": "Нет результатов...",

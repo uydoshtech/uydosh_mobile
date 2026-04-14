@@ -209,6 +209,7 @@ class AppStrings {
 
       // ===== EMPTY STATES =====
       "no_listings_found": "No listings found",
+      "my_listings_empty_state": "You haven't created any listings yet.",
 
       "no_locations_available": "No locations available",
 
@@ -1171,6 +1172,7 @@ class AppStrings {
 
       // ===== EMPTY STATES =====
       "no_listings_found": "Объявления не найдены",
+      "my_listings_empty_state": "Вы еще не создали ни одного объявления.",
 
       "no_locations_available": "Районы недоступны",
 
@@ -2143,6 +2145,7 @@ class AppStrings {
 
       // ===== EMPTY STATES =====
       "no_listings_found": "E'lonlar topilmadi",
+      "my_listings_empty_state": "Siz hali hech qanday e'lon yaratmagansiz.",
 
       "no_locations_available": "Tumanlar mavjud emas",
 

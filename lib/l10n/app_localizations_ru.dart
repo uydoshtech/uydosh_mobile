@@ -473,6 +473,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get no_listings_found => 'Объявления не найдены';
 
   @override
+  String get my_listings_empty_state =>
+      'Вы еще не создали ни одного объявления.';
+
+  @override
   String get no_locations_available => 'Районы недоступны';
 
   @override

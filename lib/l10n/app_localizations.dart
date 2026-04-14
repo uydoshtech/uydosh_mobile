@@ -952,6 +952,12 @@ abstract class AppLocalizations {
   /// **'No listings found'**
   String get no_listings_found;
 
+  /// No description provided for @my_listings_empty_state.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t created any listings yet.'**
+  String get my_listings_empty_state;
+
   /// No description provided for @no_locations_available.
   ///
   /// In en, this message translates to:

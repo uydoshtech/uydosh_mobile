@@ -15,6 +15,7 @@ import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -558,11 +559,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       }
     }
 
-    // Use GhostButton for all themes - it"s already theme-aware
-    return GhostButtonFactory.iconText(
-      onPressed: onPressed,
-      icon: Icons.home,
-      text: L10n.get("favorites_browse_button"),
+    return Builder(
+      builder: (context) {
+        final label = Theme.of(context).textTheme.labelLarge;
+        final baseSize = label?.fontSize ?? 14;
+        final textStyle =
+            label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
+            TextStyle(
+              fontSize: baseSize * 1.2,
+              height: 1.0,
+              fontWeight: FontWeight.w500,
+            );
+        return PrimaryButtonFactory.iconText(
+          onPressed: onPressed,
+          icon: Icons.home,
+          text: L10n.get("favorites_browse_button"),
+          width: double.infinity,
+          borderRadius: BorderRadius.circular(20),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          textStyle: textStyle,
+        );
+      },
     );
   }
 

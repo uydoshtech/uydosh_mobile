@@ -5,6 +5,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
@@ -20,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
@@ -72,6 +74,15 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
   final ScrollController _scrollController = ScrollController();
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
+
+  Color _emptyStateTitleColor() =>
+      ThemeState().isBlueTheme ? AppColors.textLight : AppColors.textGrey600;
+
+  Color _errorTitleColor() =>
+      ThemeState().isBlueTheme ? AppColors.textLight : AppColors.statusInactive;
+
+  Color _errorBodyColor() =>
+      ThemeState().isBlueTheme ? AppColors.textLight : AppColors.textGrey600;
 
   @override
   void initState() {
@@ -240,52 +251,67 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ThemeIconFactory.display(icon: Icons.home_outlined),
-          const SizedBox(height: 16),
-          Text(
-            L10n.get("no_listings_found"),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textGrey600,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ThemeIconFactory.display(icon: Icons.home_outlined),
+            const SizedBox(height: 16),
+            Text(
+              L10n.get("my_listings_empty_state"),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: _emptyStateTitleColor(),
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            "You haven't created any listings yet.",
-            style: TextStyle(fontSize: 14, color: AppColors.textGrey500),
-          ),
-          const SizedBox(height: 24),
-          GhostButtonFactory.iconText(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder:
-                      (context) => BlocProvider(
-                        create:
-                            (context) =>
-                                SubwayStationsBloc(
-                                  getIt<ISubwayStationService>(),
-                                ),
-                        child: BlocProvider(
-                          create:
-                              (context) =>
-                                  LocationsBloc(getIt<ILocationService>()),
-                          child: const CreateListingScreen(showAppBar: true),
-                        ),
+            const SizedBox(height: 24),
+            Builder(
+              builder: (context) {
+                final label = Theme.of(context).textTheme.labelLarge;
+                final baseSize = label?.fontSize ?? 14;
+                final textStyle =
+                    label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
+                    TextStyle(
+                      fontSize: baseSize * 1.2,
+                      height: 1.0,
+                      fontWeight: FontWeight.w500,
+                    );
+                return PrimaryButtonFactory.iconText(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder:
+                            (context) => BlocProvider(
+                              create:
+                                  (context) =>
+                                      SubwayStationsBloc(
+                                        getIt<ISubwayStationService>(),
+                                      ),
+                              child: BlocProvider(
+                                create:
+                                    (context) =>
+                                        LocationsBloc(getIt<ILocationService>()),
+                                child: const CreateListingScreen(showAppBar: true),
+                              ),
+                            ),
                       ),
-                ),
-              );
-            },
-            icon: Icons.add,
-            text: L10n.get("create_listing"),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          ),
-        ],
+                    );
+                  },
+                  icon: Icons.add,
+                  text: L10n.get("create_listing_button"),
+                  width: double.infinity,
+                  borderRadius: BorderRadius.circular(20),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: textStyle,
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -303,16 +329,16 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
           const SizedBox(height: 16),
           Text(
             L10n.get("error"),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: AppColors.statusInactive,
+              color: _errorTitleColor(),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             ErrorMessageHelper.sanitizeErrorMessage(errorMessage),
-            style: const TextStyle(fontSize: 14, color: AppColors.textGrey600),
+            style: TextStyle(fontSize: 14, color: _errorBodyColor()),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),

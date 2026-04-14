@@ -470,6 +470,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get no_listings_found => 'No listings found';
 
   @override
+  String get my_listings_empty_state =>
+      'You haven\'t created any listings yet.';
+
+  @override
   String get no_locations_available => 'No locations available';
 
   @override

@@ -474,6 +474,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get no_listings_found => 'E\'lonlar topilmadi';
 
   @override
+  String get my_listings_empty_state =>
+      'Siz hali hech qanday e\'lon yaratmagansiz.';
+
+  @override
   String get no_locations_available => 'Tumanlar mavjud emas';
 
   @override

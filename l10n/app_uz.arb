@@ -214,6 +214,7 @@
   "favorite_removed_success": "Sevimlilardan o'chirildi",
   "successfully_signed_in_google": "Google orqali muvaffaqiyatli kirdingiz!",
   "no_listings_found": "E'lonlar topilmadi",
+  "my_listings_empty_state": "Siz hali hech qanday e'lon yaratmagansiz.",
   "no_locations_available": "Tumanlar mavjud emas",
   "no_universities_available": "Universitetlar mavjud emas",
   "no_search_results": "Natija topilmadi...",
