@@ -58,7 +58,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 padding: const EdgeInsets.only(top: 2),
                 child: Icon(
                   Icons.info_outline,
-                  size: 16,
+                  size: 17,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -76,19 +76,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ],
           ),
           const SizedBox(height: 6),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              style: TextButton.styleFrom(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          Padding(
+            padding: const EdgeInsets.only(left: 25),
+            child: SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0,
+                    vertical: 6,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () async {
+                  await openAppSettings();
+                },
+                child: Text(L10n.get("notifications_open_settings")),
               ),
-              onPressed: () async {
-                await openAppSettings();
-              },
-              child: Text(L10n.get("notifications_open_settings")),
             ),
           ),
         ],
