@@ -39,6 +39,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _bulkWorking = false;
   List<SearchAlert> _alerts = const [];
 
+  Widget _alertsExplainer(ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: L10n.text(
+        "notifications_alerts_explainer",
+        style: TextStyle(
+          color: theme.colorScheme.onSurfaceVariant,
+          fontSize: 14,
+          height: 1.25,
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -468,7 +487,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        const SizedBox(height: 48),
+                        _alertsExplainer(theme),
+                        const SizedBox(height: 36),
                         ThemeIcon(
                           Icons.notifications_none,
                           size: 56,
@@ -492,10 +512,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.all(16),
-                      itemCount: _alerts.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemCount: _alerts.length + 1,
+                      separatorBuilder: (_, i) => SizedBox(height: i == 0 ? 12 : 16),
                       itemBuilder: (context, i) {
-                        final a = _alerts[i];
+                        if (i == 0) return _alertsExplainer(theme);
+
+                        final a = _alerts[i - 1];
                         final themeState = ThemeState();
                         return Theme(
                           data: theme.copyWith(

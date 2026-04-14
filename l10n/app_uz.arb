@@ -83,6 +83,7 @@
   "profile_interlocutor": "Suhbatdosh profili",
   "view_listing": "E'lonni ko'rish",
   "menu_messages": "Xabarlar",
+  "notifications_alerts_explainer": "Bu yerda siz ogohlantirishlar yaratasiz. Mos yangi e’lonlar paydo bo‘lsa, telefon sozlamalarida yoqilgan bo‘lsa, biz push‑bildirishnoma yuboramiz.",
   "type_message": "Xabar yozing...",
   "conversation_created": "Suhbat boshlandi",
   "conversation_failed": "Suhbat boshlanmadi",
