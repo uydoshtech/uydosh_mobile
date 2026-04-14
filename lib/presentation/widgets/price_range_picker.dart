@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/padded_slider_value_indicator_shape.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class PriceRangePicker extends StatefulWidget {
@@ -32,8 +33,17 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
   late double _minPrice;
   late double _maxPrice;
 
+  static const double _step = 10.0;
+
   Widget _unitIcon(Color color) {
     return Icon(Icons.payments_outlined, size: 14, color: color);
+  }
+
+  int? _divisions() {
+    final range = (widget.maxPrice - widget.minPrice).abs();
+    final steps = (range / _step).round();
+    if (steps <= 0) return null;
+    return steps;
   }
 
   @override
@@ -149,6 +159,9 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                 thumbShape: const RoundSliderThumbShape(
                   enabledThumbRadius: 8.0,
                 ),
+                rangeThumbShape: const RoundRangeSliderThumbShape(
+                  enabledThumbRadius: 8.0,
+                ),
                 overlayShape: const RoundSliderOverlayShape(
                   overlayRadius: 16.0,
                 ),
@@ -156,17 +169,31 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                 inactiveTrackColor: getInactiveTrackColor(),
                 thumbColor: sliderColor,
                 overlayColor: sliderColor.withValues(alpha: 0.1),
+                showValueIndicator: ShowValueIndicator.always,
+                valueIndicatorColor: sliderColor,
+                valueIndicatorShape: const PaddedSliderValueIndicatorShape(
+                  labelPadding: 16.0,
+                ),
+                rangeValueIndicatorShape:
+                    const PaddleRangeSliderValueIndicatorShape(),
+                valueIndicatorTextStyle: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  height: 1.0,
+                ),
               ),
               child: widget.useSinglePrice
                   ? Slider(
                       value: _minPrice,
                       min: widget.minPrice,
                       max: widget.maxPrice,
+                      divisions: _divisions(),
                       activeColor: sliderColor,
                       inactiveColor: getInactiveTrackColor(),
                       label: "${_minPrice.round()}",
                       onChanged: (value) {
-                        final newPrice = (value / 10).round() * 10.0;
+                        final newPrice = (value / _step).round() * _step;
                         if ((newPrice ~/ 10) != (_minPrice ~/ 10)) {
                           HapticFeedbackUtils.impact();
                           SendSoundUtils.playSelectionSound();
@@ -187,6 +214,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                         values: RangeValues(_minPrice, _maxPrice),
                         min: widget.minPrice,
                         max: widget.maxPrice,
+                        divisions: _divisions(),
                         activeColor: sliderColor,
                         inactiveColor: getInactiveTrackColor(),
                         labels: RangeLabels(
@@ -194,8 +222,8 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                           "${_maxPrice.round()}",
                         ),
                         onChanged: (values) {
-                          final newMin = (values.start / 10).round() * 10.0;
-                          final newMax = (values.end / 10).round() * 10.0;
+                          final newMin = (values.start / _step).round() * _step;
+                          final newMax = (values.end / _step).round() * _step;
                           if ((newMin ~/ 10) != (_minPrice ~/ 10) ||
                               (newMax ~/ 10) != (_maxPrice ~/ 10)) {
                             HapticFeedbackUtils.impact();

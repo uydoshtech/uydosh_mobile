@@ -326,7 +326,7 @@ class AppStrings {
 
       "listing_title_hint": "Enter listing title",
 
-      "listing_description_hint": "Enter listing description",
+      "listing_description_hint": "Enter listing text",
       "listing_price_label": "Price",
       "listing_translate_tooltip_en": "Translate to English",
       "listing_translate_tooltip_ru": "Translate to Russian",
@@ -335,8 +335,8 @@ class AppStrings {
       "listing_translating_description": "Translating…",
       "listing_translation_error": "Couldn’t translate. Try again.",
       "listing_translation_unavailable": "Translation unavailable.",
-      "listing_ai_enhance": "Improve description with AI",
-      "listing_ai_enhance_empty": "Enter a description first.",
+      "listing_ai_enhance": "Improve text with AI",
+      "listing_ai_enhance_empty": "Enter text first.",
       "listing_ai_enhance_unavailable":
           "AI enhancement isn’t available on this device.",
       "listing_ai_enhance_error": "Couldn’t improve the text. Try again.",
@@ -853,8 +853,8 @@ class AppStrings {
       "creating_listing": "Creating...",
       "title_required": "Title is required",
       "title_too_long": "Title must be 25 characters or less",
-      "description_required": "Description is required",
-      "description_too_long": "Description must be 500 characters or less",
+      "description_required": "Text is required",
+      "description_too_long": "Text must be 500 characters or less",
       "location_required": "Please select a location",
 
       "auth_required_title": "Authentication required",
@@ -1293,7 +1293,7 @@ class AppStrings {
 
       "listing_title_hint": "Введите заголовок объявления",
 
-      "listing_description_hint": "Введите описание объявления",
+      "listing_description_hint": "Введите текст объявления",
       "listing_price_label": "Цена",
       "listing_translate_tooltip_en": "Перевести на английский",
       "listing_translate_tooltip_ru": "Перевести на русский",
@@ -1302,8 +1302,8 @@ class AppStrings {
       "listing_translating_description": "Перевод…",
       "listing_translation_error": "Не удалось перевести. Попробуйте снова.",
       "listing_translation_unavailable": "Перевод недоступен.",
-      "listing_ai_enhance": "Улучшить описание с AI",
-      "listing_ai_enhance_empty": "Сначала введите описание.",
+      "listing_ai_enhance": "Улучшить текст с AI",
+      "listing_ai_enhance_empty": "Сначала введите текст.",
       "listing_ai_enhance_unavailable": "Улучшение с AI недоступно.",
       "listing_ai_enhance_error":
           "Не удалось улучшить текст. Попробуйте снова.",
@@ -1821,8 +1821,8 @@ class AppStrings {
       "creating_listing": "Создается...",
       "title_required": "Заголовок обязателен",
       "title_too_long": "Заголовок должен быть не более 25 символов",
-      "description_required": "Описание обязательно",
-      "description_too_long": "Описание должно быть не более 500 символов",
+      "description_required": "Текст обязателен",
+      "description_too_long": "Текст должен быть не более 500 символов",
       "location_required": "Пожалуйста, выберите район",
 
       "auth_required_title": "Требуется аутентификация",
@@ -2269,7 +2269,7 @@ class AppStrings {
 
       "listing_title_hint": "E'lon sarlavhasini kiriting",
 
-      "listing_description_hint": "E'lon tavsifini kiriting",
+      "listing_description_hint": "E'lon matnini kiriting",
       "listing_price_label": "Narxi",
       "listing_translate_tooltip_en": "Inglizchaga tarjima qilish",
       "listing_translate_tooltip_ru": "Rus tiliga tarjima qilish",
@@ -2278,8 +2278,8 @@ class AppStrings {
       "listing_translating_description": "Tarjima qilinmoqda…",
       "listing_translation_error": "Tarjima qilinmadi. Qayta urinib ko‘ring.",
       "listing_translation_unavailable": "Tarjima mavjud emas.",
-      "listing_ai_enhance": "Tavsifni AI bilan yaxshilash",
-      "listing_ai_enhance_empty": "Avval tavsif kiriting.",
+      "listing_ai_enhance": "Matnni AI bilan yaxshilash",
+      "listing_ai_enhance_empty": "Avval matn kiriting.",
       "listing_ai_enhance_unavailable": "AI yaxshilash mavjud emas.",
       "listing_ai_enhance_error":
           "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
@@ -2807,8 +2807,8 @@ class AppStrings {
       "creating_listing": "Yaratilmoqda...",
       "title_required": "Sarlavha talab qilinadi",
       "title_too_long": "Sarlavha 25 belgidan ko'p bo'lmasligi kerak",
-      "description_required": "Tavsif talab qilinadi",
-      "description_too_long": "Tavsif 500 belgidan ko'p bo'p bo'lmasligi kerak",
+      "description_required": "Matn talab qilinadi",
+      "description_too_long": "Matn 500 belgidan ko'p bo'p bo'lmasligi kerak",
       "location_required": "Iltimos, tuman tanlang",
 
       "auth_required_title": "Autentifikatsiya talab qilinadi",

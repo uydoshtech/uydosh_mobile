@@ -95,6 +95,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool _showDescriptionError = false;
   bool _showLocationError = false;
 
+  static const int _descriptionBaseLines = 4;
+  static const int _descriptionExpandedExtraLines = 2;
+  bool _isDescriptionExpanded = false;
+
   // Lists
   List<Location> _currentLocations = [];
   List<SubwayStation> _currentStations = [];
@@ -667,108 +671,155 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               (hintText) => WheelPickerPlateContainer(
                 showErrorBorder: _showDescriptionError,
                 theme: Theme.of(context),
-                child: TextFormField(
-                  controller: _descriptionController,
-                  onChanged: (value) {
-                    if (_showDescriptionError && value.trim().isNotEmpty) {
-                      setState(() {
-                        _showDescriptionError = false;
-                      });
-                    }
-                  },
-                  decoration: InputDecoration(
-                    hintText: hintText,
-                    hintStyle: TextStyle(
-                      color:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant.withOpacity(0.7)
-                              : Colors.grey[400],
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: _showDescriptionError
-                          ? BorderSide.none
-                          : ThemeState().isLightTheme &&
-                                  !ThemeState().isBlueTheme
-                              ? BorderSide.none
-                              : BorderSide(
-                                  color: _getBorderColor(),
-                                  width: 2,
-                                ),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.transparent,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                  ),
-                  style: TextStyle(
-                    color:
-                        ThemeState().isLightTheme
-                            ? Colors.black
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  maxLines: 4,
-                  maxLength: 1000,
-                  buildCounter: (
-                    context, {
-                    required currentLength,
-                    required isFocused,
-                    maxLength,
-                  }) {
-                    final max = maxLength ?? 0;
-                    final isNearLimit =
-                        max > 0 && (currentLength / max) >= 0.9;
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 4, bottom: 18),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ListingDescriptionAiEnhanceButton(
-                            controller: _descriptionController,
-                            inlineWithCounter: true,
-                          ),
-                          const Spacer(),
-                          Text(
-                            "$currentLength/$maxLength",
-                            style: TextStyle(
-                              color:
-                                  isNearLimit
-                                      ? Colors.red
-                                      : Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant
-                                              .withOpacity(0.7)
-                                          : Colors.black,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                child: AnimatedSize(
+                  duration: const Duration(milliseconds: 320),
+                  reverseDuration: const Duration(milliseconds: 320),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.hardEdge,
+                  child: TextFormField(
+                    controller: _descriptionController,
+                    onChanged: (value) {
+                      if (_showDescriptionError && value.trim().isNotEmpty) {
+                        setState(() {
+                          _showDescriptionError = false;
+                        });
+                      }
+                    },
+                    decoration: InputDecoration(
+                      hintText: hintText,
+                      hintStyle: TextStyle(
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant.withOpacity(0.7)
+                                : Colors.grey[400],
                       ),
-                    );
-                  },
+                      border: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color:
+                          ThemeState().isLightTheme
+                              ? Colors.black
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines:
+                        _descriptionBaseLines +
+                        (_isDescriptionExpanded
+                            ? _descriptionExpandedExtraLines
+                            : 0),
+                    maxLength: 1000,
+                    buildCounter: (
+                      context, {
+                      required currentLength,
+                      required isFocused,
+                      maxLength,
+                    }) {
+                      final max = maxLength ?? 0;
+                      final isNearLimit =
+                          max > 0 && (currentLength / max) >= 0.9;
+                      final counterColor =
+                          isNearLimit
+                              ? Colors.red
+                              : Theme.of(context).brightness == Brightness.dark
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withOpacity(0.7)
+                                  : Colors.black;
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 4, bottom: 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            ListingDescriptionAiEnhanceButton(
+                              controller: _descriptionController,
+                              inlineWithCounter: true,
+                            ),
+                            const Spacer(),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "$currentLength/$maxLength",
+                                  style: TextStyle(
+                                    color: counterColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Semantics(
+                                  button: true,
+                                  label:
+                                      _isDescriptionExpanded
+                                          ? "Collapse description"
+                                          : "Expand description",
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () {
+                                      HapticFeedbackUtils.lightImpact();
+                                      setState(() {
+                                        _isDescriptionExpanded =
+                                            !_isDescriptionExpanded;
+                                      });
+                                    },
+                                    child: SizedBox(
+                                      width: 44,
+                                      height: 44,
+                                      child: Center(
+                                        child: AnimatedRotation(
+                                          turns:
+                                              _isDescriptionExpanded
+                                                  ? 0.5
+                                                  : 0.0,
+                                          duration: const Duration(
+                                            milliseconds: 240,
+                                          ),
+                                          curve: Curves.easeInOut,
+                                          child: const Icon(
+                                            Icons.expand_more,
+                                            size: 20,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
         ),

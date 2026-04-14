@@ -734,15 +734,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                            borderSide: _showDescriptionError
-                                ? BorderSide.none
-                                : ThemeState().isLightTheme &&
-                                        !ThemeState().isBlueTheme
-                                    ? BorderSide.none
-                                    : BorderSide(
-                                        color: _getBorderColor(),
-                                        width: 2,
-                                      ),
+                            borderSide: BorderSide.none,
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
@@ -777,7 +769,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           final isNearLimit =
                               max > 0 && (currentLength / max) >= 0.9;
                           return Padding(
-                            padding: const EdgeInsets.only(top: 4, bottom: 18),
+                            padding: const EdgeInsets.only(top: 4, bottom: 8),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
