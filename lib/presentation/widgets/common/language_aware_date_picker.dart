@@ -6,6 +6,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class LanguageAwareDatePicker {
   static Future<DateTime?> showDatePicker({
@@ -373,12 +374,19 @@ class _LanguageAwareDatePickerDialogState
                   child: Container(
                     margin: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color:
-                          isSelected
-                              ? theme.colorScheme.primary
-                              : isToday
+                      color: isSelected
+                          ? null
+                          : isToday
                               ? theme.colorScheme.primary.withOpacity(0.1)
                               : Colors.transparent,
+                      gradient: isSelected
+                          ? ThreeDSurfaceStyle.surfaceGradient(
+                              context,
+                              theme.colorScheme.primary,
+                            )
+                          : null,
+                      boxShadow:
+                          isSelected ? ThreeDSurfaceStyle.elevatedShadows(context) : null,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -416,53 +424,61 @@ class _LanguageAwareDatePickerDialogState
             // Action buttons (same pill style as listing detail views / promote)
             Row(
               children: [
-                ThreeDPillButton(
-                  onPressed: _cancel,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ThemeIcon(
-                        CupertinoIcons.xmark,
-                        size: 16,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: themeState.isBlueTheme ? 0.85 : 0.7,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        widget.cancelText ?? L10n.get("cancel"),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: themeState.isBlueTheme ? 0.9 : 0.7,
+                Expanded(
+                  child: ThreeDPillButton(
+                    onPressed: _cancel,
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ThemeIcon(
+                            CupertinoIcons.xmark,
+                            size: 16,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: themeState.isBlueTheme ? 0.85 : 0.7,
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.cancelText ?? L10n.get("cancel"),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: themeState.isBlueTheme ? 0.9 : 0.7,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-                const Spacer(),
-                ThreeDPillButton(
-                  onPressed: _confirm,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ThemeIcon(
-                        CupertinoIcons.checkmark,
-                        size: 16,
-                        color: _pillAccentColor(context),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ThreeDPillButton(
+                    onPressed: _confirm,
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ThemeIcon(
+                            CupertinoIcons.checkmark,
+                            size: 16,
+                            color: _pillAccentColor(context),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.confirmText ?? L10n.get("ok"),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: _pillAccentColor(context),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        widget.confirmText ?? L10n.get("ok"),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: _pillAccentColor(context),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ],
