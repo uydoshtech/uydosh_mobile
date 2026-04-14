@@ -69,7 +69,10 @@ class NeumorphicToggle extends StatelessWidget {
             padding: const EdgeInsets.all(3),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final thumbSize = constraints.maxHeight - 6;
+                // Square thumb fills the padded inner bounds (Material-like ~80% of track).
+                final thumbSize = constraints.maxWidth < constraints.maxHeight
+                    ? constraints.maxWidth
+                    : constraints.maxHeight;
                 return AnimatedAlign(
                   duration: _anim,
                   curve: _curve,
