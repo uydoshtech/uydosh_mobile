@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -157,12 +158,21 @@ class _SearchSheetFilterToggle extends StatelessWidget {
   final bool emphasized;
   final ValueChanged<bool> onChanged;
 
+  Color _getBorderColor() {
+    if (ThemeState().isBlueTheme) {
+      return BlueThemeColors.buttonPrimary;
+    }
+    return Colors.black;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final onBlue = ThemeState().isBlueTheme;
     final fg = onBlue ? Colors.white : Colors.black;
     final iconColor = onBlue ? Colors.white : theme.iconTheme.color;
+    final border = _getBorderColor();
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -195,8 +205,18 @@ class _SearchSheetFilterToggle extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            NeumorphicThemeAwareToggle(
+            NeumorphicToggle(
               value: value,
+              activeAccentColor: border,
+              activeTrackColor: border.withValues(alpha: 0.3),
+              inactiveThumbColor:
+                  isDark
+                      ? theme.colorScheme.onSurfaceVariant.withOpacity(0.7)
+                      : Colors.grey.shade600,
+              inactiveTrackColor:
+                  isDark
+                      ? theme.colorScheme.onSurfaceVariant.withOpacity(0.3)
+                      : Colors.grey.shade300,
               onChanged: onChanged,
             ),
           ],
