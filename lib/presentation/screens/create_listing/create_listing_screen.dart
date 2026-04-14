@@ -727,7 +727,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             ? Colors.black
                             : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  maxLines: 5,
+                  maxLines: 4,
                   maxLength: 1000,
                   buildCounter: (
                     context, {

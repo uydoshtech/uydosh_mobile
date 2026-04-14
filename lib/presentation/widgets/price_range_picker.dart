@@ -32,6 +32,10 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
   late double _minPrice;
   late double _maxPrice;
 
+  Widget _unitIcon(Color color) {
+    return Icon(Icons.payments_outlined, size: 14, color: color);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -117,23 +121,20 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
           if (!widget.useSinglePrice)
             // Min price label on the left (range mode only)
             Container(
-              width: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
+              width: 64,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+              alignment: Alignment.center,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextSpan(
-                      text: "${_minPrice.round()}",
+                    _unitIcon(textColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${_minPrice.round()}",
+                      textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 13, color: textColor),
-                    ),
-                    TextSpan(
-                      text: "\ny.e.",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: textColor,
-                        fontWeight: FontWeight.w400,
-                      ),
                     ),
                   ],
                 ),
@@ -163,7 +164,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                       max: widget.maxPrice,
                       activeColor: sliderColor,
                       inactiveColor: getInactiveTrackColor(),
-                      label: "${_minPrice.round()} y.e.",
+                      label: "${_minPrice.round()}",
                       onChanged: (value) {
                         final newPrice = (value / 10).round() * 10.0;
                         if ((newPrice ~/ 10) != (_minPrice ~/ 10)) {
@@ -189,8 +190,8 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                         activeColor: sliderColor,
                         inactiveColor: getInactiveTrackColor(),
                         labels: RangeLabels(
-                          "${_minPrice.round()} y.e.",
-                          "${_maxPrice.round()} y.e.",
+                          "${_minPrice.round()}",
+                          "${_maxPrice.round()}",
                         ),
                         onChanged: (values) {
                           final newMin = (values.start / 10).round() * 10.0;
@@ -216,24 +217,21 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
 
           // Price label on the right
           Container(
-            width: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
+            width: 64,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+            alignment: Alignment.center,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextSpan(
-                    text: "${(widget.useSinglePrice ? _minPrice : _maxPrice).round()}",
+                  Text(
+                    "${(widget.useSinglePrice ? _minPrice : _maxPrice).round()}",
+                    textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 13, color: textColor),
                   ),
-                  TextSpan(
-                    text: "\ny.e.",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: textColor,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  const SizedBox(width: 4),
+                  _unitIcon(textColor),
                 ],
               ),
             ),
