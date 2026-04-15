@@ -5,17 +5,18 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart";
 
 class CreateComplaintScreen extends StatefulWidget {
 
@@ -124,11 +125,11 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
             return state.map(
               initial: (_) {
                 logger.d("=== COMPLAINT UI: Initial state ===");
-                return const Center(child: CircularProgressIndicator());
+                return const CenteredHouseLoadingIndicator();
               },
               loading: (_) {
                 logger.d("=== COMPLAINT UI: Loading state ===");
-                return const Center(child: CircularProgressIndicator());
+                return const CenteredHouseLoadingIndicator();
               },
               categoriesLoaded: (state) {
                 logger.d(
