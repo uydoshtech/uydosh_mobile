@@ -1818,7 +1818,8 @@ L10n.get("feature_listing_error",
             mainAxisSize: MainAxisSize.min,
             children: [
               ListingDetailMetaBadges(listingDetail: listingDetail),
-              ListingDetailAreaPriceStats(listingDetail: listingDetail),
+              if (listingDetail.listingType.code != "room_needed")
+                ListingDetailAreaPriceStats(listingDetail: listingDetail),
             ],
           ),
         ),
