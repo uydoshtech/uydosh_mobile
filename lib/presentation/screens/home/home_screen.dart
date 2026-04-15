@@ -572,7 +572,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 listenable: AnimationSettingsState(),
                 builder: (context, _) {
                   return TutorialPulseWrapper(
-                    enabled: AnimationSettingsState().searchPulseEnabled,
+                    enabled: false,
                     variant: TutorialPulseVariant.floatingActionButton,
                     child: SearchFloatingActionButton(
                       searchFiltersState: _searchFiltersState,

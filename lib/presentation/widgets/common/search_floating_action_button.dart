@@ -1,7 +1,9 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 
@@ -45,22 +47,19 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final base = widget.backgroundColor ?? theme.colorScheme.primary;
-    final fg = widget.foregroundColor ?? Colors.white;
+    // Match the burger menu button chrome: use surface background and theme-based
+    // icon color, without glossy highlight or outer halo.
+    final base = widget.backgroundColor ?? theme.colorScheme.surface;
     final tip = widget.tooltip ?? L10n.get("search");
-    final depthScale =
-        ((widget.elevation ?? 10) / 10).clamp(0.55, 1.55).toDouble();
+    // Match the profile button shape (circle-ish), but keep the same 56x56 size.
+    final radius = const BorderRadius.all(Radius.circular(999));
+    final fg =
+        widget.foregroundColor ??
+        (ThemeState().isBlueTheme ? Colors.white : Colors.black);
 
     final shadows = _pressed
         ? ThreeDSurfaceStyle.pressedShadows(context)
-        : [
-            ...ThreeDSurfaceStyle.floatingOrbHaloShadows(
-              context,
-              base,
-              depthScale: depthScale,
-            ),
-            ...ThreeDSurfaceStyle.elevatedShadows(context),
-          ];
+        : ThreeDSurfaceStyle.elevatedShadows(context);
 
     return Tooltip(
       message: tip,
@@ -73,7 +72,13 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              customBorder: const CircleBorder(),
+              borderRadius: radius,
+              splashFactory: NoSplash.splashFactory,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
               onTap: widget.onPressed ?? () => _handleSearchPressed(context),
               onHighlightChanged: (v) => setState(() => _pressed = v),
               child: AnimatedContainer(
@@ -81,29 +86,16 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
                 width: SearchFloatingActionButton._fabSize,
                 height: SearchFloatingActionButton._fabSize,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
+                  borderRadius: radius,
                   gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
                   boxShadow: shadows,
                 ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: ThreeDSurfaceStyle.surfaceRadialHighlightGradient(
-                            theme.brightness,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.search,
-                      size: (widget.iconSize ?? 25.0) * 1.1,
-                      color: fg,
-                    ),
-                  ],
+                child: Center(
+                  child: Icon(
+                    Icons.search,
+                    size: (widget.iconSize ?? 25.0) * 1.1,
+                    color: fg,
+                  ),
                 ),
               ),
             ),
