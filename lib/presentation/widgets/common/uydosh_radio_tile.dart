@@ -60,42 +60,31 @@ class UydoshRadioTile<T> extends StatelessWidget {
             child: ListTileTheme(
               textColor: foregroundColor,
               iconColor: foregroundColor,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 4,
+              child: DefaultTextStyle.merge(
+                style: TextStyle(
+                  color: foregroundColor,
+                  fontSize: baseFontSize + 2,
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Radio<T>(
-                        value: value,
-                        groupValue: groupValue,
-                        onChanged: onChanged,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                        fillColor: WidgetStateProperty.resolveWith((states) {
-                          if (states.contains(WidgetState.selected)) {
-                            return isBlueTheme
-                                ? const Color(0xFF1E3A5F)
-                                : theme.colorScheme.primary;
-                          }
-                          return foregroundColor.withValues(alpha: 0.72);
-                        }),
-                      ),
-                    ),
-                    Expanded(
-                      child: DefaultTextStyle.merge(
-                        style: TextStyle(
-                          color: foregroundColor,
-                          fontSize: baseFontSize + 2,
-                        ),
-                        child: title,
-                      ),
-                    ),
-                  ],
+                child: ListTile(
+                  dense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 4,
+                  ),
+                  title: title,
+                  leading: Radio<T>(
+                    value: value,
+                    groupValue: groupValue,
+                    onChanged: onChanged,
+                    fillColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return isBlueTheme
+                            ? const Color(0xFF1E3A5F)
+                            : theme.colorScheme.primary;
+                      }
+                      return foregroundColor.withValues(alpha: 0.72);
+                    }),
+                  ),
                 ),
               ),
             ),
