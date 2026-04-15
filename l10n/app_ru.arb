@@ -366,7 +366,7 @@
   "listing_translating_description": "Перевод…",
   "listing_translation_error": "Не удалось перевести. Попробуйте снова.",
   "listing_translation_unavailable": "Перевод недоступен.",
-  "listing_ai_enhance": "Улучшить описание с AI",
+  "listing_ai_enhance": "Улучшить с AI",
   "listing_ai_enhance_empty": "Сначала введите описание.",
   "listing_ai_enhance_unavailable": "Улучшение с AI недоступно.",
   "listing_ai_enhance_error": "Не удалось улучшить текст. Попробуйте снова.",

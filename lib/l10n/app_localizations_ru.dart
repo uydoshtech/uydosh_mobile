@@ -804,7 +804,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_translation_unavailable => 'Перевод недоступен.';
 
   @override
-  String get listing_ai_enhance => 'Улучшить описание с AI';
+  String get listing_ai_enhance => 'Улучшить с AI';
 
   @override
   String get listing_ai_enhance_empty => 'Сначала введите описание.';

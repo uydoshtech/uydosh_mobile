@@ -335,7 +335,7 @@ class AppStrings {
       "listing_translating_description": "Translating…",
       "listing_translation_error": "Couldn’t translate. Try again.",
       "listing_translation_unavailable": "Translation unavailable.",
-      "listing_ai_enhance": "Improve text with AI",
+      "listing_ai_enhance": "Improve with AI",
       "listing_ai_enhance_empty": "Enter text first.",
       "listing_ai_enhance_unavailable":
           "AI enhancement isn’t available on this device.",
@@ -1308,7 +1308,7 @@ class AppStrings {
       "listing_translating_description": "Перевод…",
       "listing_translation_error": "Не удалось перевести. Попробуйте снова.",
       "listing_translation_unavailable": "Перевод недоступен.",
-      "listing_ai_enhance": "Улучшить текст с AI",
+      "listing_ai_enhance": "Улучшить с AI",
       "listing_ai_enhance_empty": "Сначала введите текст.",
       "listing_ai_enhance_unavailable": "Улучшение с AI недоступно.",
       "listing_ai_enhance_error":
@@ -2290,7 +2290,7 @@ class AppStrings {
       "listing_translating_description": "Tarjima qilinmoqda…",
       "listing_translation_error": "Tarjima qilinmadi. Qayta urinib ko‘ring.",
       "listing_translation_unavailable": "Tarjima mavjud emas.",
-      "listing_ai_enhance": "Matnni AI bilan yaxshilash",
+      "listing_ai_enhance": "AI bilan yaxshilash",
       "listing_ai_enhance_empty": "Avval matn kiriting.",
       "listing_ai_enhance_unavailable": "AI yaxshilash mavjud emas.",
       "listing_ai_enhance_error":

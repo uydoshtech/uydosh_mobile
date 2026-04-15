@@ -798,7 +798,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_translation_unavailable => 'Translation unavailable.';
 
   @override
-  String get listing_ai_enhance => 'Improve description with AI';
+  String get listing_ai_enhance => 'Improve with AI';
 
   @override
   String get listing_ai_enhance_empty => 'Enter a description first.';

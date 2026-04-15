@@ -539,7 +539,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       child: Scaffold(
       appBar: UydoshAppBar(
         title: L10n.text(
-          "edit_listing",
+          "edit",
           style: theme.appBarTheme.titleTextStyle,
         ),
         backgroundColor:
@@ -884,11 +884,13 @@ class _EditListingScreenState extends State<EditListingScreen> {
                     const SizedBox(height: 10),
 
                     // Move-in Date and Private Room Row
-                    Row(
-                      children: [
-                        // Move-in Date Field (50% width)
-                        Expanded(
-                          child: L10n.inputField(
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Move-in Date Field (50% width)
+                          Expanded(
+                            child: L10n.inputField(
                             "quick_question_move_in_date",
                             builder:
                                 (hintText) => Container(
@@ -1044,16 +1046,18 @@ class _EditListingScreenState extends State<EditListingScreen> {
                         Expanded(
                           child: Container(
                             clipBehavior: Clip.antiAlias,
-                            decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                            decoration:
+                                ThreeDSurfaceStyle.wheelPickerPlateDecoration(
                               context,
                               theme: theme,
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 6.0,
+                                horizontal: 12.0,
+                                vertical: 16.0,
                               ),
                               child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   ThemeIcon(
                                     Icons.lock_outline,
@@ -1072,6 +1076,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
+                                      mainAxisSize: MainAxisSize.min,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
@@ -1121,6 +1126,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           ),
                         ),
                       ],
+                    ),
                     ),
                     const SizedBox(height: 10),
 

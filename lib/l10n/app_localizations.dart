@@ -1555,7 +1555,7 @@ abstract class AppLocalizations {
   /// No description provided for @listing_ai_enhance.
   ///
   /// In en, this message translates to:
-  /// **'Improve description with AI'**
+  /// **'Improve with AI'**
   String get listing_ai_enhance;
 
   /// No description provided for @listing_ai_enhance_empty.

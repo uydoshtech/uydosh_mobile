@@ -809,7 +809,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_translation_unavailable => 'Tarjima mavjud emas.';
 
   @override
-  String get listing_ai_enhance => 'Tavsifni AI bilan yaxshilash';
+  String get listing_ai_enhance => 'AI bilan yaxshilash';
 
   @override
   String get listing_ai_enhance_empty => 'Avval tavsif kiriting.';

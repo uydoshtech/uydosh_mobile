@@ -374,7 +374,7 @@
   "listing_translating_description": "Tarjima qilinmoqda…",
   "listing_translation_error": "Tarjima qilinmadi. Qayta urinib ko‘ring.",
   "listing_translation_unavailable": "Tarjima mavjud emas.",
-  "listing_ai_enhance": "Tavsifni AI bilan yaxshilash",
+  "listing_ai_enhance": "AI bilan yaxshilash",
   "listing_ai_enhance_empty": "Avval tavsif kiriting.",
   "listing_ai_enhance_unavailable": "AI yaxshilash mavjud emas.",
   "listing_ai_enhance_error": "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
