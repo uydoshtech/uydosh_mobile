@@ -1,10 +1,11 @@
 import "package:flutter/material.dart";
 import "package:flutter_roomplan/flutter_roomplan.dart";
-import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -12,12 +13,11 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
-const _kRoomScanExampleAssets = <String>[
-  "assets/images/room_scan_examples/example_1.png",
-  "assets/images/room_scan_examples/example_2.png",
-  "assets/images/room_scan_examples/example_3.png",
-];
+// TEMP (for testing): render the 3D scan welcome UI even on web/Chrome.
+// Scanning will still be disabled (Start button no-ops on non‑iOS).
+const bool kForceShowRoomScanWelcomeUiOnWeb = true;
 
 /// RoomPlan (LiDAR) capture → upload USDZ to [point_cloud_url] on the listing.
 class RoomPlanScanScreen extends StatefulWidget {
@@ -29,21 +29,33 @@ class RoomPlanScanScreen extends StatefulWidget {
   State<RoomPlanScanScreen> createState() => _RoomPlanScanScreenState();
 }
 
-class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
+class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
+    with SingleTickerProviderStateMixin {
   final _roomPlan = FlutterRoomplan();
-  final PageController _examplePageController = PageController();
   bool _uploading = false;
   bool _starting = false;
 
+  late final AnimationController _iconRotationController;
+  late final Animation<double> _iconRotationAnimation;
+
   @override
   void dispose() {
-    _examplePageController.dispose();
+    _iconRotationController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+
+    _iconRotationController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat();
+    _iconRotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _iconRotationController, curve: Curves.linear),
+    );
+
     if (!isIOSDevice) return;
     if (ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) return;
     _roomPlan.onRoomCaptureFinished(() {
@@ -117,12 +129,41 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
     }
   }
 
+  Color _get3dIconColor(BuildContext context) {
+    final themeState = ThemeState();
+    return themeState.isBlueTheme
+        ? BlueThemeColors.textPrimary
+        : Theme.of(context).colorScheme.primary;
+  }
+
+  Widget _buildRotating3dIcon(BuildContext context) {
+    final iconColor = _get3dIconColor(context);
+
+    return Semantics(
+      label: L10n.get("room_scan_title"),
+      child: AnimatedBuilder(
+        animation: _iconRotationAnimation,
+        builder: (context, child) {
+          return Transform.rotate(
+            angle: _iconRotationAnimation.value * 2 * 3.14159,
+            child: child,
+          );
+        },
+        child: Icon(
+          Icons.view_in_ar,
+          size: 190,
+          color: iconColor.withValues(alpha: 0.92),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: ClientLidarRoomScanConfig.lidarRoomScanDisabled,
       builder: (context, lidarDisabled, _) {
-        if (!isIOSDevice) {
+        if (!isIOSDevice && !kForceShowRoomScanWelcomeUiOnWeb) {
           return Scaffold(
             appBar: UydoshAppBar(
               leading: ThreeDAppBarIconButton.backLeading(context),
@@ -160,8 +201,6 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
 
         final loading = _uploading || _starting;
 
-        final colorScheme = Theme.of(context).colorScheme;
-
         return Scaffold(
           appBar: UydoshAppBar(
             leading: ThreeDAppBarIconButton.backLeading(context),
@@ -177,48 +216,9 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 if (!_uploading) ...[
-                  const SizedBox(height: 20),
-                  Text(
-                    L10n.get("room_scan_examples_label"),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Semantics(
-                    label: L10n.get("room_scan_examples_label"),
-                    child: AspectRatio(
-                      aspectRatio: 1,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: PageView.builder(
-                          controller: _examplePageController,
-                          itemCount: _kRoomScanExampleAssets.length,
-                          itemBuilder: (context, index) {
-                            return Image.asset(
-                              _kRoomScanExampleAssets[index],
-                              fit: BoxFit.cover,
-                              gaplessPlayback: true,
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Center(
-                    child: SmoothPageIndicator(
-                      controller: _examplePageController,
-                      count: _kRoomScanExampleAssets.length,
-                      effect: WormEffect(
-                        dotHeight: 8,
-                        dotWidth: 8,
-                        spacing: 8,
-                        dotColor: colorScheme.outline.withValues(alpha: 0.35),
-                        activeDotColor: colorScheme.primary,
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 28),
+                  Center(child: _buildRotating3dIcon(context)),
+                  const SizedBox(height: 28),
                 ],
                 const SizedBox(height: 24),
                 if (_uploading)
@@ -230,18 +230,20 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen> {
                     ],
                   )
                 else ...[
-                  PrimaryButton(
+                  Center(
+                    child: UydoshLinkButton(
+                      text: L10n.get("skip"),
+                      onPressed: () => Navigator.of(context).pop(false),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  PrimaryButtonFactory.iconText(
                     onPressed: loading ? null : _startScan,
                     isLoading: _starting,
                     isDisabled: loading,
-                    child: Text(L10n.get("room_scan_start")),
-                  ),
-                  const SizedBox(height: 16),
-                  GhostButtonFactory.text(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    text: L10n.get("skip"),
-                    width: double.infinity,
-                    isDisabled: loading,
+                    icon: Icons.view_in_ar,
+                    iconSize: 18,
+                    text: L10n.get("room_scan_start"),
                   ),
                 ],
               ],

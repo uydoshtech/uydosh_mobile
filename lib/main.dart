@@ -39,6 +39,7 @@ import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/onboarding/onboarding_screen.dart";
+import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/animated_svg_logo.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -48,6 +49,9 @@ final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 // Flag to skip splash screen - automatically skip when running in Chrome/web
 bool get kSkipSplashScreen => kIsWeb;
+
+// TEMP (for testing): make home disappear and show the 3D scan welcome page.
+const bool kShowRoomPlanWelcomeInsteadOfHome = false;
 
 void main() async {
   try {
@@ -210,6 +214,10 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Widget _getInitialScreen() {
+    if (kShowRoomPlanWelcomeInsteadOfHome) {
+      // For testing only. The welcome UI is inside RoomPlanScanScreen.
+      return const RoomPlanScanScreen(listingId: 0);
+    }
     final onboardingState = OnboardingState();
     if (onboardingState.showOnboarding && !onboardingState.hasSeenOnboardingScreens) {
       return const OnboardingScreen();
