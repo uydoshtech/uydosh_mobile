@@ -1964,14 +1964,17 @@ L10n.get("feature_listing_error",
                     }(),
                     if ((pageState.complaintsCount ?? 0) > 0) ...[
                       const SizedBox(height: 16),
-                      ListingDetailComplaintsCard(
-                        complaintsLabel: _buildComplaintsButtonLabel(
-                          pageState.isLoadingComplaintsCount,
-                          pageState.complaintsCount,
+                      SizedBox(
+                        width: double.infinity,
+                        child: ListingDetailComplaintsCard(
+                          complaintsLabel: _buildComplaintsButtonLabel(
+                            pageState.isLoadingComplaintsCount,
+                            pageState.complaintsCount,
+                          ),
+                          onPressed: () =>
+                              _viewListingComplaints(listingDetail.id),
+                          warningBlinkAnimation: _warningBlinkAnimation,
                         ),
-                        onPressed: () =>
-                            _viewListingComplaints(listingDetail.id),
-                        warningBlinkAnimation: _warningBlinkAnimation,
                       ),
                     ],
                   ],

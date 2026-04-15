@@ -791,7 +791,7 @@
   "favorite_toggle_error": "Не удалось обновить статус избранного",
   "favorite_toggle_network_error": "Ошибка сети при обновлении статуса избранного",
   "unable_to_load_favorites": "Не удалось загрузить избранное. Попробуйте позже.",
-  "create_listing_title": "Создать объявление",
+  "create_listing_title": "Опубликовать",
   "edit_listing": "Редактировать объявление",
   "edit_profile": "Редактировать профиль",
   "updating_listing": "Обновляется...",

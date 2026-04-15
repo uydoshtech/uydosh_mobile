@@ -2068,7 +2068,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось загрузить избранное. Попробуйте позже.';
 
   @override
-  String get create_listing_title => 'Создать объявление';
+  String get create_listing_title => 'Опубликовать';
 
   @override
   String get edit_listing => 'Редактировать объявление';

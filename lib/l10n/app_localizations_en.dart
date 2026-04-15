@@ -2053,7 +2053,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Unable to load favorites. Please try again later.';
 
   @override
-  String get create_listing_title => 'Create Listing';
+  String get create_listing_title => 'Publish';
 
   @override
   String get edit_listing => 'Edit Listing';

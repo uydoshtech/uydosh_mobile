@@ -2088,7 +2088,7 @@ class AppLocalizationsUz extends AppLocalizations {
       'Sevimlilarni yuklash imkoni yo\'q. Keyinroq urinib ko\'ring.';
 
   @override
-  String get create_listing_title => 'E\'lon yaratish';
+  String get create_listing_title => 'E\'lon qilish';
 
   @override
   String get edit_listing => 'E\'lonni tahrirlash';

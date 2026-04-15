@@ -799,7 +799,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 4),
                                     Semantics(
                                       button: true,
                                       label:

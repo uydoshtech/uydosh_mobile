@@ -853,7 +853,7 @@ class AppStrings {
           "Unable to load favorites. Please try again later.",
 
       // ===== CREATE & EDIT LISTING =====
-      "create_listing_title": "Create Listing",
+      "create_listing_title": "Publish",
       "edit_listing": "Edit Listing",
       "edit_profile": "Edit Profile",
       "updating_listing": "Updating...",
@@ -1827,7 +1827,7 @@ class AppStrings {
           "Не удалось загрузить избранное. Попробуйте позже.",
 
       // ===== CREATE & EDIT LISTING =====
-      "create_listing_title": "Создать объявление",
+      "create_listing_title": "Опубликовать",
       "edit_listing": "Редактировать объявление",
       "edit_profile": "Редактировать профиль",
       "updating_listing": "Обновляется...",
@@ -2819,7 +2819,7 @@ class AppStrings {
           "Sevimlilarni yuklash imkoni yo'q. Keyinroq urinib ko'ring.",
 
       // ===== CREATE & EDIT LISTING =====
-      "create_listing_title": "E'lon yaratish",
+      "create_listing_title": "E'lon qilish",
       "edit_listing": "E'lonni tahrirlash",
       "edit_profile": "Profilni tahrirlash",
       "updating_listing": "Yangilanmoqda...",

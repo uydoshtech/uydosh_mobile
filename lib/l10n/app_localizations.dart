@@ -3937,7 +3937,7 @@ abstract class AppLocalizations {
   /// No description provided for @create_listing_title.
   ///
   /// In en, this message translates to:
-  /// **'Create Listing'**
+  /// **'Publish'**
   String get create_listing_title;
 
   /// No description provided for @edit_listing.
