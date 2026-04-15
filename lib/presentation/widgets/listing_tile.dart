@@ -1029,7 +1029,7 @@ class _ListingTileState extends State<ListingTile>
   // Theme-dependent color method for private room icon
   Color _getPrivateRoomIconColor() {
     if (ThemeState().isBlueTheme) {
-      return AppColors.primary;
+      return AppColors.textLight;
     } else {
       return AppColors.primary;
     }

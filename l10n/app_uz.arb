@@ -350,20 +350,18 @@
   "listing_description_hint": "E'lon tavsifini kiriting",
   "listing_price_label": "Narxi",
   "listing_area_price_heading": "Atrofdagi bozor narxi",
-  "listing_area_price_station_line": "«{place}» bekati: median {median} b.y. ({count} e’lon)",
+  "listing_area_price_station_line": "«{place}» bekati: median {median} b.y.",
   "@listing_area_price_station_line": {
     "placeholders": {
       "place": { "type": "String" },
-      "median": { "type": "String" },
-      "count": { "type": "String" }
+      "median": { "type": "String" }
     }
   },
-  "listing_area_price_location_line": "«{place}» tumanida: median {median} b.y. ({count} e’lon)",
+  "listing_area_price_location_line": "«{place}» tumanida: median {median} b.y.",
   "@listing_area_price_location_line": {
     "placeholders": {
       "place": { "type": "String" },
-      "median": { "type": "String" },
-      "count": { "type": "String" }
+      "median": { "type": "String" }
     }
   },
   "listing_area_price_insufficient_data": "Hozircha narx bo‘yicha orientir ko‘rsatish uchun yetarli e’lon yo‘q.",
@@ -891,7 +889,6 @@
   "delete_listing_error": "E'loni o'chirishda xatolik",
   "unknown": "Noma'lum",
   "create_complaint": "Shikoyat yaratish",
-  "select_complaint_category": "Shikoyat kategoriyasini tanlang",
   "complaint_description_hint": "Tafsilotlar qo'shing (ixtiyoriy)",
   "submit_complaint": "Shikoyatni yuborish",
   "complaint_created_success": "Shikoyat muvaffaqiyatli yuborildi",

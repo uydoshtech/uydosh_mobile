@@ -3,6 +3,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
@@ -11,6 +12,7 @@ import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -174,16 +176,13 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
   }
 
   Widget _buildContent(List<ComplaintCategory> categories) {
+    final textBaseSize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            L10n.get("select_complaint_category"),
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 4),
           Expanded(
             child: CommonListView(
               padding: EdgeInsets.zero,
@@ -206,13 +205,53 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _descriptionController,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText: L10n.get("complaint_description_hint"),
-              border: const OutlineInputBorder(),
-              alignLabelWithHint: true,
+          Container(
+            constraints: const BoxConstraints(minHeight: 96),
+            child: WheelPickerPlateContainer(
+              theme: Theme.of(context),
+              child: TextFormField(
+                controller: _descriptionController,
+                minLines: 3,
+                maxLines: 5,
+                decoration: InputDecoration(
+                  hintText: L10n.get("complaint_description_hint"),
+                  hintStyle: TextStyle(
+                    fontSize: textBaseSize + 2,
+                    color:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant.withOpacity(0.7)
+                            : Colors.grey[400],
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                  alignLabelWithHint: true,
+                ),
+                style: TextStyle(
+                  fontSize: textBaseSize + 2,
+                  color:
+                      ThemeState().isLightTheme
+                          ? Colors.black
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 16),

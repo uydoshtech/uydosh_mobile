@@ -342,20 +342,18 @@
   "listing_description_hint": "Введите описание объявления",
   "listing_price_label": "Цена",
   "listing_area_price_heading": "Ориентир по цене",
-  "listing_area_price_station_line": "У станции «{place}»: медиана {median} у.е. ({count} объявлений)",
+  "listing_area_price_station_line": "У станции «{place}»: медиана {median} у.е.",
   "@listing_area_price_station_line": {
     "placeholders": {
       "place": { "type": "String" },
-      "median": { "type": "String" },
-      "count": { "type": "String" }
+      "median": { "type": "String" }
     }
   },
-  "listing_area_price_location_line": "В районе «{place}»: медиана {median} у.е. ({count} объявлений)",
+  "listing_area_price_location_line": "В районе «{place}»: медиана {median} у.е.",
   "@listing_area_price_location_line": {
     "placeholders": {
       "place": { "type": "String" },
-      "median": { "type": "String" },
-      "count": { "type": "String" }
+      "median": { "type": "String" }
     }
   },
   "listing_area_price_insufficient_data": "Пока недостаточно похожих объявлений, чтобы показать ориентир по цене.",
@@ -883,7 +881,6 @@
   "delete_listing_error": "Ошибка удаления объявления",
   "unknown": "Неизвестно",
   "create_complaint": "Создать жалобу",
-  "select_complaint_category": "Выберите категорию жалобы",
   "complaint_description_hint": "Добавьте подробности (необязательно)",
   "submit_complaint": "Отправить жалобу",
   "complaint_created_success": "Жалоба успешно отправлена",

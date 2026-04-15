@@ -762,15 +762,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_area_price_heading => 'Ориентир по цене';
 
   @override
-  String listing_area_price_station_line(
-      String place, String median, String count) {
-    return 'У станции «$place»: медиана $median у.е. ($count объявлений)';
+  String listing_area_price_station_line(String place, String median) {
+    return 'У станции «$place»: медиана $median у.е.';
   }
 
   @override
-  String listing_area_price_location_line(
-      String place, String median, String count) {
-    return 'В районе «$place»: медиана $median у.е. ($count объявлений)';
+  String listing_area_price_location_line(String place, String median) {
+    return 'В районе «$place»: медиана $median у.е.';
   }
 
   @override
@@ -2317,9 +2315,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get create_complaint => 'Создать жалобу';
-
-  @override
-  String get select_complaint_category => 'Выберите категорию жалобы';
 
   @override
   String get complaint_description_hint =>

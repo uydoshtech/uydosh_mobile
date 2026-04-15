@@ -757,15 +757,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_area_price_heading => 'Typical rent nearby';
 
   @override
-  String listing_area_price_station_line(
-      String place, String median, String count) {
-    return 'At $place: median $median y.e. ($count listings)';
+  String listing_area_price_station_line(String place, String median) {
+    return 'At $place: median $median y.e.';
   }
 
   @override
-  String listing_area_price_location_line(
-      String place, String median, String count) {
-    return 'In $place: median $median y.e. ($count listings)';
+  String listing_area_price_location_line(String place, String median) {
+    return 'In $place: median $median y.e.';
   }
 
   @override
@@ -2300,9 +2298,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get create_complaint => 'Create Complaint';
-
-  @override
-  String get select_complaint_category => 'Select Complaint Category';
 
   @override
   String get complaint_description_hint => 'Add details (optional)';

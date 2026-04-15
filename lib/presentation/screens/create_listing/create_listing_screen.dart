@@ -761,74 +761,88 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                   : Colors.black;
                       return Padding(
                         padding: const EdgeInsets.only(top: 4, bottom: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ListingDescriptionAiEnhanceButton(
-                              controller: _descriptionController,
-                              inlineWithCounter: true,
-                            ),
-                            const SizedBox(width: 16),
-                            ListingDescriptionTemplateButton(
-                              controller: _descriptionController,
-                              listingTypeId: _selectedListingTypeId,
-                              gender: _selectedGender,
-                              inlineWithCounter: true,
-                            ),
-                            const Spacer(),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  "$currentLength/$maxLength",
-                                  style: TextStyle(
-                                    color: counterColor,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.centerLeft,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  ListingDescriptionAiEnhanceButton(
+                                    controller: _descriptionController,
+                                    inlineWithCounter: true,
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Semantics(
-                                  button: true,
-                                  label:
-                                      _isDescriptionExpanded
-                                          ? "Collapse description"
-                                          : "Expand description",
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(12),
-                                    onTap: () {
-                                      HapticFeedbackUtils.lightImpact();
-                                      setState(() {
-                                        _isDescriptionExpanded =
-                                            !_isDescriptionExpanded;
-                                      });
-                                    },
-                                    child: SizedBox(
-                                      width: 44,
-                                      height: 44,
-                                      child: Center(
-                                        child: AnimatedRotation(
-                                          turns:
-                                              _isDescriptionExpanded
-                                                  ? 0.5
-                                                  : 0.0,
-                                          duration: const Duration(
-                                            milliseconds: 240,
-                                          ),
-                                          curve: Curves.easeInOut,
-                                          child: const Icon(
-                                            Icons.expand_more,
-                                            size: 20,
-                                            color: Colors.white,
+                                  const SizedBox(width: 16),
+                                  ListingDescriptionTemplateButton(
+                                    controller: _descriptionController,
+                                    listingTypeId: _selectedListingTypeId,
+                                    gender: _selectedGender,
+                                    inlineWithCounter: true,
+                                  ),
+                                ],
+                              ),
+                              Positioned(
+                                right: -18,
+                                top: 0,
+                                bottom: 0,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "$currentLength/$maxLength",
+                                      style: TextStyle(
+                                        color: counterColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Semantics(
+                                      button: true,
+                                      label:
+                                          _isDescriptionExpanded
+                                              ? "Collapse description"
+                                              : "Expand description",
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(12),
+                                        onTap: () {
+                                          HapticFeedbackUtils.lightImpact();
+                                          setState(() {
+                                            _isDescriptionExpanded =
+                                                !_isDescriptionExpanded;
+                                          });
+                                        },
+                                        child: SizedBox(
+                                          width: 44,
+                                          height: 44,
+                                          child: Center(
+                                            child: AnimatedRotation(
+                                              turns:
+                                                  _isDescriptionExpanded
+                                                      ? 0.5
+                                                      : 0.0,
+                                              duration: const Duration(
+                                                milliseconds: 240,
+                                              ),
+                                              curve: Curves.easeInOut,
+                                              child: const Icon(
+                                                Icons.expand_more,
+                                                size: 20,
+                                                color: Colors.white,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },

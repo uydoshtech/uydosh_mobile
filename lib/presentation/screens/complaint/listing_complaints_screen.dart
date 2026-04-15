@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 
 class ListingComplaintsScreen extends StatefulWidget {
 
@@ -117,12 +118,14 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       children: [
         Expanded(
           child: CommonListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
             itemCount: complaintGroups.length,
             itemSpacing: 12,
             itemBuilder: (context, index) {
               final group = complaintGroups[index];
-              return Card(
+              return ListingDetailTileShell(
+                margin: EdgeInsets.zero,
+                clipBehavior: Clip.antiAlias,
                 child: ListTile(
                   leading: const ThemeIcon(
                     Icons.report_outlined,
@@ -136,7 +139,6 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
                     ),
                   ),
                   subtitle: _buildGroupSubtitle(group),
-                  trailing: _buildCountChip(group.count),
                 ),
               );
             },
@@ -223,11 +225,50 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
   }
 
   Widget _buildGroupSubtitle(_ComplaintGroup group) {
-    final dateText = _formatComplaintDate(group.latestComplaint);
+    final complaintText = (group.latestComplaint?.text ?? "").trim();
+    final createdAt = _parseComplaintDate(group.latestComplaint?.createdAt);
+    final localCreatedAt = createdAt?.toLocal();
+    final timeText =
+        localCreatedAt == null
+            ? L10n.get("unknown")
+            : "${localCreatedAt.hour.toString().padLeft(2, '0')}:${localCreatedAt.minute.toString().padLeft(2, '0')}";
+    final dateText =
+        localCreatedAt == null
+            ? L10n.get("unknown")
+            : AppDateUtils.formatDateWithMonthDay(context, localCreatedAt);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (complaintText.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            complaintText,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              height: 1.25,
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            const ThemeIcon(
+              Icons.access_time,
+              size: 16,
+              color: AppColors.textGrey,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                timeText,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
         Row(
           children: [
             const ThemeIcon(
@@ -245,40 +286,6 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
           ],
         ),
       ],
-    );
-  }
-
-  String _formatComplaintDate(Complaint? complaint) {
-    if (complaint?.createdAt == null || complaint!.createdAt!.isEmpty) {
-      return L10n.get("unknown");
-    }
-    final date = DateTime.tryParse(complaint.createdAt!);
-    if (date == null) {
-      return complaint.createdAt!;
-    }
-    return AppDateUtils.formatDateWithShortMonth(context, date);
-  }
-
-  Widget _buildCountChip(int count) {
-    const color = AppColors.primary;
-    final label =
-        L10n.get("complaints_count_short").replaceAll("{count}", "$count");
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 

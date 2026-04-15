@@ -1172,7 +1172,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   );
                                 },
                                 icon: const ThemeIcon(Icons.view_in_ar),
-                                label: Text(L10n.get("add_room_scan_3d")),
+                                label: Text(
+                                  L10n.get("add_room_scan_3d"),
+                                  style: ThemeState().isBlueTheme
+                                      ? const TextStyle(color: Colors.white)
+                                      : null,
+                                ),
                               ),
                             ),
                           ],

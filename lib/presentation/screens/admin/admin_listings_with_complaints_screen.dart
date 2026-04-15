@@ -283,7 +283,7 @@ class _AdminListingsWithComplaintsScreenState
         ? selectedColor
         : (isBlueTheme ? BlueThemeColors.card : Colors.grey[200]);
     final borderColor = isSelected
-        ? selectedColor
+        ? (isBlueTheme ? Colors.white : selectedColor)
         : (isBlueTheme ? BlueThemeColors.cardBorder : Colors.grey[400]!);
     final textColor = isSelected
         ? Colors.white
@@ -396,7 +396,10 @@ class _AdminListingsWithComplaintsScreenState
             child: ListTile(
               leading: ThemeIcon(
                 Icons.home_work_outlined,
-                color: Theme.of(context).colorScheme.primary,
+                color:
+                    ThemeState().isBlueTheme
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.primary,
               ),
               title: Text(
                 "${L10n.get("admin_complaints_listing_id")}: ${_getListingLabel(context, group.listingId)}",

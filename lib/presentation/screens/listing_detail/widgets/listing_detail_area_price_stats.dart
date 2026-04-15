@@ -10,33 +10,64 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
 
   final ListingDetail listingDetail;
 
-  Color? _priceIndicatorColor(ThemeData theme, AreaPriceBenchmark benchmark) {
-    if (benchmark.median <= 0) return null;
+  int _priceIndicatorLevel(AreaPriceBenchmark benchmark) {
+    if (benchmark.median <= 0) return 0;
 
     final ratio = listingDetail.price / benchmark.median;
-    if (ratio <= 1.1) return Colors.green.shade400;
-    if (ratio <= 1.35) return Colors.amber.shade700;
-    return theme.colorScheme.error;
+    // More filled disks = more expensive vs median:
+    // 1 = green (cheap/ok), 2 = yellow (somewhat expensive), 3 = red (expensive)
+    if (ratio <= 1.1) return 1;
+    if (ratio <= 1.35) return 2;
+    return 3;
   }
 
-  Widget _priceIndicatorDot(
+  Widget _priceIndicatorDisks(
     BuildContext context, {
     required AreaPriceBenchmark benchmark,
   }) {
     final theme = Theme.of(context);
-    final color = _priceIndicatorColor(theme, benchmark);
-    if (color == null) return const SizedBox.shrink();
+    final level = _priceIndicatorLevel(benchmark);
+    if (level <= 0) return const SizedBox.shrink();
 
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: theme.colorScheme.surface,
-          width: 1.0,
+    const size = 10.0;
+    const gap = 1.0; // pixels between disks
+    const step = size + gap;
+
+    final emptyBase = theme.colorScheme.onSurfaceVariant;
+    final filledBase = switch (level) {
+      1 => Colors.green.shade400,
+      2 => Colors.amber.shade700,
+      _ => theme.colorScheme.error,
+    };
+
+    Widget disk(int idx) {
+      final filled = idx < level;
+      final borderColor =
+          filled ? filledBase : emptyBase.withOpacity(0.7);
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: filled ? filledBase : emptyBase.withOpacity(0.14),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: borderColor,
+            width: 1.4,
+          ),
         ),
+      );
+    }
+
+    return SizedBox(
+      width: size + step * 2,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(left: 0 * step, child: disk(0)),
+          Positioned(left: 1 * step, child: disk(1)),
+          Positioned(left: 2 * step, child: disk(2)),
+        ],
       ),
     );
   }
@@ -52,7 +83,7 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 3),
-          child: _priceIndicatorDot(context, benchmark: benchmark),
+          child: _priceIndicatorDisks(context, benchmark: benchmark),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -120,7 +151,6 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
               text: l10n.listing_area_price_station_line(
                 stationName,
                 "${station.median}",
-                "${station.sampleCount}",
               ),
             ),
             if (district != null) const SizedBox(height: 6),
@@ -132,7 +162,6 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
               text: l10n.listing_area_price_location_line(
                 _districtPlaceName() ?? l10n.listing_area_price_unknown_district,
                 "${district.median}",
-                "${district.sampleCount}",
               ),
             ),
         ],
@@ -149,31 +178,35 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
         children: [
           Divider(height: 1, color: theme.colorScheme.outlineVariant),
           const SizedBox(height: 10),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ThemeIcon(
-                Icons.insights_outlined,
-                size: 18,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+          Theme(
+            data: theme.copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              initiallyExpanded: false,
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: const EdgeInsets.only(top: 6),
+              iconColor: theme.colorScheme.onSurfaceVariant,
+              collapsedIconColor: theme.colorScheme.onSurfaceVariant,
+              title: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ThemeIcon(
+                    Icons.insights_outlined,
+                    size: 18,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
                       context.l10n.listing_area_price_heading,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    body,
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+              children: [body],
+            ),
           ),
         ],
       ),

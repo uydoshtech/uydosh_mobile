@@ -1483,16 +1483,14 @@ abstract class AppLocalizations {
   /// No description provided for @listing_area_price_station_line.
   ///
   /// In en, this message translates to:
-  /// **'At {place}: median {median} y.e. ({count} listings)'**
-  String listing_area_price_station_line(
-      String place, String median, String count);
+  /// **'At {place}: median {median} y.e.'**
+  String listing_area_price_station_line(String place, String median);
 
   /// No description provided for @listing_area_price_location_line.
   ///
   /// In en, this message translates to:
-  /// **'In {place}: median {median} y.e. ({count} listings)'**
-  String listing_area_price_location_line(
-      String place, String median, String count);
+  /// **'In {place}: median {median} y.e.'**
+  String listing_area_price_location_line(String place, String median);
 
   /// No description provided for @listing_area_price_insufficient_data.
   ///
@@ -4392,12 +4390,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create Complaint'**
   String get create_complaint;
-
-  /// No description provided for @select_complaint_category.
-  ///
-  /// In en, this message translates to:
-  /// **'Select Complaint Category'**
-  String get select_complaint_category;
 
   /// No description provided for @complaint_description_hint.
   ///

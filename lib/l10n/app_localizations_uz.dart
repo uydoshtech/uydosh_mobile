@@ -767,15 +767,13 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_area_price_heading => 'Atrofdagi bozor narxi';
 
   @override
-  String listing_area_price_station_line(
-      String place, String median, String count) {
-    return '«$place» bekati: median $median b.y. ($count e’lon)';
+  String listing_area_price_station_line(String place, String median) {
+    return '«$place» bekati: median $median b.y.';
   }
 
   @override
-  String listing_area_price_location_line(
-      String place, String median, String count) {
-    return '«$place» tumanida: median $median b.y. ($count e’lon)';
+  String listing_area_price_location_line(String place, String median) {
+    return '«$place» tumanida: median $median b.y.';
   }
 
   @override
@@ -2336,9 +2334,6 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get create_complaint => 'Shikoyat yaratish';
-
-  @override
-  String get select_complaint_category => 'Shikoyat kategoriyasini tanlang';
 
   @override
   String get complaint_description_hint => 'Tafsilotlar qo\'shing (ixtiyoriy)';

@@ -350,20 +350,18 @@
   "listing_description_hint": "Enter listing description",
   "listing_price_label": "Price",
   "listing_area_price_heading": "Typical rent nearby",
-  "listing_area_price_station_line": "At {place}: median {median} y.e. ({count} listings)",
+  "listing_area_price_station_line": "At {place}: median {median} y.e.",
   "@listing_area_price_station_line": {
     "placeholders": {
       "place": { "type": "String" },
-      "median": { "type": "String" },
-      "count": { "type": "String" }
+      "median": { "type": "String" }
     }
   },
-  "listing_area_price_location_line": "In {place}: median {median} y.e. ({count} listings)",
+  "listing_area_price_location_line": "In {place}: median {median} y.e.",
   "@listing_area_price_location_line": {
     "placeholders": {
       "place": { "type": "String" },
-      "median": { "type": "String" },
-      "count": { "type": "String" }
+      "median": { "type": "String" }
     }
   },
   "listing_area_price_insufficient_data": "Not enough similar listings here yet to show a typical rent range.",
@@ -891,7 +889,6 @@
   "delete_listing_error": "Error deleting listing",
   "unknown": "Unknown",
   "create_complaint": "Create Complaint",
-  "select_complaint_category": "Select Complaint Category",
   "complaint_description_hint": "Add details (optional)",
   "submit_complaint": "Submit Complaint",
   "complaint_created_success": "Complaint submitted successfully",
