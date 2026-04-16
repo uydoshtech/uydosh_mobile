@@ -50,6 +50,25 @@ abstract final class ThreeDSurfaceStyle {
         ),
       ];
 
+  /// Softer dual-shadow for flat “soft UI” buttons that match [ColorScheme.surface].
+  static List<BoxShadow> neumorphicSoftRaisedShadows(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return [
+      BoxShadow(
+        color: Colors.white.withValues(alpha: isDark ? 0.12 : 0.72),
+        offset: const Offset(-4, -4),
+        blurRadius: 10,
+        spreadRadius: 0,
+      ),
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.42 : 0.18),
+        offset: const Offset(5, 5),
+        blurRadius: 12,
+        spreadRadius: 0,
+      ),
+    ];
+  }
+
   static LinearGradient surfaceGradient(BuildContext context, Color bg) {
     final scheme = Theme.of(context).colorScheme;
     return LinearGradient(

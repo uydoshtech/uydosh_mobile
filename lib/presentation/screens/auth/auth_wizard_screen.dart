@@ -1196,6 +1196,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                               vertical: 16,
                             ),
                             isOnboardingButton: true,
+                            neumorphicSoftUi: true,
                           ),
                         ),
                       if (_currentPage > 0 && _currentPage != 1)
@@ -1212,6 +1213,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             ),
                             isLoading: _isAuthenticating,
                             isOnboardingButton: true,
+                            neumorphicSoftUi: true,
                           ),
                         ),
                     ],

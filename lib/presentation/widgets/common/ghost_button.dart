@@ -22,6 +22,7 @@ class GhostButton extends StatefulWidget {
     this.iconColor,
     this.textStyle,
     this.isOnboardingButton = false,
+    this.neumorphicSoftUi = false,
   });
 
   final VoidCallback? onPressed;
@@ -38,6 +39,9 @@ class GhostButton extends StatefulWidget {
   final Color? iconColor;
   final TextStyle? textStyle;
   final bool isOnboardingButton;
+
+  /// Flat fill matching [ColorScheme.surface], no stroke, soft dual shadows.
+  final bool neumorphicSoftUi;
 
   @override
   State<GhostButton> createState() => _GhostButtonState();
@@ -79,11 +83,21 @@ class _GhostButtonState extends State<GhostButton> {
 
   @override
   Widget build(BuildContext context) {
-    final radius = widget.borderRadius ?? BorderRadius.circular(8);
-    final shadows =
-        !_enabled || _pressed
-            ? ThreeDSurfaceStyle.pressedShadows(context)
-            : ThreeDSurfaceStyle.elevatedShadows(context);
+    final radius =
+        widget.borderRadius ??
+        BorderRadius.circular(widget.neumorphicSoftUi ? 16 : 8);
+    final List<BoxShadow> shadows;
+    if (widget.neumorphicSoftUi) {
+      shadows =
+          _pressed && _enabled
+              ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+              : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context);
+    } else {
+      shadows =
+          !_enabled || _pressed
+              ? ThreeDSurfaceStyle.pressedShadows(context)
+              : ThreeDSurfaceStyle.elevatedShadows(context);
+    }
     final bg = _surfaceGradientBase();
     final fg = _getTextColor();
     final pad =
@@ -108,7 +122,11 @@ class _GhostButtonState extends State<GhostButton> {
       height: widget.height,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 90),
-        transform: Matrix4.translationValues(0, _pressed && _enabled ? 2 : 0, 0),
+        transform: Matrix4.translationValues(
+          0,
+          _pressed && _enabled && !widget.neumorphicSoftUi ? 2 : 0,
+          0,
+        ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -121,11 +139,21 @@ class _GhostButtonState extends State<GhostButton> {
               padding: pad,
               decoration: BoxDecoration(
                 borderRadius: radius,
-                gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
-                border: Border.all(
-                  color: _getBorderColor(),
-                  width: widget.borderWidth,
-                ),
+                color:
+                    widget.neumorphicSoftUi
+                        ? Theme.of(context).colorScheme.surface
+                        : null,
+                gradient:
+                    widget.neumorphicSoftUi
+                        ? null
+                        : ThreeDSurfaceStyle.surfaceGradient(context, bg),
+                border:
+                    widget.neumorphicSoftUi
+                        ? null
+                        : Border.all(
+                          color: _getBorderColor(),
+                          width: widget.borderWidth,
+                        ),
                 boxShadow: shadows,
               ),
               child: Center(
@@ -176,6 +204,7 @@ class GhostButtonFactory {
     TextStyle? textStyle,
     double? iconSize,
     bool isOnboardingButton = false,
+    bool neumorphicSoftUi = false,
   }) {
     return GhostButton(
       onPressed: onPressed,
@@ -189,6 +218,7 @@ class GhostButtonFactory {
       iconColor: iconColor,
       textStyle: textStyle,
       isOnboardingButton: isOnboardingButton,
+      neumorphicSoftUi: neumorphicSoftUi,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -213,6 +243,7 @@ class GhostButtonFactory {
     Color? textColor,
     TextStyle? textStyle,
     bool isOnboardingButton = false,
+    bool neumorphicSoftUi = false,
   }) {
     return GhostButton(
       onPressed: onPressed,
@@ -225,6 +256,7 @@ class GhostButtonFactory {
       textColor: textColor,
       textStyle: textStyle,
       isOnboardingButton: isOnboardingButton,
+      neumorphicSoftUi: neumorphicSoftUi,
       child: Text(text),
     );
   }
@@ -241,6 +273,7 @@ class GhostButtonFactory {
     Color? borderColor,
     Color? iconColor,
     bool isOnboardingButton = false,
+    bool neumorphicSoftUi = false,
   }) {
     return GhostButton(
       onPressed: onPressed,
@@ -252,6 +285,7 @@ class GhostButtonFactory {
       borderColor: borderColor,
       iconColor: iconColor,
       isOnboardingButton: isOnboardingButton,
+      neumorphicSoftUi: neumorphicSoftUi,
       child: ThemeIcon(icon, color: iconColor),
     );
   }
