@@ -35,6 +35,7 @@ class _AdminContentModerationScreenState
   bool _lidarRoomScanDisabled = false;
   bool _isSavingLidar = false;
   bool _isSavingListingContacts = false;
+  bool _isSavingPriceInsights = false;
 
   @override
   void initState() {
@@ -161,6 +162,18 @@ class _AdminContentModerationScreenState
     }
   }
 
+  Future<void> _onShowPriceInsightsChanged(bool value) async {
+    if (_isSavingPriceInsights) return;
+    setState(() => _isSavingPriceInsights = true);
+    try {
+      HapticFeedbackUtils.impact();
+      await AdminFeatureFlagsState().setShowPriceInsights(value);
+    } finally {
+      if (!mounted) return;
+      setState(() => _isSavingPriceInsights = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -257,6 +270,37 @@ class _AdminContentModerationScreenState
                 value: flags.showListingContacts,
                 enabled: !_isSavingListingContacts,
                 onChanged: _onShowListingContactsChanged,
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        ListenableBuilder(
+          listenable: AdminFeatureFlagsState(),
+          builder: (context, _) {
+            final flags = AdminFeatureFlagsState();
+            return ListTile(
+              leading: _isSavingPriceInsights
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const ThemeIcon(Icons.insights_outlined),
+              title: Text(L10n.get("admin_client_settings_show_price_insights")),
+              subtitle: Text(
+                L10n.get(
+                  "admin_client_settings_show_price_insights_description",
+                ),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              trailing: NeumorphicThemeAwareToggle(
+                value: flags.showPriceInsights,
+                enabled: !_isSavingPriceInsights,
+                onChanged: _onShowPriceInsightsChanged,
               ),
             );
           },

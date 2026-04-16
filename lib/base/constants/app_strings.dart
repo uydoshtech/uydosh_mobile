@@ -550,6 +550,9 @@ class AppStrings {
           "Show listing contact details",
       "admin_client_settings_show_listing_contacts_description":
           "Enables Telegram and phone call buttons in the Matching section when a listing has contact_phone/contact_telegram.",
+      "admin_client_settings_show_price_insights": "Show price insights",
+      "admin_client_settings_show_price_insights_description":
+          "Enables the “Price insights” (median nearby rent) block on listing details.",
       "admin_client_config_hide_gemini_listing_ui":
           "Hide translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -1527,6 +1530,9 @@ class AppStrings {
           "Показывать контакты в объявлениях",
       "admin_client_settings_show_listing_contacts_description":
           "Включает кнопки Telegram и звонка в блоке «Совместимость», если у объявления заполнены contact_phone/contact_telegram.",
+      "admin_client_settings_show_price_insights": "Показывать ориентир по цене",
+      "admin_client_settings_show_price_insights_description":
+          "Включает блок «Ориентир по цене» (медиана по району/станции) в карточке объявления.",
       "admin_client_config_hide_gemini_listing_ui":
           "Скрыть перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -2517,6 +2523,10 @@ class AppStrings {
           "Eʼlondagi kontaktlarni ko‘rsatish",
       "admin_client_settings_show_listing_contacts_description":
           "Agar eʼlonda contact_phone/contact_telegram bo‘lsa, «Moslik» bo‘limida Telegram va qo‘ng‘iroq tugmalarini yoqadi.",
+      "admin_client_settings_show_price_insights":
+          "Narx bo‘yicha orientirni ko‘rsatish",
+      "admin_client_settings_show_price_insights_description":
+          "E’lon tafsilotlarida “Narx bo‘yicha orientir” (yaqin atrof medianasi) blokini yoqadi.",
       "admin_client_config_hide_gemini_listing_ui":
           "Tarjima va AI yaxshilashni yashirish",
       "admin_client_config_hide_gemini_listing_ui_description":

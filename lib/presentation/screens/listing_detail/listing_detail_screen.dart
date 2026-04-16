@@ -18,6 +18,7 @@ import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/room_usdz_viewer_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -1863,6 +1864,7 @@ L10n.get("feature_listing_error",
   }
 
   Widget _metaBadgesTile(ListingDetail listingDetail) {
+    AdminFeatureFlagsState().ensureLoaded();
     return SizedBox(
       width: double.infinity,
       child: ListingDetailTileShell(
@@ -1874,7 +1876,17 @@ L10n.get("feature_listing_error",
             children: [
               ListingDetailMetaBadges(listingDetail: listingDetail),
               if (listingDetail.listingType.code != "room_needed")
-                ListingDetailAreaPriceStats(listingDetail: listingDetail),
+                ListenableBuilder(
+                  listenable: AdminFeatureFlagsState(),
+                  builder: (context, _) {
+                    if (!AdminFeatureFlagsState().showPriceInsights) {
+                      return const SizedBox.shrink();
+                    }
+                    return ListingDetailAreaPriceStats(
+                      listingDetail: listingDetail,
+                    );
+                  },
+                ),
             ],
           ),
         ),
