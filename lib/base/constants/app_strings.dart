@@ -546,6 +546,10 @@ class AppStrings {
       "admin_content_moderation_title": "Client configuration",
       "admin_content_moderation_description":
           "Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).",
+      "admin_client_settings_show_listing_contacts":
+          "Show listing contact details",
+      "admin_client_settings_show_listing_contacts_description":
+          "Enables Telegram and phone call buttons in the Matching section when a listing has contact_phone/contact_telegram.",
       "admin_client_config_hide_gemini_listing_ui":
           "Hide translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -1519,6 +1523,10 @@ class AppStrings {
       "admin_content_moderation_title": "Настройки клиента",
       "admin_content_moderation_description":
           "Модерация фото (сервер): если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).",
+      "admin_client_settings_show_listing_contacts":
+          "Показывать контакты в объявлениях",
+      "admin_client_settings_show_listing_contacts_description":
+          "Включает кнопки Telegram и звонка в блоке «Совместимость», если у объявления заполнены contact_phone/contact_telegram.",
       "admin_client_config_hide_gemini_listing_ui":
           "Скрыть перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -2505,6 +2513,10 @@ class AppStrings {
       "admin_content_moderation_title": "Klient sozlamalari",
       "admin_content_moderation_description":
           "Foto moderatsiyasi (server): yoqilganda, yuklangan fotolar nojo'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O'chirilganda tekshirish va xiralashtirish o'tkazilmaydi (AWS Rekognition chaqiruvlari yo'q).",
+      "admin_client_settings_show_listing_contacts":
+          "Eʼlondagi kontaktlarni ko‘rsatish",
+      "admin_client_settings_show_listing_contacts_description":
+          "Agar eʼlonda contact_phone/contact_telegram bo‘lsa, «Moslik» bo‘limida Telegram va qo‘ng‘iroq tugmalarini yoqadi.",
       "admin_client_config_hide_gemini_listing_ui":
           "Tarjima va AI yaxshilashni yashirish",
       "admin_client_config_hide_gemini_listing_ui_description":

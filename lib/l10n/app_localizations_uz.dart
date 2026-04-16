@@ -1030,7 +1030,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get telegram => 'Telegram';
 
   @override
-  String get open_in_telegram => 'Telegramda ochish';
+  String get open_in_telegram => 'Telegramda yozish';
 
   @override
   String get open_in_telegram_confirmation =>
@@ -1315,6 +1315,14 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_panel_category_settings => 'Ilova sozlamalari';
+
+  @override
+  String get admin_client_settings_show_listing_contacts =>
+      'Eʼlondagi kontaktlarni ko‘rsatish';
+
+  @override
+  String get admin_client_settings_show_listing_contacts_description =>
+      'Agar eʼlonda contact_phone/contact_telegram bo‘lsa, «Moslik» bo‘limida Telegram va qo‘ng‘iroq tugmalarini yoqadi.';
 
   @override
   String get admin_panel_section_content_moderation => 'Klient sozlamalari';

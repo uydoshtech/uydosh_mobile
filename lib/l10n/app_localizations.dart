@@ -1963,7 +1963,7 @@ abstract class AppLocalizations {
   /// No description provided for @open_in_telegram.
   ///
   /// In en, this message translates to:
-  /// **'Open in Telegram'**
+  /// **'Message in Telegram'**
   String get open_in_telegram;
 
   /// No description provided for @open_in_telegram_confirmation.
@@ -2517,6 +2517,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application Settings'**
   String get admin_panel_category_settings;
+
+  /// No description provided for @admin_client_settings_show_listing_contacts.
+  ///
+  /// In en, this message translates to:
+  /// **'Show listing contact details'**
+  String get admin_client_settings_show_listing_contacts;
+
+  /// No description provided for @admin_client_settings_show_listing_contacts_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Enables Telegram and phone call buttons in the Matching section when a listing has contact_phone/contact_telegram.'**
+  String get admin_client_settings_show_listing_contacts_description;
 
   /// No description provided for @admin_panel_section_content_moderation.
   ///

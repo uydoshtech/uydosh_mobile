@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -177,6 +178,8 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AdminFeatureFlagsState().ensureLoaded();
+
     final isAuthenticated = AuthenticationState().isAuthenticated;
     final isOwner = UserListingState().isOwner(listingDetail.user.id);
 
@@ -196,9 +199,6 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
         : "$compatibilityPercent%";
 
     final isProfileComplete = ProfileCompletionState().isProfileComplete;
-    final hasTelegram = (telegramHandle?.trim().isNotEmpty ?? false) && onTelegram != null;
-    final hasPhone = (phoneNumber?.trim().isNotEmpty ?? false) && onPhone != null;
-    final phoneDisplay = hasPhone ? _formatUzbekPhoneDisplay(phoneNumber!) : null;
 
     final chevronColor = ListingDetailThemeHelper.locationTextColor;
 
@@ -317,9 +317,22 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                 ],
               )
             else
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              ListenableBuilder(
+                listenable: AdminFeatureFlagsState(),
+                builder: (context, _) {
+                  final showContacts = AdminFeatureFlagsState().showListingContacts;
+                  final hasTelegram = showContacts &&
+                      (telegramHandle?.trim().isNotEmpty ?? false) &&
+                      onTelegram != null;
+                  final hasPhone = showContacts &&
+                      (phoneNumber?.trim().isNotEmpty ?? false) &&
+                      onPhone != null;
+                  final phoneDisplay =
+                      hasPhone ? _formatUzbekPhoneDisplay(phoneNumber!) : null;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   if (matches.isNotEmpty) ...[
                     Text(
                       L10n.get("compatibility_matches"),
@@ -534,7 +547,9 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                       ),
                     ],
                   ),
-                ],
+                    ],
+                  );
+                },
               ),
           ],
         ),

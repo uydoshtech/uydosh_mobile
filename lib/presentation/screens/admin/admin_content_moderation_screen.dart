@@ -3,6 +3,8 @@ import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
@@ -32,11 +34,13 @@ class _AdminContentModerationScreenState
   bool _isSavingGemini = false;
   bool _lidarRoomScanDisabled = false;
   bool _isSavingLidar = false;
+  bool _isSavingListingContacts = false;
 
   @override
   void initState() {
     super.initState();
     _load();
+    AdminFeatureFlagsState().ensureLoaded();
   }
 
   Future<void> _load() async {
@@ -145,6 +149,18 @@ class _AdminContentModerationScreenState
     }
   }
 
+  Future<void> _onShowListingContactsChanged(bool value) async {
+    if (_isSavingListingContacts) return;
+    setState(() => _isSavingListingContacts = true);
+    try {
+      HapticFeedbackUtils.impact();
+      await AdminFeatureFlagsState().setShowListingContacts(value);
+    } finally {
+      if (!mounted) return;
+      setState(() => _isSavingListingContacts = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -213,6 +229,39 @@ class _AdminContentModerationScreenState
           ),
         ),
         const SizedBox(height: 24),
+        ListenableBuilder(
+          listenable: AdminFeatureFlagsState(),
+          builder: (context, _) {
+            final flags = AdminFeatureFlagsState();
+            return ListTile(
+              leading: _isSavingListingContacts
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const ThemeIcon(Icons.contact_phone),
+              title: Text(
+                L10n.get("admin_client_settings_show_listing_contacts"),
+              ),
+              subtitle: Text(
+                L10n.get(
+                  "admin_client_settings_show_listing_contacts_description",
+                ),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              trailing: NeumorphicThemeAwareToggle(
+                value: flags.showListingContacts,
+                enabled: !_isSavingListingContacts,
+                onChanged: _onShowListingContactsChanged,
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
         ListTile(
           leading: _isSaving
               ? const SizedBox(

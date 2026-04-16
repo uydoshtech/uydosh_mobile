@@ -1018,7 +1018,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get telegram => 'Telegram';
 
   @override
-  String get open_in_telegram => 'Open in Telegram';
+  String get open_in_telegram => 'Message in Telegram';
 
   @override
   String get open_in_telegram_confirmation => 'Telegram will be opened.';
@@ -1299,6 +1299,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_panel_category_settings => 'Application Settings';
+
+  @override
+  String get admin_client_settings_show_listing_contacts =>
+      'Show listing contact details';
+
+  @override
+  String get admin_client_settings_show_listing_contacts_description =>
+      'Enables Telegram and phone call buttons in the Matching section when a listing has contact_phone/contact_telegram.';
 
   @override
   String get admin_panel_section_content_moderation => 'Client configuration';

@@ -1024,7 +1024,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get telegram => 'Telegram';
 
   @override
-  String get open_in_telegram => 'Открыть в Telegram';
+  String get open_in_telegram => 'Написать в Telegram';
 
   @override
   String get open_in_telegram_confirmation =>
@@ -1307,6 +1307,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_panel_category_settings => 'Настройки приложения';
+
+  @override
+  String get admin_client_settings_show_listing_contacts =>
+      'Показывать контакты в объявлениях';
+
+  @override
+  String get admin_client_settings_show_listing_contacts_description =>
+      'Включает кнопки Telegram и звонка в блоке «Совместимость», если у объявления заполнены contact_phone/contact_telegram.';
 
   @override
   String get admin_panel_section_content_moderation => 'Настройки клиента';
