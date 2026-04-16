@@ -5,14 +5,15 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
-import "package:uy_dosh/presentation/widgets/listing_tile.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 class AdminUserListingsScreen extends StatefulWidget {
   const AdminUserListingsScreen({
-    required this.userId, super.key,
+    required this.userId,
+    super.key,
     this.userEmail,
   });
 
@@ -82,9 +83,8 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
 
       if (!mounted) return;
       setState(() {
-        final newItems = response.data
-            .where((item) => _listingIds.add(item.id))
-            .toList();
+        final newItems =
+            response.data.where((item) => _listingIds.add(item.id)).toList();
         _listings.addAll(newItems);
         _hasMore = newItems.isNotEmpty && response.data.length >= _pageSize;
         if (_hasMore) {
@@ -152,14 +152,13 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
               ),
             ),
           Expanded(
-            child:
-                _isLoading
-                    ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    )
-                    : _hasError
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                    ),
+                  )
+                : _hasError
                     ? _buildErrorState(context)
                     : _buildListings(context),
           ),
@@ -227,7 +226,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
       controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       itemCount: _listings.length,
-      itemSpacing: 16,
+      itemSpacing: 8,
       itemBuilder: (context, index) {
         final listing = _listings[index];
         return ListingTile(listing: listing);

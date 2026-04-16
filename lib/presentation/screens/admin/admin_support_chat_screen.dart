@@ -11,10 +11,11 @@ import "package:uy_dosh/domain/services/support_chat_service.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminSupportChatScreen extends StatefulWidget {
@@ -118,11 +119,13 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
   }
 
   void _openThread(SupportChatThread thread) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => _AdminSupportChatThreadScreen(thread: thread),
-      ),
-    ).then((_) => _refresh());
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (context) => _AdminSupportChatThreadScreen(thread: thread),
+          ),
+        )
+        .then((_) => _refresh());
   }
 
   @override
@@ -163,11 +166,22 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
             const SizedBox(width: 8),
             _buildFilterChip(context, "open", "admin_support_chat_filter_open"),
             const SizedBox(width: 8),
-            _buildFilterChip(context, "closed", "admin_support_chat_filter_closed"),
+            _buildFilterChip(
+                context, "closed", "admin_support_chat_filter_closed"),
           ],
         ),
       ),
     );
+  }
+
+  Color _getFilterSelectedColor() {
+    if (ThemeState().isBlueTheme) {
+      return BlueThemeColors.buttonPrimary;
+    } else if (ThemeState().isLightTheme) {
+      return Colors.black;
+    } else {
+      return Colors.black;
+    }
   }
 
   Widget _buildFilterChip(
@@ -177,7 +191,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
   ) {
     final isSelected = _statusFilter == status;
     final isBlueTheme = ThemeState().isBlueTheme;
-    final selectedColor = Theme.of(context).colorScheme.primary;
+    final selectedColor = _getFilterSelectedColor();
     final backgroundColor = isSelected
         ? selectedColor
         : (isBlueTheme ? BlueThemeColors.card : Colors.grey[200]);
@@ -273,79 +287,96 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
     return CommonListView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
+      itemSpacing: 8,
       itemCount: _threads.length,
       itemBuilder: (context, index) {
         final thread = _threads[index];
-        return Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        final theme = Theme.of(context);
+        const tileRadius = BorderRadius.all(Radius.circular(16));
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: tileRadius,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(
+              context,
+              theme.colorScheme.surface,
+            ),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           ),
-          child: InkWell(
-            onTap: () => _openThread(thread),
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          thread.displayTitle,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+          child: Material(
+            color: Colors.transparent,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            shape: const RoundedRectangleBorder(borderRadius: tileRadius),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => _openThread(thread),
+              borderRadius: tileRadius,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            thread.displayTitle,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        ),
+                        _buildStatusChip(context, thread.status),
+                      ],
+                    ),
+                    if (thread.user != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        thread.user!.name ??
+                            thread.user!.email ??
+                            "User #${thread.userId}",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      _buildStatusChip(context, thread.status),
                     ],
-                  ),
-                  if (thread.user != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      thread.user!.name ?? thread.user!.email ?? "User #${thread.userId}",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    if (thread.lastMessage != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        thread.lastMessage!.body,
+                        style: const TextStyle(fontSize: 13),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
-                  if (thread.lastMessage != null) ...[
+                    ],
                     const SizedBox(height: 8),
-                    Text(
-                      thread.lastMessage!.body,
-                      style: const TextStyle(fontSize: 13),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      if (thread.messageCount != null)
+                    Row(
+                      children: [
+                        if (thread.messageCount != null)
+                          Text(
+                            "${thread.messageCount} ${L10n.get("admin_support_chat_messages")}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        const Spacer(),
                         Text(
-                          "${thread.messageCount} ${L10n.get("admin_support_chat_messages")}",
+                          _formatDate(thread.updatedAt),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
-                      const Spacer(),
-                      Text(
-                        _formatDate(thread.updatedAt),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -387,7 +418,8 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
       return "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
     }
     if (diff.inDays == 1) return L10n.get("admin_support_chat_yesterday");
-    if (diff.inDays < 7) return "${diff.inDays} ${L10n.get("admin_support_chat_days_ago")}";
+    if (diff.inDays < 7)
+      return "${diff.inDays} ${L10n.get("admin_support_chat_days_ago")}";
     return "${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}";
   }
 }
@@ -542,8 +574,12 @@ class _AdminSupportChatThreadScreenState
             actions: [
               IconButton(
                 icon: ThemeIcon(
-                  widget.thread.status == "open" ? Icons.check_circle_outline : Icons.lock_open,
-                  color: widget.thread.status == "open" ? Colors.green.shade700 : null,
+                  widget.thread.status == "open"
+                      ? Icons.check_circle_outline
+                      : Icons.lock_open,
+                  color: widget.thread.status == "open"
+                      ? Colors.green.shade700
+                      : null,
                 ),
                 onPressed: _toggleStatus,
                 tooltip: widget.thread.status == "open"
@@ -555,26 +591,28 @@ class _AdminSupportChatThreadScreenState
           body: Column(
             children: [
               Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _messages.isEmpty
-                    ? Center(
-                        child: Text(
-                          L10n.get("admin_support_chat_no_messages"),
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _messages.isEmpty
+                        ? Center(
+                            child: Text(
+                              L10n.get("admin_support_chat_no_messages"),
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _messages.length,
+                            itemBuilder: (context, index) {
+                              final msg = _messages[index];
+                              return _buildMessageBubble(context, msg);
+                            },
                           ),
-                        ),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          final msg = _messages[index];
-                          return _buildMessageBubble(context, msg);
-                        },
-                      ),
               ),
               if (widget.thread.status == "open")
                 _buildInputBar(context)
@@ -652,9 +690,11 @@ class _AdminSupportChatThreadScreenState
       builder: (context, child) {
         final themeState = ThemeState();
         final inputFieldBg = themeState.inputBackgroundColor;
-        final inputFieldBrightness = ThemeData.estimateBrightnessForColor(inputFieldBg);
-        final inputFieldTextColor =
-            inputFieldBrightness == Brightness.dark ? Colors.white : Colors.black;
+        final inputFieldBrightness =
+            ThemeData.estimateBrightnessForColor(inputFieldBg);
+        final inputFieldTextColor = inputFieldBrightness == Brightness.dark
+            ? Colors.white
+            : Colors.black;
         final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),

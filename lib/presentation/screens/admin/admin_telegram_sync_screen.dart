@@ -24,6 +24,53 @@ class AdminTelegramSyncScreen extends StatefulWidget {
 }
 
 class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
+  static const BorderRadius _kTileBorderRadius =
+      BorderRadius.all(Radius.circular(12));
+
+  /// Soft raised panel: same neumorphic chrome as listing-detail tiles
+  /// ([ThreeDSurfaceStyle]), with a base color close to the page so shadows read.
+  Widget _neumorphicTile({
+    required BuildContext context,
+    required Widget child,
+    Clip clipBehavior = Clip.none,
+  }) {
+    final theme = Theme.of(context);
+    final baseColor = ThemeState().isBlueTheme
+        ? theme.colorScheme.surface
+        : (theme.cardTheme.color ?? theme.colorScheme.surface);
+    final margin = theme.cardTheme.margin ?? EdgeInsets.zero;
+    final cardShape = theme.cardTheme.shape;
+    final ShapeBorder shape;
+    final BorderRadius borderRadius;
+    if (cardShape is RoundedRectangleBorder) {
+      shape = cardShape;
+      borderRadius = cardShape.borderRadius.resolve(Directionality.of(context));
+    } else {
+      shape = const RoundedRectangleBorder(borderRadius: _kTileBorderRadius);
+      borderRadius = _kTileBorderRadius;
+    }
+
+    return Padding(
+      padding: margin,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
+          boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          shape: shape,
+          clipBehavior: clipBehavior,
+          child: child,
+        ),
+      ),
+    );
+  }
+
   /// Default listing owner after Telegram sync (Uydoshtech@gmail.com in production).
   static const int _kDefaultListingOwnerUserId = 86;
 
@@ -427,15 +474,18 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
             ),
             const SizedBox(height: 16),
           ],
-          Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+          _neumorphicTile(
+            context: context,
             // Don't clip: TextField floating labels can extend upward slightly.
             clipBehavior: Clip.none,
             child: Theme(
-              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              data: Theme.of(context).copyWith(
+                dividerColor: Colors.transparent,
+                expansionTileTheme: const ExpansionTileThemeData(
+                  backgroundColor: Colors.transparent,
+                  collapsedBackgroundColor: Colors.transparent,
+                ),
+              ),
               child: ExpansionTile(
                 maintainState: true,
                 initiallyExpanded: true,
@@ -671,14 +721,17 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+          _neumorphicTile(
+            context: context,
             clipBehavior: Clip.antiAlias,
             child: Theme(
-              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              data: Theme.of(context).copyWith(
+                dividerColor: Colors.transparent,
+                expansionTileTheme: const ExpansionTileThemeData(
+                  backgroundColor: Colors.transparent,
+                  collapsedBackgroundColor: Colors.transparent,
+                ),
+              ),
               child: ExpansionTile(
                 initiallyExpanded: false,
                 onExpansionChanged: (expanded) {

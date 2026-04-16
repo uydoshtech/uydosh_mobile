@@ -11,16 +11,18 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminUserComplaintsScreen extends StatefulWidget {
   const AdminUserComplaintsScreen({
-    required this.userId, super.key,
+    required this.userId,
+    super.key,
     this.userEmail,
   });
 
@@ -75,7 +77,8 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     });
 
     try {
-      final response = await getIt<IComplaintService>().getUserListingComplaints(
+      final response =
+          await getIt<IComplaintService>().getUserListingComplaints(
         widget.userId,
       );
       if (!mounted) return;
@@ -157,12 +160,11 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
               ),
             ),
           Expanded(
-            child:
-                _isLoading
-                    ? CenteredHouseLoadingIndicator(
-                      text: L10n.get("admin_complaints_loading"),
-                    )
-                    : _hasError
+            child: _isLoading
+                ? CenteredHouseLoadingIndicator(
+                    text: L10n.get("admin_complaints_loading"),
+                  )
+                : _hasError
                     ? _buildErrorState(context)
                     : _buildComplaintsList(context),
           ),
@@ -229,18 +231,38 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     final grouped = _groupComplaintsByListing(_complaints);
     return CommonListView(
       padding: const EdgeInsets.all(16),
+      itemSpacing: 8,
       itemCount: grouped.length,
       itemBuilder: (context, index) {
         final group = grouped[index];
-          final listingLabel = group.listingId <= 0
-              ? L10n.get("not_specified")
-              : group.listingId.toString();
-          return Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        final theme = Theme.of(context);
+        const tileRadius = BorderRadius.all(Radius.circular(16));
+        final listingLabel = group.listingId <= 0
+            ? L10n.get("not_specified")
+            : group.listingId.toString();
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: tileRadius,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(
+              context,
+              theme.colorScheme.surface,
             ),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            shape: const RoundedRectangleBorder(borderRadius: tileRadius),
+            clipBehavior: Clip.antiAlias,
             child: ExpansionTile(
+              backgroundColor: Colors.transparent,
+              collapsedBackgroundColor: Colors.transparent,
+              shape: const RoundedRectangleBorder(borderRadius: tileRadius),
+              collapsedShape: const RoundedRectangleBorder(
+                borderRadius: tileRadius,
+              ),
               title: Text(
                 "${L10n.get("admin_complaints_listing_id")}: $listingLabel",
                 style: const TextStyle(fontWeight: FontWeight.w600),
@@ -249,7 +271,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
                 "${L10n.get("admin_user_complaints_group_count")}: ${group.complaints.length}",
                 style: TextStyle(
                   fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
               children: List.generate(group.complaints.length, (itemIndex) {
@@ -258,8 +280,9 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
                 return _buildComplaintItem(complaint, showDivider: !isLast);
               }),
             ),
-          );
-        },
+          ),
+        );
+      },
       showRefreshIndicator: true,
       onRefresh: _refresh,
     );
@@ -272,15 +295,14 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
       map.putIfAbsent(listingId, () => <Complaint>[]).add(complaint);
     }
 
-    final groups =
-        map.entries
-            .map(
-              (entry) => _ComplaintGroup(
-                listingId: entry.key,
-                complaints: entry.value,
-              ),
-            )
-            .toList();
+    final groups = map.entries
+        .map(
+          (entry) => _ComplaintGroup(
+            listingId: entry.key,
+            complaints: entry.value,
+          ),
+        )
+        .toList();
 
     groups.sort((a, b) => a.listingId.compareTo(b.listingId));
     return groups;
@@ -427,7 +449,8 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
   }
 
   String _getCategoryLabel(Complaint complaint) {
-    final category = complaint.category ?? _categoriesById[complaint.categoryId];
+    final category =
+        complaint.category ?? _categoriesById[complaint.categoryId];
     if (category == null) {
       return L10n.get("admin_complaints_category_unknown");
     }
@@ -538,16 +561,15 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (context) => MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (context) => ListingDetailBloc(getIt<IListingService>()),
-                ),
-                BlocProvider(create: (_) => ListingDetailPageBloc()),
-              ],
-              child: ListingDetailScreen(listingId: listingId),
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => ListingDetailBloc(getIt<IListingService>()),
             ),
+            BlocProvider(create: (_) => ListingDetailPageBloc()),
+          ],
+          child: ListingDetailScreen(listingId: listingId),
+        ),
       ),
     );
   }

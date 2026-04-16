@@ -13,8 +13,9 @@ import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart"
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminPanelScreen extends StatefulWidget {
@@ -141,7 +142,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const AdminSubwayLineHeatmapScreen(),
+                      builder: (context) =>
+                          const AdminSubwayLineHeatmapScreen(),
                     ),
                   );
                 },
@@ -234,7 +236,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const AdminContentModerationScreen(),
+                      builder: (context) =>
+                          const AdminContentModerationScreen(),
                     ),
                   );
                 },
@@ -257,6 +260,10 @@ class _AdminCategoryCard extends StatelessWidget {
     required this.children,
   });
 
+  static const BorderRadius _tileBorderRadius = BorderRadius.all(
+    Radius.circular(16),
+  );
+
   final IconData headerIcon;
   final String titleKey;
   final bool expanded;
@@ -270,72 +277,85 @@ class _AdminCategoryCard extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
     final dividerColor =
         theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3);
+    final baseSurface = theme.colorScheme.surface;
+    final headerSplashRadius = expanded
+        ? const BorderRadius.vertical(top: Radius.circular(16))
+        : _tileBorderRadius;
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: _tileBorderRadius,
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, baseSurface),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       ),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: onHeaderTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: Row(
-                children: [
-                  ThemeIcon(headerIcon, size: 24, color: onSurface),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      L10n.get(titleKey),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+      child: Material(
+        color: Colors.transparent,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(borderRadius: _tileBorderRadius),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            InkWell(
+              onTap: onHeaderTap,
+              borderRadius: headerSplashRadius,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: Row(
+                  children: [
+                    ThemeIcon(headerIcon, size: 24, color: onSurface),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        L10n.get(titleKey),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: onSurface,
+                        ),
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: expanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: ThemeIcon(
+                        Icons.keyboard_arrow_down,
                         color: onSurface,
                       ),
                     ),
-                  ),
-                  AnimatedRotation(
-                    turns: expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: ThemeIcon(
-                      Icons.keyboard_arrow_down,
-                      color: onSurface,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          ClipRect(
-            child: AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child: expanded
-                  ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Divider(height: 1, thickness: 1, color: dividerColor),
-                      for (var i = 0; i < children.length; i++) ...[
-                        children[i],
-                        if (i < children.length - 1)
-                          Divider(
-                            height: 1,
-                            thickness: 1,
-                            indent: 52,
-                            endIndent: 16,
-                            color: dividerColor,
-                          ),
-                      ],
-                    ],
-                  )
-                  : const SizedBox(width: double.infinity),
+            ClipRect(
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child: expanded
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Divider(height: 1, thickness: 1, color: dividerColor),
+                          for (var i = 0; i < children.length; i++) ...[
+                            children[i],
+                            if (i < children.length - 1)
+                              Divider(
+                                height: 1,
+                                thickness: 1,
+                                indent: 52,
+                                endIndent: 16,
+                                color: dividerColor,
+                              ),
+                          ],
+                        ],
+                      )
+                    : const SizedBox(width: double.infinity),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

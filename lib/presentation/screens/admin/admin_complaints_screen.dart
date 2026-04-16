@@ -14,12 +14,13 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
-import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 class AdminComplaintsScreen extends StatefulWidget {
   const AdminComplaintsScreen({super.key});
@@ -192,12 +193,11 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
         children: [
           _buildFilterRow(context),
           Expanded(
-            child:
-                _isLoading
-                    ? CenteredHouseLoadingIndicator(
-                      text: L10n.get("admin_complaints_loading"),
-                    )
-                    : _hasError
+            child: _isLoading
+                ? CenteredHouseLoadingIndicator(
+                    text: L10n.get("admin_complaints_loading"),
+                  )
+                : _hasError
                     ? _buildErrorState(context)
                     : _buildComplaintsList(context),
           ),
@@ -292,6 +292,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
       ),
     );
   }
+
   String _buildStatusFilterLabel(
     BuildContext context,
     String status,
@@ -321,6 +322,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
       });
     } catch (_) {}
   }
+
   Color _getFilterSelectedColor() {
     if (ThemeState().isBlueTheme) {
       return BlueThemeColors.buttonPrimary;
@@ -377,7 +379,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
     if (_complaints.isEmpty) {
       return Center(
         child: Text(
-L10n.get("admin_complaints_empty"),
+          L10n.get("admin_complaints_empty"),
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -389,14 +391,28 @@ L10n.get("admin_complaints_empty"),
     return CommonListView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
+      itemSpacing: 8,
       itemCount: _complaints.length,
       itemBuilder: (context, index) {
         final complaint = _complaints[index];
-        return Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        final theme = Theme.of(context);
+        const tileRadius = BorderRadius.all(Radius.circular(16));
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: tileRadius,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(
+              context,
+              theme.colorScheme.surface,
             ),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            shape: const RoundedRectangleBorder(borderRadius: tileRadius),
+            clipBehavior: Clip.antiAlias,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -438,8 +454,9 @@ L10n.get("admin_complaints_empty"),
                 ],
               ),
             ),
-          );
-        },
+          ),
+        );
+      },
       showRefreshIndicator: true,
       onRefresh: _refresh,
       showLoadMoreIndicator: _isLoadingMore,
@@ -591,8 +608,7 @@ L10n.get("admin_complaints_empty"),
       context,
       labelKey: "admin_complaints_complainant_id",
       valueText: _complainantDisplayName(complaint),
-      onPressed:
-          userId != null ? () => _openComplainantProfile(userId) : null,
+      onPressed: userId != null ? () => _openComplainantProfile(userId) : null,
     );
   }
 
@@ -664,7 +680,8 @@ L10n.get("admin_complaints_empty"),
   }
 
   String _getCategoryLabel(Complaint complaint) {
-    final category = complaint.category ?? _categoriesById[complaint.categoryId];
+    final category =
+        complaint.category ?? _categoriesById[complaint.categoryId];
     if (category == null) {
       return L10n.get("admin_complaints_category_unknown");
     }

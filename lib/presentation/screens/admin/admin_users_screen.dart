@@ -10,10 +10,11 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -170,7 +171,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
     _complaintCountsLoading.add(user.id);
     try {
-      final response = await getIt<IComplaintService>().getUserListingComplaints(
+      final response =
+          await getIt<IComplaintService>().getUserListingComplaints(
         user.id,
       );
       if (!mounted) return;
@@ -210,12 +212,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
-      body:
-          _isLoading
-              ? CenteredHouseLoadingIndicator(
-                text: L10n.get("admin_users_loading"),
-              )
-              : _hasError
+      body: _isLoading
+          ? CenteredHouseLoadingIndicator(
+              text: L10n.get("admin_users_loading"),
+            )
+          : _hasError
               ? _buildErrorState(context)
               : _buildUsersList(context),
     );
@@ -279,56 +280,70 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     return CommonListView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
+      itemSpacing: 8,
       itemCount: _users.length,
       itemBuilder: (context, index) {
         final user = _users[index];
-          final userName = _userNames[user.id];
-          final listingCount = _listingCounts[user.id];
-          final complaintCount = _complaintCounts[user.id];
-          return Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        final userName = _userNames[user.id];
+        final listingCount = _listingCounts[user.id];
+        final complaintCount = _complaintCounts[user.id];
+        final theme = Theme.of(context);
+        const tileRadius = BorderRadius.all(Radius.circular(16));
+
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: tileRadius,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(
+              context,
+              theme.colorScheme.surface,
             ),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            shape: const RoundedRectangleBorder(borderRadius: tileRadius),
+            clipBehavior: Clip.antiAlias,
             child: InkWell(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: tileRadius,
               onTap: () {
                 Navigator.of(context)
                     .push(
-                      MaterialPageRoute(
-                        builder: (context) => AdminUserDetailScreen(user: user),
-                      ),
-                    )
+                  MaterialPageRoute(
+                    builder: (context) => AdminUserDetailScreen(user: user),
+                  ),
+                )
                     .then((result) {
-                      if (result is Map) {
-                        final resultUser = result["user"] as AdminUser?;
-                        if (resultUser != null && resultUser.id == user.id) {
-                          setState(() {
-                            _users[index] = resultUser;
-                          });
-                        } else {
-                          final resultUserId = result["userId"];
-                          final resultRole = result["role"];
-                          if (resultUserId == user.id && resultRole is String) {
-                            setState(() {
-                              _users[index] =
-                                  AdminUser(
-                                    id: user.id,
-                                    email: user.email,
-                                    role: resultRole,
-                                    firebaseUid: user.firebaseUid,
-                                    telegramId: user.telegramId,
-                                    createdAt: user.createdAt,
-                                    isBlocked: user.isBlocked,
-                                    blockedAt: user.blockedAt,
-                                    blockedUntil: user.blockedUntil,
-                                    blockedReason: user.blockedReason,
-                                  );
-                            });
-                          }
-                        }
+                  if (result is Map) {
+                    final resultUser = result["user"] as AdminUser?;
+                    if (resultUser != null && resultUser.id == user.id) {
+                      setState(() {
+                        _users[index] = resultUser;
+                      });
+                    } else {
+                      final resultUserId = result["userId"];
+                      final resultRole = result["role"];
+                      if (resultUserId == user.id && resultRole is String) {
+                        setState(() {
+                          _users[index] = AdminUser(
+                            id: user.id,
+                            email: user.email,
+                            role: resultRole,
+                            firebaseUid: user.firebaseUid,
+                            telegramId: user.telegramId,
+                            createdAt: user.createdAt,
+                            isBlocked: user.isBlocked,
+                            blockedAt: user.blockedAt,
+                            blockedUntil: user.blockedUntil,
+                            blockedReason: user.blockedReason,
+                          );
+                        });
                       }
-                    });
+                    }
+                  }
+                });
               },
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -352,17 +367,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                 "•",
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
                               const SizedBox(width: 6),
                               Flexible(
                                 child: Text(
-                                  user.email ??
-                                      L10n.get("not_specified"),
+                                  user.email ?? L10n.get("not_specified"),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -376,8 +387,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                         ThemeIcon(
                           Icons.arrow_forward_ios,
                           size: 16,
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ],
                     ),
@@ -401,30 +411,26 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     _buildMetaRow(
                       context,
                       labelKey: "admin_users_listings_count",
-                      value:
-                          listingCount == null
-                              ? L10n.get("admin_users_listings_count_loading")
-                              : listingCount >= 0
+                      value: listingCount == null
+                          ? L10n.get("admin_users_listings_count_loading")
+                          : listingCount >= 0
                               ? listingCount.toString()
                               : L10n.get("admin_users_listings_count_error"),
                     ),
                     _buildMetaRow(
                       context,
                       labelKey: "admin_user_complaints_group_count",
-                      value:
-                          complaintCount == null
-                              ? L10n.get("admin_users_listings_count_loading")
-                              : complaintCount >= 0
+                      value: complaintCount == null
+                          ? L10n.get("admin_users_listings_count_loading")
+                          : complaintCount >= 0
                               ? complaintCount.toString()
                               : L10n.get("admin_users_listings_count_error"),
-                      labelColor:
-                          complaintCount != null && complaintCount > 0
-                              ? Theme.of(context).colorScheme.error
-                              : null,
-                      valueColor:
-                          complaintCount != null && complaintCount > 0
-                              ? Theme.of(context).colorScheme.error
-                              : null,
+                      labelColor: complaintCount != null && complaintCount > 0
+                          ? theme.colorScheme.error
+                          : null,
+                      valueColor: complaintCount != null && complaintCount > 0
+                          ? theme.colorScheme.error
+                          : null,
                     ),
                     if (user.isCurrentlyBlocked)
                       Padding(
@@ -433,7 +439,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           children: [
                             ThemeIcon(
                               Icons.block,
-                              color: Theme.of(context).colorScheme.error,
+                              color: theme.colorScheme.error,
                               size: 16,
                             ),
                             const SizedBox(width: 6),
@@ -441,7 +447,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               L10n.get("admin_user_detail_blocked"),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Theme.of(context).colorScheme.error,
+                                color: theme.colorScheme.error,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -452,8 +458,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 ),
               ),
             ),
-          );
-        },
+          ),
+        );
+      },
       showRefreshIndicator: true,
       onRefresh: _refresh,
       showLoadMoreIndicator: _isLoadingMore,
@@ -481,8 +488,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             style: TextStyle(
               fontSize: 12,
               color:
-                  labelColor ??
-                  Theme.of(context).colorScheme.onSurfaceVariant,
+                  labelColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           Expanded(

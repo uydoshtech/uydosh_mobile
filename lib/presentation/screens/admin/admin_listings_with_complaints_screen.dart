@@ -9,9 +9,10 @@ import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminListingsWithComplaintsScreen extends StatefulWidget {
@@ -215,12 +216,11 @@ class _AdminListingsWithComplaintsScreenState
         children: [
           _buildFilterRow(context),
           Expanded(
-            child:
-                _isLoading
-                    ? CenteredHouseLoadingIndicator(
-                      text: L10n.get("admin_complaints_loading"),
-                    )
-                    : _hasError
+            child: _isLoading
+                ? CenteredHouseLoadingIndicator(
+                    text: L10n.get("admin_complaints_loading"),
+                  )
+                : _hasError
                     ? _buildErrorState(context)
                     : _buildListingsList(context),
           ),
@@ -385,21 +385,35 @@ class _AdminListingsWithComplaintsScreenState
     return CommonListView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
+      itemSpacing: 8,
       itemCount: _groups.length,
       itemBuilder: (context, index) {
         final group = _groups[index];
-          return Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        final theme = Theme.of(context);
+        const tileRadius = BorderRadius.all(Radius.circular(16));
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: tileRadius,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(
+              context,
+              theme.colorScheme.surface,
             ),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            shape: const RoundedRectangleBorder(borderRadius: tileRadius),
+            clipBehavior: Clip.antiAlias,
             child: ListTile(
+              tileColor: Colors.transparent,
               leading: ThemeIcon(
                 Icons.home_work_outlined,
-                color:
-                    ThemeState().isBlueTheme
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.primary,
+                color: ThemeState().isBlueTheme
+                    ? Colors.white
+                    : theme.colorScheme.primary,
               ),
               title: Text(
                 "${L10n.get("admin_complaints_listing_id")}: ${_getListingLabel(context, group.listingId)}",
@@ -413,7 +427,7 @@ class _AdminListingsWithComplaintsScreenState
                     _buildComplaintsCountLabel(context, group.count),
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -424,12 +438,13 @@ class _AdminListingsWithComplaintsScreenState
               trailing: ThemeIcon(
                 Icons.arrow_forward_ios,
                 size: 16,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
               onTap: () => _openListing(group.listingId),
             ),
-          );
-        },
+          ),
+        );
+      },
       showRefreshIndicator: true,
       onRefresh: _refresh,
       showLoadMoreIndicator: _isLoadingMore,
@@ -463,10 +478,9 @@ class _AdminListingsWithComplaintsScreenState
 
     final sortedIds = group.categoryCounts.keys.toList()
       ..sort((a, b) {
-        final countCompare =
-            (group.categoryCounts[b] ?? 0).compareTo(
-              group.categoryCounts[a] ?? 0,
-            );
+        final countCompare = (group.categoryCounts[b] ?? 0).compareTo(
+          group.categoryCounts[a] ?? 0,
+        );
         if (countCompare != 0) {
           return countCompare;
         }
@@ -512,7 +526,8 @@ class _AdminListingsWithComplaintsScreenState
     _ListingComplaintGroup group,
     int categoryId,
   ) {
-    final category = group.categoryById[categoryId] ?? _categoriesById[categoryId];
+    final category =
+        group.categoryById[categoryId] ?? _categoriesById[categoryId];
     if (category == null) {
       return L10n.get("admin_complaints_category_unknown");
     }
@@ -555,8 +570,8 @@ class _ListingComplaintGroup {
     required this.latestCreatedAt,
     Map<int, int>? categoryCounts,
     Map<int, ComplaintCategory?>? categoryById,
-  }) : categoryCounts = categoryCounts ?? <int, int>{},
-       categoryById = categoryById ?? <int, ComplaintCategory?>{};
+  })  : categoryCounts = categoryCounts ?? <int, int>{},
+        categoryById = categoryById ?? <int, ComplaintCategory?>{};
 
   final int listingId;
   int count;
