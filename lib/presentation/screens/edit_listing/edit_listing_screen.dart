@@ -22,7 +22,6 @@ import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dar
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_template_button.dart";
@@ -32,6 +31,7 @@ import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -1209,22 +1209,32 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                     const SizedBox(height: 26),
 
-                    // Update Button
-                    Container(
-                      child: GhostButtonFactory.iconText(
-                        onPressed:
+                    Builder(
+                      builder: (context) {
+                        final label = Theme.of(context).textTheme.labelLarge;
+                        final baseSize = label?.fontSize ?? 14;
+                        final textStyle =
+                            label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
+                            TextStyle(
+                              fontSize: baseSize * 1.2,
+                              height: 1.0,
+                              fontWeight: FontWeight.w500,
+                            );
+                        return PrimaryButtonFactory.iconText(
+                          onPressed: _isSubmitting ? null : _submitForm,
+                          icon: Icons.save,
+                          text: L10n.get(
                             _isSubmitting
-                                ? null
-                                : _submitForm, // Disable when submitting
-                        icon: Icons.save,
-                        text: L10n.get(
-                          _isSubmitting
-                              ? "updating_listing"
-                              : "update_listing_button",
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        isLoading: _isSubmitting,
-                      ),
+                                ? "updating_listing"
+                                : "update_listing_button",
+                          ),
+                          width: double.infinity,
+                          borderRadius: BorderRadius.circular(20),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          textStyle: textStyle,
+                          isLoading: _isSubmitting,
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 20),

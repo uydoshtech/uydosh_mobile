@@ -42,6 +42,8 @@ class OutgoingConversationTile extends StatelessWidget {
         final hasSubwayStation = conversation.subwayStationNameUz != null ||
             conversation.subwayStationNameRu != null ||
             conversation.subwayStationNameEn != null;
+        final hasListingPrice =
+            conversation.listingPrice != null && conversation.listingPrice! > 0;
 
         final avatarLeading = conversation.otherUserAvatar != null
             ? ClipOval(
@@ -98,7 +100,7 @@ class OutgoingConversationTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (hasLocation || hasSubwayStation) ...[
+                      if (hasLocation || hasSubwayStation || hasListingPrice) ...[
                         const SizedBox(height: 8),
                         ConversationLocationInfo(
                           conversation: conversation,
