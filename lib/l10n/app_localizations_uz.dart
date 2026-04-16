@@ -223,7 +223,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get notifications_alerts_explainer =>
-      'Bu yerda sizning saqlangan ogohlantirishlaringiz ko‘rsatiladi. Mos yangi e’lonlar paydo bo‘lsa, telefon sozlamalarida yoqilgan bo‘lsa, biz push‑bildirishnoma yuboramiz.';
+      'Bu yerda sizning ogohlantirishlaringiz.\nMos uy-joy yoki qo‘shni paydo bo‘lishi bilan darhol xabar beramiz.';
 
   @override
   String get notifications_open_settings => 'Sozlamalarni ochish';

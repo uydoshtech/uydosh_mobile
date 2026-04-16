@@ -223,7 +223,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notifications_alerts_explainer =>
-      'Здесь показаны ваши сохранённые оповещения. Когда появляются новые подходящие объявления, мы отправим push‑уведомление, если оно включено в настройках телефона.';
+      'Здесь ваши оповещения.\nКак только появится подходящее жильё или сосед — мы сразу сообщим.';
 
   @override
   String get notifications_open_settings => 'Открыть настройки';

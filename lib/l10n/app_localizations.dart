@@ -505,7 +505,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifications_alerts_explainer.
   ///
   /// In en, this message translates to:
-  /// **'These are your saved alerts. When new matching listings appear, we’ll send a push notification if it’s enabled in your phone settings.'**
+  /// **'Here are your alerts.\nAs soon as matching housing or a neighbor appears, we\'ll let you know right away.'**
   String get notifications_alerts_explainer;
 
   /// No description provided for @notifications_open_settings.

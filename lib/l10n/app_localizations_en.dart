@@ -221,7 +221,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifications_alerts_explainer =>
-      'These are your saved alerts. When new matching listings appear, we’ll send a push notification if it’s enabled in your phone settings.';
+      'Here are your alerts.\nAs soon as matching housing or a neighbor appears, we\'ll let you know right away.';
 
   @override
   String get notifications_open_settings => 'Open settings';

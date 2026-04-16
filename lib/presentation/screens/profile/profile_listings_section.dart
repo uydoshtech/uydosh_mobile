@@ -52,10 +52,6 @@ class ProfileListingsSection extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildGroupedMenuCard(context),
-        if (userRole == "admin") ...[
-          const SizedBox(height: 8),
-          _buildAdminPanelButton(context),
-        ],
         if (userRole == "landlord") ...[
           const SizedBox(height: 8),
           _buildManagePropertyButton(context),
@@ -146,6 +142,19 @@ class ProfileListingsSection extends StatelessWidget {
               );
             },
           ),
+          if (userRole == "admin")
+            _buildGroupedMenuItem(
+              context: context,
+              icon: Icons.admin_panel_settings,
+              title: L10n.get("menu_admin_panel"),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AdminPanelScreen(),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -189,51 +198,6 @@ class ProfileListingsSection extends StatelessWidget {
               size: 16,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAdminPanelButton(BuildContext context) {
-    return _threeDProfileTile(
-      context,
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const AdminPanelScreen()),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            children: [
-              ThemeIcon(
-                Icons.admin_panel_settings,
-                color: ThemeState().isBlueTheme
-                    ? Colors.white
-                    : Theme.of(context).colorScheme.primary,
-                size: 24,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  L10n.get("menu_admin_panel"),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              ThemeIcon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                size: 16,
-              ),
-            ],
-          ),
         ),
       ),
     );
