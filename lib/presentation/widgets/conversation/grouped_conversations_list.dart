@@ -162,6 +162,9 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
             firstConversation.subwayStationNameUz != null ||
                 firstConversation.subwayStationNameRu != null ||
                 firstConversation.subwayStationNameEn != null;
+        final hasListingPrice =
+            firstConversation.listingPrice != null &&
+                firstConversation.listingPrice! > 0;
 
         return ThreeDElevatedSurface(
           baseColor: cardColor,
@@ -193,13 +196,13 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                       '${conversations.length} ${conversations.length == 1 ? L10n.get("conversation_count") : L10n.get("conversations_count")}',
                       style: TextStyle(fontSize: 12, color: secondaryTextColor),
                     ),
-                    // Location and Metro Station Information
-                    if (hasLocation || hasSubwayStation) ...[
+                    // Location, metro, and price (same data as single conversation tiles)
+                    if (hasLocation || hasSubwayStation || hasListingPrice) ...[
                       const SizedBox(height: 8),
                       ConversationLocationInfo(
                         conversation: firstConversation,
                         textColor: secondaryTextColor,
-                        showPrice: false,
+                        showPrice: true,
                       ),
                     ],
                   ],

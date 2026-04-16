@@ -116,7 +116,9 @@ class ConversationLocationInfo extends StatelessWidget {
                 textColor: textColor,
               ),
             ],
-            if (showPrice && conversation.listingPrice != null) ...[
+            if (showPrice &&
+                conversation.listingPrice != null &&
+                conversation.listingPrice! > 0) ...[
               const SizedBox(height: 4),
               ConversationPriceDisplay(
                 conversation: conversation,

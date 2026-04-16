@@ -565,7 +565,7 @@ class _ListingTileState extends State<ListingTile>
                         ),
                       ],
                       const SizedBox(height: 12),
-                      // Location and Subway Station Information
+                      // Location and subway (optional); price/amenities/date are not gated on these
                       if (widget.listing.location != null ||
                           widget.listing.subwayStation != null) ...[
                         ListenableBuilder(
@@ -574,11 +574,9 @@ class _ListingTileState extends State<ListingTile>
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Location and Metro info
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Location (District)
                                     if (widget.listing.location != null) ...[
                                       Row(
                                         children: [
@@ -618,7 +616,6 @@ class _ListingTileState extends State<ListingTile>
                                         ],
                                       ),
                                     ],
-                                    // Subway Station (below district)
                                     if (widget.listing.subwayStation !=
                                         null) ...[
                                       const SizedBox(height: 4),
@@ -628,105 +625,113 @@ class _ListingTileState extends State<ListingTile>
                                     ],
                                   ],
                                 ),
-                                // Amenities icons below location and metro
-                                if (widget.listing.amenities != null &&
-                                    widget.listing.amenities!.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children:
-                                        (_cachedSortedAmenities ?? [])
-                                            .map(
-                                              (amenity) => Padding(
-                                                padding: const EdgeInsets.only(
-                                                  right: 8,
-                                                ),
-                                                child: ThemeIcon(
-                                                  _getAmenityIcon(amenity),
-                                                  size: 20,
-                                                  color:
-                                                      _getAmenityIconColor(),
-                                                ),
-                                              ),
-                                            )
-                                            .toList(),
-                                  ),
-                                ],
-                                // Price display
-                                ...[
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      const ThemeIcon(
-                                        CupertinoIcons.money_dollar_circle,
-                                        size: 22,
-                                        color: Colors.green,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        _formatPriceRange(),
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                                // Private Room indicator below price
-                                if (widget.listing.privateRoom ?? false) ...[
-                                  const SizedBox(height: 8),
-                                  ListenableBuilder(
-                                    listenable: LanguageState(),
-                                    builder: (context, child) {
-                                      return Row(
-                                        children: [
-                                          ThemeIcon(
-                                            CupertinoIcons.lock_fill,
-                                            size: 20,
-                                            color: _getPrivateRoomIconColor(),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            L10n.get("private_room"),
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color:
-                                                  _getPrivateRoomTextColor(),
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ],
-                                // Move-in Date
-                                if (widget.listing.moveInDate != null &&
-                                    widget.listing.moveInDate!.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      ThemeIcon(
-                                        CupertinoIcons.square_arrow_right,
-                                        size: 22,
-                                        color: _getDateTextColor(),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        "${L10n.get("move_in_date_label")} ${_cachedFormattedMoveInDate ?? ""}",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: _getDateTextColor(),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
                               ],
                             );
                           },
+                        ),
+                      ],
+                      if (widget.listing.amenities != null &&
+                          widget.listing.amenities!.isNotEmpty) ...[
+                        if (widget.listing.location != null ||
+                            widget.listing.subwayStation != null)
+                          const SizedBox(height: 8),
+                        Row(
+                          children: (_cachedSortedAmenities ?? [])
+                              .map(
+                                (amenity) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ThemeIcon(
+                                    _getAmenityIcon(amenity),
+                                    size: 20,
+                                    color: _getAmenityIconColor(),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
+                      if (widget.listing.price > 0) ...[
+                        if (widget.listing.location != null ||
+                            widget.listing.subwayStation != null ||
+                            (widget.listing.amenities != null &&
+                                widget.listing.amenities!.isNotEmpty))
+                          const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const ThemeIcon(
+                              CupertinoIcons.money_dollar_circle,
+                              size: 22,
+                              color: Colors.green,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatPriceRange(),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (widget.listing.privateRoom ?? false) ...[
+                        if (widget.listing.location != null ||
+                            widget.listing.subwayStation != null ||
+                            (widget.listing.amenities != null &&
+                                widget.listing.amenities!.isNotEmpty) ||
+                            widget.listing.price > 0)
+                          const SizedBox(height: 8),
+                        ListenableBuilder(
+                          listenable: LanguageState(),
+                          builder: (context, child) {
+                            return Row(
+                              children: [
+                                ThemeIcon(
+                                  CupertinoIcons.lock_fill,
+                                  size: 20,
+                                  color: _getPrivateRoomIconColor(),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  L10n.get("private_room"),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: _getPrivateRoomTextColor(),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                      if (widget.listing.moveInDate != null &&
+                          widget.listing.moveInDate!.isNotEmpty) ...[
+                        if (widget.listing.location != null ||
+                            widget.listing.subwayStation != null ||
+                            (widget.listing.amenities != null &&
+                                widget.listing.amenities!.isNotEmpty) ||
+                            widget.listing.price > 0 ||
+                            (widget.listing.privateRoom ?? false))
+                          const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            ThemeIcon(
+                              CupertinoIcons.square_arrow_right,
+                              size: 22,
+                              color: _getDateTextColor(),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              "${L10n.get("move_in_date_label")} ${_cachedFormattedMoveInDate ?? ""}",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _getDateTextColor(),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ],
