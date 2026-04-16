@@ -213,7 +213,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get profile_interlocutor => 'Профиль Собеседника';
+  String get profile_interlocutor => 'Профиль собеседника';
 
   @override
   String get view_listing => 'Посмотреть объявление';

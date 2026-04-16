@@ -29,10 +29,11 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AuthWizardScreen extends StatefulWidget {
   const AuthWizardScreen({
@@ -1204,16 +1205,47 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       // Hide next button on Google Sign-In page (page 1) since navigation happens automatically
                       if (_currentPage != 1)
                         Expanded(
-                          child: GhostButtonFactory.text(
-                            onPressed: _getNextButtonAction(),
-                            text: L10n.get(_getNextButtonTextKey()),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 16,
-                            ),
-                            isLoading: _isAuthenticating,
-                            isOnboardingButton: true,
-                            neumorphicSoftUi: true,
+                          child: Builder(
+                            builder: (context) {
+                              final nextText = L10n.get(_getNextButtonTextKey());
+                              final onNext = _getNextButtonAction();
+                              final label = Theme.of(context).textTheme.labelLarge;
+                              final baseSize = label?.fontSize ?? 14;
+                              final textStyle =
+                                  label?.copyWith(
+                                        fontSize: baseSize * 1.2,
+                                        height: 1.0,
+                                      ) ??
+                                  TextStyle(
+                                    fontSize: baseSize * 1.2,
+                                    height: 1.0,
+                                    fontWeight: FontWeight.w500,
+                                  );
+                              if (ThemeState().isLightTheme) {
+                                return PrimaryButtonFactory.text(
+                                  onPressed: onNext,
+                                  text: nextText,
+                                  width: double.infinity,
+                                  borderRadius: BorderRadius.circular(20),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  textStyle: textStyle,
+                                  isLoading: _isAuthenticating,
+                                );
+                              }
+                              return GhostButtonFactory.text(
+                                onPressed: onNext,
+                                text: nextText,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 16,
+                                ),
+                                isLoading: _isAuthenticating,
+                                isOnboardingButton: true,
+                                neumorphicSoftUi: true,
+                              );
+                            },
                           ),
                         ),
                     ],
