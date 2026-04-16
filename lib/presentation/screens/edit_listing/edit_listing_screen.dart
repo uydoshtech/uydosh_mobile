@@ -811,7 +811,6 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     controller: _descriptionController,
                                     inlineWithCounter: true,
                                   ),
-                                  const SizedBox(width: 16),
                                   ListingDescriptionTemplateButton(
                                     controller: _descriptionController,
                                     listingTypeId: _selectedListingTypeId,

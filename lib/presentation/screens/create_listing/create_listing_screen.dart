@@ -774,7 +774,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                     controller: _descriptionController,
                                     inlineWithCounter: true,
                                   ),
-                                  const SizedBox(width: 16),
                                   ListingDescriptionTemplateButton(
                                     controller: _descriptionController,
                                     listingTypeId: _selectedListingTypeId,

@@ -131,7 +131,17 @@ class _ListingDescriptionAiEnhanceButtonState
         if (hideGeminiUi) {
           return const SizedBox.shrink();
         }
-        return _buildButton(context);
+        final button = _buildButton(context);
+        // When used inline with the description counter, the adjacent Template button
+        // expects a fixed gap after the AI action. Keep that spacing inside this
+        // widget so it disappears when the AI action is hidden.
+        if (widget.inlineWithCounter) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: button,
+          );
+        }
+        return button;
       },
     );
   }
