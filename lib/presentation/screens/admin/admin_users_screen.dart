@@ -26,6 +26,7 @@ class AdminUsersScreen extends StatefulWidget {
 class _AdminUsersScreenState extends State<AdminUsersScreen> {
   final List<AdminUser> _users = [];
   final Map<int, String?> _userNames = {};
+  final Map<int, String?> _userAvatarUrls = {};
   final Map<int, int> _listingCounts = {};
   final Map<int, int> _complaintCounts = {};
   final Set<int> _listingCountsLoading = {};
@@ -153,11 +154,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       if (!mounted) return;
       setState(() {
         _userNames[user.id] = profile.name;
+        _userAvatarUrls[user.id] = profile.avatarUrl;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _userNames[user.id] = null;
+        _userAvatarUrls[user.id] = null;
       });
     } finally {
       _userNamesLoading.remove(user.id);
@@ -194,6 +197,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     _hasMore = true;
     _users.clear();
     _userNames.clear();
+    _userAvatarUrls.clear();
     _listingCounts.clear();
     _listingCountsLoading.clear();
     _complaintCounts.clear();
@@ -285,6 +289,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       itemBuilder: (context, index) {
         final user = _users[index];
         final userName = _userNames[user.id];
+        final avatarUrl = _userAvatarUrls[user.id];
         final listingCount = _listingCounts[user.id];
         final complaintCount = _complaintCounts[user.id];
         final theme = Theme.of(context);
@@ -352,6 +357,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   children: [
                     Row(
                       children: [
+                        _AdminUserAvatar(
+                          avatarUrl: avatarUrl,
+                          initials: _buildUserInitials(
+                            name: userName,
+                            email: user.email,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Row(
                             children: [
@@ -542,5 +555,111 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     }
     parts[1] = "${month.substring(0, 1).toUpperCase()}${month.substring(1)}";
     return parts.join(" ");
+  }
+
+  String? _buildUserInitials({String? name, String? email}) {
+    final source = (name != null && name.trim().isNotEmpty)
+        ? name.trim()
+        : (email != null && email.trim().isNotEmpty ? email.trim() : null);
+    if (source == null) return null;
+
+    final parts = source
+        .replaceAll(RegExp(r"[^A-Za-zА-Яа-яЁё0-9\s]"), " ")
+        .split(RegExp(r"\s+"))
+        .where((p) => p.trim().isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return null;
+
+    if (parts.length == 1) {
+      final p = parts.first;
+      final first = p.isNotEmpty ? p[0] : "";
+      final second = p.length >= 2 ? p[1] : "";
+      final res = (first + second).toUpperCase();
+      return res.trim().isEmpty ? null : res;
+    }
+
+    final res = (parts[0][0] + parts[1][0]).toUpperCase();
+    return res.trim().isEmpty ? null : res;
+  }
+}
+
+class _AdminUserAvatar extends StatelessWidget {
+  const _AdminUserAvatar({
+    required this.avatarUrl,
+    required this.initials,
+  });
+
+  final String? avatarUrl;
+  final String? initials;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = 36.0;
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final border = onSurface.withValues(alpha: 0.08);
+
+    final url = avatarUrl?.trim();
+    final hasUrl = url != null && url.isNotEmpty;
+
+    Widget content;
+    if (hasUrl) {
+      content = ClipOval(
+        child: Image.network(
+          url,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              _InitialsAvatarFallback(initials: initials),
+        ),
+      );
+    } else {
+      content = _InitialsAvatarFallback(initials: initials);
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Color.lerp(surface, onSurface, 0.02),
+          border: Border.all(color: border, width: 1),
+        ),
+        child: Center(child: content),
+      ),
+    );
+  }
+}
+
+class _InitialsAvatarFallback extends StatelessWidget {
+  const _InitialsAvatarFallback({required this.initials});
+
+  final String? initials;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final text = initials?.trim();
+    final hasText = text != null && text.isNotEmpty;
+
+    if (!hasText) {
+      return ThemeIcon(
+        Icons.person,
+        size: 18,
+        color: theme.colorScheme.onSurfaceVariant,
+      );
+    }
+
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w800,
+        color: theme.colorScheme.onSurface,
+      ),
+    );
   }
 }

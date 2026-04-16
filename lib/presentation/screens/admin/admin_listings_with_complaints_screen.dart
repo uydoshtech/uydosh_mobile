@@ -234,38 +234,42 @@ class _AdminListingsWithComplaintsScreenState
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildFilterChip(
-              context,
-              "pending",
-              _buildStatusFilterLabel(
+        child: Align(
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildFilterChip(
                 context,
                 "pending",
-                "admin_complaints_filter_pending",
+                _buildStatusFilterLabel(
+                  context,
+                  "pending",
+                  "admin_complaints_filter_pending",
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              context,
-              "resolved",
-              _buildStatusFilterLabel(
+              const SizedBox(width: 8),
+              _buildFilterChip(
                 context,
                 "resolved",
-                "admin_complaints_filter_resolved",
+                _buildStatusFilterLabel(
+                  context,
+                  "resolved",
+                  "admin_complaints_filter_resolved",
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              context,
-              "dismissed",
-              _buildStatusFilterLabel(
+              const SizedBox(width: 8),
+              _buildFilterChip(
                 context,
                 "dismissed",
-                "admin_complaints_filter_dismissed",
+                _buildStatusFilterLabel(
+                  context,
+                  "dismissed",
+                  "admin_complaints_filter_dismissed",
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -277,17 +281,18 @@ class _AdminListingsWithComplaintsScreenState
     String label,
   ) {
     final isSelected = _statusFilter == status;
-    final selectedColor = Theme.of(context).colorScheme.primary;
     final isBlueTheme = ThemeState().isBlueTheme;
+    final selectedColor = isBlueTheme
+        ? BlueThemeColors.buttonPrimary
+        : Theme.of(context).colorScheme.primary;
     final backgroundColor = isSelected
         ? selectedColor
-        : (isBlueTheme ? BlueThemeColors.card : Colors.grey[200]);
+        : (isBlueTheme ? Colors.transparent : Colors.grey[200]);
     final borderColor = isSelected
-        ? (isBlueTheme ? Colors.white : selectedColor)
-        : (isBlueTheme ? BlueThemeColors.cardBorder : Colors.grey[400]!);
-    final textColor = isSelected
-        ? Colors.white
-        : (isBlueTheme ? BlueThemeColors.textPrimary : Colors.grey[700]!);
+        ? selectedColor
+        : (isBlueTheme ? Colors.white : Colors.grey[400]!);
+    final textColor =
+        isSelected ? Colors.white : (isBlueTheme ? Colors.white : Colors.grey[700]!);
     return InkWell(
       onTap: () => _onStatusFilterChanged(status),
       borderRadius: BorderRadius.circular(10),

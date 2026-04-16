@@ -5,12 +5,14 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_search_alerts_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
@@ -28,6 +30,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   bool _saving = false;
   late AdminUser _currentUser;
   bool _blocking = false;
+  String? _avatarUrl;
+  String? _profileName;
 
   @override
   void initState() {
@@ -35,6 +39,22 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     _currentUser = widget.user;
     _selectedRole = widget.user.role;
     _currentRole = widget.user.role;
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    if (_currentUser.id <= 0) return;
+    try {
+      final profile =
+          await getIt<IUserProfileService>().getUserProfile(_currentUser.id);
+      if (!mounted) return;
+      setState(() {
+        _avatarUrl = profile.avatarUrl;
+        _profileName = profile.name;
+      });
+    } catch (_) {
+      // Non-critical: leave avatar/name empty if profile fetch fails.
+    }
   }
 
   void _popWithResult() {
@@ -74,17 +94,53 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   }
 
   Widget _buildInfoCard(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return _NeumorphicTile(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _currentUser.email ?? L10n.get("not_specified"),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _AdminUserAvatar(
+                  avatarUrl: _avatarUrl,
+                  initials: _buildUserInitials(
+                    name: _profileName,
+                    email: _currentUser.email,
+                  ),
+                  size: 44,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _currentUser.email ?? L10n.get("not_specified"),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (_profileName != null &&
+                          _profileName!.trim().isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          _profileName!.trim(),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             _buildMetaRow(
@@ -105,9 +161,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
 
   Widget _buildBlockCard(BuildContext context) {
     final blocked = _currentUser.isCurrentlyBlocked;
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return _NeumorphicTile(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -329,9 +383,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   }
 
   Widget _buildRoleCard(BuildContext context, {required bool canSave}) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return _NeumorphicTile(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -394,9 +446,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   }
 
   Widget _buildActionsCard(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return _NeumorphicTile(
       child: Column(
         children: [
           ListTile(
@@ -416,7 +466,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               );
             },
           ),
-          const Divider(height: 1),
+          Divider(
+            height: 1,
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+          ),
           ListTile(
             leading: const ThemeIcon(Icons.report_problem),
             title: Text(
@@ -434,7 +487,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               );
             },
           ),
-          const Divider(height: 1),
+          Divider(
+            height: 1,
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+          ),
           ListTile(
             leading: const ThemeIcon(Icons.filter_alt_outlined),
             title: Text(
@@ -550,6 +606,31 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
       ),
     );
   }
+
+  String? _buildUserInitials({String? name, String? email}) {
+    final source = (name != null && name.trim().isNotEmpty)
+        ? name.trim()
+        : (email != null && email.trim().isNotEmpty ? email.trim() : null);
+    if (source == null) return null;
+
+    final parts = source
+        .replaceAll(RegExp(r"[^A-Za-zА-Яа-яЁё0-9\s]"), " ")
+        .split(RegExp(r"\s+"))
+        .where((p) => p.trim().isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return null;
+
+    if (parts.length == 1) {
+      final p = parts.first;
+      final first = p.isNotEmpty ? p[0] : "";
+      final second = p.length >= 2 ? p[1] : "";
+      final res = (first + second).toUpperCase();
+      return res.trim().isEmpty ? null : res;
+    }
+
+    final res = (parts[0][0] + parts[1][0]).toUpperCase();
+    return res.trim().isEmpty ? null : res;
+  }
 }
 
 class _RoleOption {
@@ -557,4 +638,118 @@ class _RoleOption {
 
   final String? value;
   final String label;
+}
+
+class _NeumorphicTile extends StatelessWidget {
+  const _NeumorphicTile({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    const tileRadius = BorderRadius.all(Radius.circular(16));
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: tileRadius,
+        gradient: ThreeDSurfaceStyle.surfaceGradient(
+          context,
+          theme.colorScheme.surface,
+        ),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(borderRadius: tileRadius),
+        clipBehavior: Clip.antiAlias,
+        child: child,
+      ),
+    );
+  }
+}
+
+class _AdminUserAvatar extends StatelessWidget {
+  const _AdminUserAvatar({
+    required this.avatarUrl,
+    required this.initials,
+    this.size = 36,
+  });
+
+  final String? avatarUrl;
+  final String? initials;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final border = onSurface.withValues(alpha: 0.08);
+
+    final url = avatarUrl?.trim();
+    final hasUrl = url != null && url.isNotEmpty;
+
+    Widget content;
+    if (hasUrl) {
+      content = ClipOval(
+        child: Image.network(
+          url,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              _InitialsAvatarFallback(initials: initials),
+        ),
+      );
+    } else {
+      content = _InitialsAvatarFallback(initials: initials);
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Color.lerp(surface, onSurface, 0.02),
+          border: Border.all(color: border, width: 1),
+        ),
+        child: Center(child: content),
+      ),
+    );
+  }
+}
+
+class _InitialsAvatarFallback extends StatelessWidget {
+  const _InitialsAvatarFallback({required this.initials});
+
+  final String? initials;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final text = initials?.trim();
+    final hasText = text != null && text.isNotEmpty;
+
+    if (!hasText) {
+      return ThemeIcon(
+        Icons.person,
+        size: 20,
+        color: theme.colorScheme.onSurfaceVariant,
+      );
+    }
+
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w800,
+        color: theme.colorScheme.onSurface,
+      ),
+    );
+  }
 }
