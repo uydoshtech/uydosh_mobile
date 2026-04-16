@@ -149,7 +149,7 @@ class _MessageBubbleState extends State<MessageBubble>
                           ),
                           if (widget.isCurrentUser) ...[
                             const SizedBox(width: 4),
-                            _buildCheckmarks(),
+                            _buildCheckmarks(textColor),
                           ],
                         ],
                       ),
@@ -275,12 +275,16 @@ class _MessageBubbleState extends State<MessageBubble>
 
   /// Build checkmarks for message status
   /// Single checkmark = sent, double checkmark = read by recipient
-  Widget _buildCheckmarks() {
+  Widget _buildCheckmarks(Color ownBubbleTextColor) {
     final isReadByRecipient = widget.message.isReadByRecipient ?? false;
+    // WhatsApp-style blue for “read” double ticks on white outgoing bubbles.
+    const readColor = Color(0xFF34B7F1);
     return ThemeIcon(
       isReadByRecipient ? Icons.done_all : Icons.check,
-      size: 12,
-      color: Colors.green.shade700,
+      size: 14,
+      color: isReadByRecipient
+          ? readColor
+          : ownBubbleTextColor.withValues(alpha: 0.45),
     );
   }
 }

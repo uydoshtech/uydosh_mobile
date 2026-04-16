@@ -550,7 +550,11 @@ class _UserSupportChatThreadScreenState
               ),
               if (isUser) ...[
                 const SizedBox(width: 4),
-                ThemeIcon(Icons.check, size: 12, color: Colors.green.shade700),
+                ThemeIcon(
+                  Icons.check,
+                  size: 14,
+                  color: textColor.withValues(alpha: 0.45),
+                ),
               ],
             ],
           ),
