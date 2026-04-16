@@ -17,16 +17,18 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/log_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/app_badge_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
+import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
@@ -101,6 +103,14 @@ void main() async {
     // Dependency injection must be configured before any startup tasks that use GetIt
     // (e.g. server-backed client config fetches).
     await configureDependencies();
+
+    // Keep the OS app icon badge in sync with unread messages.
+    // This will get corrected by server-backed refreshes (e.g. inbox load) shortly after launch.
+    void syncBadge() {
+      getIt<IAppBadgeService>().setBadgeCount(UnreadMessagesState().unreadCount);
+    }
+    UnreadMessagesState().addListener(syncBadge);
+    syncBadge();
 
     // Initialize app states in parallel (independent SharedPreferences/Storage reads)
     await Future.wait([

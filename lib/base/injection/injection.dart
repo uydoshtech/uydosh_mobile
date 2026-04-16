@@ -5,12 +5,13 @@ import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
 import "package:uy_dosh/base/api/public_dio_configurator.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/app_badge_service.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
-import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/domain/services/admin_user_search_alert_service.dart";
+import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/domain/services/amenity_service.dart";
 import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
@@ -36,6 +37,7 @@ final getIt = GetIt.instance;
 
 Future<void> configureDependencies() async {
   getIt.registerLazySingleton<AppAnalyticsService>(AppAnalyticsService.new);
+  getIt.registerLazySingleton<IAppBadgeService>(AppBadgeService.new);
   // Register services with meaningful names
   getIt.registerLazySingleton<IPublicDioConfigurator>(
     PublicDioConfigurator.new,
