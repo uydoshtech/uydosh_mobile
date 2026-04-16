@@ -12,6 +12,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
@@ -438,53 +439,73 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                   if (hasTelegram || hasPhone) ...[
                     Wrap(
                       spacing: 12,
-                      runSpacing: 4,
+                      runSpacing: 10,
                       children: [
                         if (hasTelegram)
-                          TextButton.icon(
+                          GhostButton(
                             onPressed: () {
                               HapticFeedbackUtils.impact();
                               onTelegram?.call();
                             },
-                            icon: ThemeIcon(
-                              Icons.telegram,
-                              size: 18,
-                              color: _getIconColor(),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
                             ),
-                            label: Text(
-                              L10n.get("open_in_telegram"),
-                              style: TextStyle(
-                                decoration: TextDecoration.underline,
-                                decorationColor: _getIconColor(),
-                                color: _getDescriptionTextColor(),
-                                fontWeight: FontWeight.w600,
-                              ),
+                            borderWidth: 1.5,
+                            borderColor: _getIconColor(),
+                            textColor: _getDescriptionTextColor(),
+                            iconColor: _getIconColor(),
+                            textStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ThemeIcon(
+                                  Icons.telegram,
+                                  size: 18,
+                                  color: _getIconColor(),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(L10n.get("open_in_telegram")),
+                              ],
                             ),
                           ),
                         if (hasPhone)
-                          TextButton.icon(
+                          GhostButton(
                             onPressed: () {
                               HapticFeedbackUtils.impact();
                               onPhone?.call();
                             },
-                            icon: ThemeIcon(
-                              Icons.phone,
-                              size: 18,
-                              color: _getIconColor(),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
                             ),
-                            label: Text(
-                              phoneDisplay ?? L10n.get("contact_user"),
-                              style: TextStyle(
-                                decoration: TextDecoration.underline,
-                                decorationColor: _getIconColor(),
-                                color: _getDescriptionTextColor(),
-                                fontWeight: FontWeight.w600,
-                              ),
+                            borderWidth: 1.5,
+                            borderColor: _getIconColor(),
+                            textColor: _getDescriptionTextColor(),
+                            iconColor: _getIconColor(),
+                            textStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ThemeIcon(
+                                  Icons.phone,
+                                  size: 18,
+                                  color: _getIconColor(),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(phoneDisplay ?? L10n.get("contact_user")),
+                              ],
                             ),
                           ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 14),
                   ],
                   Row(
                     children: [

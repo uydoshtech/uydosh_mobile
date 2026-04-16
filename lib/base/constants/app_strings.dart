@@ -255,7 +255,7 @@ class AppStrings {
       "refresh": "Refresh",
       "actions": "Actions",
 
-      "view_profile": "Profile",
+      "view_profile": "Owner's Profile",
       "deactivate_listing": "Deactivate",
       "deactivate_listing_confirmation":
           "Are you sure you want to deactivate this listing? It will no longer be visible to other users.",
@@ -433,7 +433,7 @@ class AppStrings {
       "rating": "Rating",
       "about_me": "About Me",
       "telegram": "Telegram",
-      "open_in_telegram": "Open in Telegram",
+      "open_in_telegram": "Text in Telegram",
       "open_in_telegram_confirmation": "Telegram will be opened.",
 
       // New profile fields
@@ -962,7 +962,7 @@ class AppStrings {
       "share_subject_en": "UyDosh - Housing Listing",
 
       "contact_user": "Contact User",
-      "message": "Write",
+      "message": "Text in Chat",
 
       // ===== STATUS & STATE =====
       "delete_listing": "Delete Listing",
@@ -1235,7 +1235,7 @@ class AppStrings {
       "refresh": "Обновить",
       "actions": "Действия",
 
-      "view_profile": "Профиль",
+      "view_profile": "Профиль владельца",
       "deactivate_listing": "Деактивировать",
       "deactivate_listing_confirmation":
           "Вы уверены, что хотите деактивировать это объявление? Оно больше не будет видно другим пользователям.",
@@ -1411,7 +1411,7 @@ class AppStrings {
       "rating": "Рейтинг",
       "about_me": "Обо мне",
       "telegram": "Telegram",
-      "open_in_telegram": "Открыть в Telegram",
+      "open_in_telegram": "Написать в Telegram",
       "open_in_telegram_confirmation":
           "Telegram откроется в приложении или браузере.",
 
@@ -1944,7 +1944,7 @@ class AppStrings {
       "share_subject_en": "UyDosh - Housing Listing",
 
       "contact_user": "Связаться с пользователем",
-      "message": "Написать",
+      "message": "Написать в чат",
 
       // ===== STATUS & STATE =====
       "delete_listing": "Удалить объявление",
@@ -2224,7 +2224,7 @@ class AppStrings {
       "refresh": "Yangilash",
       "actions": "Harakatlar",
 
-      "view_profile": "Profil",
+      "view_profile": "Egasining profili",
       "deactivate_listing": "Deaktivlashtirish",
       "deactivate_listing_confirmation":
           "Bu e'loni deaktivlashtirishni xohlaysizmi? U boshqa foydalanuvchilarga ko'rinmaydi.",
@@ -2404,7 +2404,7 @@ class AppStrings {
       "rating": "Reyting",
       "about_me": "Men haqimda",
       "telegram": "Telegram",
-      "open_in_telegram": "Telegramda ochish",
+      "open_in_telegram": "Telegramda yozish",
       "open_in_telegram_confirmation":
           "Telegram ilova yoki brauzerda ochiladi.",
 
@@ -2944,7 +2944,7 @@ class AppStrings {
       "share_subject_en": "UyDosh - Housing Listing",
 
       "contact_user": "Foydalanuvchi bilan bog'lanish",
-      "message": "Yozish",
+      "message": "Chatda yozish",
 
       // ===== STATUS & STATE =====
       "delete_listing": "E'loni o'chirish",

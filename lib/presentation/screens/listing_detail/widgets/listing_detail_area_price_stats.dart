@@ -38,27 +38,23 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
     final color = _priceTierColor(context, level);
     const fontSize = 17.0;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 1),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          for (var i = 0; i < level; i++) ...[
-            if (i > 0) const SizedBox(width: 2),
-            Text(
-              r"$",
-              style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w800,
-                color: color,
-                height: 1.0,
-              ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        for (var i = 0; i < level; i++) ...[
+          if (i > 0) const SizedBox(width: 2),
+          Text(
+            r"$",
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w800,
+              color: color,
+              height: 1.0,
             ),
-          ],
+          ),
         ],
-      ),
+      ],
     );
   }
 
@@ -69,7 +65,7 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
   }) {
     final theme = Theme.of(context);
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         _priceTierDollarSigns(context, benchmark),
         const SizedBox(width: 8),
