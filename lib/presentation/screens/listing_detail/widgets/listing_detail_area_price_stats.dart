@@ -10,63 +10,53 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
 
   final ListingDetail listingDetail;
 
+  /// 1 = cheap vs median, 2 = medium, 3 = expensive; 0 = unknown (no median).
   int _priceIndicatorLevel(AreaPriceBenchmark benchmark) {
     if (benchmark.median <= 0) return 0;
-
     final ratio = listingDetail.price / benchmark.median;
-    // More filled disks = more expensive vs median:
-    // 1 = green (cheap/ok), 2 = yellow (somewhat expensive), 3 = red (expensive)
     if (ratio <= 1.1) return 1;
     if (ratio <= 1.35) return 2;
     return 3;
   }
 
-  Widget _priceIndicatorDisks(
-    BuildContext context, {
-    required AreaPriceBenchmark benchmark,
-  }) {
-    final theme = Theme.of(context);
+  Color _priceTierColor(BuildContext context, int level) {
+    return switch (level) {
+      1 => Colors.green.shade400,
+      2 => Colors.amber.shade700,
+      _ => Theme.of(context).colorScheme.error,
+    };
+  }
+
+  /// Plain dollar characters only (no circled icon); count matches [_priceIndicatorLevel].
+  Widget _priceTierDollarSigns(
+    BuildContext context,
+    AreaPriceBenchmark benchmark,
+  ) {
     final level = _priceIndicatorLevel(benchmark);
     if (level <= 0) return const SizedBox.shrink();
 
-    const size = 10.0;
-    const gap = 1.0; // pixels between disks
-    const step = size + gap;
+    final color = _priceTierColor(context, level);
+    const fontSize = 17.0;
 
-    final emptyBase = theme.colorScheme.onSurfaceVariant;
-    final filledBase = switch (level) {
-      1 => Colors.green.shade400,
-      2 => Colors.amber.shade700,
-      _ => theme.colorScheme.error,
-    };
-
-    Widget disk(int idx) {
-      final filled = idx < level;
-      final borderColor =
-          filled ? filledBase : emptyBase.withOpacity(0.7);
-      return Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: filled ? filledBase : emptyBase.withOpacity(0.14),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: borderColor,
-            width: 1.4,
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: size + step * 2,
-      height: size,
-      child: Stack(
-        clipBehavior: Clip.none,
+    return Padding(
+      padding: const EdgeInsets.only(top: 1),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
-          Positioned(left: 0 * step, child: disk(0)),
-          Positioned(left: 1 * step, child: disk(1)),
-          Positioned(left: 2 * step, child: disk(2)),
+          for (var i = 0; i < level; i++) ...[
+            if (i > 0) const SizedBox(width: 2),
+            Text(
+              r"$",
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w800,
+                color: color,
+                height: 1.0,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -81,10 +71,7 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 3),
-          child: _priceIndicatorDisks(context, benchmark: benchmark),
-        ),
+        _priceTierDollarSigns(context, benchmark),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
