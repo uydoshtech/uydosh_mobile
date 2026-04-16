@@ -30,9 +30,9 @@ class _AdminContentModerationScreenState
   bool _hasError = false;
   String? _errorMessage;
   bool _blurEnabled = true;
-  bool _geminiListingUiHidden = false;
+  bool _geminiListingUiEnabled = true;
   bool _isSavingGemini = false;
-  bool _lidarRoomScanDisabled = false;
+  bool _lidarRoomScanEnabled = true;
   bool _isSavingLidar = false;
   bool _isSavingListingContacts = false;
   bool _isSavingPriceInsights = false;
@@ -59,12 +59,13 @@ class _AdminContentModerationScreenState
       if (!mounted) return;
       setState(() {
         _blurEnabled = blurRes.enabled;
-        _geminiListingUiHidden = geminiRes.hidden;
-        _lidarRoomScanDisabled = lidarRes.disabled;
+        // UI is positive: ON means enabled/shown.
+        _geminiListingUiEnabled = !geminiRes.hidden;
+        _lidarRoomScanEnabled = !lidarRes.disabled;
         _isLoading = false;
       });
-      ClientGeminiListingUiConfig.applyHidden(hidden: _geminiListingUiHidden);
-      ClientLidarRoomScanConfig.applyDisabled(disabled: _lidarRoomScanDisabled);
+      ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
+      ClientLidarRoomScanConfig.applyDisabled(disabled: !_lidarRoomScanEnabled);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -75,16 +76,17 @@ class _AdminContentModerationScreenState
     }
   }
 
-  Future<void> _onLidarDisabledChanged(bool value) async {
+  Future<void> _onLidarEnabledChanged(bool value) async {
     if (_isSavingLidar) return;
     setState(() => _isSavingLidar = true);
     try {
       final res = await _settingsService.setLidarRoomScanDisabled(
-        disabled: value,
+        // Server stores "disabled", UI is "enabled".
+        disabled: !value,
       );
       if (!mounted) return;
       setState(() {
-        _lidarRoomScanDisabled = res.disabled;
+        _lidarRoomScanEnabled = !res.disabled;
         _isSavingLidar = false;
       });
       ClientLidarRoomScanConfig.applyDisabled(disabled: res.disabled);
@@ -101,14 +103,17 @@ class _AdminContentModerationScreenState
     }
   }
 
-  Future<void> _onGeminiHideChanged(bool value) async {
+  Future<void> _onGeminiEnabledChanged(bool value) async {
     if (_isSavingGemini) return;
     setState(() => _isSavingGemini = true);
     try {
-      final res = await _settingsService.setGeminiListingUiHidden(hidden: value);
+      // Server stores "hidden", UI is "enabled".
+      final res = await _settingsService.setGeminiListingUiHidden(
+        hidden: !value,
+      );
       if (!mounted) return;
       setState(() {
-        _geminiListingUiHidden = res.hidden;
+        _geminiListingUiEnabled = !res.hidden;
         _isSavingGemini = false;
       });
       ClientGeminiListingUiConfig.applyHidden(hidden: res.hidden);
@@ -339,9 +344,9 @@ class _AdminContentModerationScreenState
             ),
           ),
           trailing: NeumorphicThemeAwareToggle(
-            value: _geminiListingUiHidden,
+            value: _geminiListingUiEnabled,
             enabled: !_isSavingGemini,
-            onChanged: _onGeminiHideChanged,
+            onChanged: _onGeminiEnabledChanged,
           ),
         ),
         const SizedBox(height: 16),
@@ -362,9 +367,9 @@ class _AdminContentModerationScreenState
             ),
           ),
           trailing: NeumorphicThemeAwareToggle(
-            value: _lidarRoomScanDisabled,
+            value: _lidarRoomScanEnabled,
             enabled: !_isSavingLidar,
-            onChanged: _onLidarDisabledChanged,
+            onChanged: _onLidarEnabledChanged,
           ),
         ),
       ],

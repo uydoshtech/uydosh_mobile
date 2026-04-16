@@ -554,12 +554,12 @@ class AppStrings {
       "admin_client_settings_show_price_insights_description":
           "Enables the “Price insights” (median nearby rent) block on listing details.",
       "admin_client_config_hide_gemini_listing_ui":
-          "Hide translation & AI improve",
+          "Show translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
-          "Hides description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).",
-      "admin_client_config_disable_lidar_room_scan": "Turn off LiDAR room scan",
+          "Shows description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).",
+      "admin_client_config_disable_lidar_room_scan": "Enable LiDAR room scan",
       "admin_client_config_disable_lidar_room_scan_description":
-          "Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).",
+          "Enables the add-scan flow after creating a listing, the add-scan button when editing, and allows scan uploads. Applies to all users and devices (stored on the server).",
       "admin_content_moderation_blur_enabled":
           "Detect and blur offensive photos",
       "admin_content_moderation_loading": "Loading moderation settings...",
@@ -1534,13 +1534,13 @@ class AppStrings {
       "admin_client_settings_show_price_insights_description":
           "Включает блок «Ориентир по цене» (медиана по району/станции) в карточке объявления.",
       "admin_client_config_hide_gemini_listing_ui":
-          "Скрыть перевод и улучшение ИИ",
+          "Показывать перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
-          "Скрывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Действует для всех пользователей и устройств (хранится на сервере).",
+          "Показывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Действует для всех пользователей и устройств (хранится на сервере).",
       "admin_client_config_disable_lidar_room_scan":
-          "Отключить сканирование LiDAR",
+          "Включить сканирование LiDAR",
       "admin_client_config_disable_lidar_room_scan_description":
-          "Скрывает шаг добавления скана после создания объявления, кнопку при редактировании и блокирует загрузку сканов. Действует для всех пользователей и устройств (хранится на сервере).",
+          "Включает шаг добавления скана после создания объявления, кнопку при редактировании и разрешает загрузку сканов. Действует для всех пользователей и устройств (хранится на сервере).",
       "admin_content_moderation_blur_enabled":
           "Проверять и размывать нежелательные фото",
       "admin_content_moderation_loading": "Загрузка настроек модерации...",
@@ -2528,13 +2528,13 @@ class AppStrings {
       "admin_client_settings_show_price_insights_description":
           "E’lon tafsilotlarida “Narx bo‘yicha orientir” (yaqin atrof medianasi) blokini yoqadi.",
       "admin_client_config_hide_gemini_listing_ui":
-          "Tarjima va AI yaxshilashni yashirish",
+          "Tarjima va AI yaxshilashni ko‘rsatish",
       "admin_client_config_hide_gemini_listing_ui_description":
-          "E'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni yashiradi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+          "E'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni ko‘rsatadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
       "admin_client_config_disable_lidar_room_scan":
-          "LiDAR xona skanini o'chirish",
+          "LiDAR xona skanini yoqish",
       "admin_client_config_disable_lidar_room_scan_description":
-          "E'lon yaratilgach skan qo'shish qadamini, tahrirlashdagi skan tugmasini yashiradi va yuklashni bloklaydi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+          "E'lon yaratilgach skan qo'shish qadamini, tahrirlashdagi skan tugmasini ko‘rsatadi va yuklashga ruxsat beradi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
       "admin_content_moderation_blur_enabled":
           "Nojo'ya fotolarni aniqla va xira qil",
       "admin_content_moderation_loading":
