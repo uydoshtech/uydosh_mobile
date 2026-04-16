@@ -18,6 +18,7 @@ import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -160,9 +161,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   /// Show cached conversations if available, otherwise loading - prevents blink during refresh
   Widget _showCachedOrLoading() {
-    if (_lastDisplayedConversations != null &&
-        _lastDisplayedConversations!.isNotEmpty) {
-      return _buildTabbedConversationsList(_lastDisplayedConversations!);
+    final cache = _lastDisplayedConversations;
+    if (cache != null) {
+      return _buildTabbedConversationsList(cache);
     }
     return _buildLoadingState();
   }
@@ -179,6 +180,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return sum;
     });
   }
+
+  List<ConversationSummary> _visibleInboxConversations(
+    List<ConversationSummary> conversations,
+  ) => conversations.where(conversationHasMessagesForInbox).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -216,24 +221,24 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             initial: () {},
             loading: () {},
             conversationsLoaded: (conversations, hasMore, currentPage) {
+              final visible = _visibleInboxConversations(
+                conversations.cast<ConversationSummary>(),
+              );
               logger.d(
-                "🔍 [MessagesInboxScreen] Conversations loaded: ${conversations.length} conversations",
+                "🔍 [MessagesInboxScreen] Conversations loaded: ${conversations.length} conversations (${visible.length} with messages)",
               );
 
               // Cache for smooth refresh (no blink when returning to screen)
               if (mounted) {
                 setState(() {
-                  _lastDisplayedConversations =
-                      List<ConversationSummary>.from(
-                        conversations.cast<ConversationSummary>(),
-                      );
+                  _lastDisplayedConversations = List<ConversationSummary>.from(
+                    visible,
+                  );
                 });
               }
 
               // Calculate total unread count and update global state
-              final totalUnreadCount = _calculateTotalUnreadCount(
-                conversations.cast<ConversationSummary>(),
-              );
+              final totalUnreadCount = _calculateTotalUnreadCount(visible);
               UnreadMessagesState().updateUnreadCount(totalUnreadCount);
             },
             conversationsCleared: () {
@@ -259,9 +264,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               initial: _buildLoadingState,
               loading: _showCachedOrLoading,
               conversationsLoaded: (conversations, hasMore, currentPage) {
-                return _buildTabbedConversationsList(
+                final visible = _visibleInboxConversations(
                   conversations.cast<ConversationSummary>(),
                 );
+                return _buildTabbedConversationsList(visible);
               },
               conversationsCleared: _buildEmptyState,
               messagesLoaded:

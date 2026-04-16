@@ -7,6 +7,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
@@ -167,15 +168,17 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     bool hasMore,
     int currentPage,
   ) {
-    if (conversations.isEmpty) {
+    final visible =
+        conversations.where(conversationHasMessagesForInbox).toList();
+    if (visible.isEmpty) {
       return _buildEmptyState();
     }
 
     return CommonListView(
       padding: const EdgeInsets.all(16),
-      itemCount: conversations.length,
+      itemCount: visible.length,
       itemBuilder: (context, index) {
-        final conversation = conversations[index];
+        final conversation = visible[index];
         return ConversationCard(
           conversation: conversation,
           onTap: () => _navigateToChat(conversation.id),
