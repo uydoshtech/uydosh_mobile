@@ -1031,6 +1031,12 @@ class AppLocalizationsRu extends AppLocalizations {
       'Telegram откроется в приложении или браузере.';
 
   @override
+  String get could_not_open_telegram => 'Не удалось открыть Telegram';
+
+  @override
+  String get could_not_make_call => 'Не удалось начать звонок';
+
+  @override
   String get employed => 'Работаю';
 
   @override

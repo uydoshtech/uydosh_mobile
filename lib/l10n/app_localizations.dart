@@ -1972,6 +1972,18 @@ abstract class AppLocalizations {
   /// **'Telegram will be opened.'**
   String get open_in_telegram_confirmation;
 
+  /// No description provided for @could_not_open_telegram.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open Telegram'**
+  String get could_not_open_telegram;
+
+  /// No description provided for @could_not_make_call.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start a call'**
+  String get could_not_make_call;
+
   /// No description provided for @employed.
   ///
   /// In en, this message translates to:

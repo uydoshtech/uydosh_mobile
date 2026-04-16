@@ -456,6 +456,8 @@
   "telegram": "Telegram",
   "open_in_telegram": "Открыть в Telegram",
   "open_in_telegram_confirmation": "Telegram откроется в приложении или браузере.",
+  "could_not_open_telegram": "Не удалось открыть Telegram",
+  "could_not_make_call": "Не удалось начать звонок",
   "employed": "Работаю",
   "cleanliness": "Чистоплотность",
   "noise_level": "Уровень шума",

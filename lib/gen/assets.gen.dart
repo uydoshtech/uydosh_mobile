@@ -36,9 +36,6 @@ class $AssetsImagesGen {
   /// File path: assets/images/ios_neutral_rd_ctn.svg
   String get iosNeutralRdCtn => 'assets/images/ios_neutral_rd_ctn.svg';
 
-  /// Directory path: assets/images/room_scan_examples
-  $AssetsImagesRoomScanExamplesGen get roomScanExamples => const $AssetsImagesRoomScanExamplesGen();
-
   /// File path: assets/images/tashkent_subway_map_simple.svg
   String get tashkentSubwayMapSimple => 'assets/images/tashkent_subway_map_simple.svg';
 
@@ -143,25 +140,6 @@ class $AssetsIconComponentsGen {
 
   /// List of all assets
   List<dynamic> get values => [brandMark, chimney, redRoof, square, uLetter];
-}
-
-class $AssetsImagesRoomScanExamplesGen {
-  const $AssetsImagesRoomScanExamplesGen();
-
-  /// File path: assets/images/room_scan_examples/example_1.png
-  AssetGenImage get example1 =>
-      const AssetGenImage('assets/images/room_scan_examples/example_1.png');
-
-  /// File path: assets/images/room_scan_examples/example_2.png
-  AssetGenImage get example2 =>
-      const AssetGenImage('assets/images/room_scan_examples/example_2.png');
-
-  /// File path: assets/images/room_scan_examples/example_3.png
-  AssetGenImage get example3 =>
-      const AssetGenImage('assets/images/room_scan_examples/example_3.png');
-
-  /// List of all assets
-  List<AssetGenImage> get values => [example1, example2, example3];
 }
 
 class Assets {

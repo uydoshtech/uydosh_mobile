@@ -508,6 +508,53 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
   }
 
+  Future<void> _openTelegramChat(String handle) async {
+    final trimmed = handle.trim();
+    if (trimmed.isEmpty) return;
+    final username = trimmed.startsWith("@") ? trimmed.substring(1) : trimmed;
+    if (username.isEmpty) return;
+
+    final appUri = Uri.parse("tg://resolve?domain=$username");
+    final webUri = Uri.parse("https://t.me/$username");
+
+    try {
+      if (await canLaunchUrl(appUri)) {
+        await launchUrl(appUri, mode: LaunchMode.externalApplication);
+        return;
+      }
+      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      logger.d("Error opening Telegram: $e");
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("could_not_open_telegram"),
+      );
+    }
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final trimmed = phoneNumber.trim();
+    if (trimmed.isEmpty) return;
+    final digits = trimmed.replaceAll(RegExp(r"[^0-9+]"), "");
+    final uri = Uri.parse("tel:$digits");
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        throw Exception("canLaunchUrl returned false");
+      }
+    } catch (e) {
+      logger.d("Error making phone call: $e");
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("could_not_make_call"),
+      );
+    }
+  }
+
   String _buildComplaintsButtonLabel(
     bool isLoadingComplaintsCount,
     int? complaintsCount,
@@ -1801,6 +1848,14 @@ L10n.get("feature_listing_error",
       compatibilityError: pageState.compatibilityError,
       matches: pageState.compatibilityMatches,
       differences: pageState.compatibilityDifferences,
+      telegramHandle: listingDetail.contactTelegram,
+      phoneNumber: listingDetail.contactPhone,
+      onTelegram: (listingDetail.contactTelegram?.trim().isNotEmpty ?? false)
+          ? () => _openTelegramChat(listingDetail.contactTelegram!)
+          : null,
+      onPhone: (listingDetail.contactPhone?.trim().isNotEmpty ?? false)
+          ? () => _makePhoneCall(listingDetail.contactPhone!)
+          : null,
       onMessage: () => _startConversation(listingDetail),
       onViewProfile: () => _navigateToProfile(listingDetail.user.id),
       onCompleteProfile: _navigateToOwnProfile,

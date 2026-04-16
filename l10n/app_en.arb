@@ -464,6 +464,8 @@
   "telegram": "Telegram",
   "open_in_telegram": "Open in Telegram",
   "open_in_telegram_confirmation": "Telegram will be opened.",
+  "could_not_open_telegram": "Could not open Telegram",
+  "could_not_make_call": "Could not start a call",
   "employed": "Employed",
   "cleanliness": "Cleanliness",
   "noise_level": "Noise Level",

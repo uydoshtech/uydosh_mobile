@@ -55,6 +55,10 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
     required this.compatibilityError,
     required this.matches,
     required this.differences,
+    required this.telegramHandle,
+    required this.phoneNumber,
+    required this.onTelegram,
+    required this.onPhone,
     required this.onMessage,
     required this.onViewProfile,
     required this.onCompleteProfile,
@@ -69,6 +73,10 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
   final String? compatibilityError;
   final List<CompatibilityMatch> matches;
   final List<CompatibilityDifference> differences;
+  final String? telegramHandle;
+  final String? phoneNumber;
+  final VoidCallback? onTelegram;
+  final VoidCallback? onPhone;
   final VoidCallback onMessage;
   final VoidCallback onViewProfile;
   final VoidCallback onCompleteProfile;
@@ -109,6 +117,29 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
       default:
         return Icons.info_outline;
     }
+  }
+
+  String _formatUzbekPhoneDisplay(String raw) {
+    final d = raw.replaceAll(RegExp(r"\D"), "");
+    // Handle +998XXXXXXXXX, 998XXXXXXXXX, or 9XXXXXXXX
+    String? nine;
+    if (d.startsWith("998") && d.length >= 12) {
+      final rest = d.substring(3);
+      if (rest.length >= 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(rest.substring(0, 9))) {
+        nine = rest.substring(0, 9);
+      }
+    } else if (d.startsWith("9") && d.length >= 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(d.substring(0, 9))) {
+      nine = d.substring(0, 9);
+    } else if (d.length == 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(d)) {
+      nine = d;
+    } else if (d.length > 9) {
+      final m = RegExp(r"(9[0134679]\d{7})$").firstMatch(d);
+      nine = m?.group(1);
+    }
+
+    if (nine == null || nine.length != 9) return raw.trim();
+    return "+998 ${nine.substring(0, 2)} ${nine.substring(2, 5)} "
+        "${nine.substring(5, 7)} ${nine.substring(7, 9)}";
   }
 
   Color _getDescriptionTextColor() {
@@ -165,6 +196,9 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
         : "$compatibilityPercent%";
 
     final isProfileComplete = ProfileCompletionState().isProfileComplete;
+    final hasTelegram = (telegramHandle?.trim().isNotEmpty ?? false) && onTelegram != null;
+    final hasPhone = (phoneNumber?.trim().isNotEmpty ?? false) && onPhone != null;
+    final phoneDisplay = hasPhone ? _formatUzbekPhoneDisplay(phoneNumber!) : null;
 
     final chevronColor = ListingDetailThemeHelper.locationTextColor;
 
@@ -388,6 +422,57 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                       ],
                     ),
                   const SizedBox(height: 16),
+                  if (hasTelegram || hasPhone) ...[
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
+                      children: [
+                        if (hasTelegram)
+                          TextButton.icon(
+                            onPressed: () {
+                              HapticFeedbackUtils.impact();
+                              onTelegram?.call();
+                            },
+                            icon: ThemeIcon(
+                              Icons.telegram,
+                              size: 18,
+                              color: _getIconColor(),
+                            ),
+                            label: Text(
+                              L10n.get("open_in_telegram"),
+                              style: TextStyle(
+                                decoration: TextDecoration.underline,
+                                decorationColor: _getIconColor(),
+                                color: _getDescriptionTextColor(),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        if (hasPhone)
+                          TextButton.icon(
+                            onPressed: () {
+                              HapticFeedbackUtils.impact();
+                              onPhone?.call();
+                            },
+                            icon: ThemeIcon(
+                              Icons.phone,
+                              size: 18,
+                              color: _getIconColor(),
+                            ),
+                            label: Text(
+                              phoneDisplay ?? L10n.get("contact_user"),
+                              style: TextStyle(
+                                decoration: TextDecoration.underline,
+                                decorationColor: _getIconColor(),
+                                color: _getDescriptionTextColor(),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   Row(
                     children: [
                       Expanded(

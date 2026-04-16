@@ -1024,6 +1024,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get open_in_telegram_confirmation => 'Telegram will be opened.';
 
   @override
+  String get could_not_open_telegram => 'Could not open Telegram';
+
+  @override
+  String get could_not_make_call => 'Could not start a call';
+
+  @override
   String get employed => 'Employed';
 
   @override

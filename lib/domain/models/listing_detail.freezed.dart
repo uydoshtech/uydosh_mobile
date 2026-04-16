@@ -59,6 +59,10 @@ mixin _$ListingDetail {
   bool? get privateRoom => throw _privateConstructorUsedError;
   @JsonKey(name: "point_cloud_url")
   String? get pointCloudUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: "contact_phone")
+  String? get contactPhone => throw _privateConstructorUsedError;
+  @JsonKey(name: "contact_telegram")
+  String? get contactTelegram => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation => throw _privateConstructorUsedError;
   LocationDetail? get location => throw _privateConstructorUsedError;
@@ -106,6 +110,8 @@ abstract class $ListingDetailCopyWith<$Res> {
       @JsonKey(name: "move_in_date") String? moveInDate,
       @JsonKey(name: "private_room") bool? privateRoom,
       @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
+      @JsonKey(name: "contact_phone") String? contactPhone,
+      @JsonKey(name: "contact_telegram") String? contactTelegram,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       LocationDetail? location,
       List<Amenity>? amenities,
@@ -156,6 +162,8 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
     Object? pointCloudUrl = freezed,
+    Object? contactPhone = freezed,
+    Object? contactTelegram = freezed,
     Object? subwayStation = freezed,
     Object? location = freezed,
     Object? amenities = freezed,
@@ -250,6 +258,14 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
       pointCloudUrl: freezed == pointCloudUrl
           ? _value.pointCloudUrl
           : pointCloudUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      contactPhone: freezed == contactPhone
+          ? _value.contactPhone
+          : contactPhone // ignore: cast_nullable_to_non_nullable
+              as String?,
+      contactTelegram: freezed == contactTelegram
+          ? _value.contactTelegram
+          : contactTelegram // ignore: cast_nullable_to_non_nullable
               as String?,
       subwayStation: freezed == subwayStation
           ? _value.subwayStation
@@ -368,6 +384,8 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       @JsonKey(name: "move_in_date") String? moveInDate,
       @JsonKey(name: "private_room") bool? privateRoom,
       @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
+      @JsonKey(name: "contact_phone") String? contactPhone,
+      @JsonKey(name: "contact_telegram") String? contactTelegram,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       LocationDetail? location,
       List<Amenity>? amenities,
@@ -421,6 +439,8 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
     Object? pointCloudUrl = freezed,
+    Object? contactPhone = freezed,
+    Object? contactTelegram = freezed,
     Object? subwayStation = freezed,
     Object? location = freezed,
     Object? amenities = freezed,
@@ -516,6 +536,14 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           ? _value.pointCloudUrl
           : pointCloudUrl // ignore: cast_nullable_to_non_nullable
               as String?,
+      contactPhone: freezed == contactPhone
+          ? _value.contactPhone
+          : contactPhone // ignore: cast_nullable_to_non_nullable
+              as String?,
+      contactTelegram: freezed == contactTelegram
+          ? _value.contactTelegram
+          : contactTelegram // ignore: cast_nullable_to_non_nullable
+              as String?,
       subwayStation: freezed == subwayStation
           ? _value.subwayStation
           : subwayStation // ignore: cast_nullable_to_non_nullable
@@ -566,6 +594,8 @@ class _$ListingDetailImpl implements _ListingDetail {
       @JsonKey(name: "move_in_date") this.moveInDate,
       @JsonKey(name: "private_room") this.privateRoom,
       @JsonKey(name: "point_cloud_url") this.pointCloudUrl,
+      @JsonKey(name: "contact_phone") this.contactPhone,
+      @JsonKey(name: "contact_telegram") this.contactTelegram,
       @JsonKey(name: "subway_station") this.subwayStation,
       this.location,
       final List<Amenity>? amenities,
@@ -639,6 +669,12 @@ class _$ListingDetailImpl implements _ListingDetail {
   @JsonKey(name: "point_cloud_url")
   final String? pointCloudUrl;
   @override
+  @JsonKey(name: "contact_phone")
+  final String? contactPhone;
+  @override
+  @JsonKey(name: "contact_telegram")
+  final String? contactTelegram;
+  @override
   @JsonKey(name: "subway_station")
   final SubwayStationDetail? subwayStation;
   @override
@@ -669,7 +705,7 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, contactPhone: $contactPhone, contactTelegram: $contactTelegram, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats)';
   }
 
   @override
@@ -715,6 +751,10 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.privateRoom == privateRoom) &&
             (identical(other.pointCloudUrl, pointCloudUrl) ||
                 other.pointCloudUrl == pointCloudUrl) &&
+            (identical(other.contactPhone, contactPhone) ||
+                other.contactPhone == contactPhone) &&
+            (identical(other.contactTelegram, contactTelegram) ||
+                other.contactTelegram == contactTelegram) &&
             (identical(other.subwayStation, subwayStation) ||
                 other.subwayStation == subwayStation) &&
             (identical(other.location, location) ||
@@ -752,6 +792,8 @@ class _$ListingDetailImpl implements _ListingDetail {
         moveInDate,
         privateRoom,
         pointCloudUrl,
+        contactPhone,
+        contactTelegram,
         subwayStation,
         location,
         const DeepCollectionEquality().hash(_amenities),
@@ -800,6 +842,8 @@ abstract class _ListingDetail implements ListingDetail {
       @JsonKey(name: "move_in_date") final String? moveInDate,
       @JsonKey(name: "private_room") final bool? privateRoom,
       @JsonKey(name: "point_cloud_url") final String? pointCloudUrl,
+      @JsonKey(name: "contact_phone") final String? contactPhone,
+      @JsonKey(name: "contact_telegram") final String? contactTelegram,
       @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
       final LocationDetail? location,
       final List<Amenity>? amenities,
@@ -871,6 +915,12 @@ abstract class _ListingDetail implements ListingDetail {
   @override
   @JsonKey(name: "point_cloud_url")
   String? get pointCloudUrl;
+  @override
+  @JsonKey(name: "contact_phone")
+  String? get contactPhone;
+  @override
+  @JsonKey(name: "contact_telegram")
+  String? get contactTelegram;
   @override
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation;

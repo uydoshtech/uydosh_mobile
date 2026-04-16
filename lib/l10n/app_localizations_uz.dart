@@ -1037,6 +1037,12 @@ class AppLocalizationsUz extends AppLocalizations {
       'Telegram ilova yoki brauzerda ochiladi.';
 
   @override
+  String get could_not_open_telegram => 'Telegramni ochib bo\'lmadi';
+
+  @override
+  String get could_not_make_call => 'Qo\'ng\'iroqni boshlab bo\'lmadi';
+
+  @override
   String get employed => 'Ishlaydi';
 
   @override

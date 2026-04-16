@@ -464,6 +464,8 @@
   "telegram": "Telegram",
   "open_in_telegram": "Telegramda ochish",
   "open_in_telegram_confirmation": "Telegram ilova yoki brauzerda ochiladi.",
+  "could_not_open_telegram": "Telegramni ochib bo'lmadi",
+  "could_not_make_call": "Qo'ng'iroqni boshlab bo'lmadi",
   "employed": "Ishlaydi",
   "cleanliness": "Tozalik",
   "noise_level": "Shovqin darajasi",

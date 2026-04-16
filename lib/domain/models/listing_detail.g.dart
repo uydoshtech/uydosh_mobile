@@ -31,6 +31,8 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
       moveInDate: json['move_in_date'] as String?,
       privateRoom: json['private_room'] as bool?,
       pointCloudUrl: json['point_cloud_url'] as String?,
+      contactPhone: json['contact_phone'] as String?,
+      contactTelegram: json['contact_telegram'] as String?,
       subwayStation: json['subway_station'] == null
           ? null
           : SubwayStationDetail.fromJson(
@@ -74,6 +76,8 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'move_in_date': instance.moveInDate,
       'private_room': instance.privateRoom,
       'point_cloud_url': instance.pointCloudUrl,
+      'contact_phone': instance.contactPhone,
+      'contact_telegram': instance.contactTelegram,
       'subway_station': instance.subwayStation,
       'location': instance.location,
       'amenities': instance.amenities,
