@@ -28,6 +28,7 @@ import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
+import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -118,6 +119,7 @@ void main() async {
       AuthenticationState().initialize(),
       OnboardingState().initialize(),
       TutorialState().initialize(),
+      TooltipsState().initialize(),
       HapticFeedbackState().initialize(),
       AnimationSettingsState().initialize(),
       SearchFiltersState().initialize(),

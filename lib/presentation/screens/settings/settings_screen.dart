@@ -11,6 +11,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -211,6 +212,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildLanguageMenuItem(context),
             _buildThemeMenuItem(context),
             _buildOnboardingToggleMenuItem(context),
+            _buildTooltipsToggleMenuItem(context),
             _buildHapticFeedbackToggleMenuItem(context),
             _buildAnimationsToggleMenuItems(context),
 
@@ -358,6 +360,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onChanged: (value) async {
             await OnboardingState().setShowOnboarding(value);
             // When turned ON, onboarding will show on next app start (no immediate navigation)
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTooltipsToggleMenuItem(BuildContext context) {
+    return ListenableBuilder(
+      listenable: TooltipsState(),
+      builder: (context, child) {
+        return UydoshToggle(
+          icon: Icons.tips_and_updates_outlined,
+          iconColor: _getIconColor(),
+          title: L10n.text(
+            "tooltips_toggle",
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: _getTextColor(),
+            ),
+          ),
+          subtitle: L10n.text(
+            "tooltips_toggle_description",
+            style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
+          ),
+          value: TooltipsState().enabled,
+          onChanged: (value) async {
+            if (value) {
+              await TooltipsState().enableAndResetAll();
+            } else {
+              await TooltipsState().setEnabled(false);
+            }
           },
         );
       },

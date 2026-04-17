@@ -4,6 +4,7 @@ import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
+import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -36,6 +37,7 @@ class _AdminContentModerationScreenState
   bool _isSavingLidar = false;
   bool _isSavingListingContacts = false;
   bool _isSavingPriceInsights = false;
+  bool _isSavingTooltips = false;
 
   @override
   void initState() {
@@ -179,6 +181,22 @@ class _AdminContentModerationScreenState
     }
   }
 
+  Future<void> _onTooltipsEnabledChanged(bool value) async {
+    if (_isSavingTooltips) return;
+    setState(() => _isSavingTooltips = true);
+    try {
+      HapticFeedbackUtils.impact();
+      if (value) {
+        await TooltipsState().enableAndResetAll();
+      } else {
+        await TooltipsState().setEnabled(false);
+      }
+    } finally {
+      if (!mounted) return;
+      setState(() => _isSavingTooltips = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -247,6 +265,34 @@ class _AdminContentModerationScreenState
           ),
         ),
         const SizedBox(height: 24),
+        ListenableBuilder(
+          listenable: TooltipsState(),
+          builder: (context, _) {
+            return ListTile(
+              leading: _isSavingTooltips
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const ThemeIcon(Icons.tips_and_updates_outlined),
+              title: Text(L10n.get("tooltips_toggle")),
+              subtitle: Text(
+                L10n.get("tooltips_toggle_description"),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              trailing: NeumorphicThemeAwareToggle(
+                value: TooltipsState().enabled,
+                enabled: !_isSavingTooltips,
+                onChanged: _onTooltipsEnabledChanged,
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
         ListenableBuilder(
           listenable: AdminFeatureFlagsState(),
           builder: (context, _) {

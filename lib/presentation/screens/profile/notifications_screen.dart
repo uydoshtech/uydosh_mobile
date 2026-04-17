@@ -4,6 +4,7 @@ import "package:dio/dio.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:permission_handler/permission_handler.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -11,6 +12,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -39,73 +41,114 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _loading = true;
   bool _bulkWorking = false;
   List<SearchAlert> _alerts = const [];
+  bool _showAlertsExplainer = true;
 
-  Widget _alertsExplainer(ThemeData theme) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+  Widget _alertsExplainer(ThemeData theme, {required VoidCallback onClose}) {
+    final fg = theme.colorScheme.onSurfaceVariant;
+    return Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 12, 40, 12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.55,
+            ),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Icon(
-                  Icons.info_outline,
-                  size: 17,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(Icons.info_outline, size: 17, color: fg),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: L10n.text(
+                      "notifications_alerts_explainer",
+                      style: TextStyle(
+                        color: fg,
+                        fontSize: 14,
+                        height: 1.25,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: L10n.text(
-                  "notifications_alerts_explainer",
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: 14,
-                    height: 1.25,
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.only(left: 25),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 0,
+                        vertical: 6,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () async {
+                      await openAppSettings();
+                    },
+                    child: Text(L10n.get("notifications_open_settings")),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.only(left: 25),
-            child: SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 0,
-                    vertical: 6,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                onPressed: () async {
-                  await openAppSettings();
-                },
-                child: Text(L10n.get("notifications_open_settings")),
-              ),
-            ),
+        ),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: IconButton(
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: onClose,
+            icon: Icon(Icons.close, size: 18, color: fg),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            splashRadius: 18,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   @override
   void initState() {
     super.initState();
+    _loadAlertsExplainerVisibility();
     _load();
+  }
+
+  Future<void> _loadAlertsExplainerVisibility() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Persist default so it's visible/adjustable in device storage.
+      if (!prefs.containsKey(TooltipsState.keyNotificationsAlertsExplainerDismissed)) {
+        await prefs.setBool(TooltipsState.keyNotificationsAlertsExplainerDismissed, false);
+      }
+      final dismissed =
+          prefs.getBool(TooltipsState.keyNotificationsAlertsExplainerDismissed) ?? false;
+      if (!mounted) return;
+      setState(() => _showAlertsExplainer = !dismissed);
+    } catch (_) {
+      // If prefs are unavailable, keep default (show).
+    }
+  }
+
+  Future<void> _dismissAlertsExplainer() async {
+    setState(() => _showAlertsExplainer = false);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(TooltipsState.keyNotificationsAlertsExplainerDismissed, true);
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -468,6 +511,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final tooltipsEnabled = TooltipsState().enabled;
 
     return Scaffold(
       appBar: UydoshAppBar(
@@ -531,7 +575,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       padding: const EdgeInsets.all(16),
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        _alertsExplainer(theme),
+                        if (tooltipsEnabled && _showAlertsExplainer)
+                          _alertsExplainer(
+                            theme,
+                            onClose: _dismissAlertsExplainer,
+                          ),
                         const SizedBox(height: 36),
                         ThemeIcon(
                           Icons.notifications_none,
@@ -556,12 +604,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.all(16),
-                      itemCount: _alerts.length + 1,
+                      itemCount: _alerts.length +
+                          ((tooltipsEnabled && _showAlertsExplainer) ? 1 : 0),
                       separatorBuilder: (_, i) => SizedBox(height: i == 0 ? 12 : 16),
                       itemBuilder: (context, i) {
-                        if (i == 0) return _alertsExplainer(theme);
+                        final showExplainer = tooltipsEnabled && _showAlertsExplainer;
+                        if (showExplainer && i == 0) {
+                          return _alertsExplainer(
+                            theme,
+                            onClose: _dismissAlertsExplainer,
+                          );
+                        }
 
-                        final a = _alerts[i - 1];
+                        final a = _alerts[i - (showExplainer ? 1 : 0)];
                         final themeState = ThemeState();
                         return Theme(
                           data: theme.copyWith(

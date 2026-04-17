@@ -291,6 +291,8 @@ class AppStrings {
       "theme_changed_to": "Theme changed to {theme}",
       "theme_color": "Theme color",
       "switch_theme": "Switch Theme",
+      "tooltips_toggle": "Tips",
+      "tooltips_toggle_description": "Show helpful hints and tooltips",
 
       // ===== ABOUT & FEATURES =====
       "about_description":
@@ -1275,6 +1277,8 @@ class AppStrings {
       "theme_changed_to": "Тема изменена на {theme}",
       "theme_color": "Цвет темы",
       "switch_theme": "Переключить тему",
+      "tooltips_toggle": "Подсказки",
+      "tooltips_toggle_description": "Показывать подсказки и тултипы",
 
       // ===== ABOUT & FEATURES =====
       "about_description":
@@ -2268,6 +2272,8 @@ class AppStrings {
       "theme_changed_to": "Mavzu o'zgartirildi: {theme}",
       "theme_color": "Mavzu rangi",
       "switch_theme": "Mavzuni almashtirish",
+      "tooltips_toggle": "Maslahatlar",
+      "tooltips_toggle_description": "Foydali maslahatlar va tooltiplarni ko'rsatish",
 
       // ===== ABOUT & FEATURES =====
       "about_description":
