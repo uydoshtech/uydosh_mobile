@@ -14,6 +14,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   bool _isBlinking = true;
   double? _cachedSheetHeight;
   bool _metroLineChangedInThisSession = false;
+  bool _isCreatingSearchAlert = false;
 
   @override
   void initState() {
@@ -232,6 +233,72 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     // Don"t fall back to index-based selection to prevent auto-selecting first station
     return null;
+  }
+
+  Future<void> _addAlertFromCurrentSearch() async {
+    if (!AuthenticationState().isAuthenticated) {
+      context.pushAuthWizard();
+      return;
+    }
+
+    final locationId = _getSelectedLocationId();
+    final subwayLineId =
+        _searchFiltersState.selectedSubwayLine > 0 ? _searchFiltersState.selectedSubwayLine : null;
+    final subwayStationId = _getSelectedSubwayStationId();
+
+    final hasAnyLocationConstraint =
+        (locationId != null && locationId > 0) ||
+        (subwayLineId != null && subwayLineId > 0) ||
+        (subwayStationId != null && subwayStationId > 0);
+    if (!hasAnyLocationConstraint) {
+      ToastTheme.showError(context, message: L10n.get("search_alert_too_wide"));
+      return;
+    }
+
+    setState(() => _isCreatingSearchAlert = true);
+    try {
+      final err = await getIt<ISearchAlertService>().createAlertForCurrentSearch(
+        listingTypeId: _searchFiltersState.selectedListingTypeId,
+        locationId: locationId,
+        subwayStationId: subwayStationId,
+        subwayLineId: subwayLineId,
+        gender: _searchFiltersState.selectedGender,
+        minPrice: _searchFiltersState.minPrice,
+        maxPrice: _searchFiltersState.maxPrice,
+        privateRoomOnly: _searchFiltersState.privateRoom,
+        withPhotoOnly: _searchFiltersState.withPhoto,
+      );
+
+      if (!mounted) return;
+
+      if (err != null) {
+        if (err == SearchAlertService.alreadyExistsErrorToken) {
+          ToastTheme.showSuccess(context, message: L10n.get("search_alert_already_exists"));
+        } else {
+          ToastTheme.showError(
+            context,
+            message: err == "error" ? L10n.get("search_alert_failed") : err,
+          );
+        }
+        return;
+      }
+
+      await ActiveSearchAlertsState().refresh();
+
+      // Ensure notifications are enabled (or guide user to settings).
+      final push = getIt<IPushNotificationService>();
+      if (push.isSupported) {
+        final ok = await push.requestPermissionAndRegister();
+        if (!mounted) return;
+        if (!ok) {
+          ToastTheme.showWarning(context, message: L10n.get("search_alert_permission"));
+        }
+      }
+
+      ToastTheme.showSuccess(context, message: L10n.get("search_alert_created"));
+    } finally {
+      if (mounted) setState(() => _isCreatingSearchAlert = false);
+    }
   }
 
   // New method to get the initial station item for the wheel picker
@@ -567,6 +634,26 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       ),
                     ),
                   ),
+                  ThreeDAppBarIconButton(
+                    borderRadius: const BorderRadius.all(Radius.circular(999)),
+                    iconData: Icons.add_alert,
+                    onPressed: () {
+                      if (_isCreatingSearchAlert) return;
+                      unawaited(_addAlertFromCurrentSearch());
+                    },
+                    semanticsLabel: L10n.get("search_alert_notify_me"),
+                    iconWidget: Opacity(
+                      opacity: _isCreatingSearchAlert ? 0.55 : 1,
+                      child: Center(
+                        child: ThemeIcon(
+                          Icons.add_alert,
+                          size: 24,
+                          useThemeColor: true,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
                   ThreeDAppBarIconButton(
                     iconData: Icons.close,
                     onPressed: () => Navigator.pop(context),
