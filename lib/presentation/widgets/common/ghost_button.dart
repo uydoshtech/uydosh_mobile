@@ -124,7 +124,7 @@ class _GhostButtonState extends State<GhostButton> {
         duration: const Duration(milliseconds: 90),
         transform: Matrix4.translationValues(
           0,
-          _pressed && _enabled && !widget.neumorphicSoftUi ? 2 : 0,
+          _pressed && _enabled ? 2 : 0,
           0,
         ),
         child: Material(

@@ -1241,6 +1241,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   horizontal: 32,
                                   vertical: 16,
                                 ),
+                                textStyle: textStyle,
                                 isLoading: _isAuthenticating,
                                 isOnboardingButton: true,
                                 neumorphicSoftUi: true,
