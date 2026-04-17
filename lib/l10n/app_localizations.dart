@@ -4322,7 +4322,7 @@ abstract class AppLocalizations {
   /// No description provided for @sign_in_with_google_description.
   ///
   /// In en, this message translates to:
-  /// **'Sign in to your Google account to continue'**
+  /// **'Continue with Google 👋\nFast and secure — no extra sign-ups'**
   String get sign_in_with_google_description;
 
   /// No description provided for @signing_in.

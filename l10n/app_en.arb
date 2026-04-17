@@ -869,7 +869,7 @@
   "move_in_date_label": "Move-in date:",
   "publication_date": "Published on:",
   "sign_in_with_google": "Sign In with Google",
-  "sign_in_with_google_description": "Sign in to your Google account to continue",
+  "sign_in_with_google_description": "Continue with Google 👋\nFast and secure — no extra sign-ups",
   "signing_in": "Signing in...",
   "google_sign_in_failed": "Google Sign-In failed: {error}",
   "@google_sign_in_failed": {

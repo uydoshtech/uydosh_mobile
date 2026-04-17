@@ -2279,7 +2279,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get sign_in_with_google_description =>
-      'Войдите в свой аккаунт Google для продолжения';
+      'Продолжить через Google 👋\nБыстро и безопасно — без лишних регистраций';
 
   @override
   String get signing_in => 'Вход в систему...';

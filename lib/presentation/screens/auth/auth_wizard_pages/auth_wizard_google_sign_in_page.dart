@@ -43,7 +43,8 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                       "sign_in_with_google_description",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 20,
+                        height: 1.25,
                         color: _getOnboardingTextSecondaryColor(context),
                       ),
                     ),

@@ -861,7 +861,7 @@
   "move_in_date_label": "Дата вселения:",
   "publication_date": "Опубликовано:",
   "sign_in_with_google": "Войти через Google",
-  "sign_in_with_google_description": "Войдите в свой аккаунт Google для продолжения",
+  "sign_in_with_google_description": "Продолжить через Google 👋\nБыстро и безопасно — без лишних регистраций",
   "signing_in": "Вход в систему...",
   "google_sign_in_failed": "Ошибка входа через Google: {error}",
   "@google_sign_in_failed": {

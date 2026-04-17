@@ -949,7 +949,7 @@ class AppStrings {
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Sign In with Google",
       "sign_in_with_google_description":
-          "Sign in to your Google account to continue",
+          "Continue with Google 👋\nFast and secure — no extra sign-ups",
 
       "signing_in": "Signing in...",
       "google_sign_in_failed": "Google Sign-In failed: {error}",
@@ -1931,7 +1931,7 @@ class AppStrings {
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Войти через Google",
       "sign_in_with_google_description":
-          "Войдите в свой аккаунт Google для продолжения",
+          "Продолжить через Google 👋\nБыстро и безопасно — без лишних регистраций",
 
       "signing_in": "Вход в систему...",
       "google_sign_in_failed": "Ошибка входа через Google: {error}",
@@ -2931,7 +2931,7 @@ class AppStrings {
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Google orqali kirish",
       "sign_in_with_google_description":
-          "Davom etish uchun Google hisobingizga kiring",
+          "Google orqali davom etish 👋\nTez va xavfsiz — ortiqcha ro'yxatdan o'tishsiz",
 
       "signing_in": "Tizimga kirilmoqda...",
       "google_sign_in_failed": "Google orqali kirishda xatolik: {error}",

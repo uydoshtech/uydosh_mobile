@@ -869,7 +869,7 @@
   "move_in_date_label": "Ko'chib kelish sanasi:",
   "publication_date": "Nashr sanasi:",
   "sign_in_with_google": "Google orqali kirish",
-  "sign_in_with_google_description": "Davom etish uchun Google hisobingizga kiring",
+  "sign_in_with_google_description": "Google orqali davom etish 👋\nTez va xavfsiz — ortiqcha ro'yxatdan o'tishsiz",
   "signing_in": "Tizimga kirilmoqda...",
   "google_sign_in_failed": "Google orqali kirishda xatolik: {error}",
   "@google_sign_in_failed": {

@@ -2299,7 +2299,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get sign_in_with_google_description =>
-      'Davom etish uchun Google hisobingizga kiring';
+      'Google orqali davom etish 👋\nTez va xavfsiz — ortiqcha ro\'yxatdan o\'tishsiz';
 
   @override
   String get signing_in => 'Tizimga kirilmoqda...';

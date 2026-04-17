@@ -2263,7 +2263,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sign_in_with_google_description =>
-      'Sign in to your Google account to continue';
+      'Continue with Google 👋\nFast and secure — no extra sign-ups';
 
   @override
   String get signing_in => 'Signing in...';
