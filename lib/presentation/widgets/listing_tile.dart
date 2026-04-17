@@ -1025,7 +1025,7 @@ class _ListingTileState extends State<ListingTile>
   // Theme-dependent color method for arrow icon
   Color _getArrowIconColor() {
     if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
+      return AppColors.textLight.withValues(alpha: 0.5);
     } else {
       return AppColors.textGrey400; // Default grey for light theme
     }
