@@ -26,6 +26,8 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const loaderSlotHeight = 104.0;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -142,16 +144,32 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                       ),
                     ),
                   ],
-                  if (isAuthenticating) ...[
-                    const SizedBox(height: 24),
-                    CenteredHouseLoadingIndicator(
-                      text: L10n.get("signing_in"),
-                      textStyle: TextStyle(
-                        color: _getOnboardingTextSecondaryColor(context),
-                        fontSize: 16,
+                  const SizedBox(height: 16),
+                  // Reserve space so content doesn't jump when loader appears.
+                  SizedBox(
+                    height: loaderSlotHeight,
+                    child: Center(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 180),
+                        switchInCurve: Curves.easeOut,
+                        switchOutCurve: Curves.easeIn,
+                        child:
+                            isAuthenticating
+                                ? CenteredHouseLoadingIndicator(
+                                  key: const ValueKey("auth_loader"),
+                                  text: L10n.get("signing_in"),
+                                  textStyle: TextStyle(
+                                    color:
+                                        _getOnboardingTextSecondaryColor(context),
+                                    fontSize: 16,
+                                  ),
+                                )
+                                : const SizedBox(
+                                  key: ValueKey("auth_loader_placeholder"),
+                                ),
                       ),
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),
