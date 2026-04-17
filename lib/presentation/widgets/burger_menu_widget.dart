@@ -24,7 +24,7 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
-import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
+import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
@@ -576,8 +576,9 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                         // Navigate to messages screen
                         if (context.mounted) {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const MessagesInboxScreen(),
+                            MaterialPageRoute<void>(
+                              builder: (context) =>
+                                  const PushedMessagesInboxScaffold(),
                             ),
                           );
                         }
