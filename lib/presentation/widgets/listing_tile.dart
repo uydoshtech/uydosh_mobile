@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:flutter/cupertino.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -331,8 +332,8 @@ class _ListingTileState extends State<ListingTile>
                                     widget.listing.photos!.isNotEmpty) ...[
                                   const PhotoIcon(),
                                 ],
-                                // 3D room scan (iPhone-sized iOS only; viewer is iOS)
-                                if (isIPhoneFormFactor(context) &&
+                                // 3D room scan (available on iOS; show indicator on web too)
+                                if ((kIsWeb || isIPhoneFormFactor(context)) &&
                                     (widget.listing.pointCloudUrl?.isNotEmpty ??
                                         false)) ...[
                                   if (widget.listing.photos != null &&
