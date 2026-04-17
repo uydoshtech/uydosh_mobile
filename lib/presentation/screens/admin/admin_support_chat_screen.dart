@@ -289,7 +289,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
     return CommonListView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      itemSpacing: 8,
+      itemSpacing: 4,
       itemCount: _threads.length,
       itemBuilder: (context, index) {
         final thread = _threads[index];

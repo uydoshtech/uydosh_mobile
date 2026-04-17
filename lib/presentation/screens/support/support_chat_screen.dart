@@ -17,6 +17,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -186,12 +187,13 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     return UydoshRefreshIndicator(
       onRefresh: _fetchThreads,
       child: CommonListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+        itemSpacing: 12,
         itemCount: itemCount,
         itemBuilder: (context, index) {
           if (_threads.isEmpty) {
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32),
+              padding: const EdgeInsets.only(top: 24, bottom: 8),
               child: Column(
                 children: [
                   ThemeIcon(
@@ -199,70 +201,26 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                     size: 64,
                     color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     L10n.get("contact_support_empty"),
                     style: TextStyle(
                       fontSize: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      height: 1.35,
+                      color: ThemeState().secondaryTextColor,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 24),
-                  OutlinedButton.icon(
-                    onPressed: _creatingThread ? null : _createNewThread,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: ThemeState().textColor,
-                      side: BorderSide(
-                        color: ThemeState().textColor.withValues(alpha: 0.35),
-                        width: 1,
-                      ),
-                      shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    icon: _creatingThread
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                ThemeState().textColor,
-                              ),
-                            ),
-                          )
-                        : const ThemeIcon(Icons.add),
-                    label: Text(L10n.get("contact_support_new")),
-                  ),
+                  const SizedBox(height: 28),
+                  _buildNewThreadButton(context),
                 ],
               ),
             );
           }
           if (index == 0) {
-            return OutlinedButton.icon(
-              onPressed: _creatingThread ? null : _createNewThread,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: ThemeState().textColor,
-                side: BorderSide(
-                  color: ThemeState().textColor.withValues(alpha: 0.35),
-                  width: 1,
-                ),
-                shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              icon: _creatingThread
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          ThemeState().textColor,
-                        ),
-                      ),
-                    )
-                  : const ThemeIcon(Icons.add),
-              label: Text(L10n.get("contact_support_new")),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: _buildNewThreadButton(context),
             );
           }
           final thread = _threads[index - 1];
@@ -272,54 +230,120 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     );
   }
 
-  Widget _buildThreadCard(BuildContext context, SupportChatThread thread) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: () => _openThread(thread),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      thread.displayTitle,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  _buildStatusChip(context, thread.status),
-                ],
-              ),
-              if (thread.lastMessage != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  thread.lastMessage!.body,
-                  style: const TextStyle(fontSize: 13),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+  Widget _buildNewThreadButton(BuildContext context) {
+    final ts = ThemeState();
+    return SizedBox(
+      width: double.infinity,
+      child: ThreeDPillButton(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        borderRadius: const BorderRadius.all(Radius.circular(18)),
+        backgroundColor: ts.cardColor,
+        onPressed: _creatingThread
+            ? null
+            : () {
+                HapticFeedbackUtils.impact();
+                _createNewThread();
+              },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_creatingThread)
+              SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(ts.textColor),
                 ),
-              ],
-              const SizedBox(height: 8),
+              )
+            else ...[
+              ThemeIcon(Icons.add, color: ts.textColor, size: 22),
+              const SizedBox(width: 10),
               Text(
-                _formatDate(thread.updatedAt),
+                L10n.get("contact_support_new"),
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: ts.textColor,
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThreadCard(BuildContext context, SupportChatThread thread) {
+    final ts = ThemeState();
+    const tileRadius = BorderRadius.all(Radius.circular(16));
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: tileRadius,
+        gradient: ThreeDSurfaceStyle.surfaceGradient(
+          context,
+          ts.cardColor,
+        ),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(borderRadius: tileRadius),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _openThread(thread),
+          borderRadius: tileRadius,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        thread.displayTitle,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ts.textColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildStatusChip(context, thread.status),
+                  ],
+                ),
+                if (thread.lastMessage != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    thread.lastMessage!.body,
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.3,
+                      color: ts.secondaryTextColor,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                SizedBox(height: thread.lastMessage != null ? 10 : 8),
+                Text(
+                  _formatDate(thread.updatedAt),
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.2,
+                    color: ts.secondaryTextColor.withValues(alpha: 0.92),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
