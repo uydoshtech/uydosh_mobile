@@ -1,4 +1,4 @@
-part of "../search_bottom_sheet.dart";
+part of "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 
 class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
@@ -15,6 +15,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   double? _cachedSheetHeight;
   bool _metroLineChangedInThisSession = false;
   bool _isCreatingSearchAlert = false;
+  int _searchAlertCelebrationTick = 0;
 
   @override
   void initState() {
@@ -281,6 +282,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           );
         }
         return;
+      }
+
+      if (mounted) {
+        setState(() => _searchAlertCelebrationTick++);
       }
 
       await ActiveSearchAlertsState().refresh();
@@ -634,23 +639,16 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       ),
                     ),
                   ),
-                  ThreeDAppBarIconButton(
-                    borderRadius: const BorderRadius.all(Radius.circular(999)),
-                    iconData: Icons.add_alert,
-                    onPressed: () {
-                      if (_isCreatingSearchAlert) return;
-                      unawaited(_addAlertFromCurrentSearch());
-                    },
-                    semanticsLabel: L10n.get("search_alert_notify_me"),
-                    iconWidget: Opacity(
-                      opacity: _isCreatingSearchAlert ? 0.55 : 1,
-                      child: Center(
-                        child: ThemeIcon(
-                          Icons.add_alert,
-                          size: 24,
-                          useThemeColor: true,
-                        ),
-                      ),
+                  Opacity(
+                    opacity: _isCreatingSearchAlert ? 0.55 : 1,
+                    child: NotifySearchAlertAppBarButton(
+                      tooltip: L10n.get("search_alert_notify_me"),
+                      enabled: !_isCreatingSearchAlert,
+                      celebrationTick: _searchAlertCelebrationTick,
+                      onPressed: () {
+                        if (_isCreatingSearchAlert) return;
+                        unawaited(_addAlertFromCurrentSearch());
+                      },
                     ),
                   ),
                   const SizedBox(width: 16),

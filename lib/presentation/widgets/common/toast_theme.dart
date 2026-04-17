@@ -15,8 +15,26 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 /// - ToastTheme.showInfo(context, message: "Here"s some information")
 class ToastTheme {
   static const Duration _defaultDuration = Duration(
-    milliseconds: 3000,
-  ); // 3 seconds
+    milliseconds: 6000,
+  ); // 6 seconds
+
+  static Color _foregroundOn(Color backgroundColor) {
+    // Pick the better of black/white using WCAG contrast ratio.
+    // https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio
+    final bgL = backgroundColor.computeLuminance();
+    const blackL = 0.0;
+    const whiteL = 1.0;
+
+    double contrast(double l1, double l2) {
+      final light = l1 > l2 ? l1 : l2;
+      final dark = l1 > l2 ? l2 : l1;
+      return (light + 0.05) / (dark + 0.05);
+    }
+
+    final blackContrast = contrast(bgL, blackL);
+    final whiteContrast = contrast(bgL, whiteL);
+    return blackContrast >= whiteContrast ? Colors.black : Colors.white;
+  }
 
   // Keep track of current toast overlay
   static OverlayEntry? _currentToastOverlay;
@@ -291,7 +309,11 @@ class ToastTheme {
         SnackBar(
           content: Text(
             message,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            style: TextStyle(
+              color: _foregroundOn(backgroundColor),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           backgroundColor: backgroundColor,
           duration: duration,
@@ -385,6 +407,7 @@ class _RollingToastContentState extends State<_RollingToastContent>
 
   @override
   Widget build(BuildContext context) {
+    final foregroundColor = ToastTheme._foregroundOn(widget.backgroundColor);
     return AnimatedBuilder(
       animation: _slideController,
       builder: (context, child) {
@@ -413,10 +436,10 @@ class _RollingToastContentState extends State<_RollingToastContent>
                 ),
                 child: Text(
                   widget.message,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: foregroundColor,
                     fontSize: 15,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     decoration: TextDecoration.none,
                     decorationColor: Colors.transparent,
                     decorationThickness: 0,
@@ -520,6 +543,7 @@ class _TopToastOverlayState extends State<_TopToastOverlay>
 
   @override
   Widget build(BuildContext context) {
+    final foregroundColor = ToastTheme._foregroundOn(widget.backgroundColor);
     return Positioned(
       top:
           kToolbarHeight +
@@ -556,10 +580,10 @@ class _TopToastOverlayState extends State<_TopToastOverlay>
                   ),
                   child: Text(
                     widget.message,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: foregroundColor,
                       fontSize: 15,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       decoration: TextDecoration.none,
                       decorationColor: Colors.transparent,
                       decorationThickness: 0,
