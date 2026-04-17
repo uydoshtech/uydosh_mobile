@@ -159,6 +159,78 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   String _normText(String? s) => (s ?? "").trim();
 
+  List<String> _computeChangedFieldLabels() {
+    final p = widget.profile;
+    final changed = <String>[];
+
+    void addLabel(String key, {String? fallback}) {
+      var label = L10n.get(key, fallback: fallback).trim();
+      label = label.replaceAll(RegExp(r":\s*$"), "").trim();
+      if (label.isEmpty) return;
+      changed.add(label);
+    }
+
+    if (_nameController.text.trim() != (p.name ?? "").trim()) {
+      addLabel("name", fallback: "Name");
+    }
+    if (_normText(_aboutMeController.text) != _normText(p.aboutMe)) {
+      addLabel("about_me", fallback: "About me");
+    }
+    if (_normText(_telegramController.text) != _normText(p.telegram)) {
+      addLabel("telegram", fallback: "Telegram");
+    }
+    if (_selectedGender.value != (p.gender ?? 1)) {
+      addLabel("gender", fallback: "Gender");
+    }
+    if (_selectedRegionId.value != _resolvedRegionIdFromProfile()) {
+      addLabel("im_from", fallback: "Region");
+    }
+
+    final baselineStudent = p.universityId != null;
+    if (_isStudent.value != baselineStudent) {
+      addLabel("are_you_student", fallback: "Student");
+    }
+
+    final effectiveUni = _isStudent.value ? _selectedUniversityId.value : null;
+    if (effectiveUni != _resolvedUniversityIdFromProfile()) {
+      addLabel("university", fallback: "University");
+    }
+
+    final langBaseline = p.preferredLanguage ?? LanguageState().currentLanguage;
+    if (_selectedLanguage.value != langBaseline) {
+      addLabel("language", fallback: "Language");
+    }
+
+    if (_isRoleLoaded.value) {
+      final br = _baselineRole;
+      if (br != null && _selectedRole.value != br) {
+        addLabel("are_you_landlord_or_renter", fallback: "Role");
+      }
+    }
+
+    if (p.employed != _employed.value) addLabel("employed", fallback: "Employed");
+    if (p.wakeupTime != _wakeupTime.value) addLabel("wakeup_time", fallback: "Wake-up time");
+    if (p.sleepTime != _sleepTime.value) addLabel("sleep_time", fallback: "Sleep time");
+    if (p.cleanliness != _cleanliness.value) addLabel("cleanliness", fallback: "Cleanliness");
+    if (p.noiseLevel != _noiseLevel.value) addLabel("noise_level", fallback: "Noise level");
+    if (p.sociability != _sociability.value) addLabel("sociability", fallback: "Sociability");
+    if (p.guestsAllowed != _guestsAllowed.value) addLabel("guests_allowed", fallback: "Guests");
+    if (p.smokingPreference != _smokingPreference.value) {
+      addLabel("smoking_preference", fallback: "Smoking");
+    }
+    if (p.alcoholPreference != _alcoholPreference.value) {
+      addLabel("alcohol_preference", fallback: "Alcohol");
+    }
+    if (p.cookingHabits != _cookingHabits.value) {
+      addLabel("cooking_habits", fallback: "Cooking");
+    }
+    if (p.petsPreference != _petsPreference.value) {
+      addLabel("pets_preference", fallback: "Pets");
+    }
+
+    return changed;
+  }
+
   int? _resolvedRegionIdFromProfile() {
     final id = widget.profile.regionId;
     if (id == null) return null;
@@ -218,10 +290,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _onPopInvoked(bool didPop, dynamic result) async {
     if (didPop) return;
+    final changedFields = _computeChangedFieldLabels();
     final leave = await showDialog<bool>(
       context: context,
       builder: (ctx) {
         final theme = Theme.of(ctx);
+        final changedPrefix = L10n.get("changed_fields");
+        final bullet = "•";
+        final contentText = changedFields.isEmpty
+            ? L10n.get("unsaved_changes_message")
+            : "${L10n.get("unsaved_changes_message")}\n\n$changedPrefix:\n$bullet ${changedFields.join("\n$bullet ")}";
         return AlertDialog(
           backgroundColor: theme.dialogTheme.backgroundColor,
           title: Text(
@@ -233,7 +311,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           content: Text(
-            L10n.get("unsaved_changes_message"),
+            contentText,
             style: TextStyle(
               fontSize: 16,
               color: theme.colorScheme.onSurfaceVariant,
