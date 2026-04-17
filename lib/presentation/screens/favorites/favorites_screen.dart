@@ -316,7 +316,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       onRefresh: () => _loadFavoriteListings(isRefresh: true),
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
-          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+          padding: const EdgeInsets.all(16.0),
           itemCount: _favoriteListings.length,
           itemSpacing: 16.0,
           itemBuilder: (context, index) {
