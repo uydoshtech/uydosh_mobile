@@ -6,8 +6,9 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class FaqScreen extends StatefulWidget {
@@ -61,28 +62,6 @@ class _FaqScreenState extends State<FaqScreen> {
     }
   }
 
-  Color _getCardColor() {
-    final currentTheme = ThemeState().currentTheme;
-    switch (currentTheme) {
-      case AppTheme.blueTheme:
-        return Colors.white.withValues(alpha: 0.05);
-      case AppTheme.lightTheme:
-      default:
-        return Colors.white;
-    }
-  }
-
-  Color _getDividerColor() {
-    final currentTheme = ThemeState().currentTheme;
-    switch (currentTheme) {
-      case AppTheme.blueTheme:
-        return Colors.white.withValues(alpha: 0.3);
-      case AppTheme.lightTheme:
-      default:
-        return Colors.grey[200]!;
-    }
-  }
-
   Color _getIconColor() {
     final currentTheme = ThemeState().currentTheme;
     switch (currentTheme) {
@@ -92,6 +71,16 @@ class _FaqScreenState extends State<FaqScreen> {
       default:
         return Colors.grey[700]!;
     }
+  }
+
+  static const double _faqTileRadius = 16;
+
+  BoxDecoration _faqTileDecoration(BuildContext context) {
+    return BoxDecoration(
+      color: _getBackgroundColor(),
+      borderRadius: BorderRadius.circular(_faqTileRadius),
+      boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+    );
   }
 
   @override
@@ -235,14 +224,7 @@ class _FaqScreenState extends State<FaqScreen> {
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
-      decoration: BoxDecoration(
-        color: _getCardColor(),
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(
-          color: _getDividerColor(),
-          width: 1.0,
-        ),
-      ),
+      decoration: _faqTileDecoration(context),
       child: Column(
         children: [
           // Header (always visible)
@@ -257,7 +239,7 @@ class _FaqScreenState extends State<FaqScreen> {
                 }
               });
             },
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(_faqTileRadius),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
               child: Row(
