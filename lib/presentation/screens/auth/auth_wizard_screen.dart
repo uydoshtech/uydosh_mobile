@@ -1203,7 +1203,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                     fontWeight: FontWeight.w500,
                                   );
                               if (ThemeState().isLightTheme) {
-                                return PrimaryButtonFactory.iconText(
+                                return PrimaryButtonFactory.iconTextCentered(
                                   onPressed: _previousPage,
                                   icon: Icons.chevron_left,
                                   text: L10n.get("back"),
@@ -1216,7 +1216,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   iconSize: 22,
                                 );
                               }
-                              return GhostButtonFactory.iconText(
+                              return GhostButtonFactory.iconTextCentered(
                                 onPressed: _previousPage,
                                 icon: Icons.chevron_left,
                                 text: L10n.get("back"),
@@ -1253,7 +1253,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                     fontWeight: FontWeight.w500,
                                   );
                               if (ThemeState().isLightTheme) {
-                                return PrimaryButtonFactory.textIcon(
+                                return PrimaryButtonFactory.textIconCentered(
                                   onPressed: onNext,
                                   text: nextText,
                                   icon: Icons.chevron_right,
@@ -1266,7 +1266,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   isLoading: _isAuthenticating,
                                 );
                               }
-                              return GhostButtonFactory.textIcon(
+                              return GhostButtonFactory.textIconCentered(
                                 onPressed: onNext,
                                 text: nextText,
                                 icon: Icons.chevron_right,

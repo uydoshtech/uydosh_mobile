@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -268,6 +269,96 @@ class GhostButtonFactory {
           const SizedBox(width: 8),
           ThemeIcon(icon, color: iconColor ?? textColor, size: iconSize),
         ],
+      ),
+    );
+  }
+
+  /// Like [iconText], but keeps the text centered (no horizontal shifting).
+  static Widget iconTextCentered({
+    required VoidCallback? onPressed,
+    required IconData icon,
+    required String text,
+    EdgeInsetsGeometry? padding,
+    double? width,
+    double? height,
+    bool isLoading = false,
+    bool isDisabled = false,
+    Color? borderColor,
+    Color? textColor,
+    Color? iconColor,
+    TextStyle? textStyle,
+    double? iconSize,
+    bool isOnboardingButton = false,
+    bool neumorphicSoftUi = false,
+  }) {
+    final resolvedIconSize = iconSize ?? 22;
+    final slotWidth = resolvedIconSize + 8;
+    return GhostButton(
+      onPressed: onPressed,
+      padding: padding,
+      width: width,
+      height: height,
+      isLoading: isLoading,
+      isDisabled: isDisabled,
+      borderColor: borderColor,
+      textColor: textColor,
+      iconColor: iconColor,
+      textStyle: textStyle,
+      isOnboardingButton: isOnboardingButton,
+      neumorphicSoftUi: neumorphicSoftUi,
+      child: ButtonIconLabel(
+        slotWidth: slotWidth,
+        leading: ThemeIcon(
+          icon,
+          color: iconColor ?? textColor,
+          size: resolvedIconSize,
+        ),
+        label: Text(text),
+      ),
+    );
+  }
+
+  /// Like [textIcon], but keeps the text centered (no horizontal shifting).
+  static Widget textIconCentered({
+    required VoidCallback? onPressed,
+    required String text,
+    required IconData icon,
+    EdgeInsetsGeometry? padding,
+    double? width,
+    double? height,
+    bool isLoading = false,
+    bool isDisabled = false,
+    Color? borderColor,
+    Color? textColor,
+    Color? iconColor,
+    TextStyle? textStyle,
+    double? iconSize,
+    bool isOnboardingButton = false,
+    bool neumorphicSoftUi = false,
+  }) {
+    final resolvedIconSize = iconSize ?? 22;
+    final slotWidth = resolvedIconSize + 8;
+    return GhostButton(
+      onPressed: onPressed,
+      padding: padding,
+      width: width,
+      height: height,
+      isLoading: isLoading,
+      isDisabled: isDisabled,
+      borderColor: borderColor,
+      textColor: textColor,
+      iconColor: iconColor,
+      textStyle: textStyle,
+      isOnboardingButton: isOnboardingButton,
+      neumorphicSoftUi: neumorphicSoftUi,
+      child: ButtonIconLabel(
+        slotWidth: slotWidth,
+        trailing: ThemeIcon(
+          icon,
+          color: iconColor ?? textColor,
+          size: resolvedIconSize,
+        ),
+        label: Text(text),
       ),
     );
   }

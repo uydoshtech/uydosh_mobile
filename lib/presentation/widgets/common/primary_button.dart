@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class PrimaryButton extends StatefulWidget {
@@ -201,6 +202,80 @@ class PrimaryButtonFactory {
           const SizedBox(width: 8),
           Icon(icon, size: iconSize),
         ],
+      ),
+    );
+  }
+
+  /// Like [iconText], but keeps the text centered (no horizontal shifting).
+  static Widget iconTextCentered({
+    required VoidCallback? onPressed,
+    required IconData icon,
+    required String text,
+    EdgeInsetsGeometry? padding,
+    double? width,
+    double? height,
+    BorderRadius? borderRadius,
+    Color? surfaceGradientBase,
+    Color? textColor,
+    TextStyle? textStyle,
+    double? iconSize,
+    bool isLoading = false,
+    bool isDisabled = false,
+  }) {
+    final resolvedIconSize = iconSize ?? 22;
+    final slotWidth = resolvedIconSize + 8;
+    return PrimaryButton(
+      onPressed: onPressed,
+      padding: padding,
+      width: width,
+      height: height,
+      borderRadius: borderRadius,
+      surfaceGradientBase: surfaceGradientBase,
+      textColor: textColor,
+      textStyle: textStyle,
+      isLoading: isLoading,
+      isDisabled: isDisabled,
+      child: ButtonIconLabel(
+        slotWidth: slotWidth,
+        leading: Icon(icon, size: resolvedIconSize),
+        label: Text(text, style: textStyle),
+      ),
+    );
+  }
+
+  /// Like [textIcon], but keeps the text centered (no horizontal shifting).
+  static Widget textIconCentered({
+    required VoidCallback? onPressed,
+    required String text,
+    required IconData icon,
+    EdgeInsetsGeometry? padding,
+    double? width,
+    double? height,
+    BorderRadius? borderRadius,
+    Color? surfaceGradientBase,
+    Color? textColor,
+    TextStyle? textStyle,
+    double? iconSize,
+    bool isLoading = false,
+    bool isDisabled = false,
+  }) {
+    final resolvedIconSize = iconSize ?? 22;
+    final slotWidth = resolvedIconSize + 8;
+    return PrimaryButton(
+      onPressed: onPressed,
+      padding: padding,
+      width: width,
+      height: height,
+      borderRadius: borderRadius,
+      surfaceGradientBase: surfaceGradientBase,
+      textColor: textColor,
+      textStyle: textStyle,
+      isLoading: isLoading,
+      isDisabled: isDisabled,
+      child: ButtonIconLabel(
+        slotWidth: slotWidth,
+        trailing: Icon(icon, size: resolvedIconSize),
+        label: Text(text, style: textStyle),
       ),
     );
   }
