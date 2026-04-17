@@ -91,6 +91,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
   final Set<int> _makingPhotoPrimaryIds =
       {}; // Track which photos are being made primary
 
+  /// Set to true if the 3D scan screen reports an upload/edit happened.
+  bool _roomScanChanged = false;
+
   /// When true, [Navigator.pop] after a successful save is allowed despite dirty form.
   bool _allowPopWithoutConfirm = false;
 
@@ -409,6 +412,74 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   String _normListingText(String? s) => (s ?? "").trim();
 
+  List<String> _computeChangedFieldLabels({
+    required ListingDetail baseline,
+    required int? currentLocationId,
+    required int? currentSubwayStationId,
+    required int? currentSubwayLineId,
+  }) {
+    final changed = <String>[];
+
+    void addLabel(String key, {required String fallback}) {
+      var label = L10n.get(key, fallback: fallback).trim();
+      // Many labels in AppStrings end with ":" (e.g. Move-in date:). Strip for lists.
+      label = label.replaceAll(RegExp(r":\s*$"), "").trim();
+      changed.add(label.isEmpty ? fallback : label);
+    }
+
+    if (_normListingText(_titleController.text) != _normListingText(baseline.title)) {
+      addLabel("listing_title_label", fallback: "Title");
+    }
+    if (_normListingText(_descriptionController.text) != _normListingText(_descriptionForEditing(baseline))) {
+      addLabel("listing_description_label", fallback: "Description");
+    }
+
+    final baselineTypeId = baseline.listingType.code == "roommate_needed" ? 2 : 1;
+    if (_selectedListingTypeId != baselineTypeId) {
+      addLabel("listing_type_label", fallback: "Listing type");
+    }
+
+    final baselineGender = baseline.gender ?? 1;
+    if (_selectedGender != baselineGender) {
+      addLabel("gender", fallback: "Gender");
+    }
+
+    if (_price.round() != baseline.price) {
+      addLabel("listing_price_label", fallback: "Price");
+    }
+
+    if (_isPrivateRoom != (baseline.privateRoom ?? false)) {
+      addLabel("private_room", fallback: "Private room");
+    }
+
+    if (_moveInDateValue != _baselineMoveInDate(baseline)) {
+      addLabel("move_in_date_label", fallback: "Move-in date");
+    }
+
+    if (baseline.locationId != currentLocationId) {
+      addLabel("location", fallback: "Location");
+    }
+
+    if (baseline.subwayStationId != currentSubwayStationId ||
+        baseline.subwayLineId != currentSubwayLineId) {
+      addLabel("select_metro_line_optional", fallback: "Metro");
+    }
+
+    if (!_amenityIdsMatchBaseline()) {
+      addLabel("amenities", fallback: "Amenities");
+    }
+
+    if (_selectedPhotos.isNotEmpty) {
+      addLabel("listing_photos_label", fallback: "Photos");
+    }
+
+    if (_roomScanChanged) {
+      addLabel("room_scan_title", fallback: "3D scan");
+    }
+
+    return changed;
+  }
+
   String _baselineMoveInDate(ListingDetail d) {
     var moveInDate = d.moveInDate ?? "";
     if (moveInDate.isNotEmpty && moveInDate.contains("T")) {
@@ -488,10 +559,25 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   Future<void> _onPopInvoked(bool didPop, dynamic result) async {
     if (didPop) return;
+    final baseline = widget.listingDetail;
+    final changedFields = _computeChangedFieldLabels(
+      baseline: baseline,
+      currentLocationId: _isLoadingLocations ? baseline.locationId : _currentLocationId(),
+      currentSubwayStationId:
+          _isLoadingStations ? baseline.subwayStationId : _currentSubwayStationId(),
+      currentSubwayLineId: _isLoadingStations
+          ? baseline.subwayLineId
+          : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null),
+    );
     final leave = await showDialog<bool>(
       context: context,
       builder: (ctx) {
         final theme = Theme.of(ctx);
+        final changedPrefix = L10n.get("changed_fields");
+        final bullet = "•";
+        final contentText = changedFields.isEmpty
+            ? L10n.get("unsaved_changes_message")
+            : "${L10n.get("unsaved_changes_message")}\n\n$changedPrefix:\n$bullet ${changedFields.join("\n$bullet ")}";
         return AlertDialog(
           backgroundColor: theme.dialogTheme.backgroundColor,
           title: Text(
@@ -503,7 +589,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
             ),
           ),
           content: Text(
-            L10n.get("unsaved_changes_message"),
+            contentText,
             style: TextStyle(
               fontSize: 16,
               color: theme.colorScheme.onSurfaceVariant,
@@ -1168,13 +1254,17 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               child: OutlinedButton.icon(
                                 onPressed: () async {
                                   HapticFeedbackUtils.impact();
-                                  await Navigator.of(context).push<bool>(
+                                  final changed = await Navigator.of(context).push<bool>(
                                     MaterialPageRoute(
                                       builder: (context) => RoomPlanScanScreen(
                                         listingId: widget.listingDetail.id,
                                       ),
                                     ),
                                   );
+                                  if (!mounted) return;
+                                  if (changed == true) {
+                                    setState(() => _roomScanChanged = true);
+                                  }
                                 },
                                 icon: const ThemeIcon(Icons.view_in_ar),
                                 label: Text(
@@ -1399,9 +1489,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
       }
 
       // Show success message
+      final changedFields = _computeChangedFieldLabels(
+        baseline: widget.listingDetail,
+        currentLocationId: selectedLocation.id,
+        currentSubwayStationId: selectedStation?.id,
+        currentSubwayLineId: _selectedSubwayLine > 0 ? _selectedSubwayLine : null,
+      );
+      final baseSuccess = L10n.get("listing_updated_success");
+      final changedPrefix = L10n.get("changed_fields", fallback: "Changed");
       ToastTheme.showSuccess(
         context,
-        message: L10n.get("listing_updated_success"),
+        message: changedFields.isEmpty
+            ? baseSuccess
+            : "$baseSuccess\n$changedPrefix: ${changedFields.join(', ')}",
       );
 
       // Clear all error states on success

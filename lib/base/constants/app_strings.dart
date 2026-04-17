@@ -270,6 +270,7 @@ class AppStrings {
       "create_listing_button": "Create Listing",
       "update_listing_button": "Update Listing",
       "save_changes": "Save Changes",
+      "changed_fields": "Changed",
       "unsaved_changes_title": "Unsaved changes",
       "unsaved_changes_message":
           "You have unsaved changes. If you leave now, they will be lost.",
@@ -325,8 +326,10 @@ class AppStrings {
           "You can only promote a listing once per week",
 
       "listing_title_hint": "Enter listing title",
+      "listing_title_label": "Title",
 
       "listing_description_hint": "Enter listing text",
+      "listing_description_label": "Description",
       "listing_price_label": "Price",
       "listing_translate_tooltip_en": "Translate to English",
       "listing_translate_tooltip_ru": "Translate to Russian",
@@ -350,6 +353,7 @@ class AppStrings {
 
       "listing_type_roommate_needed": "Need Roommate",
       "listing_type_room_needed": "Need Room",
+      "listing_type_label": "Listing type",
       "title_male_roommate": "#NeedRoommate",
       "title_female_roommate": "#NeedRoommate",
       "title_male_room": "#NeedRoom",
@@ -1250,6 +1254,7 @@ class AppStrings {
       "create_listing_button": "Создать объявление",
       "update_listing_button": "Обновить объявление",
       "save_changes": "Сохранить изменения",
+      "changed_fields": "Изменено",
       "unsaved_changes_title": "Несохранённые изменения",
       "unsaved_changes_message":
           "У вас есть несохранённые изменения. Если выйти сейчас, они будут потеряны.",
@@ -1305,8 +1310,10 @@ class AppStrings {
           "Вы можете поднять объявление только раз в неделю",
 
       "listing_title_hint": "Введите заголовок объявления",
+      "listing_title_label": "Заголовок",
 
       "listing_description_hint": "Введите текст объявления",
+      "listing_description_label": "Описание",
       "listing_price_label": "Цена",
       "listing_translate_tooltip_en": "Перевести на английский",
       "listing_translate_tooltip_ru": "Перевести на русский",
@@ -1330,6 +1337,7 @@ class AppStrings {
 
       "listing_type_roommate_needed": "Ищу соседа",
       "listing_type_room_needed": "Ищу жилье",
+      "listing_type_label": "Тип объявления",
       "title_male_roommate": "#ИщемСоседа",
       "title_female_roommate": "#ИщемСоседку",
       "title_male_room": "#ИщуКомнату",
@@ -2239,6 +2247,7 @@ class AppStrings {
       "create_listing_button": "E'lon yaratish",
       "update_listing_button": "E'loni yangilash",
       "save_changes": "O'zgarishlarni saqlash",
+      "changed_fields": "O'zgargan",
       "unsaved_changes_title": "Saqlanmagan o'zgarishlar",
       "unsaved_changes_message":
           "Saqlanmagan o'zgarishlaringiz bor. Hozir chiqsangiz, ular yo'qoladi.",
@@ -2294,8 +2303,10 @@ class AppStrings {
           "E'loni haftada faqat bir marta yuqoriga ko'tarish mumkin",
 
       "listing_title_hint": "E'lon sarlavhasini kiriting",
+      "listing_title_label": "Sarlavha",
 
       "listing_description_hint": "E'lon matnini kiriting",
+      "listing_description_label": "Tavsif",
       "listing_price_label": "Narxi",
       "listing_translate_tooltip_en": "Inglizchaga tarjima qilish",
       "listing_translate_tooltip_ru": "Rus tiliga tarjima qilish",
@@ -2319,6 +2330,7 @@ class AppStrings {
 
       "listing_type_roommate_needed": "Xonadosh qidiraman",
       "listing_type_room_needed": "Xonadon kerak",
+      "listing_type_label": "E'lon turi",
       "title_male_roommate": "#YigitXonadoshQidiramiz",
       "title_female_roommate": "#QizXonadoshQidiramiz",
       "title_male_room": "#YigitXonadonQidiramiz",
