@@ -15,7 +15,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 /// - ToastTheme.showInfo(context, message: "Here"s some information")
 class ToastTheme {
   static const Duration _defaultDuration = Duration(
-    milliseconds: 6000,
+    milliseconds: 3000,
   ); // 6 seconds
 
   static Color _foregroundOn(Color backgroundColor) {
@@ -278,6 +278,7 @@ class ToastTheme {
           (context) => _TopToastOverlay(
             message: message,
             backgroundColor: backgroundColor,
+            duration: duration,
             onDismiss: () {
               overlayEntry.remove();
               _currentToastOverlay = null;
@@ -287,14 +288,6 @@ class ToastTheme {
 
     _currentToastOverlay = overlayEntry;
     overlay.insert(overlayEntry);
-
-    // Auto-dismiss after duration
-    Future.delayed(duration, () {
-      if (overlayEntry.mounted) {
-        overlayEntry.remove();
-        _currentToastOverlay = null;
-      }
-    });
   }
 
   /// Internal method to show the SnackBar (legacy method)
@@ -464,10 +457,12 @@ class _TopToastOverlay extends StatefulWidget {
   const _TopToastOverlay({
     required this.message,
     required this.backgroundColor,
+    required this.duration,
     required this.onDismiss,
   });
   final String message;
   final Color backgroundColor;
+  final Duration duration;
   final VoidCallback onDismiss;
 
   @override
@@ -476,6 +471,7 @@ class _TopToastOverlay extends StatefulWidget {
 
 class _TopToastOverlayState extends State<_TopToastOverlay>
     with TickerProviderStateMixin {
+  static const Duration _animDuration = Duration(milliseconds: 800);
   late AnimationController _slideController;
   late Animation<double> _slideAnimation;
   late Animation<double> _scaleAnimation;
@@ -487,7 +483,7 @@ class _TopToastOverlayState extends State<_TopToastOverlay>
 
     // Controller for slide and scale animations
     _slideController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: _animDuration,
       vsync: this,
     );
 
@@ -522,7 +518,8 @@ class _TopToastOverlayState extends State<_TopToastOverlay>
     _slideController.forward();
 
     // Schedule the slide up animation
-    Future.delayed(const Duration(milliseconds: 800), () {
+    final visibleFor = widget.duration - _animDuration;
+    Future.delayed(visibleFor.isNegative ? Duration.zero : visibleFor, () {
       if (mounted) {
         _startSlideUp();
       }
