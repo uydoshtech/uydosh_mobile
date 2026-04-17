@@ -1210,6 +1210,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   width: double.infinity,
                                   borderRadius: BorderRadius.circular(20),
                                   padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
                                     vertical: 16,
                                   ),
                                   textStyle: textStyle,
@@ -1260,6 +1261,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   width: double.infinity,
                                   borderRadius: BorderRadius.circular(20),
                                   padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
                                     vertical: 16,
                                   ),
                                   textStyle: textStyle,

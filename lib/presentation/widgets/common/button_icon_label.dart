@@ -22,31 +22,32 @@ class ButtonIconLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: Row(
-        children: [
-          SizedBox(
-            width: slotWidth,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: leading,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final boundedWidth = constraints.hasBoundedWidth;
+        return Row(
+          mainAxisSize: boundedWidth ? MainAxisSize.max : MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: slotWidth,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: leading,
+              ),
             ),
-          ),
-          Expanded(
-            child: Center(
-              child: label,
+            boundedWidth
+                ? Expanded(child: Center(child: label))
+                : Flexible(fit: FlexFit.loose, child: Center(child: label)),
+            SizedBox(
+              width: slotWidth,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: trailing,
+              ),
             ),
-          ),
-          SizedBox(
-            width: slotWidth,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: trailing,
-            ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 }
