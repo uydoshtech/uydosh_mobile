@@ -230,6 +230,48 @@ class GhostButtonFactory {
     );
   }
 
+  // Text + Icon button
+  static Widget textIcon({
+    required VoidCallback? onPressed,
+    required String text,
+    required IconData icon,
+    EdgeInsetsGeometry? padding,
+    double? width,
+    double? height,
+    bool isLoading = false,
+    bool isDisabled = false,
+    Color? borderColor,
+    Color? textColor,
+    Color? iconColor,
+    TextStyle? textStyle,
+    double? iconSize,
+    bool isOnboardingButton = false,
+    bool neumorphicSoftUi = false,
+  }) {
+    return GhostButton(
+      onPressed: onPressed,
+      padding: padding,
+      width: width,
+      height: height,
+      isLoading: isLoading,
+      isDisabled: isDisabled,
+      borderColor: borderColor,
+      textColor: textColor,
+      iconColor: iconColor,
+      textStyle: textStyle,
+      isOnboardingButton: isOnboardingButton,
+      neumorphicSoftUi: neumorphicSoftUi,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(text),
+          const SizedBox(width: 8),
+          ThemeIcon(icon, color: iconColor ?? textColor, size: iconSize),
+        ],
+      ),
+    );
+  }
+
   // Text only button
   static Widget text({
     required VoidCallback? onPressed,

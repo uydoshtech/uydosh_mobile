@@ -72,6 +72,25 @@ class TextButtonThemedFactory {
     );
   }
 
+  /// Creates a text button with text and icon (icon on the right)
+  static Widget textIcon({
+    required VoidCallback? onPressed,
+    required String text,
+    required IconData icon,
+    EdgeInsetsGeometry? padding,
+    ButtonStyle? style,
+  }) {
+    return TextButtonThemed(
+      onPressed: onPressed,
+      padding: padding,
+      style: style,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [Text(text), const SizedBox(width: 8), ThemeIcon(icon)],
+      ),
+    );
+  }
+
   /// Creates a text button with icon only
   static Widget icon({
     required VoidCallback? onPressed,

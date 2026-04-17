@@ -13,7 +13,6 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -241,7 +240,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       children: [
                         // Back button (only show if not on first page)
                         if (_currentPage > 0)
-                          TextButtonThemedFactory.text(
+                          TextButtonThemedFactory.iconText(
                             onPressed: () {
                               HapticFeedbackUtils.impact();
                               _pageController.previousPage(
@@ -249,13 +248,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 curve: Curves.easeInOut,
                               );
                             },
+                            icon: Icons.chevron_left,
                             text: L10n.get("onboarding_back"),
                           )
                         else
                           const SizedBox(width: 60),
 
                         // Next/Get Started button
-                        TextButtonThemedFactory.text(
+                        TextButtonThemedFactory.textIcon(
                           onPressed: () {
                             if (_currentPage < 3) {
                               _pageController.nextPage(
@@ -275,6 +275,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 ? "onboarding_next"
                                 : "onboarding_get_started",
                           ),
+                          icon: Icons.chevron_right,
                         ),
                       ],
                     ),

@@ -1203,8 +1203,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                     fontWeight: FontWeight.w500,
                                   );
                               if (ThemeState().isLightTheme) {
-                                return PrimaryButtonFactory.text(
+                                return PrimaryButtonFactory.iconText(
                                   onPressed: _previousPage,
+                                  icon: Icons.chevron_left,
                                   text: L10n.get("back"),
                                   width: double.infinity,
                                   borderRadius: BorderRadius.circular(20),
@@ -1212,10 +1213,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                     vertical: 16,
                                   ),
                                   textStyle: textStyle,
+                                  iconSize: 22,
                                 );
                               }
-                              return GhostButtonFactory.text(
+                              return GhostButtonFactory.iconText(
                                 onPressed: _previousPage,
+                                icon: Icons.chevron_left,
                                 text: L10n.get("back"),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 32,
@@ -1224,6 +1227,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                 textStyle: textStyle,
                                 isOnboardingButton: true,
                                 neumorphicSoftUi: true,
+                                iconSize: 22,
                               );
                             },
                           ),
@@ -1249,9 +1253,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                     fontWeight: FontWeight.w500,
                                   );
                               if (ThemeState().isLightTheme) {
-                                return PrimaryButtonFactory.text(
+                                return PrimaryButtonFactory.textIcon(
                                   onPressed: onNext,
                                   text: nextText,
+                                  icon: Icons.chevron_right,
                                   width: double.infinity,
                                   borderRadius: BorderRadius.circular(20),
                                   padding: const EdgeInsets.symmetric(
@@ -1261,9 +1266,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   isLoading: _isAuthenticating,
                                 );
                               }
-                              return GhostButtonFactory.text(
+                              return GhostButtonFactory.textIcon(
                                 onPressed: onNext,
                                 text: nextText,
+                                icon: Icons.chevron_right,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 32,
                                   vertical: 16,

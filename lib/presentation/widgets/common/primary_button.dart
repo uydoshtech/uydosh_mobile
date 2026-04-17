@@ -168,6 +168,43 @@ class PrimaryButtonFactory {
     );
   }
 
+  static Widget textIcon({
+    required VoidCallback? onPressed,
+    required String text,
+    required IconData icon,
+    EdgeInsetsGeometry? padding,
+    double? width,
+    double? height,
+    BorderRadius? borderRadius,
+    Color? surfaceGradientBase,
+    Color? textColor,
+    TextStyle? textStyle,
+    double? iconSize,
+    bool isLoading = false,
+    bool isDisabled = false,
+  }) {
+    return PrimaryButton(
+      onPressed: onPressed,
+      padding: padding,
+      width: width,
+      height: height,
+      borderRadius: borderRadius,
+      surfaceGradientBase: surfaceGradientBase,
+      textColor: textColor,
+      textStyle: textStyle,
+      isLoading: isLoading,
+      isDisabled: isDisabled,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(text, style: textStyle),
+          const SizedBox(width: 8),
+          Icon(icon, size: iconSize),
+        ],
+      ),
+    );
+  }
+
   static Widget text({
     required VoidCallback? onPressed,
     required String text,
