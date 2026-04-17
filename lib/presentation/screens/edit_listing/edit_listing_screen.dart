@@ -554,6 +554,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
     if (_selectedPhotos.isNotEmpty) return true;
 
+    if (_roomScanChanged) return true;
+
     return false;
   }
 
@@ -1249,12 +1251,13 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const SizedBox(height: 16),
-                            Align(
-                              alignment: Alignment.centerLeft,
+                            SizedBox(
+                              width: double.infinity,
                               child: OutlinedButton.icon(
                                 onPressed: () async {
                                   HapticFeedbackUtils.impact();
-                                  final changed = await Navigator.of(context).push<bool>(
+                                  final changed =
+                                      await Navigator.of(context).push<bool>(
                                     MaterialPageRoute(
                                       builder: (context) => RoomPlanScanScreen(
                                         listingId: widget.listingDetail.id,
@@ -1266,12 +1269,20 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     setState(() => _roomScanChanged = true);
                                   }
                                 },
-                                icon: const ThemeIcon(Icons.view_in_ar),
+                                icon: ThemeIcon(
+                                  Icons.view_in_ar,
+                                  color: ThemeState().isBlueTheme
+                                      ? Colors.white
+                                      : null,
+                                ),
                                 label: Text(
                                   L10n.get("add_room_scan_3d"),
                                   style: ThemeState().isBlueTheme
                                       ? const TextStyle(color: Colors.white)
                                       : null,
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(44),
                                 ),
                               ),
                             ),

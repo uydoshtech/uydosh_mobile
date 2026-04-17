@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -38,9 +40,13 @@ class ChatMessageInput extends StatelessWidget {
           scheme.onSurface,
           themeState.isBlueTheme ? 0.06 : 0.02,
         )!;
+        final bottomInset = math.max(
+          MediaQuery.viewPaddingOf(context).bottom,
+          16.0,
+        );
 
         return Container(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
           decoration: BoxDecoration(
             color: themeState.chatInputBarBackgroundColor,
             border: Border(top: BorderSide(color: borderColor)),

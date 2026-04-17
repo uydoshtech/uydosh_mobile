@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -693,6 +695,10 @@ class _AdminSupportChatThreadScreenState
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
+        final bottomInset = math.max(
+          MediaQuery.viewPaddingOf(context).bottom,
+          16.0,
+        );
         final inputFieldBg = themeState.inputBackgroundColor;
         final inputFieldBrightness =
             ThemeData.estimateBrightnessForColor(inputFieldBg);
@@ -701,7 +707,7 @@ class _AdminSupportChatThreadScreenState
             : Colors.black;
         final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
         return Container(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomInset),
           decoration: BoxDecoration(
             color: themeState.chatInputBarBackgroundColor,
             border: Border(top: BorderSide(color: themeState.borderColor)),

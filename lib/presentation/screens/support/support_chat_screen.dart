@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -207,13 +209,27 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-                  FilledButton.icon(
+                  OutlinedButton.icon(
                     onPressed: _creatingThread ? null : _createNewThread,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: ThemeState().textColor,
+                      side: BorderSide(
+                        color: ThemeState().textColor.withValues(alpha: 0.35),
+                        width: 1,
+                      ),
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
                     icon: _creatingThread
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                ThemeState().textColor,
+                              ),
+                            ),
                           )
                         : const ThemeIcon(Icons.add),
                     label: Text(L10n.get("contact_support_new")),
@@ -223,13 +239,27 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
             );
           }
           if (index == 0) {
-            return FilledButton.icon(
+            return OutlinedButton.icon(
               onPressed: _creatingThread ? null : _createNewThread,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: ThemeState().textColor,
+                side: BorderSide(
+                  color: ThemeState().textColor.withValues(alpha: 0.35),
+                  width: 1,
+                ),
+                shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
               icon: _creatingThread
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          ThemeState().textColor,
+                        ),
+                      ),
                     )
                   : const ThemeIcon(Icons.add),
               label: Text(L10n.get("contact_support_new")),
@@ -569,6 +599,11 @@ class _UserSupportChatThreadScreenState
       builder: (context, child) {
         final themeState = ThemeState();
         final scheme = Theme.of(context).colorScheme;
+        // `padding.bottom` is often 0 on Flutter web/desktop; keep a minimum gutter.
+        final bottomInset = math.max(
+          MediaQuery.viewPaddingOf(context).bottom,
+          16.0,
+        );
         final inputFieldBg = themeState.inputBackgroundColor;
         final inputFieldBrightness = ThemeData.estimateBrightnessForColor(inputFieldBg);
         final inputFieldTextColor =
@@ -580,7 +615,7 @@ class _UserSupportChatThreadScreenState
           themeState.isBlueTheme ? 0.06 : 0.02,
         )!;
         return Container(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomInset),
           decoration: BoxDecoration(
             color: themeState.chatInputBarBackgroundColor,
             border: Border(top: BorderSide(color: themeState.borderColor)),
