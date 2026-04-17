@@ -177,7 +177,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
     }
 
     return CommonListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.all(16.0),
       itemCount: _viewedListings.length,
       itemSpacing: 16.0,
       itemBuilder: (context, index) {
