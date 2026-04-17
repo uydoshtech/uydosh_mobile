@@ -1189,15 +1189,43 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     children: [
                       if (_currentPage > 0)
                         Expanded(
-                          child: GhostButtonFactory.text(
-                            onPressed: _previousPage,
-                            text: L10n.get("back"),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 16,
-                            ),
-                            isOnboardingButton: true,
-                            neumorphicSoftUi: true,
+                          child: Builder(
+                            builder: (context) {
+                              final label = Theme.of(context).textTheme.labelLarge;
+                              final textStyle =
+                                  label?.copyWith(
+                                        fontSize: 17,
+                                        height: 1.0,
+                                      ) ??
+                                  const TextStyle(
+                                    fontSize: 17,
+                                    height: 1.0,
+                                    fontWeight: FontWeight.w500,
+                                  );
+                              if (ThemeState().isLightTheme) {
+                                return PrimaryButtonFactory.text(
+                                  onPressed: _previousPage,
+                                  text: L10n.get("back"),
+                                  width: double.infinity,
+                                  borderRadius: BorderRadius.circular(20),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  textStyle: textStyle,
+                                );
+                              }
+                              return GhostButtonFactory.text(
+                                onPressed: _previousPage,
+                                text: L10n.get("back"),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 16,
+                                ),
+                                textStyle: textStyle,
+                                isOnboardingButton: true,
+                                neumorphicSoftUi: true,
+                              );
+                            },
                           ),
                         ),
                       if (_currentPage > 0 && _currentPage != 1)
@@ -1210,14 +1238,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                               final nextText = L10n.get(_getNextButtonTextKey());
                               final onNext = _getNextButtonAction();
                               final label = Theme.of(context).textTheme.labelLarge;
-                              final baseSize = label?.fontSize ?? 14;
                               final textStyle =
                                   label?.copyWith(
-                                        fontSize: baseSize * 1.2,
+                                        fontSize: 17,
                                         height: 1.0,
                                       ) ??
-                                  TextStyle(
-                                    fontSize: baseSize * 1.2,
+                                  const TextStyle(
+                                    fontSize: 17,
                                     height: 1.0,
                                     fontWeight: FontWeight.w500,
                                   );
