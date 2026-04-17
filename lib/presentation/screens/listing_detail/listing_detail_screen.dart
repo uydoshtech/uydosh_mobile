@@ -1875,7 +1875,8 @@ L10n.get("feature_listing_error",
             mainAxisSize: MainAxisSize.min,
             children: [
               ListingDetailMetaBadges(listingDetail: listingDetail),
-              if (listingDetail.listingType.code != "room_needed")
+              if (listingDetail.listingType.code != "room_needed" &&
+                  listingDetail.price > 0)
                 ListenableBuilder(
                   listenable: AdminFeatureFlagsState(),
                   builder: (context, _) {
