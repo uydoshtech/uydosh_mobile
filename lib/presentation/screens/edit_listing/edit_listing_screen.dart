@@ -271,8 +271,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
         curve: Curves.easeInOut,
       );
     });
-    // Sync location with the selected station when stations are loaded
-    _syncLocationWithStation();
+    // Only derive location from the station when the listing has no saved
+    // location; otherwise the wheel must match [listingDetail.location] like
+    // the detail screen (station.location_id can differ).
+    if (widget.listingDetail.location == null) {
+      _syncLocationWithStation();
+    }
   }
 
   /// Sync location picker with the selected subway station's location_id
@@ -321,10 +325,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
         return aName.compareTo(bName);
       });
 
-      // Find and set the current location index
+      // Index must be into [_currentLocations] (sorted), not the raw API list.
       if (widget.listingDetail.location != null) {
         final currentLocationId = widget.listingDetail.location!.id;
-        final locationIndex = locations.indexWhere(
+        final locationIndex = _currentLocations.indexWhere(
           (location) => location.id == currentLocationId,
         );
         _selectedLocationIndex = locationIndex >= 0 ? locationIndex : -1;
@@ -334,6 +338,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
       _isLoadingLocations = false;
     });
+    if (widget.listingDetail.location == null) {
+      _syncLocationWithStation();
+    }
   }
 
   // Helper method to get the appropriate name based on current language
