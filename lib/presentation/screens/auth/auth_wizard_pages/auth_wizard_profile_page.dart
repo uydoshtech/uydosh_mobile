@@ -5,6 +5,7 @@ import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AuthWizardProfilePage extends StatelessWidget {
@@ -295,8 +296,9 @@ class AuthWizardProfilePage extends StatelessWidget {
     IconData icon,
   ) {
     final isSelected = selectedGender == gender;
-    return GestureDetector(
+    return PressableTransform(
       onTap: () => onGenderSelected(gender),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -346,8 +348,9 @@ class AuthWizardProfilePage extends StatelessWidget {
     IconData icon,
   ) {
     final isSelected = selectedRole == role;
-    return GestureDetector(
+    return PressableTransform(
       onTap: () => onRoleSelected(role),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -397,8 +400,9 @@ class AuthWizardProfilePage extends StatelessWidget {
     IconData icon,
   ) {
     final isSelected = isStudent == studentValue;
-    return GestureDetector(
+    return PressableTransform(
       onTap: () => onStudentSelected(studentValue),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -453,7 +457,7 @@ class AuthWizardProfilePage extends StatelessWidget {
           width: 2,
         ),
       ),
-      child: InkWell(
+      child: PressableTransform(
         onTap: onShowRegionPicker,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -543,7 +547,7 @@ class AuthWizardProfilePage extends StatelessWidget {
           width: 2,
         ),
       ),
-      child: InkWell(
+      child: PressableTransform(
         onTap: onShowUniversityPicker,
         borderRadius: BorderRadius.circular(12),
         child: Padding(

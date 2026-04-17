@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class AuthWizardLanguagePage extends StatelessWidget {
@@ -74,8 +75,9 @@ class AuthWizardLanguagePage extends StatelessWidget {
     final surface = scheme.surface;
     const borderRadius = BorderRadius.all(Radius.circular(16));
 
-    return GestureDetector(
+    return PressableTransform(
       onTap: () => onLanguageSelected(languageCode),
+      borderRadius: borderRadius,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),

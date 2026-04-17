@@ -8,15 +8,29 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
-class AuthWizardGoogleSignInPage extends StatelessWidget {
+class AuthWizardGoogleSignInPage extends StatefulWidget {
   const AuthWizardGoogleSignInPage({
-    required this.isAuthenticating, required this.isGoogleSignedIn, required this.currentUser, required this.onSignInWithGoogle, super.key,
+    required this.isAuthenticating,
+    required this.isGoogleSignedIn,
+    required this.currentUser,
+    required this.onSignInWithGoogle,
+    super.key,
   });
 
   final bool isAuthenticating;
   final bool isGoogleSignedIn;
   final User? currentUser;
   final VoidCallback onSignInWithGoogle;
+
+  @override
+  State<AuthWizardGoogleSignInPage> createState() =>
+      _AuthWizardGoogleSignInPageState();
+}
+
+class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage> {
+  bool _pressed = false;
+
+  bool get _enabled => !widget.isAuthenticating;
 
   Color _getOnboardingTextColor(BuildContext context) =>
       Theme.of(context).colorScheme.onSurface;
@@ -52,34 +66,53 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  if (!isGoogleSignedIn) ...[
+                  if (!widget.isGoogleSignedIn) ...[
                     Center(
                       child: SizedBox(
                         width: 199,
                         height: 44,
-                        child: InkWell(
-                          onTap: isAuthenticating ? null : onSignInWithGoogle,
-                          borderRadius: BorderRadius.circular(22),
-                          child: ListenableBuilder(
-                            listenable: ThemeState(),
-                            builder: (context, child) {
-                              final currentTheme = ThemeState().currentTheme;
-                              final svgAsset =
-                                  currentTheme == AppTheme.lightTheme
-                                      ? "assets/images/ios_dark_rd_ctn.svg"
-                                      : "assets/images/ios_neutral_rd_ctn.svg";
-                              return SvgPicture.asset(
-                                svgAsset,
-                                width: 199,
-                                height: 44,
-                              );
-                            },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 90),
+                          transform: Matrix4.translationValues(
+                            0,
+                            _pressed && _enabled ? 2 : 0,
+                            0,
+                          ),
+                          child: InkWell(
+                            onTap:
+                                widget.isAuthenticating
+                                    ? null
+                                    : widget.onSignInWithGoogle,
+                            borderRadius: BorderRadius.circular(22),
+                            onHighlightChanged:
+                                _enabled
+                                    ? (v) => setState(() => _pressed = v)
+                                    : null,
+                            child: Opacity(
+                              opacity: _enabled ? 1 : 0.55,
+                              child: ListenableBuilder(
+                                listenable: ThemeState(),
+                                builder: (context, child) {
+                                  final currentTheme =
+                                      ThemeState().currentTheme;
+                                  final svgAsset =
+                                      currentTheme == AppTheme.lightTheme
+                                          ? "assets/images/ios_dark_rd_ctn.svg"
+                                          : "assets/images/ios_neutral_rd_ctn.svg";
+                                  return SvgPicture.asset(
+                                    svgAsset,
+                                    width: 199,
+                                    height: 44,
+                                  );
+                                },
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ],
-                  if (isGoogleSignedIn && currentUser != null) ...[
+                  if (widget.isGoogleSignedIn && widget.currentUser != null) ...[
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -88,10 +121,10 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          currentUser!.photoURL != null
+                          widget.currentUser!.photoURL != null
                               ? ClipOval(
                                   child: CachedNetworkImage(
-                                    imageUrl: currentUser!.photoURL!,
+                                    imageUrl: widget.currentUser!.photoURL!,
                                     width: 60,
                                     height: 60,
                                     fit: BoxFit.cover,
@@ -123,7 +156,7 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  currentUser!.displayName ?? "User",
+                                  widget.currentUser!.displayName ?? "User",
                                   style: TextStyle(
                                     color: _getOnboardingTextColor(context),
                                     fontSize: 18,
@@ -131,7 +164,7 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  currentUser!.email ?? "",
+                                  widget.currentUser!.email ?? "",
                                   style: TextStyle(
                                     color: _getOnboardingTextSecondaryColor(context),
                                     fontSize: 14,
@@ -154,7 +187,7 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                         switchInCurve: Curves.easeOut,
                         switchOutCurve: Curves.easeIn,
                         child:
-                            isAuthenticating
+                            widget.isAuthenticating
                                 ? CenteredHouseLoadingIndicator(
                                   key: const ValueKey("auth_loader"),
                                   text: L10n.get("signing_in"),
