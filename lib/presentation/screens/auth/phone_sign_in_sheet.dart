@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:firebase_auth/firebase_auth.dart";
+import "package:flutter/foundation.dart" show kDebugMode;
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -37,6 +38,12 @@ class PhoneSignInSheet extends StatefulWidget {
 }
 
 enum _Step { enterPhone, enterCode }
+
+/// Firebase test number that must also be registered in
+/// Firebase Console → Auth → Sign-in method → Phone numbers for testing.
+/// No real SMS is sent for this number — the fixed code configured in the
+/// console will verify it.
+const String _kFirebaseTestPhoneNumber = "+1 0000000000";
 
 class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
   late final IPhoneAuthService _phoneAuth;
@@ -77,6 +84,16 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
   }
 
   String _normalizePhone(String raw) => raw.replaceAll(RegExp(r"[^\d+]"), "");
+
+  /// Debug-only: prefill the phone field with the Firebase test number so the
+  /// flow can be verified end-to-end without burning real SMS quota.
+  /// The fixed SMS code is whatever you configured in Firebase Console.
+  void _prefillTestNumber() {
+    _phoneController.text = _kFirebaseTestPhoneNumber;
+    _phoneController.selection = TextSelection.fromPosition(
+      TextPosition(offset: _phoneController.text.length),
+    );
+  }
 
   Future<void> _onSendCode() async {
     final phone = _normalizePhone(_phoneController.text);
@@ -311,6 +328,23 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
           ),
           onSubmitted: (_) => _onSendCode(),
         ),
+        if (kDebugMode) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _busy ? null : _prefillTestNumber,
+              icon: const Icon(Icons.science_outlined, size: 16),
+              label: const Text("Use Firebase test number"),
+              style: TextButton.styleFrom(
+                foregroundColor: textColor.withValues(alpha: 0.75),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                visualDensity: VisualDensity.compact,
+                textStyle: const TextStyle(fontSize: 12),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 20),
         PrimaryButtonFactory.textIconCentered(
           onPressed: _busy ? null : _onSendCode,
