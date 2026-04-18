@@ -94,6 +94,13 @@ abstract final class AuthWizardTheme {
     return Colors.black;
   }
 
+  static Color getBottomSheetCursorColor() {
+    if (ThemeState().isBlueTheme) {
+      return BlueThemeColors.primary;
+    }
+    return Colors.black;
+  }
+
   static Color getBottomSheetHandleColor(BuildContext context) {
     if (ThemeState().isBlueTheme) {
       return Colors.grey.shade400;

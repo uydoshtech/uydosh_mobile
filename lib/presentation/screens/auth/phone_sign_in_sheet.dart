@@ -312,6 +312,7 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
           focusNode: _phoneFocus,
           keyboardType: TextInputType.phone,
           enabled: !_busy,
+          cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
           style: TextStyle(color: textColor, fontSize: 18),
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r"[\d+\s]")),
@@ -371,6 +372,7 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
           enabled: !_busy,
           maxLength: 6,
           textAlign: TextAlign.center,
+          cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
           style: TextStyle(
             color: textColor,
             fontSize: 28,
