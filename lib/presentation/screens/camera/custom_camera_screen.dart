@@ -39,57 +39,21 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
   _CaptureStage _stage = _CaptureStage.live;
   XFile? _captured;
 
-  // Tracks the device's physical tilt (reported by the camera plugin even
-  // while the UI is orientation-locked). Drives in-place rotation of the
-  // control icons so they stay upright for the user. Apple-Camera style.
-  DeviceOrientation _deviceOrientation = DeviceOrientation.portraitUp;
-
-  void _onControllerValueChanged() {
-    final value = _controller?.value;
-    if (value == null || !value.isInitialized) return;
-    final next = value.deviceOrientation;
-    if (next != _deviceOrientation) {
-      setState(() => _deviceOrientation = next);
-    }
-  }
-
-  /// Quarter-turn rotation (in turns, where 1.0 = 360°) that brings an
-  /// upright widget into the user's physical frame of reference.
-  double get _controlsRotationTurns {
-    switch (_deviceOrientation) {
-      case DeviceOrientation.portraitUp:
-        return 0;
-      case DeviceOrientation.landscapeLeft:
-        return 0.25;
-      case DeviceOrientation.portraitDown:
-        return 0.5;
-      case DeviceOrientation.landscapeRight:
-        return -0.25;
-    }
-  }
-
-  /// Wraps [child] in an [AnimatedRotation] driven by device tilt so the
-  /// control stays upright in the user's frame of reference.
-  Widget _rotateWithDevice(Widget child) {
-    return AnimatedRotation(
-      turns: _controlsRotationTurns,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      child: child,
-    );
-  }
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Lock the camera screen to portrait. The `camera` plugin's preview is
-    // pinned to the orientation active at `initialize()` time and doesn't
-    // rotate reliably on Android, so letting the UI rotate produces a
-    // stretched / mis-rotated frame. Standard camera-app UX is to stay in
-    // portrait.
+    // Unlock orientation while the camera screen is mounted so the OS
+    // reports physical device tilt correctly to the `camera` plugin. This
+    // is the ONLY reliable way to get landscape captures to actually save
+    // as landscape — the plugin ties capture orientation to the system's
+    // current interface orientation, so if we keep the UI portrait-locked
+    // the saved photo always ends up portrait regardless of how the phone
+    // was held.
     SystemChrome.setPreferredOrientations(const [
       DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
     ]);
     _bootstrap();
   }
@@ -105,6 +69,13 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       DeviceOrientation.portraitUp,
     ]);
     super.dispose();
+  }
+
+  /// Listener on the controller's value so we can trigger a rebuild when
+  /// the plugin reports a new device orientation (keeps the capture in
+  /// sync even if the user rotates while the preview is running).
+  void _onControllerValueChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -222,7 +193,23 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     setState(() => _capturing = true);
     try {
       HapticFeedbackUtils.impact();
+      // Freeze capture orientation to whatever the plugin currently reports
+      // as the device's physical tilt. This is what lets landscape shots
+      // actually save as landscape pixels: without an explicit lock, some
+      // platforms fall back to the last interface orientation, which can
+      // lag behind a fast rotate-then-shoot.
+      try {
+        await controller
+            .lockCaptureOrientation(controller.value.deviceOrientation);
+      } catch (_) {
+        // Non-fatal — orientation will fall back to the plugin default.
+      }
       final file = await controller.takePicture();
+      try {
+        await controller.unlockCaptureOrientation();
+      } catch (_) {
+        // Non-fatal.
+      }
       if (!mounted) return;
       setState(() {
         _captured = file;
@@ -328,20 +315,27 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       return const SizedBox.shrink();
     }
 
-    // `controller.value.aspectRatio` is width / height in the camera's native
-    // (landscape) orientation. On a portrait phone we need to fill the screen
-    // without distorting the preview → scale it up with Transform.scale using
-    // the canonical `size.aspectRatio * cameraAspectRatio` recipe.
-    final size = MediaQuery.sizeOf(context);
-    final cameraAspectRatio = controller.value.aspectRatio;
-    var scale = size.aspectRatio * cameraAspectRatio;
-    if (scale < 1) scale = 1 / scale;
+    // `previewSize` is always reported in the camera's sensor orientation
+    // (landscape, e.g. 1920x1080). If we hand those raw dims to `SizedBox`
+    // on a portrait UI, `CameraPreview`'s internal `AspectRatio` gets tight
+    // landscape constraints it can't satisfy → the texture gets stretched
+    // into a landscape box (looks like a fish-eye / squashed preview).
+    //
+    // Swap width/height when the UI is portrait so the box matches the
+    // orientation `CameraPreview` actually lays out for. `FittedBox(cover)`
+    // then scales that correctly-proportioned box to fill the screen.
+    final previewSize = controller.value.previewSize ?? const Size(4, 3);
+    final isLandscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+    final boxWidth = isLandscape ? previewSize.width : previewSize.height;
+    final boxHeight = isLandscape ? previewSize.height : previewSize.width;
 
     return ClipRect(
-      child: Transform.scale(
-        scale: scale,
-        alignment: Alignment.center,
-        child: Center(
+      child: FittedBox(
+        fit: BoxFit.cover,
+        child: SizedBox(
+          width: boxWidth,
+          height: boxHeight,
           child: CameraPreview(controller),
         ),
       ),
@@ -360,22 +354,20 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       right: 24,
       bottom: bottomPadding + 26,
       child: IgnorePointer(
-        child: _rotateWithDevice(
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.25),
-              ),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.25),
             ),
-            child: Image.asset(
-              "assets/icon/app_logo.png",
-              width: 48,
-              height: 48,
-              fit: BoxFit.contain,
-            ),
+          ),
+          child: Image.asset(
+            "assets/icon/app_logo.png",
+            width: 48,
+            height: 48,
+            fit: BoxFit.contain,
           ),
         ),
       ),
@@ -402,21 +394,17 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
         ),
         child: Row(
           children: [
-            _rotateWithDevice(
-              _CameraIconButton(
-                icon: Icons.close,
-                onPressed: _cancel,
-                tooltip: L10n.get("close"),
-              ),
+            _CameraIconButton(
+              icon: Icons.close,
+              onPressed: _cancel,
+              tooltip: L10n.get("close"),
             ),
             const Spacer(),
             if (_stage == _CaptureStage.live)
-              _rotateWithDevice(
-                _CameraIconButton(
-                  icon: _flashIcon,
-                  onPressed: _cycleFlash,
-                  tooltip: L10n.get("flash"),
-                ),
+              _CameraIconButton(
+                icon: _flashIcon,
+                onPressed: _cycleFlash,
+                tooltip: L10n.get("flash"),
               ),
           ],
         ),
@@ -473,20 +461,16 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _rotateWithDevice(
-          _CameraTextButton(
-            icon: Icons.refresh,
-            label: L10n.get("retake"),
-            onPressed: _retake,
-          ),
+        _CameraTextButton(
+          icon: Icons.refresh,
+          label: L10n.get("retake"),
+          onPressed: _retake,
         ),
-        _rotateWithDevice(
-          _CameraTextButton(
-            icon: Icons.check,
-            label: L10n.get("use_photo"),
-            filled: true,
-            onPressed: _usePhoto,
-          ),
+        _CameraTextButton(
+          icon: Icons.check,
+          label: L10n.get("use_photo"),
+          filled: true,
+          onPressed: _usePhoto,
         ),
       ],
     );

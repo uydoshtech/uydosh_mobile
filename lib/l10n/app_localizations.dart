@@ -505,7 +505,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifications_alerts_explainer.
   ///
   /// In en, this message translates to:
-  /// **'Here are your alerts.\nAs soon as matching housing or a neighbor appears, we\'ll let you know right away.'**
+  /// **'Here are your alerts.\nAs soon as matching housing or a neighbor appears — we\'ll send you a push notification.'**
   String get notifications_alerts_explainer;
 
   /// No description provided for @notifications_open_settings.
@@ -2571,6 +2571,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).'**
   String get admin_client_config_disable_lidar_room_scan_description;
+
+  /// No description provided for @admin_client_config_disable_custom_camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Use in-app custom camera'**
+  String get admin_client_config_disable_custom_camera;
+
+  /// No description provided for @admin_client_config_disable_custom_camera_description.
+  ///
+  /// In en, this message translates to:
+  /// **'When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device\'s native camera. Applies to all users and devices (stored on the server).'**
+  String get admin_client_config_disable_custom_camera_description;
 
   /// No description provided for @admin_content_moderation_blur_enabled.
   ///

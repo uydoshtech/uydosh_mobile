@@ -6,6 +6,8 @@ abstract class IPublicAppSettingsService {
   Future<bool> getGeminiListingUiHidden();
 
   Future<bool> getLidarRoomScanDisabled();
+
+  Future<bool> getCustomCameraDisabled();
 }
 
 class PublicAppSettingsService implements IPublicAppSettingsService {
@@ -47,6 +49,25 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
       return false;
     } catch (e) {
       logger.d("PublicAppSettingsService.getLidarRoomScanDisabled: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> getCustomCameraDisabled() async {
+    try {
+      final response = await _apiClient.get<dynamic>(
+        "/app/settings/custom-camera-disabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      if (response is Map) {
+        final map = Map<String, dynamic>.from(response);
+        return map["disabled"] as bool? ?? false;
+      }
+      return false;
+    } catch (e) {
+      logger.d("PublicAppSettingsService.getCustomCameraDisabled: $e");
       rethrow;
     }
   }

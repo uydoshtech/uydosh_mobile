@@ -73,6 +73,27 @@ class _PatchLidarRoomScanDisabledRequest implements IJsonEncodable {
   dynamic toJson() => {"disabled": disabled};
 }
 
+class CustomCameraDisabledResponse {
+  CustomCameraDisabledResponse({required this.disabled});
+
+  factory CustomCameraDisabledResponse.fromJson(Map<String, dynamic> json) {
+    return CustomCameraDisabledResponse(
+      disabled: json["disabled"] as bool? ?? false,
+    );
+  }
+
+  final bool disabled;
+}
+
+class _PatchCustomCameraDisabledRequest implements IJsonEncodable {
+  _PatchCustomCameraDisabledRequest({required this.disabled});
+
+  final bool disabled;
+
+  @override
+  dynamic toJson() => {"disabled": disabled};
+}
+
 abstract class IAdminContentModerationSettingsService {
   Future<ContentModerationBlurResponse> getContentModerationBlurSetting();
 
@@ -89,6 +110,12 @@ abstract class IAdminContentModerationSettingsService {
   Future<LidarRoomScanDisabledResponse> getLidarRoomScanDisabledSetting();
 
   Future<LidarRoomScanDisabledResponse> setLidarRoomScanDisabled({
+    required bool disabled,
+  });
+
+  Future<CustomCameraDisabledResponse> getCustomCameraDisabledSetting();
+
+  Future<CustomCameraDisabledResponse> setCustomCameraDisabled({
     required bool disabled,
   });
 }
@@ -224,6 +251,49 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating LiDAR room scan disabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<CustomCameraDisabledResponse> getCustomCameraDisabledSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/custom-camera-disabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return CustomCameraDisabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from custom camera settings",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading custom camera disabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<CustomCameraDisabledResponse> setCustomCameraDisabled({
+    required bool disabled,
+  }) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/custom-camera-disabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchCustomCameraDisabledRequest(disabled: disabled),
+      );
+      return CustomCameraDisabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from custom camera settings",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating custom camera disabled setting: $e");
       rethrow;
     }
   }

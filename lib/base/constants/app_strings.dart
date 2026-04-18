@@ -569,6 +569,9 @@ class AppStrings {
           "Show translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
           "Shows description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).",
+      "admin_client_config_disable_custom_camera": "Use in-app custom camera",
+      "admin_client_config_disable_custom_camera_description":
+          "When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device's native camera. Applies to all users and devices (stored on the server).",
       "admin_client_config_disable_lidar_room_scan": "Enable LiDAR room scan",
       "admin_client_config_disable_lidar_room_scan_description":
           "Enables the add-scan flow after creating a listing, the add-scan button when editing, and allows scan uploads. Applies to all users and devices (stored on the server).",
@@ -1561,6 +1564,10 @@ class AppStrings {
           "Показывать перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
           "Показывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Действует для всех пользователей и устройств (хранится на сервере).",
+      "admin_client_config_disable_custom_camera":
+          "Использовать встроенную камеру",
+      "admin_client_config_disable_custom_camera_description":
+          "Когда включено, съёмка фото открывает встроенную камеру с водяным знаком. Когда выключено, клиенты используют стандартную камеру устройства. Действует для всех пользователей и устройств (хранится на сервере).",
       "admin_client_config_disable_lidar_room_scan":
           "Включить сканирование LiDAR",
       "admin_client_config_disable_lidar_room_scan_description":
@@ -2567,6 +2574,10 @@ class AppStrings {
           "Tarjima va AI yaxshilashni ko‘rsatish",
       "admin_client_config_hide_gemini_listing_ui_description":
           "E'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni ko‘rsatadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+      "admin_client_config_disable_custom_camera":
+          "Ichki kamera rejimidan foydalanish",
+      "admin_client_config_disable_custom_camera_description":
+          "Yoqilganda, foto olish vaqtida suv belgisi bilan ichki kamera ochiladi. O'chirilganda, klientlar qurilmaning standart kamerasiga o'tadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
       "admin_client_config_disable_lidar_room_scan":
           "LiDAR xona skanini yoqish",
       "admin_client_config_disable_lidar_room_scan_description":

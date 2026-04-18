@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -35,6 +36,8 @@ class _AdminContentModerationScreenState
   bool _isSavingGemini = false;
   bool _lidarRoomScanEnabled = true;
   bool _isSavingLidar = false;
+  bool _customCameraEnabled = true;
+  bool _isSavingCustomCamera = false;
   bool _isSavingListingContacts = false;
   bool _isSavingPriceInsights = false;
   bool _isSavingTooltips = false;
@@ -58,16 +61,19 @@ class _AdminContentModerationScreenState
           await _settingsService.getGeminiListingUiHiddenSetting();
       final lidarRes =
           await _settingsService.getLidarRoomScanDisabledSetting();
+      final cameraRes = await _settingsService.getCustomCameraDisabledSetting();
       if (!mounted) return;
       setState(() {
         _blurEnabled = blurRes.enabled;
         // UI is positive: ON means enabled/shown.
         _geminiListingUiEnabled = !geminiRes.hidden;
         _lidarRoomScanEnabled = !lidarRes.disabled;
+        _customCameraEnabled = !cameraRes.disabled;
         _isLoading = false;
       });
       ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
       ClientLidarRoomScanConfig.applyDisabled(disabled: !_lidarRoomScanEnabled);
+      ClientCustomCameraConfig.applyDisabled(disabled: !_customCameraEnabled);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -95,6 +101,33 @@ class _AdminContentModerationScreenState
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSavingLidar = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "${L10n.get("admin_content_moderation_save_error")}: $e",
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onCustomCameraEnabledChanged(bool value) async {
+    if (_isSavingCustomCamera) return;
+    setState(() => _isSavingCustomCamera = true);
+    try {
+      final res = await _settingsService.setCustomCameraDisabled(
+        // Server stores "disabled", UI is "enabled".
+        disabled: !value,
+      );
+      if (!mounted) return;
+      setState(() {
+        _customCameraEnabled = !res.disabled;
+        _isSavingCustomCamera = false;
+      });
+      ClientCustomCameraConfig.applyDisabled(disabled: res.disabled);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSavingCustomCamera = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -416,6 +449,29 @@ class _AdminContentModerationScreenState
             value: _lidarRoomScanEnabled,
             enabled: !_isSavingLidar,
             onChanged: _onLidarEnabledChanged,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ListTile(
+          leading: _isSavingCustomCamera
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const ThemeIcon(Icons.camera_alt_outlined),
+          title: Text(L10n.get("admin_client_config_disable_custom_camera")),
+          subtitle: Text(
+            L10n.get("admin_client_config_disable_custom_camera_description"),
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: NeumorphicThemeAwareToggle(
+            value: _customCameraEnabled,
+            enabled: !_isSavingCustomCamera,
+            onChanged: _onCustomCameraEnabledChanged,
           ),
         ),
       ],

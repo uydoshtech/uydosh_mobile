@@ -223,7 +223,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notifications_alerts_explainer =>
-      'Здесь ваши оповещения.\nКак только появится подходящее жильё или сосед — мы сразу сообщим.';
+      'Здесь ваши оповещения.\nКак только появится подходящее жильё или сосед — мы пришлём push-уведомление.';
 
   @override
   String get notifications_open_settings => 'Открыть настройки';
@@ -1341,6 +1341,14 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get admin_client_config_disable_lidar_room_scan_description =>
       'Скрывает шаг добавления скана после создания объявления, кнопку при редактировании и блокирует загрузку сканов. Действует для всех пользователей и устройств (хранится на сервере).';
+
+  @override
+  String get admin_client_config_disable_custom_camera =>
+      'Использовать встроенную камеру';
+
+  @override
+  String get admin_client_config_disable_custom_camera_description =>
+      'Когда включено, съёмка фото открывает встроенную камеру с водяным знаком. Когда выключено, клиенты используют стандартную камеру устройства. Действует для всех пользователей и устройств (хранится на сервере).';
 
   @override
   String get admin_content_moderation_blur_enabled =>

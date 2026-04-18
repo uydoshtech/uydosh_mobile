@@ -223,7 +223,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get notifications_alerts_explainer =>
-      'Bu yerda sizning ogohlantirishlaringiz.\nMos uy-joy yoki qo‘shni paydo bo‘lishi bilan darhol xabar beramiz.';
+      'Bu yerda sizning ogohlantirishlaringiz.\nMos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.';
 
   @override
   String get notifications_open_settings => 'Sozlamalarni ochish';
@@ -1349,6 +1349,14 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get admin_client_config_disable_lidar_room_scan_description =>
       'E\'lon yaratilgach skan qo\'shish qadamini, tahrirlashdagi skan tugmasini yashiradi va yuklashni bloklaydi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
+
+  @override
+  String get admin_client_config_disable_custom_camera =>
+      'Ichki kamera rejimidan foydalanish';
+
+  @override
+  String get admin_client_config_disable_custom_camera_description =>
+      'Yoqilganda, foto olish vaqtida suv belgisi bilan ichki kamera ochiladi. O\'chirilganda, klientlar qurilmaning standart kamerasiga o\'tadi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
 
   @override
   String get admin_content_moderation_blur_enabled =>

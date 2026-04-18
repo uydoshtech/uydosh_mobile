@@ -8,6 +8,7 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
+import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
@@ -126,6 +127,7 @@ void main() async {
       ThemeState().initialize(),
       ClientGeminiListingUiConfig.load(),
       ClientLidarRoomScanConfig.load(),
+      ClientCustomCameraConfig.load(),
     ]);
 
     logger.d(

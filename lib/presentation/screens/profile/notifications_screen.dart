@@ -97,7 +97,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     onPressed: () async {
                       await openAppSettings();
                     },
-                    child: Text(L10n.get("notifications_open_settings")),
+                    child: Builder(
+                      builder: (context) {
+                        final color =
+                            DefaultTextStyle.of(context).style.color ??
+                            Theme.of(context).colorScheme.primary;
+                        return IntrinsicWidth(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(L10n.get("notifications_open_settings")),
+                              const SizedBox(height: 3),
+                              SizedBox(
+                                height: 1.5,
+                                width: double.infinity,
+                                child: CustomPaint(
+                                  painter: _DottedLinePainter(color: color),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -733,4 +756,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       backgroundColor: ThemeState().backgroundColor,
     );
   }
+}
+
+class _DottedLinePainter extends CustomPainter {
+  _DottedLinePainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const double dotRadius = 0.75;
+    const double gap = 3.0;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    final double step = dotRadius * 2 + gap;
+    final double y = size.height / 2;
+    for (double x = dotRadius; x <= size.width; x += step) {
+      canvas.drawCircle(Offset(x, y), dotRadius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DottedLinePainter oldDelegate) =>
+      oldDelegate.color != color;
 }

@@ -4,6 +4,7 @@ import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:image_picker/image_picker.dart";
+import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
@@ -111,14 +112,25 @@ class _PhotoPickerState extends State<PhotoPicker> {
           }
         }
       } else {
-        // Use our custom camera screen (with UyDosh watermark overlay)
-        // instead of the native camera picker.
-        final capturedPath = await Navigator.of(context).push<String>(
-          MaterialPageRoute(
-            builder: (_) => const CustomCameraScreen(),
-            fullscreenDialog: true,
-          ),
-        );
+        // Default: native camera via image_picker. If the admin switch is
+        // flipped on, use our in-app custom camera (watermark overlay).
+        String? capturedPath;
+        if (ClientCustomCameraConfig.customCameraDisabled.value) {
+          capturedPath = await Navigator.of(context).push<String>(
+            MaterialPageRoute(
+              builder: (_) => const CustomCameraScreen(),
+              fullscreenDialog: true,
+            ),
+          );
+        } else {
+          final image = await _picker.pickImage(
+            source: ImageSource.camera,
+            maxWidth: 1280,
+            maxHeight: 720,
+            imageQuality: 75,
+          );
+          capturedPath = image?.path;
+        }
 
         if (capturedPath != null) {
           if (widget.selectedPhotos.length < widget.maxPhotos) {

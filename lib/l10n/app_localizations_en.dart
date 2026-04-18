@@ -221,7 +221,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifications_alerts_explainer =>
-      'Here are your alerts.\nAs soon as matching housing or a neighbor appears, we\'ll let you know right away.';
+      'Here are your alerts.\nAs soon as matching housing or a neighbor appears — we\'ll send you a push notification.';
 
   @override
   String get notifications_open_settings => 'Open settings';
@@ -1333,6 +1333,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get admin_client_config_disable_lidar_room_scan_description =>
       'Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).';
+
+  @override
+  String get admin_client_config_disable_custom_camera =>
+      'Use in-app custom camera';
+
+  @override
+  String get admin_client_config_disable_custom_camera_description =>
+      'When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device\'s native camera. Applies to all users and devices (stored on the server).';
 
   @override
   String get admin_content_moderation_blur_enabled =>
