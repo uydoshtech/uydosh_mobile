@@ -15,6 +15,7 @@ class MessageBubble extends StatefulWidget {
     this.onAnimationComplete,
     this.currentUserProfile,
     this.otherUserInitials,
+    this.otherUserAvatarUrl,
   });
   final Message message;
   final bool isCurrentUser;
@@ -22,6 +23,11 @@ class MessageBubble extends StatefulWidget {
   final VoidCallback? onAnimationComplete;
   final UserProfile? currentUserProfile;
   final String? otherUserInitials;
+
+  /// Avatar URL (raw or backend-relative) for the other user in this
+  /// conversation. Takes precedence over the per-message sender avatar so
+  /// the same image is shown even when a given message omits sender profile.
+  final String? otherUserAvatarUrl;
 
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
@@ -122,6 +128,8 @@ class _MessageBubbleState extends State<MessageBubble>
                   isFromCurrentUser: widget.isCurrentUser,
                   leftAvatarInitials: _getOtherUserInitials(),
                   rightAvatarInitials: _getCurrentUserInitials(),
+                  leftAvatarUrl: _getOtherUserAvatarUrl(),
+                  rightAvatarUrl: widget.currentUserProfile?.avatarUrl,
                   bubbleChild: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -183,6 +191,12 @@ class _MessageBubbleState extends State<MessageBubble>
 
   String? _getCurrentUserInitials() {
     return StringUtils.extractInitials(widget.currentUserProfile?.name);
+  }
+
+  String? _getOtherUserAvatarUrl() {
+    final passed = widget.otherUserAvatarUrl;
+    if (passed != null && passed.trim().isNotEmpty) return passed;
+    return widget.message.sender?.profile?.avatarUrl;
   }
 
   /// Get theme-aware own message text color

@@ -450,6 +450,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 },
                 currentUserProfile: _currentUserProfile,
                 otherUserInitials: widget.otherUserInitials,
+                otherUserAvatarUrl: widget.otherUserAvatar,
               ),
           };
         },

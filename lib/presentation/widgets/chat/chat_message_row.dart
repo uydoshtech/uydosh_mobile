@@ -10,6 +10,8 @@ class ChatMessageRow extends StatelessWidget {
     required this.bubbleChild,
     this.leftAvatarInitials,
     this.rightAvatarInitials,
+    this.leftAvatarUrl,
+    this.rightAvatarUrl,
     super.key,
   });
 
@@ -25,6 +27,12 @@ class ChatMessageRow extends StatelessWidget {
   /// Initials for avatar on the right (current user / support staff).
   final String? rightAvatarInitials;
 
+  /// Optional avatar image URL (raw or resolvable) for the left avatar.
+  final String? leftAvatarUrl;
+
+  /// Optional avatar image URL (raw or resolvable) for the right avatar.
+  final String? rightAvatarUrl;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -37,6 +45,7 @@ class ChatMessageRow extends StatelessWidget {
             ChatAvatar(
               isCurrentUser: false,
               initials: leftAvatarInitials,
+              avatarUrl: leftAvatarUrl,
             ),
             const SizedBox(width: 8),
           ],
@@ -57,6 +66,7 @@ class ChatMessageRow extends StatelessWidget {
             ChatAvatar(
               isCurrentUser: true,
               initials: rightAvatarInitials,
+              avatarUrl: rightAvatarUrl,
             ),
           ],
         ],
