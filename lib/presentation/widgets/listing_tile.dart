@@ -301,7 +301,7 @@ class _ListingTileState extends State<ListingTile>
                     ),
                   ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -518,19 +518,11 @@ class _ListingTileState extends State<ListingTile>
                                       ),
                                     );
                                   },
-                                )
-                          else
-                            const SizedBox(
-                              width: 51, // 27 (icon size) + 24 (padding: 12 * 2)
-                              height:
-                                  51, // 27 (icon size) + 24 (padding: 12 * 2)
-                            ),
+                                ),
                         ],
                       ),
                       // Title
-                      if (widget.listing.listingType != null) ...[
-                        const SizedBox(height: 6),
-                      ],
+                      const SizedBox(height: 8),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.only(
