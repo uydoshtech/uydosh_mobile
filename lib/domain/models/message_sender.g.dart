@@ -9,9 +9,10 @@ part of 'message_sender.dart';
 _$MessageSenderImpl _$$MessageSenderImplFromJson(Map<String, dynamic> json) =>
     _$MessageSenderImpl(
       id: (json['id'] as num).toInt(),
-      email: json['email'] as String,
-      firebaseUid: json['firebase_uid'] as String,
+      email: json['email'] as String?,
+      firebaseUid: json['firebase_uid'] as String?,
       telegramId: json['telegram_id'] as String?,
+      phoneNumber: json['phone_number'] as String?,
       profile: json['profile'] == null
           ? null
           : MessageSenderProfile.fromJson(
@@ -24,6 +25,7 @@ Map<String, dynamic> _$$MessageSenderImplToJson(_$MessageSenderImpl instance) =>
       'email': instance.email,
       'firebase_uid': instance.firebaseUid,
       'telegram_id': instance.telegramId,
+      'phone_number': instance.phoneNumber,
       'profile': instance.profile,
     };
 

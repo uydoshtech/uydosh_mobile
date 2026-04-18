@@ -99,6 +99,7 @@ dependencies:
   flutter_roomplan: ^1.0.7
   path_provider: ^2.1.4
   firebase_app_check: ^0.3.2+10
+  image_cropper: ^12.2.1
 
 dev_dependencies:
   flutter_test:

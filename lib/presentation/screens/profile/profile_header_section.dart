@@ -1,6 +1,7 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
+import "package:image_cropper/image_cropper.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
@@ -105,9 +106,8 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     try {
       picked = await _picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
+        // Pick near-original; the cropper will clamp final output.
+        imageQuality: 95,
       );
     } catch (_) {
       if (!mounted) return;
@@ -120,9 +120,12 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
 
     if (picked == null) return;
 
+    final cropped = await _cropToSquare(picked.path);
+    if (cropped == null) return;
+
     setState(() => _uploadingAvatar = true);
     try {
-      await getIt<IUserProfileService>().uploadAvatar(picked.path);
+      await getIt<IUserProfileService>().uploadAvatar(cropped);
       if (!mounted) return;
       ToastTheme.showSuccess(
         context,
@@ -140,6 +143,59 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     }
   }
 
+  /// Presents the native cropper (uCrop on Android, TOCropViewController on
+  /// iOS) with a 1:1 lock so the cropped output always fills the circle
+  /// avatar. Returns the path of the cropped file, or `null` if cancelled.
+  Future<String?> _cropToSquare(String sourcePath) async {
+    try {
+      final theme = Theme.of(context);
+      final toolbarTitle = L10n.get("crop_profile_photo");
+      final result = await ImageCropper().cropImage(
+        sourcePath: sourcePath,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 85,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: toolbarTitle,
+            toolbarColor: theme.colorScheme.surface,
+            toolbarWidgetColor: theme.colorScheme.onSurface,
+            statusBarLight: theme.brightness == Brightness.light,
+            backgroundColor: Colors.black,
+            activeControlsWidgetColor: theme.colorScheme.primary,
+            lockAspectRatio: true,
+            hideBottomControls: true,
+            cropStyle: CropStyle.circle,
+            initAspectRatio: CropAspectRatioPreset.square,
+            aspectRatioPresets: const [CropAspectRatioPreset.square],
+          ),
+          IOSUiSettings(
+            title: toolbarTitle,
+            doneButtonTitle: L10n.get("crop_done"),
+            cancelButtonTitle: L10n.get("crop_cancel"),
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+            rotateButtonsHidden: true,
+            aspectRatioPickerButtonHidden: true,
+            cropStyle: CropStyle.circle,
+            aspectRatioPresets: const [CropAspectRatioPreset.square],
+          ),
+        ],
+      );
+      return result?.path;
+    } catch (_) {
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("error_picking_photo"),
+        );
+      }
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isComplete =
@@ -150,52 +206,76 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
         Center(
           child: Column(
             children: [
-              Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  _buildProfileAvatar(context),
-                  if (widget.userBlocked)
-                    Tooltip(
-                      message: L10n.get("admin_user_detail_blocked"),
-                      child: Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.error,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.surface,
-                            width: 2,
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned.fill(child: _buildProfileAvatar(context)),
+                    // Bottom-right: edit-avatar affordance (camera) for anyone
+                    // who can upload; replaced by a block badge for blocked
+                    // users. Hidden only while an upload is in flight.
+                    if (widget.userBlocked)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Tooltip(
+                          message: L10n.get("admin_user_detail_blocked"),
+                          child: Container(
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.error,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.surface,
+                                width: 2,
+                              ),
+                            ),
+                            child: const ThemeIcon(
+                              Icons.block,
+                              size: 14,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                        child: const ThemeIcon(
-                          Icons.block,
-                          size: 14,
-                          color: Colors.white,
+                      )
+                    else if (!_uploadingAvatar)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: _buildCameraBadge(context),
+                      ),
+                    // Top-right: profile-completion tick (only when 100%),
+                    // so it doesn't collide with the edit affordance below.
+                    if (!widget.userBlocked && isComplete)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Tooltip(
+                          message: L10n.get("profile_completion"),
+                          child: Container(
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: AppColors.success,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.surface,
+                                width: 2,
+                              ),
+                            ),
+                            child: const ThemeIcon(
+                              Icons.check,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
-                    )
-                  else if (isComplete)
-                    Container(
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        color: AppColors.success,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.surface,
-                          width: 2,
-                        ),
-                      ),
-                      child: const ThemeIcon(
-                        Icons.check,
-                        size: 14,
-                        color: Colors.white,
-                      ),
-                    )
-                  else if (!_uploadingAvatar)
-                    _buildCameraBadge(context),
-                ],
+                  ],
+                ),
               ),
               if (((widget.profile.name ?? widget.cachedGoogleDisplayName) ??
                       "")

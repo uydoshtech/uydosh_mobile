@@ -20,12 +20,18 @@ MessageSender _$MessageSenderFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$MessageSender {
-  int get id => throw _privateConstructorUsedError;
-  String get email => throw _privateConstructorUsedError;
+  int get id =>
+      throw _privateConstructorUsedError; // All three identity fields are independently nullable because a user may
+// have signed in via only one of Google (email + firebase_uid), Phone
+// (firebase_uid + phone_number), or Telegram (telegram_id). The backend
+// returns whichever are present and `null` for the rest.
+  String? get email => throw _privateConstructorUsedError;
   @JsonKey(name: "firebase_uid")
-  String get firebaseUid => throw _privateConstructorUsedError;
+  String? get firebaseUid => throw _privateConstructorUsedError;
   @JsonKey(name: "telegram_id")
   String? get telegramId => throw _privateConstructorUsedError;
+  @JsonKey(name: "phone_number")
+  String? get phoneNumber => throw _privateConstructorUsedError;
   MessageSenderProfile? get profile => throw _privateConstructorUsedError;
 
   /// Serializes this MessageSender to a JSON map.
@@ -46,9 +52,10 @@ abstract class $MessageSenderCopyWith<$Res> {
   @useResult
   $Res call(
       {int id,
-      String email,
-      @JsonKey(name: "firebase_uid") String firebaseUid,
+      String? email,
+      @JsonKey(name: "firebase_uid") String? firebaseUid,
       @JsonKey(name: "telegram_id") String? telegramId,
+      @JsonKey(name: "phone_number") String? phoneNumber,
       MessageSenderProfile? profile});
 
   $MessageSenderProfileCopyWith<$Res>? get profile;
@@ -70,9 +77,10 @@ class _$MessageSenderCopyWithImpl<$Res, $Val extends MessageSender>
   @override
   $Res call({
     Object? id = null,
-    Object? email = null,
-    Object? firebaseUid = null,
+    Object? email = freezed,
+    Object? firebaseUid = freezed,
     Object? telegramId = freezed,
+    Object? phoneNumber = freezed,
     Object? profile = freezed,
   }) {
     return _then(_value.copyWith(
@@ -80,17 +88,21 @@ class _$MessageSenderCopyWithImpl<$Res, $Val extends MessageSender>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
-      email: null == email
+      email: freezed == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
-              as String,
-      firebaseUid: null == firebaseUid
+              as String?,
+      firebaseUid: freezed == firebaseUid
           ? _value.firebaseUid
           : firebaseUid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       telegramId: freezed == telegramId
           ? _value.telegramId
           : telegramId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      phoneNumber: freezed == phoneNumber
+          ? _value.phoneNumber
+          : phoneNumber // ignore: cast_nullable_to_non_nullable
               as String?,
       profile: freezed == profile
           ? _value.profile
@@ -124,9 +136,10 @@ abstract class _$$MessageSenderImplCopyWith<$Res>
   @useResult
   $Res call(
       {int id,
-      String email,
-      @JsonKey(name: "firebase_uid") String firebaseUid,
+      String? email,
+      @JsonKey(name: "firebase_uid") String? firebaseUid,
       @JsonKey(name: "telegram_id") String? telegramId,
+      @JsonKey(name: "phone_number") String? phoneNumber,
       MessageSenderProfile? profile});
 
   @override
@@ -147,9 +160,10 @@ class __$$MessageSenderImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
-    Object? email = null,
-    Object? firebaseUid = null,
+    Object? email = freezed,
+    Object? firebaseUid = freezed,
     Object? telegramId = freezed,
+    Object? phoneNumber = freezed,
     Object? profile = freezed,
   }) {
     return _then(_$MessageSenderImpl(
@@ -157,17 +171,21 @@ class __$$MessageSenderImplCopyWithImpl<$Res>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
-      email: null == email
+      email: freezed == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
-              as String,
-      firebaseUid: null == firebaseUid
+              as String?,
+      firebaseUid: freezed == firebaseUid
           ? _value.firebaseUid
           : firebaseUid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       telegramId: freezed == telegramId
           ? _value.telegramId
           : telegramId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      phoneNumber: freezed == phoneNumber
+          ? _value.phoneNumber
+          : phoneNumber // ignore: cast_nullable_to_non_nullable
               as String?,
       profile: freezed == profile
           ? _value.profile
@@ -182,9 +200,10 @@ class __$$MessageSenderImplCopyWithImpl<$Res>
 class _$MessageSenderImpl implements _MessageSender {
   const _$MessageSenderImpl(
       {required this.id,
-      required this.email,
-      @JsonKey(name: "firebase_uid") required this.firebaseUid,
+      this.email,
+      @JsonKey(name: "firebase_uid") this.firebaseUid,
       @JsonKey(name: "telegram_id") this.telegramId,
+      @JsonKey(name: "phone_number") this.phoneNumber,
       this.profile});
 
   factory _$MessageSenderImpl.fromJson(Map<String, dynamic> json) =>
@@ -192,20 +211,27 @@ class _$MessageSenderImpl implements _MessageSender {
 
   @override
   final int id;
+// All three identity fields are independently nullable because a user may
+// have signed in via only one of Google (email + firebase_uid), Phone
+// (firebase_uid + phone_number), or Telegram (telegram_id). The backend
+// returns whichever are present and `null` for the rest.
   @override
-  final String email;
+  final String? email;
   @override
   @JsonKey(name: "firebase_uid")
-  final String firebaseUid;
+  final String? firebaseUid;
   @override
   @JsonKey(name: "telegram_id")
   final String? telegramId;
+  @override
+  @JsonKey(name: "phone_number")
+  final String? phoneNumber;
   @override
   final MessageSenderProfile? profile;
 
   @override
   String toString() {
-    return 'MessageSender(id: $id, email: $email, firebaseUid: $firebaseUid, telegramId: $telegramId, profile: $profile)';
+    return 'MessageSender(id: $id, email: $email, firebaseUid: $firebaseUid, telegramId: $telegramId, phoneNumber: $phoneNumber, profile: $profile)';
   }
 
   @override
@@ -219,13 +245,15 @@ class _$MessageSenderImpl implements _MessageSender {
                 other.firebaseUid == firebaseUid) &&
             (identical(other.telegramId, telegramId) ||
                 other.telegramId == telegramId) &&
+            (identical(other.phoneNumber, phoneNumber) ||
+                other.phoneNumber == phoneNumber) &&
             (identical(other.profile, profile) || other.profile == profile));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, email, firebaseUid, telegramId, profile);
+  int get hashCode => Object.hash(
+      runtimeType, id, email, firebaseUid, telegramId, phoneNumber, profile);
 
   /// Create a copy of MessageSender
   /// with the given fields replaced by the non-null parameter values.
@@ -246,24 +274,31 @@ class _$MessageSenderImpl implements _MessageSender {
 abstract class _MessageSender implements MessageSender {
   const factory _MessageSender(
       {required final int id,
-      required final String email,
-      @JsonKey(name: "firebase_uid") required final String firebaseUid,
+      final String? email,
+      @JsonKey(name: "firebase_uid") final String? firebaseUid,
       @JsonKey(name: "telegram_id") final String? telegramId,
+      @JsonKey(name: "phone_number") final String? phoneNumber,
       final MessageSenderProfile? profile}) = _$MessageSenderImpl;
 
   factory _MessageSender.fromJson(Map<String, dynamic> json) =
       _$MessageSenderImpl.fromJson;
 
   @override
-  int get id;
+  int get id; // All three identity fields are independently nullable because a user may
+// have signed in via only one of Google (email + firebase_uid), Phone
+// (firebase_uid + phone_number), or Telegram (telegram_id). The backend
+// returns whichever are present and `null` for the rest.
   @override
-  String get email;
+  String? get email;
   @override
   @JsonKey(name: "firebase_uid")
-  String get firebaseUid;
+  String? get firebaseUid;
   @override
   @JsonKey(name: "telegram_id")
   String? get telegramId;
+  @override
+  @JsonKey(name: "phone_number")
+  String? get phoneNumber;
   @override
   MessageSenderProfile? get profile;
 

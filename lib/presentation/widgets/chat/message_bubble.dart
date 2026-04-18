@@ -172,8 +172,9 @@ class _MessageBubbleState extends State<MessageBubble>
     final sender = widget.message.sender;
     var userName = sender?.profile?.name;
     if (userName == null || userName.isEmpty) {
-      if (sender?.email != null && sender!.email.isNotEmpty) {
-        final emailParts = sender.email.split("@");
+      final email = sender?.email;
+      if (email != null && email.isNotEmpty) {
+        final emailParts = email.split("@");
         if (emailParts.isNotEmpty) userName = emailParts[0];
       }
     }

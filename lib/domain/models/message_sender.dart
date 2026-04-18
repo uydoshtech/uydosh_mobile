@@ -7,9 +7,14 @@ part "message_sender.g.dart";
 class MessageSender with _$MessageSender {
   const factory MessageSender({
     required int id,
-    required String email,
-    @JsonKey(name: "firebase_uid") required String firebaseUid,
+    // All three identity fields are independently nullable because a user may
+    // have signed in via only one of Google (email + firebase_uid), Phone
+    // (firebase_uid + phone_number), or Telegram (telegram_id). The backend
+    // returns whichever are present and `null` for the rest.
+    String? email,
+    @JsonKey(name: "firebase_uid") String? firebaseUid,
     @JsonKey(name: "telegram_id") String? telegramId,
+    @JsonKey(name: "phone_number") String? phoneNumber,
     MessageSenderProfile? profile,
   }) = _MessageSender;
 

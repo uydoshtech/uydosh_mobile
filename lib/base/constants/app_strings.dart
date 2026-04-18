@@ -388,6 +388,9 @@ class AppStrings {
       "uploading_profile_photo": "Uploading photo…",
       "profile_photo_updated": "Profile photo updated",
       "error_uploading_profile_photo": "Couldn't upload profile photo",
+      "crop_profile_photo": "Crop photo",
+      "crop_done": "Done",
+      "crop_cancel": "Cancel",
 
       "max_photos_reached": "Maximum photos reached",
       "max_photos_message":
@@ -1411,6 +1414,9 @@ class AppStrings {
       "uploading_profile_photo": "Загрузка фото…",
       "profile_photo_updated": "Фото профиля обновлено",
       "error_uploading_profile_photo": "Не удалось загрузить фото профиля",
+      "crop_profile_photo": "Обрезать фото",
+      "crop_done": "Готово",
+      "crop_cancel": "Отмена",
 
       "max_photos_reached": "Достигнут максимум фотографий",
       "max_photos_message": "Вы можете загрузить максимум 5 фото.",
@@ -2445,6 +2451,9 @@ class AppStrings {
       "uploading_profile_photo": "Rasm yuklanmoqda…",
       "profile_photo_updated": "Profil rasmi yangilandi",
       "error_uploading_profile_photo": "Profil rasmini yuklab bo'lmadi",
+      "crop_profile_photo": "Rasmni kesish",
+      "crop_done": "Tayyor",
+      "crop_cancel": "Bekor qilish",
 
       "max_photos_reached": "Maksimal rasmlar soniga yetildi",
       "max_photos_message":
