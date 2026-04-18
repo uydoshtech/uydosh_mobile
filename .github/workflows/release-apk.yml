@@ -113,3 +113,49 @@ jobs:
             --title "UyDosh Android APK (latest)" \
             --notes "$NOTES" \
             --latest
+
+      - name: Notify by email on success
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: UyDosh CI <${{ secrets.MAIL_USERNAME }}>
+          to: ${{ secrets.MAIL_USERNAME }}
+          subject: "[UyDosh] Android APK build #${{ github.run_number }} succeeded"
+          body: |
+            Android APK build completed successfully.
+
+            Commit:   ${{ github.sha }}
+            Branch:   ${{ github.ref_name }}
+            Message:  ${{ github.event.head_commit.message }}
+            Run:      ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Downloads (android-latest release):
+              - ${{ github.server_url }}/${{ github.repository }}/releases/tag/android-latest
+              - https://github.com/uydoshtech/uydoshtech.github.io/releases/tag/android-latest
+
+      - name: Notify by email on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: UyDosh CI <${{ secrets.MAIL_USERNAME }}>
+          to: ${{ secrets.MAIL_USERNAME }}
+          subject: "[UyDosh] Android APK build #${{ github.run_number }} FAILED"
+          body: |
+            Android APK build FAILED.
+
+            Commit:   ${{ github.sha }}
+            Branch:   ${{ github.ref_name }}
+            Message:  ${{ github.event.head_commit.message }}
+            Run:      ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Open the run above to see which step failed and view logs.
