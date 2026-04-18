@@ -5,9 +5,11 @@ import "package:camera/camera.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 /// Full-screen custom camera with a UyDosh logo pinned to the bottom-right,
@@ -527,48 +529,68 @@ class _CameraIconButton extends StatelessWidget {
   }
 }
 
-class _ShutterButton extends StatelessWidget {
+class _ShutterButton extends StatefulWidget {
   const _ShutterButton({required this.onPressed, required this.busy});
 
   final VoidCallback? onPressed;
   final bool busy;
 
   @override
+  State<_ShutterButton> createState() => _ShutterButtonState();
+}
+
+class _ShutterButtonState extends State<_ShutterButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
+    const size = 84.0;
+    final enabled = widget.onPressed != null && !widget.busy;
+    const base = BlueThemeColors.primary;
+
+    final shadows = _pressed || !enabled
+        ? ThreeDSurfaceStyle.pressedShadows(context)
+        : [
+            ...ThreeDSurfaceStyle.floatingOrbHaloShadows(context, base),
+            ...ThreeDSurfaceStyle.elevatedShadows(context),
+          ];
+
     return Semantics(
       label: L10n.get("take_photo"),
       button: true,
       child: GestureDetector(
-        onTap: onPressed,
+        onTap: widget.onPressed,
+        onTapDown: enabled ? (_) => setState(() => _pressed = true) : null,
+        onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
+        onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
-          width: 76,
-          height: 76,
+          curve: Curves.easeOut,
+          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+          width: size,
+          height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
-            color: Colors.white.withValues(alpha: 0.15),
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
+            boxShadow: shadows,
           ),
-          child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
-              width: busy ? 30 : 58,
-              height: busy ? 30 : 58,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: onPressed == null
-                    ? Colors.white.withValues(alpha: 0.4)
-                    : Colors.white,
-              ),
-              child: busy
-                  ? const Padding(
-                      padding: EdgeInsets.all(6),
+          child: Opacity(
+            opacity: enabled ? 1 : 0.55,
+            child: Center(
+              child: widget.busy
+                  ? const SizedBox(
+                      width: 28,
+                      height: 28,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.black,
+                        strokeWidth: 2.4,
+                        color: Colors.white,
                       ),
                     )
-                  : null,
+                  : const Icon(
+                      Icons.photo_camera,
+                      color: Colors.white,
+                      size: 38,
+                    ),
             ),
           ),
         ),
