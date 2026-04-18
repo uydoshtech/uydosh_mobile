@@ -198,7 +198,7 @@ class OutgoingConversationTile extends StatelessWidget {
                             ThemeIcon(
                               Icons.arrow_forward_ios,
                               size: 16,
-                              color: iconColor.withValues(alpha: 0.5),
+                              color: iconColor,
                             ),
                         ],
                       ),
