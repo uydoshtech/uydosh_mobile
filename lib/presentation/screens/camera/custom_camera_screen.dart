@@ -37,6 +37,46 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
   _CaptureStage _stage = _CaptureStage.live;
   XFile? _captured;
 
+  // Tracks the device's physical tilt (reported by the camera plugin even
+  // while the UI is orientation-locked). Drives in-place rotation of the
+  // control icons so they stay upright for the user. Apple-Camera style.
+  DeviceOrientation _deviceOrientation = DeviceOrientation.portraitUp;
+
+  void _onControllerValueChanged() {
+    final value = _controller?.value;
+    if (value == null || !value.isInitialized) return;
+    final next = value.deviceOrientation;
+    if (next != _deviceOrientation) {
+      setState(() => _deviceOrientation = next);
+    }
+  }
+
+  /// Quarter-turn rotation (in turns, where 1.0 = 360°) that brings an
+  /// upright widget into the user's physical frame of reference.
+  double get _controlsRotationTurns {
+    switch (_deviceOrientation) {
+      case DeviceOrientation.portraitUp:
+        return 0;
+      case DeviceOrientation.landscapeLeft:
+        return 0.25;
+      case DeviceOrientation.portraitDown:
+        return 0.5;
+      case DeviceOrientation.landscapeRight:
+        return -0.25;
+    }
+  }
+
+  /// Wraps [child] in an [AnimatedRotation] driven by device tilt so the
+  /// control stays upright in the user's frame of reference.
+  Widget _rotateWithDevice(Widget child) {
+    return AnimatedRotation(
+      turns: _controlsRotationTurns,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      child: child,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +95,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _controller?.removeListener(_onControllerValueChanged);
     _controller?.dispose();
     // Restore the app's global orientation policy (see `main.dart`, which
     // locks the whole app to portraitUp).
@@ -112,6 +153,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
 
   Future<void> _setUpController(CameraDescription description) async {
     final previous = _controller;
+    previous?.removeListener(_onControllerValueChanged);
     final controller = CameraController(
       description,
       ResolutionPreset.high,
@@ -124,13 +166,13 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
 
     try {
       await controller.initialize();
-      // Pin the preview + captured frame to portraitUp so tilting the device
-      // doesn't rotate / stretch the live feed or affect the saved photo.
-      try {
-        await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
-      } catch (e) {
-        if (kDebugMode) debugPrint("lockCaptureOrientation failed: $e");
-      }
+      controller.addListener(_onControllerValueChanged);
+      // Intentionally do NOT lock capture orientation here. The preview /
+      // UI is pinned to portrait via `setPreferredOrientations` in
+      // initState, which keeps the live feed from stretching on rotation.
+      // Capture orientation, however, should follow the device's physical
+      // tilt so shots taken with the phone held sideways are saved as
+      // genuine landscape images (matches Apple's stock Camera behavior).
       // Most front cameras don't support flash; attempting to set
       // `auto` / `always` there throws and aborts init → black screen.
       // Force flash off on the front camera and only apply the user's
@@ -333,20 +375,22 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       left: 16,
       bottom: 140,
       child: IgnorePointer(
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.35),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.25),
+        child: _rotateWithDevice(
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.25),
+              ),
             ),
-          ),
-          child: Image.asset(
-            "assets/icon/app_logo.png",
-            width: 48,
-            height: 48,
-            fit: BoxFit.contain,
+            child: Image.asset(
+              "assets/icon/app_logo.png",
+              width: 48,
+              height: 48,
+              fit: BoxFit.contain,
+            ),
           ),
         ),
       ),
@@ -376,17 +420,21 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
         ),
         child: Row(
           children: [
-            _CameraIconButton(
-              icon: Icons.close,
-              onPressed: _cancel,
-              tooltip: L10n.get("close"),
+            _rotateWithDevice(
+              _CameraIconButton(
+                icon: Icons.close,
+                onPressed: _cancel,
+                tooltip: L10n.get("close"),
+              ),
             ),
             const Spacer(),
             if (_stage == _CaptureStage.live && !isFront)
-              _CameraIconButton(
-                icon: _flashIcon,
-                onPressed: _cycleFlash,
-                tooltip: L10n.get("flash"),
+              _rotateWithDevice(
+                _CameraIconButton(
+                  icon: _flashIcon,
+                  onPressed: _cycleFlash,
+                  tooltip: L10n.get("flash"),
+                ),
               ),
           ],
         ),
@@ -434,15 +482,18 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const SizedBox(width: 56),
+        // Shutter button is radially symmetric — no need to rotate it.
         _ShutterButton(
           onPressed: canShoot ? _takePicture : null,
           busy: _capturing,
         ),
         _cameras.length > 1
-            ? _CameraIconButton(
-                icon: Icons.cameraswitch_outlined,
-                onPressed: _switchCamera,
-                tooltip: L10n.get("switch_camera"),
+            ? _rotateWithDevice(
+                _CameraIconButton(
+                  icon: Icons.cameraswitch_outlined,
+                  onPressed: _switchCamera,
+                  tooltip: L10n.get("switch_camera"),
+                ),
               )
             : const SizedBox(width: 56),
       ],
@@ -453,16 +504,20 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _CameraTextButton(
-          icon: Icons.refresh,
-          label: L10n.get("retake"),
-          onPressed: _retake,
+        _rotateWithDevice(
+          _CameraTextButton(
+            icon: Icons.refresh,
+            label: L10n.get("retake"),
+            onPressed: _retake,
+          ),
         ),
-        _CameraTextButton(
-          icon: Icons.check,
-          label: L10n.get("use_photo"),
-          filled: true,
-          onPressed: _usePhoto,
+        _rotateWithDevice(
+          _CameraTextButton(
+            icon: Icons.check,
+            label: L10n.get("use_photo"),
+            filled: true,
+            onPressed: _usePhoto,
+          ),
         ),
       ],
     );

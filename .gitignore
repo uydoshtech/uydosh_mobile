@@ -38,6 +38,9 @@ migrate_working_dir/
 # Symbolication related
 app.*.symbols
 
+# Firebase Crashlytics build artifacts (dump_syms binary is downloaded per build)
+.crashlytics/
+
 # Obfuscation related
 app.*.map.json
 

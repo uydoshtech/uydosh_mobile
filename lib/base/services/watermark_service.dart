@@ -21,13 +21,21 @@ class WatermarkService {
       final imageBytes = await imageFile.readAsBytes();
       logger.d("📁 Image file size: ${imageBytes.length} bytes");
 
-      final originalImage = img.decodeImage(imageBytes);
-      if (originalImage == null) {
+      final decoded = img.decodeImage(imageBytes);
+      if (decoded == null) {
         throw Exception("Failed to decode image");
       }
 
+      // Bake any EXIF orientation (e.g. from landscape-held shots on
+      // iPhone, which save pixels in sensor orientation + an orientation
+      // tag) into the pixels before compositing. This guarantees:
+      //   1. the watermark is placed on the user-visible orientation,
+      //   2. the re-encoded JPEG displays correctly everywhere, even in
+      //      viewers that ignore EXIF (web previews, some thumbnailers).
+      final originalImage = img.bakeOrientation(decoded);
+
       logger.d(
-        "🖼️ Original image dimensions: ${originalImage.width}x${originalImage.height}",
+        "🖼️ Original image dimensions (post-bake): ${originalImage.width}x${originalImage.height}",
       );
 
       final watermarkImage = img.decodeImage(watermarkImageBytes);
