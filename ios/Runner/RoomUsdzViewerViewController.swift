@@ -860,14 +860,19 @@ private enum SVGPathParser {
     SCNTransaction.commit()
   }
 
-  /// Makes the floor slightly darker than walls (keeps walls/furniture close to original).
+  /// Stylized palette tuned to read as a calm, lived-in room:
+  /// - Floor: warm brown (slightly darker than furniture accent)
+  /// - Walls: warm cream / pale sand — brightens the scan and harmonizes with wood + teal
+  /// - Furniture: muted blue-teal accent
   private func applyFloorAndFurnitureTint() {
     guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
     cacheOriginalMaterialsIfNeeded()
     let floorTint = darkerColor(from: strings.onFloorObjectTint, factor: 0.78)
-    // Muted blue-teal that plays well with warm wood + cool light walls.
-    // (RGB: 0x2F6F7A)
+    // Muted blue-teal that plays well with warm wood + cream walls. (RGB: 0x2F6F7A)
     let furnitureTint = UIColor(red: 47 / 255, green: 111 / 255, blue: 122 / 255, alpha: 1)
+    // Warm cream / pale sand — reads as a freshly painted wall, complements brown floor + teal accents.
+    // (RGB: 0xE6DCC4)
+    let wallTint = UIColor(red: 230 / 255, green: 220 / 255, blue: 196 / 255, alpha: 1)
     SCNTransaction.begin()
     SCNTransaction.animationDuration = 0
     func visit(_ node: SCNNode) {
@@ -881,7 +886,7 @@ private enum SVGPathParser {
         return
       }
 
-      // Restore originals first; then selectively tint floor slabs darker.
+      // Restore originals first; then selectively retint per surface class.
       geo.materials = originals.map { $0.copy() as! SCNMaterial }
       if let b = worldBounds(of: node), isLikelyFloorSlab(b, sceneBounds: sceneBounds) {
         geo.materials = originals.map { orig in
@@ -893,6 +898,12 @@ private enum SVGPathParser {
         geo.materials = originals.map { orig in
           let m = orig.copy() as! SCNMaterial
           m.diffuse.contents = furnitureTint
+          return m
+        }
+      } else if isWallSurface(node) {
+        geo.materials = originals.map { orig in
+          let m = orig.copy() as! SCNMaterial
+          m.diffuse.contents = wallTint
           return m
         }
       }
@@ -921,6 +932,18 @@ private enum SVGPathParser {
     if name.contains("wall") || name.contains("ceiling") { return true }
     if name.contains("door") || name.contains("window") || name.contains("opening") { return true }
     return false
+  }
+
+  /// Name-based wall detector (RoomPlan exports meshes named like `Wall0`, `Wall1`, ...).
+  /// Intentionally excludes ceiling/doors/windows/openings so the tint only hits solid walls.
+  private func isWallSurface(_ node: SCNNode) -> Bool {
+    if node.name == "UydoshFramingCamera" { return false }
+    let name = (node.name ?? "").lowercased()
+    if name.isEmpty { return false }
+    if name.contains("floor") || name.contains("ground") { return false }
+    if name.contains("ceiling") { return false }
+    if name.contains("door") || name.contains("window") || name.contains("opening") { return false }
+    return name.contains("wall")
   }
 
   private func setAllGeometryVisible(_ visible: Bool) {
