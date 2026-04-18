@@ -970,6 +970,30 @@ class AppStrings {
       "google_sign_in_failed": "Google Sign-In failed: {error}",
       "popup_closed": "Sign-in popup was closed",
 
+      // ===== PHONE AUTHENTICATION =====
+      "sign_in_with_phone": "Sign in with phone",
+      "sign_in_with_phone_description":
+          "We'll text you a 6-digit code to confirm your number.",
+      "auth_separator_or": "or",
+      "phone_number_hint": "Phone number",
+      "phone_number_example": "+998 90 123 45 67",
+      "phone_send_code": "Send code",
+      "phone_resend_code": "Resend code",
+      "phone_resend_in_seconds": "Resend in {seconds}s",
+      "phone_invalid_format":
+          "Please enter a valid phone number including country code (e.g. +998 90 123 45 67).",
+      "phone_code_entry_title": "Enter the 6-digit code",
+      "phone_code_entry_description": "Sent to {phone}",
+      "phone_code_invalid": "That code is incorrect or has expired.",
+      "phone_verify": "Verify",
+      "phone_verifying": "Verifying...",
+      "phone_verification_failed": "Phone verification failed: {error}",
+      "phone_too_many_requests":
+          "Too many attempts. Please try again in a few minutes.",
+      "phone_quota_exceeded":
+          "Phone verification is temporarily unavailable. Please try again later.",
+      "change_phone_number": "Change phone number",
+
       // ===== SHARING & CONTACT =====
       "check_out_listing_on_uydosh": "Check out this listing on UyDosh!",
       "share_subject_uz": "UyDosh - Uy e'loni",
@@ -1967,6 +1991,30 @@ class AppStrings {
       "signing_in": "Вход в систему...",
       "google_sign_in_failed": "Ошибка входа через Google: {error}",
       "popup_closed": "Окно входа было закрыто",
+
+      // ===== PHONE AUTHENTICATION =====
+      "sign_in_with_phone": "Войти по номеру",
+      "sign_in_with_phone_description":
+          "Мы отправим SMS с 6-значным кодом для подтверждения номера.",
+      "auth_separator_or": "или",
+      "phone_number_hint": "Номер телефона",
+      "phone_number_example": "+998 90 123 45 67",
+      "phone_send_code": "Отправить код",
+      "phone_resend_code": "Отправить код ещё раз",
+      "phone_resend_in_seconds": "Повторно через {seconds} с",
+      "phone_invalid_format":
+          "Введите номер с кодом страны (например, +998 90 123 45 67).",
+      "phone_code_entry_title": "Введите 6-значный код",
+      "phone_code_entry_description": "Отправлен на {phone}",
+      "phone_code_invalid": "Код неверный или просрочен.",
+      "phone_verify": "Подтвердить",
+      "phone_verifying": "Проверка...",
+      "phone_verification_failed": "Ошибка подтверждения: {error}",
+      "phone_too_many_requests":
+          "Слишком много попыток. Попробуйте через несколько минут.",
+      "phone_quota_exceeded":
+          "Подтверждение по телефону временно недоступно. Попробуйте позже.",
+      "change_phone_number": "Изменить номер",
 
       // ===== SHARING & CONTACT =====
       "check_out_listing_on_uydosh": "Посмотрите это объявление на UyDosh!",
@@ -2983,6 +3031,30 @@ class AppStrings {
       "signing_in": "Tizimga kirilmoqda...",
       "google_sign_in_failed": "Google orqali kirishda xatolik: {error}",
       "popup_closed": "Kirish oynasi yopildi",
+
+      // ===== PHONE AUTHENTICATION =====
+      "sign_in_with_phone": "Telefon raqami orqali kirish",
+      "sign_in_with_phone_description":
+          "Raqamingizni tasdiqlash uchun 6 xonali kod yuboramiz.",
+      "auth_separator_or": "yoki",
+      "phone_number_hint": "Telefon raqami",
+      "phone_number_example": "+998 90 123 45 67",
+      "phone_send_code": "Kod yuborish",
+      "phone_resend_code": "Kodni qayta yuborish",
+      "phone_resend_in_seconds": "Qayta yuborish {seconds} s dan keyin",
+      "phone_invalid_format":
+          "Davlat kodini qo'shib to'g'ri raqam kiriting (masalan, +998 90 123 45 67).",
+      "phone_code_entry_title": "6 xonali kodni kiriting",
+      "phone_code_entry_description": "{phone} raqamiga yuborildi",
+      "phone_code_invalid": "Kod noto'g'ri yoki muddati tugagan.",
+      "phone_verify": "Tasdiqlash",
+      "phone_verifying": "Tekshirilmoqda...",
+      "phone_verification_failed": "Tasdiqlashda xatolik: {error}",
+      "phone_too_many_requests":
+          "Juda ko'p urinish. Bir necha daqiqadan so'ng qayta urinib ko'ring.",
+      "phone_quota_exceeded":
+          "Telefon orqali tasdiqlash vaqtincha mavjud emas. Keyinroq urinib ko'ring.",
+      "change_phone_number": "Raqamni o'zgartirish",
 
       // ===== SHARING & CONTACT =====
       "check_out_listing_on_uydosh": "Bu e'lonni UyDosh da ko'ring!",

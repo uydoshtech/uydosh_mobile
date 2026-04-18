@@ -4,6 +4,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/domain/models/auth/auth_request.dart";
 import "package:uy_dosh/domain/models/auth/auth_response.dart";
 import "package:uy_dosh/domain/models/auth/firebase_auth_request.dart";
+import "package:uy_dosh/domain/models/auth/firebase_phone_auth_request.dart";
 
 abstract class IAuthService {
   Future<AuthResponse> register(String email);
@@ -15,6 +16,16 @@ abstract class IAuthService {
     required String firebaseUid,
     String? avatarUrl,
   });
+
+  /// Authenticate with backend after a successful Firebase Phone Auth sign-in.
+  /// [phoneNumber] must be in E.164 format (e.g. `+998901234567`) and must be
+  /// the number that was verified by Firebase.
+  Future<Map<String, dynamic>> firebasePhoneAuth({
+    required String firebaseUid,
+    required String phoneNumber,
+    String? avatarUrl,
+  });
+
   Future<bool> refreshToken();
   Future<void> logout();
 }
@@ -92,6 +103,30 @@ class AuthService implements IAuthService {
       return response;
     } catch (e) {
       throw Exception("Firebase auth failed: $e");
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> firebasePhoneAuth({
+    required String firebaseUid,
+    required String phoneNumber,
+    String? avatarUrl,
+  }) async {
+    try {
+      final request = FirebasePhoneAuthRequest(
+        firebaseUid: firebaseUid,
+        phoneNumber: phoneNumber,
+        avatarUrl: avatarUrl,
+      );
+      final response = await _apiClient
+          .post<Map<String, dynamic>, FirebasePhoneAuthRequest>(
+        "/users/firebase-phone-auth",
+        (json) => json as Map<String, dynamic>,
+        data: request,
+      );
+      return response;
+    } catch (e) {
+      throw Exception("Firebase phone auth failed: $e");
     }
   }
 

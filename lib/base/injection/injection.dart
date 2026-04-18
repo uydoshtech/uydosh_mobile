@@ -23,6 +23,7 @@ import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/otp_service.dart";
 import "package:uy_dosh/domain/services/otp_service_impl.dart";
+import "package:uy_dosh/domain/services/phone_auth_service.dart";
 import "package:uy_dosh/domain/services/public_app_settings_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
@@ -101,6 +102,8 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<IOtpService>(
     () => OtpService(getIt<IPublicApiClient>()),
   );
+
+  getIt.registerLazySingleton<IPhoneAuthService>(PhoneAuthService.new);
 
   getIt.registerLazySingleton<IMessagingService>(
     () => MessagingService(getIt<IOAuthApiClient>()),

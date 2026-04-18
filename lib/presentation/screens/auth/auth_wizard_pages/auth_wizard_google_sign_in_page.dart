@@ -14,6 +14,7 @@ class AuthWizardGoogleSignInPage extends StatefulWidget {
     required this.isGoogleSignedIn,
     required this.currentUser,
     required this.onSignInWithGoogle,
+    required this.onSignInWithPhone,
     super.key,
   });
 
@@ -21,6 +22,7 @@ class AuthWizardGoogleSignInPage extends StatefulWidget {
   final bool isGoogleSignedIn;
   final User? currentUser;
   final VoidCallback onSignInWithGoogle;
+  final VoidCallback onSignInWithPhone;
 
   @override
   State<AuthWizardGoogleSignInPage> createState() =>
@@ -106,6 +108,64 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                                   );
                                 },
                               ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: _getOnboardingTextSecondaryColor(context)
+                                .withValues(alpha: 0.4),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            L10n.get("auth_separator_or"),
+                            style: TextStyle(
+                              color: _getOnboardingTextSecondaryColor(context),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: _getOnboardingTextSecondaryColor(context)
+                                .withValues(alpha: 0.4),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: TextButton.icon(
+                        onPressed: _enabled ? widget.onSignInWithPhone : null,
+                        icon: ThemeIcon(
+                          Icons.phone_iphone,
+                          color: _getOnboardingTextColor(context),
+                        ),
+                        label: Text(
+                          L10n.get("sign_in_with_phone"),
+                          style: TextStyle(
+                            color: _getOnboardingTextColor(context),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                            side: BorderSide(
+                              color: _getOnboardingTextColor(context)
+                                  .withValues(alpha: 0.4),
                             ),
                           ),
                         ),

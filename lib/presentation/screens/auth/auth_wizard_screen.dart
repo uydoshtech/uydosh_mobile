@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_language_page.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_profile_page.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
+import "package:uy_dosh/presentation/screens/auth/phone_sign_in_sheet.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -34,6 +35,8 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
+
+enum _AuthMethod { google, phone }
 
 class AuthWizardScreen extends StatefulWidget {
   const AuthWizardScreen({
@@ -88,6 +91,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   bool _isAuthenticating = false;
   bool _isGoogleSignedIn = false;
   User? _currentUser;
+  _AuthMethod _authMethod = _AuthMethod.google;
 
   // Navigation control
   bool _isProgrammaticNavigation = false;
@@ -274,8 +278,66 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
   }
 
+  // Phone Sign-In method
+  Future<void> _signInWithPhone() async {
+    if (_isAuthenticating) return;
+
+    getIt<AppAnalyticsService>().logSignInStarted(method: "phone");
+
+    final user = await PhoneSignInSheet.show(context);
+    if (user == null) {
+      // User cancelled or error was shown inside the sheet.
+      return;
+    }
+
+    setState(() {
+      _isAuthenticating = true;
+      _isGoogleSignedIn = true; // share "is authenticated" gate with rest of wizard
+      _currentUser = user;
+      _authMethod = _AuthMethod.phone;
+    });
+
+    try {
+      if ((user.displayName ?? "").isNotEmpty && _nameController.text.isEmpty) {
+        _nameController.text = user.displayName!;
+      }
+
+      await SessionManager.storeGoogleProfile(
+        displayName: user.displayName,
+        photoUrl: user.photoURL,
+      );
+
+      await _authenticateWithBackend(authMethod: _AuthMethod.phone);
+
+      if (mounted) {
+        setState(() => _isAuthenticating = false);
+        getIt<AppAnalyticsService>().logSignInSuccess(method: "phone");
+        ToastTheme.showSuccess(
+          context,
+          message: L10n.get("sign_in_with_phone"),
+          duration: const Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      getIt<AppAnalyticsService>().logSignInFailure(
+        method: "phone",
+        errorType: e.toString().length > 100
+            ? e.toString().substring(0, 100)
+            : e.toString(),
+      );
+      if (mounted) {
+        setState(() => _isAuthenticating = false);
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("phone_verification_failed")
+              .replaceAll("{error}", e.toString()),
+        );
+      }
+    }
+  }
+
   // Authenticate with your backend after Firebase Sign-In - FIRST OCCURRENCE
-  Future<void> _authenticateWithBackend() async {
+  Future<void> _authenticateWithBackend({_AuthMethod authMethod = _AuthMethod.google}) async {
     try {
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
@@ -291,11 +353,17 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       logger.d("🔍 Is Google signed in: $_isGoogleSignedIn");
 
       // Call backend via Dio (AuthService)
-      final response = await _authService.firebaseAuth(
-        email: currentUser.email ?? "",
-        firebaseUid: currentUser.uid,
-        avatarUrl: currentUser.photoURL,
-      );
+      final response = authMethod == _AuthMethod.phone
+          ? await _authService.firebasePhoneAuth(
+              firebaseUid: currentUser.uid,
+              phoneNumber: currentUser.phoneNumber ?? "",
+              avatarUrl: currentUser.photoURL,
+            )
+          : await _authService.firebaseAuth(
+              email: currentUser.email ?? "",
+              firebaseUid: currentUser.uid,
+              avatarUrl: currentUser.photoURL,
+            );
 
       logger.d("✅ Backend authentication successful!");
       logger.d("📥 Backend response: $response");
@@ -458,11 +526,17 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return;
       }
 
-      final response = await _authService.firebaseAuth(
-        email: currentUser.email ?? "",
-        firebaseUid: currentUser.uid,
-        avatarUrl: currentUser.photoURL,
-      );
+      final response = _authMethod == _AuthMethod.phone
+          ? await _authService.firebasePhoneAuth(
+              firebaseUid: currentUser.uid,
+              phoneNumber: currentUser.phoneNumber ?? "",
+              avatarUrl: currentUser.photoURL,
+            )
+          : await _authService.firebaseAuth(
+              email: currentUser.email ?? "",
+              firebaseUid: currentUser.uid,
+              avatarUrl: currentUser.photoURL,
+            );
 
       // Store session (includes blocked status)
       await _storeBackendSession(response);
@@ -765,7 +839,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         final currentUser = _auth.currentUser;
         if (currentUser != null) {
           try {
-            await _authenticateWithBackend();
+            await _authenticateWithBackend(authMethod: _authMethod);
             // Try to get backend user ID again
             final newBackendUserId = await SessionManager.getBackendUserId();
 
@@ -1152,6 +1226,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           isGoogleSignedIn: _isGoogleSignedIn,
                           currentUser: _currentUser,
                           onSignInWithGoogle: _signInWithGoogle,
+                          onSignInWithPhone: _signInWithPhone,
                         ),
                         AuthWizardProfilePage(
                           profileScrollController: _profileScrollController,

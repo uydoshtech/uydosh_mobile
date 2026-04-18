@@ -13,6 +13,7 @@ import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
+import "package:uy_dosh/base/firebase/app_check_bootstrap.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/log_config.dart";
@@ -28,8 +29,8 @@ import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
+import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -84,6 +85,10 @@ void main() async {
         rethrow;
       }
     }
+
+    // Activate App Check BEFORE any Firebase Auth call (phone verification
+    // requires it). Safe to await — non-fatal if it fails.
+    await AppCheckBootstrap.activate();
 
     // Initialize Crashlytics (iOS/Android only; not supported on web)
     if (!kIsWeb) {
