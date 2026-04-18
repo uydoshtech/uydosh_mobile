@@ -301,7 +301,7 @@ class _ListingTileState extends State<ListingTile>
                     ),
                   ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -318,19 +318,27 @@ class _ListingTileState extends State<ListingTile>
                                     listingTypeCode:
                                         widget.listing.listingType!.code,
                                     size: 18,
-                                    padding: const EdgeInsets.all(6),
+                                    padding: const EdgeInsets.all(4),
                                   ),
                                   const SizedBox(width: 10),
                                 ],
                                 // Gender Badge
                                 if (widget.listing.gender != null) ...[
-                                  GenderBadge(gender: widget.listing.gender!),
-                                  const SizedBox(width: 10),
+                                  GenderBadge(
+                                    gender: widget.listing.gender!,
+                                    size: 18,
+                                    padding: const EdgeInsets.all(4),
+                                  ),
+                                  const SizedBox(width: 6),
                                 ],
                                 // Photo indicator icon
                                 if (widget.listing.photos != null &&
                                     widget.listing.photos!.isNotEmpty) ...[
-                                  const PhotoIcon(),
+                                  const PhotoIcon(
+                                    size: 18,
+                                    padding: EdgeInsets.all(4),
+                                    borderRadius: 8,
+                                  ),
                                 ],
                                 // 3D room scan (available on iOS; show indicator on web too)
                                 if ((kIsWeb || isIPhoneFormFactor(context)) &&
@@ -338,8 +346,11 @@ class _ListingTileState extends State<ListingTile>
                                         false)) ...[
                                   if (widget.listing.photos != null &&
                                       widget.listing.photos!.isNotEmpty)
-                                    const SizedBox(width: 10),
-                                  const Room3dIconBadge(),
+                                    const SizedBox(width: 6),
+                                  const Room3dIconBadge(
+                                    size: 18,
+                                    padding: EdgeInsets.all(4),
+                                  ),
                                 ],
                               ],
                             ),
