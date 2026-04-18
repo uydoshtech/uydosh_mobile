@@ -602,6 +602,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           canPop: !_isFormDirty(),
           onPopInvokedWithResult: _onPopInvoked,
           child: Scaffold(
+            // Unified soft-UI background so neumorphic shadows on the cards
+            // blend seamlessly with the page instead of clashing with a
+            // contrasting scaffold tone.
+            backgroundColor: theme.colorScheme.surface,
             appBar: UydoshAppBar(
               leading: ThreeDAppBarIconButton.backLeading(context),
               title: Text(
@@ -1168,16 +1172,16 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   Widget _buildRoleLoadingPlaceholder(BuildContext context) {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isBlueTheme
-            ? BlueThemeColors.surface
-            : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outline),
+        borderRadius: BorderRadius.circular(16),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             ThemeIcon(
@@ -1226,6 +1230,12 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   }) {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
+    // Neumorphic recessed (inset) input: flat fill that matches the surface
+    // with inner shadows, no hard border — feels "soft-UI" / new-morphic.
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
+    final iconColor =
+        isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1237,31 +1247,33 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             color: _getLifestyleHeaderColor(),
           ),
         ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          decoration: InputDecoration(
-            prefixIcon: ThemeIcon(icon, color: theme.colorScheme.onSurfaceVariant),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: theme.colorScheme.outline),
+        const SizedBox(height: 10),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: baseColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: ThreeDSurfaceStyle.insetRecessedShadows(context),
+          ),
+          child: TextField(
+            controller: controller,
+            maxLines: maxLines,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: isBlueTheme ? Colors.white : theme.colorScheme.onSurface,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: theme.colorScheme.outline),
+            cursorColor: theme.colorScheme.primary,
+            decoration: InputDecoration(
+              prefixIcon: ThemeIcon(icon, color: iconColor),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              focusedErrorBorder: InputBorder.none,
+              filled: false,
+              isDense: true,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: theme.colorScheme.primary,
-                width: 2,
-              ),
-            ),
-            filled: true,
-            fillColor: isBlueTheme
-                ? BlueThemeColors.surface
-                : theme.colorScheme.surfaceContainerHighest,
           ),
         ),
       ],
@@ -1343,16 +1355,19 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         final theme = Theme.of(context);
         final isBlueTheme = ThemeState().isBlueTheme;
         final isSelected = currentIsStudent == isStudent;
-        final backgroundColor = isSelected
+        final baseColor =
+            isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
+        // Selected = inset / pressed-in; unselected = raised plate.
+        // Keep the label at full contrast in both states (the inset shadow is
+        // enough to signal "pressed"). Picking an accent color for selected
+        // text washed it out against the dark blue theme surface.
+        final textColor =
+            isBlueTheme ? Colors.white : theme.colorScheme.onSurface;
+        final iconColor = isBlueTheme
             ? Colors.white
-            : (isBlueTheme
-                ? BlueThemeColors.surface
-                : theme.colorScheme.surfaceContainerHighest);
-        final borderColor =
-            isSelected ? Colors.black : theme.colorScheme.outline;
-        final textColor = isSelected
-            ? Colors.black
-            : (isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
+            : (isSelected
+                ? theme.colorScheme.onSurface
+                : theme.colorScheme.onSurfaceVariant);
 
         return GestureDetector(
           onTap: () {
@@ -1370,17 +1385,25 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               _selectedUniversityId.value = null;
             }
           },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
+              color: isSelected ? baseColor : null,
+              gradient: isSelected
+                  ? null
+                  : ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: isSelected
+                  ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+                  : ThreeDSurfaceStyle.elevatedShadows(context),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ThemeIcon(icon, color: textColor, size: 20),
+                ThemeIcon(icon, color: iconColor, size: 20),
                 const SizedBox(width: 10),
                 Flexible(
                   child: Text(

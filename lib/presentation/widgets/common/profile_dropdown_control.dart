@@ -1,12 +1,15 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart";
 
 export "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart"
     show DropdownOption;
 
-/// Profile-section styled wrapper around [UydoshDropdown].
+/// Profile-section styled wrapper around [UydoshDropdown]. Uses a raised
+/// neumorphic surface ([ThreeDSurfaceStyle.elevatedShadows]) — no hard border
+/// so it reads as a soft plate rather than a flat outlined tile.
 class ProfileDropdownControl extends StatelessWidget {
   const ProfileDropdownControl({
     required this.label,
@@ -27,17 +30,14 @@ class ProfileDropdownControl extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
-    final sectionBackground =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: sectionBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline,
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(16),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       ),
       child: UydoshDropdown(
         label: label,
@@ -45,7 +45,7 @@ class ProfileDropdownControl extends StatelessWidget {
         options: options,
         onChanged: onChanged,
         icon: icon,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }

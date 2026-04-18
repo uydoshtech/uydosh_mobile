@@ -1,11 +1,17 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 
+/// Profile-section styled wrapper around [UydoshToggle]. Uses a raised
+/// neumorphic surface so it matches the other profile controls.
 class ProfileToggleControl extends StatelessWidget {
   const ProfileToggleControl({
-    required this.label, required this.value, required this.onChanged, super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    super.key,
     this.icon,
   });
 
@@ -18,33 +24,25 @@ class ProfileToggleControl extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
-    final sectionBackground =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: sectionBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline,
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(16),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       ),
       child: UydoshToggle(
         icon: icon,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         iconColor:
-            isBlueTheme
-                ? Colors.white
-                : theme.colorScheme.onSurfaceVariant,
+            isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant,
         title: Text(
           label,
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w500,
-            color:
-                isBlueTheme
-                    ? Colors.white
-                    : theme.colorScheme.onSurface,
+            color: isBlueTheme ? Colors.white : theme.colorScheme.onSurface,
           ),
         ),
         value: value ?? false,

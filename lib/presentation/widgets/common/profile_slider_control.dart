@@ -1,9 +1,11 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_slider.dart";
 
-/// Profile-section styled wrapper around [UydoshSlider].
+/// Profile-section styled wrapper around [UydoshSlider]. Uses a raised
+/// neumorphic surface consistent with the other profile controls.
 class ProfileSliderControl extends StatelessWidget {
   const ProfileSliderControl({
     required this.label,
@@ -30,18 +32,15 @@ class ProfileSliderControl extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
-    final sectionBackground =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surfaceContainerHighest;
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
     final currentValue = value ?? min;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: sectionBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline,
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(16),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       ),
       child: UydoshSlider(
         label: label,
