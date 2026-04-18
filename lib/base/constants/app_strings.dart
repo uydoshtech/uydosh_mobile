@@ -378,6 +378,12 @@ class AppStrings {
       "take_photo": "Take Photo",
       "choose_from_gallery": "Choose from Gallery",
       "photo_limit_reached": "Maximum 5 photos allowed",
+      "retake": "Retake",
+      "use_photo": "Use Photo",
+      "flash": "Flash",
+      "switch_camera": "Switch camera",
+      "camera_unavailable": "Camera is unavailable",
+      "error_picking_photo": "Couldn't pick the photo",
 
       "max_photos_reached": "Maximum photos reached",
       "max_photos_message":
@@ -1364,6 +1370,12 @@ class AppStrings {
       "take_photo": "Сделать фото",
       "choose_from_gallery": "Выбрать из галереи",
       "photo_limit_reached": "Максимум 5 фотографий",
+      "retake": "Переснять",
+      "use_photo": "Использовать",
+      "flash": "Вспышка",
+      "switch_camera": "Сменить камеру",
+      "camera_unavailable": "Камера недоступна",
+      "error_picking_photo": "Не удалось загрузить фото",
 
       "max_photos_reached": "Достигнут максимум фотографий",
       "max_photos_message": "Вы можете загрузить максимум 5 фото.",
@@ -2360,6 +2372,12 @@ class AppStrings {
       "take_photo": "Rasm olish",
       "choose_from_gallery": "Galereyadan tanlash",
       "photo_limit_reached": "Maksimal 5 ta rasm",
+      "retake": "Qayta olish",
+      "use_photo": "Foydalanish",
+      "flash": "Chaqnoq",
+      "switch_camera": "Kamerani almashtirish",
+      "camera_unavailable": "Kamera mavjud emas",
+      "error_picking_photo": "Rasmni yuklab bo'lmadi",
 
       "max_photos_reached": "Maksimal rasmlar soniga yetildi",
       "max_photos_message":

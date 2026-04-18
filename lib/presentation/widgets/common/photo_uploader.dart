@@ -10,6 +10,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/photo.dart";
+import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -99,18 +100,19 @@ class _PhotoUploaderState extends State<PhotoUploader>
           }
         }
       } else {
-        // For camera, keep single image selection
-        final image = await _picker.pickImage(
-          source: source,
-          maxWidth: 1280,
-          maxHeight: 720,
-          imageQuality: 75,
+        // Use our custom camera screen (with UyDosh watermark overlay)
+        // instead of the native camera picker.
+        final capturedPath = await Navigator.of(context).push<String>(
+          MaterialPageRoute(
+            builder: (_) => const CustomCameraScreen(),
+            fullscreenDialog: true,
+          ),
         );
 
-        if (image != null) {
+        if (capturedPath != null) {
           if (widget.selectedPhotos.length < widget.maxPhotos) {
             final newPhotos = List<String>.from(widget.selectedPhotos);
-            newPhotos.add(image.path);
+            newPhotos.add(capturedPath);
 
             // If this is the first photo being added AND no existing photos, make it primary
             if (widget.selectedPhotos.isEmpty &&
@@ -518,36 +520,33 @@ class _PhotoUploaderState extends State<PhotoUploader>
                         HapticFeedbackUtils.impact();
                         widget.onMakePhotoPrimary(index);
                       },
-              child: CachedNetworkImage(
-                imageUrl: _buildPhotoUrl(photo.photoUrl),
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
-                memCacheWidth: 400,
-                memCacheHeight: 400,
-                fadeInDuration: const Duration(milliseconds: 200),
-                fadeInCurve: Curves.easeOut,
-                placeholder:
-                    (context, url) => ColoredBox(
-                      color: ThemeState().isBlueTheme
-                          ? BlueThemeColors.surface
-                          : Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: const Center(
+              child: ColoredBox(
+                color: ThemeState().isBlueTheme
+                    ? BlueThemeColors.surface
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: CachedNetworkImage(
+                  imageUrl: _buildPhotoUrl(photo.photoUrl),
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.contain,
+                  // Pass only memCacheWidth so the raster preserves the
+                  // source aspect ratio (forcing both dims distorts
+                  // portrait photos).
+                  memCacheWidth: 400,
+                  fadeInDuration: const Duration(milliseconds: 200),
+                  fadeInCurve: Curves.easeOut,
+                  placeholder:
+                      (context, url) => const Center(
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
-                    ),
-                errorWidget:
-                    (context, url, error) => ColoredBox(
-                      color: ThemeState().isBlueTheme
-                          ? BlueThemeColors.surface
-                          : Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: ThemeIcon(
+                  errorWidget:
+                      (context, url, error) => ThemeIcon(
                         Icons.broken_image,
                         color: Theme.of(
                           context,
                         ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                       ),
-                    ),
+                ),
               ),
             ),
             // Overlay loader when making photo primary
@@ -665,26 +664,28 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 HapticFeedbackUtils.impact();
                 _makeNewPhotoPrimary(index);
               },
-              child: Image.file(
-                File(photoPath),
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
-                cacheWidth: 400,
-                cacheHeight: 400,
-                errorBuilder: (context, error, stackTrace) {
-                  return ColoredBox(
-                    color: ThemeState().isBlueTheme
-                        ? BlueThemeColors.surface
-                        : Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: ThemeIcon(
+              child: ColoredBox(
+                color: ThemeState().isBlueTheme
+                    ? BlueThemeColors.surface
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Image.file(
+                  File(photoPath),
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.contain,
+                  // Pass only cacheWidth so the raster preserves source
+                  // aspect ratio (forcing both dims distorts portrait
+                  // photos).
+                  cacheWidth: 400,
+                  errorBuilder: (context, error, stackTrace) {
+                    return ThemeIcon(
                       Icons.broken_image,
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
             // Primary photo indicator

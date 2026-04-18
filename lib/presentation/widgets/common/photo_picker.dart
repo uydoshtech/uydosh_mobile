@@ -9,6 +9,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -110,15 +111,16 @@ class _PhotoPickerState extends State<PhotoPicker> {
           }
         }
       } else {
-        // For camera, keep single image selection
-        final image = await _picker.pickImage(
-          source: source,
-          maxWidth: 1280, // Reduced from 1920 for lighter images
-          maxHeight: 720, // Reduced from 1080 for lighter images
-          imageQuality: 75, // Reduced from 85 for lighter images
+        // Use our custom camera screen (with UyDosh watermark overlay)
+        // instead of the native camera picker.
+        final capturedPath = await Navigator.of(context).push<String>(
+          MaterialPageRoute(
+            builder: (_) => const CustomCameraScreen(),
+            fullscreenDialog: true,
+          ),
         );
 
-        if (image != null) {
+        if (capturedPath != null) {
           if (widget.selectedPhotos.length < widget.maxPhotos) {
             // Show loading indicator
             setState(() {
@@ -128,7 +130,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
             try {
               final watermarkBytes = await _loadWatermarkBytes();
               final watermarkedFile = await WatermarkService.addWatermark(
-                File(image.path),
+                File(capturedPath),
                 watermarkImageBytes: watermarkBytes,
               );
               final newPhotos = List<String>.from(widget.selectedPhotos);
@@ -139,7 +141,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                 debugPrint("Error adding watermark: $e");
               }
               final newPhotos = List<String>.from(widget.selectedPhotos);
-              newPhotos.add(image.path);
+              newPhotos.add(capturedPath);
               widget.onPhotosChanged(newPhotos);
             } finally {
               // Hide loading indicator
@@ -494,13 +496,21 @@ class _PhotoPickerState extends State<PhotoPicker> {
                 // Mark photo as primary by reordering
                 _makePhotoPrimary(index);
               },
-              child: Image.file(
-                File(orderedPhotos[index]),
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
-                cacheWidth: 400,
-                cacheHeight: 400,
+              child: ColoredBox(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.black
+                    : Colors.grey.shade200,
+                child: Image.file(
+                  File(orderedPhotos[index]),
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.contain,
+                  // Pass only cacheWidth so Flutter preserves the source
+                  // aspect ratio in the raster (setting both cacheWidth and
+                  // cacheHeight forces the bitmap into that exact box and
+                  // can distort portrait photos).
+                  cacheWidth: 400,
+                ),
               ),
             ),
           ),
