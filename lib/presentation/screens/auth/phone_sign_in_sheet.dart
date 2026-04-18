@@ -382,8 +382,6 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
                 onPressed: _busy ? null : _onChangeNumber,
                 text: L10n.get("change_phone_number"),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                textColor: textColor,
-                borderColor: textColor.withValues(alpha: 0.4),
               ),
             ),
             const SizedBox(width: 12),
@@ -395,8 +393,6 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
                         .replaceAll("{seconds}", _resendSeconds.toString())
                     : L10n.get("phone_resend_code"),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                textColor: textColor,
-                borderColor: textColor.withValues(alpha: 0.4),
               ),
             ),
           ],

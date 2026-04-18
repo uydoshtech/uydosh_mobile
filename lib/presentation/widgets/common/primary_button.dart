@@ -238,7 +238,13 @@ class PrimaryButtonFactory {
       child: ButtonIconLabel(
         slotWidth: slotWidth,
         leading: Icon(icon, size: resolvedIconSize),
-        label: Text(text, style: textStyle),
+        label: Text(
+          text,
+          style: textStyle,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
@@ -275,7 +281,13 @@ class PrimaryButtonFactory {
       child: ButtonIconLabel(
         slotWidth: slotWidth,
         trailing: Icon(icon, size: resolvedIconSize),
-        label: Text(text, style: textStyle),
+        label: Text(
+          text,
+          style: textStyle,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }

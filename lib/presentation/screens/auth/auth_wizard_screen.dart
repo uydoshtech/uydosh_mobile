@@ -1285,7 +1285,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   width: double.infinity,
                                   borderRadius: BorderRadius.circular(20),
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
+                                    horizontal: 12,
                                     vertical: 16,
                                   ),
                                   textStyle: textStyle,
@@ -1297,7 +1297,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                 icon: Icons.chevron_left,
                                 text: L10n.get("back"),
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 32,
+                                  horizontal: 12,
                                   vertical: 16,
                                 ),
                                 textStyle: textStyle,
@@ -1336,7 +1336,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   width: double.infinity,
                                   borderRadius: BorderRadius.circular(20),
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
+                                    horizontal: 12,
                                     vertical: 16,
                                   ),
                                   textStyle: textStyle,
@@ -1348,7 +1348,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                 text: nextText,
                                 icon: Icons.chevron_right,
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 32,
+                                  horizontal: 12,
                                   vertical: 16,
                                 ),
                                 textStyle: textStyle,

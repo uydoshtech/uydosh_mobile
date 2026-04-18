@@ -313,7 +313,12 @@ class GhostButtonFactory {
           color: iconColor ?? textColor,
           size: resolvedIconSize,
         ),
-        label: Text(text),
+        label: Text(
+          text,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
@@ -358,7 +363,12 @@ class GhostButtonFactory {
           color: iconColor ?? textColor,
           size: resolvedIconSize,
         ),
-        label: Text(text),
+        label: Text(
+          text,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
