@@ -5,6 +5,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -37,14 +38,16 @@ class ConversationTile extends StatelessWidget {
         final avatarColor = themeState.avatarColor;
         final avatarIconColor = themeState.avatarIconColor;
 
+        final resolvedAvatarUrl = resolveAvatarUrl(conversation.otherUserAvatar);
+
         final listTile = ListTile(
           onTap: onTap,
           // Sit on parent [ThreeDElevatedSurface] gradient instead of a flat fill.
           tileColor: isGrouped ? Colors.transparent : null,
-          leading: conversation.otherUserAvatar != null
+          leading: resolvedAvatarUrl != null
               ? ClipOval(
                   child: CachedNetworkImage(
-                    imageUrl: conversation.otherUserAvatar!,
+                    imageUrl: resolvedAvatarUrl,
                     width: 40,
                     height: 40,
                     fit: BoxFit.cover,

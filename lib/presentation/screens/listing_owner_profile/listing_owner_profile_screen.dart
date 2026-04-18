@@ -11,7 +11,7 @@ import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -891,22 +891,13 @@ L10n.get("rating"),
     }
   }
 
-  String _resolveAvatarUrl(String url) {
-    final trimmed = url.trim();
-    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-      return trimmed;
-    }
-    return "${EnvironmentUtil.basePath}$trimmed";
-  }
-
   Widget _buildProfilePicture(UserProfile profile) {
-    final raw = profile.avatarUrl?.trim();
-    if (raw == null || raw.isEmpty) {
+    final imageUrl = resolveAvatarUrl(profile.avatarUrl);
+    if (imageUrl == null) {
       return const Center(
         child: ThemeIcon(Icons.person, size: 50, color: Colors.white),
       );
     }
-    final imageUrl = _resolveAvatarUrl(raw);
     return ClipOval(
       child: CachedNetworkImage(
         imageUrl: imageUrl,

@@ -9,7 +9,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -81,21 +81,14 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
   final ImagePicker _picker = ImagePicker();
   bool _uploadingAvatar = false;
 
-  String? _resolvedProfileAvatarUrl() {
-    final raw = widget.profile.avatarUrl?.trim();
-    if (raw == null || raw.isEmpty) return null;
-    if (raw.startsWith("http://") || raw.startsWith("https://")) {
-      return raw;
-    }
-    return "${EnvironmentUtil.basePath}$raw";
-  }
-
   String? _effectiveAvatarUrl() {
-    // Prefer a custom avatar uploaded/stored on the user's profile. Fall back
-    // to the Google/Firebase photo for users signed in with Google.
-    return _resolvedProfileAvatarUrl() ??
-        widget.cachedGooglePhotoUrl ??
-        FirebaseAuth.instance.currentUser?.photoURL;
+    // Prefer the Google/Firebase photo while the user is signed in with
+    // Google — it is always fresh. Fall back to whatever is stored on the
+    // profile (custom upload, or a previously-backfilled Google URL) for
+    // users who don't have an active Firebase photoURL (e.g. phone auth).
+    return widget.cachedGooglePhotoUrl ??
+        FirebaseAuth.instance.currentUser?.photoURL ??
+        resolveAvatarUrl(widget.profile.avatarUrl);
   }
 
   Future<void> _pickAndUploadAvatar() async {

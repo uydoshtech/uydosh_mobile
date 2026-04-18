@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -690,7 +691,7 @@ class _AdminUserAvatar extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
     final border = onSurface.withValues(alpha: 0.08);
 
-    final url = avatarUrl?.trim();
+    final url = resolveAvatarUrl(avatarUrl);
     final hasUrl = url != null && url.isNotEmpty;
 
     Widget content;

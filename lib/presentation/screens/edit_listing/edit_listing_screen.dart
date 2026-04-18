@@ -1283,7 +1283,14 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       : null,
                                 ),
                                 label: Text(
-                                  L10n.get("add_room_scan_3d"),
+                                  L10n.get(
+                                    (_roomScanChanged ||
+                                            (widget.listingDetail.pointCloudUrl
+                                                    ?.isNotEmpty ??
+                                                false))
+                                        ? "replace_room_scan_3d"
+                                        : "add_room_scan_3d",
+                                  ),
                                   style: ThemeState().isBlueTheme
                                       ? const TextStyle(color: Colors.white)
                                       : null,

@@ -442,6 +442,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get add_room_scan_3d => 'Add 3D room scan';
 
   @override
+  String get replace_room_scan_3d => 'Replace 3D room scan';
+
+  @override
   String get room_scan_examples_label => 'Example scans';
 
   @override

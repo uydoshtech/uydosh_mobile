@@ -10,6 +10,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
@@ -623,11 +624,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildProfileMenuIcon() {
-    if (widget.otherUserAvatar != null &&
-        widget.otherUserAvatar!.trim().isNotEmpty) {
+    final resolvedAvatarUrl = resolveAvatarUrl(widget.otherUserAvatar);
+    if (resolvedAvatarUrl != null) {
       return ClipOval(
         child: CachedNetworkImage(
-          imageUrl: widget.otherUserAvatar!,
+          imageUrl: resolvedAvatarUrl,
           width: 24,
           height: 24,
           fit: BoxFit.cover,

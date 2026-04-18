@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
@@ -297,6 +298,7 @@ class ConversationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedAvatarUrl = resolveAvatarUrl(conversation.otherUserAvatar);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 6,
@@ -306,10 +308,10 @@ class ConversationCard extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        leading: conversation.otherUserAvatar != null
+        leading: resolvedAvatarUrl != null
             ? ClipOval(
                 child: CachedNetworkImage(
-                  imageUrl: conversation.otherUserAvatar!,
+                  imageUrl: resolvedAvatarUrl,
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,

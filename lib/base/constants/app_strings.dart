@@ -186,6 +186,7 @@ class AppStrings {
       "room_scan_disabled_globally":
           "3D room scanning is turned off in app settings. It may be available again later.",
       "add_room_scan_3d": "Add 3D room scan",
+      "replace_room_scan_3d": "Replace 3D room scan",
       "room_scan_examples_label": "Example scans",
       "skip": "Skip",
       "view_room_3d": "View 3D room",
@@ -1208,6 +1209,7 @@ class AppStrings {
       "room_scan_disabled_globally":
           "3D-сканирование комнаты отключено в настройках приложения. Позже оно может снова стать доступным.",
       "add_room_scan_3d": "Добавить 3D-скан комнаты",
+      "replace_room_scan_3d": "Заменить 3D-скан комнаты",
       "room_scan_examples_label": "Примеры сканов",
       "skip": "Пропустить",
       "view_room_3d": "Смотреть комнату в 3D",
@@ -2243,6 +2245,7 @@ class AppStrings {
       "room_scan_disabled_globally":
           "3D xona skanlash ilova sozlamalarida o'chirilgan. Keyinroq yana yoqilishi mumkin.",
       "add_room_scan_3d": "3D xona skanini qo'shish",
+      "replace_room_scan_3d": "3D xona skanini almashtirish",
       "room_scan_examples_label": "Skan namunalari",
       "skip": "O'tkazib yuborish",
       "view_room_3d": "3D xonani ko'rish",

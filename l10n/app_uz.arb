@@ -205,6 +205,7 @@
   "room_scan_not_supported": "3D skan uchun LiDARli iPhone yoki iPad kerak.",
   "room_scan_disabled_globally": "3D xona skanlash ilova sozlamalarida o'chirilgan. Keyinroq yana yoqilishi mumkin.",
   "add_room_scan_3d": "3D xona skanini qo'shish",
+  "replace_room_scan_3d": "3D xona skanini almashtirish",
   "room_scan_examples_label": "Skan namunalari",
   "skip": "O'tkazib yuborish",
   "listing_updated_success": "E'lon muvaffaqiyatli yangilandi",

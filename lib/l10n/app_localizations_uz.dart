@@ -446,6 +446,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get add_room_scan_3d => '3D xona skanini qo\'shish';
 
   @override
+  String get replace_room_scan_3d => '3D xona skanini almashtirish';
+
+  @override
   String get room_scan_examples_label => 'Skan namunalari';
 
   @override

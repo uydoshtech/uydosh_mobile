@@ -37,7 +37,8 @@ class EditProfileScreen extends StatefulWidget {
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfileScreenState extends State<EditProfileScreen>
+    with SingleTickerProviderStateMixin {
   late TextEditingController _nameController;
   late TextEditingController _aboutMeController;
   late TextEditingController _telegramController;
@@ -79,6 +80,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _baselineRole;
 
   late final Listenable _formListenables;
+
+  /// Pulse animation for the save button to gently blink when there are
+  /// unsaved changes, drawing the user's attention to it.
+  late final AnimationController _savePulseController;
+  late final Animation<double> _savePulseOpacity;
 
   @override
   void initState() {
@@ -139,6 +145,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _sleepTime,
       _isRoleLoaded,
     ]);
+
+    _savePulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _savePulseOpacity = Tween<double>(begin: 0.45, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _savePulseController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     _loadRegions();
     _loadUniversities();
@@ -365,6 +382,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _isRoleLoaded.dispose();
     _regionScrollController?.dispose();
     _universityScrollController?.dispose();
+    _savePulseController.dispose();
     super.dispose();
   }
 
@@ -596,30 +614,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   theme.colorScheme.onPrimary,
               elevation: 0,
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: ValueListenableBuilder<bool>(
-                    valueListenable: _isLoading,
-                    builder: (context, isLoading, _) => IconButton(
-                      onPressed: isLoading ? null : _saveProfile,
-                      icon: isLoading
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  theme.appBarTheme.foregroundColor ??
-                                      theme.colorScheme.onPrimary,
-                                ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: _isLoading,
+                  builder: (context, isLoading, _) {
+                    if (isLoading) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: IconButton(
+                          onPressed: null,
+                          icon: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                theme.appBarTheme.foregroundColor ??
+                                    theme.colorScheme.onPrimary,
                               ),
-                            )
-                          : const ThemeIcon(Icons.save),
-                      tooltip: L10n.get(
-                        "save_changes",
+                            ),
+                          ),
+                          tooltip: L10n.get("save_changes"),
+                        ),
+                      );
+                    }
+                    if (!_isFormDirty()) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: FadeTransition(
+                        opacity: _savePulseOpacity,
+                        child: IconButton(
+                          onPressed: _saveProfile,
+                          icon: const ThemeIcon(Icons.save),
+                          tooltip: L10n.get("save_changes"),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -1097,25 +1127,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Save Button
+                  // Save Button - only visible when there are unsaved changes
+                  // (or while a save is in progress), with a gentle pulse to
+                  // draw the user's attention.
                   ValueListenableBuilder<bool>(
                     valueListenable: _isLoading,
-                    builder: (context, isLoading, _) => SizedBox(
-                      width: double.infinity,
-                      child: GhostButtonFactory.iconText(
-                        onPressed: isLoading ? null : _saveProfile,
-                        icon: Icons.save,
-                        text: isLoading
-                            ? L10n.get(
-                                "saving",
-                              )
-                            : L10n.get(
-                                "save_changes",
-                              ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        isLoading: isLoading,
-                      ),
-                    ),
+                    builder: (context, isLoading, _) {
+                      if (!isLoading && !_isFormDirty()) {
+                        return const SizedBox.shrink();
+                      }
+                      final button = SizedBox(
+                        width: double.infinity,
+                        child: GhostButtonFactory.iconText(
+                          onPressed: isLoading ? null : _saveProfile,
+                          icon: Icons.save,
+                          text: isLoading
+                              ? L10n.get("saving")
+                              : L10n.get("save_changes"),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          isLoading: isLoading,
+                          neumorphicSoftUi: true,
+                        ),
+                      );
+                      if (isLoading) return button;
+                      return FadeTransition(
+                        opacity: _savePulseOpacity,
+                        child: button,
+                      );
+                    },
                   ),
                 ],
               ),
