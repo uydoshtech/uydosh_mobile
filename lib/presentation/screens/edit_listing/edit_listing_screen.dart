@@ -49,7 +49,8 @@ class EditListingScreen extends StatefulWidget {
   State<EditListingScreen> createState() => _EditListingScreenState();
 }
 
-class _EditListingScreenState extends State<EditListingScreen> {
+class _EditListingScreenState extends State<EditListingScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -97,6 +98,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
   /// When true, [Navigator.pop] after a successful save is allowed despite dirty form.
   bool _allowPopWithoutConfirm = false;
 
+  /// Pulse animation for the save button to gently blink when there are
+  /// unsaved changes, drawing the user's attention to it. Mirrors the
+  /// behavior on the edit profile screen.
+  late final AnimationController _savePulseController;
+  late final Animation<double> _savePulseOpacity;
+
   void _markDirty() {
     if (mounted) setState(() {});
   }
@@ -120,6 +127,16 @@ class _EditListingScreenState extends State<EditListingScreen> {
     );
     _metroStationScrollController = FixedExtentScrollController(
       initialItem: _selectedStationIndex,
+    );
+    _savePulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _savePulseOpacity = Tween<double>(begin: 0.45, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _savePulseController,
+        curve: Curves.easeInOut,
+      ),
     );
     _loadLocations();
   }
@@ -376,6 +393,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _listingTypeScrollController?.dispose();
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
+    _savePulseController.dispose();
     // Clean up any ongoing operations
     _makingPhotoPrimaryIds.clear();
     _deletingPhotoIds.clear();
@@ -652,14 +670,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: ActionDropdownMenu(
-              items: _buildActionMenuItems(),
-              icon: Icons.more_vert,
-              iconColor:
-                  theme.appBarTheme.foregroundColor ??
-                  theme.colorScheme.onPrimary,
-              tooltip: L10n.get("actions"),
-            ),
+            child: _buildAppBarTrailingAction(theme),
           ),
         ],
       ),
@@ -1562,6 +1573,48 @@ class _EditListingScreenState extends State<EditListingScreen> {
         _isSubmitting = false;
       });
     }
+  }
+
+  /// Shows a pulsing save icon when the form has unsaved changes (or a
+  /// spinner while a save is in progress). Falls back to the 3-dots menu
+  /// when the form is clean — matching the behavior on the edit profile
+  /// screen so the save affordance is consistently discoverable.
+  Widget _buildAppBarTrailingAction(ThemeData theme) {
+    final foregroundColor =
+        theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary;
+
+    if (_isSubmitting) {
+      return IconButton(
+        onPressed: null,
+        icon: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
+          ),
+        ),
+        tooltip: L10n.get("save_changes"),
+      );
+    }
+
+    if (_isFormDirty()) {
+      return FadeTransition(
+        opacity: _savePulseOpacity,
+        child: IconButton(
+          onPressed: _submitForm,
+          icon: const ThemeIcon(Icons.save),
+          tooltip: L10n.get("save_changes"),
+        ),
+      );
+    }
+
+    return ActionDropdownMenu(
+      items: _buildActionMenuItems(),
+      icon: Icons.more_vert,
+      iconColor: foregroundColor,
+      tooltip: L10n.get("actions"),
+    );
   }
 
   List<ActionMenuItem> _buildActionMenuItems() {
