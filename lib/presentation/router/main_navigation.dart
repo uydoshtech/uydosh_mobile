@@ -99,6 +99,10 @@ class MainNavigationState extends State<MainNavigation>
     // Show notifications bell tutorial once the user has at least one alert.
     ActiveSearchAlertsState().addListener(_maybeShowNotificationsBellTutorial);
 
+    // Re-attempt notifications bell tutorial when tutorial progress changes
+    // (e.g. user completes the search tutorial, which is a prerequisite).
+    TutorialState().addListener(_maybeShowNotificationsBellTutorial);
+
     // Check initial authentication status
     _checkAuthenticationStatus();
 
@@ -138,6 +142,7 @@ class MainNavigationState extends State<MainNavigation>
   @override
   void dispose() {
     ActiveSearchAlertsState().removeListener(_maybeShowNotificationsBellTutorial);
+    TutorialState().removeListener(_maybeShowNotificationsBellTutorial);
     routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -505,6 +510,10 @@ class MainNavigationState extends State<MainNavigation>
     if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
     if (!AuthenticationState().isAuthenticated) return;
     if (!ActiveSearchAlertsState().hasActiveEnabledAlerts) return;
+    // Gate on the first (search) tutorial being completed so the two overlays
+    // cannot race on cold start. Once the search tutorial finishes,
+    // TutorialState notifies and this method is re-evaluated.
+    if (!TutorialState().hasCompletedSearchTutorial) return;
 
     _notificationsBellTutorialPending = true;
 
