@@ -1,3 +1,7 @@
+import "dart:convert";
+import "dart:io";
+
+import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -11,6 +15,18 @@ abstract class IUserProfileService {
   Future<UserProfile> getCurrentUserProfile();
   Future<UserProfile> createProfile(CreateProfileRequest request);
   Future<UserProfile> updateProfile(UpdateProfileRequest request);
+
+  /// Uploads an image file from the user's device and sets it as their
+  /// avatar on the backend. Returns the refreshed [UserProfile].
+  Future<UserProfile> uploadAvatar(String filePath);
+}
+
+class _AvatarUploadRequest implements IJsonEncodable {
+  _AvatarUploadRequest(this._image);
+  final String _image;
+
+  @override
+  Map<String, dynamic> toJson() => {"image": _image};
 }
 
 class UserProfileService implements IUserProfileService {
@@ -353,6 +369,37 @@ class UserProfileService implements IUserProfileService {
 
       logger.d("=====================================");
       throw Exception("Failed to update profile: $e");
+    }
+  }
+
+  @override
+  Future<UserProfile> uploadAvatar(String filePath) async {
+    try {
+      final file = File(filePath);
+      if (!file.existsSync()) {
+        throw Exception("Avatar file does not exist: $filePath");
+      }
+
+      final bytes = await file.readAsBytes();
+      final imageData = "data:image/jpeg;base64,${base64Encode(bytes)}";
+
+      logger.d("=== UPLOAD AVATAR API CALL ===");
+      logger.d("File path: $filePath");
+      logger.d("Payload size (bytes): ${bytes.length}");
+
+      await _oauthApiClient.post<Map<String, dynamic>, _AvatarUploadRequest>(
+        "/profiles/avatar",
+        (json) => json as Map<String, dynamic>,
+        data: _AvatarUploadRequest(imageData),
+      );
+
+      final updated = await getCurrentUserProfile();
+      await SessionManager.storeUserProfile(updated);
+      logger.d("✅ Avatar uploaded and profile refreshed: ${updated.avatarUrl}");
+      return updated;
+    } catch (e) {
+      logger.d("❌ Error uploading avatar: $e");
+      rethrow;
     }
   }
 }

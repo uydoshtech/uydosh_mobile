@@ -404,6 +404,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 getRoleLabel: (role) => _getRoleLabel(role, context),
                 onEditProfile: () =>
                     _openEditProfileScreen(context, profile),
+                onAvatarUpdated: () {
+                  if (!mounted) return;
+                  context.read<CurrentUserProfileBloc>().add(
+                        const CurrentUserProfileEvent.fetchProfile(),
+                      );
+                },
               ),
 
               const SizedBox(height: 16),

@@ -1,16 +1,22 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
+import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 class _RoleBadge extends StatelessWidget {
@@ -39,7 +45,7 @@ class _RoleBadge extends StatelessWidget {
   }
 }
 
-class ProfileHeaderSection extends StatelessWidget {
+class ProfileHeaderSection extends StatefulWidget {
   const ProfileHeaderSection({
     required this.profile,
     required this.cachedGoogleDisplayName,
@@ -49,6 +55,7 @@ class ProfileHeaderSection extends StatelessWidget {
     required this.userBlocked,
     required this.getRoleLabel,
     required this.onEditProfile,
+    required this.onAvatarUpdated,
     super.key,
   });
 
@@ -61,9 +68,82 @@ class ProfileHeaderSection extends StatelessWidget {
   final String Function(String? role) getRoleLabel;
   final VoidCallback onEditProfile;
 
+  /// Invoked after a successful avatar upload so the parent can refresh
+  /// cached profile data.
+  final VoidCallback onAvatarUpdated;
+
+  @override
+  State<ProfileHeaderSection> createState() => _ProfileHeaderSectionState();
+}
+
+class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
+  final ImagePicker _picker = ImagePicker();
+  bool _uploadingAvatar = false;
+
+  String? _resolvedProfileAvatarUrl() {
+    final raw = widget.profile.avatarUrl?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    if (raw.startsWith("http://") || raw.startsWith("https://")) {
+      return raw;
+    }
+    return "${EnvironmentUtil.basePath}$raw";
+  }
+
+  String? _effectiveAvatarUrl() {
+    // Prefer a custom avatar uploaded/stored on the user's profile. Fall back
+    // to the Google/Firebase photo for users signed in with Google.
+    return _resolvedProfileAvatarUrl() ??
+        widget.cachedGooglePhotoUrl ??
+        FirebaseAuth.instance.currentUser?.photoURL;
+  }
+
+  Future<void> _pickAndUploadAvatar() async {
+    if (_uploadingAvatar || widget.userBlocked) return;
+    HapticFeedbackUtils.impact();
+
+    XFile? picked;
+    try {
+      picked = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_picking_photo"),
+      );
+      return;
+    }
+
+    if (picked == null) return;
+
+    setState(() => _uploadingAvatar = true);
+    try {
+      await getIt<IUserProfileService>().uploadAvatar(picked.path);
+      if (!mounted) return;
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("profile_photo_updated"),
+      );
+      widget.onAvatarUpdated();
+    } catch (_) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_uploading_profile_photo"),
+      );
+    } finally {
+      if (mounted) setState(() => _uploadingAvatar = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isComplete = ProfileCompletionState.completionPercent(profile) >= 100;
+    final isComplete =
+        ProfileCompletionState.completionPercent(widget.profile) >= 100;
 
     return Column(
       children: [
@@ -74,7 +154,7 @@ class ProfileHeaderSection extends StatelessWidget {
                 alignment: Alignment.bottomRight,
                 children: [
                   _buildProfileAvatar(context),
-                  if (userBlocked)
+                  if (widget.userBlocked)
                     Tooltip(
                       message: L10n.get("admin_user_detail_blocked"),
                       child: Container(
@@ -112,14 +192,17 @@ class ProfileHeaderSection extends StatelessWidget {
                         size: 14,
                         color: Colors.white,
                       ),
-                    ),
+                    )
+                  else if (!_uploadingAvatar)
+                    _buildCameraBadge(context),
                 ],
               ),
-              if (((profile.name ?? cachedGoogleDisplayName) ?? "")
+              if (((widget.profile.name ?? widget.cachedGoogleDisplayName) ??
+                      "")
                   .isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  profile.name ?? cachedGoogleDisplayName ?? "",
+                  widget.profile.name ?? widget.cachedGoogleDisplayName ?? "",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -128,10 +211,10 @@ class ProfileHeaderSection extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ],
-              if (userRoleLoaded) ...[
+              if (widget.userRoleLoaded) ...[
                 const SizedBox(height: 4),
                 _RoleBadge(
-                  label: getRoleLabel(userRole),
+                  label: widget.getRoleLabel(widget.userRole),
                 ),
               ],
             ],
@@ -139,7 +222,7 @@ class ProfileHeaderSection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         if (!isComplete) ...[
-          _buildProfileCompletionCard(context, profile, isComplete),
+          _buildProfileCompletionCard(context, widget.profile, isComplete),
           const SizedBox(height: 4),
         ] else ...[
           const SizedBox(height: 4),
@@ -150,23 +233,80 @@ class ProfileHeaderSection extends StatelessWidget {
 
   Widget _buildProfileAvatar(BuildContext context) {
     final surface = Theme.of(context).colorScheme.surface;
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(999)),
-        gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
-        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+    final canUpload = !widget.userBlocked;
+
+    return Semantics(
+      button: canUpload,
+      label: L10n.get("upload_profile_photo"),
+      child: GestureDetector(
+        onTap: canUpload ? _pickAndUploadAvatar : null,
+        child: Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(999)),
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: ClipOval(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _buildProfilePicture(context),
+                if (_uploadingAvatar)
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                    ),
+                    child: const Center(
+                      child: SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
-      child: ClipOval(
-        child: _buildProfilePicture(context),
+    );
+  }
+
+  Widget _buildCameraBadge(BuildContext context) {
+    final theme = Theme.of(context);
+    return Tooltip(
+      message: L10n.get("upload_profile_photo"),
+      child: GestureDetector(
+        onTap: _pickAndUploadAvatar,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: theme.colorScheme.surface,
+              width: 2,
+            ),
+          ),
+          child: const ThemeIcon(
+            Icons.photo_camera,
+            size: 18,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildProfilePicture(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final photoUrl = cachedGooglePhotoUrl ?? currentUser?.photoURL;
+    final photoUrl = _effectiveAvatarUrl();
 
     if (photoUrl != null) {
       return CachedNetworkImage(
@@ -295,11 +435,11 @@ class ProfileHeaderSection extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              if (!userBlocked) ...[
+              if (!widget.userBlocked) ...[
                 const SizedBox(height: 8),
                 UydoshLinkButton(
                   text: L10n.get("complete_profile"),
-                  onPressed: onEditProfile,
+                  onPressed: widget.onEditProfile,
                   outlined: true,
                 ),
               ],

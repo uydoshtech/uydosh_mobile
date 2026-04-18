@@ -384,6 +384,10 @@ class AppStrings {
       "switch_camera": "Switch camera",
       "camera_unavailable": "Camera is unavailable",
       "error_picking_photo": "Couldn't pick the photo",
+      "upload_profile_photo": "Upload profile photo",
+      "uploading_profile_photo": "Uploading photo…",
+      "profile_photo_updated": "Profile photo updated",
+      "error_uploading_profile_photo": "Couldn't upload profile photo",
 
       "max_photos_reached": "Maximum photos reached",
       "max_photos_message":
@@ -1403,6 +1407,10 @@ class AppStrings {
       "switch_camera": "Сменить камеру",
       "camera_unavailable": "Камера недоступна",
       "error_picking_photo": "Не удалось загрузить фото",
+      "upload_profile_photo": "Загрузить фото профиля",
+      "uploading_profile_photo": "Загрузка фото…",
+      "profile_photo_updated": "Фото профиля обновлено",
+      "error_uploading_profile_photo": "Не удалось загрузить фото профиля",
 
       "max_photos_reached": "Достигнут максимум фотографий",
       "max_photos_message": "Вы можете загрузить максимум 5 фото.",
@@ -2433,6 +2441,10 @@ class AppStrings {
       "switch_camera": "Kamerani almashtirish",
       "camera_unavailable": "Kamera mavjud emas",
       "error_picking_photo": "Rasmni yuklab bo'lmadi",
+      "upload_profile_photo": "Profil rasmini yuklash",
+      "uploading_profile_photo": "Rasm yuklanmoqda…",
+      "profile_photo_updated": "Profil rasmi yangilandi",
+      "error_uploading_profile_photo": "Profil rasmini yuklab bo'lmadi",
 
       "max_photos_reached": "Maksimal rasmlar soniga yetildi",
       "max_photos_message":
