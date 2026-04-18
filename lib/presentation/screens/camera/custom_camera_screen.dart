@@ -10,8 +10,8 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
-/// Full-screen custom camera with a UyDosh logo pinned to the bottom-left
-/// corner — mirrors the 3D scan scene aesthetic.
+/// Full-screen custom camera with a UyDosh logo pinned to the bottom-right,
+/// aligned with the shutter button — mirrors the 3D scan scene aesthetic.
 ///
 /// Returns the captured image's absolute file path via [Navigator.pop],
 /// or `null` if the user cancels / an error occurs.
@@ -127,18 +127,16 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
         });
         return;
       }
-      // iOS typically exposes several back cameras (wide, ultra-wide,
-      // telephoto, dual, triple). We only want one back and one front
-      // entry so `_switchCamera()` flips cleanly between them.
+      // Back-camera only. iOS typically exposes several back cameras
+      // (wide, ultra-wide, telephoto, dual, triple) — we just pick the
+      // first one marked `back`. Front/selfie camera is intentionally
+      // unsupported: listing photos are meant to show the space being
+      // rented, not the user.
       final back = cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.back,
         orElse: () => cameras.first,
       );
-      final front = cameras.firstWhere(
-        (c) => c.lensDirection == CameraLensDirection.front,
-        orElse: () => back,
-      );
-      _cameras = front == back ? [back] : [back, front];
+      _cameras = [back];
       _cameraIndex = 0;
       await _setUpController(_cameras[_cameraIndex]);
     } catch (e, st) {
@@ -162,8 +160,6 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     );
     _controller = controller;
 
-    final isFront = description.lensDirection == CameraLensDirection.front;
-
     try {
       await controller.initialize();
       controller.addListener(_onControllerValueChanged);
@@ -173,17 +169,10 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       // Capture orientation, however, should follow the device's physical
       // tilt so shots taken with the phone held sideways are saved as
       // genuine landscape images (matches Apple's stock Camera behavior).
-      // Most front cameras don't support flash; attempting to set
-      // `auto` / `always` there throws and aborts init → black screen.
-      // Force flash off on the front camera and only apply the user's
-      // chosen mode on the back camera.
       try {
-        await controller.setFlashMode(isFront ? FlashMode.off : _flashMode);
+        await controller.setFlashMode(_flashMode);
       } catch (e) {
         if (kDebugMode) debugPrint("setFlashMode failed: $e");
-      }
-      if (isFront && _flashMode != FlashMode.off) {
-        _flashMode = FlashMode.off;
       }
     } catch (e, st) {
       logger.e("Camera controller init failed", error: e, stackTrace: st);
@@ -204,22 +193,9 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     });
   }
 
-  Future<void> _switchCamera() async {
-    if (_cameras.length < 2 || _capturing || _initializing) return;
-    HapticFeedbackUtils.impact();
-    setState(() => _initializing = true);
-    _cameraIndex = (_cameraIndex + 1) % _cameras.length;
-    await _setUpController(_cameras[_cameraIndex]);
-  }
-
   Future<void> _cycleFlash() async {
     final controller = _controller;
     if (controller == null || !controller.value.isInitialized) return;
-    // Front cameras typically don't support torch/auto flash.
-    final isFront =
-        _cameras.isNotEmpty &&
-        _cameras[_cameraIndex].lensDirection == CameraLensDirection.front;
-    if (isFront) return;
 
     const order = [FlashMode.off, FlashMode.auto, FlashMode.always];
     final next = order[(order.indexOf(_flashMode) + 1) % order.length];
@@ -371,9 +347,16 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
   }
 
   Widget _buildLogoWatermark() {
+    // Vertically align with the shutter button inside the bottom bar.
+    // Bottom bar: padding bottom = bottomPadding + 20, top = 16,
+    // shutter button height = 76 → shutter center sits
+    // (bottomPadding + 20 + 38) from the screen bottom. The logo badge
+    // is ~64px tall (48 icon + 8 padding on each side), so to center it
+    // on the same line we offset it by (shutterCenter - 32).
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
     return Positioned(
-      left: 16,
-      bottom: 140,
+      right: 24,
+      bottom: bottomPadding + 26,
       child: IgnorePointer(
         child: _rotateWithDevice(
           Container(
@@ -399,9 +382,6 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
 
   Widget _buildTopBar(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
-    final isFront =
-        _cameras.isNotEmpty &&
-        _cameras[_cameraIndex].lensDirection == CameraLensDirection.front;
     return Positioned(
       left: 0,
       right: 0,
@@ -428,7 +408,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
               ),
             ),
             const Spacer(),
-            if (_stage == _CaptureStage.live && !isFront)
+            if (_stage == _CaptureStage.live)
               _rotateWithDevice(
                 _CameraIconButton(
                   icon: _flashIcon,
@@ -478,25 +458,12 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
         !_capturing &&
         _controller != null &&
         _controller!.value.isInitialized;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const SizedBox(width: 56),
-        // Shutter button is radially symmetric — no need to rotate it.
-        _ShutterButton(
-          onPressed: canShoot ? _takePicture : null,
-          busy: _capturing,
-        ),
-        _cameras.length > 1
-            ? _rotateWithDevice(
-                _CameraIconButton(
-                  icon: Icons.cameraswitch_outlined,
-                  onPressed: _switchCamera,
-                  tooltip: L10n.get("switch_camera"),
-                ),
-              )
-            : const SizedBox(width: 56),
-      ],
+    // Shutter button is radially symmetric — no need to rotate it.
+    return Center(
+      child: _ShutterButton(
+        onPressed: canShoot ? _takePicture : null,
+        busy: _capturing,
+      ),
     );
   }
 

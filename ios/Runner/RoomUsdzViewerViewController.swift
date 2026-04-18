@@ -212,7 +212,6 @@ final class RoomUsdzViewerViewController: UIViewController {
       sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
       sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      // Footer overlays the bottom; clear until dimensions load so no empty strip is reserved.
       sceneView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
 
       hintStack.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 10),
@@ -222,15 +221,15 @@ final class RoomUsdzViewerViewController: UIViewController {
 
       hintContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
       hintContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-      hintContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+      hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
 
       brandMarkView.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
-      brandMarkView.bottomAnchor.constraint(equalTo: hintContainer.topAnchor, constant: -12),
+      brandMarkView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
       brandMarkView.widthAnchor.constraint(equalToConstant: 62),
       brandMarkView.heightAnchor.constraint(equalToConstant: 62),
 
       zoomControlsContainer.trailingAnchor.constraint(equalTo: sceneView.trailingAnchor, constant: -12),
-      zoomControlsContainer.bottomAnchor.constraint(equalTo: hintContainer.topAnchor, constant: -12),
+      zoomControlsContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
     ])
 
     loadScene()
