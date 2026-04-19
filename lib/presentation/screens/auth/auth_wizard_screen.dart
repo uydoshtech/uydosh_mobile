@@ -436,9 +436,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     // Store backend user ID
     final user = response["user"];
     if (user != null && user["id"] != null) {
-      final userId = user["id"];
-      await SessionManager.storeBackendUserId(userId);
-      await getIt<AppAnalyticsService>().setUserId(userId.toString());
+      final rawUserId = user["id"];
+      final parsedUserId = rawUserId is int
+          ? rawUserId
+          : int.tryParse(rawUserId.toString());
+      if (parsedUserId != null) {
+        await SessionManager.storeBackendUserId(parsedUserId);
+        await getIt<AppAnalyticsService>().setUserId(parsedUserId.toString());
+      }
     }
     if (user != null) {
       await SessionManager.storeUserRole(user["role"]);

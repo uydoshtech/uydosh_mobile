@@ -254,9 +254,11 @@ class PushNotificationService implements IPushNotificationService {
   Future<void> registerTokenWithBackend() async {
     if (!_isSupported) return;
 
-    final userId = await SessionManager.getBackendUserId();
-    if (userId == null) {
-      logger.d("📲 Skipping FCM token registration: user not authenticated");
+    // Backend derives userId from the Bearer session token; we shouldn't
+    // depend on having `user_id` cached locally (it may not be stored yet).
+    final sessionToken = await SessionManager.getToken();
+    if (sessionToken == null || sessionToken.isEmpty) {
+      logger.d("📲 Skipping FCM token registration: no backend session token");
       return;
     }
 
