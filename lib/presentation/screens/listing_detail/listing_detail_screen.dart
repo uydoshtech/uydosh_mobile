@@ -1208,6 +1208,29 @@ L10n.get("feature_listing_error",
       );
     }
 
+    // Admin-only: remove listing from top (unfeature).
+    //
+    // The owner already has a dedicated "Promote/Remove from top" pill
+    // in [ListingDetailOwnerToolbar]; this menu entry is for admins acting
+    // on listings they don't own. We reuse [_toggleFeatureListing], which
+    // — because the listing is currently featured — will go down the
+    // "unfeature" branch (DELETE /listings/:id/feature) and skip the
+    // owner-only weekly promotion cooldown.
+    if (isAdmin &&
+        !isOwner &&
+        ListingUtils.isCurrentlyFeaturedDetail(listingDetail)) {
+      items.add(
+        ActionMenuItem(
+          value: "admin_remove_from_top",
+          icon: CupertinoIcons.arrow_down_circle,
+          textKey: "remove_from_top",
+          onPressed: _toggleFeatureListing,
+          iconColor: Colors.red,
+          textColor: Colors.red,
+        ),
+      );
+    }
+
     // Share option - always show
     items.add(
       ActionMenuItem(
