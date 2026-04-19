@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:flutter_roomplan/flutter_roomplan.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -117,6 +118,20 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
         return;
       }
       await _roomPlan.startScan();
+    } on MissingPluginException catch (e, st) {
+      logger.e("Room scan plugin missing", error: e, stackTrace: st);
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: "Room scan is unavailable (iOS plugin not initialized).",
+      );
+    } on PlatformException catch (e, st) {
+      logger.e("Room scan platform error", error: e, stackTrace: st);
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: "Room scan failed: ${e.code}",
+      );
     } catch (e, st) {
       logger.e("Room scan start failed", error: e, stackTrace: st);
       if (!mounted) return;

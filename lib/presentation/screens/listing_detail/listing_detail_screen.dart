@@ -1,6 +1,8 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:dio/dio.dart";
+import "package:flutter/services.dart";
 import "package:share_plus/share_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:url_launcher/url_launcher.dart";
@@ -769,6 +771,44 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
           message: L10n.get("room_3d_open_error"),
         );
       }
+    } on MissingPluginException catch (e, st) {
+      logger.d("Room 3D viewer missing-plugin: $e\n$st");
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: "3D viewer is unavailable (iOS plugin not initialized).",
+      );
+    } on PlatformException catch (e, st) {
+      logger.d("Room 3D viewer platform error: ${e.code} ${e.message}\n$st");
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: "3D viewer error: ${e.code}",
+      );
+    } on DioException catch (e) {
+      logger.d(
+        "Room 3D viewer network error (status=${e.response?.statusCode}): $e",
+      );
+      if (!mounted) return;
+      final status = e.response?.statusCode;
+      if (status == 404) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("room_3d_open_error"),
+        );
+        return;
+      }
+      if (status == 401 || status == 403) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("error_not_authenticated"),
+        );
+        return;
+      }
+      ToastTheme.showError(
+        context,
+        message: L10n.get("room_3d_open_error"),
+      );
     } catch (e) {
       logger.d("Room 3D viewer error: $e");
       if (!mounted) return;

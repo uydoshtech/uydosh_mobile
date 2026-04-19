@@ -46,4 +46,75 @@ post_install do |installer|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
     end
   end
+
+  # Patch flutter_roomplan iOS plugin to work with iOS multi-scene apps.
+  # The upstream plugin uses `UIApplication.shared.delegate?.window??.rootViewController`,
+  # which is often nil on iOS 13+ (UIScene) and causes "Start scan" to no-op and
+  # USDZ path lookups to fail.
+  plugin_file = File.expand_path(File.join(__dir__, '.symlinks', 'plugins', 'flutter_roomplan', 'ios', 'Classes', 'FlutterRoomplanPlugin.swift'))
+  if File.exist?(plugin_file)
+    src = File.read(plugin_file)
+    marker = '/* uydosh: scene-safe VC lookup */'
+    unless src.include?(marker)
+      # Replace fragile rootVC lookup.
+      src = src.gsub(
+        'let rootVC = UIApplication.shared.delegate?.window??.rootViewController',
+        'let rootVC = FlutterRoomplanPlugin.uydoshTopViewController()'
+      )
+      # Replace scan VC lookup used by getUsdzFilePath/getJsonFilePath.
+      src = src.gsub(
+        'if let roomVC = UIApplication.shared.delegate?.window??.rootViewController?.presentedViewController as? RoomCaptureViewController',
+        'if let roomVC = FlutterRoomplanPlugin.uydoshCurrentRoomCaptureViewController()'
+      )
+
+      # Inject helpers before the final closing brace of the class.
+      injection = <<~SWIFT
+
+        #{marker}
+        private static func uydoshTopViewController() -> UIViewController? {
+          for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            let windows = windowScene.windows
+            let root = windows.first(where: { $0.isKeyWindow })?.rootViewController
+              ?? windows.first?.rootViewController
+            if let root = root {
+              return uydoshFindTop(from: root)
+            }
+          }
+          return nil
+        }
+
+        private static func uydoshFindTop(from vc: UIViewController) -> UIViewController {
+          if let presented = vc.presentedViewController {
+            return uydoshFindTop(from: presented)
+          }
+          if let nav = vc as? UINavigationController, let visible = nav.visibleViewController {
+            return uydoshFindTop(from: visible)
+          }
+          if let tab = vc as? UITabBarController, let selected = tab.selectedViewController {
+            return uydoshFindTop(from: selected)
+          }
+          return vc
+        }
+
+        private static func uydoshCurrentRoomCaptureViewController() -> RoomCaptureViewController? {
+          guard let top = uydoshTopViewController() else { return nil }
+          // Walk presented chain from the current top VC.
+          var vc: UIViewController? = top
+          while let current = vc {
+            if let room = current as? RoomCaptureViewController { return room }
+            vc = current.presentedViewController
+          }
+          return nil
+        }
+      SWIFT
+
+      # Insert right before the last "}" (end of class).
+      idx = src.rindex("}")
+      if idx
+        src = src.dup.insert(idx, injection)
+        File.write(plugin_file, src)
+      end
+    end
+  end
 end

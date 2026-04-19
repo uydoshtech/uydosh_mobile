@@ -6,6 +6,7 @@ import "package:path_provider/path_provider.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 
 /// iOS: download USDZ then present custom SceneKit viewer (object-only, no Quick Look AR tab).
@@ -29,15 +30,26 @@ class RoomUsdzViewerService {
     if (!isIOSDevice) return false;
     final temp = await getTemporaryDirectory();
     final file = File("${temp.path}/uydosh_room_$listingId.usdz");
+    final sessionToken = await SessionManager.getToken();
     final dio = Dio(
       BaseOptions(
         connectTimeout: const Duration(seconds: 45),
         receiveTimeout: const Duration(minutes: 2),
         responseType: ResponseType.stream,
+        headers: <String, dynamic>{
+          if (sessionToken != null && sessionToken.trim().isNotEmpty)
+            "Authorization":
+                sessionToken.startsWith("Bearer ") ? sessionToken : "Bearer $sessionToken",
+        },
       ),
     );
     try {
       await dio.download(absoluteUrl, file.path);
+    } on DioException catch (e, st) {
+      logger.d(
+        "USDZ download failed (status=${e.response?.statusCode}): ${e.message}\n$st",
+      );
+      rethrow;
     } catch (e, st) {
       logger.d("USDZ download failed: $e\n$st");
       rethrow;
