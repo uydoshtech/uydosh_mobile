@@ -36,7 +36,6 @@ class UydoshAppBar extends AppBar {
     super.forceMaterialTransparency = false,
     super.useDefaultSemanticsOrder = true,
     super.actionsPadding,
-    super.animateColor = false,
     Clip? clipBehavior,
   }) : super(clipBehavior: clipBehavior ?? Clip.none);
 }
