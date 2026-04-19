@@ -631,62 +631,48 @@ class _ListingTileState extends State<ListingTile>
                         ListenableBuilder(
                           listenable: LanguageState(),
                           builder: (context, child) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            final hasLocation =
+                                widget.listing.location != null;
+                            final hasStation =
+                                widget.listing.subwayStation != null;
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (widget.listing.location != null) ...[
-                                      Row(
-                                        children: [
-                                          const ThemeIcon(
-                                            Icons.location_on,
-                                            color: AppColors.error,
-                                            size: 20,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: Text(
-                                              _shortenDistrictSuffix(
-                                                _getLocalizedName(
-                                                  nameUz:
-                                                      widget
-                                                          .listing
-                                                          .location!
-                                                          .nameUz,
-                                                  nameRu:
-                                                      widget
-                                                          .listing
-                                                          .location!
-                                                          .nameRu,
-                                                  nameEn:
-                                                      widget
-                                                          .listing
-                                                          .location!
-                                                          .nameEn,
-                                                ),
-                                              ),
-                                              style: TextStyle(
-                                                fontSize:
-                                                    14, // 12 * 1.2 = 14.4, rounded to 14
-                                                color:
-                                                    _getLocationTextColor(),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                if (hasLocation) ...[
+                                  const ThemeIcon(
+                                    Icons.location_on,
+                                    color: AppColors.error,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      _shortenDistrictSuffix(
+                                        _getLocalizedName(
+                                          nameUz:
+                                              widget.listing.location!.nameUz,
+                                          nameRu:
+                                              widget.listing.location!.nameRu,
+                                          nameEn:
+                                              widget.listing.location!.nameEn,
+                                        ),
                                       ),
-                                    ],
-                                    if (widget.listing.subwayStation !=
-                                        null) ...[
-                                      const SizedBox(height: 4),
-                                      _buildSubwayStationDisplay(
-                                        widget.listing.subwayStation!,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: _getLocationTextColor(),
                                       ),
-                                    ],
-                                  ],
-                                ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                                if (hasLocation && hasStation)
+                                  const SizedBox(width: 12),
+                                if (hasStation)
+                                  Flexible(
+                                    child: _buildSubwayStationDisplay(
+                                      widget.listing.subwayStation!,
+                                    ),
+                                  ),
                               ],
                             );
                           },
