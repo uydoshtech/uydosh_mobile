@@ -646,6 +646,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             text: L10n.get("refresh"),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             textStyle: const TextStyle(fontSize: 16),
+            neumorphicSoftUi: true,
           ),
         ],
       ),

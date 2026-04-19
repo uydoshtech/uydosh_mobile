@@ -20,6 +20,14 @@ Firebase for auth, messaging, analytics and crash reporting.
   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/home_feed.PNG" alt="Home feed" width="19%">
+  <img src="docs/screenshots/listing_details.PNG" alt="Listing detail" width="19%">
+  <img src="docs/screenshots/lidar_3d_scan.PNG" alt="LiDAR 3D scan" width="19%">
+  <img src="docs/screenshots/message_inbox.PNG" alt="Message inbox" width="19%">
+  <img src="docs/screenshots/profile.PNG" alt="Profile" width="19%">
+</p>
+
 ---
 
 ## Table of Contents
@@ -83,6 +91,12 @@ Firebase for auth, messaging, analytics and crash reporting.
 
 ### Search & Discovery
 
+<p align="center">
+  <img src="docs/screenshots/home_feed.PNG" alt="Home feed with listings" width="240">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/search_sheet.PNG" alt="Search filter sheet" width="240">
+</p>
+
 - Infinite-scroll listings feed with pull-to-refresh (`uydosh_refresh_indicator`).
 - Rich filter sheet: listing type (room available / roommate needed),
   location (region + district), metro line and station, price range, gender,
@@ -97,6 +111,12 @@ Firebase for auth, messaging, analytics and crash reporting.
 
 ### Listings & Photos
 
+<p align="center">
+  <img src="docs/screenshots/listing_details.PNG" alt="Listing detail screen" width="240">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/create_listing.PNG" alt="Create listing form" width="240">
+</p>
+
 - Grid/list with animated "featured" border for boosted listings.
 - Detail screen blocks: photos carousel, meta badges, description
   (with on-demand translation), amenities, compatibility card, metro +
@@ -110,6 +130,10 @@ Firebase for auth, messaging, analytics and crash reporting.
   scan, view stats.
 
 ### 3D LiDAR Room Scan (iOS)
+
+<p align="center">
+  <img src="docs/screenshots/lidar_3d_scan.PNG" alt="LiDAR 3D room scan welcome screen" width="240">
+</p>
 
 On LiDAR-equipped iPhones and iPads (iPhone 12 Pro and later, iPad Pro M-series),
 UyDosh uses Apple's RoomPlan framework to capture a structural model of the
@@ -157,6 +181,10 @@ Implemented in `base/services/gemini_service.dart`:
 
 ### Authentication & Profile
 
+<p align="center">
+  <img src="docs/screenshots/profile.PNG" alt="User profile screen" width="240">
+</p>
+
 - **Phone sign-in** (Firebase Auth with `reCAPTCHA` / `App Check` playing the
   role of bot protection).
 - **Google Sign-In** (`google_sign_in`) with automatic avatar backfill to the
@@ -174,6 +202,10 @@ Implemented in `base/services/gemini_service.dart`:
   when the refresh token is rejected.
 
 ### Messaging
+
+<p align="center">
+  <img src="docs/screenshots/message_inbox.PNG" alt="Message inbox with conversations" width="240">
+</p>
 
 - One-on-one conversations with avatars, grouped by date, read receipts and
   unread counts.

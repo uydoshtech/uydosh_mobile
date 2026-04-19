@@ -10,6 +10,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -32,6 +33,7 @@ import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
@@ -1479,18 +1481,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           // Confirm button
           Padding(
             padding: const EdgeInsets.all(20),
-            child: SizedBox(
-              width: double.infinity,
-              child: GhostButtonFactory.text(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                text: L10n.get("confirm"),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                textColor: AuthWizardTheme.getBottomSheetTextColor(),
-                borderColor: AuthWizardTheme.getBottomSheetTextColor(),
-                isOnboardingButton: true,
-              ),
+            child: _buildBottomSheetConfirmButton(
+              context,
+              onPressed: () => Navigator.pop(context),
             ),
           ),
         ],
@@ -1609,21 +1602,48 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           // Confirm button
           Padding(
             padding: const EdgeInsets.all(20),
-            child: SizedBox(
-              width: double.infinity,
-              child: GhostButtonFactory.text(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                text: L10n.get("confirm"),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                textColor: AuthWizardTheme.getBottomSheetTextColor(),
-                borderColor: AuthWizardTheme.getBottomSheetTextColor(),
-                isOnboardingButton: true,
-              ),
+            child: _buildBottomSheetConfirmButton(
+              context,
+              onPressed: () => Navigator.pop(context),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 3D neumorphic confirm button used inside onboarding bottom sheets
+  /// (region and university pickers). Matches the onboarding blue theme.
+  Widget _buildBottomSheetConfirmButton(
+    BuildContext context, {
+    required VoidCallback onPressed,
+  }) {
+    final isBlue = ThemeState().isBlueTheme;
+    final buttonBg = isBlue
+        ? BlueThemeColors.primary
+        : Theme.of(context).colorScheme.surface;
+    final textColor = isBlue
+        ? Colors.white
+        : Theme.of(context).colorScheme.onSurface;
+
+    return SizedBox(
+      width: double.infinity,
+      child: ThreeDPillButton(
+        onPressed: onPressed,
+        backgroundColor: buttonBg,
+        borderRadius: const BorderRadius.all(Radius.circular(18)),
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: Center(
+          child: Text(
+            L10n.get("confirm"),
+            style: TextStyle(
+              color: textColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ),
       ),
     );
   }

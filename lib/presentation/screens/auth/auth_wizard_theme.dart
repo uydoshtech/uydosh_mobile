@@ -82,28 +82,28 @@ abstract final class AuthWizardTheme {
 
   static Color getBottomSheetBackgroundColor() {
     if (ThemeState().isBlueTheme) {
-      return Colors.white;
+      return BlueThemeColors.onboardingCard;
     }
     return LightThemeColors.onboardingCard;
   }
 
   static Color getBottomSheetTextColor() {
     if (ThemeState().isBlueTheme) {
-      return Colors.black;
+      return Colors.white;
     }
     return Colors.black;
   }
 
   static Color getBottomSheetCursorColor() {
     if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.primary;
+      return Colors.white;
     }
     return Colors.black;
   }
 
   static Color getBottomSheetHandleColor(BuildContext context) {
     if (ThemeState().isBlueTheme) {
-      return Colors.grey.shade400;
+      return Colors.white.withValues(alpha: 0.4);
     } else if (ThemeState().isLightTheme) {
       return Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3);
     } else {
