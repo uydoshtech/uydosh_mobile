@@ -39,7 +39,7 @@ class UydoshSlider extends StatelessWidget {
     final isBlueTheme = currentTheme == AppTheme.blueTheme;
 
     return Padding(
-      padding: contentPadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: contentPadding ?? const EdgeInsets.fromLTRB(16, 10, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -86,47 +86,56 @@ class UydoshSlider extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor:
-                  isBlueTheme ? Colors.blue[600] : theme.colorScheme.primary,
-              inactiveTrackColor:
-                  isBlueTheme ? Colors.grey[300] : Colors.grey[600],
-              thumbColor:
-                  isBlueTheme ? Colors.blue[600] : theme.colorScheme.primary,
-              overlayColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-              valueIndicatorColor: theme.colorScheme.primary,
-              valueIndicatorShape: const PaddedSliderValueIndicatorShape(
-                labelPadding: 24.0,
+          // Compact slider: custom thumb / track / overlay sizes and a fixed
+          // height wrapper collapse the default ~48px tap target down to ~24px
+          // so the tile reads tight without shrinking the hit area too much.
+          SizedBox(
+            height: 24,
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 3,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                overlayShape:
+                    const RoundSliderOverlayShape(overlayRadius: 14),
+                activeTrackColor:
+                    isBlueTheme ? Colors.blue[600] : theme.colorScheme.primary,
+                inactiveTrackColor:
+                    isBlueTheme ? Colors.grey[300] : Colors.grey[600],
+                thumbColor:
+                    isBlueTheme ? Colors.blue[600] : theme.colorScheme.primary,
+                overlayColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                valueIndicatorColor: theme.colorScheme.primary,
+                valueIndicatorShape: const PaddedSliderValueIndicatorShape(
+                  labelPadding: 24.0,
+                ),
+                valueIndicatorTextStyle: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              valueIndicatorTextStyle: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+              child: Slider(
+                value: value.toDouble(),
+                min: min.toDouble(),
+                max: max.toDouble(),
+                divisions: divisions ?? (max - min),
+                label:
+                    labels != null &&
+                            value >= min &&
+                            value <= max &&
+                            (value - min) < labels!.length
+                        ? labels![value - min]
+                        : value.toString(),
+                onChanged: (newValue) {
+                  onChanged(newValue.round());
+                },
               ),
-            ),
-            child: Slider(
-              value: value.toDouble(),
-              min: min.toDouble(),
-              max: max.toDouble(),
-              divisions: divisions ?? (max - min),
-              label:
-                  labels != null &&
-                          value >= min &&
-                          value <= max &&
-                          (value - min) < labels!.length
-                      ? labels![value - min]
-                      : value.toString(),
-              onChanged: (newValue) {
-                onChanged(newValue.round());
-              },
             ),
           ),
           if (labels != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 2),
             Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children:
@@ -140,7 +149,7 @@ class UydoshSlider extends StatelessWidget {
                               : (isLightTheme
                                   ? Colors.grey[600]
                                   : Colors.grey[400]),
-                      fontSize: 13,
+                      fontSize: 12,
                     ),
                   );
                 }).toList(),

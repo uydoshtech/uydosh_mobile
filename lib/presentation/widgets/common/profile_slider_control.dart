@@ -51,7 +51,7 @@ class ProfileSliderControl extends StatelessWidget {
         icon: icon,
         divisions: divisions,
         labels: labels,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
       ),
     );
   }
