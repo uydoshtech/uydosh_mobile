@@ -2004,129 +2004,127 @@ L10n.get("feature_listing_error",
           listingDetail.createdAt,
         );
 
+        // Build the list of top-level section widgets once per LanguageState
+        // rebuild. Rendering them as discrete slivers (via SliverList) lets
+        // Flutter skip layout/paint for sections that are scrolled off-screen
+        // — a meaningful win on this screen because the owner toolbar, photo
+        // carousel, compatibility panel, and map card all do non-trivial
+        // work per frame when visible.
+        final isOwner = UserListingState().isOwner(listingDetail.user.id);
+        final hasPhotos =
+            listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
+        final show3d =
+            isIOSDevice && (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
+
+        final sections = <Widget>[
+          if (isOwner)
+            BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
+                ({int? viewCount, bool isLoadingViewCount, bool isToggling})>(
+              selector: (s) => (
+                viewCount: s.viewCount,
+                isLoadingViewCount: s.isLoadingViewCount,
+                isToggling: s.isToggling,
+              ),
+              builder: (context, ownerState) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: ListingDetailOwnerToolbar(
+                  listingDetail: listingDetail,
+                  viewCount: ownerState.viewCount,
+                  isLoadingViewCount: ownerState.isLoadingViewCount,
+                  isToggling: ownerState.isToggling,
+                  onToggleFeature: _toggleFeatureListing,
+                ),
+              ),
+            ),
+          if (hasPhotos)
+            Theme(
+              data: Theme.of(context).copyWith(
+                cardTheme: Theme.of(context).cardTheme.copyWith(
+                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                ),
+              ),
+              child: ListingDetailPhotoSection(
+                photos: listingDetail.photos!,
+                orderedPhotos:
+                    _getOrderedPhotos(listingDetail.photos!).cast<Photo>(),
+                pageController: _pageController,
+                buildPhotoUrl: _buildPhotoUrl,
+                onPhotoTap: _openFullScreenPhotoViewer,
+              ),
+            ),
+          Padding(
+            padding: EdgeInsets.only(top: hasPhotos ? 4 : 0, bottom: 4),
+            child: _metaBadgesTile(listingDetail),
+          ),
+          if (show3d)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: _room3dTile(listingDetail),
+            ),
+          ListingDetailContentCard(
+            listingDetail: listingDetail,
+            currentLanguage: currentLanguage,
+            formattedMoveInDate: formattedMoveIn,
+            formattedPublicationDate: formattedPub,
+            getLocalizedName: _getLocalizedName,
+            ownerName: pageState.ownerName,
+            detailScrollController: _scrollController,
+            onOpenInYandexMaps: () => _confirmOpenInYandexMaps(listingDetail),
+            onAuthorTap: () => _navigateToProfile(listingDetail.user.id),
+          ),
+          if (compatibilitySection != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: compatibilitySection,
+            ),
+          BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
+              ({int? count, bool isLoading})>(
+            selector: (s) => (
+              count: s.complaintsCount,
+              isLoading: s.isLoadingComplaintsCount,
+            ),
+            builder: (context, cs) {
+              if ((cs.count ?? 0) <= 0) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ListingDetailComplaintsCard(
+                    complaintsLabel: _buildComplaintsButtonLabel(
+                      cs.isLoading,
+                      cs.count,
+                    ),
+                    onPressed: () => _viewListingComplaints(listingDetail.id),
+                    warningBlinkAnimation: _warningBlinkAnimation,
+                  ),
+                ),
+              );
+            },
+          ),
+        ];
+
         return Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
+              child: CustomScrollView(
                 controller: _scrollController,
-                // Tight top: global [CardTheme.margin] is all(8); photo [ListingDetailPhotoSection]
-                // is wrapped with zero top margin so the carousel sits closer to the app bar.
-                padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 36.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (UserListingState().isOwner(listingDetail.user.id)) ...[
-                      // Scoped to (viewCount, isLoadingViewCount, isToggling)
-                      // so async view-count fetches don't rebuild the rest of
-                      // the page.
-                      BlocSelector<ListingDetailPageBloc,
-                          ListingDetailPageState,
-                          ({int? viewCount, bool isLoadingViewCount, bool isToggling})>(
-                        selector: (s) => (
-                          viewCount: s.viewCount,
-                          isLoadingViewCount: s.isLoadingViewCount,
-                          isToggling: s.isToggling,
-                        ),
-                        builder: (context, ownerState) =>
-                            ListingDetailOwnerToolbar(
-                          listingDetail: listingDetail,
-                          viewCount: ownerState.viewCount,
-                          isLoadingViewCount: ownerState.isLoadingViewCount,
-                          isToggling: ownerState.isToggling,
-                          onToggleFeature: _toggleFeatureListing,
-                        ),
+                slivers: [
+                  SliverPadding(
+                    // Tight top: global [CardTheme.margin] is all(8); photo
+                    // [ListingDetailPhotoSection] has zero top margin so the
+                    // carousel sits closer to the app bar.
+                    padding:
+                        const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 36.0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => sections[index],
+                        childCount: sections.length,
                       ),
-                      const SizedBox(height: 16),
-                    ],
-                    // Photo carousel (own tile); type / gender / price in a separate tile below
-                    if (listingDetail.photos != null &&
-                        listingDetail.photos!.isNotEmpty) ...[
-                      Theme(
-                        data: Theme.of(context).copyWith(
-                          cardTheme: Theme.of(context).cardTheme.copyWith(
-                            margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                          ),
-                        ),
-                        child: ListingDetailPhotoSection(
-                          photos: listingDetail.photos!,
-                          orderedPhotos: _getOrderedPhotos(listingDetail.photos!)
-                              .cast<Photo>(),
-                          pageController: _pageController,
-                          buildPhotoUrl: _buildPhotoUrl,
-                          onPhotoTap: _openFullScreenPhotoViewer,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      _metaBadgesTile(listingDetail),
-                      const SizedBox(height: 4),
-                    ] else ...[
-                      _metaBadgesTile(listingDetail),
-                      const SizedBox(height: 4),
-                    ],
-                    if (isIOSDevice &&
-                        (listingDetail.pointCloudUrl?.isNotEmpty ?? false)) ...[
-                      const SizedBox(height: 4),
-                      _room3dTile(listingDetail),
-                    ],
-                    // Unified Listing Detail Card (gap above = space between photo tile and this card)
-                    ListingDetailContentCard(
-                      listingDetail: listingDetail,
-                      currentLanguage: currentLanguage,
-                      formattedMoveInDate: formattedMoveIn,
-                      formattedPublicationDate: formattedPub,
-                      getLocalizedName: _getLocalizedName,
-                      ownerName: pageState.ownerName,
-                      detailScrollController: _scrollController,
-                      onOpenInYandexMaps: () =>
-                          _confirmOpenInYandexMaps(listingDetail),
-                      onAuthorTap: () =>
-                          _navigateToProfile(listingDetail.user.id),
                     ),
-                    // Tight but shadow-safe gap: cardTheme.margin already
-                    // contributes 8px top+bottom around each tile shell, and
-                    // the elevated neumorphic shadow (offset 6,6 blur 14)
-                    // extends ~12–15px. A 4px spacer keeps total separation
-                    // at ~20px, matching the photo→meta tile rhythm without
-                    // letting the two drop shadows visually collide.
-                    ...() {
-                      final section = compatibilitySection;
-                      if (section == null) return <Widget>[];
-                      return [
-                        const SizedBox(height: 4),
-                        section,
-                      ];
-                    }(),
-                    // Scoped to (complaintsCount, isLoadingComplaintsCount) so
-                    // complaints-count fetches don't rebuild the rest.
-                    BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
-                        ({int? count, bool isLoading})>(
-                      selector: (s) => (
-                        count: s.complaintsCount,
-                        isLoading: s.isLoadingComplaintsCount,
-                      ),
-                      builder: (context, cs) {
-                        if ((cs.count ?? 0) <= 0) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: ListingDetailComplaintsCard(
-                              complaintsLabel: _buildComplaintsButtonLabel(
-                                cs.isLoading,
-                                cs.count,
-                              ),
-                              onPressed: () =>
-                                  _viewListingComplaints(listingDetail.id),
-                              warningBlinkAnimation: _warningBlinkAnimation,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],

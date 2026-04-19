@@ -1,3 +1,4 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -606,13 +607,20 @@ class _AdminUserAvatar extends StatelessWidget {
 
     Widget content;
     if (hasUrl) {
+      // 2x DPR for the 36x36 slot so the image stays crisp on 3x screens
+      // without decoding the full-resolution original into a tiny widget.
+      // Cuts per-avatar memory from ~MB's to ~10s of KB each.
+      final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+      final rasterDim = (size * devicePixelRatio).round();
       content = ClipOval(
-        child: Image.network(
-          url,
+        child: CachedNetworkImage(
+          imageUrl: url,
           width: size,
           height: size,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) =>
+          memCacheWidth: rasterDim,
+          memCacheHeight: rasterDim,
+          errorWidget: (context, error, stackTrace) =>
               _InitialsAvatarFallback(initials: initials),
         ),
       );

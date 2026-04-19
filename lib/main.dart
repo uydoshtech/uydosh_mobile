@@ -1,4 +1,5 @@
 // Firebase imports
+import "dart:async" show unawaited;
 import "dart:ui" show PlatformDispatcher;
 
 import "package:firebase_core/firebase_core.dart";
@@ -63,9 +64,12 @@ void main() async {
     WidgetsFlutterBinding.ensureInitialized();
     await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-    // Limit image cache to reduce memory use (default: 1000 images, 100MB)
-    imageCache.maximumSize = 200;
-    imageCache.maximumSizeBytes = 50 << 20; // 50 MB
+    // Image cache budget. Flutter's default is 1000 images / 100MB. We cap
+    // count at 400 (plenty for a feed + detail browsing) but keep 100MB of
+    // bytes so users browsing many high-res listing photos don't evict
+    // currently-on-screen images and trigger a re-decode storm.
+    imageCache.maximumSize = 400;
+    imageCache.maximumSizeBytes = 100 << 20; // 100 MB
 
     // Initialize Firebase
     try {
@@ -119,21 +123,35 @@ void main() async {
     UnreadMessagesState().addListener(syncBadge);
     syncBadge();
 
-    // Initialize app states in parallel (independent SharedPreferences/Storage reads)
+    // Split startup into (must-block-first-frame) and (deferrable) work:
+    //
+    //   Critical path — needed for correct rendering on the very first build:
+    //     * LanguageState   (splash subtitle localization)
+    //     * ThemeState      (splash gradient + colors)
+    //     * AuthenticationState (drives _getInitialScreen / BlocAuthListener)
+    //     * OnboardingState     (drives _getInitialScreen decision)
+    //
+    //   Deferred — consumed only on later screens, or in response to user
+    //   interaction. Pushed to `addPostFrameCallback` so the first paint
+    //   happens sooner (measurable improvement on slow devices + web).
     await Future.wait([
       LanguageState().initialize(),
       AuthenticationState().initialize(),
       OnboardingState().initialize(),
-      TutorialState().initialize(),
-      TooltipsState().initialize(),
-      HapticFeedbackState().initialize(),
-      AnimationSettingsState().initialize(),
-      SearchFiltersState().initialize(),
       ThemeState().initialize(),
-      ClientGeminiListingUiConfig.load(),
-      ClientLidarRoomScanConfig.load(),
-      ClientCustomCameraConfig.load(),
     ]);
+    // Kick off the remote-config loaders now but don't await them. They
+    // resolve asynchronously and their consumers already tolerate the
+    // default/unloaded shape until the first fetch returns.
+    unawaited(ClientGeminiListingUiConfig.load());
+    unawaited(ClientLidarRoomScanConfig.load());
+    unawaited(ClientCustomCameraConfig.load());
+    // Local SharedPreferences reads — cheap, but still off the critical path.
+    unawaited(TutorialState().initialize());
+    unawaited(TooltipsState().initialize());
+    unawaited(HapticFeedbackState().initialize());
+    unawaited(AnimationSettingsState().initialize());
+    unawaited(SearchFiltersState().initialize());
 
     logger.d(
       "🔐 Main: AuthenticationState initialized. Current status: ${AuthenticationState().isAuthenticated}",
@@ -174,27 +192,42 @@ void main() async {
     final navigatorKey = GlobalKey<NavigatorState>();
     getIt.registerSingleton<GlobalKey<NavigatorState>>(navigatorKey);
 
-    // Initialize push notifications and register token if authenticated
-    if (!kIsWeb) {
-      await getIt<IPushNotificationService>().initialize();
-      if (AuthenticationState().isAuthenticated) {
-        getIt<IPushNotificationService>().registerTokenWithBackend();
-      }
-    }
-
-    // Set analytics user ID if already authenticated
-    if (AuthenticationState().isAuthenticated) {
-      final userId = await SessionManager.getBackendUserId();
-      if (userId != null) {
-        await getIt<AppAnalyticsService>().setUserId(userId.toString());
-      }
-    }
-
+    // Register DeepLinkService synchronously (cheap) but defer its actual
+    // initialize() call to after the first frame — it sets up platform
+    // channels / stream listeners and isn't needed until the user navigates.
     final deepLinkService = DeepLinkService(navigatorKey: navigatorKey);
     getIt.registerSingleton<DeepLinkService>(deepLinkService);
-    if (!kIsWeb) {
-      await deepLinkService.initialize();
-    }
+
+    // Defer expensive post-startup side-effects (push notifications, deep
+    // link wiring, analytics user-id hydration) until the splash/first
+    // screen is already painting. Keeps the cold-start critical path short.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!kIsWeb) {
+        try {
+          await getIt<IPushNotificationService>().initialize();
+          if (AuthenticationState().isAuthenticated) {
+            unawaited(
+              getIt<IPushNotificationService>().registerTokenWithBackend(),
+            );
+          }
+        } catch (e) {
+          logger.d("Push notification init failed: $e");
+        }
+        unawaited(deepLinkService.initialize());
+      }
+      if (AuthenticationState().isAuthenticated) {
+        try {
+          final userId = await SessionManager.getBackendUserId();
+          if (userId != null) {
+            unawaited(
+              getIt<AppAnalyticsService>().setUserId(userId.toString()),
+            );
+          }
+        } catch (e) {
+          logger.d("Analytics userId hydrate failed: $e");
+        }
+      }
+    });
 
     runApp(MyApp(navigatorKey: navigatorKey));
   } catch (e, stackTrace) {

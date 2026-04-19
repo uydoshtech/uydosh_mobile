@@ -43,6 +43,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   late final IFavoriteService _favoriteService;
   late final VoidCallback _authListener;
   bool _hasInitialized = false; // Track if initial load has been done
+  // Track the previous auth state so the listener only fires a rebuild/reload
+  // when the `isAuthenticated` bit actually flips. AuthenticationState emits
+  // for unrelated side changes (e.g. token refresh) and previously caused the
+  // whole favorites list to reset + re-fetch on every notification.
+  bool _lastAuthenticated = false;
 
   @override
   void initState() {
@@ -50,19 +55,34 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     getIt<AppAnalyticsService>().logScreenView(screenName: "favorites");
     _favoriteService = getIt<IFavoriteService>();
 
-    // Create and store the authentication state listener
+    _lastAuthenticated = AuthenticationState().isAuthenticated;
+
     _authListener = () {
-      if (mounted) {
-        // Reset initialization when auth state changes
-        _resetInitialization();
-        setState(() {});
+      if (!mounted) return;
+      final isAuth = AuthenticationState().isAuthenticated;
+      if (isAuth == _lastAuthenticated) {
+        // Auth bit didn't actually change — ignore this notification.
+        // (Token refresh, profile hydration, etc. shouldn't reset the list.)
+        return;
+      }
+      _lastAuthenticated = isAuth;
+      _resetInitialization();
+      if (!isAuth) {
+        // Logged out: clear the list so the signed-out empty state shows.
+        _favoriteListings = [];
+        _hasMoreData = true;
+        _currentPage = 1;
+        _hasError = false;
+      }
+      setState(() {});
+      if (isAuth) {
+        // Logged back in: refresh.
+        _loadFavoriteListings(isRefresh: true);
       }
     };
 
-    // Listen to authentication state changes
     AuthenticationState().addListener(_authListener);
 
-    // Wait for authentication state to be initialized, then check if we should load favorites
     _initializeAndLoadFavorites();
   }
 
