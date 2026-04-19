@@ -75,12 +75,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   int _selectedGender = 1;
   int _defaultGenderFromProfile = 1; // Profile-based default for reset
   /// Roommate listing (type 2): single rent amount.
-  double _roommatePrice = 50.0;
+  double _roommatePrice = 0.0;
   /// Room-needed listing (type 1): budget range (API still stores one `price`).
-  double _roomBudgetMin = 50.0;
-  double _roomBudgetMax = 150.0;
+  double _roomBudgetMin = 0.0;
+  double _roomBudgetMax = 0.0;
+  /// Whether the user has interacted with the price slider at least once.
+  bool _priceTouched = false;
 
-  static const double _priceSliderMin = 10.0;
+  static const double _priceSliderMin = 0.0;
   static const double _priceSliderMax = 500.0;
 
   bool get _pricePickerSingleHandle => _selectedListingTypeId == 2;
@@ -95,6 +97,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   // Validation state variables
   bool _showDescriptionError = false;
   bool _showLocationError = false;
+  bool _showPriceError = false;
 
   static const int _descriptionBaseLines = 4;
   static const int _descriptionExpandedExtraLines = 3;
@@ -560,10 +563,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                         _selectedPhotos.clear();
                         _primaryPhotoIndex = null;
                       }
-                      if (prevType == 2 && listingTypeId == 1) {
-                        _deriveBudgetRangeFromRoommatePrice();
-                      } else if (prevType == 1 && listingTypeId == 2) {
-                        _deriveRoommatePriceFromBudget();
+                      if (_priceTouched) {
+                        if (prevType == 2 && listingTypeId == 1) {
+                          _deriveBudgetRangeFromRoommatePrice();
+                        } else if (prevType == 1 && listingTypeId == 2) {
+                          _deriveRoommatePriceFromBudget();
+                        }
                       }
                     });
                     _updateTitle();
@@ -651,6 +656,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           initialMaxPrice:
               _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMax,
           useSinglePrice: _pricePickerSingleHandle,
+          showErrorBorder: _showPriceError,
           onPriceRangeChanged: (minPrice, maxPrice) {
             _dismissKeyboard();
             setState(() {
@@ -660,6 +666,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 _roomBudgetMin = minPrice;
                 _roomBudgetMax = maxPrice;
               }
+              _priceTouched = true;
+              _showPriceError = false;
             });
           },
         ),
@@ -1251,6 +1259,22 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       });
     }
 
+    // Validate price: user must actively pick a value.
+    if (!_priceTouched) {
+      ToastTheme.showError(
+        context,
+        message: L10n.get("price_required"),
+      );
+      setState(() {
+        _showPriceError = true;
+      });
+      return;
+    } else {
+      setState(() {
+        _showPriceError = false;
+      });
+    }
+
     // Metro line and station are now optional - no validation required
 
     // Set loading state
@@ -1373,9 +1397,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       setState(() {
         _selectedListingTypeId = _defaultListingTypeFromProfile;
         _selectedGender = _defaultGenderFromProfile;
-        _roommatePrice = 50.0;
-        _roomBudgetMin = 50.0;
-        _roomBudgetMax = 150.0;
+        _roommatePrice = 0.0;
+        _roomBudgetMin = 0.0;
+        _roomBudgetMax = 0.0;
+        _priceTouched = false;
         _selectedSubwayLine = 0;
         _selectedStationIndex = 0;
         _selectedLocationIndex = -1;
@@ -1388,6 +1413,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         // Reset validation errors
         _showDescriptionError = false;
         _showLocationError = false;
+        _showPriceError = false;
       });
 
       // Regenerate title with default values

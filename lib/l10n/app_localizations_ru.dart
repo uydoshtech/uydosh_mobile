@@ -2124,6 +2124,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get location_required => 'Пожалуйста, выберите район';
 
   @override
+  String get price_required => 'Пожалуйста, укажите цену';
+
+  @override
   String get auth_required_title => 'Требуется аутентификация';
 
   @override

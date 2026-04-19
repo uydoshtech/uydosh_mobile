@@ -4036,6 +4036,12 @@ abstract class AppLocalizations {
   /// **'Please select a location'**
   String get location_required;
 
+  /// No description provided for @price_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set a price'**
+  String get price_required;
+
   /// No description provided for @auth_required_title.
   ///
   /// In en, this message translates to:

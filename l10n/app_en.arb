@@ -816,6 +816,7 @@
   "description_required": "Description is required",
   "description_too_long": "Description must be 500 characters or less",
   "location_required": "Please select a location",
+  "price_required": "Please set a price",
   "auth_required_title": "Authentication required",
   "authentication_required": "Authentication required. Please log in to create listings.",
   "unauthenticated_listing_prompt": "To create and post listings, you need to sign in to your account.",

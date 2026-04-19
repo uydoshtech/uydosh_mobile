@@ -166,6 +166,29 @@ class _ListingTileState extends State<ListingTile>
     }
   }
 
+  /// Abbreviates the "district" suffix so long names fit on one tile row.
+  /// ru: "Алмазарский район" → "Алмазарский р-н"
+  /// uz: "Olmazor tumani"    → "Olmazor t."
+  /// en: "Almazar district"  → "Almazar dist."
+  ///
+  /// Uses plain `replaceAll` (not `\b` word boundaries) because Dart's default
+  /// `\w` class excludes Cyrillic characters — so `\bрайон\b` never matches.
+  String _shortenDistrictSuffix(String name) {
+    const replacements = <String, String>{
+      " район": " р-н",
+      " Район": " р-н",
+      " tumani": " t.",
+      " Tumani": " t.",
+      " district": " dist.",
+      " District": " dist.",
+    };
+    var result = name;
+    replacements.forEach((from, to) {
+      result = result.replaceAll(from, to);
+    });
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
@@ -301,7 +324,7 @@ class _ListingTileState extends State<ListingTile>
                     ),
                   ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -320,7 +343,7 @@ class _ListingTileState extends State<ListingTile>
                                     size: 18,
                                     padding: const EdgeInsets.all(4),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 6),
                                 ],
                                 // Gender Badge
                                 if (widget.listing.gender != null) ...[
@@ -328,6 +351,39 @@ class _ListingTileState extends State<ListingTile>
                                     gender: widget.listing.gender!,
                                     size: 18,
                                     padding: const EdgeInsets.all(4),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                                // Price (inline with top icons)
+                                if (widget.listing.price > 0) ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: Colors.green,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const ThemeIcon(
+                                          Icons.payments,
+                                          size: 18,
+                                          color: Colors.green,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          "${widget.listing.price}",
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                   const SizedBox(width: 6),
                                 ],
@@ -592,22 +648,24 @@ class _ListingTileState extends State<ListingTile>
                                           const SizedBox(width: 6),
                                           Expanded(
                                             child: Text(
-                                              _getLocalizedName(
-                                                nameUz:
-                                                    widget
-                                                        .listing
-                                                        .location!
-                                                        .nameUz,
-                                                nameRu:
-                                                    widget
-                                                        .listing
-                                                        .location!
-                                                        .nameRu,
-                                                nameEn:
-                                                    widget
-                                                        .listing
-                                                        .location!
-                                                        .nameEn,
+                                              _shortenDistrictSuffix(
+                                                _getLocalizedName(
+                                                  nameUz:
+                                                      widget
+                                                          .listing
+                                                          .location!
+                                                          .nameUz,
+                                                  nameRu:
+                                                      widget
+                                                          .listing
+                                                          .location!
+                                                          .nameRu,
+                                                  nameEn:
+                                                      widget
+                                                          .listing
+                                                          .location!
+                                                          .nameEn,
+                                                ),
                                               ),
                                               style: TextStyle(
                                                 fontSize:
@@ -654,88 +712,66 @@ class _ListingTileState extends State<ListingTile>
                               .toList(),
                         ),
                       ],
-                      if (widget.listing.price > 0) ...[
+                      if ((widget.listing.privateRoom ?? false) ||
+                          (widget.listing.moveInDate != null &&
+                              widget.listing.moveInDate!.isNotEmpty)) ...[
                         if (widget.listing.location != null ||
                             widget.listing.subwayStation != null ||
                             (widget.listing.amenities != null &&
                                 widget.listing.amenities!.isNotEmpty))
                           const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const ThemeIcon(
-                              CupertinoIcons.money_dollar_circle,
-                              size: 22,
-                              color: Colors.green,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _formatPriceRange(),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      if (widget.listing.privateRoom ?? false) ...[
-                        if (widget.listing.location != null ||
-                            widget.listing.subwayStation != null ||
-                            (widget.listing.amenities != null &&
-                                widget.listing.amenities!.isNotEmpty) ||
-                            widget.listing.price > 0)
-                          const SizedBox(height: 8),
                         ListenableBuilder(
                           listenable: LanguageState(),
                           builder: (context, child) {
+                            final hasPrivateRoom =
+                                widget.listing.privateRoom ?? false;
+                            final hasMoveInDate =
+                                widget.listing.moveInDate != null &&
+                                    widget.listing.moveInDate!.isNotEmpty;
                             return Row(
                               children: [
-                                ThemeIcon(
-                                  CupertinoIcons.lock_fill,
-                                  size: 20,
-                                  color: _getPrivateRoomIconColor(),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  L10n.get("private_room"),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: _getPrivateRoomTextColor(),
-                                    fontWeight: FontWeight.bold,
+                                if (hasPrivateRoom) ...[
+                                  ThemeIcon(
+                                    CupertinoIcons.lock_fill,
+                                    size: 20,
+                                    color: _getPrivateRoomIconColor(),
                                   ),
-                                ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    L10n.get("private_room"),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: _getPrivateRoomTextColor(),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                                if (hasPrivateRoom && hasMoveInDate)
+                                  const SizedBox(width: 12),
+                                if (hasMoveInDate) ...[
+                                  ThemeIcon(
+                                    CupertinoIcons.square_arrow_right,
+                                    size: 22,
+                                    color: _getDateTextColor(),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      hasPrivateRoom
+                                          ? (_cachedFormattedMoveInDate ?? "")
+                                          : "${L10n.get("move_in_date_label")} ${_cachedFormattedMoveInDate ?? ""}",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: _getDateTextColor(),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ],
                             );
                           },
-                        ),
-                      ],
-                      if (widget.listing.moveInDate != null &&
-                          widget.listing.moveInDate!.isNotEmpty) ...[
-                        if (widget.listing.location != null ||
-                            widget.listing.subwayStation != null ||
-                            (widget.listing.amenities != null &&
-                                widget.listing.amenities!.isNotEmpty) ||
-                            widget.listing.price > 0 ||
-                            (widget.listing.privateRoom ?? false))
-                          const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            ThemeIcon(
-                              CupertinoIcons.square_arrow_right,
-                              size: 22,
-                              color: _getDateTextColor(),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              "${L10n.get("move_in_date_label")} ${_cachedFormattedMoveInDate ?? ""}",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: _getDateTextColor(),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
                         ),
                       ],
                     ],
@@ -788,10 +824,6 @@ class _ListingTileState extends State<ListingTile>
       default:
         return AppColors.metroLine1;
     }
-  }
-
-  String _formatPriceRange() {
-    return "${widget.listing.price} y.e.";
   }
 
   String _computeFormattedMoveInDate() {

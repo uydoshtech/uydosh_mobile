@@ -155,18 +155,17 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
   Widget _section(BuildContext context, {required Widget body}) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 2),
+      padding: const EdgeInsets.only(top: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Divider(height: 1, color: theme.colorScheme.outlineVariant),
-          const SizedBox(height: 2),
           Theme(
             data: theme.copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
               initiallyExpanded: false,
               tilePadding: EdgeInsets.zero,
               childrenPadding: const EdgeInsets.only(top: 6),
+              minTileHeight: 36,
               iconColor: theme.colorScheme.onSurfaceVariant,
               collapsedIconColor: theme.colorScheme.onSurfaceVariant,
               title: Row(

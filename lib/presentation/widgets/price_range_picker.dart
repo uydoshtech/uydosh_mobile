@@ -15,6 +15,7 @@ class PriceRangePicker extends StatefulWidget {
     this.initialMinPrice = 50.0,
     this.initialMaxPrice = 250.0,
     this.useSinglePrice = false,
+    this.showErrorBorder = false,
   });
 
   final Function(double minPrice, double maxPrice) onPriceRangeChanged;
@@ -24,6 +25,8 @@ class PriceRangePicker extends StatefulWidget {
   final double initialMaxPrice;
   /// When true, shows a single handle and passes the same price for both min and max.
   final bool useSinglePrice;
+  /// When true, draws a pulsing red outline to highlight a missing selection.
+  final bool showErrorBorder;
 
   @override
   State<PriceRangePicker> createState() => _PriceRangePickerState();
@@ -120,13 +123,12 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
 
     return Container(
       margin: const EdgeInsets.all(5),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      clipBehavior: Clip.antiAlias,
-      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-        context,
+      child: WheelPickerPlateContainer(
         theme: theme,
-      ),
-      child: Row(
+        showErrorBorder: widget.showErrorBorder,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
         children: [
           if (!widget.useSinglePrice)
             // Min price label on the left (range mode only)
@@ -265,6 +267,8 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
             ),
           ),
         ],
+          ),
+        ),
       ),
     );
   }

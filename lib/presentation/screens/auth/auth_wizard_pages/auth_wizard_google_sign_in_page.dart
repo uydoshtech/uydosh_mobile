@@ -5,6 +5,7 @@ import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -142,32 +143,33 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                     ),
                     const SizedBox(height: 16),
                     Center(
-                      child: TextButton.icon(
+                      child: GhostButton(
                         onPressed: _enabled ? widget.onSignInWithPhone : null,
-                        icon: ThemeIcon(
-                          Icons.phone_iphone,
-                          color: _getOnboardingTextColor(context),
-                        ),
-                        label: Text(
-                          L10n.get("sign_in_with_phone"),
-                          style: TextStyle(
-                            color: _getOnboardingTextColor(context),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
-                            side: BorderSide(
-                              color: _getOnboardingTextColor(context)
-                                  .withValues(alpha: 0.4),
+                        width: 199,
+                        height: 44,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        borderRadius: BorderRadius.circular(22),
+                        textColor: _getOnboardingTextColor(context),
+                        iconColor: _getOnboardingTextColor(context),
+                        neumorphicSoftUi: true,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ThemeIcon(
+                              Icons.phone_iphone,
+                              color: _getOnboardingTextColor(context),
+                              size: 18,
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            Text(
+                              L10n.get("sign_in_with_phone"),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                height: 1.0,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

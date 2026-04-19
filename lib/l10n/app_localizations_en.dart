@@ -2109,6 +2109,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get location_required => 'Please select a location';
 
   @override
+  String get price_required => 'Please set a price';
+
+  @override
   String get auth_required_title => 'Authentication required';
 
   @override

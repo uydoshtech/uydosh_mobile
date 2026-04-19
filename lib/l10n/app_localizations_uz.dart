@@ -2144,6 +2144,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get location_required => 'Iltimos, tuman tanlang';
 
   @override
+  String get price_required => 'Iltimos, narxni belgilang';
+
+  @override
   String get auth_required_title => 'Autentifikatsiya talab qilinadi';
 
   @override
