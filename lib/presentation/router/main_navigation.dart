@@ -420,9 +420,38 @@ class MainNavigationState extends State<MainNavigation>
     }
   }
 
-  // Get screens based on authentication status
+  // ---------------------------------------------------------------------------
+  // Tab screen memoization
+  //
+  // `build()` of MainNavigation is called whenever `setState` fires — and
+  // that happens for many reasons unrelated to the active tab (auth state
+  // changes, profile-completion ticks, unread-badge pulses, etc.). Previously
+  // `_getScreens()` re-allocated all four tab widgets on every one of those
+  // rebuilds. The element tree reconciled them correctly, so blocs survived,
+  // but Flutter still had to hash + compare four fresh widget instances per
+  // rebuild.
+  //
+  // Strategy:
+  //   - Tabs whose constructor args don't depend on mutable state (Favorites,
+  //     Create Listing) are built ONCE in initState and stored as `late final`
+  //     fields. Identity-stable, so Flutter's short-circuit on `oldWidget ==
+  //     newWidget` kicks in immediately.
+  //   - Tabs whose args DO depend on `_currentIndex` (Home, Messages) must be
+  //     rebuilt so `isHomeTabActive` / `mainTabSelected` stay accurate — those
+  //     flags drive `didUpdateWidget` logic (tutorials, conversation refetch)
+  //     which breaks if we feed them stale values.
+  // ---------------------------------------------------------------------------
+  late final Widget _favoritesTab = const FavoritesScreen();
+  late final Widget _createListingTab = BlocProvider(
+    create: (_) => SubwayStationsBloc(getIt<ISubwayStationService>()),
+    child: BlocProvider(
+      create: (_) => LocationsBloc(getIt<ILocationService>()),
+      child: const CreateListingScreen(),
+    ),
+  );
+
   List<Widget> _getScreens() {
-    final screens = [
+    return [
       BlocProvider(
         create: (context) {
           final bloc = ListingsBloc(getIt<IListingService>());
@@ -431,25 +460,13 @@ class MainNavigationState extends State<MainNavigation>
         },
         child: HomeScreen(isHomeTabActive: _currentIndex == 0),
       ),
-      const FavoritesScreen(),
+      _favoritesTab,
       MessagesInboxScreen(
         showCustomHeader: false,
         mainTabSelected: _currentIndex == 2,
-      ), // Conversations screen at index 2
-    ];
-
-    // Remove authentication check - always add Create Listing screen
-    screens.add(
-      BlocProvider(
-        create: (context) => SubwayStationsBloc(getIt<ISubwayStationService>()),
-        child: BlocProvider(
-          create: (context) => LocationsBloc(getIt<ILocationService>()),
-          child: const CreateListingScreen(),
-        ),
       ),
-    );
-
-    return screens;
+      _createListingTab,
+    ];
   }
 
   /// Method to navigate to a specific index (can be called from outside).

@@ -64,8 +64,14 @@ class _ListingTileState extends State<ListingTile>
   late AnimationController _heartAnimationController;
   late Animation<double> _heartScaleAnimation;
   bool _isTogglingFavorite = false;
-  int? _viewCount;
-  bool _isLoadingViewCount = false;
+  // View count UI state lives in a dedicated notifier so the owner-only
+  // "views + active badge" area can rebuild on its own when the count lands,
+  // without forcing a full tile rebuild (which would re-lay-out photos,
+  // amenities, metro badges, etc.).
+  final ValueNotifier<_ListingViewCountState> _viewCountState =
+      ValueNotifier<_ListingViewCountState>(
+    const _ListingViewCountState(count: null, loading: false),
+  );
   Timer? _viewCountDelayTimer;
   String? _cachedFormattedMoveInDate;
   List<Amenity>? _cachedSortedAmenities;
@@ -117,26 +123,27 @@ class _ListingTileState extends State<ListingTile>
   void dispose() {
     _viewCountDelayTimer?.cancel();
     _viewCountDelayTimer = null;
+    _viewCountState.dispose();
     _heartAnimationController.dispose();
     super.dispose();
   }
 
   Future<void> _loadViewCount() async {
-    if (_isLoadingViewCount) return;
-    setState(() => _isLoadingViewCount = true);
+    if (_viewCountState.value.loading) return;
+    _viewCountState.value = _viewCountState.value.copyWith(loading: true);
     try {
       final count = await getIt<IListingService>().getListingViewCount(
         widget.listing.id,
       );
       if (mounted) {
-        setState(() {
-          _viewCount = count;
-          _isLoadingViewCount = false;
-        });
+        _viewCountState.value = _ListingViewCountState(
+          count: count,
+          loading: false,
+        );
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _isLoadingViewCount = false);
+        _viewCountState.value = _viewCountState.value.copyWith(loading: false);
       }
     }
   }
@@ -322,40 +329,49 @@ class _ListingTileState extends State<ListingTile>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Views count
-                        if (_isLoadingViewCount)
-                          const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.textGrey600,
-                            ),
-                          )
-                        else if (_viewCount != null)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const ThemeIcon(
-                                  CupertinoIcons.eye,
-                                  size: 16,
+                        // View count: only this widget rebuilds when the count
+                        // lands — the rest of the tile (photos, amenities,
+                        // etc.) doesn't get invalidated.
+                        ValueListenableBuilder<_ListingViewCountState>(
+                          valueListenable: _viewCountState,
+                          builder: (context, vc, _) {
+                            if (vc.loading) {
+                              return const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
                                   color: AppColors.textGrey600,
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  L10n.get("listing_views_by_others")
-                                  .replaceAll("{count}", _viewCount.toString()),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                              );
+                            }
+                            final count = vc.count;
+                            if (count == null) return const SizedBox.shrink();
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const ThemeIcon(
+                                    CupertinoIcons.eye,
+                                    size: 16,
                                     color: AppColors.textGrey600,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    L10n.get("listing_views_by_others")
+                                        .replaceAll("{count}", count.toString()),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.textGrey600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                         // Active/Inactive badge
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -1203,5 +1219,21 @@ class _ListingTileState extends State<ListingTile>
         ],
       );
     }
+  }
+}
+
+/// Narrow state container for the owner-only "view count" pill inside a tile.
+/// Kept immutable so `ValueNotifier` change detection works with identity
+/// checks on state transitions (loading -> loaded / error).
+class _ListingViewCountState {
+  const _ListingViewCountState({required this.count, required this.loading});
+  final int? count;
+  final bool loading;
+
+  _ListingViewCountState copyWith({int? count, bool? loading}) {
+    return _ListingViewCountState(
+      count: count ?? this.count,
+      loading: loading ?? this.loading,
+    );
   }
 }

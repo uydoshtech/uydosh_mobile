@@ -265,6 +265,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  // Cache the merged listenable so we don't allocate a new
+  // `_CombiningListenable` on every `build()` (the ListenableBuilder below is
+  // rebuilt on every theme/locale change).
+  late final Listenable _themeAndLocaleListenable = Listenable.merge([
+    ThemeState(),
+    LanguageState(),
+  ]);
+
   Widget _getInitialScreen() {
     if (kShowRoomPlanWelcomeInsteadOfHome) {
       // For testing only. The welcome UI is inside RoomPlanScanScreen.
@@ -280,48 +288,57 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: Listenable.merge([ThemeState(), LanguageState()]),
-      builder: (context, child) {
-        return MaterialApp(
-          title: "UyDosh",
-          theme: ThemeState().currentThemeData,
-          debugShowCheckedModeBanner: false,
-          navigatorKey: widget.navigatorKey,
-          navigatorObservers: [routeObserver],
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: supportedLocales,
-          locale: Locale(LanguageState().currentLanguage, ""),
-          home: kSkipSplashScreen ? _getInitialScreen() : const SplashScreen(),
-          builder: (context, child) {
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider<MessagingBloc>(
-                  create: (_) => MessagingBloc(
-                    getIt<IMessagingService>(),
-                    getIt<IGamificationService>(),
-                  ),
-                ),
-                BlocProvider<CurrentUserProfileBloc>(
-                  create: (_) =>
-                      CurrentUserProfileBloc(getIt<IUserProfileService>()),
-                ),
-              ],
-              child: _AchievementUnlockListener(
+    // BlocProviders are hoisted ABOVE the theme/locale ListenableBuilder.
+    // Previously they lived inside `MaterialApp.builder`, which meant the
+    // provider widgets (and their subtree) were reconstructed on every
+    // theme/locale tick. `BlocProvider.create` only fires once per element
+    // life, so the blocs themselves were preserved — but the provider
+    // widgets around them were re-instantiated and reconciled on every
+    // rebuild. Hoisting removes that busywork and also keeps the provider
+    // references identity-stable for anything outside the ListenableBuilder
+    // that might want to read them.
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<MessagingBloc>(
+          create: (_) => MessagingBloc(
+            getIt<IMessagingService>(),
+            getIt<IGamificationService>(),
+          ),
+        ),
+        BlocProvider<CurrentUserProfileBloc>(
+          create: (_) =>
+              CurrentUserProfileBloc(getIt<IUserProfileService>()),
+        ),
+      ],
+      child: ListenableBuilder(
+        listenable: _themeAndLocaleListenable,
+        builder: (context, child) {
+          return MaterialApp(
+            title: "UyDosh",
+            theme: ThemeState().currentThemeData,
+            debugShowCheckedModeBanner: false,
+            navigatorKey: widget.navigatorKey,
+            navigatorObservers: [routeObserver],
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: supportedLocales,
+            locale: Locale(LanguageState().currentLanguage, ""),
+            home: kSkipSplashScreen ? _getInitialScreen() : const SplashScreen(),
+            builder: (context, child) {
+              return _AchievementUnlockListener(
                 navigatorKey: widget.navigatorKey,
                 child: _BlocAuthListener(
                   child: child ?? const SizedBox.shrink(),
                 ),
-              ),
-            );
-          },
-        );
-      },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
