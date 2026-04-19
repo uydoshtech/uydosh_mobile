@@ -638,7 +638,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String?>(
               key: ValueKey(_currentUser.id),
-              initialValue: _selectedRole,
+              value: _selectedRole,
               elevation: AppTheme.menuPanelElevation,
               items: _roleOptions(context)
                   .map(
