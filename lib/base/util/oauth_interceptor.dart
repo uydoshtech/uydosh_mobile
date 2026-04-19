@@ -5,9 +5,12 @@
  * is strictly prohibited.
  */
 
+import "dart:async";
+
 import "package:dio/dio.dart";
 import "package:uy_dosh/base/api/auth_token_repository_i.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_expired_handler.dart";
 
 class CustomOAuthInterceptor extends Interceptor {
   const CustomOAuthInterceptor({required this.tokenRepo, required this.dio});
@@ -74,8 +77,10 @@ class CustomOAuthInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    if (err.response?.statusCode != 401 ||
-        err.requestOptions.extra[retryKey] == true) {
+    final statusCode = err.response?.statusCode;
+    final alreadyRetried = err.requestOptions.extra[retryKey] == true;
+
+    if (statusCode != 401) {
       logger.e({
         "request": {
           "method": err.requestOptions.method,
@@ -84,13 +89,43 @@ class CustomOAuthInterceptor extends Interceptor {
           "data": _requestDataForLog(err.requestOptions.data),
           "queryParameters": err.requestOptions.queryParameters,
         },
-        "statusCode": err.response?.statusCode,
+        "statusCode": statusCode,
         "response": err.response?.data,
       }, error: err);
       return super.onError(err, handler);
     }
+
+    if (alreadyRetried) {
+      logger.e({
+        "request": {
+          "method": err.requestOptions.method,
+          "path": err.requestOptions.path,
+        },
+        "statusCode": statusCode,
+        "response": err.response?.data,
+        "note": "401 after retry — session is dead, forcing logout",
+      }, error: err);
+      unawaited(
+        SessionExpiredHandler.instance.handle(
+          reason: "401 after retry on ${err.requestOptions.path}",
+        ),
+      );
+      return super.onError(err, handler);
+    }
+
     try {
-      await tokenRepo.refreshTokens();
+      final refreshed = await tokenRepo.refreshTokens();
+      if (!refreshed) {
+        logger.d(
+          "🚨 OAuthInterceptor: Token refresh not possible, forcing logout",
+        );
+        unawaited(
+          SessionExpiredHandler.instance.handle(
+            reason: "refresh returned false on ${err.requestOptions.path}",
+          ),
+        );
+        return super.onError(err, handler);
+      }
       final requestOptions = err.requestOptions;
       requestOptions.extra[retryKey] = true;
       if (await _addAuth(requestOptions)) {
@@ -107,10 +142,25 @@ class CustomOAuthInterceptor extends Interceptor {
         return handler.resolve(response);
       }
       logger.e(err, error: err);
+      unawaited(
+        SessionExpiredHandler.instance.handle(
+          reason: "no token after refresh on ${err.requestOptions.path}",
+        ),
+      );
       return super.onError(err, handler);
     } on Exception catch (error, stackTrace) {
       logger.e(err, error: err, stackTrace: stackTrace);
-      if (error is DioException) return super.onError(error, handler);
+      if (error is DioException) {
+        if (error.response?.statusCode == 401) {
+          unawaited(
+            SessionExpiredHandler.instance.handle(
+              reason:
+                  "retry request threw 401 on ${err.requestOptions.path}",
+            ),
+          );
+        }
+        return super.onError(error, handler);
+      }
     }
   }
 

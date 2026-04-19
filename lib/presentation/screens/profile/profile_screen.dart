@@ -310,7 +310,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     data.profile ?? _cachedUserProfile;
 
                 if (effectiveProfile == null &&
-                    (data.isLoading || data.hasError)) {
+                    data.isLoading &&
+                    !data.hasError) {
                   return Scaffold(
                     body: CenteredHouseLoadingIndicator(
                       text: L10n.get("loading"),
@@ -324,6 +325,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     body: CenteredHouseLoadingIndicator(
                       text: L10n.get("loading"),
                     ),
+                  );
+                }
+
+                if (effectiveProfile == null && data.hasError) {
+                  return Scaffold(
+                    appBar: UydoshAppBar(
+                      leading: ThreeDAppBarIconButton.backLeading(
+                        context,
+                        onPressed: () {
+                          if (Navigator.of(context).canPop()) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                      ),
+                      title: Text(
+                        L10n.get("profile"),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    body: _buildErrorState(data.errorMessage, context),
                   );
                 }
 
@@ -444,43 +468,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildErrorState(String message, BuildContext context) {
+    final isSessionExpired = message == sessionExpiredErrorCode;
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ThemeIcon(
-            Icons.error_outline,
-            size: 64,
-            color: Theme.of(context).colorScheme.error,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            L10n.get("error_loading_profile"),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ThemeIcon(
+              Icons.error_outline,
+              size: 64,
               color: Theme.of(context).colorScheme.error,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            L10n.get("error_generic"),
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            const SizedBox(height: 16),
+            Text(
+              L10n.get(
+                isSessionExpired ? "session_expired" : "error_loading_profile",
+              ),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              context.read<CurrentUserProfileBloc>().add(
-                const CurrentUserProfileEvent.fetchProfile(),
-              );
-            },
-            child: Text(L10n.get("retry")),
-          ),
-        ],
+            if (!isSessionExpired) ...[
+              const SizedBox(height: 8),
+              Text(
+                L10n.get("error_generic"),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                if (isSessionExpired) {
+                  LogoutService().performLogout(context);
+                } else {
+                  context.read<CurrentUserProfileBloc>().add(
+                    const CurrentUserProfileEvent.fetchProfile(),
+                  );
+                }
+              },
+              child: Text(
+                L10n.get(isSessionExpired ? "logout" : "retry"),
+              ),
+            ),
+            if (!isSessionExpired) ...[
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => _showLogoutDialog(context),
+                child: Text(L10n.get("logout")),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

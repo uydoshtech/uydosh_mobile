@@ -768,6 +768,7 @@
   "logout_description": "Are you sure you want to logout? You will need to sign in again to access your profile.",
   "logout": "Logout",
   "logout_success": "Successfully logged out",
+  "session_expired": "Your session has expired. Please sign in again.",
   "delete_account": "Delete account",
   "delete_account_confirmation": "Are you sure you want to delete your account? This action cannot be undone. All your data, listings, and messages will be permanently removed.",
   "delete_account_success": "Account deleted successfully",

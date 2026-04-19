@@ -1,7 +1,10 @@
+import "dart:async";
+
 import "package:dio/dio.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
+import "package:uy_dosh/base/services/session_expired_handler.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
@@ -13,6 +16,7 @@ part "current_user_profile_event.dart";
 part "current_user_profile_state.dart";
 
 const String profileNotFoundErrorCode = "profile_not_found";
+const String sessionExpiredErrorCode = "session_expired";
 
 class CurrentUserProfileBloc
     extends Bloc<CurrentUserProfileEvent, CurrentUserProfileState> {
@@ -50,6 +54,18 @@ class CurrentUserProfileBloc
         emit(
           const CurrentUserProfileState.error(
             message: profileNotFoundErrorCode,
+          ),
+        );
+        return;
+      }
+      if (error is DioException && error.response?.statusCode == 401) {
+        unawaited(
+          SessionExpiredHandler.instance
+              .handle(reason: "CurrentUserProfileBloc.fetchProfile 401"),
+        );
+        emit(
+          const CurrentUserProfileState.error(
+            message: sessionExpiredErrorCode,
           ),
         );
         return;

@@ -768,6 +768,7 @@
   "logout_description": "Chiqishni xohlaysizmi? Profilingizga kirish uchun qaytadan tizimga kirishingiz kerak bo'ladi.",
   "logout": "Chiqish",
   "logout_success": "Muvaffaqiyatli chiqildi",
+  "session_expired": "Sessiya muddati tugadi. Iltimos, qayta tizimga kiring.",
   "delete_account": "Hisobni o'chirish",
   "delete_account_confirmation": "Hisobingizni o'chirishni xohlaysizmi? Bu amalni bekor qilish mumkin emas. Barcha ma'lumotlaringiz, e'lonlaringiz va xabarlaringiz butunlay o'chiriladi.",
   "delete_account_success": "Hisob muvaffaqiyatli o'chirildi",

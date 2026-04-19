@@ -718,20 +718,22 @@ class _ListingTileState extends State<ListingTile>
                           widget.listing.amenities!.isNotEmpty) ...[
                         if (widget.listing.location != null ||
                             widget.listing.subwayStation != null)
-                          const SizedBox(height: 8),
-                        Row(
-                          children: (_cachedSortedAmenities ?? [])
-                              .map(
-                                (amenity) => Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: ThemeIcon(
+                          const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 40),
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 8,
+                            children: (_cachedSortedAmenities ?? [])
+                                .map(
+                                  (amenity) => ThemeIcon(
                                     _getAmenityIcon(amenity),
-                                    size: 20,
+                                    size: 18,
                                     color: _getAmenityIconColor(),
                                   ),
-                                ),
-                              )
-                              .toList(),
+                                )
+                                .toList(),
+                          ),
                         ),
                       ],
                       if ((widget.listing.privateRoom ?? false) ||
@@ -741,7 +743,7 @@ class _ListingTileState extends State<ListingTile>
                             widget.listing.subwayStation != null ||
                             (widget.listing.amenities != null &&
                                 widget.listing.amenities!.isNotEmpty))
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                         ListenableBuilder(
                           listenable: LanguageState(),
                           builder: (context, child) {
@@ -1026,8 +1028,9 @@ class _ListingTileState extends State<ListingTile>
   Color _getAmenityIconColor() {
     // Use ThemeState to detect current theme
     if (ThemeState().isBlueTheme) {
-      // Blue theme - use white for icons
-      return AppColors.textLight;
+      // Blue theme — soft blue-gray so amenity icons read as secondary
+      // info and don't compete with the bold white title/meta text.
+      return _blueThemeSecondary;
     } else if (ThemeState().isLightTheme) {
       // Light theme - use black for icons
       return Colors.black;
@@ -1036,6 +1039,10 @@ class _ListingTileState extends State<ListingTile>
       return AppColors.iconPrimary; // This is Color(0xFF6B46C1)
     }
   }
+
+  /// Soft blue-gray used for secondary text/icons on the dark-blue theme,
+  /// matching `MessagingThemeColors.textSecondary`/`iconSecondary`.
+  static const Color _blueThemeSecondary = Color(0xFFB3C0CC);
 
   // Theme-dependent color method for title text
   Color _getTitleTextColor() {
@@ -1049,7 +1056,9 @@ class _ListingTileState extends State<ListingTile>
   // Theme-dependent color method for description text
   Color _getDescriptionTextColor() {
     if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
+      // Secondary-tier text on blue theme: softer than the white title
+      // so body copy recedes and establishes a clear hierarchy.
+      return _blueThemeSecondary;
     } else {
       return Colors.black; // Default text for light theme
     }
@@ -1065,7 +1074,10 @@ class _ListingTileState extends State<ListingTile>
   // Theme-dependent color method for location and metro text
   Color _getLocationTextColor() {
     if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
+      // Secondary-tier text on blue theme — keeps location/metro legible
+      // but visually subordinate to the title and primary meta (private
+      // room / move-in date) rows.
+      return _blueThemeSecondary;
     } else {
       return Colors.black; // Default text for light theme
     }

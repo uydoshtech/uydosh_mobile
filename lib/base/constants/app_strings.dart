@@ -829,6 +829,7 @@ class AppStrings {
           "Are you sure you want to logout? You will need to sign in again to access your profile.",
       "logout": "Logout",
       "logout_success": "Successfully logged out",
+      "session_expired": "Your session has expired. Please sign in again.",
 
       // ===== DELETE ACCOUNT =====
       "delete_account": "Delete account",
@@ -1858,6 +1859,7 @@ class AppStrings {
           "Вы уверены, что хотите выйти? Вам нужно будет снова войти, чтобы получить доступ к профилю.",
       "logout": "Выйти",
       "logout_success": "Вы успешно вышли из системы",
+      "session_expired": "Сессия истекла. Пожалуйста, войдите снова.",
 
       // ===== DELETE ACCOUNT =====
       "delete_account": "Удалить аккаунт",
@@ -2906,6 +2908,7 @@ class AppStrings {
           "Chiqishni xohlaysizmi? Profilingizga kirish uchun qaytadan tizimga kirishingiz kerak bo'ladi.",
       "logout": "Chiqish",
       "logout_success": "Muvaffaqiyatli chiqildi",
+      "session_expired": "Sessiya muddati tugadi. Iltimos, qayta tizimga kiring.",
 
       // ===== DELETE ACCOUNT =====
       "delete_account": "Hisobni o'chirish",

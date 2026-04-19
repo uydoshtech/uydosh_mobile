@@ -1,4 +1,3 @@
-import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/foundation.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
@@ -43,59 +42,19 @@ class AuthTokenRepository implements IAuthTokenRepository {
 
   @override
   Future<bool> refreshTokens() async {
-    try {
-      debugPrint(
-        "🔄 AuthTokenRepository: Attempting to refresh Firebase token...",
-      );
-
-      // Get current Firebase user
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        debugPrint(
-          "❌ AuthTokenRepository: No Firebase user found, cannot refresh token",
-        );
-        return false;
-      }
-
-      // Force refresh the Firebase ID token
-      debugPrint(
-        "🔄 AuthTokenRepository: Refreshing Firebase ID token for user: ${user.email}",
-      );
-      final newToken = await user.getIdToken(true); // force refresh
-
-      if (newToken != null && newToken.isNotEmpty) {
-        debugPrint(
-          "✅ AuthTokenRepository: Successfully refreshed Firebase token",
-        );
-        debugPrint(
-          "🔑 AuthTokenRepository: New token length: ${newToken.length}",
-        );
-
-        // Update the session with the new token
-        await SessionManager.storeSessionToken(newToken);
-
-        // Also update the last login timestamp to extend session validity
-        await SessionManager.refreshSession();
-
-        debugPrint("✅ AuthTokenRepository: Session updated with new token");
-        return true;
-      } else {
-        debugPrint(
-          "❌ AuthTokenRepository: Failed to get new token from Firebase",
-        );
-        return false;
-      }
-    } catch (e) {
-      debugPrint("❌ AuthTokenRepository: Error refreshing tokens: $e");
-
-      // If token refresh fails, clear the session to force re-authentication
-      debugPrint(
-        "🔄 AuthTokenRepository: Clearing session due to refresh failure",
-      );
-      await SessionManager.clearSession();
-
-      return false;
-    }
+    // The backend session token is a DB-issued session id, not a Firebase
+    // ID token. There's no client-side way to mint a new DB session token
+    // from a Firebase refresh — that must go through the sign-in flow.
+    //
+    // Previously this method force-refreshed the Firebase ID token and
+    // stored it as the session token, which the backend's session
+    // verification always rejects. That bug caused "invalid session token"
+    // loops after revocation. Return false so the 401 handler can kick
+    // the user back to the auth wizard instead of silently failing.
+    debugPrint(
+      "🔄 AuthTokenRepository: refreshTokens() called — not supported, returning false",
+    );
+    return false;
   }
 
   @override
