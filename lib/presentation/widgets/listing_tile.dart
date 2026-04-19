@@ -158,59 +158,50 @@ class _ListingTileState extends State<ListingTile>
 
   /// Shared favorite-toggle handler used by both the interactive heart
   /// (favorites screen) and the compact heart indicator (home screen).
+  ///
+  /// Uses an optimistic update: the local [FavoritesState] is toggled
+  /// immediately so the heart animation plays without waiting for the
+  /// network round-trip. If the API call fails, the state is rolled back
+  /// and an error toast is shown.
   Future<void> _handleFavoriteTap(BuildContext context) async {
     HapticFeedbackUtils.impact();
     final favoritesState = FavoritesState();
     final wasFavorite =
         widget.forceFavorite ?? favoritesState.isFavorite(widget.listing.id);
 
-    setState(() {
-      _isTogglingFavorite = true;
-    });
+    // Optimistic local toggle — triggers the heart's scale/pulse animation
+    // immediately, before we know whether the server accepted the change.
+    favoritesState.toggleFavorite(widget.listing.id);
+    if (!wasFavorite) {
+      _pulsateHeart();
+    }
 
     try {
       final favoriteService = getIt<IFavoriteService>();
       final success = await favoriteService.toggleFavorite(widget.listing.id);
 
       if (success) {
-        favoritesState.toggleFavorite(widget.listing.id);
-
-        if (!wasFavorite) {
-          _pulsateHeart();
-        }
-
         if (wasFavorite && widget.onFavoriteRemoved != null) {
           widget.onFavoriteRemoved!();
         }
+        return;
+      }
 
-        if (context.mounted) {
-          ToastTheme.showSuccess(
-            context,
-            message: L10n.get(
-              wasFavorite
-                  ? "favorite_removed_success"
-                  : "favorite_added_success",
-            ),
-          );
-        }
-      } else if (context.mounted) {
+      // Server rejected the toggle — roll back local state.
+      favoritesState.toggleFavorite(widget.listing.id);
+      if (context.mounted) {
         ToastTheme.showError(
           context,
           message: L10n.get("favorite_toggle_error"),
         );
       }
     } catch (_) {
+      favoritesState.toggleFavorite(widget.listing.id);
       if (context.mounted) {
         ToastTheme.showError(
           context,
           message: L10n.get("favorite_toggle_network_error"),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isTogglingFavorite = false;
-        });
       }
     }
   }
@@ -508,8 +499,8 @@ class _ListingTileState extends State<ListingTile>
                                           scale: _heartScaleAnimation.value,
                                           child: _isTogglingFavorite
                                               ? SizedBox(
-                                                  width: 27,
-                                                  height: 27,
+                                                  width: 20,
+                                                  height: 20,
                                                   child:
                                                       CircularProgressIndicator(
                                                     strokeWidth: 2,
@@ -533,7 +524,7 @@ class _ListingTileState extends State<ListingTile>
                                                           .favoriteActive
                                                       : AppColors
                                                           .favoriteInactive,
-                                                  size: 27,
+                                                  size: 20,
                                                 ),
                                         );
                                       },
@@ -543,8 +534,10 @@ class _ListingTileState extends State<ListingTile>
                               },
                             ),
                           // Tappable favorite indicator (e.g. for home screen):
-                          // only rendered when the listing is in the user's
-                          // favorites. Animates in/out with a scale pulse.
+                          // shows an outline heart when not favorited and a
+                          // filled heart when favorited. Tapping toggles the
+                          // favorite. Transitions are animated with a scale
+                          // pulse via AnimatedSwitcher.
                           if (!widget.showHeartIcon &&
                               widget.showFavoriteIndicator)
                             ListenableBuilder(
@@ -555,10 +548,11 @@ class _ListingTileState extends State<ListingTile>
                                 ),
                               ]),
                               builder: (context, child) {
-                                final show = AuthenticationState()
-                                        .isAuthenticated &&
-                                    FavoritesState()
-                                        .isFavorite(widget.listing.id);
+                                if (!AuthenticationState().isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+                                final isFavorite = FavoritesState()
+                                    .isFavorite(widget.listing.id);
                                 return AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 300),
                                   reverseDuration:
@@ -570,30 +564,28 @@ class _ListingTileState extends State<ListingTile>
                                     scale: animation,
                                     child: child,
                                   ),
-                                  child: show
-                                      ? GestureDetector(
-                                          key: const ValueKey("fav-on"),
-                                          onTap: _isTogglingFavorite
-                                              ? null
-                                              : () =>
-                                                  _handleFavoriteTap(context),
-                                          behavior:
-                                              HitTestBehavior.opaque,
-                                          child: Opacity(
-                                            opacity: _isTogglingFavorite
-                                                ? 0.6
-                                                : 1.0,
-                                            child: const ThemeIcon(
-                                              Icons.favorite,
-                                              color:
-                                                  AppColors.favoriteActive,
-                                              size: 20,
-                                            ),
-                                          ),
-                                        )
-                                      : const SizedBox.shrink(
-                                          key: ValueKey("fav-off"),
-                                        ),
+                                  child: GestureDetector(
+                                    key: ValueKey(
+                                      isFavorite ? "fav-on" : "fav-off",
+                                    ),
+                                    onTap: _isTogglingFavorite
+                                        ? null
+                                        : () => _handleFavoriteTap(context),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Opacity(
+                                      opacity:
+                                          _isTogglingFavorite ? 0.6 : 1.0,
+                                      child: ThemeIcon(
+                                        isFavorite
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                        color: isFavorite
+                                            ? AppColors.favoriteActive
+                                            : AppColors.favoriteInactive,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
                                 );
                               },
                             ),
