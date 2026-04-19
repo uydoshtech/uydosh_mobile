@@ -10,7 +10,6 @@ class UydoshAppBar extends AppBar {
     super.automaticallyImplyLeading = true,
     super.title,
     super.actions,
-    super.automaticallyImplyActions = true,
     super.flexibleSpace,
     super.bottom,
     super.elevation,
