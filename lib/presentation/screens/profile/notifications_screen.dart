@@ -34,6 +34,9 @@ import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
+const bool _pushDebugEnabled =
+    kDebugMode || bool.fromEnvironment("PUSH_DEBUG", defaultValue: false);
+
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -55,7 +58,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _hasBackendSessionToken = false;
 
   Future<void> _refreshPushDebug() async {
-    if (!kDebugMode) return;
+    if (!_pushDebugEnabled) return;
     setState(() => _pushDebugLoading = true);
     try {
       final status =
@@ -93,7 +96,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _pushDebugPanel(ThemeData theme) {
-    if (!kDebugMode) return const SizedBox.shrink();
+    if (!_pushDebugEnabled) return const SizedBox.shrink();
     final mono = theme.textTheme.bodySmall?.copyWith(
       fontFamily: "Menlo",
       height: 1.25,
@@ -280,7 +283,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     super.initState();
     _loadAlertsExplainerVisibility();
     _load();
-    if (kDebugMode) {
+    if (_pushDebugEnabled) {
       _refreshPushDebug();
     }
   }
