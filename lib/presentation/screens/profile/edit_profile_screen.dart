@@ -72,10 +72,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   bool _isAdmin = false;
   late ValueNotifier<bool> _isRoleLoaded;
 
-  // Scroll controllers for wheel pickers
-  FixedExtentScrollController? _regionScrollController;
-  FixedExtentScrollController? _universityScrollController;
-
   /// Role as loaded from session (baseline for dirty check).
   String? _baselineRole;
 
@@ -380,8 +376,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _isLoadingRegions.dispose();
     _isLoadingUniversities.dispose();
     _isRoleLoaded.dispose();
-    _regionScrollController?.dispose();
-    _universityScrollController?.dispose();
     _savePulseController.dispose();
     super.dispose();
   }
@@ -411,9 +405,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       } else {
         _selectedRegionId.value = null;
       }
-
-      // Initialize scroll controller after regions are loaded
-      _initializeRegionScrollController();
     } catch (e) {
       _isLoadingRegions.value = false;
       if (mounted) {
@@ -427,26 +418,12 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     }
   }
 
-  void _initializeRegionScrollController() {
-    if (_regions.isNotEmpty) {
-      final initialItem = _getInitialRegionItem();
-      _regionScrollController?.dispose();
-      _regionScrollController = FixedExtentScrollController(
-        initialItem: initialItem,
-      );
-      setState(() {}); // Trigger rebuild to use new scroll controller
-    }
-  }
-
   Future<void> _loadUniversities() async {
     try {
       final universityService = getIt<IUniversityService>();
       final universities = await universityService.getUniversities();
       setState(() => _universities = universities);
       _isLoadingUniversities.value = false;
-
-      // Initialize scroll controller after universities are loaded
-      _initializeUniversityScrollController();
     } catch (e) {
       _isLoadingUniversities.value = false;
       if (mounted) {
@@ -457,17 +434,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           ).replaceAll("{error}", e.toString()),
         );
       }
-    }
-  }
-
-  void _initializeUniversityScrollController() {
-    if (_universities.isNotEmpty) {
-      final initialItem = _getInitialUniversityItem();
-      _universityScrollController?.dispose();
-      _universityScrollController = FixedExtentScrollController(
-        initialItem: initialItem,
-      );
-      setState(() {}); // Trigger rebuild to use new scroll controller
     }
   }
 
@@ -1374,16 +1340,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             HapticFeedbackUtils.impact();
             SendSoundUtils.playSelectionSound();
             _isStudent.value = isStudent;
-            if (isStudent) {
-              // Auto-select first university if none selected
-              if (_universities.isNotEmpty &&
-                  _selectedUniversityId.value == null) {
-                _selectedUniversityId.value = _universities.first.id;
-                _initializeUniversityScrollController();
-              }
-            } else {
-              _selectedUniversityId.value = null;
-            }
+            // Intentionally keep `_selectedUniversityId` when toggling off —
+            // the save payload and dirty-check already ignore it while
+            // `_isStudent` is false, so preserving it lets the user toggle
+            // back without losing their previous university pick.
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
@@ -1425,7 +1385,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   }
 
   Widget _buildRegionSelector(BuildContext context) {
-    final theme = Theme.of(context);
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
@@ -1441,139 +1400,26 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                context,
-                theme: theme,
-              ),
-              height: 80,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _isLoadingRegions,
-                      builder: (context, isLoadingRegions, _) =>
-                          isLoadingRegions
-                              ? Center(
-                                  child: Text(
-                                    L10n.get(
-                                      "loading_regions",
-                                    ),
-                                    style: TextStyle(
-                                      color: ThemeState().isBlueTheme
-                                          ? Colors.white
-                                          : Colors.black,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                )
-                              : _regionScrollController != null
-                                  ? CupertinoPicker(
-                                      backgroundColor: Colors.transparent,
-                                      itemExtent: 40,
-                                      scrollController: _regionScrollController,
-                                      onSelectedItemChanged: (index) {
-                                        HapticFeedbackUtils.impact();
-                                        SendSoundUtils.playSelectionSound();
-                                        if (index == 0) {
-                                          _selectedRegionId.value = null;
-                                        } else {
-                                          final regionIndex = index - 1;
-                                          if (regionIndex < _regions.length) {
-                                            _selectedRegionId.value =
-                                                _regions[regionIndex].id;
-                                          }
-                                        }
-                                      },
-                                      children: [
-                                        // Unselected option
-                                        Center(
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              ThemeIcon(
-                                                Icons.location_on,
-                                                color: theme.colorScheme
-                                                    .onSurfaceVariant,
-                                                size: 18,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                L10n.get(
-                                                  "select_region",
-                                                ),
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color:
-                                                      ThemeState().isBlueTheme
-                                                          ? Colors.white
-                                                          : Colors.black,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        // Region options
-                                        ..._regions.asMap().entries.map(
-                                              (entry) => Center(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    ThemeIcon(
-                                                      Icons.location_on,
-                                                      color:
-                                                          _getRegionIconColorForIndex(
-                                                        entry.key + 1,
-                                                      ),
-                                                      size: 18,
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    Flexible(
-                                                      child: Text(
-                                                        _getLocalizedRegionName(
-                                                          entry.value,
-                                                        ),
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: ThemeState()
-                                                                  .isBlueTheme
-                                                              ? Colors.white
-                                                              : Colors.black,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                      ],
-                                    )
-                                  : Center(
-                                      child: Text(
-                                        L10n.get(
-                                          "loading_regions",
-                                        ),
-                                        style: TextStyle(
-                                          color: ThemeState().isBlueTheme
-                                              ? Colors.white
-                                              : Colors.black,
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                      ),
-                                    ),
-                    ),
-                  ),
-                ],
+            ValueListenableBuilder<bool>(
+              valueListenable: _isLoadingRegions,
+              builder: (context, isLoadingRegions, _) =>
+                  ValueListenableBuilder<int?>(
+                valueListenable: _selectedRegionId,
+                builder: (context, _, __) => _buildPickerTile(
+                  context,
+                  icon: Icons.location_on,
+                  iconColor: _selectedRegionId.value == null
+                      ? null
+                      : _getRegionIconColorForId(_selectedRegionId.value!),
+                  valueText: isLoadingRegions
+                      ? L10n.get("loading_regions")
+                      : _getSelectedRegionName(),
+                  isPlaceholder: _selectedRegionId.value == null,
+                  isLoading: isLoadingRegions,
+                  onTap: isLoadingRegions || _regions.isEmpty
+                      ? null
+                      : () => _showRegionPickerSheet(context),
+                ),
               ),
             ),
           ],
@@ -1613,7 +1459,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   }
 
   Widget _buildUniversitySelector(BuildContext context) {
-    final theme = Theme.of(context);
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
@@ -1629,144 +1474,28 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                context,
-                theme: theme,
-              ),
-              height: 120,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _isLoadingUniversities,
-                      builder: (context, isLoadingUniversities, _) =>
-                          isLoadingUniversities
-                              ? Center(
-                                  child: Text(
-                                    L10n.get(
-                                      "loading_universities",
-                                    ),
-                                    style: TextStyle(
-                                      color: ThemeState().isBlueTheme
-                                          ? Colors.white
-                                          : Colors.black,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                )
-                              : _universityScrollController != null
-                                  ? CupertinoPicker(
-                                      backgroundColor: Colors.transparent,
-                                      itemExtent: 50,
-                                      scrollController:
-                                          _universityScrollController,
-                                      onSelectedItemChanged: (index) {
-                                        HapticFeedbackUtils.impact();
-                                        SendSoundUtils.playSelectionSound();
-                                        if (index == 0) {
-                                          _selectedUniversityId.value = null;
-                                        } else {
-                                          final universityIndex = index - 1;
-                                          if (universityIndex <
-                                              _universities.length) {
-                                            _selectedUniversityId.value =
-                                                _universities[universityIndex]
-                                                    .id;
-                                          }
-                                        }
-                                      },
-                                      children: [
-                                        // Unselected option
-                                        Center(
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              ThemeIcon(
-                                                Icons.school,
-                                                color: theme.colorScheme
-                                                    .onSurfaceVariant,
-                                                size: 18,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                L10n.get(
-                                                  "select_university",
-                                                ),
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color:
-                                                      ThemeState().isBlueTheme
-                                                          ? Colors.white
-                                                          : Colors.black,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        // University options
-                                        ..._universities.asMap().entries.map(
-                                              (entry) => Center(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    ThemeIcon(
-                                                      Icons.school,
-                                                      color:
-                                                          _getUniversityIconColorForIndex(
-                                                        entry.key + 1,
-                                                      ),
-                                                      size: 18,
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    Flexible(
-                                                      child: Text(
-                                                        entry.value
-                                                            .getLocalizedNameCapitalized(
-                                                          LanguageState()
-                                                              .currentLanguage,
-                                                        ),
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: ThemeState()
-                                                                  .isBlueTheme
-                                                              ? Colors.white
-                                                              : Colors.black,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                      ],
-                                    )
-                                  : Center(
-                                      child: Text(
-                                        L10n.get(
-                                          "loading_universities",
-                                        ),
-                                        style: TextStyle(
-                                          color: ThemeState().isBlueTheme
-                                              ? Colors.white
-                                              : Colors.black,
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                      ),
-                                    ),
-                    ),
-                  ),
-                ],
+            ValueListenableBuilder<bool>(
+              valueListenable: _isLoadingUniversities,
+              builder: (context, isLoadingUniversities, _) =>
+                  ValueListenableBuilder<int?>(
+                valueListenable: _selectedUniversityId,
+                builder: (context, _, __) => _buildPickerTile(
+                  context,
+                  icon: Icons.school,
+                  iconColor: _selectedUniversityId.value == null
+                      ? null
+                      : _getUniversityIconColorForId(
+                          _selectedUniversityId.value!,
+                        ),
+                  valueText: isLoadingUniversities
+                      ? L10n.get("loading_universities")
+                      : _getSelectedUniversityName(),
+                  isPlaceholder: _selectedUniversityId.value == null,
+                  isLoading: isLoadingUniversities,
+                  onTap: isLoadingUniversities || _universities.isEmpty
+                      ? null
+                      : () => _showUniversityPickerSheet(context),
+                ),
               ),
             ),
           ],
@@ -1828,6 +1557,337 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
   String _getLocalizedRegionName(Region region) {
     return region.getLocalizedName(LanguageState().currentLanguage);
+  }
+
+  String _getSelectedUniversityName() {
+    if (_isLoadingUniversities.value) {
+      return L10n.get("loading_universities");
+    }
+
+    if (_selectedUniversityId.value == null) {
+      return L10n.get("select_university");
+    }
+
+    final idx = _universities.indexWhere(
+      (u) => u.id == _selectedUniversityId.value,
+    );
+    if (idx < 0) return L10n.get("select_university");
+    return _universities[idx]
+        .getLocalizedNameCapitalized(LanguageState().currentLanguage);
+  }
+
+  Color? _getRegionIconColorForId(int regionId) {
+    final idx = _regions.indexWhere((r) => r.id == regionId);
+    if (idx < 0) return null;
+    return _getRegionIconColorForIndex(idx + 1);
+  }
+
+  Color? _getUniversityIconColorForId(int universityId) {
+    final idx = _universities.indexWhere((u) => u.id == universityId);
+    if (idx < 0) return null;
+    return _getUniversityIconColorForIndex(idx + 1);
+  }
+
+  /// A tappable neumorphic "plate" that displays an icon, the currently
+  /// selected value, and a chevron. Opens a bottom-sheet picker on tap so
+  /// the form doesn't scroll the selection by accident.
+  Widget _buildPickerTile(
+    BuildContext context, {
+    required IconData icon,
+    required String valueText,
+    required bool isPlaceholder,
+    required bool isLoading,
+    required VoidCallback? onTap,
+    Color? iconColor,
+  }) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
+    final defaultIconColor =
+        isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant;
+    final valueColor = isPlaceholder
+        ? (isBlueTheme
+            ? Colors.white70
+            : theme.colorScheme.onSurfaceVariant)
+        : (isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
+    final chevronColor =
+        isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap == null
+            ? null
+            : () {
+                HapticFeedbackUtils.impact();
+                SendSoundUtils.playSelectionSound();
+                onTap();
+              },
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                ThemeIcon(
+                  icon,
+                  color: iconColor ?? defaultIconColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    valueText,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight:
+                          isPlaceholder ? FontWeight.w500 : FontWeight.w600,
+                      fontStyle:
+                          isLoading ? FontStyle.italic : FontStyle.normal,
+                      color: valueColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ThemeIcon(
+                  Icons.arrow_drop_down,
+                  color: chevronColor,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showRegionPickerSheet(BuildContext context) {
+    final initialItem = _getInitialRegionItem();
+    final controller =
+        FixedExtentScrollController(initialItem: initialItem);
+    // Track a pending selection so dismissing the sheet without confirming
+    // keeps the previous value (prevents accidental overwrites).
+    var pendingRegionId = _selectedRegionId.value;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return _buildPickerBottomSheet(
+          sheetContext: sheetContext,
+          title: L10n.get("select_region"),
+          controller: controller,
+          itemExtent: 48,
+          itemCount: _regions.length + 1,
+          itemBuilder: (index) {
+            if (index == 0) {
+              return _buildPickerSheetRow(
+                sheetContext,
+                icon: Icons.location_on,
+                label: L10n.get("select_region"),
+                iconColor: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                isPlaceholder: true,
+              );
+            }
+            final region = _regions[index - 1];
+            return _buildPickerSheetRow(
+              sheetContext,
+              icon: Icons.location_on,
+              label: _getLocalizedRegionName(region),
+              iconColor: _getRegionIconColorForIndex(index),
+            );
+          },
+          onSelectedItemChanged: (index) {
+            HapticFeedbackUtils.impact();
+            SendSoundUtils.playSelectionSound();
+            pendingRegionId = index == 0 ? null : _regions[index - 1].id;
+          },
+          onConfirm: () {
+            _selectedRegionId.value = pendingRegionId;
+            Navigator.of(sheetContext).pop();
+          },
+        );
+      },
+    ).whenComplete(controller.dispose);
+  }
+
+  void _showUniversityPickerSheet(BuildContext context) {
+    final initialItem = _getInitialUniversityItem();
+    final controller =
+        FixedExtentScrollController(initialItem: initialItem);
+    var pendingUniversityId = _selectedUniversityId.value;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return _buildPickerBottomSheet(
+          sheetContext: sheetContext,
+          title: L10n.get("select_university"),
+          controller: controller,
+          itemExtent: 56,
+          itemCount: _universities.length + 1,
+          itemBuilder: (index) {
+            if (index == 0) {
+              return _buildPickerSheetRow(
+                sheetContext,
+                icon: Icons.school,
+                label: L10n.get("select_university"),
+                iconColor: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                isPlaceholder: true,
+              );
+            }
+            final university = _universities[index - 1];
+            return _buildPickerSheetRow(
+              sheetContext,
+              icon: Icons.school,
+              label: university.getLocalizedNameCapitalized(
+                LanguageState().currentLanguage,
+              ),
+              iconColor: _getUniversityIconColorForIndex(index),
+            );
+          },
+          onSelectedItemChanged: (index) {
+            HapticFeedbackUtils.impact();
+            SendSoundUtils.playSelectionSound();
+            pendingUniversityId =
+                index == 0 ? null : _universities[index - 1].id;
+          },
+          onConfirm: () {
+            _selectedUniversityId.value = pendingUniversityId;
+            Navigator.of(sheetContext).pop();
+          },
+        );
+      },
+    ).whenComplete(controller.dispose);
+  }
+
+  Widget _buildPickerBottomSheet({
+    required BuildContext sheetContext,
+    required String title,
+    required FixedExtentScrollController controller,
+    required double itemExtent,
+    required int itemCount,
+    required Widget Function(int index) itemBuilder,
+    required ValueChanged<int> onSelectedItemChanged,
+    required VoidCallback onConfirm,
+  }) {
+    final theme = Theme.of(sheetContext);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
+    final textColor =
+        isBlueTheme ? Colors.white : theme.colorScheme.onSurface;
+    final handleColor = (isBlueTheme ? Colors.white : Colors.black)
+        .withValues(alpha: 0.25);
+
+    return SafeArea(
+      top: false,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: baseColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: handleColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 220,
+              child: CupertinoPicker(
+                backgroundColor: Colors.transparent,
+                scrollController: controller,
+                itemExtent: itemExtent,
+                onSelectedItemChanged: onSelectedItemChanged,
+                children: [
+                  for (var i = 0; i < itemCount; i++) itemBuilder(i),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+              child: SizedBox(
+                width: double.infinity,
+                child: GhostButtonFactory.iconText(
+                  onPressed: onConfirm,
+                  icon: Icons.check,
+                  text: L10n.get("confirm"),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  neumorphicSoftUi: true,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPickerSheetRow(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color iconColor,
+    bool isPlaceholder = false,
+  }) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final textColor = isPlaceholder
+        ? (isBlueTheme
+            ? Colors.white70
+            : theme.colorScheme.onSurfaceVariant)
+        : (isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ThemeIcon(icon, color: iconColor, size: 18),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Get theme-aware color for lifestyle preferences header
