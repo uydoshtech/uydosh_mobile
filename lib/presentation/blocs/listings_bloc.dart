@@ -205,6 +205,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         ).timeout(_requestTimeout);
 
         final newListings = response.data;
+        FavoritesState().syncFromListings(newListings);
         _hasMore =
             (_currentPage + 1) <= response.totalPages && newListings.isNotEmpty;
 
@@ -332,6 +333,8 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         limit: limit,
       ).timeout(_requestTimeout);
 
+      FavoritesState().syncFromListings(listings);
+
       if (isRefresh) {
         _currentListings = listings;
       } else {
@@ -413,6 +416,8 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         page: page,
         limit: limit,
       ).timeout(_requestTimeout);
+
+      FavoritesState().syncFromListings(listings);
 
       if (isRefresh) {
         _currentListings = listings;
@@ -583,6 +588,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       ).timeout(_requestTimeout);
 
       final listings = response.data;
+      FavoritesState().syncFromListings(listings);
 
       if (isRefresh) {
         _currentListings = listings;

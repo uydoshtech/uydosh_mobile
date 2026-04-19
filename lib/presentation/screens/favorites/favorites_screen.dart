@@ -327,9 +327,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               height: _itemsBeingRemoved.contains(listing.id) ? 0 : null,
-              margin: EdgeInsets.only(
-                bottom: _itemsBeingRemoved.contains(listing.id) ? 0 : 16.0,
-              ),
               child: _itemsBeingRemoved.contains(listing.id)
                   ? const SizedBox.shrink()
                   : ListingTile(

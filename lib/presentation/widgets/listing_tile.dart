@@ -156,6 +156,65 @@ class _ListingTileState extends State<ListingTile>
     });
   }
 
+  /// Shared favorite-toggle handler used by both the interactive heart
+  /// (favorites screen) and the compact heart indicator (home screen).
+  Future<void> _handleFavoriteTap(BuildContext context) async {
+    HapticFeedbackUtils.impact();
+    final favoritesState = FavoritesState();
+    final wasFavorite =
+        widget.forceFavorite ?? favoritesState.isFavorite(widget.listing.id);
+
+    setState(() {
+      _isTogglingFavorite = true;
+    });
+
+    try {
+      final favoriteService = getIt<IFavoriteService>();
+      final success = await favoriteService.toggleFavorite(widget.listing.id);
+
+      if (success) {
+        favoritesState.toggleFavorite(widget.listing.id);
+
+        if (!wasFavorite) {
+          _pulsateHeart();
+        }
+
+        if (wasFavorite && widget.onFavoriteRemoved != null) {
+          widget.onFavoriteRemoved!();
+        }
+
+        if (context.mounted) {
+          ToastTheme.showSuccess(
+            context,
+            message: L10n.get(
+              wasFavorite
+                  ? "favorite_removed_success"
+                  : "favorite_added_success",
+            ),
+          );
+        }
+      } else if (context.mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("favorite_toggle_error"),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("favorite_toggle_network_error"),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTogglingFavorite = false;
+        });
+      }
+    }
+  }
+
   // Helper method to get the appropriate name based on current language
   String _getLocalizedName({String? nameUz, String? nameRu, String? nameEn}) {
     final currentLanguage = LanguageState().currentLanguage;
@@ -427,162 +486,65 @@ class _ListingTileState extends State<ListingTile>
                                 ),
                               ]),
                               builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-                                if (!isAuthenticated) {
+                                if (!AuthenticationState().isAuthenticated) {
                                   return const SizedBox.shrink();
                                 }
 
-                                final favoritesState = FavoritesState();
-                                // Use forceFavorite parameter if provided, otherwise check FavoritesState
                                 final isFavorite =
                                     widget.forceFavorite ??
-                                    favoritesState.isFavorite(
+                                    FavoritesState().isFavorite(
                                       widget.listing.id,
                                     );
                                 return GestureDetector(
-                                      onTap:
-                                          _isTogglingFavorite
-                                              ? null
-                                              : () async {
-                                                // Add haptic feedback
-                                                HapticFeedbackUtils.impact();
-
-                                                // For favorites screen, we know the item is currently favorited
-                                                // For other screens, check the actual state
-                                                final wasFavorite =
-                                                    widget.forceFavorite ??
-                                                    favoritesState.isFavorite(
-                                                      widget.listing.id,
-                                                    );
-
-                                                // Set loading state
-                                                setState(() {
-                                                  _isTogglingFavorite = true;
-                                                });
-
-                                                // Call API to toggle favorite
-                                                try {
-                                                  final favoriteService =
-                                                      getIt<IFavoriteService>();
-
-                                                  final success =
-                                                      await favoriteService
-                                                          .toggleFavorite(
-                                                            widget.listing.id,
-                                                          );
-
-                                                  if (success) {
-                                                    // Update local state only if API call succeeds
-                                                    favoritesState
-                                                        .toggleFavorite(
-                                                          widget.listing.id,
-                                                        );
-
-                                                    // Only trigger animation when adding to favorites (not when removing)
-                                                    if (!wasFavorite) {
-                                                      _pulsateHeart();
-                                                    }
-
-                                                    // If this was a removal and we have a callback, call it
-                                                    if (wasFavorite &&
-                                                        widget
-                                                                .onFavoriteRemoved !=
-                                                            null) {
-                                                      widget
-                                                          .onFavoriteRemoved!();
-                                                    }
-
-                                                    // Show success message to user
-                                                    if (context.mounted) {
-                                                      ToastTheme.showSuccess(
-                                                        context,
-                                                        message: L10n.get(
-                                                        wasFavorite
-                                                            ? "favorite_removed_success"
-                                                            : "favorite_added_success",
-                                                      ),
-                                                      );
-                                                    }
-                                                  } else {
-                                                    // Show error message to user
-                                                    if (context.mounted) {
-                                                      ToastTheme.showError(
-                                                        context,
-                                                        message: L10n.get("favorite_toggle_error"),
-                                                      );
-                                                    }
-                                                  }
-                                                } catch (e) {
-                                                  // Show error message to user
-                                                  if (context.mounted) {
-                                                    ToastTheme.showError(
-                                                      context,
-                                                      message: L10n.get("favorite_toggle_network_error"),
-                                                  );
-                                                  }
-                                                } finally {
-                                                  // Clear loading state
-                                                  if (mounted) {
-                                                    setState(() {
-                                                      _isTogglingFavorite =
-                                                          false;
-                                                    });
-                                                  }
-                                                }
-                                              },
-                                      child: Opacity(
-                                        opacity:
-                                            _isTogglingFavorite ? 0.6 : 1.0,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(12.0),
-                                          child: AnimatedBuilder(
-                                            animation: _heartScaleAnimation,
-                                            builder: (context, child) {
-                                              return Transform.scale(
-                                                scale:
-                                                    _heartScaleAnimation.value,
-                                                child:
-                                                    _isTogglingFavorite
-                                                        ? SizedBox(
-                                                          width: 27,
-                                                          height: 27,
-                                                          child: CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                            valueColor: AlwaysStoppedAnimation<
-                                                              Color
-                                                            >(
-                                                              isFavorite
-                                                                  ? AppColors
-                                                                      .favoriteActive
-                                                                  : AppColors
-                                                                      .favoriteInactive,
-                                                            ),
-                                                          ),
-                                                        )
-                                                        : ThemeIcon(
-                                                          isFavorite
-                                                              ? Icons.favorite
-                                                              : Icons
-                                                                  .favorite_border,
-                                                          color:
-                                                              isFavorite
-                                                                  ? AppColors
-                                                                      .favoriteActive
-                                                                  : AppColors
-                                                                      .favoriteInactive,
-                                                          size: 27,
-                                                        ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                          // Read-only favorite indicator (e.g. for home screen) —
-                          // only rendered when the listing is in the user's favorites.
+                                  onTap: _isTogglingFavorite
+                                      ? null
+                                      : () => _handleFavoriteTap(context),
+                                  child: Opacity(
+                                    opacity: _isTogglingFavorite ? 0.6 : 1.0,
+                                    child: AnimatedBuilder(
+                                      animation: _heartScaleAnimation,
+                                      builder: (context, child) {
+                                        return Transform.scale(
+                                          scale: _heartScaleAnimation.value,
+                                          child: _isTogglingFavorite
+                                              ? SizedBox(
+                                                  width: 27,
+                                                  height: 27,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<
+                                                            Color>(
+                                                      isFavorite
+                                                          ? AppColors
+                                                              .favoriteActive
+                                                          : AppColors
+                                                              .favoriteInactive,
+                                                    ),
+                                                  ),
+                                                )
+                                              : ThemeIcon(
+                                                  isFavorite
+                                                      ? Icons.favorite
+                                                      : Icons.favorite_border,
+                                                  color: isFavorite
+                                                      ? AppColors
+                                                          .favoriteActive
+                                                      : AppColors
+                                                          .favoriteInactive,
+                                                  size: 27,
+                                                ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          // Tappable favorite indicator (e.g. for home screen):
+                          // only rendered when the listing is in the user's
+                          // favorites. Animates in/out with a scale pulse.
                           if (!widget.showHeartIcon &&
                               widget.showFavoriteIndicator)
                             ListenableBuilder(
@@ -593,18 +555,45 @@ class _ListingTileState extends State<ListingTile>
                                 ),
                               ]),
                               builder: (context, child) {
-                                if (!AuthenticationState().isAuthenticated) {
-                                  return const SizedBox.shrink();
-                                }
-                                if (!FavoritesState().isFavorite(
-                                  widget.listing.id,
-                                )) {
-                                  return const SizedBox.shrink();
-                                }
-                                return const ThemeIcon(
-                                  Icons.favorite,
-                                  color: AppColors.favoriteActive,
-                                  size: 20,
+                                final show = AuthenticationState()
+                                        .isAuthenticated &&
+                                    FavoritesState()
+                                        .isFavorite(widget.listing.id);
+                                return AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  reverseDuration:
+                                      const Duration(milliseconds: 180),
+                                  switchInCurve: Curves.elasticOut,
+                                  switchOutCurve: Curves.easeInBack,
+                                  transitionBuilder: (child, animation) =>
+                                      ScaleTransition(
+                                    scale: animation,
+                                    child: child,
+                                  ),
+                                  child: show
+                                      ? GestureDetector(
+                                          key: const ValueKey("fav-on"),
+                                          onTap: _isTogglingFavorite
+                                              ? null
+                                              : () =>
+                                                  _handleFavoriteTap(context),
+                                          behavior:
+                                              HitTestBehavior.opaque,
+                                          child: Opacity(
+                                            opacity: _isTogglingFavorite
+                                                ? 0.6
+                                                : 1.0,
+                                            child: const ThemeIcon(
+                                              Icons.favorite,
+                                              color:
+                                                  AppColors.favoriteActive,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        )
+                                      : const SizedBox.shrink(
+                                          key: ValueKey("fav-off"),
+                                        ),
                                 );
                               },
                             ),
