@@ -564,25 +564,47 @@ class _ListingTileState extends State<ListingTile>
                                     scale: animation,
                                     child: child,
                                   ),
-                                  child: GestureDetector(
+                                  // Layout slot stays at the icon's 20x20
+                                  // footprint; OverflowBox expands the
+                                  // GestureDetector's hit area to 44x44
+                                  // (standard touch target) without
+                                  // affecting surrounding layout.
+                                  child: SizedBox(
                                     key: ValueKey(
                                       isFavorite ? "fav-on" : "fav-off",
                                     ),
-                                    onTap: _isTogglingFavorite
-                                        ? null
-                                        : () => _handleFavoriteTap(context),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Opacity(
-                                      opacity:
-                                          _isTogglingFavorite ? 0.6 : 1.0,
-                                      child: ThemeIcon(
-                                        isFavorite
-                                            ? Icons.favorite
-                                            : Icons.favorite_border,
-                                        color: isFavorite
-                                            ? AppColors.favoriteActive
-                                            : AppColors.favoriteInactive,
-                                        size: 20,
+                                    width: 20,
+                                    height: 20,
+                                    child: OverflowBox(
+                                      maxWidth: 44,
+                                      maxHeight: 44,
+                                      child: GestureDetector(
+                                        onTap: _isTogglingFavorite
+                                            ? null
+                                            : () =>
+                                                  _handleFavoriteTap(context),
+                                        behavior: HitTestBehavior.opaque,
+                                        child: SizedBox(
+                                          width: 44,
+                                          height: 44,
+                                          child: Center(
+                                            child: Opacity(
+                                              opacity: _isTogglingFavorite
+                                                  ? 0.6
+                                                  : 1.0,
+                                              child: ThemeIcon(
+                                                isFavorite
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color: isFavorite
+                                                    ? AppColors.favoriteActive
+                                                    : AppColors
+                                                          .favoriteInactive,
+                                                size: 20,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -785,7 +807,7 @@ class _ListingTileState extends State<ListingTile>
                   child: Center(
                     child: ThemeIcon(
                       Icons.arrow_forward_ios,
-                      size: 24, // 16 * 1.5 = 24
+                      size: 19.2, // 24 * 0.8 = 19.2
                       color: _getArrowIconColor(),
                     ),
                   ),
