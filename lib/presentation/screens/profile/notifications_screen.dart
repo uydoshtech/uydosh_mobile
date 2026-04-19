@@ -1,6 +1,8 @@
 // ignore_for_file: eol_at_end_of_file
 
 import "package:dio/dio.dart";
+import "package:firebase_messaging/firebase_messaging.dart";
+import "package:flutter/foundation.dart" show kDebugMode;
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:permission_handler/permission_handler.dart";
@@ -10,11 +12,13 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -42,6 +46,134 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _bulkWorking = false;
   List<SearchAlert> _alerts = const [];
   bool _showAlertsExplainer = true;
+
+  bool _pushDebugExpanded = false;
+  bool _pushDebugLoading = false;
+  String? _pushPermission;
+  String? _apnsTokenPreview;
+  String? _fcmTokenPreview;
+  bool _hasBackendSessionToken = false;
+
+  Future<void> _refreshPushDebug() async {
+    if (!kDebugMode) return;
+    setState(() => _pushDebugLoading = true);
+    try {
+      final status =
+          await getIt<IPushNotificationService>().getNotificationStatus();
+      final apns = await FirebaseMessaging.instance.getAPNSToken();
+      final fcm = await FirebaseMessaging.instance.getToken();
+      final backendToken = await SessionManager.getToken();
+
+      String? preview(String? token) {
+        if (token == null || token.isEmpty) return null;
+        final head = token.length > 18 ? token.substring(0, 18) : token;
+        return "$head… (len=${token.length})";
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _pushPermission = status?.name;
+        _apnsTokenPreview = preview(apns);
+        _fcmTokenPreview = preview(fcm);
+        _hasBackendSessionToken =
+            backendToken != null && backendToken.trim().isNotEmpty;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _pushPermission = "error";
+        _apnsTokenPreview = null;
+        _fcmTokenPreview = null;
+        _hasBackendSessionToken = false;
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _pushDebugLoading = false);
+    }
+  }
+
+  Widget _pushDebugPanel(ThemeData theme) {
+    if (!kDebugMode) return const SizedBox.shrink();
+    final mono = theme.textTheme.bodySmall?.copyWith(
+      fontFamily: "Menlo",
+      height: 1.25,
+    );
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: ExpansionTile(
+        initiallyExpanded: _pushDebugExpanded,
+        onExpansionChanged: (v) async {
+          setState(() => _pushDebugExpanded = v);
+          if (v) {
+            await _refreshPushDebug();
+          }
+        },
+        title: const Text("Push debug (dev)"),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        children: [
+          if (_pushDebugLoading)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: LinearProgressIndicator(minHeight: 2),
+            ),
+          Text("permission: ${_pushPermission ?? "unknown"}", style: mono),
+          Text(
+            "backend session token: ${_hasBackendSessionToken ? "yes" : "no"}",
+            style: mono,
+          ),
+          Text("APNs token: ${_apnsTokenPreview ?? "null"}", style: mono),
+          Text("FCM token: ${_fcmTokenPreview ?? "null"}", style: mono),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              OutlinedButton(
+                onPressed: _pushDebugLoading ? null : _refreshPushDebug,
+                child: const Text("Refresh"),
+              ),
+              OutlinedButton(
+                onPressed: _pushDebugLoading
+                    ? null
+                    : () async {
+                        final ok = await getIt<IPushNotificationService>()
+                            .requestPermissionAndRegister();
+                        if (!mounted) return;
+                        ToastTheme.showInfoSimple(
+                          context,
+                          message: ok
+                              ? "Push enabled + register attempted"
+                              : "Not enabled",
+                        );
+                        await _refreshPushDebug();
+                      },
+                child: const Text("Request permission + register"),
+              ),
+              OutlinedButton(
+                onPressed: _pushDebugLoading
+                    ? null
+                    : () async {
+                        await getIt<IPushNotificationService>()
+                            .registerTokenWithBackend();
+                        if (!mounted) return;
+                        ToastTheme.showInfoSimple(
+                          context,
+                          message: "Register attempted",
+                        );
+                        await _refreshPushDebug();
+                      },
+                child: const Text("Register now"),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _alertsExplainer(ThemeData theme, {required VoidCallback onClose}) {
     final fg = theme.colorScheme.onSurfaceVariant;
@@ -148,6 +280,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     super.initState();
     _loadAlertsExplainerVisibility();
     _load();
+    if (kDebugMode) {
+      _refreshPushDebug();
+    }
   }
 
   Future<void> _loadAlertsExplainerVisibility() async {
@@ -603,6 +738,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             theme,
                             onClose: _dismissAlertsExplainer,
                           ),
+                        if (kDebugMode) ...[
+                          const SizedBox(height: 12),
+                          _pushDebugPanel(theme),
+                        ],
                         const SizedBox(height: 36),
                         ThemeIcon(
                           Icons.notifications_none,
@@ -633,9 +772,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       itemBuilder: (context, i) {
                         final showExplainer = tooltipsEnabled && _showAlertsExplainer;
                         if (showExplainer && i == 0) {
-                          return _alertsExplainer(
-                            theme,
-                            onClose: _dismissAlertsExplainer,
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _alertsExplainer(
+                                theme,
+                                onClose: _dismissAlertsExplainer,
+                              ),
+                              if (kDebugMode) ...[
+                                const SizedBox(height: 12),
+                                _pushDebugPanel(theme),
+                              ],
+                            ],
                           );
                         }
 
