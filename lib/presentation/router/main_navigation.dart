@@ -66,6 +66,8 @@ class MainNavigationState extends State<MainNavigation>
   bool _notificationsBellTutorialShownThisSession = false;
   bool _notificationsBellTutorialPending = false;
 
+  late final VoidCallback _authStateListener;
+
   void _scheduleMaybeShowNotificationsBellTutorial() {
     if (!mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -89,12 +91,15 @@ class MainNavigationState extends State<MainNavigation>
     // Add observer for app lifecycle
     WidgetsBinding.instance.addObserver(this);
 
-    // Listen to global authentication state changes
-    AuthenticationState().addListener(() {
+    // Listen to global authentication state changes. Stored in a field so
+    // we can remove it in dispose() — otherwise each remount of
+    // MainNavigation leaks another listener onto the global singleton.
+    _authStateListener = () {
       if (mounted) {
         _checkAuthenticationStatus();
       }
-    });
+    };
+    AuthenticationState().addListener(_authStateListener);
 
     // Show notifications bell tutorial once the user has at least one alert.
     ActiveSearchAlertsState().addListener(_maybeShowNotificationsBellTutorial);
@@ -118,13 +123,22 @@ class MainNavigationState extends State<MainNavigation>
   Future<void> _initProfileCompletionFromCache() async {
     if (!AuthenticationState().isAuthenticated) return;
     try {
-      var profile = await SessionManager.getCachedUserProfile();
-      profile ??= await getIt<IUserProfileService>().getCurrentUserProfile();
-      await SessionManager.storeUserProfile(profile);
-      if (mounted) {
-        ProfileCompletionState().updateFromProfile(profile);
+      // 1) Instant-prime from cache so the UI has completion state without
+      //    waiting for the network.
+      final cached = await SessionManager.getCachedUserProfile();
+      if (cached != null && mounted) {
+        ProfileCompletionState().updateFromProfile(cached);
       }
-      await syncGoogleAvatarToBackendIfMissing(existingProfile: profile);
+
+      // 2) Always refresh from the server so stale cached profiles (e.g.
+      //    saved through a flow that didn't also write to SessionManager)
+      //    self-heal on the next app launch.
+      final fresh = await getIt<IUserProfileService>().getCurrentUserProfile();
+      await SessionManager.storeUserProfile(fresh);
+      if (mounted) {
+        ProfileCompletionState().updateFromProfile(fresh);
+      }
+      await syncGoogleAvatarToBackendIfMissing(existingProfile: fresh);
     } catch (_) {
       // Ignore - profile will be loaded when user opens profile/burger menu
     }
@@ -141,6 +155,7 @@ class MainNavigationState extends State<MainNavigation>
 
   @override
   void dispose() {
+    AuthenticationState().removeListener(_authStateListener);
     ActiveSearchAlertsState().removeListener(_maybeShowNotificationsBellTutorial);
     TutorialState().removeListener(_maybeShowNotificationsBellTutorial);
     routeObserver.unsubscribe(this);

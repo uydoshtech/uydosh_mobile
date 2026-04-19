@@ -297,7 +297,10 @@ class _ListingTileState extends State<ListingTile>
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => context.pushListingDetail(widget.listing.id),
+                onTap: () {
+                  HapticFeedbackUtils.lightImpact();
+                  context.pushListingDetail(widget.listing.id);
+                },
                 borderRadius: borderRadius,
                 child: Stack(
                   children: [

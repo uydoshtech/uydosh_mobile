@@ -1,5 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -159,7 +161,15 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   }
 
   Future<void> _loadUserRole() async {
-    final role = await SessionManager.getUserRole();
+    // Start with the locally cached role so we render quickly, then refresh
+    // from the server so stale caches (e.g. after a role promotion in the DB)
+    // can't hide the admin option or cause us to send a downgraded role on save.
+    var role = await SessionManager.getUserRole();
+    final serverRole = await _fetchRoleFromServer();
+    if (serverRole != null && serverRole != role) {
+      await SessionManager.storeUserRole(serverRole);
+      role = serverRole;
+    }
     if (mounted) {
       _isAdmin = role == "admin";
       final resolved =
@@ -168,6 +178,24 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       _baselineRole = resolved;
       _isRoleLoaded.value = true;
     }
+  }
+
+  Future<String?> _fetchRoleFromServer() async {
+    try {
+      final response = await getIt<IOAuthApiClient>()
+          .post<Map<String, dynamic>, _EditProfileEmptyRequest>(
+            "/users/verify-session",
+            (json) => json as Map<String, dynamic>,
+            data: _EditProfileEmptyRequest(),
+          );
+      final user = response["user"];
+      if (user is Map<String, dynamic>) {
+        return user["role"] as String?;
+      }
+    } catch (e) {
+      logger.d("⚠️ [EditProfileScreen] Failed to refresh role from server: $e");
+    }
+    return null;
   }
 
   String _normText(String? s) => (s ?? "").trim();
@@ -1898,4 +1926,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       return Colors.black; // Black text for other themes
     }
   }
+}
+
+class _EditProfileEmptyRequest implements IJsonEncodable {
+  @override
+  Map<String, dynamic> toJson() => const <String, dynamic>{};
 }

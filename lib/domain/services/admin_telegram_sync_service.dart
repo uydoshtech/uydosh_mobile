@@ -150,6 +150,57 @@ class _TelegramSyncPostBody implements IJsonEncodable {
   };
 }
 
+class ClearListingsResult {
+  ClearListingsResult({
+    required this.listingsDeleted,
+    required this.listingsRemaining,
+    required this.ingestedMessagesDeleted,
+    required this.ingestedMessagesRemaining,
+  });
+
+  factory ClearListingsResult.fromJson(Map<String, dynamic> json) {
+    int n(dynamic v) => v is int ? v : (v is num ? v.toInt() : 0);
+    return ClearListingsResult(
+      listingsDeleted: n(json["listingsDeleted"]),
+      listingsRemaining: n(json["listingsRemaining"]),
+      ingestedMessagesDeleted: n(json["ingestedMessagesDeleted"]),
+      ingestedMessagesRemaining: n(json["ingestedMessagesRemaining"]),
+    );
+  }
+
+  final int listingsDeleted;
+  final int listingsRemaining;
+  /// TRUNCATE ... CASCADE on `listings` also wipes `telegram_ingested_messages`
+  /// (it has a FK reference), so we surface that impact in the response.
+  final int ingestedMessagesDeleted;
+  final int ingestedMessagesRemaining;
+}
+
+class ClearIngestedMessagesResult {
+  ClearIngestedMessagesResult({
+    required this.ingestedMessagesDeleted,
+    required this.ingestedMessagesRemaining,
+  });
+
+  factory ClearIngestedMessagesResult.fromJson(Map<String, dynamic> json) {
+    int n(dynamic v) => v is int ? v : (v is num ? v.toInt() : 0);
+    return ClearIngestedMessagesResult(
+      ingestedMessagesDeleted: n(json["ingestedMessagesDeleted"]),
+      ingestedMessagesRemaining: n(json["ingestedMessagesRemaining"]),
+    );
+  }
+
+  final int ingestedMessagesDeleted;
+  final int ingestedMessagesRemaining;
+}
+
+class _EmptyRequest implements IJsonEncodable {
+  const _EmptyRequest();
+
+  @override
+  dynamic toJson() => <String, dynamic>{};
+}
+
 abstract class IAdminTelegramSyncService {
   Future<TelegramSyncRunResult> runSync({
     required String chat,
@@ -164,6 +215,15 @@ abstract class IAdminTelegramSyncService {
     String? chatKeyFilter,
     int maxRows = 100000,
   });
+
+  /// DELETE `/admin/listings/all` — wipes every row from the `listings` table and all
+  /// referencing rows (photos, amenities, favorites, complaints, conversations, ingested
+  /// messages, etc.). Destructive; resets sequence ids.
+  Future<ClearListingsResult> clearAllListings();
+
+  /// DELETE `/admin/telegram/ingested-messages/all` — wipes every row from the
+  /// `telegram_ingested_messages` table. Does not touch `listings`.
+  Future<ClearIngestedMessagesResult> clearAllIngestedMessages();
 }
 
 class AdminTelegramSyncService implements IAdminTelegramSyncService {
@@ -229,6 +289,48 @@ class AdminTelegramSyncService implements IAdminTelegramSyncService {
       await save_export.saveExportBytes(bytes, name);
     } catch (e) {
       logger.d("Telegram ingested export error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ClearListingsResult> clearAllListings() async {
+    try {
+      final response = await _oauthApiClient.delete<dynamic, IJsonEncodable>(
+        "/admin/listings/all",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: const _EmptyRequest(),
+        options: Options(
+          receiveTimeout: const Duration(minutes: 5),
+          sendTimeout: const Duration(minutes: 1),
+        ),
+      );
+      final map = _requireJsonMap(response, "Unexpected clear listings response");
+      return ClearListingsResult.fromJson(map);
+    } catch (e) {
+      logger.d("Clear all listings error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ClearIngestedMessagesResult> clearAllIngestedMessages() async {
+    try {
+      final response = await _oauthApiClient.delete<dynamic, IJsonEncodable>(
+        "/admin/telegram/ingested-messages/all",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: const _EmptyRequest(),
+        options: Options(
+          receiveTimeout: const Duration(minutes: 5),
+          sendTimeout: const Duration(minutes: 1),
+        ),
+      );
+      final map = _requireJsonMap(response, "Unexpected clear ingested messages response");
+      return ClearIngestedMessagesResult.fromJson(map);
+    } catch (e) {
+      logger.d("Clear ingested messages error: $e");
       rethrow;
     }
   }

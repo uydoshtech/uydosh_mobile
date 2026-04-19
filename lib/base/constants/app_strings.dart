@@ -632,6 +632,28 @@ class AppStrings {
           "Max rows must be between 1 and 500000.",
       "admin_telegram_export_done":
           "Export ready — use the share sheet or browser download.",
+      "admin_data_import_danger_section_title": "Danger zone",
+      "admin_data_import_danger_intro":
+          "Destructive operations that reset the database. Use on dev/staging when re-running imports. Cannot be undone.",
+      "admin_data_import_clear_listings_button": "Clear listings table",
+      "admin_data_import_clear_listings_running": "Clearing listings…",
+      "admin_data_import_clear_listings_confirm_title":
+          "Clear all listings?",
+      "admin_data_import_clear_listings_confirm_body":
+          "This wipes every row in the listings table. All photos, amenities, favorites, complaints, conversations and ingested Telegram messages that reference listings are deleted too. Sequence ids are reset. This cannot be undone.",
+      "admin_data_import_clear_listings_done":
+          "Cleared {count} listings (and {ingested} ingested messages).",
+      "admin_data_import_clear_ingested_button":
+          "Clear ingested Telegram messages",
+      "admin_data_import_clear_ingested_running":
+          "Clearing ingested messages…",
+      "admin_data_import_clear_ingested_confirm_title":
+          "Clear ingested Telegram messages?",
+      "admin_data_import_clear_ingested_confirm_body":
+          "This wipes every row in the telegram_ingested_messages table. Existing listings are kept. Sequence id is reset. This cannot be undone.",
+      "admin_data_import_clear_ingested_done":
+          "Cleared {count} ingested messages.",
+      "admin_data_import_clear_confirm_action": "Clear",
       "admin_panel_section_users": "Users",
       "admin_panel_section_support_chat": "Support chat",
       "admin_panel_section_complaints": "Complaints",
@@ -1663,6 +1685,28 @@ class AppStrings {
       "admin_telegram_export_invalid_max_rows": "Макс. строк: от 1 до 500000.",
       "admin_telegram_export_done":
           "Файл готов — поделитесь или сохраните из браузера.",
+      "admin_data_import_danger_section_title": "Опасная зона",
+      "admin_data_import_danger_intro":
+          "Разрушительные операции, которые сбрасывают базу. Используйте на dev/staging перед повторным импортом. Нельзя отменить.",
+      "admin_data_import_clear_listings_button": "Очистить таблицу объявлений",
+      "admin_data_import_clear_listings_running": "Очистка объявлений…",
+      "admin_data_import_clear_listings_confirm_title":
+          "Очистить все объявления?",
+      "admin_data_import_clear_listings_confirm_body":
+          "Будут удалены все строки из таблицы listings. Также удалятся все фотографии, удобства, избранное, жалобы, чаты и загруженные сообщения из Telegram, ссылающиеся на объявления. ID-секвенсы сбросятся. Отменить нельзя.",
+      "admin_data_import_clear_listings_done":
+          "Удалено {count} объявлений (и {ingested} сообщений).",
+      "admin_data_import_clear_ingested_button":
+          "Очистить загруженные сообщения Telegram",
+      "admin_data_import_clear_ingested_running":
+          "Очистка загруженных сообщений…",
+      "admin_data_import_clear_ingested_confirm_title":
+          "Очистить загруженные сообщения Telegram?",
+      "admin_data_import_clear_ingested_confirm_body":
+          "Будут удалены все строки из таблицы telegram_ingested_messages. Объявления остаются. ID-секвенс сбросится. Отменить нельзя.",
+      "admin_data_import_clear_ingested_done":
+          "Удалено {count} загруженных сообщений.",
+      "admin_data_import_clear_confirm_action": "Очистить",
       "admin_panel_section_users": "Пользователи",
       "admin_panel_section_support_chat": "Поддержка",
       "admin_panel_section_complaints": "Жалобы",
@@ -2708,6 +2752,28 @@ class AppStrings {
           "Maks. qatorlar 1 dan 500000 gacha bo‘lishi kerak.",
       "admin_telegram_export_done":
           "Tayyor — ulashish oynasi yoki brauzer yuklab olishi.",
+      "admin_data_import_danger_section_title": "Xavfli zona",
+      "admin_data_import_danger_intro":
+          "Ma'lumotlar bazasini tozalaydigan buzg'unchi amallar. dev/staging muhitida qayta import qilishdan oldin ishlating. Qaytarib bo'lmaydi.",
+      "admin_data_import_clear_listings_button": "E'lonlar jadvalini tozalash",
+      "admin_data_import_clear_listings_running": "E'lonlar tozalanmoqda…",
+      "admin_data_import_clear_listings_confirm_title":
+          "Barcha e'lonlarni tozalaysizmi?",
+      "admin_data_import_clear_listings_confirm_body":
+          "Bu listings jadvalidagi barcha qatorlarni o'chiradi. Fotolar, qulayliklar, sevimlilar, shikoyatlar, suhbatlar va Telegram’dan yuklangan xabarlar ham o'chadi. ID-sekvenslar qayta boshlanadi. Qaytarib bo'lmaydi.",
+      "admin_data_import_clear_listings_done":
+          "{count} e'lon ({ingested} yuklangan xabar bilan birga) tozalandi.",
+      "admin_data_import_clear_ingested_button":
+          "Yuklangan Telegram xabarlarini tozalash",
+      "admin_data_import_clear_ingested_running":
+          "Yuklangan xabarlar tozalanmoqda…",
+      "admin_data_import_clear_ingested_confirm_title":
+          "Yuklangan Telegram xabarlarini tozalaysizmi?",
+      "admin_data_import_clear_ingested_confirm_body":
+          "Bu telegram_ingested_messages jadvalidagi barcha qatorlarni o'chiradi. E'lonlar saqlanib qoladi. ID-sekvens qayta boshlanadi. Qaytarib bo'lmaydi.",
+      "admin_data_import_clear_ingested_done":
+          "{count} yuklangan xabar tozalandi.",
+      "admin_data_import_clear_confirm_action": "Tozalash",
       "admin_panel_section_users": "Foydalanuvchilar",
       "admin_panel_section_support_chat": "Qo'llab-quvvatlash",
       "admin_panel_section_complaints": "Shikoyatlar",

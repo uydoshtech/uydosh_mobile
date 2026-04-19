@@ -113,9 +113,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _userBlocked = results[3]! as bool;
     });
 
-    if (_cachedUserProfile == null &&
-        AuthenticationState().isAuthenticated &&
-        mounted) {
+    // Always opportunistically refresh from the server after showing the
+    // cached profile. This keeps the screen instant-render from cache but
+    // overwrites any stale fields (e.g. completion %) with the latest data.
+    if (AuthenticationState().isAuthenticated && mounted) {
       context.read<CurrentUserProfileBloc>().add(
             const CurrentUserProfileEvent.fetchProfile(),
           );

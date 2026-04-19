@@ -103,6 +103,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   bool _skipListingImport = false;
   bool _running = false;
   bool _exporting = false;
+  bool _clearingListings = false;
+  bool _clearingIngested = false;
   TelegramSyncRunResult? _lastResult;
   String? _errorText;
 
@@ -208,6 +210,121 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         _errorText = e.toString();
         _running = false;
       });
+    }
+  }
+
+  Future<bool> _confirmDestructive({
+    required String title,
+    required String body,
+    required String confirmLabel,
+  }) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(child: Text(body)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(L10n.get("cancel")),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.colorScheme.error,
+                foregroundColor: theme.colorScheme.onError,
+              ),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(confirmLabel),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
+  }
+
+  Future<void> _clearAllListings() async {
+    final confirmed = await _confirmDestructive(
+      title: L10n.get("admin_data_import_clear_listings_confirm_title"),
+      body: L10n.get("admin_data_import_clear_listings_confirm_body"),
+      confirmLabel: L10n.get("admin_data_import_clear_confirm_action"),
+    );
+    if (!confirmed) return;
+    if (!mounted) return;
+
+    setState(() {
+      _clearingListings = true;
+      _errorText = null;
+    });
+    try {
+      final r = await _service.clearAllListings();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            L10n.getWithParams(
+              "admin_data_import_clear_listings_done",
+              params: {
+                "count": "${r.listingsDeleted}",
+                "ingested": "${r.ingestedMessagesDeleted}",
+              },
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorText = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _clearingListings = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _clearIngestedMessages() async {
+    final confirmed = await _confirmDestructive(
+      title: L10n.get("admin_data_import_clear_ingested_confirm_title"),
+      body: L10n.get("admin_data_import_clear_ingested_confirm_body"),
+      confirmLabel: L10n.get("admin_data_import_clear_confirm_action"),
+    );
+    if (!confirmed) return;
+    if (!mounted) return;
+
+    setState(() {
+      _clearingIngested = true;
+      _errorText = null;
+    });
+    try {
+      final r = await _service.clearAllIngestedMessages();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            L10n.getWithParams(
+              "admin_data_import_clear_ingested_done",
+              params: {"count": "${r.ingestedMessagesDeleted}"},
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorText = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _clearingIngested = false;
+        });
+      }
     }
   }
 
@@ -798,7 +915,115 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          _buildDangerZone(context, isBlue: isBlue),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDangerZone(BuildContext context, {required bool isBlue}) {
+    final theme = Theme.of(context);
+    final errorColor = theme.colorScheme.error;
+    final onErrorColor = theme.colorScheme.onError;
+    final busy = _running || _exporting || _clearingListings || _clearingIngested;
+
+    final dangerButtonStyle = FilledButton.styleFrom(
+      backgroundColor: errorColor,
+      foregroundColor: onErrorColor,
+      minimumSize: const Size(double.infinity, 48),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+    );
+
+    return _neumorphicTile(
+      context: context,
+      clipBehavior: Clip.antiAlias,
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          expansionTileTheme: const ExpansionTileThemeData(
+            backgroundColor: Colors.transparent,
+            collapsedBackgroundColor: Colors.transparent,
+          ),
+        ),
+        child: ExpansionTile(
+          initiallyExpanded: false,
+          onExpansionChanged: (expanded) {
+            if (expanded) HapticFeedbackUtils.impact();
+          },
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
+          collapsedShape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          title: Row(
+            children: [
+              ThemeIcon(Icons.warning_amber_rounded, color: errorColor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  L10n.get("admin_data_import_danger_section_title"),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: errorColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          children: [
+            Text(
+              L10n.get("admin_data_import_danger_intro"),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              style: dangerButtonStyle,
+              onPressed: busy ? null : _clearAllListings,
+              icon: _clearingListings
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: onErrorColor,
+                      ),
+                    )
+                  : const ThemeIcon(Icons.delete_sweep_outlined),
+              label: Text(
+                _clearingListings
+                    ? L10n.get("admin_data_import_clear_listings_running")
+                    : L10n.get("admin_data_import_clear_listings_button"),
+              ),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              style: dangerButtonStyle,
+              onPressed: busy ? null : _clearIngestedMessages,
+              icon: _clearingIngested
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: onErrorColor,
+                      ),
+                    )
+                  : const ThemeIcon(Icons.delete_outline),
+              label: Text(
+                _clearingIngested
+                    ? L10n.get("admin_data_import_clear_ingested_running")
+                    : L10n.get("admin_data_import_clear_ingested_button"),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
