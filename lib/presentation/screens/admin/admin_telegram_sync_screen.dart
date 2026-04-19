@@ -74,10 +74,13 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   /// Default listing owner after Telegram sync (Uydoshtech@gmail.com in production).
   static const int _kDefaultListingOwnerUserId = 86;
 
-  /// Preset sync sizes (matches admin UX: small counts, then round hundreds).
+  /// Preset sync sizes (matches admin UX: small counts, then round hundreds,
+  /// then +1000 steps up to 20000 for large backfills).
   static const List<int> _kMessageLimitChoices = [
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
     20, 30, 50, 100, 200, 500, 1000,
+    2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
+    11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000,
   ];
 
   static const BorderRadius _kFieldBorderRadius =

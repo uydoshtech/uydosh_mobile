@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/uydosh_logo.png" alt="UyDosh Logo" width="140"/>
+</p>
+
 # UyDosh — Find a Room, a Roommate, or the Right Space in Uzbekistan
 
 UyDosh is a mobile-first marketplace that helps people in Uzbekistan find rooms,
