@@ -114,12 +114,6 @@ class FavoriteService implements IFavoriteService {
         "🌐 FavoriteService: Toggling favorite status for listing $listingId...",
       );
 
-      // Debug: Check current token
-      final token = await SessionManager.getToken();
-      logger.d(
-        "🔑 FavoriteService: Current token: ${token?.substring(0, 20)}... (length: ${token?.length})",
-      );
-
       final response = await _oauthApiClient
           .put<Map<String, dynamic>, _EmptyRequest>(
             "/favorites/toggle/$listingId",
@@ -132,11 +126,6 @@ class FavoriteService implements IFavoriteService {
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         logger.d("❌ FavoriteService: Unauthorized - session expired");
-        // Get token for debugging
-        final failedToken = await SessionManager.getToken();
-        logger.d(
-          "🔑 FavoriteService: Token that failed: ${failedToken?.substring(0, 20)}... (length: ${failedToken?.length})",
-        );
         await _handleUnauthorized();
         return false;
       }
@@ -168,9 +157,6 @@ class FavoriteService implements IFavoriteService {
       logger.d("🔑 FavoriteService: Auth token exists: ${token != null}");
       if (token != null) {
         logger.d("🔑 FavoriteService: Token length: ${token.length}");
-        logger.d(
-          "🔑 FavoriteService: Token preview: ${token.substring(0, token.length > 20 ? 20 : token.length)}...",
-        );
       }
 
       // Use the main /favorites endpoint with pagination

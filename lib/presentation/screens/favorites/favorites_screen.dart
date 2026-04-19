@@ -169,9 +169,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       logger.d("🔐 FavoritesScreen: Is authenticated: $isAuthenticated");
       if (token != null) {
         logger.d("🔐 FavoritesScreen: Token length: ${token.length}");
-        logger.d(
-          "🔐 FavoritesScreen: Token preview: ${token.substring(0, token.length > 20 ? 20 : token.length)}...",
-        );
       }
 
       if (!isAuthenticated) {
@@ -226,29 +223,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       // Show appropriate error message based on error type
       if (mounted) {
         String errorMessage;
-        String actionLabel;
-        VoidCallback? action;
 
         if (isAuthError) {
           errorMessage =
               "Authentication required. Please log in again to view your favorites.";
-          actionLabel = "Log In";
-          action = () async {
-            // Use centralized logout service
-            await LogoutService().performLogout(context);
-            // Navigate to auth wizard
-            context.pushReplaceAuthWizard();
-          };
         } else if (e.toString().contains("network") ||
             e.toString().contains("connection")) {
           errorMessage =
               "Network error. Please check your connection and try again.";
-          actionLabel = "Retry";
-          action = () => _loadFavoriteListings(isRefresh: true);
         } else {
           errorMessage = L10n.get("unable_to_load_favorites");
-          actionLabel = "Retry";
-          action = () => _loadFavoriteListings(isRefresh: true);
         }
 
         if (isAuthError) {

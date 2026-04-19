@@ -12,15 +12,14 @@ class AuthTokenRepository implements IAuthTokenRepository {
   Future<String?> getAccessToken() async {
     // Use our session manager instead of separate storage
     final token = await SessionManager.getToken();
-    debugPrint("🔑 AuthTokenRepository: getAccessToken called");
-    debugPrint(
-      "🔑 AuthTokenRepository: Token from SessionManager: ${token != null ? "exists" : "null"}",
-    );
-    if (token != null) {
-      debugPrint("🔑 AuthTokenRepository: Token length: ${token.length}");
+    if (kDebugMode) {
+      debugPrint("🔑 AuthTokenRepository: getAccessToken called");
       debugPrint(
-        "🔑 AuthTokenRepository: Token preview: ${token.substring(0, token.length > 20 ? 20 : token.length)}...",
+        "🔑 AuthTokenRepository: Token from SessionManager: ${token != null ? "exists" : "null"}",
       );
+      if (token != null) {
+        debugPrint("🔑 AuthTokenRepository: Token length: ${token.length}");
+      }
     }
     return token;
   }

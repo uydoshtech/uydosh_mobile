@@ -62,8 +62,9 @@ class CustomOAuthInterceptor extends Interceptor {
     logger.d(
       "🔑 OAuthInterceptor: Request headers after auth: ${options.headers}",
     );
+    final authHeader = options.headers["Authorization"];
     logger.d(
-      '🔑 OAuthInterceptor: Authorization header: ${options.headers['Authorization']}',
+      "🔑 OAuthInterceptor: Authorization header set: ${authHeader != null && authHeader.toString().isNotEmpty ? "yes" : "no"}",
     );
     logger.d(
       "🔑 OAuthInterceptor: Full request options: ${options.toString()}",
@@ -172,10 +173,6 @@ class CustomOAuthInterceptor extends Interceptor {
     logger.d("🔑 OAuthInterceptor: Token exists: ${accessToken != null}");
     if (accessToken != null) {
       logger.d("🔑 OAuthInterceptor: Token length: ${accessToken.length}");
-      logger.d(
-        "🔑 OAuthInterceptor: Token preview: ${accessToken.substring(0, accessToken.length > 20 ? 20 : accessToken.length)}...",
-      );
-      logger.d("🔑 OAuthInterceptor: Full token: $accessToken");
 
       // Check if token already has "Bearer " prefix
       String authHeader;
@@ -190,9 +187,7 @@ class CustomOAuthInterceptor extends Interceptor {
       }
 
       options.headers["Authorization"] = authHeader;
-      logger.d(
-        "🔑 OAuthInterceptor: Authorization header set: ${authHeader.substring(0, authHeader.length > 20 ? 20 : authHeader.length)}...",
-      );
+      logger.d("🔑 OAuthInterceptor: Authorization header updated");
       return true;
     } else {
       logger.d("❌ OAuthInterceptor: No access token available");
