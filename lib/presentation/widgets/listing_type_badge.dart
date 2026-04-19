@@ -199,7 +199,7 @@ class ListingTypeDropdown extends StatelessWidget {
     final types = ListingTypeHelper.getAllTypes(context);
 
     return DropdownButtonFormField<String>(
-      initialValue: selectedValue,
+      value: selectedValue.isEmpty ? null : selectedValue,
       onChanged: onChanged,
       elevation: AppTheme.menuPanelElevation,
       decoration: InputDecoration(
