@@ -776,14 +776,14 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
       if (!mounted) return;
       ToastTheme.showError(
         context,
-        message: "3D viewer is unavailable (iOS plugin not initialized).",
+        message: L10n.get("room_3d_open_error"),
       );
     } on PlatformException catch (e, st) {
       logger.d("Room 3D viewer platform error: ${e.code} ${e.message}\n$st");
       if (!mounted) return;
       ToastTheme.showError(
         context,
-        message: "3D viewer error: ${e.code}",
+        message: L10n.get("room_3d_open_error"),
       );
     } on DioException catch (e) {
       logger.d(

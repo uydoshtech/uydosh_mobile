@@ -123,14 +123,14 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
       if (!mounted) return;
       ToastTheme.showError(
         context,
-        message: "Room scan is unavailable (iOS plugin not initialized).",
+        message: L10n.get("room_scan_error"),
       );
     } on PlatformException catch (e, st) {
       logger.e("Room scan platform error", error: e, stackTrace: st);
       if (!mounted) return;
       ToastTheme.showError(
         context,
-        message: "Room scan failed: ${e.code}",
+        message: L10n.get("room_scan_error"),
       );
     } catch (e, st) {
       logger.e("Room scan start failed", error: e, stackTrace: st);
