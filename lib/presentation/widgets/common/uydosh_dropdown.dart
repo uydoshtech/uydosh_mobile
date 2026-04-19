@@ -73,6 +73,7 @@ class UydoshDropdown extends StatelessWidget {
                 value: value,
                 isExpanded: true,
                 elevation: AppTheme.menuPanelElevation,
+                borderRadius: BorderRadius.circular(16),
                 icon: ThemeIcon(
                   Icons.arrow_drop_down,
                   color:
