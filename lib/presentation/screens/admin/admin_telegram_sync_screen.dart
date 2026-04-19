@@ -14,6 +14,7 @@ import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminTelegramSyncScreen extends StatefulWidget {
@@ -261,17 +262,14 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     try {
       final r = await _service.clearAllListings();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            L10n.getWithParams(
-              "admin_data_import_clear_listings_done",
-              params: {
-                "count": "${r.listingsDeleted}",
-                "ingested": "${r.ingestedMessagesDeleted}",
-              },
-            ),
-          ),
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.getWithParams(
+          "admin_data_import_clear_listings_done",
+          params: {
+            "count": "${r.listingsDeleted}",
+            "ingested": "${r.ingestedMessagesDeleted}",
+          },
         ),
       );
     } catch (e) {
@@ -304,14 +302,11 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     try {
       final r = await _service.clearAllIngestedMessages();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            L10n.getWithParams(
-              "admin_data_import_clear_ingested_done",
-              params: {"count": "${r.ingestedMessagesDeleted}"},
-            ),
-          ),
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.getWithParams(
+          "admin_data_import_clear_ingested_done",
+          params: {"count": "${r.ingestedMessagesDeleted}"},
         ),
       );
     } catch (e) {
