@@ -38,6 +38,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   List<AdminUserDevice>? _devices;
   bool _devicesLoading = false;
   String? _devicesError;
+  bool _devicesExpanded = false;
 
   @override
   void initState() {
@@ -129,69 +130,130 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   Widget _buildDevicesCard(BuildContext context) {
     final theme = Theme.of(context);
     final subtleColor = theme.colorScheme.onSurfaceVariant;
+    final count = _devices?.length ?? 0;
+    final hasDevices = count > 0;
+
     return _NeumorphicTile(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    L10n.get("admin_user_detail_devices_title"),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () =>
+                setState(() => _devicesExpanded = !_devicesExpanded),
+            borderRadius: _devicesExpanded
+                ? const BorderRadius.vertical(top: Radius.circular(16))
+                : const BorderRadius.all(Radius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Text(
+                          L10n.get("admin_user_detail_devices_title"),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (hasDevices) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              count.toString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                ),
-                IconButton(
-                  tooltip: L10n.get("retry"),
-                  icon: const ThemeIcon(Icons.refresh, size: 18),
-                  onPressed: _devicesLoading ? null : _loadDevices,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (_devicesLoading && _devices == null)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                  IconButton(
+                    tooltip: L10n.get("retry"),
+                    icon: const ThemeIcon(Icons.refresh, size: 18),
+                    onPressed: _devicesLoading ? null : _loadDevices,
                   ),
-                ),
-              )
-            else if (_devicesError != null)
-              Text(
-                _devicesError!,
-                style: TextStyle(fontSize: 12, color: theme.colorScheme.error),
-              )
-            else if (_devices == null || _devices!.isEmpty)
-              Text(
-                L10n.get("admin_user_detail_devices_empty"),
-                style: TextStyle(fontSize: 13, color: subtleColor),
-              )
-            else
-              Column(
-                children: [
-                  for (int i = 0; i < _devices!.length; i++) ...[
-                    if (i > 0)
-                      Divider(
-                        height: 16,
-                        color:
-                            theme.dividerColor.withValues(alpha: 0.15),
-                      ),
-                    _buildDeviceRow(context, _devices![i]),
-                  ],
+                  AnimatedRotation(
+                    turns: _devicesExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 180),
+                    child: ThemeIcon(
+                      Icons.keyboard_arrow_down,
+                      color: subtleColor,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                 ],
               ),
-          ],
-        ),
+            ),
+          ),
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 180),
+            crossFadeState: _devicesExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            firstChild: const SizedBox(width: double.infinity),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: _buildDevicesBody(context),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildDevicesBody(BuildContext context) {
+    final theme = Theme.of(context);
+    final subtleColor = theme.colorScheme.onSurfaceVariant;
+    if (_devicesLoading && _devices == null) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+    if (_devicesError != null) {
+      return Text(
+        _devicesError!,
+        style: TextStyle(fontSize: 12, color: theme.colorScheme.error),
+      );
+    }
+    if (_devices == null || _devices!.isEmpty) {
+      return Text(
+        L10n.get("admin_user_detail_devices_empty"),
+        style: TextStyle(fontSize: 13, color: subtleColor),
+      );
+    }
+    return Column(
+      children: [
+        for (int i = 0; i < _devices!.length; i++) ...[
+          if (i > 0)
+            Divider(
+              height: 16,
+              color: theme.dividerColor.withValues(alpha: 0.15),
+            ),
+          _buildDeviceRow(context, _devices![i]),
+        ],
+      ],
     );
   }
 
