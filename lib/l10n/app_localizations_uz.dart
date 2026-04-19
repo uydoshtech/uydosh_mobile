@@ -1989,6 +1989,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get logout_success => 'Muvaffaqiyatli chiqildi';
 
   @override
+  String get session_expired =>
+      'Sessiya muddati tugadi. Iltimos, qayta tizimga kiring.';
+
+  @override
   String get delete_account => 'Hisobni o\'chirish';
 
   @override

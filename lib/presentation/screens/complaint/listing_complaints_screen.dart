@@ -271,7 +271,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
   }
 
   Widget _buildCountBadge(int count) {
-    const double diameter = 34;
+    const double diameter = 38;
     final base = Theme.of(context).colorScheme.surface;
     return Container(
       width: diameter,
@@ -283,9 +283,11 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
       ),
       child: Text(
         "$count",
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: AppColors.error,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w800,
+          fontSize: 18,
+          height: 1.0,
+          color: AppColors.warning,
         ),
       ),
     );

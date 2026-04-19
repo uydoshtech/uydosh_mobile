@@ -3748,6 +3748,12 @@ abstract class AppLocalizations {
   /// **'Successfully logged out'**
   String get logout_success;
 
+  /// No description provided for @session_expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Please sign in again.'**
+  String get session_expired;
+
   /// No description provided for @delete_account.
   ///
   /// In en, this message translates to:

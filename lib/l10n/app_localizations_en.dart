@@ -1958,6 +1958,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout_success => 'Successfully logged out';
 
   @override
+  String get session_expired =>
+      'Your session has expired. Please sign in again.';
+
+  @override
   String get delete_account => 'Delete account';
 
   @override

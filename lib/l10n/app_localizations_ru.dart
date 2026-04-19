@@ -1971,6 +1971,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get logout_success => 'Вы успешно вышли из системы';
 
   @override
+  String get session_expired => 'Сессия истекла. Пожалуйста, войдите снова.';
+
+  @override
   String get delete_account => 'Удалить аккаунт';
 
   @override
