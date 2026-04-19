@@ -210,6 +210,7 @@
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				87AB53F0F72DB7D3AC60AABA /* [CP] Embed Pods Frameworks */,
 				43B75A9EFFF72F3CA5239C69 /* [CP] Copy Pods Resources */,
+				51FBCA57FB000002DE070001 /* Generate Missing dSYMs */,
 				51FBCA57FB000001C0DE0001 /* FirebaseCrashlytics */,
 			);
 			buildRules = (
@@ -392,6 +393,21 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		51FBCA57FB000002DE070001 /* Generate Missing dSYMs */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Generate Missing dSYMs";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Generate stub dSYMs for any embedded framework that is missing one.\n# Works around Flutter native-assets (e.g. objective_c.framework) shipping\n# stripped prebuilt binaries without dSYMs, which causes App Store Connect to\n# emit \"symbols were not loaded\" warnings during TestFlight/App Store processing.\n# The stubs have matching UUIDs so Apple's validator is satisfied. They don't\n# add real symbolication (the upstream binary has no debug info to begin with).\n\nset -u\n\nif [ \"${DEBUG_INFORMATION_FORMAT:-}\" != \"dwarf-with-dsym\" ]; then\n    echo \"note: Skipping stub dSYM generation (DEBUG_INFORMATION_FORMAT=${DEBUG_INFORMATION_FORMAT:-unset}).\"\n    exit 0\nfi\n\nFRAMEWORKS_DIR=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\nDSYM_DIR=\"${DWARF_DSYM_FOLDER_PATH}\"\n\nif [ ! -d \"$FRAMEWORKS_DIR\" ]; then\n    echo \"note: No Frameworks directory at $FRAMEWORKS_DIR; skipping.\"\n    exit 0\nfi\n\nmkdir -p \"$DSYM_DIR\"\n\nmake_stub_dsym() {\n    local bin=\"$1\"\n    local dsym=\"$2\"\n    local fw_name=\"$3\"\n    mkdir -p \"$dsym/Contents/Resources/DWARF\"\n    cat > \"$dsym/Contents/Info.plist\" <<PLIST\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>CFBundleDevelopmentRegion</key><string>English</string>\n\t<key>CFBundleIdentifier</key><string>com.apple.xcode.dsym.${fw_name}</string>\n\t<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>\n\t<key>CFBundlePackageType</key><string>dSYM</string>\n\t<key>CFBundleSignature</key><string>????</string>\n\t<key>CFBundleShortVersionString</key><string>1.0</string>\n\t<key>CFBundleVersion</key><string>1</string>\n</dict>\n</plist>\nPLIST\n    cp \"$bin\" \"$dsym/Contents/Resources/DWARF/$fw_name\"\n}\n\nfor FW in \"$FRAMEWORKS_DIR\"/*.framework; do\n    [ -d \"$FW\" ] || continue\n    FW_NAME=$(basename \"$FW\" .framework)\n    BIN=\"$FW/$FW_NAME\"\n    DSYM=\"$DSYM_DIR/$FW_NAME.framework.dSYM\"\n    if [ -f \"$BIN\" ] && [ ! -d \"$DSYM\" ]; then\n        echo \"note: Generating stub dSYM for $FW_NAME.framework\"\n        make_stub_dsym \"$BIN\" \"$DSYM\" \"$FW_NAME\"\n    fi\ndone\n";
 		};
 		51FBCA57FB000001C0DE0001 /* FirebaseCrashlytics */ = {
 			isa = PBXShellScriptBuildPhase;

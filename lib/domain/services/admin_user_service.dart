@@ -2,6 +2,7 @@ import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
+import "package:uy_dosh/domain/models/admin_user_device.dart";
 
 abstract class IAdminUserService {
   Future<List<AdminUser>> getUsers({
@@ -16,6 +17,7 @@ abstract class IAdminUserService {
     DateTime? blockedUntil,
   });
   Future<AdminUser> unblockUser({required int userId});
+  Future<List<AdminUserDevice>> getUserDevices({required int userId});
 }
 
 class AdminUserService implements IAdminUserService {
@@ -91,6 +93,24 @@ class AdminUserService implements IAdminUserService {
       return AdminUser.fromJson(response);
     } catch (e) {
       logger.d("Error blocking user: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<AdminUserDevice>> getUserDevices({required int userId}) async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/users/$userId/devices",
+        (json) => json,
+      );
+      final rawList = response is List ? response : <dynamic>[];
+      return rawList
+          .whereType<Map<String, dynamic>>()
+          .map(AdminUserDevice.fromJson)
+          .toList();
+    } catch (e) {
+      logger.d("Error fetching user devices: $e");
       rethrow;
     }
   }

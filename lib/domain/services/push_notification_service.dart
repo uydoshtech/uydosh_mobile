@@ -6,6 +6,7 @@ import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/device_info_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
@@ -262,7 +263,15 @@ class PushNotificationService implements IPushNotificationService {
 
       final platform =
           defaultTargetPlatform == TargetPlatform.iOS ? "ios" : "android";
-      final request = RegisterFcmTokenRequest(token: token, platform: platform);
+      final device = await DeviceInfoService.get();
+      final request = RegisterFcmTokenRequest(
+        token: token,
+        platform: platform,
+        deviceId: device.deviceId,
+        deviceModel: device.deviceModel,
+        osVersion: device.osVersion,
+        appVersion: device.appVersion,
+      );
 
       await _oauthApiClient.post<Map<String, dynamic>, RegisterFcmTokenRequest>(
         "/users/fcm-token",

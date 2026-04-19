@@ -101,6 +101,8 @@ dependencies:
   firebase_app_check: ^0.3.2+10
   image_cropper: ^12.2.1
   dio_cache_interceptor: ^4.0.6
+  device_info_plus: ^12.4.0
+  package_info_plus: ^9.0.1
 
 dev_dependencies:
   flutter_test:

@@ -5,6 +5,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
+import "package:uy_dosh/domain/models/admin_user_device.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
@@ -34,6 +35,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   String? _avatarUrl;
   String? _profileName;
 
+  List<AdminUserDevice>? _devices;
+  bool _devicesLoading = false;
+  String? _devicesError;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +46,31 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     _selectedRole = widget.user.role;
     _currentRole = widget.user.role;
     _loadProfile();
+    _loadDevices();
+  }
+
+  Future<void> _loadDevices() async {
+    if (_currentUser.id <= 0) return;
+    setState(() {
+      _devicesLoading = true;
+      _devicesError = null;
+    });
+    try {
+      final devices = await getIt<IAdminUserService>().getUserDevices(
+        userId: _currentUser.id,
+      );
+      if (!mounted) return;
+      setState(() {
+        _devices = devices;
+        _devicesLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _devicesError = e.toString();
+        _devicesLoading = false;
+      });
+    }
   }
 
   Future<void> _loadProfile() async {
@@ -84,6 +114,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         children: [
           _buildInfoCard(context),
           const SizedBox(height: 12),
+          _buildDevicesCard(context),
+          const SizedBox(height: 12),
           _buildBlockCard(context),
           const SizedBox(height: 12),
           _buildRoleCard(context, canSave: canSave),
@@ -92,6 +124,153 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildDevicesCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final subtleColor = theme.colorScheme.onSurfaceVariant;
+    return _NeumorphicTile(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    L10n.get("admin_user_detail_devices_title"),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: L10n.get("retry"),
+                  icon: const ThemeIcon(Icons.refresh, size: 18),
+                  onPressed: _devicesLoading ? null : _loadDevices,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (_devicesLoading && _devices == null)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              )
+            else if (_devicesError != null)
+              Text(
+                _devicesError!,
+                style: TextStyle(fontSize: 12, color: theme.colorScheme.error),
+              )
+            else if (_devices == null || _devices!.isEmpty)
+              Text(
+                L10n.get("admin_user_detail_devices_empty"),
+                style: TextStyle(fontSize: 13, color: subtleColor),
+              )
+            else
+              Column(
+                children: [
+                  for (int i = 0; i < _devices!.length; i++) ...[
+                    if (i > 0)
+                      Divider(
+                        height: 16,
+                        color:
+                            theme.dividerColor.withValues(alpha: 0.15),
+                      ),
+                    _buildDeviceRow(context, _devices![i]),
+                  ],
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeviceRow(BuildContext context, AdminUserDevice device) {
+    final theme = Theme.of(context);
+    final subtleColor = theme.colorScheme.onSurfaceVariant;
+    final platform = (device.platform ?? "").toLowerCase();
+    final IconData platformIcon;
+    if (platform == "ios") {
+      platformIcon = Icons.phone_iphone;
+    } else if (platform == "android") {
+      platformIcon = Icons.phone_android;
+    } else {
+      platformIcon = Icons.devices;
+    }
+    final modelLine = (device.deviceModel ?? "").trim().isNotEmpty
+        ? device.deviceModel!.trim()
+        : L10n.get("admin_user_detail_devices_model_unknown");
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: ThemeIcon(platformIcon, size: 22, color: subtleColor),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                modelLine,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _composeDeviceSubtitle(device),
+                style: TextStyle(fontSize: 12, color: subtleColor),
+              ),
+              if (device.lastSeenAt != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  "${L10n.get("admin_user_detail_devices_last_seen")}: ${_formatDateTime(device.lastSeenAt!)}",
+                  style: TextStyle(fontSize: 11, color: subtleColor),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _composeDeviceSubtitle(AdminUserDevice device) {
+    final parts = <String>[];
+    final os = (device.osVersion ?? "").trim();
+    if (os.isNotEmpty) parts.add(os);
+    final app = (device.appVersion ?? "").trim();
+    if (app.isNotEmpty) {
+      parts.add("${L10n.get("admin_user_detail_devices_app_prefix")} $app");
+    }
+    if (parts.isEmpty) {
+      return L10n.get("admin_user_detail_devices_details_unknown");
+    }
+    return parts.join(" · ");
+  }
+
+  String _formatDateTime(DateTime value) {
+    final local = value.toLocal();
+    final y = local.year.toString().padLeft(4, "0");
+    final m = local.month.toString().padLeft(2, "0");
+    final d = local.day.toString().padLeft(2, "0");
+    final hh = local.hour.toString().padLeft(2, "0");
+    final mm = local.minute.toString().padLeft(2, "0");
+    return "$y-$m-$d $hh:$mm";
   }
 
   Widget _buildInfoCard(BuildContext context) {
