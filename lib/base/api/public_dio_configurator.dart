@@ -1,4 +1,6 @@
 import "package:dio/dio.dart";
+import "package:dio_cache_interceptor/dio_cache_interceptor.dart";
+import "package:uy_dosh/base/api/app_cache.dart";
 import "package:uy_dosh/base/api/dio_configurator.dart";
 import "package:uy_dosh/base/logger/pretty_dio_logger.dart";
 import "package:uy_dosh/base/util/dio/error/error_interceptor.dart";
@@ -39,6 +41,13 @@ class PublicDioConfigurator implements IPublicDioConfigurator {
     }
     dio.options.connectTimeout = connectTimeout ?? this.connectTimeout;
     dio.options.receiveTimeout = receiveTimeout ?? this.receiveTimeout;
+    // Install the HTTP response cache. Global policy honors server cache
+    // directives, so no endpoint is cached by default (the backend doesn't
+    // send Cache-Control). Individual requests opt in via
+    // `AppCache.longGetOptions()` / `AppCache.shortGetOptions()`.
+    dio.interceptors.add(
+      DioCacheInterceptor(options: AppCache.defaultOptions),
+    );
     if (useErrorInterceptor ?? this.useErrorInterceptor) {
       dio.interceptors.add(ErrorInterceptor());
     }

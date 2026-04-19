@@ -1827,7 +1827,13 @@ L10n.get("feature_listing_error",
             if (data.hasError) {
               return _buildErrorState(data.errorMessage);
             }
+            // Only rebuild the big static body when a field it directly uses
+            // changes. The 3 hot sub-sections below (owner toolbar,
+            // compatibility, complaints) have their own BlocSelectors that
+            // rebuild surgically on the relevant fields only, so we exclude
+            // those from the outer buildWhen.
             return BlocBuilder<ListingDetailPageBloc, ListingDetailPageState>(
+              buildWhen: (prev, curr) => prev.ownerName != curr.ownerName,
               builder: (context, pageState) =>
                   _buildLoadedState(data.listingDetail!, pageState),
             );
@@ -1858,31 +1864,51 @@ L10n.get("feature_listing_error",
 
   Widget? _buildCompatibilitySection(
     ListingDetail listingDetail,
-    ListingDetailPageState pageState,
   ) {
     final isOwner = UserListingState().isOwner(listingDetail.user.id);
     if (isOwner) return null;
 
-    return ListingDetailCompatibilitySection(
-      listingDetail: listingDetail,
-      scrollController: _scrollController,
-      sectionKey: _compatibilitySectionKey,
-      compatibilityPercent: pageState.compatibilityPercent,
-      isLoadingCompatibility: pageState.isLoadingCompatibility,
-      compatibilityError: pageState.compatibilityError,
-      matches: pageState.compatibilityMatches,
-      differences: pageState.compatibilityDifferences,
-      telegramHandle: listingDetail.contactTelegram,
-      phoneNumber: listingDetail.contactPhone,
-      onTelegram: (listingDetail.contactTelegram?.trim().isNotEmpty ?? false)
-          ? () => _openTelegramChat(listingDetail.contactTelegram!)
-          : null,
-      onPhone: (listingDetail.contactPhone?.trim().isNotEmpty ?? false)
-          ? () => _makePhoneCall(listingDetail.contactPhone!)
-          : null,
-      onMessage: () => _startConversation(listingDetail),
-      onViewProfile: () => _navigateToProfile(listingDetail.user.id),
-      onCompleteProfile: _navigateToOwnProfile,
+    // Scoped to the compatibility fields of pageState so async compatibility
+    // calculation emissions only rebuild this section.
+    return BlocSelector<
+        ListingDetailPageBloc,
+        ListingDetailPageState,
+        ({
+          int? compatibilityPercent,
+          bool isLoadingCompatibility,
+          String? compatibilityError,
+          List<CompatibilityMatch> matches,
+          List<CompatibilityDifference> differences,
+        })>(
+      selector: (s) => (
+        compatibilityPercent: s.compatibilityPercent,
+        isLoadingCompatibility: s.isLoadingCompatibility,
+        compatibilityError: s.compatibilityError,
+        matches: s.compatibilityMatches,
+        differences: s.compatibilityDifferences,
+      ),
+      builder: (context, compat) => ListingDetailCompatibilitySection(
+        listingDetail: listingDetail,
+        scrollController: _scrollController,
+        sectionKey: _compatibilitySectionKey,
+        compatibilityPercent: compat.compatibilityPercent,
+        isLoadingCompatibility: compat.isLoadingCompatibility,
+        compatibilityError: compat.compatibilityError,
+        matches: compat.matches,
+        differences: compat.differences,
+        telegramHandle: listingDetail.contactTelegram,
+        phoneNumber: listingDetail.contactPhone,
+        onTelegram:
+            (listingDetail.contactTelegram?.trim().isNotEmpty ?? false)
+                ? () => _openTelegramChat(listingDetail.contactTelegram!)
+                : null,
+        onPhone: (listingDetail.contactPhone?.trim().isNotEmpty ?? false)
+            ? () => _makePhoneCall(listingDetail.contactPhone!)
+            : null,
+        onMessage: () => _startConversation(listingDetail),
+        onViewProfile: () => _navigateToProfile(listingDetail.user.id),
+        onCompleteProfile: _navigateToOwnProfile,
+      ),
     );
   }
 
@@ -1963,7 +1989,7 @@ L10n.get("feature_listing_error",
       builder: (context, child) {
         final currentLanguage = LanguageState().currentLanguage;
         final compatibilitySection =
-            _buildCompatibilitySection(listingDetail, pageState);
+            _buildCompatibilitySection(listingDetail);
 
         // Pre-compute outside build: dates (avoids DateTime.parse in content card)
         final formattedMoveIn = listingDetail.moveInDate != null &&
@@ -1989,14 +2015,26 @@ L10n.get("feature_listing_error",
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // View count and promote button for owner - at the top
                     if (UserListingState().isOwner(listingDetail.user.id)) ...[
-                      ListingDetailOwnerToolbar(
-                        listingDetail: listingDetail,
-                        viewCount: pageState.viewCount,
-                        isLoadingViewCount: pageState.isLoadingViewCount,
-                        isToggling: pageState.isToggling,
-                        onToggleFeature: _toggleFeatureListing,
+                      // Scoped to (viewCount, isLoadingViewCount, isToggling)
+                      // so async view-count fetches don't rebuild the rest of
+                      // the page.
+                      BlocSelector<ListingDetailPageBloc,
+                          ListingDetailPageState,
+                          ({int? viewCount, bool isLoadingViewCount, bool isToggling})>(
+                        selector: (s) => (
+                          viewCount: s.viewCount,
+                          isLoadingViewCount: s.isLoadingViewCount,
+                          isToggling: s.isToggling,
+                        ),
+                        builder: (context, ownerState) =>
+                            ListingDetailOwnerToolbar(
+                          listingDetail: listingDetail,
+                          viewCount: ownerState.viewCount,
+                          isLoadingViewCount: ownerState.isLoadingViewCount,
+                          isToggling: ownerState.isToggling,
+                          onToggleFeature: _toggleFeatureListing,
+                        ),
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -2058,21 +2096,35 @@ L10n.get("feature_listing_error",
                         section,
                       ];
                     }(),
-                    if ((pageState.complaintsCount ?? 0) > 0) ...[
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ListingDetailComplaintsCard(
-                          complaintsLabel: _buildComplaintsButtonLabel(
-                            pageState.isLoadingComplaintsCount,
-                            pageState.complaintsCount,
-                          ),
-                          onPressed: () =>
-                              _viewListingComplaints(listingDetail.id),
-                          warningBlinkAnimation: _warningBlinkAnimation,
-                        ),
+                    // Scoped to (complaintsCount, isLoadingComplaintsCount) so
+                    // complaints-count fetches don't rebuild the rest.
+                    BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
+                        ({int? count, bool isLoading})>(
+                      selector: (s) => (
+                        count: s.complaintsCount,
+                        isLoading: s.isLoadingComplaintsCount,
                       ),
-                    ],
+                      builder: (context, cs) {
+                        if ((cs.count ?? 0) <= 0) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ListingDetailComplaintsCard(
+                              complaintsLabel: _buildComplaintsButtonLabel(
+                                cs.isLoading,
+                                cs.count,
+                              ),
+                              onPressed: () =>
+                                  _viewListingComplaints(listingDetail.id),
+                              warningBlinkAnimation: _warningBlinkAnimation,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

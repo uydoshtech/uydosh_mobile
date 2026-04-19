@@ -247,21 +247,31 @@ class _ListingTileState extends State<ListingTile>
 
   @override
   Widget build(BuildContext context) {
+    // NOTE: this intentionally does NOT wrap in `ListenableBuilder(ThemeState())`.
+    //
+    // MaterialApp at the root of the app is already wrapped in a
+    // ListenableBuilder that listens to ThemeState (see `main.dart`). When the
+    // theme changes, MaterialApp rebuilds with a new `theme`, which triggers
+    // `Theme.of(context)` dependents below to rebuild. Since this tile reads
+    // `Theme.of(context)` (scheme, brightness), it's already wired in.
+    //
+    // Adding a per-tile listener on top of that caused every visible tile in
+    // the feed to also rebuild on ANY `ThemeState.notifyListeners()` call —
+    // e.g. `ThemeState.initialize()` firing after the feed rendered — for
+    // zero correctness benefit.
     return RepaintBoundary(
-      child: ListenableBuilder(
-        listenable: ThemeState(),
-        builder: (context, child) {
+      child: Builder(
+        builder: (context) {
           final descriptionSnippet = _descriptionSnippetForPublicTile();
           final borderRadius = BorderRadius.circular(12);
           final scheme = Theme.of(context).colorScheme;
           final bg = scheme.surface;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
           final darkShadow = Colors.black.withValues(
-            alpha: 
-            Theme.of(context).brightness == Brightness.dark ? 0.45 : 0.20,
+            alpha: isDark ? 0.45 : 0.20,
           );
           final lightShadow = Colors.white.withValues(
-            alpha: 
-            Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.65,
+            alpha: isDark ? 0.06 : 0.65,
           );
 
           final cardWidget = DecoratedBox(

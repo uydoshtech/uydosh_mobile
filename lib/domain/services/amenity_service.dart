@@ -1,3 +1,4 @@
+import "package:uy_dosh/base/api/app_cache.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
@@ -14,9 +15,9 @@ class AmenityService implements IAmenityService {
   @override
   Future<List<Amenity>> getAmenities() async {
     try {
-      final amenities = await _apiClient.get<
-        List<Amenity>
-      >("/amenities/ordered", (dynamic json) {
+      final amenities = await _apiClient.get<List<Amenity>>(
+        "/amenities/ordered",
+        (dynamic json) {
         if (json is Map<String, dynamic> && json.containsKey("amenities")) {
           // Handle the actual API response structure
           final amenitiesList = json["amenities"] as List;
@@ -47,7 +48,9 @@ class AmenityService implements IAmenityService {
           logger.d("Unexpected JSON structure: $json"); // Debug print
           return <Amenity>[];
         }
-      });
+      },
+        options: AppCache.longGetOptions(),
+      );
 
       return amenities;
     } catch (e) {

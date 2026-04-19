@@ -1,3 +1,4 @@
+import "package:uy_dosh/base/api/app_cache.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
@@ -28,6 +29,7 @@ class SubwayStationService implements ISubwayStationService {
         (json) => json,
         basePath: EnvironmentUtil.basePath,
         queryParameters: {"language": currentLanguage},
+        options: AppCache.longGetOptions(),
       );
 
       // Debug: Print response structure
@@ -77,6 +79,7 @@ class SubwayStationService implements ISubwayStationService {
         (json) => json,
         basePath: EnvironmentUtil.basePath,
         queryParameters: {"language": currentLanguage},
+        options: AppCache.longGetOptions(),
       );
 
       // Debug: Print response structure
