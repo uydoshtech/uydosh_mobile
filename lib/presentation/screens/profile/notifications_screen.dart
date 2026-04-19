@@ -2,7 +2,6 @@
 
 import "package:dio/dio.dart";
 import "package:firebase_messaging/firebase_messaging.dart";
-import "package:flutter/foundation.dart" show kDebugMode;
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:permission_handler/permission_handler.dart";
@@ -34,8 +33,7 @@ import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
-const bool _pushDebugEnabled =
-    kDebugMode || bool.fromEnvironment("PUSH_DEBUG", defaultValue: false);
+const bool _pushDebugEnabled = true;
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -58,7 +56,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _hasBackendSessionToken = false;
 
   Future<void> _refreshPushDebug() async {
-    if (!_pushDebugEnabled) return;
     setState(() => _pushDebugLoading = true);
     try {
       final status =
@@ -96,7 +93,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _pushDebugPanel(ThemeData theme) {
-    if (!_pushDebugEnabled) return const SizedBox.shrink();
     final mono = theme.textTheme.bodySmall?.copyWith(
       fontFamily: "Menlo",
       height: 1.25,
