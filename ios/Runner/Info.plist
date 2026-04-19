@@ -68,6 +68,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- remote-notification lets iOS wake the app for silent/data pushes and
+	     is required for FirebaseMessaging background handlers to run. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
 	
 	<!-- Google Sign-In Configuration -->
 	<key>CFBundleURLTypes</key>

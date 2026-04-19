@@ -78,8 +78,12 @@ class PushNotificationService implements IPushNotificationService {
     _handlersSetup = true;
     FirebaseMessaging.onMessage.listen(_onForegroundMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
-    FirebaseMessaging.instance.onTokenRefresh.listen((_) {
-      logger.d("📲 FCM token refreshed");
+    // Wire onTokenRefresh unconditionally. On iOS the first getToken() after
+    // login often races ahead of APNs delivering the device token; when it
+    // finally arrives the refresh listener is what gets us a real FCM token
+    // and a successful register-with-backend.
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+      logger.d("📲 FCM token refreshed (len=${token.length})");
       registerTokenWithBackend();
     });
   }
@@ -94,22 +98,24 @@ class PushNotificationService implements IPushNotificationService {
     try {
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+      // Set up handlers BEFORE requesting permission so onTokenRefresh is
+      // wired even if the user denies the permission prompt this session —
+      // otherwise a later approval (or background APNs delivery) would be lost.
+      _setupMessageHandlers();
+
       final settings = await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,
         sound: true,
+      );
+      logger.d(
+        "📲 FCM permission status: ${settings.authorizationStatus.name}",
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.denied) {
         logger.d("📲 Push notification permission denied");
         return;
       }
-
-      if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-        logger.d("📲 Push notification permission provisional");
-      }
-
-      _setupMessageHandlers();
 
       final initialMessage =
           await FirebaseMessaging.instance.getInitialMessage();
@@ -255,9 +261,25 @@ class PushNotificationService implements IPushNotificationService {
     }
 
     try {
+      // On iOS, FirebaseMessaging.getToken() returns null until APNs has
+      // handed the app a device token. Poll briefly so login-time registration
+      // doesn't silently no-op during the cold-start APNs race. On Android
+      // there's no APNs, so this is effectively a no-op wait.
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        final apnsToken = await _awaitApnsToken();
+        if (apnsToken == null) {
+          logger.d(
+            "📲 APNs token not available after wait; onTokenRefresh will "
+            "retry once it arrives",
+          );
+          return;
+        }
+        logger.d("📲 APNs token acquired (len=${apnsToken.length})");
+      }
+
       final token = await FirebaseMessaging.instance.getToken();
       if (token == null || token.isEmpty) {
-        logger.d("📲 No FCM token available");
+        logger.d("📲 No FCM token available (getToken returned null)");
         return;
       }
 
@@ -279,9 +301,33 @@ class PushNotificationService implements IPushNotificationService {
         data: request,
       );
 
-      logger.d("📲 FCM token registered with backend");
+      logger.d(
+        "📲 FCM token registered with backend "
+        "(platform=$platform, device=${device.deviceModel ?? "?"})",
+      );
     } catch (e) {
       logger.d("📲 FCM token registration failed: $e");
     }
+  }
+
+  /// Poll `getAPNSToken()` a few times with small backoff so the first
+  /// post-login call doesn't lose the race against APNs token delivery.
+  /// Returns null if APNs still hasn't delivered a token after the wait
+  /// window — in that case `onTokenRefresh` is the retry mechanism.
+  Future<String?> _awaitApnsToken({
+    int maxAttempts = 10,
+    Duration step = const Duration(milliseconds: 500),
+  }) async {
+    for (var i = 0; i < maxAttempts; i++) {
+      try {
+        final apns = await FirebaseMessaging.instance.getAPNSToken();
+        if (apns != null && apns.isNotEmpty) return apns;
+      } catch (e) {
+        logger.d("📲 getAPNSToken threw: $e");
+        return null;
+      }
+      await Future<void>.delayed(step);
+    }
+    return null;
   }
 }
