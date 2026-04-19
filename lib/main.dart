@@ -501,16 +501,14 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _startAnimations() async {
-    await Future.delayed(const Duration(milliseconds: 200));
+    // Be defensive: on some iOS versions a long, fully-transparent splash can
+    // look like a "black screen". Show content immediately, then animate.
     _fadeController.forward();
-
-    // Start text animations after logo animation completes (4000ms + 200ms delay)
-    await Future.delayed(const Duration(milliseconds: 4200));
     _titleController.forward();
-    _subtitleController.forward(); // Start simultaneously with title
+    _subtitleController.forward();
 
-    // Navigate based on onboarding preference after text animations complete
-    await Future.delayed(const Duration(milliseconds: 2500));
+    // Navigate based on onboarding preference after a short display window.
+    await Future.delayed(const Duration(milliseconds: 1200));
     if (mounted) {
       final onboardingState = OnboardingState();
       if (onboardingState.showOnboarding && !onboardingState.hasSeenOnboardingScreens) {
