@@ -27,6 +27,7 @@ class Listing with _$Listing {
     @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
     @JsonKey(name: "amenities") List<Amenity>? amenities,
     List<Photo>? photos,
+    @JsonKey(name: "isFavorited") bool? isFavorited,
   }) = _Listing;
 
   factory Listing.fromJson(Map<String, dynamic> json) =>

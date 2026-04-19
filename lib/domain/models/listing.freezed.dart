@@ -62,6 +62,8 @@ mixin _$Listing {
   @JsonKey(name: "amenities")
   List<Amenity>? get amenities => throw _privateConstructorUsedError;
   List<Photo>? get photos => throw _privateConstructorUsedError;
+  @JsonKey(name: "isFavorited")
+  bool? get isFavorited => throw _privateConstructorUsedError;
 
   /// Serializes this Listing to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -99,7 +101,8 @@ abstract class $ListingCopyWith<$Res> {
       @JsonKey(name: "location") LocationDetail? location,
       @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
       @JsonKey(name: "amenities") List<Amenity>? amenities,
-      List<Photo>? photos});
+      List<Photo>? photos,
+      @JsonKey(name: "isFavorited") bool? isFavorited});
 
   $SubwayStationDetailCopyWith<$Res>? get subwayStation;
   $LocationDetailCopyWith<$Res>? get location;
@@ -143,6 +146,7 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
     Object? listingType = freezed,
     Object? amenities = freezed,
     Object? photos = freezed,
+    Object? isFavorited = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -233,6 +237,10 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
           ? _value.photos
           : photos // ignore: cast_nullable_to_non_nullable
               as List<Photo>?,
+      isFavorited: freezed == isFavorited
+          ? _value.isFavorited
+          : isFavorited // ignore: cast_nullable_to_non_nullable
+              as bool?,
     ) as $Val);
   }
 
@@ -308,7 +316,8 @@ abstract class _$$ListingImplCopyWith<$Res> implements $ListingCopyWith<$Res> {
       @JsonKey(name: "location") LocationDetail? location,
       @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
       @JsonKey(name: "amenities") List<Amenity>? amenities,
-      List<Photo>? photos});
+      List<Photo>? photos,
+      @JsonKey(name: "isFavorited") bool? isFavorited});
 
   @override
   $SubwayStationDetailCopyWith<$Res>? get subwayStation;
@@ -353,6 +362,7 @@ class __$$ListingImplCopyWithImpl<$Res>
     Object? listingType = freezed,
     Object? amenities = freezed,
     Object? photos = freezed,
+    Object? isFavorited = freezed,
   }) {
     return _then(_$ListingImpl(
       id: null == id
@@ -443,6 +453,10 @@ class __$$ListingImplCopyWithImpl<$Res>
           ? _value._photos
           : photos // ignore: cast_nullable_to_non_nullable
               as List<Photo>?,
+      isFavorited: freezed == isFavorited
+          ? _value.isFavorited
+          : isFavorited // ignore: cast_nullable_to_non_nullable
+              as bool?,
     ));
   }
 }
@@ -472,7 +486,8 @@ class _$ListingImpl implements _Listing {
       @JsonKey(name: "location") this.location,
       @JsonKey(name: "listing_type") this.listingType,
       @JsonKey(name: "amenities") final List<Amenity>? amenities,
-      final List<Photo>? photos})
+      final List<Photo>? photos,
+      @JsonKey(name: "isFavorited") this.isFavorited})
       : _amenities = amenities,
         _photos = photos;
 
@@ -560,8 +575,12 @@ class _$ListingImpl implements _Listing {
   }
 
   @override
+  @JsonKey(name: "isFavorited")
+  final bool? isFavorited;
+
+  @override
   String toString() {
-    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, subwayStation: $subwayStation, location: $location, listingType: $listingType, amenities: $amenities, photos: $photos)';
+    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, subwayStation: $subwayStation, location: $location, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited)';
   }
 
   @override
@@ -606,7 +625,9 @@ class _$ListingImpl implements _Listing {
                 other.listingType == listingType) &&
             const DeepCollectionEquality()
                 .equals(other._amenities, _amenities) &&
-            const DeepCollectionEquality().equals(other._photos, _photos));
+            const DeepCollectionEquality().equals(other._photos, _photos) &&
+            (identical(other.isFavorited, isFavorited) ||
+                other.isFavorited == isFavorited));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -634,7 +655,8 @@ class _$ListingImpl implements _Listing {
         location,
         listingType,
         const DeepCollectionEquality().hash(_amenities),
-        const DeepCollectionEquality().hash(_photos)
+        const DeepCollectionEquality().hash(_photos),
+        isFavorited
       ]);
 
   /// Create a copy of Listing
@@ -676,7 +698,8 @@ abstract class _Listing implements Listing {
       @JsonKey(name: "location") final LocationDetail? location,
       @JsonKey(name: "listing_type") final ListingTypeDetail? listingType,
       @JsonKey(name: "amenities") final List<Amenity>? amenities,
-      final List<Photo>? photos}) = _$ListingImpl;
+      final List<Photo>? photos,
+      @JsonKey(name: "isFavorited") final bool? isFavorited}) = _$ListingImpl;
 
   factory _Listing.fromJson(Map<String, dynamic> json) = _$ListingImpl.fromJson;
 
@@ -744,6 +767,9 @@ abstract class _Listing implements Listing {
   List<Amenity>? get amenities;
   @override
   List<Photo>? get photos;
+  @override
+  @JsonKey(name: "isFavorited")
+  bool? get isFavorited;
 
   /// Create a copy of Listing
   /// with the given fields replaced by the non-null parameter values.

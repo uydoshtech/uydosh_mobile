@@ -10,8 +10,10 @@ String _complaintStatusFromJson(Object? value) =>
 
 @freezed
 class ComplaintComplainantProfile with _$ComplaintComplainantProfile {
-  const factory ComplaintComplainantProfile({String? name}) =
-      _ComplaintComplainantProfile;
+  const factory ComplaintComplainantProfile({
+    String? name,
+    @JsonKey(name: "avatar_url") String? avatarUrl,
+  }) = _ComplaintComplainantProfile;
 
   factory ComplaintComplainantProfile.fromJson(Map<String, dynamic> json) =>
       _$ComplaintComplainantProfileFromJson(json);

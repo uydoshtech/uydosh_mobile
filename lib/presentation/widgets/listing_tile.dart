@@ -36,6 +36,8 @@ class ListingTile extends StatefulWidget {
     this.onFavoriteRemoved, // Optional callback
     this.showHeartIcon =
         false, // Default to false - only show on favorites screen
+    this.showFavoriteIndicator =
+        false, // Read-only heart, visible only if listing is in user favorites
     this.showActiveStatus =
         false, // Default to false - only show on my listings screen
     this.searchLineId, // Optional parameter to indicate which line was used for search
@@ -45,6 +47,10 @@ class ListingTile extends StatefulWidget {
   final bool? forceFavorite; // New parameter to force heart to be red
   final VoidCallback? onFavoriteRemoved; // Callback when favorite is removed
   final bool showHeartIcon; // New parameter to control heart icon visibility
+  /// When true, renders a small non-interactive filled heart in the top-right
+  /// of the tile if the listing is currently in the user's favorites.
+  /// Ignored when [showHeartIcon] is true (the interactive heart takes over).
+  final bool showFavoriteIndicator;
   final bool showActiveStatus; // Show active/inactive badge in top-right corner
   final int?
   searchLineId; // Line ID used for search (helps order transfer stations)
@@ -575,6 +581,33 @@ class _ListingTileState extends State<ListingTile>
                                     );
                                   },
                                 ),
+                          // Read-only favorite indicator (e.g. for home screen) —
+                          // only rendered when the listing is in the user's favorites.
+                          if (!widget.showHeartIcon &&
+                              widget.showFavoriteIndicator)
+                            ListenableBuilder(
+                              listenable: Listenable.merge([
+                                AuthenticationState(),
+                                FavoritesState().listenableFor(
+                                  widget.listing.id,
+                                ),
+                              ]),
+                              builder: (context, child) {
+                                if (!AuthenticationState().isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+                                if (!FavoritesState().isFavorite(
+                                  widget.listing.id,
+                                )) {
+                                  return const SizedBox.shrink();
+                                }
+                                return const ThemeIcon(
+                                  Icons.favorite,
+                                  color: AppColors.favoriteActive,
+                                  size: 20,
+                                );
+                              },
+                            ),
                         ],
                       ),
                       // Title

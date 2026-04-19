@@ -22,6 +22,8 @@ ComplaintComplainantProfile _$ComplaintComplainantProfileFromJson(
 /// @nodoc
 mixin _$ComplaintComplainantProfile {
   String? get name => throw _privateConstructorUsedError;
+  @JsonKey(name: "avatar_url")
+  String? get avatarUrl => throw _privateConstructorUsedError;
 
   /// Serializes this ComplaintComplainantProfile to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -41,7 +43,7 @@ abstract class $ComplaintComplainantProfileCopyWith<$Res> {
       _$ComplaintComplainantProfileCopyWithImpl<$Res,
           ComplaintComplainantProfile>;
   @useResult
-  $Res call({String? name});
+  $Res call({String? name, @JsonKey(name: "avatar_url") String? avatarUrl});
 }
 
 /// @nodoc
@@ -61,11 +63,16 @@ class _$ComplaintComplainantProfileCopyWithImpl<$Res,
   @override
   $Res call({
     Object? name = freezed,
+    Object? avatarUrl = freezed,
   }) {
     return _then(_value.copyWith(
       name: freezed == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+      avatarUrl: freezed == avatarUrl
+          ? _value.avatarUrl
+          : avatarUrl // ignore: cast_nullable_to_non_nullable
               as String?,
     ) as $Val);
   }
@@ -80,7 +87,7 @@ abstract class _$$ComplaintComplainantProfileImplCopyWith<$Res>
       __$$ComplaintComplainantProfileImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String? name});
+  $Res call({String? name, @JsonKey(name: "avatar_url") String? avatarUrl});
 }
 
 /// @nodoc
@@ -99,11 +106,16 @@ class __$$ComplaintComplainantProfileImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? name = freezed,
+    Object? avatarUrl = freezed,
   }) {
     return _then(_$ComplaintComplainantProfileImpl(
       name: freezed == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+      avatarUrl: freezed == avatarUrl
+          ? _value.avatarUrl
+          : avatarUrl // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
   }
@@ -113,7 +125,8 @@ class __$$ComplaintComplainantProfileImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ComplaintComplainantProfileImpl
     implements _ComplaintComplainantProfile {
-  const _$ComplaintComplainantProfileImpl({this.name});
+  const _$ComplaintComplainantProfileImpl(
+      {this.name, @JsonKey(name: "avatar_url") this.avatarUrl});
 
   factory _$ComplaintComplainantProfileImpl.fromJson(
           Map<String, dynamic> json) =>
@@ -121,10 +134,13 @@ class _$ComplaintComplainantProfileImpl
 
   @override
   final String? name;
+  @override
+  @JsonKey(name: "avatar_url")
+  final String? avatarUrl;
 
   @override
   String toString() {
-    return 'ComplaintComplainantProfile(name: $name)';
+    return 'ComplaintComplainantProfile(name: $name, avatarUrl: $avatarUrl)';
   }
 
   @override
@@ -132,12 +148,14 @@ class _$ComplaintComplainantProfileImpl
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ComplaintComplainantProfileImpl &&
-            (identical(other.name, name) || other.name == name));
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.avatarUrl, avatarUrl) ||
+                other.avatarUrl == avatarUrl));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, name);
+  int get hashCode => Object.hash(runtimeType, name, avatarUrl);
 
   /// Create a copy of ComplaintComplainantProfile
   /// with the given fields replaced by the non-null parameter values.
@@ -158,7 +176,9 @@ class _$ComplaintComplainantProfileImpl
 
 abstract class _ComplaintComplainantProfile
     implements ComplaintComplainantProfile {
-  const factory _ComplaintComplainantProfile({final String? name}) =
+  const factory _ComplaintComplainantProfile(
+          {final String? name,
+          @JsonKey(name: "avatar_url") final String? avatarUrl}) =
       _$ComplaintComplainantProfileImpl;
 
   factory _ComplaintComplainantProfile.fromJson(Map<String, dynamic> json) =
@@ -166,6 +186,9 @@ abstract class _ComplaintComplainantProfile
 
   @override
   String? get name;
+  @override
+  @JsonKey(name: "avatar_url")
+  String? get avatarUrl;
 
   /// Create a copy of ComplaintComplainantProfile
   /// with the given fields replaced by the non-null parameter values.

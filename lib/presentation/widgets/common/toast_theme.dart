@@ -18,23 +18,7 @@ class ToastTheme {
     milliseconds: 3000,
   ); // 6 seconds
 
-  static Color _foregroundOn(Color backgroundColor) {
-    // Pick the better of black/white using WCAG contrast ratio.
-    // https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio
-    final bgL = backgroundColor.computeLuminance();
-    const blackL = 0.0;
-    const whiteL = 1.0;
-
-    double contrast(double l1, double l2) {
-      final light = l1 > l2 ? l1 : l2;
-      final dark = l1 > l2 ? l2 : l1;
-      return (light + 0.05) / (dark + 0.05);
-    }
-
-    final blackContrast = contrast(bgL, blackL);
-    final whiteContrast = contrast(bgL, whiteL);
-    return blackContrast >= whiteContrast ? Colors.black : Colors.white;
-  }
+  static Color _foregroundOn(Color backgroundColor) => Colors.white;
 
   // Keep track of current toast overlay
   static OverlayEntry? _currentToastOverlay;

@@ -1041,6 +1041,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               forceFavorite:
                   false, // Home screen listings don"t force favorite state
               showHeartIcon: false, // Don"t show heart icon on home screen
+              showFavoriteIndicator:
+                  true, // Show small heart when listing is in user favorites
               onFavoriteRemoved: null, // No callback needed for home screen
             );
           },

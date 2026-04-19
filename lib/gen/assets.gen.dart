@@ -36,6 +36,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/ios_neutral_rd_ctn.svg
   String get iosNeutralRdCtn => 'assets/images/ios_neutral_rd_ctn.svg';
 
+  /// Directory path: assets/images/room_scan_examples
+  $AssetsImagesRoomScanExamplesGen get roomScanExamples => const $AssetsImagesRoomScanExamplesGen();
+
   /// File path: assets/images/tashkent_subway_map_simple.svg
   String get tashkentSubwayMapSimple => 'assets/images/tashkent_subway_map_simple.svg';
 
@@ -140,6 +143,16 @@ class $AssetsIconComponentsGen {
 
   /// List of all assets
   List<dynamic> get values => [brandMark, chimney, redRoof, square, uLetter];
+}
+
+class $AssetsImagesRoomScanExamplesGen {
+  const $AssetsImagesRoomScanExamplesGen();
+
+  /// File path: assets/images/room_scan_examples/.gitkeep
+  String get aGitkeep => 'assets/images/room_scan_examples/.gitkeep';
+
+  /// List of all assets
+  List<String> get values => [aGitkeep];
 }
 
 class Assets {

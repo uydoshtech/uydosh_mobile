@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/domain/models/listing.dart";
 
 /// Notifies only listeners for a single listing id (used by [FavoritesState.listenableFor]).
 class _ListingFavoriteNotifier extends ChangeNotifier {}
@@ -82,6 +83,25 @@ class FavoritesState extends ChangeNotifier {
       // This method should be updated to sync with the database
 
       _notifyListingChanged(listingId);
+    }
+  }
+
+  /// Seeds the favorites set from a batch of listings that carry the server-side
+  /// [Listing.isFavorited] flag (e.g. home feed response). Listings whose
+  /// [Listing.isFavorited] is null are ignored (endpoints that don't enrich the
+  /// field should leave existing local state untouched).
+  void syncFromListings(Iterable<Listing> listings) {
+    for (final listing in listings) {
+      final flag = listing.isFavorited;
+      if (flag == null) continue;
+      final wasFavorite = _favoriteListingIds.contains(listing.id);
+      if (flag && !wasFavorite) {
+        _favoriteListingIds.add(listing.id);
+        _notifyListingChanged(listing.id);
+      } else if (!flag && wasFavorite) {
+        _favoriteListingIds.remove(listing.id);
+        _notifyListingChanged(listing.id);
+      }
     }
   }
 

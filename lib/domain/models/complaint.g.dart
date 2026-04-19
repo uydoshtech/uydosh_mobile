@@ -10,12 +10,14 @@ _$ComplaintComplainantProfileImpl _$$ComplaintComplainantProfileImplFromJson(
         Map<String, dynamic> json) =>
     _$ComplaintComplainantProfileImpl(
       name: json['name'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
     );
 
 Map<String, dynamic> _$$ComplaintComplainantProfileImplToJson(
         _$ComplaintComplainantProfileImpl instance) =>
     <String, dynamic>{
       'name': instance.name,
+      'avatar_url': instance.avatarUrl,
     };
 
 _$ComplaintComplainantImpl _$$ComplaintComplainantImplFromJson(

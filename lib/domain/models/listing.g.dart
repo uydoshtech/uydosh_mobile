@@ -42,6 +42,7 @@ _$ListingImpl _$$ListingImplFromJson(Map<String, dynamic> json) =>
       photos: (json['photos'] as List<dynamic>?)
           ?.map((e) => Photo.fromJson(e as Map<String, dynamic>))
           .toList(),
+      isFavorited: json['isFavorited'] as bool?,
     );
 
 Map<String, dynamic> _$$ListingImplToJson(_$ListingImpl instance) =>
@@ -68,6 +69,7 @@ Map<String, dynamic> _$$ListingImplToJson(_$ListingImpl instance) =>
       'listing_type': instance.listingType,
       'amenities': instance.amenities,
       'photos': instance.photos,
+      'isFavorited': instance.isFavorited,
     };
 
 _$SubwayStationDetailImpl _$$SubwayStationDetailImplFromJson(

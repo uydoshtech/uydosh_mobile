@@ -2,6 +2,7 @@ import "package:bloc/bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -100,6 +101,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       ).timeout(_requestTimeout);
 
       final newListings = response.data;
+      FavoritesState().syncFromListings(newListings);
       _hasMore = (page + 1) <= response.totalPages && newListings.isNotEmpty;
 
       if (isRefresh) {
@@ -226,6 +228,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         ).timeout(_requestTimeout);
 
         final newListings = response.data;
+        FavoritesState().syncFromListings(newListings);
         _hasMore =
             (_currentPage + 1) <= response.totalPages && newListings.isNotEmpty;
 
