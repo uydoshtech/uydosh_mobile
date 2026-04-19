@@ -366,8 +366,9 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
               complaintText,
               maxLines: 5,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                height: 1.25,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontSize: 16,
+                height: 1.35,
               ),
             ),
           ),
@@ -392,7 +393,10 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
             Text(
               dateText,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textGrey,
+                color: ThemeState().isBlueTheme
+                    ? AppColors.textLight70
+                    : AppColors.textGrey,
+                fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(width: 16),
@@ -417,7 +421,9 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
   Widget _buildMetaChip(IconData icon, String value) {
     final isBlueTheme = ThemeState().isBlueTheme;
     final iconColor = isBlueTheme ? Colors.white : AppColors.textGrey;
-    const textColor = AppColors.textGrey;
+    final textColor = isBlueTheme
+        ? AppColors.textLight70
+        : AppColors.textGrey;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -431,6 +437,7 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
           value,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: textColor,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],

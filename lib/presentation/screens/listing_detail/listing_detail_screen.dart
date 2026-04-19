@@ -2021,13 +2021,17 @@ L10n.get("feature_listing_error",
                       onAuthorTap: () =>
                           _navigateToProfile(listingDetail.user.id),
                     ),
-                    const SizedBox(height: 8),
-                    // Compatibility section (below map, in scroll flow)
+                    // Tight but shadow-safe gap: cardTheme.margin already
+                    // contributes 8px top+bottom around each tile shell, and
+                    // the elevated neumorphic shadow (offset 6,6 blur 14)
+                    // extends ~12–15px. A 4px spacer keeps total separation
+                    // at ~20px, matching the photo→meta tile rhythm without
+                    // letting the two drop shadows visually collide.
                     ...() {
                       final section = compatibilitySection;
                       if (section == null) return <Widget>[];
                       return [
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         section,
                       ];
                     }(),

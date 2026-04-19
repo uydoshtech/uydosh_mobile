@@ -27,6 +27,10 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
     };
   }
 
+  /// Width reserved for the dollar-sign indicator so body rows align
+  /// regardless of tier, and line up with the header's leading icon column.
+  static const double _indicatorColumnWidth = 26;
+
   /// Plain dollar characters only (no circled icon); count matches [_priceIndicatorLevel].
   Widget _priceTierDollarSigns(
     BuildContext context,
@@ -36,14 +40,14 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
     if (level <= 0) return const SizedBox.shrink();
 
     final color = _priceTierColor(context, level);
-    const fontSize = 17.0;
+    const fontSize = 15.0;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         for (var i = 0; i < level; i++) ...[
-          if (i > 0) const SizedBox(width: 2),
+          if (i > 0) const SizedBox(width: 1),
           Text(
             r"$",
             style: TextStyle(
@@ -67,8 +71,13 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _priceTierDollarSigns(context, benchmark),
-        const SizedBox(width: 8),
+        SizedBox(
+          width: _indicatorColumnWidth,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _priceTierDollarSigns(context, benchmark),
+          ),
+        ),
         Expanded(
           child: Text(
             text,
@@ -136,7 +145,7 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
                 "${station.median}",
               ),
             ),
-            if (district != null) const SizedBox(height: 6),
+            if (district != null) const SizedBox(height: 4),
           ],
           if (district != null)
             _benchmarkRow(
@@ -154,43 +163,42 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
 
   Widget _section(BuildContext context, {required Widget body}) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Theme(
-            data: theme.copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              initiallyExpanded: false,
-              tilePadding: EdgeInsets.zero,
-              childrenPadding: const EdgeInsets.only(top: 6),
-              minTileHeight: 36,
-              iconColor: theme.colorScheme.onSurfaceVariant,
-              collapsedIconColor: theme.colorScheme.onSurfaceVariant,
-              title: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ThemeIcon(
-                    Icons.insights_outlined,
-                    size: 18,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      context.l10n.listing_area_price_heading,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+    return Theme(
+      data: theme.copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        dense: true,
+        visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: const EdgeInsets.only(top: 8, bottom: 2),
+        minTileHeight: 0,
+        iconColor: theme.colorScheme.onSurfaceVariant,
+        collapsedIconColor: theme.colorScheme.onSurfaceVariant,
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: _indicatorColumnWidth,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ThemeIcon(
+                  Icons.insights_outlined,
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
-              children: [body],
             ),
-          ),
-        ],
+            Expanded(
+              child: Text(
+                context.l10n.listing_area_price_heading,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        children: [body],
       ),
     );
   }
