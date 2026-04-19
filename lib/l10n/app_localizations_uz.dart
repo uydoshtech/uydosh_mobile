@@ -1748,6 +1748,25 @@ class AppLocalizationsUz extends AppLocalizations {
       'Foydalanuvchi blokdan chiqarildi';
 
   @override
+  String get admin_user_detail_devices_title => 'Qurilmalar';
+
+  @override
+  String get admin_user_detail_devices_empty =>
+      'Ro\'yxatdan o\'tgan qurilmalar yo\'q';
+
+  @override
+  String get admin_user_detail_devices_last_seen => 'Oxirgi faollik';
+
+  @override
+  String get admin_user_detail_devices_model_unknown => 'Noma\'lum qurilma';
+
+  @override
+  String get admin_user_detail_devices_details_unknown => 'Ma\'lumot yo\'q';
+
+  @override
+  String get admin_user_detail_devices_app_prefix => 'Ilova';
+
+  @override
   String get admin_user_complaints_title => 'Foydalanuvchi shikoyatlari';
 
   @override

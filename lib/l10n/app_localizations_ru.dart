@@ -1733,6 +1733,26 @@ class AppLocalizationsRu extends AppLocalizations {
       'Пользователь разблокирован';
 
   @override
+  String get admin_user_detail_devices_title => 'Устройства';
+
+  @override
+  String get admin_user_detail_devices_empty =>
+      'Нет зарегистрированных устройств';
+
+  @override
+  String get admin_user_detail_devices_last_seen => 'Последняя активность';
+
+  @override
+  String get admin_user_detail_devices_model_unknown =>
+      'Неизвестное устройство';
+
+  @override
+  String get admin_user_detail_devices_details_unknown => 'Нет данных';
+
+  @override
+  String get admin_user_detail_devices_app_prefix => 'Приложение';
+
+  @override
   String get admin_user_complaints_title => 'Жалобы пользователя';
 
   @override

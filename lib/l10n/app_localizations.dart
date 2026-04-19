@@ -3292,6 +3292,42 @@ abstract class AppLocalizations {
   /// **'User unblocked'**
   String get admin_user_detail_unblocked_success;
 
+  /// No description provided for @admin_user_detail_devices_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices'**
+  String get admin_user_detail_devices_title;
+
+  /// No description provided for @admin_user_detail_devices_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No registered devices'**
+  String get admin_user_detail_devices_empty;
+
+  /// No description provided for @admin_user_detail_devices_last_seen.
+  ///
+  /// In en, this message translates to:
+  /// **'Last seen'**
+  String get admin_user_detail_devices_last_seen;
+
+  /// No description provided for @admin_user_detail_devices_model_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown device'**
+  String get admin_user_detail_devices_model_unknown;
+
+  /// No description provided for @admin_user_detail_devices_details_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Details unavailable'**
+  String get admin_user_detail_devices_details_unknown;
+
+  /// No description provided for @admin_user_detail_devices_app_prefix.
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get admin_user_detail_devices_app_prefix;
+
   /// No description provided for @admin_user_complaints_title.
   ///
   /// In en, this message translates to:

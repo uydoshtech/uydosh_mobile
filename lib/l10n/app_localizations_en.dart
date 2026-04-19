@@ -1719,6 +1719,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_user_detail_unblocked_success => 'User unblocked';
 
   @override
+  String get admin_user_detail_devices_title => 'Devices';
+
+  @override
+  String get admin_user_detail_devices_empty => 'No registered devices';
+
+  @override
+  String get admin_user_detail_devices_last_seen => 'Last seen';
+
+  @override
+  String get admin_user_detail_devices_model_unknown => 'Unknown device';
+
+  @override
+  String get admin_user_detail_devices_details_unknown => 'Details unavailable';
+
+  @override
+  String get admin_user_detail_devices_app_prefix => 'App';
+
+  @override
   String get admin_user_complaints_title => 'User complaints';
 
   @override
