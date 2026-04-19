@@ -51,6 +51,8 @@ class PushNotificationService implements IPushNotificationService {
   final IOAuthApiClient _oauthApiClient;
   bool _handlersSetup = false;
   RemoteMessage? _pendingNotificationTap;
+  bool _registerInFlight = false;
+  int _registerRetryAttempt = 0;
 
   static bool get _isSupported =>
       !kIsWeb &&
@@ -262,7 +264,13 @@ class PushNotificationService implements IPushNotificationService {
       return;
     }
 
+    if (_registerInFlight) {
+      logger.d("📲 FCM token registration already in-flight, skipping");
+      return;
+    }
+
     try {
+      _registerInFlight = true;
       // On iOS, FirebaseMessaging.getToken() returns null until APNs has
       // handed the app a device token. Poll briefly so login-time registration
       // doesn't silently no-op during the cold-start APNs race. On Android
@@ -274,14 +282,18 @@ class PushNotificationService implements IPushNotificationService {
             "📲 APNs token not available after wait; onTokenRefresh will "
             "retry once it arrives",
           );
-          return;
+          // Don't bail: still attempt getToken() (it may already be available)
+          // and schedule a retry if needed.
         }
-        logger.d("📲 APNs token acquired (len=${apnsToken.length})");
+        if (apnsToken != null) {
+          logger.d("📲 APNs token acquired (len=${apnsToken.length})");
+        }
       }
 
       final token = await FirebaseMessaging.instance.getToken();
       if (token == null || token.isEmpty) {
         logger.d("📲 No FCM token available (getToken returned null)");
+        _scheduleRegisterRetry();
         return;
       }
 
@@ -303,13 +315,39 @@ class PushNotificationService implements IPushNotificationService {
         data: request,
       );
 
+      _registerRetryAttempt = 0;
       logger.d(
         "📲 FCM token registered with backend "
         "(platform=$platform, device=${device.deviceModel ?? "?"})",
       );
     } catch (e) {
       logger.d("📲 FCM token registration failed: $e");
+      _scheduleRegisterRetry();
+    } finally {
+      _registerInFlight = false;
     }
+  }
+
+  void _scheduleRegisterRetry() {
+    // Avoid infinite loops; iOS can take a bit to deliver APNs/FCM token on cold start.
+    const maxAttempts = 6;
+    if (_registerRetryAttempt >= maxAttempts) {
+      logger.d("📲 FCM token registration: max retry attempts reached");
+      return;
+    }
+    _registerRetryAttempt += 1;
+    final seconds = switch (_registerRetryAttempt) {
+      1 => 2,
+      2 => 5,
+      3 => 10,
+      4 => 20,
+      5 => 40,
+      _ => 60,
+    };
+    logger.d("📲 Scheduling FCM token registration retry in ${seconds}s");
+    Future<void>.delayed(Duration(seconds: seconds), () async {
+      await registerTokenWithBackend();
+    });
   }
 
   /// Poll `getAPNSToken()` a few times with small backoff so the first
