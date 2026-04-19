@@ -737,7 +737,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             theme,
                             onClose: _dismissAlertsExplainer,
                           ),
-                        if (kDebugMode) ...[
+                        if (_pushDebugEnabled) ...[
                           const SizedBox(height: 12),
                           _pushDebugPanel(theme),
                         ],
@@ -778,7 +778,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 theme,
                                 onClose: _dismissAlertsExplainer,
                               ),
-                              if (kDebugMode) ...[
+                              if (_pushDebugEnabled) ...[
                                 const SizedBox(height: 12),
                                 _pushDebugPanel(theme),
                               ],
