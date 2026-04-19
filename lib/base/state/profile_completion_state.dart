@@ -100,7 +100,10 @@ class ProfileCompletionState extends ChangeNotifier {
 
     if (_hasText(profile.name)) completedFields++;
     if (profile.gender != null) completedFields++;
-    if (profile.region != null) completedFields++;
+    // Either the joined `region` object or the raw `regionId` counts as
+    // "region filled". Some API responses (e.g. PUT /profiles/:id) return
+    // only the id without the joined object, so checking one is not enough.
+    if (profile.region != null || profile.regionId != null) completedFields++;
     if (profile.employed == false) {
       if (profile.university != null || profile.universityId != null) {
         completedFields++;
@@ -133,7 +136,7 @@ class ProfileCompletionState extends ChangeNotifier {
     final missing = <String>[];
     if (!_hasText(profile.name)) missing.add("name");
     if (profile.gender == null) missing.add("gender");
-    if (profile.region == null) missing.add("region");
+    if (profile.region == null && profile.regionId == null) missing.add("region");
     if (profile.employed == null) missing.add("employed");
     if (profile.employed == false &&
         profile.university == null &&

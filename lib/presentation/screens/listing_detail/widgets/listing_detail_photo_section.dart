@@ -1,3 +1,5 @@
+import "dart:ui" show ImageFilter;
+
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter/widgets.dart";
@@ -57,19 +59,18 @@ class ListingDetailPhotoSection extends StatelessWidget {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                // Flat dark fill behind letterboxed portrait photos.
-                                // Previously this was a second full-resolution decode of
-                                // the same photo put through a sigma-18 gaussian blur —
-                                // roughly 2–3× the per-frame GPU cost of the carousel for
-                                // zero informational value.
-                                const ColoredBox(color: Color(0xFF1B1B1B)),
-                                // The real photo, never distorted.
-                                Center(
+                                // Background fill (blurred + slightly dimmed) so portrait photos
+                                // look good in a horizontal carousel without distortion.
+                                ImageFiltered(
+                                  imageFilter: ImageFilter.blur(
+                                    sigmaX: 18,
+                                    sigmaY: 18,
+                                  ),
                                   child: CachedNetworkImage(
                                     imageUrl: buildPhotoUrl(photo.photoUrl),
-                                    fit: BoxFit.contain,
-                                    memCacheWidth: 1080,
-                                    memCacheHeight: 1080,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 800,
+                                    memCacheHeight: 800,
                                     fadeInDuration:
                                         const Duration(milliseconds: 300),
                                     fadeInCurve: Curves.easeOut,
@@ -90,6 +91,25 @@ class ListingDetailPhotoSection extends StatelessWidget {
                                         size: 48,
                                       ),
                                     ),
+                                  ),
+                                ),
+                                ColoredBox(
+                                  color: Colors.black.withValues(alpha: 0.12),
+                                ),
+                                // Foreground: the real photo, never distorted.
+                                Center(
+                                  child: CachedNetworkImage(
+                                    imageUrl: buildPhotoUrl(photo.photoUrl),
+                                    fit: BoxFit.contain,
+                                    memCacheWidth: 1080,
+                                    memCacheHeight: 1080,
+                                    fadeInDuration:
+                                        const Duration(milliseconds: 300),
+                                    fadeInCurve: Curves.easeOut,
+                                    placeholder: (context, url) =>
+                                        const SizedBox.shrink(),
+                                    errorWidget: (context, url, error) =>
+                                        const SizedBox.shrink(),
                                   ),
                                 ),
                                 Positioned(

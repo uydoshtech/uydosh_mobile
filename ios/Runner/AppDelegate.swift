@@ -4,6 +4,25 @@ import YandexMapsMobile
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+  /// Scene-based apps (see `Info.plist` → `FlutterSceneDelegate`) own the `UIWindow` on the
+  /// `UIWindowScene`, not on the `UIApplicationDelegate`. Plugins (e.g. `flutter_roomplan`) still
+  /// reach for `UIApplication.shared.delegate?.window??.rootViewController`, which is `nil` under
+  /// scenes and causes their `present(...)` / result callbacks to silently no-op. Exposing the
+  /// active scene's key window here keeps those legacy lookups working.
+  private var _appDelegateWindow: UIWindow?
+  override var window: UIWindow? {
+    get {
+      if let w = _appDelegateWindow { return w }
+      for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+        if let w = scene.windows.first(where: { $0.isKeyWindow }) ?? scene.windows.first {
+          return w
+        }
+      }
+      return nil
+    }
+    set { _appDelegateWindow = newValue }
+  }
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
