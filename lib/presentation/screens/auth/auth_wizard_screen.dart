@@ -191,7 +191,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
 
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => AppRouter.initialRoute),
+      // IMPORTANT: don't use `initialRoute` here.
+      // `AppRouter.initialRoute` attaches the global `mainNavigationKey` so it
+      // must only be mounted once at the true app root. During navigation,
+      // Flutter can momentarily keep both routes alive which would mount two
+      // widgets with the same GlobalKey and crash.
+      MaterialPageRoute(builder: (context) => AppRouter.mainNavigationRoute),
       (route) => false,
     );
   }

@@ -94,14 +94,20 @@ extension NavigatorExtensions on BuildContext {
   /// Replace current route with main navigation (home).
   void pushReplaceMainNavigation() {
     Navigator.of(this).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => AppRouter.initialRoute),
+      // IMPORTANT: don't use `initialRoute` here.
+      // `AppRouter.initialRoute` attaches the global `mainNavigationKey` so it
+      // must only be mounted once at the true app root. During route
+      // transitions Flutter can temporarily keep both old and new routes alive,
+      // which would mount two widgets with the same GlobalKey and crash.
+      MaterialPageRoute<void>(builder: (_) => AppRouter.mainNavigationRoute),
     );
   }
 
   /// Push main navigation and remove all previous routes.
   void pushMainNavigationAndRemoveUntil() {
     Navigator.of(this).pushAndRemoveUntil(
-      MaterialPageRoute<void>(builder: (_) => AppRouter.initialRoute),
+      // See note in `pushReplaceMainNavigation`.
+      MaterialPageRoute<void>(builder: (_) => AppRouter.mainNavigationRoute),
       (route) => false,
     );
   }
