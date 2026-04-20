@@ -169,6 +169,32 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
       color: iconColor,
     );
 
+    // IMPORTANT: The badge subtree must be mounted exactly once.
+    // Using the same GlobalKey in multiple branches can still collide because
+    // CurvedNavigationBar may keep previous/next item subtrees around during
+    // its animation frames.
+    final iconWithBadge = Stack(
+      children: [
+        bubbleIcon,
+        Positioned(
+          right: 0,
+          top: 0,
+          child: KeyedSubtree(
+            key: _messagesBadgeKey,
+            child: widget.hasUnreadMessages
+                ? const BlinkingDotWidget(
+                    color: AppColors.success,
+                    size: 13,
+                    duration: Duration(milliseconds: 750),
+                    borderColor: Colors.white,
+                    borderWidth: 2,
+                  )
+                : const SizedBox(width: 13, height: 13),
+          ),
+        ),
+      ],
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -176,50 +202,10 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
         if (isSelected)
           _CurvedNavActiveOrb(
             baseColor: _getButtonBackgroundColor(context),
-            child: Stack(
-              children: [
-                bubbleIcon,
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: KeyedSubtree(
-                    key: _messagesBadgeKey,
-                    child: widget.hasUnreadMessages
-                        ? const BlinkingDotWidget(
-                            color: AppColors.success,
-                            size: 13,
-                            duration: Duration(milliseconds: 750),
-                            borderColor: Colors.white,
-                            borderWidth: 2,
-                          )
-                        : const SizedBox(width: 13, height: 13),
-                  ),
-                ),
-              ],
-            ),
+            child: iconWithBadge,
           )
         else
-          Stack(
-            children: [
-              bubbleIcon,
-              Positioned(
-                right: 0,
-                top: 0,
-                child: KeyedSubtree(
-                  key: _messagesBadgeKey,
-                  child: widget.hasUnreadMessages
-                      ? const BlinkingDotWidget(
-                          color: AppColors.success,
-                          size: 13,
-                          duration: Duration(milliseconds: 750),
-                          borderColor: Colors.white,
-                          borderWidth: 2,
-                        )
-                      : const SizedBox(width: 13, height: 13),
-                ),
-              ),
-            ],
-          ),
+          iconWithBadge,
         if (!isSelected) ...[
           const SizedBox(height: 2),
           ListenableBuilder(
