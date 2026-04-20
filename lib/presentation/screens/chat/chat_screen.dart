@@ -1,4 +1,5 @@
 import "package:cached_network_image/cached_network_image.dart";
+import "dart:async";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -18,6 +19,7 @@ import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
@@ -29,6 +31,9 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_scree
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_header.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_input.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_messages_skeleton.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_security_ribbon.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_safety_warning_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
@@ -71,6 +76,16 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _hasLoadedMessagesForConversation = false; // Track if we've completed initial fetch (avoids loading when bloc is overwritten by RefreshConversations)
   final Set<int> _newMessageIds = {}; // Track which messages are new in this session
   UserProfile? _currentUserProfile; // Store the current user's profile
+  bool _showSecurityRibbon = true;
+  String? _safetyWarningTitle;
+  String? _safetyWarningBody;
+  DateTime? _lastSafetyCheckAt;
+  bool _safetyCheckInFlight = false;
+  bool _showRefreshSkeleton = false;
+  DateTime? _refreshSkeletonStartedAt;
+  Completer<void>? _refreshCompleter;
+
+  static const Duration _minSkeletonDuration = Duration(milliseconds: 450);
 
   /// Memoized output of [MessageGroupingUtils.groupMessagesAsItems] — invalidated when
   /// [messages] reference, [_currentUserId], or [_newMessageIds] meaningfully change.
@@ -117,6 +132,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollController = ScrollController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _initializeChat());
+    _loadSecurityRibbonState();
   }
 
   @override
@@ -144,6 +160,92 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> _loadSecurityRibbonState() async {
+    try {
+      final dismissed = await SessionManager.isChatSecurityRibbonDismissed();
+      if (!mounted) return;
+      setState(() => _showSecurityRibbon = !dismissed);
+    } catch (_) {
+      // If prefs fail, keep ribbon visible.
+    }
+  }
+
+  Future<void> _dismissSecurityRibbon() async {
+    HapticFeedbackUtils.impact();
+    if (mounted) setState(() => _showSecurityRibbon = false);
+    try {
+      await SessionManager.dismissChatSecurityRibbon();
+    } catch (_) {
+      // Ignore.
+    }
+  }
+
+  bool _matchesScamTrigger(String text) {
+    final t = text.toLowerCase();
+    // Links, off-platform, OTP, deposits, payment keywords. MVP: simple and cheap.
+    final patterns = <RegExp>[
+      RegExp(r'https?://', caseSensitive: false),
+      RegExp(r'\b(t\.me|telegram|whatsapp|wa\.me|instagram|иг|инст)\b', caseSensitive: false),
+      RegExp(r'\b(otp|code|verification|verify|парол|код|смс|sms)\b', caseSensitive: false),
+      RegExp(r'\b(deposit|prepay|advance|pay now|bank|card|iban|swift|crypto|wallet|usdt|ton)\b', caseSensitive: false),
+      RegExp(r'\b(предоплат|задаток|депозит|оплат|перевод|карта|банк)\b', caseSensitive: false),
+    ];
+    return patterns.any((p) => p.hasMatch(t));
+  }
+
+  Future<void> _maybeRunSafetyCheck({required String triggerText}) async {
+    if (_safetyCheckInFlight) return;
+
+    // debounce / rate-limit: at most once per 15 seconds
+    final now = DateTime.now();
+    if (_lastSafetyCheckAt != null &&
+        now.difference(_lastSafetyCheckAt!) < const Duration(seconds: 15)) {
+      return;
+    }
+
+    if (!_matchesScamTrigger(triggerText)) return;
+    _lastSafetyCheckAt = now;
+    _safetyCheckInFlight = true;
+
+    try {
+      final service = getIt<IMessagingService>();
+      final resp = await service.safetyCheckConversation(
+        conversationId: widget.conversationId,
+        limit: 8,
+      );
+
+      final data = resp["data"];
+      if (data is Map) {
+        final risk = (data["risk_level"] as String?)?.toLowerCase();
+        final reason = data["reason"] as String?;
+        if (risk == "medium" || risk == "high") {
+          if (!mounted) return;
+          setState(() {
+            _safetyWarningTitle =
+                risk == "high"
+                    ? L10n.get("chat_safety_warning_title_high")
+                    : L10n.get("chat_safety_warning_title_medium");
+            _safetyWarningBody =
+                (reason != null && reason.trim().isNotEmpty)
+                    ? reason
+                    : L10n.get("chat_safety_warning_fallback");
+          });
+        }
+      }
+    } catch (_) {
+      // Ignore safety check failures (non-blocking).
+    } finally {
+      _safetyCheckInFlight = false;
+    }
+  }
+
+  void _dismissSafetyWarning() {
+    setState(() {
+      _safetyWarningTitle = null;
+      _safetyWarningBody = null;
+    });
+  }
+
   String _getHeaderTitle(BuildContext context) {
     final name = widget.otherUserName?.trim();
     if (name != null && name.isNotEmpty) {
@@ -169,9 +271,7 @@ class _ChatScreenState extends State<ChatScreen> {
           appBar: ChatHeader(
             headerTitle: _getHeaderTitle(context),
             onRefresh: () {
-              context.read<MessagingBloc>().add(
-                    RefreshMessages(conversationId: widget.conversationId),
-                  );
+              _refreshMessagesWithSkeleton();
             },
             actionMenuItems: _buildActionMenuItems(),
           ),
@@ -182,6 +282,14 @@ class _ChatScreenState extends State<ChatScreen> {
             },
             child: Column(
                 children: [
+                  if (_showSecurityRibbon)
+                    ChatSecurityRibbon(onClose: _dismissSecurityRibbon),
+                  if (_safetyWarningTitle != null && _safetyWarningBody != null)
+                    ChatSafetyWarningRibbon(
+                      title: _safetyWarningTitle!,
+                      body: _safetyWarningBody!,
+                      onClose: _dismissSafetyWarning,
+                    ),
                   Expanded(
                     child: MultiBlocListener(
                       listeners: [
@@ -206,12 +314,21 @@ class _ChatScreenState extends State<ChatScreen> {
                                   // Don't mark any messages as new when initially loading
                                   // _newMessageIds remains empty for initial load
                                 });
+                                _finishRefreshSkeletonIfNeeded();
                                 // Mark messages as read after they're loaded
                                 context.read<MessagingBloc>().add(
                                       MarkMessagesAsRead(
                                         conversationId: conversationId,
                                       ),
                                     );
+
+                                // MVP1: client trigger → server safety check (non-blocking)
+                                final latest = messages.isNotEmpty
+                                    ? messages.last.content
+                                    : null;
+                                if (latest != null) {
+                                  _maybeRunSafetyCheck(triggerText: latest);
+                                }
                               },
                               conversationCreated: (conversation) {},
                               messageSent: (message) {
@@ -229,10 +346,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                 _scrollToBottom();
                                 // Haptic feedback (sound plays on send button press)
                                 HapticFeedbackUtils.impact();
+
+                                // MVP1: client trigger → server safety check (non-blocking)
+                                _maybeRunSafetyCheck(triggerText: message.content);
                               },
                               messagesMarkedAsRead:
                                   (conversationId, markedCount) {},
-                              error: (message) {},
+                              error: (message) {
+                                _finishRefreshSkeletonIfNeeded();
+                              },
                             );
                           },
                         ),
@@ -266,6 +388,9 @@ class _ChatScreenState extends State<ChatScreen> {
                           return previous != current;
                         },
                         builder: (context, state) {
+                          if (_showRefreshSkeleton) {
+                            return const ChatMessagesSkeleton();
+                          }
                           // Once we have messages, always show them - the shared
                           // MessagingBloc can be overwritten by MessagesInboxScreen
                           // (e.g. RefreshConversations on messagesMarkedAsRead),
@@ -405,9 +530,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (messages.isEmpty) {
       return UydoshRefreshIndicator(
         onRefresh: () async {
-          context.read<MessagingBloc>().add(
-                RefreshMessages(conversationId: widget.conversationId),
-              );
+          await _refreshMessagesWithSkeleton();
         },
         child: _buildEmptyState(),
       );
@@ -456,11 +579,47 @@ class _ChatScreenState extends State<ChatScreen> {
         },
       showRefreshIndicator: true,
       onRefresh: () async {
-        context.read<MessagingBloc>().add(
-              RefreshMessages(conversationId: widget.conversationId),
-            );
+        await _refreshMessagesWithSkeleton();
       },
     );
+  }
+
+  Future<void> _refreshMessagesWithSkeleton() async {
+    // Coalesce multiple taps/gestures into a single refresh.
+    if (_refreshCompleter != null && !(_refreshCompleter!.isCompleted)) {
+      return _refreshCompleter!.future;
+    }
+
+    _refreshCompleter = Completer<void>();
+    _refreshSkeletonStartedAt = DateTime.now();
+    if (mounted) {
+      setState(() => _showRefreshSkeleton = true);
+    }
+
+    context.read<MessagingBloc>().add(
+          RefreshMessages(conversationId: widget.conversationId),
+        );
+
+    return _refreshCompleter!.future;
+  }
+
+  void _finishRefreshSkeletonIfNeeded() {
+    final completer = _refreshCompleter;
+    if (completer == null || completer.isCompleted) return;
+
+    final startedAt = _refreshSkeletonStartedAt;
+    final elapsed =
+        startedAt == null ? Duration.zero : DateTime.now().difference(startedAt);
+    final remaining =
+        elapsed >= _minSkeletonDuration ? Duration.zero : _minSkeletonDuration - elapsed;
+
+    Future<void>.delayed(remaining, () {
+      if (!mounted) return;
+      setState(() => _showRefreshSkeleton = false);
+      if (!completer.isCompleted) completer.complete();
+      _refreshCompleter = null;
+      _refreshSkeletonStartedAt = null;
+    });
   }
 
   Widget _buildEmptyState() {

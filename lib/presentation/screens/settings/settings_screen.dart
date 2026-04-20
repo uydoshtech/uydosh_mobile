@@ -10,6 +10,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
+import "package:uy_dosh/base/state/sound_effects_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
@@ -214,6 +215,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildOnboardingToggleMenuItem(context),
             _buildTooltipsToggleMenuItem(context),
             _buildHapticFeedbackToggleMenuItem(context),
+            _buildSoundEffectsToggleMenuItem(context),
             _buildAnimationsToggleMenuItems(context),
 
             _buildMenuItem(
@@ -418,6 +420,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
           value: HapticFeedbackState().isEnabled,
           onChanged: (value) async {
             await HapticFeedbackState().setEnabled(value);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSoundEffectsToggleMenuItem(BuildContext context) {
+    return ListenableBuilder(
+      listenable: SoundEffectsState(),
+      builder: (context, child) {
+        return UydoshToggle(
+          icon: Icons.volume_up,
+          iconColor: _getIconColor(),
+          title: L10n.text(
+            "sound_effects",
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: _getTextColor(),
+            ),
+          ),
+          subtitle: L10n.text(
+            "sound_effects_description",
+            style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
+          ),
+          value: SoundEffectsState().isEnabled,
+          onChanged: (value) async {
+            await SoundEffectsState().setEnabled(value);
           },
         );
       },

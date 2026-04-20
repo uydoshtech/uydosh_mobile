@@ -6,6 +6,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -467,6 +468,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
   Future<void> _saveProfile() async {
     if (_nameController.text.trim().isEmpty) {
+      SoundService().playError();
       ToastTheme.showError(
         context,
         message: L10n.get("name_required"),
@@ -484,6 +486,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
       // If user is a student, require university selection
       if (_isStudent.value && _selectedUniversityId.value == null) {
+        SoundService().playError();
         ToastTheme.showError(
           context,
           message: L10n.get("please_select_university"),
@@ -557,6 +560,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       );
 
       if (mounted) {
+        SoundService().playSuccess();
         ToastTheme.showSuccess(
           context,
           message: L10n.get(
@@ -572,6 +576,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       }
     } catch (e) {
       if (mounted) {
+        SoundService().playError();
         ToastTheme.showError(
           context,
           message: L10n.get(

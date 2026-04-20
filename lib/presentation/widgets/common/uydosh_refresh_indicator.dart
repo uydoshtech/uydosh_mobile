@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 
 /// [RefreshIndicator] with [color] and [backgroundColor] aligned to app themes
@@ -56,7 +57,10 @@ class UydoshRefreshIndicator extends StatelessWidget {
         return RefreshIndicator(
           displacement: displacement,
           edgeOffset: edgeOffset,
-          onRefresh: onRefresh,
+          onRefresh: () async {
+            SoundService().playRefreshWhoosh();
+            await onRefresh();
+          },
           color: color ?? themedForegroundColor(context),
           backgroundColor: backgroundColor ?? themedBackgroundColor(context),
           notificationPredicate: notificationPredicate,

@@ -29,6 +29,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
+import "package:uy_dosh/base/state/sound_effects_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
@@ -150,6 +151,7 @@ void main() async {
     unawaited(TutorialState().initialize());
     unawaited(TooltipsState().initialize());
     unawaited(HapticFeedbackState().initialize());
+    unawaited(SoundEffectsState().initialize());
     unawaited(AnimationSettingsState().initialize());
     unawaited(SearchFiltersState().initialize());
 
@@ -179,6 +181,9 @@ void main() async {
     );
     logger.d(
       '📳 Haptics: ${HapticFeedbackState().isEnabled ? "ENABLED" : "DISABLED"}',
+    );
+    logger.d(
+      '🔊 Sound effects: ${SoundEffectsState().isEnabled ? "ENABLED" : "DISABLED"}',
     );
     logger.d(
       "🔍 Search Filters: listingType=${SearchFiltersState().selectedListingTypeId}, location=${SearchFiltersState().selectedLocationIndex}, line=${SearchFiltersState().selectedSubwayLine}, station=${SearchFiltersState().selectedStationIndex}",

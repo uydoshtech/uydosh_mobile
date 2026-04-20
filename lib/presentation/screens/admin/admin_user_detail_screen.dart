@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/apple_device_model_name.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/models/admin_user_device.dart";
@@ -269,8 +270,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     } else {
       platformIcon = Icons.devices;
     }
-    final modelLine = (device.deviceModel ?? "").trim().isNotEmpty
-        ? device.deviceModel!.trim()
+    final rawModel = (device.deviceModel ?? "").trim();
+    final modelLine = rawModel.isNotEmpty
+        ? (platform == "ios" ? AppleDeviceModelName.format(rawModel) : rawModel)
         : L10n.get("admin_user_detail_devices_model_unknown");
 
     return Row(

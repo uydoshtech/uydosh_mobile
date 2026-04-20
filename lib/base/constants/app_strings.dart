@@ -91,6 +91,13 @@ class AppStrings {
       "messages": "Messages",
       "chat": "Chat",
       "chat_with": "Chat with {name}",
+      "chat_security_ribbon_title": "Protected chat",
+      "chat_security_ribbon_body":
+          "This chat is protected by AI anti‑fraud & scam filters to help keep you safe.",
+      "chat_safety_warning_title_medium": "Safety notice",
+      "chat_safety_warning_title_high": "Be careful",
+      "chat_safety_warning_fallback":
+          "This conversation may contain scam/fraud signals. Be cautious with links, codes, and payment requests.",
       "profile_interlocutor": "Interlocutor's Profile",
       "view_listing": "View Listing",
       "menu_messages": "Messages",
@@ -1144,6 +1151,13 @@ class AppStrings {
       "messages": "Сообщения",
       "chat": "Чат",
       "chat_with": "Чат с {name}",
+      "chat_security_ribbon_title": "Защищённый чат",
+      "chat_security_ribbon_body":
+          "Чат защищён AI‑фильтрами от мошенничества и скама, чтобы вам было безопаснее общаться.",
+      "chat_safety_warning_title_medium": "Предупреждение",
+      "chat_safety_warning_title_high": "Будьте осторожны",
+      "chat_safety_warning_fallback":
+          "В этом разговоре могут быть признаки мошенничества. Осторожнее со ссылками, кодами и просьбами об оплате.",
       "profile_interlocutor": "Профиль Собеседника",
       "view_listing": "Посмотреть объявление",
       "menu_messages": "Сообщения",
@@ -2206,6 +2220,13 @@ class AppStrings {
       "messages": "Xabarlar",
       "chat": "Chat",
       "chat_with": "{name} bilan chat",
+      "chat_security_ribbon_title": "Himoyalangan chat",
+      "chat_security_ribbon_body":
+          "Bu chat AI anti‑firibgarlik va scam filtrlari bilan himoyalangan — xavfsizroq muloqot uchun.",
+      "chat_safety_warning_title_medium": "Ogohlantirish",
+      "chat_safety_warning_title_high": "Ehtiyot bo‘ling",
+      "chat_safety_warning_fallback":
+          "Bu suhbatda firibgarlik belgilari bo‘lishi mumkin. Havolalar, kodlar va to‘lov so‘rovlaridan ehtiyot bo‘ling.",
       "profile_interlocutor": "Suhbatdosh profili",
       "view_listing": "E'lonni ko'rish",
       "menu_messages": "Xabarlar",

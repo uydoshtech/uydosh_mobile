@@ -65,6 +65,12 @@ abstract class IMessagingService {
 
   Future<int> getUnreadMessageCount();
 
+  // Safety
+  Future<Map<String, dynamic>> safetyCheckConversation({
+    required int conversationId,
+    int limit = 8,
+  });
+
   // Attachments
   Future<MessageAttachment> uploadAttachment({
     required int messageId,
@@ -536,6 +542,20 @@ class MessagingService implements IMessagingService {
   }
 
   @override
+  Future<Map<String, dynamic>> safetyCheckConversation({
+    required int conversationId,
+    int limit = 8,
+  }) async {
+    await _checkAuthentication();
+    final response = await _apiClient.post<Map<String, dynamic>, IJsonEncodable>(
+      "/conversations/$conversationId/safety-check",
+      (json) => json as Map<String, dynamic>,
+      data: _SafetyCheckRequest(limit: limit),
+    );
+    return response;
+  }
+
+  @override
   Future<MessageAttachment> uploadAttachment({
     required int messageId,
     required File file,
@@ -633,4 +653,12 @@ class MessagingService implements IMessagingService {
       return "document";
     }
   }
+}
+
+class _SafetyCheckRequest implements IJsonEncodable {
+  _SafetyCheckRequest({required this.limit});
+  final int limit;
+
+  @override
+  Map<String, dynamic> toJson() => {"limit": limit};
 }

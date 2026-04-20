@@ -18,6 +18,8 @@ class SessionManager {
   static const String _googleDisplayNameKey = "google_display_name";
   static const String _googlePhotoUrlKey = "google_photo_url";
   static const String _userProfileCacheKey = "user_profile_cache";
+  static const String _chatSecurityRibbonDismissedKey =
+      "chat_security_ribbon_dismissed";
 
   // Check if user is currently authenticated
   static Future<bool> isAuthenticated() async {
@@ -253,5 +255,15 @@ class SessionManager {
       await prefs.remove(_userProfileCacheKey);
       return null;
     }
+  }
+
+  static Future<bool> isChatSecurityRibbonDismissed() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_chatSecurityRibbonDismissedKey) ?? false;
+  }
+
+  static Future<void> dismissChatSecurityRibbon() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_chatSecurityRibbonDismissedKey, true);
   }
 }

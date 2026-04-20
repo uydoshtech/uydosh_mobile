@@ -15,6 +15,7 @@ class AppConfig {
 
   // Other app-wide configurations can be added here
   static const bool enableHapticFeedback = true;
+  static const bool enableSoundEffects = true;
   static const bool enableAnimations = true;
 
   // Maps configuration

@@ -15,6 +15,7 @@ import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -172,6 +173,7 @@ class _ListingTileState extends State<ListingTile>
   /// and an error toast is shown.
   Future<void> _handleFavoriteTap(BuildContext context) async {
     HapticFeedbackUtils.impact();
+    SoundService().playLike();
     final favoritesState = FavoritesState();
     final wasFavorite =
         widget.forceFavorite ?? favoritesState.isFavorite(widget.listing.id);
