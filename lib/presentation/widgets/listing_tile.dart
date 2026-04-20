@@ -35,6 +35,7 @@ class ListingTile extends StatefulWidget {
     required this.listing, super.key,
     this.forceFavorite, // Optional parameter
     this.onFavoriteRemoved, // Optional callback
+    this.onFavoriteRemovalFailed, // Optional rollback callback (favorites screen)
     this.showHeartIcon =
         false, // Default to false - only show on favorites screen
     this.showFavoriteIndicator =
@@ -47,6 +48,8 @@ class ListingTile extends StatefulWidget {
   final Listing listing;
   final bool? forceFavorite; // New parameter to force heart to be red
   final VoidCallback? onFavoriteRemoved; // Callback when favorite is removed
+  final VoidCallback?
+  onFavoriteRemovalFailed; // Callback when optimistic removal must be rolled back
   final bool showHeartIcon; // New parameter to control heart icon visibility
   /// When true, renders a small non-interactive filled heart in the top-right
   /// of the tile if the listing is currently in the user's favorites.
@@ -185,19 +188,25 @@ class _ListingTileState extends State<ListingTile>
       _pulsateHeart();
     }
 
+    // Favorites screen: remove from the list immediately (optimistic),
+    // without waiting for the network round-trip.
+    if (wasFavorite && widget.onFavoriteRemoved != null) {
+      widget.onFavoriteRemoved!();
+    }
+
     try {
       final favoriteService = getIt<IFavoriteService>();
       final success = await favoriteService.toggleFavorite(widget.listing.id);
 
       if (success) {
-        if (wasFavorite && widget.onFavoriteRemoved != null) {
-          widget.onFavoriteRemoved!();
-        }
         return;
       }
 
       // Server rejected the toggle — roll back local state.
       favoritesState.toggleFavorite(widget.listing.id);
+      if (wasFavorite && widget.onFavoriteRemovalFailed != null) {
+        widget.onFavoriteRemovalFailed!();
+      }
       if (context.mounted) {
         ToastTheme.showError(
           context,
@@ -206,6 +215,9 @@ class _ListingTileState extends State<ListingTile>
       }
     } catch (_) {
       favoritesState.toggleFavorite(widget.listing.id);
+      if (wasFavorite && widget.onFavoriteRemovalFailed != null) {
+        widget.onFavoriteRemovalFailed!();
+      }
       if (context.mounted) {
         ToastTheme.showError(
           context,

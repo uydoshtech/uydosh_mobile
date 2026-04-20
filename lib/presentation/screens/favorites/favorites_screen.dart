@@ -35,6 +35,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   List<Listing> _favoriteListings = [];
   final Set<int> _itemsBeingRemoved = {}; // Track items being removed for animation
+  final Map<int, ({Listing listing, int index})> _optimisticallyRemoved =
+      {}; // Rollback buffer for optimistic removals
   bool _isLoading = false;
   bool _isLoadingMore = false;
   bool _hasMoreData = true;
@@ -339,11 +341,41 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       forceFavorite: true,
                       showHeartIcon: true,
                       onFavoriteRemoved: () {
+                        if (!mounted) return;
+                        // Save for rollback *before* we mutate the list.
+                        if (!_optimisticallyRemoved.containsKey(listing.id)) {
+                          _optimisticallyRemoved[listing.id] = (
+                            listing: listing,
+                            index: index,
+                          );
+                        }
                         setState(() {
                           _itemsBeingRemoved.add(listing.id);
                         });
+
+                        // After collapse finishes, remove from the list.
                         Future.delayed(const Duration(milliseconds: 300), () {
-                          _removeFromFavorites(listing.id);
+                          if (!mounted) return;
+                          setState(() {
+                            _itemsBeingRemoved.remove(listing.id);
+                            _favoriteListings.removeWhere(
+                              (l) => l.id == listing.id,
+                            );
+                          });
+                        });
+                      },
+                      onFavoriteRemovalFailed: () {
+                        if (!mounted) return;
+                        final backup = _optimisticallyRemoved.remove(listing.id);
+                        if (backup == null) return;
+
+                        setState(() {
+                          _itemsBeingRemoved.remove(listing.id);
+                          final safeIndex = backup.index.clamp(
+                            0,
+                            _favoriteListings.length,
+                          );
+                          _favoriteListings.insert(safeIndex, backup.listing);
                         });
                       },
                     ),
@@ -584,37 +616,5 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  Future<void> _removeFromFavorites(int listingId) async {
-    // Check authentication status
-    if (!AuthenticationState().isAuthenticated) {
-      logger.d(
-        "❌ FavoritesScreen: User not authenticated, cannot remove from favorites",
-      );
-      return;
-    }
-
-    if (mounted) {
-      setState(() {
-        _itemsBeingRemoved.remove(listingId);
-        _favoriteListings.removeWhere((listing) => listing.id == listingId);
-      });
-    }
-
-    try {
-      await _favoriteService.removeFromFavorites(listingId);
-      logger.d(
-        "✅ FavoritesScreen: Successfully removed listing $listingId from favorites",
-      );
-    } catch (e) {
-      logger.d(
-        "❌ FavoritesScreen: Error removing listing $listingId from favorites: $e",
-      );
-      if (mounted) {
-        ToastTheme.showError(
-          context,
-          message: "Failed to remove from favorites.",
-        );
-      }
-    }
-  }
+  // NOTE: backend removal is handled by `ListingTile` via `toggleFavorite()`.
 }

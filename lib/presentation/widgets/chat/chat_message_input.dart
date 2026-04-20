@@ -15,9 +15,11 @@ class ChatMessageInput extends StatelessWidget {
     required this.controller,
     required this.onSend,
     required this.isSendingMessage,
+    this.focusNode,
     super.key,
   });
   final TextEditingController controller;
+  final FocusNode? focusNode;
   final VoidCallback onSend;
   final bool isSendingMessage;
 
@@ -56,6 +58,7 @@ class ChatMessageInput extends StatelessWidget {
               Expanded(
                 child: ThreeDTextField(
                   controller: controller,
+                  focusNode: focusNode,
                   hintText: L10n.get("type_message"),
                   backgroundColor: inputBackgroundColor,
                   textColor: inputFieldTextColor,

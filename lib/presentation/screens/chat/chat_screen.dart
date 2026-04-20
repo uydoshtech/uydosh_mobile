@@ -71,6 +71,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   late TextEditingController _messageController;
   late ScrollController _scrollController;
+  late FocusNode _messageFocusNode;
   int? _currentUserId;
   List<Message> _messages = [];
   bool _isSendingMessage = false;
@@ -135,6 +136,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
     _messageController = TextEditingController();
     _scrollController = ScrollController();
+    _messageFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _initializeChat());
     _loadSecurityRibbonState();
@@ -144,6 +146,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _messageFocusNode.dispose();
     super.dispose();
   }
 
@@ -564,6 +567,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
                     child: ChatMessageInput(
                       controller: _messageController,
+                      focusNode: _messageFocusNode,
                       onSend: _sendMessage,
                       isSendingMessage: _isSendingMessage,
                     ),
@@ -814,7 +818,7 @@ class _ChatScreenState extends State<ChatScreen> {
             : question[0].toLowerCase() + question.substring(1);
     _messageController.text = "$greeting $lowercasedQuestion";
     // Focus the text field to show the inserted text
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).requestFocus(_messageFocusNode);
   }
 
   String _getGreetingForCurrentLanguage() {
