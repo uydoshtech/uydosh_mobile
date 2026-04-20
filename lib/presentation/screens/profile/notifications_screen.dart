@@ -5,6 +5,7 @@ import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kDebugMode;
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:permission_handler/permission_handler.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
@@ -14,12 +15,16 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
+import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
+import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -483,6 +488,66 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         "with_photo": a.withPhoto,
       };
 
+  Future<void> _openAlertResults(SearchAlert a) async {
+    if (!mounted) return;
+
+    // Sync global search filters so the search sheet / results summary match.
+    final s = SearchFiltersState();
+
+    final listingTypeId = a.listingTypeId ?? s.selectedListingTypeId;
+    final locationId = a.locationId;
+
+    final resolvedStationId = _subwayStationIdForBottomSheet(a);
+    final resolvedLineId = _subwayLineIdForBottomSheet(a);
+    final hasMultipleStations =
+        a.subwayStationIds != null && (a.subwayStationIds?.length ?? 0) > 1;
+
+    // Prefer the line filter when the alert targets multiple stations ("entire line").
+    final subwayStationId =
+        (resolvedStationId != null && !hasMultipleStations) ? resolvedStationId : null;
+    final subwayLineId =
+        (subwayStationId == null) ? resolvedLineId : null;
+
+    // Best-effort keep persistent state aligned.
+    // These setters are async; we don't want to block navigation on prefs writes.
+    s.setListingTypeId(listingTypeId);
+    s.setLocationIndex(locationId ?? 0);
+    s.setSubwayLine(subwayLineId ?? 0);
+    s.setStationId(subwayStationId ?? 0);
+    if (a.gender != null) {
+      s.setGender(a.gender!);
+    }
+    if (a.minPrice != null || a.maxPrice != null) {
+      s.setPriceRange(a.minPrice ?? s.minPrice, a.maxPrice ?? s.maxPrice);
+    }
+    if (a.privateRoom != null) {
+      s.setPrivateRoom(a.privateRoom!);
+    }
+    if (a.withPhoto != null) {
+      s.setWithPhoto(a.withPhoto!);
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => ListingsBloc(getIt<IListingService>()),
+          child: HomeScreen(
+            listingTypeId: listingTypeId,
+            locationId: locationId,
+            subwayStationId: subwayStationId,
+            subwayLineId: subwayLineId,
+            gender: a.gender,
+            minPrice: a.minPrice,
+            maxPrice: a.maxPrice,
+            privateRoom: a.privateRoom,
+            withPhoto: a.withPhoto,
+            isSearchMode: true,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _iconTextBadge({
     required ThemeData theme,
     required String text,
@@ -809,94 +874,98 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             ),
                           ),
                           child: ListingDetailTileShell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(14),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(14),
+                                onTap: _bulkWorking ? null : () => _openAlertResults(a),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(14),
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
                                     children: [
-                                      ThemeIcon(
-                                        a.enabled
-                                            ? Icons.notifications
-                                            : Icons.notifications_none_outlined,
-                                        color: ThemeState().isBlueTheme
-                                            ? Colors.white
-                                            : (a.enabled
-                                                ? theme.colorScheme.primary
-                                                : theme.colorScheme
-                                                    .onSurfaceVariant),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Material(
-                                          color: Colors.transparent,
-                                          child: Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                              0,
-                                              4,
-                                              48,
-                                              4,
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                _summaryWidget(a, theme),
-                                              ],
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          ThemeIcon(
+                                            a.enabled
+                                                ? Icons.notifications
+                                                : Icons.notifications_none_outlined,
+                                            color: ThemeState().isBlueTheme
+                                                ? Colors.white
+                                                : (a.enabled
+                                                    ? theme.colorScheme.primary
+                                                    : theme.colorScheme
+                                                        .onSurfaceVariant),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.fromLTRB(
+                                                0,
+                                                4,
+                                                48,
+                                                4,
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  _summaryWidget(a, theme),
+                                                ],
+                                              ),
                                             ),
                                           ),
+                                        ],
+                                      ),
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: TheDotDropMenuButton<String>(
+                                          enabled: !_bulkWorking,
+                                          icon: CupertinoIcons.pencil_circle,
+                                          padding: EdgeInsets.zero,
+                                          onSelected: (value) {
+                                            if (value == "toggle") {
+                                              _toggleEnabled(a, !a.enabled);
+                                            } else if (value == "delete") {
+                                              _deleteAlert(a);
+                                            }
+                                          },
+                                          itemBuilder: (menuContext) {
+                                            final isEnabled = a.enabled;
+                                            return [
+                                              PopupMenuItem(
+                                                value: "toggle",
+                                                child: UydoshPopupMenuItemRow(
+                                                  icon: isEnabled
+                                                      ? Icons
+                                                          .notifications_off_outlined
+                                                      : Icons
+                                                          .notifications_active_outlined,
+                                                  text: isEnabled
+                                                      ? L10n.get("disable")
+                                                      : L10n.get("enable"),
+                                                  enabled: true,
+                                                ),
+                                              ),
+                                              PopupMenuItem(
+                                                value: "delete",
+                                                child: UydoshPopupMenuItemRow(
+                                                  icon: Icons.delete_outline,
+                                                  text: L10n.get("delete"),
+                                                  enabled: true,
+                                                  destructive: true,
+                                                ),
+                                              ),
+                                            ];
+                                          },
                                         ),
                                       ),
                                     ],
                                   ),
-                                  Positioned(
-                                    top: 0,
-                                    right: 0,
-                                    child: TheDotDropMenuButton<String>(
-                                      enabled: !_bulkWorking,
-                                      icon: CupertinoIcons.pencil_circle,
-                                      padding: EdgeInsets.zero,
-                                      onSelected: (value) {
-                                        if (value == "toggle") {
-                                          _toggleEnabled(a, !a.enabled);
-                                        } else if (value == "delete") {
-                                          _deleteAlert(a);
-                                        }
-                                      },
-                                      itemBuilder: (menuContext) {
-                                        final isEnabled = a.enabled;
-                                        return [
-                                          PopupMenuItem(
-                                            value: "toggle",
-                                            child: UydoshPopupMenuItemRow(
-                                              icon: isEnabled
-                                                  ? Icons
-                                                      .notifications_off_outlined
-                                                  : Icons
-                                                      .notifications_active_outlined,
-                                              text: isEnabled
-                                                  ? L10n.get("disable")
-                                                  : L10n.get("enable"),
-                                              enabled: true,
-                                            ),
-                                          ),
-                                          PopupMenuItem(
-                                            value: "delete",
-                                            child: UydoshPopupMenuItemRow(
-                                              icon: Icons.delete_outline,
-                                              text: L10n.get("delete"),
-                                              enabled: true,
-                                              destructive: true,
-                                            ),
-                                          ),
-                                        ];
-                                      },
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                           ),

@@ -627,6 +627,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   }
 
   Widget _buildRoleCard(BuildContext context, {required bool canSave}) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final roleFieldFillColor = isBlueTheme
+        ? theme.colorScheme.surface.withValues(alpha: 0.22)
+        : null;
+
     return _NeumorphicTile(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -653,17 +659,19 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               onChanged: _saving
                   ? null
                   : (value) => setState(() => _selectedRole = value),
-              style: ThemeState().isBlueTheme
-                  ? Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.black87,
+              style: isBlueTheme
+                  ? theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurface,
                       )
                   : null,
-              dropdownColor: ThemeState().isBlueTheme
+              dropdownColor: isBlueTheme
                   ? Colors.blue.shade600.withValues(
                       alpha: AppTheme.menuOverlaySurfaceOpacity,
                     )
-                  : Theme.of(context).popupMenuTheme.color,
+                  : theme.popupMenuTheme.color,
               decoration: InputDecoration(
+                filled: roleFieldFillColor != null,
+                fillColor: roleFieldFillColor,
                 border: const OutlineInputBorder(),
               ),
             ),
