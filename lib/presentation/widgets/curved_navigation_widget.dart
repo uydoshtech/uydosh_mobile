@@ -68,12 +68,16 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
             ),
           ),
           // One-shot subtle cue: a tiny dot flies into the Messages badge.
-          Positioned.fill(
+          Positioned(
+            left: 0,
+            right: 0,
+            top: -90,
+            bottom: 0,
             child: TravelingDotWidget(
               targetKey: _messagesBadgeKey,
               trigger: widget.incomingMessageTravelDotTrigger,
               color: AppColors.success,
-              size: 7,
+              size: 8,
             ),
           ),
         ],
@@ -175,21 +179,22 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
             child: Stack(
               children: [
                 bubbleIcon,
-                if (widget.hasUnreadMessages)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: KeyedSubtree(
-                      key: _messagesBadgeKey,
-                      child: const BlinkingDotWidget(
-                      color: AppColors.success,
-                      size: 13,
-                      duration: Duration(milliseconds: 750),
-                      borderColor: Colors.white,
-                      borderWidth: 2,
-                      ),
-                    ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: KeyedSubtree(
+                    key: _messagesBadgeKey,
+                    child: widget.hasUnreadMessages
+                        ? const BlinkingDotWidget(
+                            color: AppColors.success,
+                            size: 13,
+                            duration: Duration(milliseconds: 750),
+                            borderColor: Colors.white,
+                            borderWidth: 2,
+                          )
+                        : const SizedBox(width: 13, height: 13),
                   ),
+                ),
               ],
             ),
           )
@@ -197,21 +202,22 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
           Stack(
             children: [
               bubbleIcon,
-              if (widget.hasUnreadMessages)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: KeyedSubtree(
-                    key: _messagesBadgeKey,
-                    child: const BlinkingDotWidget(
-                    color: AppColors.success,
-                    size: 13,
-                    duration: Duration(milliseconds: 750),
-                    borderColor: Colors.white,
-                    borderWidth: 2,
-                    ),
-                  ),
+              Positioned(
+                right: 0,
+                top: 0,
+                child: KeyedSubtree(
+                  key: _messagesBadgeKey,
+                  child: widget.hasUnreadMessages
+                      ? const BlinkingDotWidget(
+                          color: AppColors.success,
+                          size: 13,
+                          duration: Duration(milliseconds: 750),
+                          borderColor: Colors.white,
+                          borderWidth: 2,
+                        )
+                      : const SizedBox(width: 13, height: 13),
                 ),
+              ),
             ],
           ),
         if (!isSelected) ...[

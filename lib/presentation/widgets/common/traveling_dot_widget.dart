@@ -15,7 +15,10 @@ class TravelingDotWidget extends StatefulWidget {
     this.size = 7,
     this.duration = const Duration(milliseconds: 780),
     this.cooldown = const Duration(milliseconds: 900),
-    this.startAlignment = const Alignment(0.0, -0.6),
+    // Defaults to slightly above the host bounds. The host is often positioned
+    // with a negative top (see bottom-nav overlay usage) so this reads as
+    // "incoming from above" even on short nav bars.
+    this.startAlignment = const Alignment(0.0, -1.15),
   });
 
   /// GlobalKey attached to the destination widget (e.g. the badge/dot).

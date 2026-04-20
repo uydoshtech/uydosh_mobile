@@ -31,15 +31,12 @@ class ChatSecurityRibbon extends StatelessWidget {
               border: Border(bottom: BorderSide(color: border)),
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(top: 2),
-                  child: ThemeIcon(
-                    Icons.shield_outlined,
-                    size: 18,
-                    color: shieldColor,
-                  ),
+                ThemeIcon(
+                  Icons.shield,
+                  size: 23, // 18 * 1.25 ≈ 23
+                  color: shieldColor,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
