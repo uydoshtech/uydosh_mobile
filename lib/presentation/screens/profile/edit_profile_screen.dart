@@ -1351,10 +1351,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         final isSelected = currentIsStudent == isStudent;
         final baseColor =
             isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
-        // Selected = inset / pressed-in; unselected = raised plate.
-        // Keep the label at full contrast in both states (the inset shadow is
-        // enough to signal "pressed"). Picking an accent color for selected
-        // text washed it out against the dark blue theme surface.
+        // Selected = raised plate; unselected = inset / pressed-in.
+        // Keep the label at full contrast in both states.
         final textColor =
             isBlueTheme ? Colors.white : theme.colorScheme.onSurface;
         final iconColor = isBlueTheme
@@ -1378,14 +1376,14 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             curve: Curves.easeOut,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: isSelected ? baseColor : null,
+              color: isSelected ? null : baseColor,
               gradient: isSelected
-                  ? null
-                  : ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
+                  ? ThreeDSurfaceStyle.surfaceGradient(context, baseColor)
+                  : null,
               borderRadius: BorderRadius.circular(16),
               boxShadow: isSelected
-                  ? ThreeDSurfaceStyle.insetRecessedShadows(context)
-                  : ThreeDSurfaceStyle.elevatedShadows(context),
+                  ? ThreeDSurfaceStyle.elevatedShadows(context)
+                  : ThreeDSurfaceStyle.insetRecessedShadows(context),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

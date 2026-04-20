@@ -423,6 +423,11 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
   ) {
     final completionPercent = ProfileCompletionState.completionPercent(profile);
     final completionFraction = completionPercent / 100;
+    final missingKeys = ProfileCompletionState.getMissingFields(profile);
+    final missingLabels = missingKeys
+        .map(_labelForMissingProfileFieldKey)
+        .toList()
+      ..removeWhere((e) => e.trim().isEmpty);
 
     final theme = Theme.of(context);
     return Theme(
@@ -508,6 +513,25 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
+              if (missingLabels.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  L10n.get("missing_fields_title"),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  missingLabels.join(", "),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
               if (!widget.userBlocked) ...[
                 const SizedBox(height: 8),
                 UydoshLinkButton(
@@ -521,5 +545,46 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
         ),
       ),
     );
+  }
+
+  static String _labelForMissingProfileFieldKey(String key) {
+    switch (key) {
+      case "name":
+        return L10n.get("name", fallback: "Name");
+      case "gender":
+        return L10n.get("gender", fallback: "Gender");
+      case "region":
+        return L10n.get("im_from", fallback: "Region");
+      case "university":
+        return L10n.get("university", fallback: "University");
+      case "aboutMe":
+        return L10n.get("about_me", fallback: "About me");
+      case "telegram":
+        return L10n.get("telegram", fallback: "Telegram");
+      case "employed":
+        return L10n.get("employed", fallback: "Employed");
+      case "cleanliness":
+        return L10n.get("cleanliness", fallback: "Cleanliness");
+      case "noiseLevel":
+        return L10n.get("noise_level", fallback: "Noise level");
+      case "sociability":
+        return L10n.get("sociability", fallback: "Sociability");
+      case "guestsAllowed":
+        return L10n.get("guests_allowed", fallback: "Guests allowed");
+      case "smokingPreference":
+        return L10n.get("smoking_preference", fallback: "Smoking");
+      case "alcoholPreference":
+        return L10n.get("alcohol_preference", fallback: "Alcohol");
+      case "cookingHabits":
+        return L10n.get("cooking_habits", fallback: "Cooking habits");
+      case "petsPreference":
+        return L10n.get("pets_preference", fallback: "Pets preference");
+      case "wakeupTime":
+        return L10n.get("wakeup_time", fallback: "Wake-up time");
+      case "sleepTime":
+        return L10n.get("sleep_time", fallback: "Sleep time");
+      default:
+        return key;
+    }
   }
 }

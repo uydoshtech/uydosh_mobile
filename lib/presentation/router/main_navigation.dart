@@ -291,6 +291,10 @@ class MainNavigationState extends State<MainNavigation>
     int completionPercent,
     UserProfile profile,
   ) {
+    final missingKeys = ProfileCompletionState.getMissingFields(profile);
+    final missingLabels = missingKeys.map(_labelForMissingProfileFieldKey).toList()
+      ..removeWhere((e) => e.trim().isEmpty);
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -361,6 +365,24 @@ class MainNavigationState extends State<MainNavigation>
                       fontWeight: FontWeight.w600,
                     ),
               ),
+              if (missingLabels.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  L10n.get("missing_fields_title"),
+                  style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  // Usually only 1 field (e.g. 94%), but keep it robust.
+                  missingLabels.join(", "),
+                  style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
+                        color:
+                            Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -404,6 +426,49 @@ class MainNavigationState extends State<MainNavigation>
         );
       },
     );
+  }
+
+  /// Map `ProfileCompletionState.getMissingFields()` keys to localized field labels.
+  /// Keep in sync with `ProfileCompletionState.getMissingFields`.
+  static String _labelForMissingProfileFieldKey(String key) {
+    switch (key) {
+      case "name":
+        return L10n.get("name", fallback: "Name");
+      case "gender":
+        return L10n.get("gender", fallback: "Gender");
+      case "region":
+        return L10n.get("im_from", fallback: "Region");
+      case "university":
+        return L10n.get("university", fallback: "University");
+      case "aboutMe":
+        return L10n.get("about_me", fallback: "About me");
+      case "telegram":
+        return L10n.get("telegram", fallback: "Telegram");
+      case "employed":
+        return L10n.get("employed", fallback: "Employed");
+      case "cleanliness":
+        return L10n.get("cleanliness", fallback: "Cleanliness");
+      case "noiseLevel":
+        return L10n.get("noise_level", fallback: "Noise level");
+      case "sociability":
+        return L10n.get("sociability", fallback: "Sociability");
+      case "guestsAllowed":
+        return L10n.get("guests_allowed", fallback: "Guests allowed");
+      case "smokingPreference":
+        return L10n.get("smoking_preference", fallback: "Smoking");
+      case "alcoholPreference":
+        return L10n.get("alcohol_preference", fallback: "Alcohol");
+      case "cookingHabits":
+        return L10n.get("cooking_habits", fallback: "Cooking habits");
+      case "petsPreference":
+        return L10n.get("pets_preference", fallback: "Pets preference");
+      case "wakeupTime":
+        return L10n.get("wakeup_time", fallback: "Wake-up time");
+      case "sleepTime":
+        return L10n.get("sleep_time", fallback: "Sleep time");
+      default:
+        return key;
+    }
   }
 
   // Redirect to auth wizard
