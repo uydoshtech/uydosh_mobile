@@ -328,15 +328,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           itemBuilder: (context, index) {
             final listing = _favoriteListings[index];
 
-            return AnimatedContainer(
-              key: ValueKey(listing.id),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              height: _itemsBeingRemoved.contains(listing.id) ? 0 : null,
-              child: _itemsBeingRemoved.contains(listing.id)
-                  ? const SizedBox.shrink()
+            final isRemoving = _itemsBeingRemoved.contains(listing.id);
+            const duration = Duration(milliseconds: 300);
+
+            return AnimatedSwitcher(
+              duration: duration,
+              reverseDuration: const Duration(milliseconds: 180),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                return SizeTransition(
+                  sizeFactor: animation,
+                  axisAlignment: -1.0,
+                  child: FadeTransition(opacity: animation, child: child),
+                );
+              },
+              child: isRemoving
+                  ? SizedBox(
+                      key: ValueKey("fav-${listing.id}-removed"),
+                    )
                   : ListingTile(
-                      key: ValueKey(listing.id),
+                      key: ValueKey("fav-${listing.id}-tile"),
                       listing: listing,
                       forceFavorite: true,
                       showHeartIcon: true,
@@ -353,8 +365,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           _itemsBeingRemoved.add(listing.id);
                         });
 
-                        // After collapse finishes, remove from the list.
-                        Future.delayed(const Duration(milliseconds: 300), () {
+                        // After animation finishes, remove from the list.
+                        Future.delayed(duration, () {
                           if (!mounted) return;
                           setState(() {
                             _itemsBeingRemoved.remove(listing.id);
