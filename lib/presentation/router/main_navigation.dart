@@ -178,13 +178,13 @@ class MainNavigationState extends State<MainNavigation>
     final previous = _lastObservedUnreadCount;
     _lastObservedUnreadCount = current;
 
-    // Only play the travel-dot when unread transitions from 0 -> >0
-    // and the user isn't currently on the Messages tab.
-    if (previous == 0 && current > 0 && _currentIndex != 2) {
+    // Play when unread increases and the user isn't currently on Messages tab.
+    // (This is more robust than only 0 -> >0; many users already have unread.)
+    if (current > previous && _currentIndex != 2) {
       final now = DateTime.now();
       final last = _lastTravelDotPlayedAt;
       // Additional global cooldown (even if multiple increments happen quickly).
-      if (last != null && now.difference(last) < const Duration(seconds: 25)) {
+      if (last != null && now.difference(last) < const Duration(seconds: 8)) {
         return;
       }
       _lastTravelDotPlayedAt = now;

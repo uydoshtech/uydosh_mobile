@@ -71,13 +71,13 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
           Positioned(
             left: 0,
             right: 0,
-            top: -90,
+            top: -160,
             bottom: 0,
             child: TravelingDotWidget(
               targetKey: _messagesBadgeKey,
               trigger: widget.incomingMessageTravelDotTrigger,
               color: AppColors.success,
-              size: 8,
+              size: 10,
             ),
           ),
         ],
