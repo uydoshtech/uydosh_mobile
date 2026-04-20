@@ -1,3 +1,4 @@
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -168,11 +169,16 @@ class _MessageBubbleState extends State<MessageBubble>
                           ),
                         ],
                       ),
-                      if (!widget.isCurrentUser && (widget.riskLevel == 'medium' || widget.riskLevel == 'high'))
+                      if (!widget.isCurrentUser &&
+                          (widget.riskLevel == 'medium' ||
+                              widget.riskLevel == 'high'))
                         PositionedDirectional(
-                          top: -6,
-                          end: -6,
-                          child: _RiskDot(level: widget.riskLevel!),
+                          // Badge-style: overlap the bubble in the top-right.
+                          // Negative offsets keep it outside (hovering above).
+                          // Roughly half outside the bubble.
+                          top: -22,
+                          end: -22,
+                          child: _RiskBadge(level: widget.riskLevel!),
                         ),
                     ],
                   ),
@@ -317,31 +323,30 @@ class _MessageBubbleState extends State<MessageBubble>
   }
 }
 
-class _RiskDot extends StatelessWidget {
-  const _RiskDot({required this.level});
+class _RiskBadge extends StatelessWidget {
+  const _RiskBadge({required this.level});
   final String level; // medium|high
 
   @override
   Widget build(BuildContext context) {
     final color =
-        level == 'high' ? Colors.redAccent : Colors.amber.shade600;
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.95),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+        level == 'high' ? Colors.redAccent : Colors.amber.shade700;
+
+    const badgeSize = 22.0;
+
+    // Solid badge: no transparency bleeding the bubble color through.
+    return SizedBox(
+      width: badgeSize,
+      height: badgeSize,
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        child: const Center(
+          child: ThemeIcon(
+            CupertinoIcons.exclamationmark,
+            size: 14,
+            color: Colors.white,
           ),
-        ],
+        ),
       ),
     );
   }

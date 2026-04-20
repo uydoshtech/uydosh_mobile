@@ -385,10 +385,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                     );
 
                                 // MVP1: client trigger → server safety check (non-blocking)
-                                final latest = messages.isNotEmpty
-                                    ? messages.last.content
-                                    : null;
-                                if (latest != null) {
+                                final latestMessage =
+                                    messages.isNotEmpty ? messages.last : null;
+                                final latest = latestMessage?.content;
+                                final latestSenderId = latestMessage?.senderId;
+                                // Only warn the potential victim: trigger checks on incoming messages.
+                                if (latest != null &&
+                                    latestSenderId != null &&
+                                    _currentUserId != null &&
+                                    latestSenderId != _currentUserId) {
                                   _maybeRunSafetyCheck(triggerText: latest);
                                 }
                               },
@@ -408,9 +413,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                 _scrollToBottom();
                                 // Haptic feedback (sound plays on send button press)
                                 HapticFeedbackUtils.impact();
-
-                                // MVP1: client trigger → server safety check (non-blocking)
-                                _maybeRunSafetyCheck(triggerText: message.content);
                               },
                               messagesMarkedAsRead:
                                   (conversationId, markedCount) {},

@@ -305,6 +305,43 @@ class AppLocalizationsRu extends AppLocalizations {
       'Открытие существующего разговора';
 
   @override
+  String get chat_security_ribbon_title => 'Советы по безопасности';
+
+  @override
+  String get chat_security_ribbon_body =>
+      'Общайтесь в UyDosh. Не переводите предоплату и не сообщайте коды подтверждения до личной встречи и проверки деталей.';
+
+  @override
+  String get chat_safety_warning_title_high => 'Будьте осторожны';
+
+  @override
+  String get chat_safety_warning_title_medium => 'Будьте внимательны';
+
+  @override
+  String get chat_safety_warning_fallback =>
+      'Этот разговор может быть рискованным. Избегайте предоплаты и держите общение на платформе.';
+
+  @override
+  String get chat_safety_reason_deposit_to_reserve_room =>
+      'Собеседник просит депозит, чтобы «забронировать» комнату.';
+
+  @override
+  String get chat_safety_reason_suspicious_link =>
+      'Собеседник отправляет подозрительную ссылку.';
+
+  @override
+  String get chat_safety_reason_off_platform =>
+      'Собеседник пытается перевести общение вне платформы.';
+
+  @override
+  String get chat_safety_reason_otp_code =>
+      'Собеседник просит код подтверждения (OTP/SMS).';
+
+  @override
+  String get chat_safety_reason_payment_request =>
+      'Собеседник просит предоплату или платежные данные.';
+
+  @override
   String get quick_question_room_available => 'Комната свободна?';
 
   @override

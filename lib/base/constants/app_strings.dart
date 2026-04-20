@@ -121,6 +121,13 @@ class AppStrings {
           "This conversation may contain scam/fraud signals. Be cautious with links, codes, and payment requests.",
       "chat_safety_reason_deposit_to_reserve_room":
           "The user is asking for a deposit to reserve the room.",
+      "chat_safety_reason_suspicious_link": "The user is sharing a suspicious link.",
+      "chat_safety_reason_off_platform":
+          "The user is trying to move the conversation off-platform.",
+      "chat_safety_reason_otp_code":
+          "The user is asking for a verification code (OTP/SMS).",
+      "chat_safety_reason_payment_request":
+          "The user is requesting prepayment or payment details.",
       "profile_interlocutor": "Interlocutor's Profile",
       "view_listing": "View Listing",
       "menu_messages": "Messages",
@@ -727,6 +734,7 @@ class AppStrings {
       "admin_listing_creation_analytics_today": "Today",
       "admin_listing_creation_analytics_week": "This week",
       "admin_listing_creation_analytics_by_day": "Listings by day",
+      "admin_listing_creation_analytics_by_month": "Listings grouped by month",
       "admin_listing_creation_analytics_no_data":
           "No listing data in this period",
 
@@ -1204,6 +1212,14 @@ class AppStrings {
           "В этом разговоре могут быть признаки мошенничества. Осторожнее со ссылками, кодами и просьбами об оплате.",
       "chat_safety_reason_deposit_to_reserve_room":
           "Пользователь просит внести депозит, чтобы забронировать комнату.",
+      "chat_safety_reason_suspicious_link":
+          "Собеседник отправляет подозрительную ссылку.",
+      "chat_safety_reason_off_platform":
+          "Собеседник пытается перевести общение вне платформы.",
+      "chat_safety_reason_otp_code":
+          "Собеседник просит код подтверждения (OTP/SMS).",
+      "chat_safety_reason_payment_request":
+          "Собеседник просит предоплату или платежные данные.",
       "profile_interlocutor": "Профиль Собеседника",
       "view_listing": "Посмотреть объявление",
       "menu_messages": "Сообщения",
@@ -1817,6 +1833,7 @@ class AppStrings {
       "admin_listing_creation_analytics_today": "Сегодня",
       "admin_listing_creation_analytics_week": "За неделю",
       "admin_listing_creation_analytics_by_day": "Объявления по дням",
+      "admin_listing_creation_analytics_by_month": "Объявления по месяцам",
       "admin_listing_creation_analytics_no_data":
           "Нет данных за выбранный период",
 
@@ -2297,6 +2314,14 @@ class AppStrings {
           "Bu suhbatda firibgarlik belgilari bo‘lishi mumkin. Havolalar, kodlar va to‘lov so‘rovlaridan ehtiyot bo‘ling.",
       "chat_safety_reason_deposit_to_reserve_room":
           "Foydalanuvchi xonani band qilish uchun depozit so‘ramoqda.",
+      "chat_safety_reason_suspicious_link":
+          "Suhbatdosh shubhali havola yuborayapti.",
+      "chat_safety_reason_off_platform":
+          "Suhbatdosh muloqotni platformadan tashqariga olib chiqmoqchi.",
+      "chat_safety_reason_otp_code":
+          "Suhbatdosh tasdiqlash kodini (OTP/SMS) so‘rayapti.",
+      "chat_safety_reason_payment_request":
+          "Suhbatdosh oldindan to‘lov yoki to‘lov ma’lumotlarini so‘rayapti.",
       "profile_interlocutor": "Suhbatdosh profili",
       "view_listing": "E'lonni ko'rish",
       "menu_messages": "Xabarlar",
@@ -2923,6 +2948,7 @@ class AppStrings {
       "admin_listing_creation_analytics_today": "Bugun",
       "admin_listing_creation_analytics_week": "Haftada",
       "admin_listing_creation_analytics_by_day": "Kunlar bo'yicha e'lonlar",
+      "admin_listing_creation_analytics_by_month": "Oylar bo'yicha e'lonlar",
       "admin_listing_creation_analytics_no_data":
           "Tanlangan davrda ma'lumot yo'q",
 

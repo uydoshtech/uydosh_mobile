@@ -17,12 +17,11 @@ class SoundService {
   SoundService._internal();
   static final SoundService _instance = SoundService._internal();
 
-  // Short + clean refresh sound (the whoosh was perceived as too noisy).
-  static const String _refreshWhooshAsset = "sounds/click.wav";
+  static const String _refreshWhooshAsset = "sounds/whoosh_refresh.wav";
   static const String _successAsset = "sounds/success.wav";
   static const String _errorAsset = "sounds/error.wav";
   static const String _likeAsset = "sounds/like.wav";
-  static const String _messageIncomingAsset = "sounds/click.wav";
+  static const String _messageIncomingAsset = "sounds/like.wav";
 
   // Keep separate players so overlapping sounds don't cut each other off.
   final AudioPlayer _refreshPlayer = AudioPlayer();
@@ -120,7 +119,7 @@ class SoundService {
     // Pull-to-refresh is user-initiated; keep it very subtle.
     play(
       UiSound.refresh,
-      volume: 0.10,
+      volume: 0.12,
       throttle: const Duration(milliseconds: 900),
     );
   }
@@ -135,14 +134,15 @@ class SoundService {
   }
 
   void playLike() {
-    play(UiSound.like, volume: 0.16, throttle: const Duration(milliseconds: 80));
+    play(UiSound.like, volume: 0.10, throttle: const Duration(milliseconds: 80));
   }
 
   void playIncomingMessage() {
     // Foreground messages can arrive in bursts; keep it subtle + throttled.
     play(
       UiSound.messageIncoming,
-      volume: 0.14,
+      // Use the same timbre as the favorites "like" sound, but ~2x quieter.
+      volume: 0.08,
       throttle: const Duration(milliseconds: 500),
     );
   }

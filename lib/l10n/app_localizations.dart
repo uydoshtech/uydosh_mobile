@@ -652,6 +652,66 @@ abstract class AppLocalizations {
   /// **'Opening existing conversation'**
   String get opening_existing_conversation;
 
+  /// No description provided for @chat_security_ribbon_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety tips'**
+  String get chat_security_ribbon_title;
+
+  /// No description provided for @chat_security_ribbon_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your chat on UyDosh. Don’t send deposits or share verification codes before you meet and confirm details.'**
+  String get chat_security_ribbon_body;
+
+  /// No description provided for @chat_safety_warning_title_high.
+  ///
+  /// In en, this message translates to:
+  /// **'Be careful'**
+  String get chat_safety_warning_title_high;
+
+  /// No description provided for @chat_safety_warning_title_medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Be cautious'**
+  String get chat_safety_warning_title_medium;
+
+  /// No description provided for @chat_safety_warning_fallback.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation may be risky. Avoid prepayments and keep communication on the platform.'**
+  String get chat_safety_warning_fallback;
+
+  /// No description provided for @chat_safety_reason_deposit_to_reserve_room.
+  ///
+  /// In en, this message translates to:
+  /// **'They are asking for a deposit to reserve a room.'**
+  String get chat_safety_reason_deposit_to_reserve_room;
+
+  /// No description provided for @chat_safety_reason_suspicious_link.
+  ///
+  /// In en, this message translates to:
+  /// **'They are sharing a suspicious link.'**
+  String get chat_safety_reason_suspicious_link;
+
+  /// No description provided for @chat_safety_reason_off_platform.
+  ///
+  /// In en, this message translates to:
+  /// **'They are trying to move the conversation off-platform.'**
+  String get chat_safety_reason_off_platform;
+
+  /// No description provided for @chat_safety_reason_otp_code.
+  ///
+  /// In en, this message translates to:
+  /// **'They are asking for a verification code (OTP/SMS).'**
+  String get chat_safety_reason_otp_code;
+
+  /// No description provided for @chat_safety_reason_payment_request.
+  ///
+  /// In en, this message translates to:
+  /// **'They are requesting payment details or prepayment.'**
+  String get chat_safety_reason_payment_request;
+
   /// No description provided for @quick_question_room_available.
   ///
   /// In en, this message translates to:

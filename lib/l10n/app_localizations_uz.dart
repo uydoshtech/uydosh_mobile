@@ -304,6 +304,43 @@ class AppLocalizationsUz extends AppLocalizations {
   String get opening_existing_conversation => 'Mavjud suhbatni ochish';
 
   @override
+  String get chat_security_ribbon_title => 'Xavfsizlik bo‘yicha maslahatlar';
+
+  @override
+  String get chat_security_ribbon_body =>
+      'Suhbatni UyDosh’da olib boring. Uchrashib, tafsilotlarni tekshirmaguncha oldindan to‘lov yubormang va tasdiqlash kodlarini ulashmang.';
+
+  @override
+  String get chat_safety_warning_title_high => 'Ehtiyot bo‘ling';
+
+  @override
+  String get chat_safety_warning_title_medium => 'Diqqatli bo‘ling';
+
+  @override
+  String get chat_safety_warning_fallback =>
+      'Bu suhbat xavfli bo‘lishi mumkin. Oldindan to‘lovdan saqlaning va muloqotni platformada davom eting.';
+
+  @override
+  String get chat_safety_reason_deposit_to_reserve_room =>
+      'Ular xonani “band qilish” uchun depozit so‘rayapti.';
+
+  @override
+  String get chat_safety_reason_suspicious_link =>
+      'Ular shubhali havola yuborayapti.';
+
+  @override
+  String get chat_safety_reason_off_platform =>
+      'Ular suhbatni platformadan tashqariga olib chiqmoqchi.';
+
+  @override
+  String get chat_safety_reason_otp_code =>
+      'Ular tasdiqlash kodini (OTP/SMS) so‘rayapti.';
+
+  @override
+  String get chat_safety_reason_payment_request =>
+      'Ular oldindan to‘lov yoki to‘lov ma’lumotlarini so‘rayapti.';
+
+  @override
   String get quick_question_room_available => 'Xona bo\'shmi?';
 
   @override

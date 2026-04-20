@@ -10,10 +10,23 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_scree
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+
+sealed class _MonthGroupedListItem {}
+
+final class _MonthHeaderItem extends _MonthGroupedListItem {
+  _MonthHeaderItem(this.label);
+  final String label;
+}
+
+final class _DayIndexItem extends _MonthGroupedListItem {
+  _DayIndexItem(this.index);
+  final int index;
+}
 
 class AdminListingCreationAnalyticsScreen extends StatefulWidget {
   const AdminListingCreationAnalyticsScreen({super.key});
@@ -33,6 +46,7 @@ class _AdminListingCreationAnalyticsScreenState
   String? _errorMessage;
   ListingCreationAnalyticsResponse? _analytics;
   int _selectedDays = 30;
+  final Map<String, bool> _expandedByDate = <String, bool>{};
 
   @override
   void initState() {
@@ -82,7 +96,10 @@ class _AdminListingCreationAnalyticsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Scaffold(
+      backgroundColor: scheme.surface,
       appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
@@ -116,8 +133,8 @@ class _AdminListingCreationAnalyticsScreenState
                         const SizedBox(height: 24),
                         _buildSectionTitle(
                           context,
-                          "admin_listing_creation_analytics_by_day",
-                          Icons.calendar_view_day,
+                          "admin_listing_creation_analytics_by_month",
+                          Icons.calendar_month,
                         ),
                         const SizedBox(height: 12),
                       ] else
@@ -195,16 +212,17 @@ class _AdminListingCreationAnalyticsScreenState
     required String value,
     required IconData icon,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+        gradient: ThreeDSurfaceStyle.surfaceGradient(
+          context,
+          colorScheme.surface,
         ),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,6 +279,97 @@ class _AdminListingCreationAnalyticsScreenState
     );
   }
 
+  BoxDecoration _softTileDecoration(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return BoxDecoration(
+      gradient: ThreeDSurfaceStyle.surfaceGradient(context, scheme.surface),
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+    );
+  }
+
+  Widget _countChip(BuildContext context, int count) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        "$count",
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: scheme.onSurface,
+        ),
+      ),
+    );
+  }
+
+  String _monthLabel(DateTime date) {
+    final monthKey = switch (date.month) {
+      1 => "january",
+      2 => "february",
+      3 => "march",
+      4 => "april",
+      5 => "may",
+      6 => "june",
+      7 => "july",
+      8 => "august",
+      9 => "september",
+      10 => "october",
+      11 => "november",
+      12 => "december",
+      _ => "january",
+    };
+    return "${L10n.get(monthKey)} ${date.year}";
+  }
+
+  Widget _monthSeparator(BuildContext context, String label) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 14),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 1,
+              color: scheme.outlineVariant.withValues(alpha: 0.55),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: ThreeDSurfaceStyle.surfaceGradient(
+                context,
+                scheme.surface,
+              ),
+              borderRadius: BorderRadius.circular(999),
+              boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+            ),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: scheme.onSurface,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: scheme.outlineVariant.withValues(alpha: 0.55),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openListingDetail(int listingId) {
     if (!mounted) return;
     Navigator.of(context).push(
@@ -282,71 +391,113 @@ class _AdminListingCreationAnalyticsScreenState
     final item = _analytics!.byDay[index];
     final intensity =
         maxCount > 0 ? (item.count / maxCount).clamp(0.0, 1.0) : 0.0;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
     final hasListingIds = item.listingIds.isNotEmpty;
     final isSingleListing = hasListingIds && item.listingIds.length == 1;
     final isMultiListing = hasListingIds && item.listingIds.length > 1;
 
     final leadingIcon = ThemeIcon(
-      Icons.add_circle_outline,
-      color: (isDark ? Colors.grey[500]! : Colors.grey[600]!)
-          .withValues(alpha: 0.5 + intensity * 0.5),
-    );
-    final trailing = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        "${item.count}",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-      ),
+      Icons.calendar_today,
+      size: 20,
+      color: scheme.onSurfaceVariant.withValues(alpha: 0.55 + intensity * 0.45),
     );
 
     if (isSingleListing) {
-      return ListTile(
-        leading: leadingIcon,
-        title: Text(
-          _formatDate(item.date),
-          style: const TextStyle(fontWeight: FontWeight.w500),
+      return Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: _softTileDecoration(context),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          leading: leadingIcon,
+          title: Text(
+            _formatDate(item.date),
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _countChip(context, item.count),
+              const SizedBox(width: 10),
+              const ThemeIcon(Icons.chevron_right),
+            ],
+          ),
+          onTap: () => _openListingDetail(item.listingIds.first),
         ),
-        trailing: trailing,
-        onTap: () => _openListingDetail(item.listingIds.first),
       );
     }
 
     if (isMultiListing) {
-      return ExpansionTile(
-        leading: leadingIcon,
-        title: Text(
-          _formatDate(item.date),
-          style: const TextStyle(fontWeight: FontWeight.w500),
+      final expanded = _expandedByDate[item.date] ?? false;
+      return Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: _softTileDecoration(context),
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            key: PageStorageKey<String>("listing_creation_analytics_${item.date}"),
+            initiallyExpanded: expanded,
+            onExpansionChanged: (v) => setState(() => _expandedByDate[item.date] = v),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            childrenPadding: const EdgeInsets.only(left: 14, right: 14, bottom: 10),
+            leading: leadingIcon,
+            title: Text(
+              _formatDate(item.date),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _countChip(context, item.count),
+                const SizedBox(width: 10),
+                AnimatedRotation(
+                  turns: expanded ? 0.5 : 0.0,
+                  duration: const Duration(milliseconds: 160),
+                  curve: Curves.easeOut,
+                  child: const ThemeIcon(Icons.expand_more),
+                ),
+              ],
+            ),
+            children: item.listingIds
+                .map(
+                  (id) => Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    decoration: BoxDecoration(
+                      color: scheme.surfaceContainerHighest.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 2,
+                      ),
+                      title: Text(
+                        "Listing #$id",
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      trailing: const ThemeIcon(Icons.chevron_right),
+                      onTap: () => _openListingDetail(id),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
         ),
-        trailing: trailing,
-        children: item.listingIds
-            .map(
-              (id) => ListTile(
-                leading: const SizedBox(width: 24),
-                title: Text("Listing #$id"),
-                trailing: const ThemeIcon(Icons.chevron_right),
-                onTap: () => _openListingDetail(id),
-              ),
-            )
-            .toList(),
       );
     }
 
-    return ListTile(
-      leading: leadingIcon,
-      title: Text(
-        _formatDate(item.date),
-        style: const TextStyle(fontWeight: FontWeight.w500),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: _softTileDecoration(context),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        leading: leadingIcon,
+        title: Text(
+          _formatDate(item.date),
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        trailing: _countChip(context, item.count),
       ),
-      trailing: trailing,
     );
   }
 
@@ -362,13 +513,35 @@ class _AdminListingCreationAnalyticsScreenState
     }
     final maxCount =
         items.map((d) => d.count).reduce((a, b) => a > b ? a : b);
+
+    final listItems = <_MonthGroupedListItem>[];
+    String? lastMonthKey;
+    for (var i = 0; i < items.length; i++) {
+      final d = items[i];
+      DateTime? dt;
+      try {
+        dt = DateTime.parse(d.date);
+      } catch (_) {
+        dt = null;
+      }
+      final monthKey = dt != null ? "${dt.year}-${dt.month}" : null;
+      if (dt != null && monthKey != null && monthKey != lastMonthKey) {
+        listItems.add(_MonthHeaderItem(_monthLabel(dt)));
+        lastMonthKey = monthKey;
+      }
+      listItems.add(_DayIndexItem(i));
+    }
+
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          if (index.isOdd) return const Divider(height: 1);
-          return _buildByDayItem(context, index ~/ 2, maxCount);
+          final it = listItems[index];
+          return switch (it) {
+            _MonthHeaderItem(:final label) => _monthSeparator(context, label),
+            _DayIndexItem(:final index) => _buildByDayItem(context, index, maxCount),
+          };
         },
-        childCount: items.length * 2 - 1,
+        childCount: listItems.length,
       ),
     );
   }

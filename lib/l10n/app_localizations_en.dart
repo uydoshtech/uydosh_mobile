@@ -301,6 +301,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get opening_existing_conversation => 'Opening existing conversation';
 
   @override
+  String get chat_security_ribbon_title => 'Safety tips';
+
+  @override
+  String get chat_security_ribbon_body =>
+      'Keep your chat on UyDosh. Don’t send deposits or share verification codes before you meet and confirm details.';
+
+  @override
+  String get chat_safety_warning_title_high => 'Be careful';
+
+  @override
+  String get chat_safety_warning_title_medium => 'Be cautious';
+
+  @override
+  String get chat_safety_warning_fallback =>
+      'This conversation may be risky. Avoid prepayments and keep communication on the platform.';
+
+  @override
+  String get chat_safety_reason_deposit_to_reserve_room =>
+      'They are asking for a deposit to reserve a room.';
+
+  @override
+  String get chat_safety_reason_suspicious_link =>
+      'They are sharing a suspicious link.';
+
+  @override
+  String get chat_safety_reason_off_platform =>
+      'They are trying to move the conversation off-platform.';
+
+  @override
+  String get chat_safety_reason_otp_code =>
+      'They are asking for a verification code (OTP/SMS).';
+
+  @override
+  String get chat_safety_reason_payment_request =>
+      'They are requesting payment details or prepayment.';
+
+  @override
   String get quick_question_room_available => 'Is room available?';
 
   @override

@@ -379,10 +379,10 @@ class _AdminListingsWithComplaintsScreenState
       return Center(
         child: Text(
           L10n.get("admin_listing_complaints_empty"),
-          style: TextStyle(
-            fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
         ),
       );
     }

@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
@@ -82,7 +83,9 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: scheme.surface,
       appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
@@ -233,13 +236,15 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final base = _tileBaseColor(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
         border: Border.all(
-          color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+          color: colorScheme.outlineVariant.withValues(alpha: isDark ? 0.22 : 0.28),
         ),
       ),
       child: Column(
@@ -297,39 +302,79 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     );
   }
 
+  Color _tileBaseColor(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    // Slight blue tint so surfaces feel “on brand” without fighting elevation.
+    return Color.lerp(
+      scheme.surface,
+      scheme.primary,
+      isDark ? 0.10 : 0.06,
+    )!;
+  }
+
+  BoxDecoration _softTileDecoration(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final base = _tileBaseColor(context);
+    return BoxDecoration(
+      gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+      border: Border.all(
+        color: scheme.outlineVariant.withValues(alpha: isDark ? 0.20 : 0.26),
+      ),
+    );
+  }
+
+  Widget _countChip(BuildContext context, int count) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: (isDark ? scheme.surfaceContainerHighest : scheme.surfaceContainerHigh)
+            .withValues(alpha: isDark ? 0.32 : 0.55),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: isDark ? 0.20 : 0.22),
+        ),
+      ),
+      child: Text(
+        "$count",
+        style: TextStyle(
+          fontWeight: FontWeight.w800,
+          color: scheme.onSurface,
+        ),
+      ),
+    );
+  }
+
   Widget _buildStationTile(BuildContext context, int index) {
     final item = _analytics!.topStations[index];
     final station = MetroCache.getStationById(item.stationId);
     final lineId = station?.line ?? 1;
     final barColor = AppColors.getMetroLineColor(lineId);
-    return ListTile(
-      leading: Container(
-        width: 6,
-        height: 36,
-        decoration: BoxDecoration(
-          color: barColor,
-          borderRadius: BorderRadius.circular(3),
-        ),
-      ),
-      title: Text(
-        _getStationName(item.stationId),
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.grey[800]
-              : Colors.grey[300],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          "${item.count}",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: _softTileDecoration(context),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        leading: Container(
+          width: 6,
+          height: 36,
+          decoration: BoxDecoration(
+            color: barColor,
+            borderRadius: BorderRadius.circular(3),
           ),
         ),
+        title: Text(
+          _getStationName(item.stationId),
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        trailing: _countChip(context, item.count),
       ),
     );
   }
@@ -343,32 +388,23 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     final intensity = maxCount > 0
         ? (item.count / maxCount).clamp(0.0, 1.0)
         : 0.0;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ListTile(
-      leading: ThemeIcon(
-        Icons.location_on,
-        color: (isDark ? Colors.grey[500]! : Colors.grey[600]!)
-            .withValues(alpha: 0.5 + intensity * 0.5),
-      ),
-      title: Text(
-        _getLocationName(item.locationId),
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.grey[800]
-              : Colors.grey[300],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          "${item.count}",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: _softTileDecoration(context),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        leading: ThemeIcon(
+          Icons.location_on,
+          color: scheme.onSurfaceVariant.withValues(
+            alpha: 0.55 + intensity * 0.45,
           ),
         ),
+        title: Text(
+          _getLocationName(item.locationId),
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        trailing: _countChip(context, item.count),
       ),
     );
   }
@@ -387,64 +423,65 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 1.4,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        // Keep tiles compact (less vertical “blockiness”).
+        mainAxisExtent: 92,
       ),
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final item = lines[index];
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          return Card(
-            color: isDark ? Colors.grey[800] : Colors.grey[200],
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    children: [
-                      ThemeIcon(
-                        Icons.train,
-                        color: AppColors.getMetroLineColor(item.lineId),
-                        size: 22,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          MetroCache.getLineName(
-                            item.lineId,
-                            LanguageState().currentLanguage,
-                          ),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+          final scheme = Theme.of(context).colorScheme;
+          return Container(
+            decoration: _softTileDecoration(context),
+            padding: const EdgeInsets.fromLTRB(10, 9, 10, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    ThemeIcon(
+                      Icons.train,
+                      color: AppColors.getMetroLineColor(item.lineId),
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        MetroCache.getLineName(
+                          item.lineId,
+                          LanguageState().currentLanguage,
                         ),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "${item.count}",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
                     ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "${item.count}",
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    color: scheme.onSurface,
+                    height: 1.0,
                   ),
-                  Text(
-                    L10n.get("admin_search_analytics_searches"),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  L10n.get("admin_search_analytics_searches"),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: scheme.onSurfaceVariant,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
@@ -465,11 +502,8 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     }
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          if (index.isOdd) return const Divider(height: 1);
-          return _buildStationTile(context, index ~/ 2);
-        },
-        childCount: stations.length * 2 - 1,
+        (context, index) => _buildStationTile(context, index),
+        childCount: stations.length,
       ),
     );
   }
@@ -488,11 +522,8 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
         locations.map((l) => l.count).reduce((a, b) => a > b ? a : b);
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          if (index.isOdd) return const Divider(height: 1);
-          return _buildLocationTile(context, index ~/ 2, maxCount);
-        },
-        childCount: locations.length * 2 - 1,
+        (context, index) => _buildLocationTile(context, index, maxCount),
+        childCount: locations.length,
       ),
     );
   }
