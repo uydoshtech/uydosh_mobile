@@ -415,6 +415,15 @@ class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
     super.initState();
     _lastTrigger = widget.trigger;
     _blinkController.repeat(reverse: true);
+
+    // If we mount with an already-incremented trigger (e.g. app resumed with
+    // unread that just arrived), play the pulse once so it’s noticeable.
+    if (_lastTrigger > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _playPulseThenBlink();
+      });
+    }
   }
 
   @override
@@ -462,14 +471,14 @@ class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
   }
 
   double _pulseScaleValue() {
-    // Map controller 0..1 into pulseCount oscillations.
+    // Oscillate around 1.0 so we visibly grow AND shrink several times.
+    // scale = 1 + a * sin(2π * count * t)
     final count = widget.pulseCount <= 0 ? 0 : widget.pulseCount;
     if (count == 0) return 1.0;
+    final a = (widget.pulseScale - 1.0).clamp(0.0, 1.0);
     final t = _pulseController.value;
-    final phase = t * count * 2; // grow+shrink per pulse
-    final local = (phase % 1.0);
-    final s = math.sin(local * math.pi); // 0->1->0
-    return 1.0 + (widget.pulseScale - 1.0) * s;
+    final s = math.sin(2 * math.pi * count * t); // -1..1
+    return (1.0 + a * s).clamp(0.1, 10.0);
   }
 
   @override

@@ -142,7 +142,7 @@ class SoundService {
     play(
       UiSound.messageIncoming,
       // Use the same timbre as the favorites "like" sound, but ~2x quieter.
-      volume: 0.08,
+      volume: 0.056,
       throttle: const Duration(milliseconds: 500),
     );
   }
