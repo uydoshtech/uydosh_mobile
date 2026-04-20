@@ -58,7 +58,8 @@ class UydoshRefreshIndicator extends StatelessWidget {
           displacement: displacement,
           edgeOffset: edgeOffset,
           onRefresh: () async {
-            SoundService().playRefreshWhoosh();
+            // Reuse the same subtle "favorites add" sound for refresh.
+            SoundService().playLike();
             await onRefresh();
           },
           color: color ?? themedForegroundColor(context),

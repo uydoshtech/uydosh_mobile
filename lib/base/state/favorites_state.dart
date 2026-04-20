@@ -4,6 +4,9 @@ import "package:uy_dosh/domain/models/listing.dart";
 /// Notifies only listeners for a single listing id (used by [FavoritesState.listenableFor]).
 class _ListingFavoriteNotifier extends ChangeNotifier {}
 
+/// Lightweight notifier used as a "dirty" signal for Favorites screen refresh.
+class _FavoritesDirtyNotifier extends ChangeNotifier {}
+
 // Global favorites state with ChangeNotifier for reactivity
 class FavoritesState extends ChangeNotifier {
   factory FavoritesState() => _instance;
@@ -12,10 +15,29 @@ class FavoritesState extends ChangeNotifier {
 
   final Set<int> _favoriteListingIds = {};
   final Map<int, _ListingFavoriteNotifier> _notifiers = {};
+  final _FavoritesDirtyNotifier _dirtyNotifier = _FavoritesDirtyNotifier();
+  int _dirtyTick = 0;
   bool _isInitialized = false;
 
   Set<int> get favoriteListingIds => Set.from(_favoriteListingIds);
   bool get isInitialized => _isInitialized;
+
+  /// Bumped when favorites need re-fetching from backend (e.g. user favorited
+  /// a listing from Home; Favorites screen should refresh on next view).
+  Listenable get dirtyListenable => _dirtyNotifier;
+
+  bool get isDirty => _dirtyTick > 0;
+
+  void markDirty() {
+    _dirtyTick++;
+    _dirtyNotifier.notifyListeners();
+  }
+
+  void clearDirty() {
+    if (_dirtyTick == 0) return;
+    _dirtyTick = 0;
+    _dirtyNotifier.notifyListeners();
+  }
 
   /// Notifies only when [listingId]'s favorite flag changes — use with [ListenableBuilder]
   /// so unrelated listing tiles do not rebuild on other favorites' toggles.

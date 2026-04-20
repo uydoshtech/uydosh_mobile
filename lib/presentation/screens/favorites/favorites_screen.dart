@@ -7,6 +7,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/listing.dart";
@@ -37,6 +38,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   final Set<int> _itemsBeingRemoved = {}; // Track items being removed for animation
   final Map<int, ({Listing listing, int index})> _optimisticallyRemoved =
       {}; // Rollback buffer for optimistic removals
+  bool _needsSyncFromDirty = false;
   bool _isLoading = false;
   bool _isLoadingMore = false;
   bool _hasMoreData = true;
@@ -44,6 +46,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   int _currentPage = 1;
   late final IFavoriteService _favoriteService;
   late final VoidCallback _authListener;
+  late final VoidCallback _favoritesDirtyListener;
   bool _hasInitialized = false; // Track if initial load has been done
   // Track the previous auth state so the listener only fires a rebuild/reload
   // when the `isAuthenticated` bit actually flips. AuthenticationState emits
@@ -85,6 +88,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     AuthenticationState().addListener(_authListener);
 
+    _favoritesDirtyListener = () {
+      if (!mounted) return;
+      if (!AuthenticationState().isAuthenticated) return;
+      if (!FavoritesState().isDirty) return;
+
+      final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
+      if (!isCurrent) {
+        _needsSyncFromDirty = true;
+        return;
+      }
+
+      _needsSyncFromDirty = false;
+      _loadFavoriteListings(isRefresh: true);
+    };
+    FavoritesState().dirtyListenable.addListener(_favoritesDirtyListener);
+
     _initializeAndLoadFavorites();
   }
 
@@ -109,12 +128,23 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         AuthenticationState().isAuthenticated) {
       _loadFavoriteListings(isRefresh: true);
     }
+
+    // If something was favorited elsewhere (home) while this tab wasn't current,
+    // sync once when we become visible again.
+    if (_needsSyncFromDirty &&
+        (ModalRoute.of(context)?.isCurrent ?? false) &&
+        AuthenticationState().isAuthenticated &&
+        FavoritesState().isDirty) {
+      _needsSyncFromDirty = false;
+      _loadFavoriteListings(isRefresh: true);
+    }
   }
 
   @override
   void dispose() {
     // Remove the authentication state listener
     AuthenticationState().removeListener(_authListener);
+    FavoritesState().dirtyListenable.removeListener(_favoritesDirtyListener);
     super.dispose();
   }
 
@@ -205,6 +235,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         _isLoading = false;
         _hasError = false; // Clear error state on success
       });
+
+      // We've re-synced with backend; clear the dirty flag.
+      FavoritesState().clearDirty();
     } catch (e) {
       logger.d("❌ FavoritesScreen: Error loading favorite listings: $e");
 
@@ -292,9 +325,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, child) => _buildBody(),
+    // Favorites tab is hosted inside MainNavigation's Scaffold. Wrap in our own
+    // Scaffold so the tile surface/shadows render against the same background
+    // as Home's feed (otherwise shadows can look "off" on different parents).
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, child) => _buildBody(),
+      ),
     );
   }
 
@@ -331,66 +370,75 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             final isRemoving = _itemsBeingRemoved.contains(listing.id);
             const duration = Duration(milliseconds: 300);
 
-            return AnimatedSwitcher(
+            final tile = ListingTile(
+              key: ValueKey("fav-${listing.id}-tile"),
+              listing: listing,
+              // Match Home screen tile chrome: use the compact tappable
+              // favorite indicator (same styling/animation).
+              showHeartIcon: false,
+              showFavoriteIndicator: true,
+              onFavoriteRemoved: () {
+                if (!mounted) return;
+                // Save for rollback *before* we mutate the list.
+                if (!_optimisticallyRemoved.containsKey(listing.id)) {
+                  _optimisticallyRemoved[listing.id] = (
+                    listing: listing,
+                    index: index,
+                  );
+                }
+                setState(() {
+                  _itemsBeingRemoved.add(listing.id);
+                });
+
+                // After animation finishes, remove from the list.
+                Future.delayed(duration, () {
+                  if (!mounted) return;
+                  setState(() {
+                    _itemsBeingRemoved.remove(listing.id);
+                    _favoriteListings.removeWhere(
+                      (l) => l.id == listing.id,
+                    );
+                  });
+                });
+              },
+              onFavoriteRemovalFailed: () {
+                if (!mounted) return;
+                final backup = _optimisticallyRemoved.remove(listing.id);
+                if (backup == null) return;
+
+                setState(() {
+                  _itemsBeingRemoved.remove(listing.id);
+                  final safeIndex = backup.index.clamp(
+                    0,
+                    _favoriteListings.length,
+                  );
+                  _favoriteListings.insert(safeIndex, backup.listing);
+                });
+              },
+            );
+
+            // Important: don't wrap steady-state tiles in a ClipRect/SizeTransition,
+            // otherwise the tile's boxShadow gets clipped and looks "flat" vs Home.
+            if (!isRemoving) return tile;
+
+            // Collapse + fade only while removing.
+            return TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 1.0, end: 0.0),
               duration: duration,
-              reverseDuration: const Duration(milliseconds: 180),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, animation) {
-                return SizeTransition(
-                  sizeFactor: animation,
-                  axisAlignment: -1.0,
-                  child: FadeTransition(opacity: animation, child: child),
+              curve: Curves.easeInOutCubic,
+              builder: (context, t, child) {
+                return ClipRect(
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    heightFactor: t,
+                    child: Opacity(
+                      opacity: t.clamp(0.0, 1.0),
+                      child: child,
+                    ),
+                  ),
                 );
               },
-              child: isRemoving
-                  ? SizedBox(
-                      key: ValueKey("fav-${listing.id}-removed"),
-                    )
-                  : ListingTile(
-                      key: ValueKey("fav-${listing.id}-tile"),
-                      listing: listing,
-                      forceFavorite: true,
-                      showHeartIcon: true,
-                      onFavoriteRemoved: () {
-                        if (!mounted) return;
-                        // Save for rollback *before* we mutate the list.
-                        if (!_optimisticallyRemoved.containsKey(listing.id)) {
-                          _optimisticallyRemoved[listing.id] = (
-                            listing: listing,
-                            index: index,
-                          );
-                        }
-                        setState(() {
-                          _itemsBeingRemoved.add(listing.id);
-                        });
-
-                        // After animation finishes, remove from the list.
-                        Future.delayed(duration, () {
-                          if (!mounted) return;
-                          setState(() {
-                            _itemsBeingRemoved.remove(listing.id);
-                            _favoriteListings.removeWhere(
-                              (l) => l.id == listing.id,
-                            );
-                          });
-                        });
-                      },
-                      onFavoriteRemovalFailed: () {
-                        if (!mounted) return;
-                        final backup = _optimisticallyRemoved.remove(listing.id);
-                        if (backup == null) return;
-
-                        setState(() {
-                          _itemsBeingRemoved.remove(listing.id);
-                          final safeIndex = backup.index.clamp(
-                            0,
-                            _favoriteListings.length,
-                          );
-                          _favoriteListings.insert(safeIndex, backup.listing);
-                        });
-                      },
-                    ),
+              child: tile,
             );
           },
           showRefreshIndicator: false,

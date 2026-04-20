@@ -102,13 +102,14 @@ class _ListingTileState extends State<ListingTile>
       });
     }
     _heartAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 150),
+      duration: const Duration(milliseconds: 140),
       vsync: this,
     );
-    _heartScaleAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+    _heartScaleAnimation = Tween<double>(begin: 1.0, end: 1.45).animate(
       CurvedAnimation(
         parent: _heartAnimationController,
-        curve: Curves.easeInOut,
+        curve: Curves.easeOutBack,
+        reverseCurve: Curves.easeInCubic,
       ),
     );
   }
@@ -152,19 +153,12 @@ class _ListingTileState extends State<ListingTile>
     }
   }
 
-  void _pulsateHeart() {
-    // Pulsate 3 times
-    _heartAnimationController.forward().then((_) {
-      _heartAnimationController.reverse().then((_) {
-        _heartAnimationController.forward().then((_) {
-          _heartAnimationController.reverse().then((_) {
-            _heartAnimationController.forward().then((_) {
-              _heartAnimationController.reverse();
-            });
-          });
-        });
-      });
-    });
+  Future<void> _pulsateHeart() async {
+    // Single quick "pop" (1 pulse) — conspicuous but not long.
+    _heartAnimationController.stop();
+    _heartAnimationController.value = 0;
+    await _heartAnimationController.forward();
+    await _heartAnimationController.reverse();
   }
 
   /// Shared favorite-toggle handler used by both the interactive heart
@@ -186,6 +180,9 @@ class _ListingTileState extends State<ListingTile>
     favoritesState.toggleFavorite(widget.listing.id);
     if (!wasFavorite) {
       _pulsateHeart();
+      // Favorited from a non-favorites surface (e.g. Home): mark Favorites list dirty
+      // so the favorites screen can refresh next time it's opened.
+      favoritesState.markDirty();
     }
 
     // Favorites screen: remove from the list immediately (optimistic),
@@ -617,54 +614,63 @@ class _ListingTileState extends State<ListingTile>
                                 }
                                 final isFavorite = FavoritesState()
                                     .isFavorite(widget.listing.id);
-                                return AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 300),
-                                  reverseDuration:
-                                      const Duration(milliseconds: 180),
-                                  switchInCurve: Curves.elasticOut,
-                                  switchOutCurve: Curves.easeInBack,
-                                  transitionBuilder: (child, animation) =>
-                                      ScaleTransition(
-                                    scale: animation,
-                                    child: child,
-                                  ),
-                                  // Layout slot stays at the icon's 20x20
-                                  // footprint; OverflowBox expands the
-                                  // GestureDetector's hit area to 44x44
-                                  // (standard touch target) without
-                                  // affecting surrounding layout.
-                                  child: SizedBox(
-                                    key: ValueKey(
-                                      isFavorite ? "fav-on" : "fav-off",
+                                return AnimatedBuilder(
+                                  animation: _heartScaleAnimation,
+                                  builder: (context, child) {
+                                    return Transform.scale(
+                                      scale: _heartScaleAnimation.value,
+                                      child: child,
+                                    );
+                                  },
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 300),
+                                    reverseDuration:
+                                        const Duration(milliseconds: 180),
+                                    switchInCurve: Curves.elasticOut,
+                                    switchOutCurve: Curves.easeInBack,
+                                    transitionBuilder: (child, animation) =>
+                                        ScaleTransition(
+                                      scale: animation,
+                                      child: child,
                                     ),
-                                    width: 20,
-                                    height: 20,
-                                    child: OverflowBox(
-                                      maxWidth: 44,
-                                      maxHeight: 44,
-                                      child: GestureDetector(
-                                        onTap: _isTogglingFavorite
-                                            ? null
-                                            : () =>
-                                                  _handleFavoriteTap(context),
-                                        behavior: HitTestBehavior.opaque,
-                                        child: SizedBox(
-                                          width: 44,
-                                          height: 44,
-                                          child: Center(
-                                            child: Opacity(
-                                              opacity: _isTogglingFavorite
-                                                  ? 0.6
-                                                  : 1.0,
-                                              child: ThemeIcon(
-                                                isFavorite
-                                                    ? Icons.favorite
-                                                    : Icons.favorite_border,
-                                                color: isFavorite
-                                                    ? AppColors.favoriteActive
-                                                    : AppColors
-                                                          .favoriteInactive,
-                                                size: 20,
+                                    // Layout slot stays at the icon's 20x20
+                                    // footprint; OverflowBox expands the
+                                    // GestureDetector's hit area to 44x44
+                                    // (standard touch target) without
+                                    // affecting surrounding layout.
+                                    child: SizedBox(
+                                      key: ValueKey(
+                                        isFavorite ? "fav-on" : "fav-off",
+                                      ),
+                                      width: 20,
+                                      height: 20,
+                                      child: OverflowBox(
+                                        maxWidth: 44,
+                                        maxHeight: 44,
+                                        child: GestureDetector(
+                                          onTap: _isTogglingFavorite
+                                              ? null
+                                              : () =>
+                                                    _handleFavoriteTap(context),
+                                          behavior: HitTestBehavior.opaque,
+                                          child: SizedBox(
+                                            width: 44,
+                                            height: 44,
+                                            child: Center(
+                                              child: Opacity(
+                                                opacity: _isTogglingFavorite
+                                                    ? 0.6
+                                                    : 1.0,
+                                                child: ThemeIcon(
+                                                  isFavorite
+                                                      ? Icons.favorite
+                                                      : Icons.favorite_border,
+                                                  color: isFavorite
+                                                      ? AppColors.favoriteActive
+                                                      : AppColors
+                                                            .favoriteInactive,
+                                                  size: 20,
+                                                ),
                                               ),
                                             ),
                                           ),
