@@ -77,19 +77,11 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-
-      final targetContext = widget.targetKey.currentContext;
-      if (targetContext == null) return;
-
-      final targetBox = targetContext.findRenderObject() as RenderBox?;
       final overlayBox = context.findRenderObject() as RenderBox?;
-      if (targetBox == null || overlayBox == null) return;
-      if (!targetBox.hasSize || !overlayBox.hasSize) return;
+      if (overlayBox == null || !overlayBox.hasSize) return;
 
-      final targetCenterGlobal =
-          targetBox.localToGlobal(targetBox.size.center(Offset.zero));
-      final overlayTopLeftGlobal = overlayBox.localToGlobal(Offset.zero);
-      final end = targetCenterGlobal - overlayTopLeftGlobal;
+      final end = _computeEnd(overlayBox);
+      if (end == null) return;
 
       final start = widget.startAlignment.alongSize(overlayBox.size);
       final dx = (end.dx - start.dx).abs();
@@ -107,6 +99,19 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
         ..reset()
         ..forward();
     });
+  }
+
+  Offset? _computeEnd(RenderBox overlayBox) {
+    final targetContext = widget.targetKey.currentContext;
+    if (targetContext == null) return null;
+
+    final targetBox = targetContext.findRenderObject() as RenderBox?;
+    if (targetBox == null || !targetBox.hasSize) return null;
+
+    final targetCenterGlobal =
+        targetBox.localToGlobal(targetBox.size.center(Offset.zero));
+    final overlayTopLeftGlobal = overlayBox.localToGlobal(Offset.zero);
+    return targetCenterGlobal - overlayTopLeftGlobal;
   }
 
   @override
@@ -142,11 +147,18 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
+          final overlayBox = context.findRenderObject() as RenderBox?;
+          final endNow =
+              (overlayBox == null || !overlayBox.hasSize)
+                  ? null
+                  : _computeEnd(overlayBox);
+          final endStable = endNow ?? end;
+
           final t = travel.value;
           final p = _quadraticBezier(
             start,
-            _controlPoint(start, end, _lift),
-            end,
+            _controlPoint(start, endStable, _lift),
+            endStable,
             t,
           );
 
