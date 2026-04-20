@@ -22,6 +22,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/app_badge_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
+import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
@@ -220,6 +221,8 @@ void main() async {
         }
         unawaited(deepLinkService.initialize());
       }
+      // Warm up UI sound effects so the first refresh/like has no latency.
+      unawaited(SoundService().preload());
       if (AuthenticationState().isAuthenticated) {
         try {
           final userId = await SessionManager.getBackendUserId();

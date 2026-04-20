@@ -193,6 +193,18 @@ class _ChatScreenState extends State<ChatScreen> {
     return patterns.any((p) => p.hasMatch(t));
   }
 
+  String _localizedSafetyReason(String reason) {
+    final normalized = reason.trim();
+    final lower = normalized.toLowerCase();
+
+    // Backend can return English "reason" strings. Map known reasons to localized text.
+    if (lower.contains("deposit") && lower.contains("reserve")) {
+      return L10n.get("chat_safety_reason_deposit_to_reserve_room");
+    }
+
+    return normalized;
+  }
+
   Future<void> _maybeRunSafetyCheck({required String triggerText}) async {
     if (_safetyCheckInFlight) return;
 
@@ -227,7 +239,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     : L10n.get("chat_safety_warning_title_medium");
             _safetyWarningBody =
                 (reason != null && reason.trim().isNotEmpty)
-                    ? reason
+                    ? _localizedSafetyReason(reason)
                     : L10n.get("chat_safety_warning_fallback");
           });
         }

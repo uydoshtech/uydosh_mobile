@@ -12,7 +12,7 @@ class ChatMessagesSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseColor = _baseSkeletonColor(context);
-    final bgColor = ThemeState().backgroundColor;
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
 
     return Container(
       color: bgColor,

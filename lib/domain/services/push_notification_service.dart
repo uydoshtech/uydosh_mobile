@@ -6,6 +6,7 @@ import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/services/device_info_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
@@ -174,6 +175,7 @@ class PushNotificationService implements IPushNotificationService {
     final data = message.data;
     if (data["type"] != "new_message") return;
     UnreadMessagesState().incrementUnreadCount();
+    SoundService().playIncomingMessage();
   }
 
   void _routeFromNotification(RemoteMessage message) {

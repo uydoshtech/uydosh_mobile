@@ -1,10 +1,17 @@
 import "package:dio/dio.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 
 class ErrorMessageHelper {
   /// Sanitizes error messages to remove technical details and provide user-friendly text
   static String sanitizeErrorMessage(dynamic error, {BuildContext? context}) {
-    if (error == null) return "An unexpected error occurred";
+    if (error == null) {
+      return _t(
+        context,
+        "error_generic_try_again",
+        fallback: "An unexpected error occurred. Please try again.",
+      );
+    }
 
     // Handle DioException specifically
     if (error is DioException) {
@@ -13,16 +20,25 @@ class ErrorMessageHelper {
 
     // Handle other exceptions
     if (error is Exception) {
-      return _handleGenericException(error);
+      return _handleGenericException(error, context: context);
     }
 
     // Handle string errors
     if (error is String) {
-      return _sanitizeStringError(error);
+      return _sanitizeStringError(error, context: context);
     }
 
     // Default case
-    return "An unexpected error occurred";
+    return _t(
+      context,
+      "error_generic_try_again",
+      fallback: "An unexpected error occurred. Please try again.",
+    );
+  }
+
+  static String _t(BuildContext? context, String key, {required String fallback}) {
+    if (context == null) return fallback;
+    return L10n.get(key, fallback: fallback);
   }
 
   /// Handles DioException and provides user-friendly messages
@@ -34,25 +50,62 @@ class ErrorMessageHelper {
     if (error.response?.statusCode != null) {
       switch (error.response!.statusCode) {
         case 400:
-          return "Invalid request. Please check your input and try again.";
+          return _t(
+            context,
+            "error_invalid_request",
+            fallback: "Invalid request. Please check your input and try again.",
+          );
         case 401:
-          return "Authentication required. Please log in again.";
+          return _t(
+            context,
+            "error_auth_required",
+            fallback: "Authentication required. Please log in again.",
+          );
         case 403:
-          return "Access denied. You don't have permission to perform this action.";
+          return _t(
+            context,
+            "error_access_denied",
+            fallback:
+                "Access denied. You don't have permission to perform this action.",
+          );
         case 404:
-          return "The requested resource was not found.";
+          return _t(
+            context,
+            "error_not_found",
+            fallback: "The requested resource was not found.",
+          );
         case 409:
-          return "This resource already exists or conflicts with current data.";
+          return _t(
+            context,
+            "error_conflict",
+            fallback: "This resource already exists or conflicts with current data.",
+          );
         case 422:
-          return "Invalid data provided. Please check your input.";
+          return _t(
+            context,
+            "error_invalid_data",
+            fallback: "Invalid data provided. Please check your input.",
+          );
         case 429:
-          return "Too many requests. Please wait a moment and try again.";
+          return _t(
+            context,
+            "error_too_many_requests",
+            fallback: "Too many requests. Please wait a moment and try again.",
+          );
         case 500:
-          return "Server error. Please try again later.";
+          return _t(
+            context,
+            "error_server_try_later",
+            fallback: "Server error. Please try again later.",
+          );
         case 502:
         case 503:
         case 504:
-          return "Service temporarily unavailable. Please try again later.";
+          return _t(
+            context,
+            "error_service_unavailable_try_later",
+            fallback: "Service temporarily unavailable. Please try again later.",
+          );
         default:
           break;
       }
@@ -63,14 +116,31 @@ class ErrorMessageHelper {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return "Request timed out. Please check your internet connection and try again.";
+        return _t(
+          context,
+          "error_timeout_check_connection",
+          fallback:
+              "Request timed out. Please check your internet connection and try again.",
+        );
       case DioExceptionType.connectionError:
-        return "No internet connection. Please check your network settings.";
+        return _t(
+          context,
+          "error_no_internet",
+          fallback: "No internet connection. Please check your network settings.",
+        );
       case DioExceptionType.badResponse:
         // Use the status code handling above, or fall back to generic message
-        return "Unable to complete the request. Please try again.";
+        return _t(
+          context,
+          "error_unable_to_complete_try_again",
+          fallback: "Unable to complete the request. Please try again.",
+        );
       case DioExceptionType.cancel:
-        return "Request was cancelled.";
+        return _t(
+          context,
+          "error_request_cancelled",
+          fallback: "Request was cancelled.",
+        );
       default:
         break;
     }
@@ -82,16 +152,27 @@ class ErrorMessageHelper {
           message.contains("bad response") ||
           message.contains("status code") ||
           message.contains("RequestOptions.validateStatus")) {
-        return "Unable to complete the request. Please try again.";
+        return _t(
+          context,
+          "error_unable_to_complete_try_again",
+          fallback: "Unable to complete the request. Please try again.",
+        );
       }
       return message;
     }
 
-    return "Unable to complete the request. Please try again.";
+    return _t(
+      context,
+      "error_unable_to_complete_try_again",
+      fallback: "Unable to complete the request. Please try again.",
+    );
   }
 
   /// Handles generic exceptions
-  static String _handleGenericException(Exception error) {
+  static String _handleGenericException(
+    Exception error, {
+    BuildContext? context,
+  }) {
     final errorString = error.toString();
 
     // Filter out technical exception details
@@ -99,22 +180,37 @@ class ErrorMessageHelper {
         (errorString.contains("bad response") ||
             errorString.contains("status code") ||
             errorString.contains("RequestOptions.validateStatus"))) {
-      return "Unable to complete the request. Please try again.";
+      return _t(
+        context,
+        "error_unable_to_complete_try_again",
+        fallback: "Unable to complete the request. Please try again.",
+      );
     }
 
     // For other exceptions, provide a generic message
-    return "An error occurred. Please try again.";
+    return _t(
+      context,
+      "error_generic_try_again",
+      fallback: "An error occurred. Please try again.",
+    );
   }
 
   /// Sanitizes string error messages
-  static String _sanitizeStringError(String error) {
+  static String _sanitizeStringError(
+    String error, {
+    BuildContext? context,
+  }) {
     // Filter out technical error details
     if (error.contains("DioException") ||
         error.contains("bad response") ||
         error.contains("status code") ||
         error.contains("RequestOptions.validateStatus") ||
         error.contains("This exception was thrown because")) {
-      return "Unable to complete the request. Please try again.";
+      return _t(
+        context,
+        "error_unable_to_complete_try_again",
+        fallback: "Unable to complete the request. Please try again.",
+      );
     }
 
     return error;

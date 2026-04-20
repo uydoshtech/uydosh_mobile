@@ -9,6 +9,7 @@ enum UiSound {
   success,
   error,
   like,
+  messageIncoming,
 }
 
 class SoundService {
@@ -20,6 +21,7 @@ class SoundService {
   static const String _successAsset = "sounds/success.wav";
   static const String _errorAsset = "sounds/error.wav";
   static const String _likeAsset = "sounds/like.wav";
+  static const String _messageIncomingAsset = "sounds/click.wav";
 
   // Keep separate players so overlapping sounds don't cut each other off.
   final AudioPlayer _refreshPlayer = AudioPlayer();
@@ -32,6 +34,40 @@ class SoundService {
 
   final Map<UiSound, DateTime> _lastPlayedAt = <UiSound, DateTime>{};
   final Map<AudioPlayer, Future<void>> _opChainByPlayer = <AudioPlayer, Future<void>>{};
+
+  /// Best-effort warm-up of sound assets/players to reduce "first play" latency.
+  ///
+  /// This does **not** play audio. It only initializes players and primes the
+  /// asset sources so the first real user-triggered sound is instant.
+  Future<void> preload() async {
+    if (!_isEnabled()) return;
+    if (kIsWeb) return;
+    try {
+      await _ensureInitialized();
+      await Future.wait([
+        _prime(_refreshPlayer, _refreshWhooshAsset),
+        _prime(_successPlayer, _successAsset),
+        _prime(_errorPlayer, _errorAsset),
+        _prime(_uiPlayer, _likeAsset),
+        _prime(_uiPlayer, _messageIncomingAsset),
+      ]);
+    } catch (_) {
+      // Ignore warm-up failures (missing assets / platform restrictions).
+    }
+  }
+
+  Future<void> _prime(AudioPlayer player, String asset) async {
+    _opChainByPlayer[player] = (_opChainByPlayer[player] ?? Future<void>.value()).then((_) async {
+      try {
+        await player.setSource(AssetSource(asset));
+        // Some platforms keep an internal handle "hot" after stop.
+        try {
+          await player.stop();
+        } catch (_) {}
+      } catch (_) {}
+    });
+    await _opChainByPlayer[player];
+  }
 
   Future<void> _ensureInitialized() async {
     if (_initialized) return;
@@ -101,6 +137,15 @@ class SoundService {
     play(UiSound.like, volume: 0.16, throttle: const Duration(milliseconds: 80));
   }
 
+  void playIncomingMessage() {
+    // Foreground messages can arrive in bursts; keep it subtle + throttled.
+    play(
+      UiSound.messageIncoming,
+      volume: 0.14,
+      throttle: const Duration(milliseconds: 500),
+    );
+  }
+
   void play(
     UiSound sound, {
     double? volume,
@@ -129,6 +174,7 @@ class SoundService {
       UiSound.success => _successAsset,
       UiSound.error => _errorAsset,
       UiSound.like => _likeAsset,
+      UiSound.messageIncoming => _messageIncomingAsset,
     };
 
     final player = switch (sound) {

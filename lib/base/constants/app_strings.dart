@@ -82,6 +82,27 @@ class AppStrings {
 
       "error_loading_profile": "Unable to load profile",
 
+      "error_generic_try_again": "An error occurred. Please try again.",
+      "error_unable_to_complete_try_again":
+          "Unable to complete the request. Please try again.",
+      "error_no_internet": "No internet connection. Please check your network settings.",
+      "error_timeout_check_connection":
+          "Request timed out. Please check your internet connection and try again.",
+      "error_server_try_later": "Server error. Please try again later.",
+      "error_service_unavailable_try_later":
+          "Service temporarily unavailable. Please try again later.",
+      "error_invalid_request":
+          "Invalid request. Please check your input and try again.",
+      "error_auth_required": "Authentication required. Please log in again.",
+      "error_access_denied":
+          "Access denied. You don't have permission to perform this action.",
+      "error_not_found": "The requested resource was not found.",
+      "error_conflict":
+          "This resource already exists or conflicts with current data.",
+      "error_invalid_data": "Invalid data provided. Please check your input.",
+      "error_too_many_requests":
+          "Too many requests. Please wait a moment and try again.",
+      "error_request_cancelled": "Request was cancelled.",
       "error_internet_connection": "Check your internet connection",
       "error_resource_conflict":
           "You have already complained about this listing.",
@@ -98,6 +119,8 @@ class AppStrings {
       "chat_safety_warning_title_high": "Be careful",
       "chat_safety_warning_fallback":
           "This conversation may contain scam/fraud signals. Be cautious with links, codes, and payment requests.",
+      "chat_safety_reason_deposit_to_reserve_room":
+          "The user is asking for a deposit to reserve the room.",
       "profile_interlocutor": "Interlocutor's Profile",
       "view_listing": "View Listing",
       "menu_messages": "Messages",
@@ -429,6 +452,8 @@ class AppStrings {
       "onboarding_toggle_description": "Show welcome screens",
       "haptic_feedback": "Haptic feedback",
       "haptic_feedback_description": "Vibration for taps and gestures",
+      "sound_effects": "Sound effects",
+      "sound_effects_description": "Short UI sounds for actions",
       "ui_animations": "UI animations",
       "ui_animations_description": "Motion effects like pulsing and swinging",
       "ui_animation_search_pulse": "Search button pulse",
@@ -1143,6 +1168,25 @@ class AppStrings {
 
       "error_loading_profile": "Не удалось загрузить профиль",
 
+      "error_generic_try_again": "Произошла ошибка. Пожалуйста, попробуйте снова.",
+      "error_unable_to_complete_try_again":
+          "Не удалось выполнить запрос. Пожалуйста, попробуйте снова.",
+      "error_no_internet": "Нет подключения к интернету. Проверьте настройки сети.",
+      "error_timeout_check_connection":
+          "Время ожидания истекло. Проверьте интернет-соединение и попробуйте снова.",
+      "error_server_try_later": "Ошибка сервера. Пожалуйста, попробуйте позже.",
+      "error_service_unavailable_try_later":
+          "Сервис временно недоступен. Пожалуйста, попробуйте позже.",
+      "error_invalid_request":
+          "Некорректный запрос. Проверьте данные и попробуйте снова.",
+      "error_auth_required": "Требуется авторизация. Пожалуйста, войдите снова.",
+      "error_access_denied": "Доступ запрещён. У вас нет прав на это действие.",
+      "error_not_found": "Запрошенный ресурс не найден.",
+      "error_conflict": "Ресурс уже существует или конфликтует с текущими данными.",
+      "error_invalid_data": "Переданы некорректные данные. Проверьте ввод.",
+      "error_too_many_requests":
+          "Слишком много запросов. Подождите немного и попробуйте снова.",
+      "error_request_cancelled": "Запрос был отменён.",
       "error_internet_connection": "Проверьте подключение к интернету",
       "error_resource_conflict": "Вы уже пожаловались на это объявление.",
 
@@ -1158,6 +1202,8 @@ class AppStrings {
       "chat_safety_warning_title_high": "Будьте осторожны",
       "chat_safety_warning_fallback":
           "В этом разговоре могут быть признаки мошенничества. Осторожнее со ссылками, кодами и просьбами об оплате.",
+      "chat_safety_reason_deposit_to_reserve_room":
+          "Пользователь просит внести депозит, чтобы забронировать комнату.",
       "profile_interlocutor": "Профиль Собеседника",
       "view_listing": "Посмотреть объявление",
       "menu_messages": "Сообщения",
@@ -1493,6 +1539,8 @@ class AppStrings {
       "onboarding_toggle_description": "Показать приветствие",
       "haptic_feedback": "Виброотклик",
       "haptic_feedback_description": "Вибрация при нажатиях и жестах",
+      "sound_effects": "Звуковые эффекты",
+      "sound_effects_description": "Короткие UI-звуки для действий",
       "ui_animations": "Анимации интерфейса",
       "ui_animations_description": "Эффекты движения: пульсация и качание",
       "ui_animation_search_pulse": "Пульсация кнопки поиска",
@@ -2211,6 +2259,26 @@ class AppStrings {
 
       "error_loading_profile": "Profildi yuklash imkoni yo'q",
 
+      "error_generic_try_again": "Xatolik yuz berdi. Iltimos, qayta urinib ko‘ring.",
+      "error_unable_to_complete_try_again":
+          "So‘rovni bajarib bo‘lmadi. Iltimos, qayta urinib ko‘ring.",
+      "error_no_internet": "Internet yo‘q. Tarmoq sozlamalarini tekshiring.",
+      "error_timeout_check_connection":
+          "So‘rov vaqti tugadi. Internet aloqangizni tekshirib, qayta urinib ko‘ring.",
+      "error_server_try_later": "Server xatoligi. Iltimos, keyinroq urinib ko‘ring.",
+      "error_service_unavailable_try_later":
+          "Xizmat vaqtincha ishlamayapti. Iltimos, keyinroq urinib ko‘ring.",
+      "error_invalid_request":
+          "Noto‘g‘ri so‘rov. Kiritilgan ma’lumotlarni tekshirib, qayta urinib ko‘ring.",
+      "error_auth_required": "Avtorizatsiya kerak. Iltimos, qayta kiring.",
+      "error_access_denied": "Ruxsat berilmadi. Bu amal uchun huquqingiz yo‘q.",
+      "error_not_found": "So‘ralgan resurs topilmadi.",
+      "error_conflict":
+          "Resurs allaqachon mavjud yoki joriy ma’lumotlar bilan ziddiyatda.",
+      "error_invalid_data": "Noto‘g‘ri ma’lumot yuborildi. Kiritishni tekshiring.",
+      "error_too_many_requests":
+          "So‘rovlar juda ko‘p. Biroz kuting va qayta urinib ko‘ring.",
+      "error_request_cancelled": "So‘rov bekor qilindi.",
       "error_internet_connection": "Internet aloqangizni tekshiring",
       "error_resource_conflict":
           "Siz bu e'lon haqida allaqachon shikoyat qilgansiz.",
@@ -2227,6 +2295,8 @@ class AppStrings {
       "chat_safety_warning_title_high": "Ehtiyot bo‘ling",
       "chat_safety_warning_fallback":
           "Bu suhbatda firibgarlik belgilari bo‘lishi mumkin. Havolalar, kodlar va to‘lov so‘rovlaridan ehtiyot bo‘ling.",
+      "chat_safety_reason_deposit_to_reserve_room":
+          "Foydalanuvchi xonani band qilish uchun depozit so‘ramoqda.",
       "profile_interlocutor": "Suhbatdosh profili",
       "view_listing": "E'lonni ko'rish",
       "menu_messages": "Xabarlar",
@@ -2570,6 +2640,8 @@ class AppStrings {
       "onboarding_toggle_description": "Xush kelish ekrani",
       "haptic_feedback": "Haptik javob",
       "haptic_feedback_description": "Bosish va jestlar uchun tebranish",
+      "sound_effects": "Ovoz effektlari",
+      "sound_effects_description": "Harakatlar uchun qisqa UI-ovozlar",
       "ui_animations": "Interfeys animatsiyalari",
       "ui_animations_description": "Pulsatsiya va tebranish kabi effektlar",
       "ui_animation_search_pulse": "Qidiruv tugmasi pulsatsiyasi",

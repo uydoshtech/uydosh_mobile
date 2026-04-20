@@ -47,7 +47,10 @@ class CommonStateBuilder extends StatelessWidget {
 
     if (hasError) {
       return errorWidget ??
-          _buildDefaultErrorState(context, errorMessage ?? "An error occurred");
+          _buildDefaultErrorState(
+            context,
+            errorMessage ?? L10n.get("error_generic_try_again"),
+          );
     }
 
     if (isEmpty) {
@@ -99,7 +102,10 @@ class CommonStateBuilder extends StatelessWidget {
 
   Widget _buildDefaultErrorState(BuildContext context, String message) {
     // Sanitize the error message to remove technical details
-    final sanitizedMessage = ErrorMessageHelper.sanitizeErrorMessage(message);
+    final sanitizedMessage = ErrorMessageHelper.sanitizeErrorMessage(
+      message,
+      context: context,
+    );
 
     return Center(
       child: Column(
@@ -112,7 +118,7 @@ class CommonStateBuilder extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            "Error",
+            L10n.get("error"),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
