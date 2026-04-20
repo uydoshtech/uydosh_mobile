@@ -38,6 +38,7 @@ import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart";
+import "package:uy_dosh/presentation/widgets/chat/suspicious_message_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -82,6 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
   ChatSafetyWarningSeverity _safetyWarningSeverity =
       ChatSafetyWarningSeverity.medium;
   final Map<int, String> _messageRiskById = {}; // messageId -> 'medium'|'high'
+  final Map<int, String> _messageSafetyReasonById = {}; // messageId -> localized reason
   DateTime? _lastSafetyCheckAt;
   bool _safetyCheckInFlight = false;
   bool _showRefreshSkeleton = false;
@@ -270,6 +272,9 @@ class _ChatScreenState extends State<ChatScreen> {
             setState(() {
               for (final id in ids) {
                 _messageRiskById[id] = risk!;
+                if (reason != null && reason.trim().isNotEmpty) {
+                  _messageSafetyReasonById[id] = _localizedSafetyReason(reason);
+                }
               }
             });
           }
@@ -305,6 +310,35 @@ class _ChatScreenState extends State<ChatScreen> {
       _safetyWarningBody = null;
       _safetyWarningSeverity = ChatSafetyWarningSeverity.medium;
     });
+  }
+
+  String _titleForRiskLevel(String? riskLevel) {
+    final rl = (riskLevel ?? "").toLowerCase();
+    if (rl == "high") return L10n.get("chat_safety_warning_title_high");
+    return L10n.get("chat_safety_warning_title_medium");
+  }
+
+  Future<void> _openSuspiciousMessageSheet({
+    required Message message,
+    required String riskLevel,
+  }) async {
+    final reason = _messageSafetyReasonById[message.id] ??
+        L10n.get("chat_safety_warning_fallback");
+
+    await SuspiciousMessageBottomSheet.show(
+      context,
+      title: _titleForRiskLevel(riskLevel),
+      reasons: [reason],
+      onCopyPressed: () async {
+        await Clipboard.setData(ClipboardData(text: message.content));
+        if (!mounted) return;
+        ToastTheme.showSuccess(
+          context,
+          message: L10n.get("chat_safety_sheet_copied"),
+        );
+      },
+      onReportPressed: widget.listingId == null ? null : _createComplaint,
+    );
   }
 
   String _getHeaderTitle(BuildContext context) {
@@ -631,6 +665,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 isCurrentUser: isCurrentUser,
                 isLatest: isLatest,
                 riskLevel: _messageRiskById[message.id],
+                riskReason: _messageSafetyReasonById[message.id],
+                onRiskBadgeTap: () {
+                  final riskLevel = _messageRiskById[message.id];
+                  if (riskLevel == null) return;
+                  _openSuspiciousMessageSheet(
+                    message: message,
+                    riskLevel: riskLevel,
+                  );
+                },
                 onAnimationComplete: () {
                   setState(() {
                     _newMessageIds.remove(message.id);

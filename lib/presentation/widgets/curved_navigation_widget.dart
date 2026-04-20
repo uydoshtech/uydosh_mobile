@@ -8,12 +8,14 @@ import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/traveling_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class CustomCurvedNavigationBar extends StatefulWidget {
   const CustomCurvedNavigationBar({
     required this.currentIndex, required this.onTap, required this.navigationKey, required this.isAuthenticated, super.key,
     this.hasUnreadMessages = false,
+    this.incomingMessageTravelDotTrigger = 0,
   });
 
   final int currentIndex;
@@ -21,6 +23,7 @@ class CustomCurvedNavigationBar extends StatefulWidget {
   final GlobalKey<CurvedNavigationBarState> navigationKey;
   final bool isAuthenticated;
   final bool hasUnreadMessages;
+  final int incomingMessageTravelDotTrigger;
 
   @override
   State<CustomCurvedNavigationBar> createState() =>
@@ -28,32 +31,53 @@ class CustomCurvedNavigationBar extends StatefulWidget {
 }
 
 class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
+  final GlobalKey _messagesBadgeKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     final items = _buildNavigationItems(widget.isAuthenticated);
 
-    return CurvedNavigationBar(
-      key: widget.navigationKey,
-      index: _getAdjustedIndex(widget.currentIndex, widget.isAuthenticated),
+    return SizedBox(
       height: 70.0,
-      color: _getCurvedColor(context), // Theme-dependent curved color
-      // Active “disk” is drawn by [_CurvedNavActiveOrb] on the selected item;
-      // keep the package [Material] transparent so gradients/shadows show.
-      buttonBackgroundColor: Colors.transparent,
-      backgroundColor: _getBackgroundColor(
-        context,
-      ), // Theme-dependent background color
-      animationCurve: Curves.easeInOut,
-      animationDuration: const Duration(milliseconds: 300),
-      onTap: (index) {
-        _handleNavigationTap(index, widget.isAuthenticated);
-      },
-      letIndexChange: (index) {
-        // Allow all index changes - authentication will be handled in _handleNavigationTap
-        // This ensures all navigation items appear clickable and responsive
-        return true;
-      },
-      items: items,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: CurvedNavigationBar(
+              key: widget.navigationKey,
+              index: _getAdjustedIndex(widget.currentIndex, widget.isAuthenticated),
+              height: 70.0,
+              color: _getCurvedColor(context), // Theme-dependent curved color
+              // Active “disk” is drawn by [_CurvedNavActiveOrb] on the selected item;
+              // keep the package [Material] transparent so gradients/shadows show.
+              buttonBackgroundColor: Colors.transparent,
+              backgroundColor: _getBackgroundColor(
+                context,
+              ), // Theme-dependent background color
+              animationCurve: Curves.easeInOut,
+              animationDuration: const Duration(milliseconds: 300),
+              onTap: (index) {
+                _handleNavigationTap(index, widget.isAuthenticated);
+              },
+              letIndexChange: (index) {
+                // Allow all index changes - authentication will be handled in _handleNavigationTap
+                // This ensures all navigation items appear clickable and responsive
+                return true;
+              },
+              items: items,
+            ),
+          ),
+          // One-shot subtle cue: a tiny dot flies into the Messages badge.
+          Positioned.fill(
+            child: TravelingDotWidget(
+              targetKey: _messagesBadgeKey,
+              trigger: widget.incomingMessageTravelDotTrigger,
+              color: AppColors.success,
+              size: 7,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -152,15 +176,18 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
               children: [
                 bubbleIcon,
                 if (widget.hasUnreadMessages)
-                  const Positioned(
+                  Positioned(
                     right: 0,
                     top: 0,
-                    child: BlinkingDotWidget(
+                    child: KeyedSubtree(
+                      key: _messagesBadgeKey,
+                      child: const BlinkingDotWidget(
                       color: AppColors.success,
                       size: 13,
                       duration: Duration(milliseconds: 750),
                       borderColor: Colors.white,
                       borderWidth: 2,
+                      ),
                     ),
                   ),
               ],
@@ -171,15 +198,18 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
             children: [
               bubbleIcon,
               if (widget.hasUnreadMessages)
-                const Positioned(
+                Positioned(
                   right: 0,
                   top: 0,
-                  child: BlinkingDotWidget(
+                  child: KeyedSubtree(
+                    key: _messagesBadgeKey,
+                    child: const BlinkingDotWidget(
                     color: AppColors.success,
                     size: 13,
                     duration: Duration(milliseconds: 750),
                     borderColor: Colors.white,
                     borderWidth: 2,
+                    ),
                   ),
                 ),
             ],

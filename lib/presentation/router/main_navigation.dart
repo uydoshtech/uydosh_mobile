@@ -61,12 +61,17 @@ class MainNavigationState extends State<MainNavigation>
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
   bool _isAuthenticated = false;
+  int _incomingMessageTravelDotTrigger = 0;
+  int _lastObservedUnreadCount = 0;
+  DateTime? _lastTravelDotPlayedAt;
+
   bool _profileCompletionPromptShown = false;
   bool _checkingProfileCompletion = false;
   bool _notificationsBellTutorialShownThisSession = false;
   bool _notificationsBellTutorialPending = false;
 
   late final VoidCallback _authStateListener;
+  late final VoidCallback _unreadMessagesListener;
 
   void _scheduleMaybeShowNotificationsBellTutorial() {
     if (!mounted) return;
@@ -100,6 +105,10 @@ class MainNavigationState extends State<MainNavigation>
       }
     };
     AuthenticationState().addListener(_authStateListener);
+
+    _lastObservedUnreadCount = UnreadMessagesState().unreadCount;
+    _unreadMessagesListener = _onUnreadMessagesChanged;
+    UnreadMessagesState().addListener(_unreadMessagesListener);
 
     // Show notifications bell tutorial once the user has at least one alert.
     ActiveSearchAlertsState().addListener(_maybeShowNotificationsBellTutorial);
@@ -156,11 +165,35 @@ class MainNavigationState extends State<MainNavigation>
   @override
   void dispose() {
     AuthenticationState().removeListener(_authStateListener);
+    UnreadMessagesState().removeListener(_unreadMessagesListener);
     ActiveSearchAlertsState().removeListener(_maybeShowNotificationsBellTutorial);
     TutorialState().removeListener(_maybeShowNotificationsBellTutorial);
     routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _onUnreadMessagesChanged() {
+    final current = UnreadMessagesState().unreadCount;
+    final previous = _lastObservedUnreadCount;
+    _lastObservedUnreadCount = current;
+
+    // Only play the travel-dot when unread transitions from 0 -> >0
+    // and the user isn't currently on the Messages tab.
+    if (previous == 0 && current > 0 && _currentIndex != 2) {
+      final now = DateTime.now();
+      final last = _lastTravelDotPlayedAt;
+      // Additional global cooldown (even if multiple increments happen quickly).
+      if (last != null && now.difference(last) < const Duration(seconds: 25)) {
+        return;
+      }
+      _lastTravelDotPlayedAt = now;
+      if (mounted) {
+        setState(() {
+          _incomingMessageTravelDotTrigger += 1;
+        });
+      }
+    }
   }
 
   @override
@@ -816,6 +849,7 @@ class MainNavigationState extends State<MainNavigation>
             navigationKey: _bottomNavigationKey,
             isAuthenticated: _isAuthenticated,
             hasUnreadMessages: UnreadMessagesState().hasUnreadMessages,
+            incomingMessageTravelDotTrigger: _incomingMessageTravelDotTrigger,
             onTap: (index) {
               HapticFeedbackUtils.impact();
 

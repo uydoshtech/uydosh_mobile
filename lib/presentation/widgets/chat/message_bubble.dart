@@ -15,6 +15,8 @@ class MessageBubble extends StatefulWidget {
     this.isLatest = false,
     this.onAnimationComplete,
     this.riskLevel,
+    this.riskReason,
+    this.onRiskBadgeTap,
     this.currentUserProfile,
     this.otherUserInitials,
     this.otherUserAvatarUrl,
@@ -24,6 +26,8 @@ class MessageBubble extends StatefulWidget {
   final bool isLatest;
   final VoidCallback? onAnimationComplete;
   final String? riskLevel; // 'medium' | 'high' (only other user messages)
+  final String? riskReason; // localized, per-message (optional)
+  final VoidCallback? onRiskBadgeTap;
   final UserProfile? currentUserProfile;
   final String? otherUserInitials;
 
@@ -178,7 +182,11 @@ class _MessageBubbleState extends State<MessageBubble>
                           // Roughly half outside the bubble.
                           top: -22,
                           end: -22,
-                          child: _RiskBadge(level: widget.riskLevel!),
+                          child: GestureDetector(
+                            onTap: widget.onRiskBadgeTap,
+                            behavior: HitTestBehavior.opaque,
+                            child: _RiskBadge(level: widget.riskLevel!),
+                          ),
                         ),
                     ],
                   ),
