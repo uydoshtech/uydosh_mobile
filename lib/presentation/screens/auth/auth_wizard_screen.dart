@@ -12,6 +12,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
@@ -169,10 +170,41 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     final user = _auth.currentUser;
 
     if (user != null) {
-      // User is already signed in with Firebase, skip to main app
-      if (mounted) {
-        _navigateToMainNavigation();
+      // User is already signed in with Firebase, but we still need a backend
+      // session token for authenticated API calls. If it's missing, mint it
+      // via the backend Firebase auth endpoints before navigating.
+      try {
+        final hasBackendSession = await SessionManager.isAuthenticated();
+        if (!hasBackendSession) {
+          logger.d(
+            "🔐 AuthWizard: Firebase user exists but no backend session — authenticating with backend",
+          );
+          setState(() => _isAuthenticating = true);
+
+          // Best-effort infer auth method from Firebase user data.
+          final hasPhone = (user.phoneNumber ?? "").trim().isNotEmpty;
+          final hasEmail = (user.email ?? "").trim().isNotEmpty;
+          final inferredMethod =
+              hasPhone && !hasEmail ? _AuthMethod.phone : _AuthMethod.google;
+          _authMethod = inferredMethod;
+
+          await _authenticateWithBackend(authMethod: inferredMethod);
+        } else {
+          logger.d(
+            "🔐 AuthWizard: Existing backend session found — skipping backend auth",
+          );
+        }
+      } catch (e) {
+        // If anything goes wrong, keep the user in the wizard rather than
+        // navigating into a state that will immediately 401-loop.
+        logger.d("⚠️ AuthWizard: Existing session check failed: $e");
+        setState(() => _isAuthenticating = false);
+        return;
+      } finally {
+        if (mounted) setState(() => _isAuthenticating = false);
       }
+
+      if (mounted) _navigateToMainNavigation();
     }
   }
 
@@ -460,6 +492,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     // Register FCM token for push notifications
     if (!kIsWeb) {
       getIt<IPushNotificationService>().registerTokenWithBackend();
+    }
+
+    // Ensure UI auth gates update immediately after session is stored.
+    // (Otherwise, some screens can still think we're logged out until the next
+    // Firebase auth tick or a restart.)
+    try {
+      await AuthenticationState().refreshAuthenticationStatus();
+    } catch (e) {
+      logger.d("⚠️ AuthWizard: Failed to refresh AuthenticationState: $e");
     }
   }
 

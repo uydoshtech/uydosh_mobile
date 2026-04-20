@@ -86,11 +86,13 @@ class _MessageBubbleState extends State<MessageBubble>
 
       // Start fade animation with a slight delay (100ms) to create overlap
       Future.delayed(const Duration(milliseconds: 100), () {
+        if (!mounted) return;
         _fadeAnimationController.forward();
       });
 
       // Wait for both animations to complete (scale takes 500ms, fade starts at 100ms and takes 500ms, so total is 600ms)
       Future.delayed(const Duration(milliseconds: 600), () {
+        if (!mounted) return;
         widget.onAnimationComplete?.call();
       });
     } else {

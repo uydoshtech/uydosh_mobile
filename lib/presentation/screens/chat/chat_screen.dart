@@ -675,9 +675,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   );
                 },
                 onAnimationComplete: () {
-                  setState(() {
-                    _newMessageIds.remove(message.id);
-                  });
+                  if (!mounted) return;
+                  setState(() => _newMessageIds.remove(message.id));
                 },
                 currentUserProfile: _currentUserProfile,
                 otherUserInitials: widget.otherUserInitials,

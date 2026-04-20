@@ -2,13 +2,13 @@ import "dart:math" as math;
 
 import "package:flutter/material.dart";
 
-/// A one-shot "traveling dot" animation: a tiny dot arcs into [targetKey].
+/// A one-shot "traveling dot" animation: a tiny dot arcs into [targetContext].
 ///
 /// Intended for subtle attention cues (e.g. new message arrival) without a
 /// persistent blink.
 class TravelingDotWidget extends StatefulWidget {
   const TravelingDotWidget({
-    required this.targetKey,
+    required this.targetContext,
     required this.trigger,
     super.key,
     this.color = const Color(0xFF2ECC71),
@@ -21,8 +21,12 @@ class TravelingDotWidget extends StatefulWidget {
     this.startAlignment = const Alignment(0.0, -1.15),
   });
 
-  /// GlobalKey attached to the destination widget (e.g. the badge/dot).
-  final GlobalKey targetKey;
+  /// BuildContext of the destination widget (e.g. the badge/dot).
+  ///
+  /// We intentionally avoid a GlobalKey here because some navigation widgets
+  /// (e.g. CurvedNavigationBar) may temporarily duplicate item subtrees during
+  /// transitions, which can cause "Duplicate GlobalKey" crashes.
+  final BuildContext? targetContext;
 
   /// Change this value (e.g. increment) to replay the animation.
   final int trigger;
@@ -102,8 +106,10 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
   }
 
   Offset? _computeEnd(RenderBox overlayBox) {
-    final targetContext = widget.targetKey.currentContext;
+    final targetContext = widget.targetContext;
     if (targetContext == null) return null;
+    final targetElement = targetContext is Element ? targetContext : null;
+    if (targetElement != null && !targetElement.mounted) return null;
 
     final targetBox = targetContext.findRenderObject() as RenderBox?;
     if (targetBox == null || !targetBox.hasSize) return null;

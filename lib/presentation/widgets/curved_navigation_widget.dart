@@ -1,14 +1,13 @@
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
+import "dart:math" as math;
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors, BlueThemeColors;
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
-import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/common/traveling_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class CustomCurvedNavigationBar extends StatefulWidget {
@@ -31,8 +30,6 @@ class CustomCurvedNavigationBar extends StatefulWidget {
 }
 
 class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
-  final GlobalKey _messagesBadgeKey = GlobalKey();
-
   @override
   Widget build(BuildContext context) {
     final items = _buildNavigationItems(widget.isAuthenticated);
@@ -65,19 +62,6 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
                 return true;
               },
               items: items,
-            ),
-          ),
-          // One-shot subtle cue: a tiny dot flies into the Messages badge.
-          Positioned(
-            left: 0,
-            right: 0,
-            top: -160,
-            bottom: 0,
-            child: TravelingDotWidget(
-              targetKey: _messagesBadgeKey,
-              trigger: widget.incomingMessageTravelDotTrigger,
-              color: AppColors.success,
-              size: 10,
             ),
           ),
         ],
@@ -179,17 +163,19 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
         Positioned(
           right: 0,
           top: 0,
-          child: KeyedSubtree(
-            key: _messagesBadgeKey,
-            child: widget.hasUnreadMessages
-                ? const BlinkingDotWidget(
-                    color: AppColors.success,
-                    size: 13,
-                    duration: Duration(milliseconds: 750),
-                    borderColor: Colors.white,
-                    borderWidth: 2,
-                  )
-                : const SizedBox(width: 13, height: 13),
+          child: Builder(
+            builder: (context) {
+              return widget.hasUnreadMessages
+                  ? PulseThenBlinkDotWidget(
+                      trigger: widget.incomingMessageTravelDotTrigger,
+                      color: AppColors.success,
+                      size: 13,
+                      blinkDuration: const Duration(milliseconds: 750),
+                      borderColor: Colors.white,
+                      borderWidth: 2,
+                    )
+                  : const SizedBox(width: 13, height: 13);
+            },
           ),
         ),
       ],
@@ -359,6 +345,172 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
       // Dark themes - use semi-transparent white for disabled state
       return AppColors.textLight.withValues(alpha: 0.4);
     }
+  }
+}
+
+/// Unread badge that pulses (scale) a few times on [trigger] changes,
+/// then continues blinking to attract attention.
+class PulseThenBlinkDotWidget extends StatefulWidget {
+  const PulseThenBlinkDotWidget({
+    required this.trigger,
+    super.key,
+    this.color = Colors.green,
+    this.size = 12.0,
+    this.blinkDuration = const Duration(seconds: 2),
+    this.borderColor,
+    this.borderWidth = 2.0,
+    this.pulseCount = 3,
+    this.pulseScale = 1.35,
+    this.pulseStep = const Duration(milliseconds: 120),
+  });
+
+  /// Change this value (e.g. increment) to replay the pulse.
+  final int trigger;
+
+  final Color color;
+  final double size;
+
+  /// Duration of the blink cycle after the pulse completes.
+  final Duration blinkDuration;
+
+  final Color? borderColor;
+  final double borderWidth;
+
+  /// How many full grow+shrink pulses to play.
+  final int pulseCount;
+
+  /// Maximum scale during pulse.
+  final double pulseScale;
+
+  /// Duration of each half-step (grow or shrink).
+  final Duration pulseStep;
+
+  @override
+  State<PulseThenBlinkDotWidget> createState() => _PulseThenBlinkDotWidgetState();
+}
+
+class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
+    with TickerProviderStateMixin {
+  late final AnimationController _pulseController = AnimationController(
+    vsync: this,
+    duration: _pulseTotalDuration(widget.pulseCount, widget.pulseStep),
+  );
+
+  late final AnimationController _blinkController = AnimationController(
+    vsync: this,
+    duration: widget.blinkDuration,
+  );
+  late final Animation<double> _blink = Tween<double>(begin: 0.0, end: 1.0)
+      .animate(CurvedAnimation(parent: _blinkController, curve: Curves.linear));
+
+  int _lastTrigger = 0;
+
+  static Duration _pulseTotalDuration(int pulseCount, Duration pulseStep) {
+    final steps = (pulseCount <= 0) ? 0 : pulseCount * 2;
+    return Duration(milliseconds: pulseStep.inMilliseconds * steps);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _lastTrigger = widget.trigger;
+    _blinkController.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(covariant PulseThenBlinkDotWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.blinkDuration != widget.blinkDuration) {
+      _blinkController.duration = widget.blinkDuration;
+      if (_blinkController.isAnimating) {
+        _blinkController
+          ..stop()
+          ..repeat(reverse: true);
+      }
+    }
+
+    // If pulse tuning changed, rebuild controller/animation quickly.
+    if (oldWidget.pulseCount != widget.pulseCount ||
+        oldWidget.pulseStep != widget.pulseStep) {
+      _pulseController.duration =
+          _pulseTotalDuration(widget.pulseCount, widget.pulseStep);
+    }
+
+    if (widget.trigger == _lastTrigger) return;
+    _lastTrigger = widget.trigger;
+    _playPulseThenBlink();
+  }
+
+  Future<void> _playPulseThenBlink() async {
+    if (!mounted) return;
+
+    // Pause blink so the pulse reads clearly.
+    _blinkController.stop();
+
+    _pulseController
+      ..stop()
+      ..reset();
+
+    // Animate a few scale oscillations (reads like "pulse").
+    // We implement the oscillation by driving the scale via a sine-like curve:
+    // scale = 1 + (pulseScale-1) * sin(pi * t) across each half-step.
+    await _pulseController.forward();
+
+    if (!mounted) return;
+    _blinkController.repeat(reverse: true);
+  }
+
+  double _pulseScaleValue() {
+    // Map controller 0..1 into pulseCount oscillations.
+    final count = widget.pulseCount <= 0 ? 0 : widget.pulseCount;
+    if (count == 0) return 1.0;
+    final t = _pulseController.value;
+    final phase = t * count * 2; // grow+shrink per pulse
+    final local = (phase % 1.0);
+    final s = math.sin(local * math.pi); // 0->1->0
+    return 1.0 + (widget.pulseScale - 1.0) * s;
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _blinkController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_blinkController, _pulseController]),
+      builder: (context, child) {
+        // Blink: hide/show like the existing BlinkingDotWidget behavior.
+        if (_blink.value < 0.5 && !_pulseController.isAnimating) {
+          return const SizedBox.shrink();
+        }
+
+        final scale =
+            _pulseController.isAnimating ? _pulseScaleValue() : 1.0;
+
+        return Transform.scale(
+          scale: scale,
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              color: widget.color,
+              shape: BoxShape.circle,
+              border: widget.borderColor != null
+                  ? Border.all(
+                      color: widget.borderColor!,
+                      width: widget.borderWidth,
+                    )
+                  : null,
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
