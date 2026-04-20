@@ -3,16 +3,20 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
+enum ChatSafetyWarningSeverity { medium, high }
+
 class ChatSafetyWarningRibbon extends StatelessWidget {
   const ChatSafetyWarningRibbon({
     required this.title,
     required this.body,
+    this.severity = ChatSafetyWarningSeverity.medium,
     this.onClose,
     super.key,
   });
 
   final String title;
   final String body;
+  final ChatSafetyWarningSeverity severity;
   final VoidCallback? onClose;
 
   @override
@@ -23,8 +27,13 @@ class ChatSafetyWarningRibbon extends StatelessWidget {
         final ts = ThemeState();
         final scheme = Theme.of(context).colorScheme;
 
-        final bg = Color.lerp(Colors.orange.shade700, ts.cardColor, 0.88)!;
-        final border = Colors.orange.withValues(alpha: 0.22);
+        final accent =
+            severity == ChatSafetyWarningSeverity.high
+                ? scheme.error
+                : Colors.orange.shade700;
+        final bg = Color.lerp(accent, ts.cardColor, 0.88)!;
+        final border = accent.withValues(alpha: 0.22);
+        final iconColor = ts.isBlueTheme ? Colors.white : accent;
 
         return Material(
           color: bg,
@@ -42,7 +51,7 @@ class ChatSafetyWarningRibbon extends StatelessWidget {
                   child: ThemeIcon(
                     Icons.warning_amber_rounded,
                     size: 18,
-                    color: ts.isBlueTheme ? Colors.white : scheme.onSurface,
+                    color: iconColor,
                   ),
                 ),
                 const SizedBox(width: 10),

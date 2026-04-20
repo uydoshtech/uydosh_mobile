@@ -17,7 +17,8 @@ class SoundService {
   SoundService._internal();
   static final SoundService _instance = SoundService._internal();
 
-  static const String _refreshWhooshAsset = "sounds/whoosh_refresh.wav";
+  // Short + clean refresh sound (the whoosh was perceived as too noisy).
+  static const String _refreshWhooshAsset = "sounds/click.wav";
   static const String _successAsset = "sounds/success.wav";
   static const String _errorAsset = "sounds/error.wav";
   static const String _likeAsset = "sounds/like.wav";
@@ -119,7 +120,7 @@ class SoundService {
     // Pull-to-refresh is user-initiated; keep it very subtle.
     play(
       UiSound.refresh,
-      volume: 0.12,
+      volume: 0.10,
       throttle: const Duration(milliseconds: 900),
     );
   }

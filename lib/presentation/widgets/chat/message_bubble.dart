@@ -13,6 +13,7 @@ class MessageBubble extends StatefulWidget {
     required this.message, required this.isCurrentUser, super.key,
     this.isLatest = false,
     this.onAnimationComplete,
+    this.riskLevel,
     this.currentUserProfile,
     this.otherUserInitials,
     this.otherUserAvatarUrl,
@@ -21,6 +22,7 @@ class MessageBubble extends StatefulWidget {
   final bool isCurrentUser;
   final bool isLatest;
   final VoidCallback? onAnimationComplete;
+  final String? riskLevel; // 'medium' | 'high' (only other user messages)
   final UserProfile? currentUserProfile;
   final String? otherUserInitials;
 
@@ -130,37 +132,48 @@ class _MessageBubbleState extends State<MessageBubble>
                   rightAvatarInitials: _getCurrentUserInitials(),
                   leftAvatarUrl: _getOtherUserAvatarUrl(),
                   rightAvatarUrl: widget.currentUserProfile?.avatarUrl,
-                  bubbleChild: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                  bubbleChild: Stack(
+                    clipBehavior: Clip.none,
                     children: [
-                      _buildMessageContent(
-                        widget.message.content,
-                        textColor,
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          ThemeIcon(
-                            Icons.access_time,
-                            size: 10,
-                            color: textColor.withValues(alpha: 0.7),
+                          _buildMessageContent(
+                            widget.message.content,
+                            textColor,
                           ),
-                          const SizedBox(width: 2),
-                          Text(
-                            _formatTime(widget.message.createdAt),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: textColor.withValues(alpha: 0.7),
-                            ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ThemeIcon(
+                                Icons.access_time,
+                                size: 10,
+                                color: textColor.withValues(alpha: 0.7),
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                _formatTime(widget.message.createdAt),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: textColor.withValues(alpha: 0.7),
+                                ),
+                              ),
+                              if (widget.isCurrentUser) ...[
+                                const SizedBox(width: 4),
+                                _buildCheckmarks(textColor),
+                              ],
+                            ],
                           ),
-                          if (widget.isCurrentUser) ...[
-                            const SizedBox(width: 4),
-                            _buildCheckmarks(textColor),
-                          ],
                         ],
                       ),
+                      if (!widget.isCurrentUser && (widget.riskLevel == 'medium' || widget.riskLevel == 'high'))
+                        PositionedDirectional(
+                          top: -6,
+                          end: -6,
+                          child: _RiskDot(level: widget.riskLevel!),
+                        ),
                     ],
                   ),
                 ),
@@ -300,6 +313,36 @@ class _MessageBubbleState extends State<MessageBubble>
       color: isReadByRecipient
           ? readColor
           : ownBubbleTextColor.withValues(alpha: 0.45),
+    );
+  }
+}
+
+class _RiskDot extends StatelessWidget {
+  const _RiskDot({required this.level});
+  final String level; // medium|high
+
+  @override
+  Widget build(BuildContext context) {
+    final color =
+        level == 'high' ? Colors.redAccent : Colors.amber.shade600;
+    return Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.95),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
     );
   }
 }

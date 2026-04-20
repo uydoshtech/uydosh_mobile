@@ -79,6 +79,9 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _showSecurityRibbon = true;
   String? _safetyWarningTitle;
   String? _safetyWarningBody;
+  ChatSafetyWarningSeverity _safetyWarningSeverity =
+      ChatSafetyWarningSeverity.medium;
+  final Map<int, String> _messageRiskById = {}; // messageId -> 'medium'|'high'
   DateTime? _lastSafetyCheckAt;
   bool _safetyCheckInFlight = false;
   bool _showRefreshSkeleton = false;
@@ -202,6 +205,34 @@ class _ChatScreenState extends State<ChatScreen> {
       return L10n.get("chat_safety_reason_deposit_to_reserve_room");
     }
 
+    if (lower.contains("suspicious") && lower.contains("link")) {
+      return L10n.get("chat_safety_reason_suspicious_link");
+    }
+
+    if (lower.contains("off-platform") ||
+        lower.contains("off platform") ||
+        lower.contains("move the conversation") ||
+        (lower.contains("telegram") || lower.contains("whatsapp"))) {
+      return L10n.get("chat_safety_reason_off_platform");
+    }
+
+    if (lower.contains("otp") ||
+        lower.contains("verification") ||
+        (lower.contains("code") && lower.contains("sms"))) {
+      return L10n.get("chat_safety_reason_otp_code");
+    }
+
+    if (lower.contains("prepay") ||
+        lower.contains("advance") ||
+        lower.contains("deposit") ||
+        lower.contains("card") ||
+        lower.contains("iban") ||
+        lower.contains("swift") ||
+        lower.contains("crypto") ||
+        lower.contains("wallet")) {
+      return L10n.get("chat_safety_reason_payment_request");
+    }
+
     return normalized;
   }
 
@@ -230,9 +261,26 @@ class _ChatScreenState extends State<ChatScreen> {
       if (data is Map) {
         final risk = (data["risk_level"] as String?)?.toLowerCase();
         final reason = data["reason"] as String?;
+        final evidence = data["evidence_message_ids"];
+
+        if ((risk == "medium" || risk == "high") && evidence is List) {
+          final ids =
+              evidence.map((e) => e is int ? e : int.tryParse("$e")).whereType<int>();
+          if (mounted) {
+            setState(() {
+              for (final id in ids) {
+                _messageRiskById[id] = risk!;
+              }
+            });
+          }
+        }
         if (risk == "medium" || risk == "high") {
           if (!mounted) return;
           setState(() {
+            _safetyWarningSeverity =
+                risk == "high"
+                    ? ChatSafetyWarningSeverity.high
+                    : ChatSafetyWarningSeverity.medium;
             _safetyWarningTitle =
                 risk == "high"
                     ? L10n.get("chat_safety_warning_title_high")
@@ -255,6 +303,7 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _safetyWarningTitle = null;
       _safetyWarningBody = null;
+      _safetyWarningSeverity = ChatSafetyWarningSeverity.medium;
     });
   }
 
@@ -300,6 +349,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ChatSafetyWarningRibbon(
                       title: _safetyWarningTitle!,
                       body: _safetyWarningBody!,
+                      severity: _safetyWarningSeverity,
                       onClose: _dismissSafetyWarning,
                     ),
                   Expanded(
@@ -578,6 +628,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 message: message,
                 isCurrentUser: isCurrentUser,
                 isLatest: isLatest,
+                riskLevel: _messageRiskById[message.id],
                 onAnimationComplete: () {
                   setState(() {
                     _newMessageIds.remove(message.id);
