@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -58,6 +60,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   int _selectedTabIndex = 0; // 0 = incoming, 1 = outgoing
   /// Cached conversations to show during refresh - prevents blink when returning to screen
   List<ConversationSummary>? _lastDisplayedConversations;
+  Timer? _unreadRefreshDebounce;
+  late final VoidCallback _unreadMessagesListener;
+  int _lastObservedUnreadCount = 0;
 
   @override
   void initState() {
@@ -69,6 +74,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
     // Listen for authentication state changes to refresh conversations when user logs in
     AuthenticationState().addListener(_onAuthenticationStateChanged);
+
+    _lastObservedUnreadCount = UnreadMessagesState().unreadCount;
+    _unreadMessagesListener = _onUnreadMessagesChanged;
+    UnreadMessagesState().addListener(_unreadMessagesListener);
   }
 
   @override
@@ -122,6 +131,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     AuthenticationState().removeListener(_onAuthenticationStateChanged);
+    UnreadMessagesState().removeListener(_unreadMessagesListener);
+    _unreadRefreshDebounce?.cancel();
     super.dispose();
   }
 
@@ -153,6 +164,37 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     if (mounted) {
       context.read<MessagingBloc>().add(RefreshConversations());
     }
+  }
+
+  bool _isInboxVisibleAndActive() {
+    // If opened as a main tab, only refresh when that tab is selected.
+    final tabSelected = widget.mainTabSelected;
+    if (tabSelected != null) {
+      return tabSelected;
+    }
+    // Otherwise (pushed route / drawer), refresh only if we're the top route.
+    return ModalRoute.of(context)?.isCurrent ?? true;
+  }
+
+  void _onUnreadMessagesChanged() {
+    final current = UnreadMessagesState().unreadCount;
+    final previous = _lastObservedUnreadCount;
+    _lastObservedUnreadCount = current;
+
+    // Only auto-refresh when this screen is actually visible.
+    if (!mounted || !_isInboxVisibleAndActive()) return;
+    // Avoid background fetches when not signed in (inbox will show auth error state anyway).
+    if (!AuthenticationState().isAuthenticated) return;
+
+    // Debounce rapid unread updates (multiple pushes in quick succession).
+    // Refresh on any count change while visible so new dialogs appear/reorder immediately.
+    if (current == previous) return;
+    _unreadRefreshDebounce?.cancel();
+    _unreadRefreshDebounce = Timer(const Duration(milliseconds: 450), () {
+      if (!mounted) return;
+      if (!_isInboxVisibleAndActive()) return;
+      _loadConversations();
+    });
   }
 
   Future<void> _onInboxPullRefresh() async {
