@@ -29,7 +29,8 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
 
   /// Width reserved for the dollar-sign indicator so body rows align
   /// regardless of tier, and line up with the header's leading icon column.
-  static const double _indicatorColumnWidth = 26;
+  // Must accommodate "$$$" without overflowing into the text column.
+  static const double _indicatorColumnWidth = 38;
 
   /// Plain dollar characters only (no circled icon); count matches [_priceIndicatorLevel].
   Widget _priceTierDollarSigns(
@@ -75,7 +76,11 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
           width: _indicatorColumnWidth,
           child: Align(
             alignment: Alignment.centerLeft,
-            child: _priceTierDollarSigns(context, benchmark),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: _priceTierDollarSigns(context, benchmark),
+            ),
           ),
         ),
         Expanded(
