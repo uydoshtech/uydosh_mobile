@@ -202,6 +202,25 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _applyMessagesAndMarkNewOnes(List<Message> nextMessages) {
+    final hadAny = _messages.isNotEmpty;
+    final prevIds = hadAny ? _messages.map((m) => m.id).toSet() : const <int>{};
+
+    // Mark IDs that newly appeared since last render. This preserves the
+    // existing "new message" animation even when we refresh from the server.
+    // Skip marking on initial load so we don't animate the full history.
+    if (_hasLoadedMessagesForConversation && prevIds.isNotEmpty) {
+      for (final m in nextMessages) {
+        if (!prevIds.contains(m.id)) {
+          _newMessageIds.add(m.id);
+        }
+      }
+    }
+
+    _messages = nextMessages;
+    _hasLoadedMessagesForConversation = true;
+  }
+
   Future<void> _loadSecurityRibbonState() async {
     try {
       final dismissed = await SessionManager.isChatSecurityRibbonDismissed();
@@ -442,10 +461,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ) {
                                 // Store messages in widget state
                                 setState(() {
-                                  _messages = messages;
-                                  _hasLoadedMessagesForConversation = true;
-                                  // Don't mark any messages as new when initially loading
-                                  // _newMessageIds remains empty for initial load
+                                  _applyMessagesAndMarkNewOnes(messages);
                                 });
                                 _finishRefreshSkeletonIfNeeded();
                                 // Mark messages as read after they're loaded
