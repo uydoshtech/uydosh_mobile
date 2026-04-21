@@ -25,7 +25,7 @@ class ScamTrigger {
       r'\b\d{7,15}\b',
 
       // UZ: common payment/transfer phrases (latin + cyrillic)
-      r'\b(o\'tkaz|otkaz|o‘tkaz|o‘tkazing|otkazing|yubor|yuboring|to\'lov|to‘lov|oldindan|depozit|karta|bank|hisob)\b',
+      r"\b(o'tkaz|otkaz|o‘tkaz|o‘tkazing|otkazing|yubor|yuboring|to'lov|to‘lov|oldindan|depozit|karta|bank|hisob)\b",
     ];
 
     for (final raw in patterns) {

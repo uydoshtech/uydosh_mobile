@@ -157,6 +157,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   late Animation<double> _heartScaleAnimation;
   late AnimationController _warningBlinkController;
   late Animation<double> _warningBlinkAnimation;
+  late final AnimationController _room3dRotateController;
   late PageController _pageController;
   late ScrollController _scrollController;
   /// Cached so [ListenableBuilder] around the app bar menu does not restart
@@ -200,6 +201,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     );
     _warningBlinkController.repeat(reverse: true);
 
+    _room3dRotateController = AnimationUtils.createAnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat();
+
     // Initialize page controller for photo carousel
     _pageController = PageController();
     _scrollController = ScrollController();
@@ -223,6 +229,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   void dispose() {
     AnimationUtils.disposeAnimationController(_heartAnimationController);
     AnimationUtils.disposeAnimationController(_warningBlinkController);
+    AnimationUtils.disposeAnimationController(_room3dRotateController);
     _pageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -1985,6 +1992,10 @@ L10n.get("feature_listing_error",
   }
 
   Widget _room3dTile(ListingDetail listingDetail) {
+    final rotate = CurvedAnimation(
+      parent: _room3dRotateController,
+      curve: Curves.linear,
+    );
     return SizedBox(
       width: double.infinity,
       child: ListingDetailTileShell(
@@ -1995,11 +2006,14 @@ L10n.get("feature_listing_error",
             padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
             child: Row(
               children: [
-                ThemeIcon(
-                  Icons.view_in_ar,
-                  color: ThemeState().isBlueTheme
-                      ? BlueThemeColors.textPrimary
-                      : Theme.of(context).colorScheme.primary,
+                RotationTransition(
+                  turns: rotate,
+                  child: ThemeIcon(
+                    Icons.view_in_ar,
+                    color: ThemeState().isBlueTheme
+                        ? BlueThemeColors.textPrimary
+                        : Theme.of(context).colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
