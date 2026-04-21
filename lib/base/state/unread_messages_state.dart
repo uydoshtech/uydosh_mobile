@@ -10,6 +10,7 @@ class UnreadMessagesState extends ChangeNotifier {
 
   int _unreadCount = 0;
   bool _isInitialized = false;
+  int? _lastIncomingConversationId;
 
   /// Current unread messages count
   int get unreadCount => _unreadCount;
@@ -19,6 +20,10 @@ class UnreadMessagesState extends ChangeNotifier {
 
   /// Whether the state has been initialized
   bool get isInitialized => _isInitialized;
+
+  /// The conversation id associated with the most recently observed incoming
+  /// message push (best-effort; may be null).
+  int? get lastIncomingConversationId => _lastIncomingConversationId;
 
   /// Update the unread messages count
   void updateUnreadCount(int count) {
@@ -31,9 +36,10 @@ class UnreadMessagesState extends ChangeNotifier {
   }
 
   /// Increment unread count (when new message arrives)
-  void incrementUnreadCount() {
+  void incrementUnreadCount({int? conversationId}) {
     _unreadCount++;
     _isInitialized = true;
+    _lastIncomingConversationId = conversationId;
     notifyListeners();
     logger.d(
       "🔔 UnreadMessagesState: Incremented unread count to $_unreadCount",

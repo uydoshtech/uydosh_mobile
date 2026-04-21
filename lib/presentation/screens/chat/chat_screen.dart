@@ -9,6 +9,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
@@ -90,6 +91,9 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _showRefreshSkeleton = false;
   DateTime? _refreshSkeletonStartedAt;
   Completer<void>? _refreshCompleter;
+  Timer? _incomingRefreshDebounce;
+  late final VoidCallback _unreadMessagesListener;
+  int _lastObservedUnreadCount = 0;
 
   static const Duration _minSkeletonDuration = Duration(milliseconds: 450);
 
@@ -140,14 +144,44 @@ class _ChatScreenState extends State<ChatScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _initializeChat());
     _loadSecurityRibbonState();
+
+    _lastObservedUnreadCount = UnreadMessagesState().unreadCount;
+    _unreadMessagesListener = _onUnreadMessagesChanged;
+    UnreadMessagesState().addListener(_unreadMessagesListener);
   }
 
   @override
   void dispose() {
+    UnreadMessagesState().removeListener(_unreadMessagesListener);
+    _incomingRefreshDebounce?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     _messageFocusNode.dispose();
     super.dispose();
+  }
+
+  void _onUnreadMessagesChanged() {
+    final current = UnreadMessagesState().unreadCount;
+    final previous = _lastObservedUnreadCount;
+    _lastObservedUnreadCount = current;
+
+    if (!mounted) return;
+    // Only if this chat screen is the visible (top) route.
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    // Only refresh for pushes targeting THIS conversation.
+    final incomingConversationId = UnreadMessagesState().lastIncomingConversationId;
+    if (incomingConversationId != widget.conversationId) return;
+    // Ignore non-changes (extra safety).
+    if (current == previous) return;
+
+    _incomingRefreshDebounce?.cancel();
+    _incomingRefreshDebounce = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+      context.read<MessagingBloc>().add(
+            RefreshMessages(conversationId: widget.conversationId),
+          );
+    });
   }
 
   Future<void> _initializeChat() async {

@@ -174,7 +174,8 @@ class PushNotificationService implements IPushNotificationService {
   void _handleNewMessageNotification(RemoteMessage message) {
     final data = message.data;
     if (data["type"] != "new_message") return;
-    UnreadMessagesState().incrementUnreadCount();
+    final conversationId = int.tryParse("${data["conversationId"] ?? ""}");
+    UnreadMessagesState().incrementUnreadCount(conversationId: conversationId);
     SoundService().playIncomingMessage();
   }
 
