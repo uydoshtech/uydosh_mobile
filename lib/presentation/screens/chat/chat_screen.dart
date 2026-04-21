@@ -15,6 +15,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
@@ -269,19 +270,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  bool _matchesScamTrigger(String text) {
-    final t = text.toLowerCase();
-    // Links, off-platform, OTP, deposits, payment keywords. MVP: simple and cheap.
-    final patterns = <RegExp>[
-      RegExp(r'https?://', caseSensitive: false),
-      RegExp(r'\b(t\.me|telegram|whatsapp|wa\.me|instagram|иг|инст)\b', caseSensitive: false),
-      RegExp(r'\b(otp|code|verification|verify|парол|код|смс|sms)\b', caseSensitive: false),
-      RegExp(r'\b(deposit|prepay|advance|pay now|bank|card|iban|swift|crypto|wallet|usdt|ton)\b', caseSensitive: false),
-      RegExp(r'\b(предоплат|задаток|депозит|оплат|перевод|карта|банк)\b', caseSensitive: false),
-    ];
-    return patterns.any((p) => p.hasMatch(t));
-  }
-
   String _localizedSafetyReason(String reason) {
     final normalized = reason.trim();
     final lower = normalized.toLowerCase();
@@ -332,7 +320,7 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    if (!_matchesScamTrigger(triggerText)) return;
+    if (!ScamTrigger.matches(triggerText)) return;
     _lastSafetyCheckAt = now;
     _safetyCheckInFlight = true;
 
