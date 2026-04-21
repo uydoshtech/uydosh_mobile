@@ -413,14 +413,10 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  String _getHeaderTitle(BuildContext context) {
+  String _getPeerDisplayName(BuildContext context) {
     final name = widget.otherUserName?.trim();
     if (name != null && name.isNotEmpty) {
-      return L10n.getWithParams(
-        "chat_with",
-        params: {"name": name},
-        fallback: "Chat with $name",
-      );
+      return name;
     }
     return L10n.get("chat");
   }
@@ -436,7 +432,9 @@ class _ChatScreenState extends State<ChatScreen> {
         return Scaffold(
           backgroundColor: backgroundColor,
           appBar: ChatHeader(
-            headerTitle: _getHeaderTitle(context),
+            displayName: _getPeerDisplayName(context),
+            peerAvatarUrl: widget.otherUserAvatar,
+            peerInitials: widget.otherUserInitials,
             onRefresh: () {
               _refreshMessagesWithSkeleton();
             },

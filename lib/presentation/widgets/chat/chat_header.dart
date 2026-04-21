@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -10,12 +11,16 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar_refresh_butto
 class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
 
   const ChatHeader({
-    required this.headerTitle,
+    required this.displayName,
     required this.onRefresh,
     required this.actionMenuItems,
     super.key,
+    this.peerAvatarUrl,
+    this.peerInitials,
   });
-  final String headerTitle;
+  final String displayName;
+  final String? peerAvatarUrl;
+  final String? peerInitials;
   final VoidCallback onRefresh;
   final List<ActionMenuItem> actionMenuItems;
 
@@ -35,10 +40,21 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
           leading: ThreeDAppBarIconButton.backLeading(context),
           title: Row(
             children: [
+              ChatAvatar(
+                isCurrentUser: false,
+                initials: peerInitials,
+                avatarUrl: peerAvatarUrl,
+              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  headerTitle,
-                  style: TextStyle(color: textColor),
+                  displayName,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
