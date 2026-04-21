@@ -28,6 +28,12 @@ class ListingDetailPhotoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Avoid O(n) lookups in the PageView builder.
+    final originalIndexByUrl = <String, int>{};
+    for (var i = 0; i < photos.length; i++) {
+      originalIndexByUrl.putIfAbsent(photos[i].photoUrl, () => i);
+    }
+
     return SizedBox(
       width: double.infinity,
       child: ListingDetailTileShell(
@@ -46,7 +52,7 @@ class ListingDetailPhotoSection extends StatelessWidget {
                   onPageChanged: (_) {},
                   itemBuilder: (context, index) {
                     final photo = orderedPhotos[index];
-                    final originalIndex = photos.indexOf(photo);
+                    final originalIndex = originalIndexByUrl[photo.photoUrl] ?? 0;
                     return GestureDetector(
                       onTap: () =>
                           onPhotoTap(originalIndex >= 0 ? originalIndex : 0),

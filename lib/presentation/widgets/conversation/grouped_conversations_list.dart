@@ -30,49 +30,61 @@ class GroupedConversationsList extends StatefulWidget {
 
 class _GroupedConversationsListState extends State<GroupedConversationsList> {
   final Map<int, bool> _expandedGroups = {};
+  Map<int, List<ConversationSummary>> _groupedConversations = const {};
+  List<int> _sortedListingIds = const [];
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
+    _recompute();
+  }
+
+  @override
+  void didUpdateWidget(covariant GroupedConversationsList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Recompute when input list or user context changes.
+    if (!identical(oldWidget.conversations, widget.conversations) ||
+        oldWidget.currentUserId != widget.currentUserId) {
+      _recompute();
+    }
+  }
+
+  void _recompute() {
     // Group conversations by listing ID
     final groupedConversations = <int, List<ConversationSummary>>{};
     for (final conversation in widget.conversations) {
-      if (!groupedConversations.containsKey(conversation.listingId)) {
-        groupedConversations[conversation.listingId] = [];
-      }
-      groupedConversations[conversation.listingId]!.add(conversation);
+      (groupedConversations[conversation.listingId] ??= []).add(conversation);
     }
 
-    // Sort conversations within each group: unread messages first, then by last message time
-    groupedConversations.forEach((listingId, conversations) {
+    // Sort conversations within each group: unread first, then most recent first.
+    groupedConversations.forEach((_, conversations) {
       conversations.sort((a, b) {
-        // Check if conversations have unread messages
-        final aHasUnread = a.unreadCount != null &&
+        final aHasUnread =
+            a.unreadCount != null &&
             a.unreadCount! > 0 &&
             widget.currentUserId != null &&
             a.lastMessageSenderId != widget.currentUserId;
-        final bHasUnread = b.unreadCount != null &&
+        final bHasUnread =
+            b.unreadCount != null &&
             b.unreadCount! > 0 &&
             widget.currentUserId != null &&
             b.lastMessageSenderId != widget.currentUserId;
 
-        // If one has unread and the other doesn't, prioritize the one with unread
         if (aHasUnread && !bHasUnread) return -1;
         if (!aHasUnread && bHasUnread) return 1;
 
-        // If both have same unread status, sort by last message time (most recent first)
         final aTime = a.lastMessageAt ?? a.updatedAt;
         final bTime = b.lastMessageAt ?? b.updatedAt;
         return bTime.compareTo(aTime);
       });
     });
 
-    // Get sorted listing IDs: groups with unread messages first, then by most recent conversation
+    // Sort listing groups: groups with unread first, then by most recent conversation.
     final sortedListingIds = groupedConversations.keys.toList()
       ..sort((a, b) {
         final aConversations = groupedConversations[a]!;
         final bConversations = groupedConversations[b]!;
 
-        // Check if groups have any unread messages
         final aHasUnread = aConversations.any(
           (conv) =>
               conv.unreadCount != null &&
@@ -88,19 +100,17 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
               conv.lastMessageSenderId != widget.currentUserId,
         );
 
-        // If one group has unread and the other doesn't, prioritize the one with unread
         if (aHasUnread && !bHasUnread) return -1;
         if (!aHasUnread && bHasUnread) return 1;
 
-        // If both groups have same unread status, sort by most recent conversation
-        final aLatest = aConversations.first.lastMessageAt ??
-            aConversations.first.updatedAt;
-        final bLatest = bConversations.first.lastMessageAt ??
-            bConversations.first.updatedAt;
+        final aLatest =
+            aConversations.first.lastMessageAt ?? aConversations.first.updatedAt;
+        final bLatest =
+            bConversations.first.lastMessageAt ?? bConversations.first.updatedAt;
         return bLatest.compareTo(aLatest);
       });
 
-    // Auto-expand the first group with unread messages
+    // Auto-expand the first group with unread messages (no side-effects in build).
     if (sortedListingIds.isNotEmpty) {
       final firstGroupId = sortedListingIds.first;
       final firstGroupConversations = groupedConversations[firstGroupId]!;
@@ -111,22 +121,30 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
             widget.currentUserId != null &&
             conv.lastMessageSenderId != widget.currentUserId,
       );
-
       if (hasUnreadInFirstGroup && !_expandedGroups.containsKey(firstGroupId)) {
         _expandedGroups[firstGroupId] = true;
       }
     }
 
+    setState(() {
+      _groupedConversations = groupedConversations;
+      _sortedListingIds = sortedListingIds;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return CommonListView(
       padding: const EdgeInsets.all(16),
-      itemCount: sortedListingIds.length,
+      itemCount: _sortedListingIds.length,
       itemBuilder: (context, index) {
-        final listingId = sortedListingIds[index];
-        final conversations = groupedConversations[listingId]!;
+        final listingId = _sortedListingIds[index];
+        final conversations = _groupedConversations[listingId] ?? const [];
         final isExpanded =
             _expandedGroups[listingId] ?? false; // Default to collapsed
-        final listingTitle =
-            resolvedConversationListingTitle(conversations.first);
+        final listingTitle = conversations.isEmpty
+            ? ""
+            : resolvedConversationListingTitle(conversations.first);
 
         return _buildGroupCard(
           listingId: listingId,
