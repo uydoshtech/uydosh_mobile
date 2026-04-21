@@ -117,4 +117,88 @@ post_install do |installer|
       end
     end
   end
+
+  # Same UIScene issue as above: finishAndReturnResult() notifies Flutter via
+  # `UIApplication.shared.delegate?.window??.rootViewController`, which is nil
+  # on scene-based apps — so `onRoomCaptureFinished` never reaches Dart, the
+  # USDZ upload never runs, and the user stays on the invitation screen after scan.
+  room_capture_file = File.expand_path(File.join(__dir__, '.symlinks', 'plugins', 'flutter_roomplan', 'ios', 'Classes', 'RoomCaptureViewController.swift'))
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: room capture finished → Flutter (UIScene-safe) */'
+    unless src.include?(marker)
+      src = src.gsub(
+        "                        if let controller = UIApplication.shared.delegate?.window??.rootViewController as? FlutterViewController {\n                            let channel = FlutterMethodChannel(name: \"rkg/flutter_roomplan\", binaryMessenger: controller.binaryMessenger)\n                            channel.invokeMethod(\"onRoomCaptureFinished\", arguments: nil)\n                        }",
+        '                        self.uydoshNotifyRoomCaptureFinishedToFlutter()'
+      )
+
+      # Use explicit lines (not <<~SWIFT) so Ruby does not strip Swift indentation.
+      injection = [
+        '',
+        "    #{marker}",
+        '    private func uydoshNotifyRoomCaptureFinishedToFlutter() {',
+        '        var vc: UIViewController? = self.presentingViewController',
+        '        while let current = vc {',
+        '            if let flutter = current as? FlutterViewController {',
+        '                let channel = FlutterMethodChannel(name: "rkg/flutter_roomplan", binaryMessenger: flutter.binaryMessenger)',
+        '                channel.invokeMethod("onRoomCaptureFinished", arguments: nil)',
+        '                return',
+        '            }',
+        '            if let nav = current as? UINavigationController {',
+        '                for sub in nav.viewControllers {',
+        '                    if let flutter = sub as? FlutterViewController {',
+        '                        let channel = FlutterMethodChannel(name: "rkg/flutter_roomplan", binaryMessenger: flutter.binaryMessenger)',
+        '                        channel.invokeMethod("onRoomCaptureFinished", arguments: nil)',
+        '                        return',
+        '                    }',
+        '                }',
+        '                if let flutter = nav.visibleViewController as? FlutterViewController {',
+        '                    let channel = FlutterMethodChannel(name: "rkg/flutter_roomplan", binaryMessenger: flutter.binaryMessenger)',
+        '                    channel.invokeMethod("onRoomCaptureFinished", arguments: nil)',
+        '                    return',
+        '                }',
+        '            }',
+        '            if let tab = current as? UITabBarController {',
+        '                vc = tab.selectedViewController',
+        '                continue',
+        '            }',
+        '            vc = current.presentingViewController',
+        '        }',
+        '        for scene in UIApplication.shared.connectedScenes {',
+        '            guard let windowScene = scene as? UIWindowScene else { continue }',
+        '            let root = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController',
+        '                ?? windowScene.windows.first?.rootViewController',
+        '            guard let root = root else { continue }',
+        '            if let flutter = Self.uydoshFindFlutterViewController(in: root) {',
+        '                let channel = FlutterMethodChannel(name: "rkg/flutter_roomplan", binaryMessenger: flutter.binaryMessenger)',
+        '                channel.invokeMethod("onRoomCaptureFinished", arguments: nil)',
+        '                return',
+        '            }',
+        '        }',
+        '    }',
+        '',
+        '    private static func uydoshFindFlutterViewController(in vc: UIViewController) -> FlutterViewController? {',
+        '        if let f = vc as? FlutterViewController { return f }',
+        '        if let nav = vc as? UINavigationController {',
+        '            for child in nav.viewControllers {',
+        '                if let found = uydoshFindFlutterViewController(in: child) { return found }',
+        '            }',
+        '        }',
+        '        if let tab = vc as? UITabBarController, let selected = tab.selectedViewController {',
+        '            return uydoshFindFlutterViewController(in: selected)',
+        '        }',
+        '        for child in vc.children {',
+        '            if let found = uydoshFindFlutterViewController(in: child) { return found }',
+        '        }',
+        '        return nil',
+        '    }',
+      ].join("\n")
+
+      src = src.sub(
+        '    private func resetScanningSession() {',
+        "#{injection}\n    private func resetScanningSession() {"
+      )
+      File.write(room_capture_file, src)
+    end
+  end
 end
