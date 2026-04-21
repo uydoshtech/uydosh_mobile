@@ -731,6 +731,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
     return CommonListView(
       padding: const EdgeInsets.all(16),
+      itemSpacing: 10,
       itemCount: sortedConversations.length,
       itemBuilder: (context, index) {
         final conversation = sortedConversations[index];

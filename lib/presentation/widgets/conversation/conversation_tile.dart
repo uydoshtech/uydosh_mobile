@@ -183,9 +183,9 @@ class ConversationTile extends StatelessWidget {
       if (difference.inDays > 0) {
         return AppDateUtils.formatDateWithMonth(context, dateTime);
       } else if (difference.inHours > 0) {
-        return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+        return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
       } else if (difference.inMinutes > 0) {
-        return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+        return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
       } else {
         return L10n.get("now");
       }

@@ -19,9 +19,11 @@ class QuickQuestionsWidget extends StatelessWidget {
         final pillColor = themeState.pillColor;
         final pillTextColor = themeState.pillTextColor;
         final borderColor = themeState.borderColor;
+        final bottomPad =
+            MediaQuery.viewPaddingOf(context).bottom + 8;
 
         return Container(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 50),
+          padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPad),
           decoration: BoxDecoration(
             color: backgroundColor,
             border: Border(bottom: BorderSide(color: borderColor, width: 0.5)),

@@ -136,6 +136,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
   Widget build(BuildContext context) {
     return CommonListView(
       padding: const EdgeInsets.all(16),
+      itemSpacing: 10,
       itemCount: _sortedListingIds.length,
       itemBuilder: (context, index) {
         final listingId = _sortedListingIds[index];
@@ -186,7 +187,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
 
         return ThreeDElevatedSurface(
           baseColor: cardColor,
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: EdgeInsets.zero,
           child: Column(
             children: [
               // Group header

@@ -1,5 +1,3 @@
-import "dart:math" as math;
-
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -42,13 +40,11 @@ class ChatMessageInput extends StatelessWidget {
           scheme.onSurface,
           themeState.isBlueTheme ? 0.06 : 0.02,
         )!;
-        final bottomInset = math.max(
-          MediaQuery.viewPaddingOf(context).bottom,
-          16.0,
-        );
 
+        // Bottom safe area is handled below this bar (e.g. quick questions row);
+        // avoid stacking large bottom padding here or it reads as empty space.
         return Container(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           decoration: BoxDecoration(
             color: themeState.chatInputBarBackgroundColor,
             border: Border(top: BorderSide(color: borderColor)),

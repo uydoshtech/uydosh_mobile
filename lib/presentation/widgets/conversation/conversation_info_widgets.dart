@@ -87,34 +87,92 @@ class ConversationLocationInfo extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (hasLocation) ...[
-              Row(
-                children: [
-                  const ThemeIcon(
-                    Icons.location_on,
-                    color: AppColors.error,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      _getLocalizedName(
-                        nameUz: conversation.locationNameUz,
-                        nameRu: conversation.locationNameRu,
-                        nameEn: conversation.locationNameEn,
+            if (hasLocation && hasSubwayStation)
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final rowW =
+                      constraints.maxWidth.isFinite
+                          ? constraints.maxWidth
+                          : MediaQuery.sizeOf(context).width;
+                  // Cap station width so short names do not leave a huge gap before district.
+                  final stationMaxW = (rowW * 0.42).clamp(72.0, 220.0);
+                  final textStyle = TextStyle(fontSize: 12, color: textColor);
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ThemeIcon(
+                        Icons.train,
+                        color: ConversationSubwayStationDisplay._getLineColor(
+                          conversation.subwayStationLine ?? 1,
+                        ),
+                        size: 16,
                       ),
-                      style: TextStyle(fontSize: 12, color: textColor),
+                      const SizedBox(width: 4),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: stationMaxW),
+                        child: Text(
+                          _getLocalizedName(
+                            nameUz: conversation.subwayStationNameUz,
+                            nameRu: conversation.subwayStationNameRu,
+                            nameEn: conversation.subwayStationNameEn,
+                          ),
+                          style: textStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const ThemeIcon(
+                        Icons.location_on,
+                        color: AppColors.error,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          _getLocalizedName(
+                            nameUz: conversation.locationNameUz,
+                            nameRu: conversation.locationNameRu,
+                            nameEn: conversation.locationNameEn,
+                          ),
+                          style: textStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              )
+            else ...[
+              if (hasLocation)
+                Row(
+                  children: [
+                    const ThemeIcon(
+                      Icons.location_on,
+                      color: AppColors.error,
+                      size: 16,
                     ),
-                  ),
-                ],
-              ),
-            ],
-            if (hasSubwayStation) ...[
-              const SizedBox(height: 4),
-              ConversationSubwayStationDisplay(
-                conversation: conversation,
-                textColor: textColor,
-              ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        _getLocalizedName(
+                          nameUz: conversation.locationNameUz,
+                          nameRu: conversation.locationNameRu,
+                          nameEn: conversation.locationNameEn,
+                        ),
+                        style: TextStyle(fontSize: 12, color: textColor),
+                      ),
+                    ),
+                  ],
+                ),
+              if (hasSubwayStation) ...[
+                if (hasLocation) const SizedBox(height: 4),
+                ConversationSubwayStationDisplay(
+                  conversation: conversation,
+                  textColor: textColor,
+                ),
+              ],
             ],
             if (showPrice &&
                 conversation.listingPrice != null &&

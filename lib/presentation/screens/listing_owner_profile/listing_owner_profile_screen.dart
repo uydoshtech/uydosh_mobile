@@ -14,13 +14,15 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ListingOwnerProfileData {
@@ -87,7 +89,9 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
+        final theme = Theme.of(context);
         return Scaffold(
+          backgroundColor: theme.colorScheme.surface,
           appBar: UydoshAppBar(
             leading: ThreeDAppBarIconButton.backLeading(context),
             title: L10n.text(
@@ -178,54 +182,18 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
-        final currentLanguage = LanguageState().currentLanguage;
-
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Profile Avatar Section
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(width: 3, color: Colors.white),
-                      ),
-                      child: Container(
-                        width: 94,
-                        height: 94,
-                        decoration: BoxDecoration(
-                          color: _getPrimaryColor(),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: _getPrimaryColor().withOpacity(0.3),
-                              blurRadius: 15,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: _buildProfilePicture(profile),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              Center(child: _buildNeumorphicAvatar(context, profile)),
 
               const SizedBox(height: 24),
 
               // Merged Profile Information Card
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              ListingDetailTileShell(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
                   child: Column(
@@ -488,11 +456,7 @@ L10n.get("rating"),
               // Lifestyle Preferences Section
               if (_hasNewProfileFields(profile)) ...[
                 const SizedBox(height: 16),
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                ListingDetailTileShell(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
                     child: Column(
@@ -690,6 +654,7 @@ L10n.get("rating"),
                     onPressed: () => _makePhoneCall(widget.phoneNumber!),
                     icon: Icons.phone,
                     text: L10n.get("contact_user"),
+                    neumorphicSoftUi: true,
                     padding: const EdgeInsets.symmetric(
                       vertical: 16,
                       horizontal: 24,
@@ -710,9 +675,7 @@ L10n.get("rating"),
     required String value,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return ListingDetailTileShell(
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -796,82 +759,12 @@ L10n.get("rating"),
     );
   }
 
-  String _formatDate(String? dateString, String language) {
-    if (dateString == null) return "Unknown";
-
-    try {
-      final date = DateTime.parse(dateString);
-
-      final months = {
-        "en": [
-          "January",
-          "February",
-          "March",
-          "April",
-          "May",
-          "June",
-          "July",
-          "August",
-          "September",
-          "October",
-          "November",
-          "December",
-        ],
-        "ru": [
-          "Январь",
-          "Февраль",
-          "Март",
-          "Апрель",
-          "Май",
-          "Июнь",
-          "Июль",
-          "Август",
-          "Сентябрь",
-          "Октябрь",
-          "Ноябрь",
-          "Декабрь",
-        ],
-        "uz": [
-          "Yanvar",
-          "Fevral",
-          "Mart",
-          "Aprel",
-          "May",
-          "Iyun",
-          "Iyul",
-          "Avgust",
-          "Sentabr",
-          "Oktabr",
-          "Noyabr",
-          "Dekabr",
-        ],
-      };
-
-      final monthNames = months[language] ?? months["en"]!;
-      final month = monthNames[date.month - 1];
-      final year = date.year;
-
-      return "$month $year";
-    } catch (e) {
-      // If parsing fails, return the original string
-      return dateString;
-    }
-  }
-
   // Theme-dependent color helper methods
   Color _getPrimaryColor() {
     if (ThemeState().isBlueTheme) {
       return Colors.white;
     } else {
       return Colors.black;
-    }
-  }
-
-  Color _getButtonPrimaryColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.buttonPrimary;
-    } else {
-      return AppColors.buttonPrimary;
     }
   }
 
@@ -891,33 +784,69 @@ L10n.get("rating"),
     }
   }
 
-  Widget _buildProfilePicture(UserProfile profile) {
-    final imageUrl = resolveAvatarUrl(profile.avatarUrl);
-    if (imageUrl == null) {
-      return const Center(
-        child: ThemeIcon(Icons.person, size: 50, color: Colors.white),
-      );
-    }
-    return ClipOval(
-      child: CachedNetworkImage(
-        imageUrl: imageUrl,
-        width: 94,
-        height: 94,
-        fit: BoxFit.cover,
-        memCacheWidth: 188,
-        memCacheHeight: 188,
-        placeholder:
-            (context, url) => const Center(
-              child: SizedBox(
-                width: 28,
-                height: 28,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-        errorWidget:
-            (context, url, error) => const Center(
-              child: ThemeIcon(Icons.person, size: 50, color: Colors.white),
-            ),
+  /// Raised circular face matching chat avatars and soft-UI profile controls.
+  Widget _buildNeumorphicAvatar(BuildContext context, UserProfile profile) {
+    const diameter = 100.0;
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+    final resolvedUrl = resolveAvatarUrl(profile.avatarUrl);
+    final hasAvatar = resolvedUrl != null;
+    final faceBase =
+        isBlueTheme ? Colors.white : Color.lerp(surface, onSurface, 0.02)!;
+    final glyphColor = isBlueTheme ? primary : onSurface;
+
+    return SizedBox(
+      width: diameter,
+      height: diameter,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient:
+              hasAvatar ? null : ThreeDSurfaceStyle.surfaceGradient(context, faceBase),
+          color: hasAvatar ? faceBase : null,
+          boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          border: Border.all(
+            color: onSurface.withValues(alpha: 0.06),
+            width: 1,
+          ),
+        ),
+        child: ClipOval(
+          child:
+              hasAvatar
+                  ? CachedNetworkImage(
+                    imageUrl: resolvedUrl,
+                    width: diameter,
+                    height: diameter,
+                    fit: BoxFit.cover,
+                    memCacheWidth: (diameter * 2).round(),
+                    memCacheHeight: (diameter * 2).round(),
+                    placeholder:
+                        (context, url) => Center(
+                          child: SizedBox(
+                            width: 28,
+                            height: 28,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: glyphColor,
+                            ),
+                          ),
+                        ),
+                    errorWidget:
+                        (context, url, error) => Center(
+                          child: ThemeIcon(
+                            Icons.person,
+                            size: 50,
+                            color: glyphColor,
+                          ),
+                        ),
+                  )
+                  : Center(
+                    child: ThemeIcon(Icons.person, size: 50, color: glyphColor),
+                  ),
+        ),
       ),
     );
   }
