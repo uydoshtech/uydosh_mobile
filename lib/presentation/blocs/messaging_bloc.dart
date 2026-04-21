@@ -1,4 +1,5 @@
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:flutter/foundation.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
@@ -222,29 +223,39 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     Emitter<MessagingState> emit,
   ) async {
     try {
-      logger.d("🔄 [MessagingBloc] Starting to fetch messages...");
-      logger.d("   - Conversation ID: ${event.conversationId}");
-      logger.d("   - Page: ${event.page}");
-      logger.d("   - Limit: ${event.limit}");
+      if (kDebugMode) {
+        logger.d("🔄 [MessagingBloc] Starting to fetch messages...");
+        logger.d("   - Conversation ID: ${event.conversationId}");
+        logger.d("   - Page: ${event.page}");
+        logger.d("   - Limit: ${event.limit}");
+      }
 
       if (event.page == 1) {
-        logger.d("🔄 [MessagingBloc] Emitting loading state...");
+        if (kDebugMode) {
+          logger.d("🔄 [MessagingBloc] Emitting loading state...");
+        }
         emit(const MessagingLoading());
       }
 
-      logger.d("🌐 [MessagingBloc] Calling messaging service...");
+      if (kDebugMode) {
+        logger.d("🌐 [MessagingBloc] Calling messaging service...");
+      }
       final response = await _messagingService.getMessages(
         conversationId: event.conversationId,
         page: event.page,
         limit: event.limit,
       );
 
-      logger.d("✅ [MessagingBloc] Messages fetched successfully!");
-      logger.d("   - Messages count: ${response.data.length}");
-      logger.d("   - Has more: ${response.hasMore}");
-      logger.d("   - Current page: ${event.page}");
+      if (kDebugMode) {
+        logger.d("✅ [MessagingBloc] Messages fetched successfully!");
+        logger.d("   - Messages count: ${response.data.length}");
+        logger.d("   - Has more: ${response.hasMore}");
+        logger.d("   - Current page: ${event.page}");
+      }
 
-      logger.d("🔄 [MessagingBloc] Emitting messages loaded state...");
+      if (kDebugMode) {
+        logger.d("🔄 [MessagingBloc] Emitting messages loaded state...");
+      }
       emit(
         MessagesLoaded(
           messages: response.data,
@@ -253,11 +264,15 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
           conversationId: event.conversationId,
         ),
       );
-      logger.d("✅ [MessagingBloc] Messages loaded state emitted successfully!");
+      if (kDebugMode) {
+        logger.d("✅ [MessagingBloc] Messages loaded state emitted successfully!");
+      }
     } catch (e) {
-      logger.d("❌ [MessagingBloc] Error fetching messages: $e");
-      logger.d("❌ [MessagingBloc] Error type: ${e.runtimeType}");
-      logger.d("❌ [MessagingBloc] Error details: $e");
+      if (kDebugMode) {
+        logger.d("❌ [MessagingBloc] Error fetching messages: $e");
+        logger.d("❌ [MessagingBloc] Error type: ${e.runtimeType}");
+        logger.d("❌ [MessagingBloc] Error details: $e");
+      }
       emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
     }
   }
@@ -281,7 +296,11 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
           AchievementUnlockState().setPendingAchievement(achievement);
         }
       } catch (e) {
-        logger.d("❌ [MessagingBloc] Error recording first message achievement: $e");
+        if (kDebugMode) {
+          logger.d(
+            "❌ [MessagingBloc] Error recording first message achievement: $e",
+          );
+        }
       }
 
       emit(MessageSent(message: message));
@@ -307,9 +326,11 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
             .copyWith(unreadCount: 0);
         _cachedConversations[conversationIndex] = updatedConversation;
 
-        logger.d(
-          "🔧 [MessagingBloc] Frontend workaround: Set unread count to 0 for conversation ${event.conversationId}",
-        );
+        if (kDebugMode) {
+          logger.d(
+            "🔧 [MessagingBloc] Frontend workaround: Set unread count to 0 for conversation ${event.conversationId}",
+          );
+        }
       }
 
       emit(

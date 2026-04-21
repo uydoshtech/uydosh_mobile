@@ -1,5 +1,6 @@
 import "dart:math" as math;
 
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
@@ -18,9 +19,7 @@ import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
-import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -160,7 +159,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
-  bool _isLoadingMore = false;
   bool _isCreatingSearchAlert = false;
   int _searchAlertCelebrationTick = 0;
   late final VoidCallback _throttledScrollListener;
@@ -261,7 +259,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   void _resetLoadMoreState() {
-    _isLoadingMore = false;
     _resetScrollLoadingState();
   }
 
@@ -1190,12 +1187,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
 
     // Debug logging to see what values are being passed
-    logger.d(
-      "HomeScreen._dispatchSearch - subwayStationId: ${filters.subwayStationId}, subwayLineId: ${filters.subwayLineId}",
-    );
-    logger.d(
-      "HomeScreen._dispatchSearch - minPrice: ${filters.minPrice}, maxPrice: ${filters.maxPrice}",
-    );
+    if (kDebugMode) {
+      logger.d(
+        "HomeScreen._dispatchSearch - subwayStationId: ${filters.subwayStationId}, subwayLineId: ${filters.subwayLineId}",
+      );
+      logger.d(
+        "HomeScreen._dispatchSearch - minPrice: ${filters.minPrice}, maxPrice: ${filters.maxPrice}",
+      );
+    }
 
     listingsBloc.add(
       ListingsEvent.searchListings(
@@ -1213,19 +1212,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
-  /// Calculate total unread count from all conversations
-  int _calculateTotalUnreadCount(List<ConversationSummary> conversations) {
-    return conversations.fold(0, (sum, conversation) {
-      if (conversation.unreadCount != null &&
-          conversation.unreadCount! > 0 &&
-          conversation.lastMessageSenderId != null) {
-        // Only count as unread if the last message was not sent by the current user
-        // We need to get the current user ID to properly filter
-        return sum + conversation.unreadCount!;
-      }
-      return sum;
-    });
-  }
 }
 
 /// Notify-me control: expanding ring + bell wiggle on tap.

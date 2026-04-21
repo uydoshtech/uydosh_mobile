@@ -243,6 +243,9 @@ PODS:
   - TOCropViewController (3.1.2)
   - url_launcher_ios (0.0.1):
     - Flutter
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - yandex_mapkit (0.0.1):
     - Flutter
     - YandexMapsMobile (= 4.22.0-lite)
@@ -271,6 +274,7 @@ DEPENDENCIES:
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
+  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
   - yandex_mapkit (from `.symlinks/plugins/yandex_mapkit/ios`)
 
 SPEC REPOS:
@@ -350,6 +354,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
+  webview_flutter_wkwebview:
+    :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
   yandex_mapkit:
     :path: ".symlinks/plugins/yandex_mapkit/ios"
 
@@ -404,6 +410,7 @@ SPEC CHECKSUMS:
   sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
   TOCropViewController: a916930c465b5d9445a74d95e0c0da931771b4df
   url_launcher_ios: bb13df5870e8c4234ca12609d04010a21be43dfa
+  webview_flutter_wkwebview: 29eb20d43355b48fe7d07113835b9128f84e3af4
   yandex_mapkit: d98af28162446898790eaed6ae5d1d37b9ed1713
   YandexMapsMobile: c73844c6096bbb240d1491adc511c2ef4a88d88d
 

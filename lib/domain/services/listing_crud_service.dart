@@ -2,6 +2,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:dio/dio.dart";
+import "package:flutter/foundation.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -105,11 +106,13 @@ class ListingCrudService implements IListingCrudService {
         userId: null,
       );
 
-      logger.d("=== CREATE LISTING REQUEST DEBUG ===");
-      logger.d("Endpoint: /listings");
-      logger.d("User ID from session: $userId");
-      logger.d("Request JSON: ${request.toJson()}");
-      logger.d("====================================");
+      if (kDebugMode) {
+        logger.d("=== CREATE LISTING REQUEST DEBUG ===");
+        logger.d("Endpoint: /listings");
+        logger.d("User ID from session: $userId");
+        logger.d("Request JSON: ${request.toJson()}");
+        logger.d("====================================");
+      }
 
       final response = await _oauthApiClient
           .post<Map<String, dynamic>, CreateListingRequest>(
@@ -119,9 +122,11 @@ class ListingCrudService implements IListingCrudService {
             data: request,
           );
 
-      logger.d("=== CREATE LISTING RESPONSE DEBUG ===");
-      logger.d("Response keys: ${response.keys.toList()}");
-      logger.d("====================================");
+      if (kDebugMode) {
+        logger.d("=== CREATE LISTING RESPONSE DEBUG ===");
+        logger.d("Response keys: ${response.keys.toList()}");
+        logger.d("====================================");
+      }
 
       if (response.containsKey("message") &&
           response["message"] == "Listing created successfully") {
@@ -132,7 +137,9 @@ class ListingCrudService implements IListingCrudService {
 
           if (photoPaths != null && photoPaths.isNotEmpty) {
             try {
-              logger.d("=== UPLOADING PHOTOS FOR LISTING $listingId ===");
+              if (kDebugMode) {
+                logger.d("=== UPLOADING PHOTOS FOR LISTING $listingId ===");
+              }
               final isPrimaryFlags = List<bool>.generate(
                 photoPaths.length,
                 (index) => index == 0,
@@ -142,11 +149,15 @@ class ListingCrudService implements IListingCrudService {
                 photoPaths: photoPaths,
                 isPrimaryFlags: isPrimaryFlags,
               );
-              logger.d(
-                "✅ All photos uploaded successfully for listing $listingId",
-              );
+              if (kDebugMode) {
+                logger.d(
+                  "✅ All photos uploaded successfully for listing $listingId",
+                );
+              }
             } catch (photoError) {
-              logger.d("⚠️ Warning: Photos failed to upload: $photoError");
+              if (kDebugMode) {
+                logger.d("⚠️ Warning: Photos failed to upload: $photoError");
+              }
             }
           }
 
@@ -160,9 +171,11 @@ class ListingCrudService implements IListingCrudService {
         );
       }
     } catch (e) {
-      logger.d("=== CREATE LISTING ERROR DEBUG ===");
-      logger.d("Error: $e");
-      logger.d("====================================");
+      if (kDebugMode) {
+        logger.d("=== CREATE LISTING ERROR DEBUG ===");
+        logger.d("Error: $e");
+        logger.d("====================================");
+      }
       rethrow;
     }
   }
@@ -204,10 +217,12 @@ class ListingCrudService implements IListingCrudService {
         userId: null,
       );
 
-      logger.d("=== UPDATE LISTING REQUEST ===");
-      logger.d("URL: /listings/$listingId");
-      logger.d("Request JSON: ${request.toJson()}");
-      logger.d("=============================");
+      if (kDebugMode) {
+        logger.d("=== UPDATE LISTING REQUEST ===");
+        logger.d("URL: /listings/$listingId");
+        logger.d("Request JSON: ${request.toJson()}");
+        logger.d("=============================");
+      }
 
       Map<String, dynamic> response;
       try {
@@ -219,7 +234,9 @@ class ListingCrudService implements IListingCrudService {
               data: request,
             );
       } catch (e) {
-        logger.d("PUT method failed: $e, trying PATCH...");
+        if (kDebugMode) {
+          logger.d("PUT method failed: $e, trying PATCH...");
+        }
         response = await _oauthApiClient
             .patch<Map<String, dynamic>, CreateListingRequest>(
               "/listings/$listingId",
@@ -229,9 +246,11 @@ class ListingCrudService implements IListingCrudService {
             );
       }
 
-      logger.d("=== UPDATE LISTING RESPONSE ===");
-      logger.d("Response keys: ${response.keys.toList()}");
-      logger.d("==============================");
+      if (kDebugMode) {
+        logger.d("=== UPDATE LISTING RESPONSE ===");
+        logger.d("Response keys: ${response.keys.toList()}");
+        logger.d("==============================");
+      }
 
       if (response.containsKey("message") &&
           response["message"] == "Listing updated successfully") {
@@ -241,9 +260,11 @@ class ListingCrudService implements IListingCrudService {
 
           if (photoPaths != null && photoPaths.isNotEmpty) {
             try {
-              logger.d(
-                "=== UPLOADING PHOTOS FOR UPDATED LISTING $listingId ===",
-              );
+              if (kDebugMode) {
+                logger.d(
+                  "=== UPLOADING PHOTOS FOR UPDATED LISTING $listingId ===",
+                );
+              }
               final isPrimaryFlags = List<bool>.generate(
                 photoPaths.length,
                 (index) => index == 0,
@@ -253,11 +274,15 @@ class ListingCrudService implements IListingCrudService {
                 photoPaths: photoPaths,
                 isPrimaryFlags: isPrimaryFlags,
               );
-              logger.d(
-                "✅ All photos uploaded successfully for updated listing $listingId",
-              );
+              if (kDebugMode) {
+                logger.d(
+                  "✅ All photos uploaded successfully for updated listing $listingId",
+                );
+              }
             } catch (photoError) {
-              logger.d("⚠️ Warning: Photos failed to upload: $photoError");
+              if (kDebugMode) {
+                logger.d("⚠️ Warning: Photos failed to upload: $photoError");
+              }
             }
           }
 
@@ -271,7 +296,9 @@ class ListingCrudService implements IListingCrudService {
         );
       }
     } catch (e) {
-      logger.d("Error updating listing: $e");
+      if (kDebugMode) {
+        logger.d("Error updating listing: $e");
+      }
       rethrow;
     }
   }
@@ -279,10 +306,12 @@ class ListingCrudService implements IListingCrudService {
   @override
   Future<bool> toggleListingActive(int listingId) async {
     try {
-      logger.d("=== DEACTIVATION REQUEST ===");
-      logger.d("Listing ID: $listingId");
-      logger.d("Endpoint: /listings/$listingId/toggle-active");
-      logger.d("=====================================");
+      if (kDebugMode) {
+        logger.d("=== DEACTIVATION REQUEST ===");
+        logger.d("Listing ID: $listingId");
+        logger.d("Endpoint: /listings/$listingId/toggle-active");
+        logger.d("=====================================");
+      }
 
       await _oauthApiClient.patch<dynamic, EmptyListingRequest>(
         "/listings/$listingId/toggle-active",
@@ -291,12 +320,16 @@ class ListingCrudService implements IListingCrudService {
         data: EmptyListingRequest(),
       );
 
-      logger.d("=== DEACTIVATION RESPONSE ===");
-      logger.d("Success");
-      logger.d("=====================================");
+      if (kDebugMode) {
+        logger.d("=== DEACTIVATION RESPONSE ===");
+        logger.d("Success");
+        logger.d("=====================================");
+      }
       return true;
     } catch (e) {
-      logger.d("❌ Error toggling listing active status: $e");
+      if (kDebugMode) {
+        logger.d("❌ Error toggling listing active status: $e");
+      }
       rethrow;
     }
   }
@@ -304,9 +337,11 @@ class ListingCrudService implements IListingCrudService {
   @override
   Future<bool> deleteListing(int listingId) async {
     try {
-      logger.d("=== DELETE LISTING REQUEST ===");
-      logger.d("Listing ID: $listingId");
-      logger.d("=====================================");
+      if (kDebugMode) {
+        logger.d("=== DELETE LISTING REQUEST ===");
+        logger.d("Listing ID: $listingId");
+        logger.d("=====================================");
+      }
 
       await _oauthApiClient.delete<dynamic, EmptyListingRequest>(
         "/listings/$listingId",
@@ -315,12 +350,16 @@ class ListingCrudService implements IListingCrudService {
         data: EmptyListingRequest(),
       );
 
-      logger.d("=== DELETE LISTING RESPONSE ===");
-      logger.d("Success");
-      logger.d("=====================================");
+      if (kDebugMode) {
+        logger.d("=== DELETE LISTING RESPONSE ===");
+        logger.d("Success");
+        logger.d("=====================================");
+      }
       return true;
     } catch (e) {
-      logger.d("❌ Error deleting listing: $e");
+      if (kDebugMode) {
+        logger.d("❌ Error deleting listing: $e");
+      }
       rethrow;
     }
   }
@@ -355,7 +394,9 @@ class ListingCrudService implements IListingCrudService {
 
       return true;
     } catch (e) {
-      logger.d("❌ Error uploading photo: $e");
+      if (kDebugMode) {
+        logger.d("❌ Error uploading photo: $e");
+      }
       rethrow;
     }
   }
@@ -376,7 +417,9 @@ class ListingCrudService implements IListingCrudService {
       }
       return true;
     } catch (e) {
-      logger.d("❌ Error uploading multiple photos: $e");
+      if (kDebugMode) {
+        logger.d("❌ Error uploading multiple photos: $e");
+      }
       rethrow;
     }
   }
@@ -395,7 +438,9 @@ class ListingCrudService implements IListingCrudService {
       );
       return true;
     } catch (e) {
-      logger.d("❌ Error deleting photo: $e");
+      if (kDebugMode) {
+        logger.d("❌ Error deleting photo: $e");
+      }
       rethrow;
     }
   }
@@ -414,7 +459,9 @@ class ListingCrudService implements IListingCrudService {
       );
       return true;
     } catch (e) {
-      logger.d("❌ Error setting primary photo: $e");
+      if (kDebugMode) {
+        logger.d("❌ Error setting primary photo: $e");
+      }
       rethrow;
     }
   }
@@ -454,7 +501,9 @@ class ListingCrudService implements IListingCrudService {
       );
       return true;
     } catch (e) {
-      logger.d("❌ Error featuring listing: $e");
+      if (kDebugMode) {
+        logger.d("❌ Error featuring listing: $e");
+      }
       rethrow;
     }
   }
@@ -481,7 +530,9 @@ class ListingCrudService implements IListingCrudService {
       }
       return true;
     } catch (e) {
-      logger.d("❌ Error toggling feature listing: $e");
+      if (kDebugMode) {
+        logger.d("❌ Error toggling feature listing: $e");
+      }
       rethrow;
     }
   }
