@@ -10,6 +10,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
+import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
@@ -94,6 +95,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Timer? _incomingRefreshDebounce;
   late final VoidCallback _unreadMessagesListener;
   int _lastObservedUnreadCount = 0;
+  int? _lastIncomingSoundMessageId;
 
   static const Duration _minSkeletonDuration = Duration(milliseconds: 450);
 
@@ -148,10 +150,17 @@ class _ChatScreenState extends State<ChatScreen> {
     _lastObservedUnreadCount = UnreadMessagesState().unreadCount;
     _unreadMessagesListener = _onUnreadMessagesChanged;
     UnreadMessagesState().addListener(_unreadMessagesListener);
+
+    // Mark this conversation as "active" so push handler can avoid playing
+    // sound before the UI updates; ChatScreen will play it post-frame instead.
+    UnreadMessagesState().setActiveConversationId(widget.conversationId);
   }
 
   @override
   void dispose() {
+    if (UnreadMessagesState().activeConversationId == widget.conversationId) {
+      UnreadMessagesState().setActiveConversationId(null);
+    }
     UnreadMessagesState().removeListener(_unreadMessagesListener);
     _incomingRefreshDebounce?.cancel();
     _messageController.dispose();
@@ -205,6 +214,8 @@ class _ChatScreenState extends State<ChatScreen> {
   void _applyMessagesAndMarkNewOnes(List<Message> nextMessages) {
     final hadAny = _messages.isNotEmpty;
     final prevIds = hadAny ? _messages.map((m) => m.id).toSet() : const <int>{};
+    var hasNewIncoming = false;
+    int? newestIncomingId;
 
     // Mark IDs that newly appeared since last render. This preserves the
     // existing "new message" animation even when we refresh from the server.
@@ -213,12 +224,29 @@ class _ChatScreenState extends State<ChatScreen> {
       for (final m in nextMessages) {
         if (!prevIds.contains(m.id)) {
           _newMessageIds.add(m.id);
+          if (_currentUserId != null && m.senderId != _currentUserId) {
+            hasNewIncoming = true;
+            newestIncomingId = m.id;
+          }
         }
       }
     }
 
     _messages = nextMessages;
     _hasLoadedMessagesForConversation = true;
+
+    // Play incoming sound only AFTER the UI has a chance to render the new bubble.
+    // Also dedupe if multiple refreshes return the same latest message.
+    if (hasNewIncoming &&
+        newestIncomingId != null &&
+        newestIncomingId != _lastIncomingSoundMessageId) {
+      _lastIncomingSoundMessageId = newestIncomingId;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+        SoundService().playIncomingMessage();
+      });
+    }
   }
 
   Future<void> _loadSecurityRibbonState() async {

@@ -11,6 +11,7 @@ class UnreadMessagesState extends ChangeNotifier {
   int _unreadCount = 0;
   bool _isInitialized = false;
   int? _lastIncomingConversationId;
+  int? _activeConversationId;
 
   /// Current unread messages count
   int get unreadCount => _unreadCount;
@@ -24,6 +25,15 @@ class UnreadMessagesState extends ChangeNotifier {
   /// The conversation id associated with the most recently observed incoming
   /// message push (best-effort; may be null).
   int? get lastIncomingConversationId => _lastIncomingConversationId;
+
+  /// Conversation currently open in the chat screen (best-effort).
+  int? get activeConversationId => _activeConversationId;
+
+  void setActiveConversationId(int? conversationId) {
+    if (_activeConversationId == conversationId) return;
+    _activeConversationId = conversationId;
+    notifyListeners();
+  }
 
   /// Update the unread messages count
   void updateUnreadCount(int count) {

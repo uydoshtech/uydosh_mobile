@@ -176,6 +176,12 @@ class PushNotificationService implements IPushNotificationService {
     if (data["type"] != "new_message") return;
     final conversationId = int.tryParse("${data["conversationId"] ?? ""}");
     UnreadMessagesState().incrementUnreadCount(conversationId: conversationId);
+    // If user is currently viewing this conversation, let ChatScreen play the
+    // sound after the bubble appears (better perceived sync).
+    if (conversationId != null &&
+        conversationId == UnreadMessagesState().activeConversationId) {
+      return;
+    }
     SoundService().playIncomingMessage();
   }
 
