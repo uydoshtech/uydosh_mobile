@@ -6,10 +6,15 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 class DateHeaderWidget extends StatelessWidget {
 
   const DateHeaderWidget({
-    required this.dateString, required this.date, super.key,
+    required this.dateString,
+    required this.date,
+    super.key,
+    /// When set, overrides default vertical spacing (e.g. tighter top under a tab bar).
+    this.padding,
   });
   final String dateString;
   final DateTime date;
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +26,11 @@ class DateHeaderWidget extends StatelessWidget {
         final chromeBaseColor = _getChromeBaseColor(themeState, context);
         final dividerColor = _getThemeAwareDividerColor(themeState);
 
+        final effectivePadding =
+            padding ?? const EdgeInsets.symmetric(vertical: 16);
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: effectivePadding,
           child: Row(
             children: [
               Expanded(child: Container(height: 1, color: dividerColor)),

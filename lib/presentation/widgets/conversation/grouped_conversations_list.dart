@@ -18,10 +18,21 @@ class GroupedConversationsList extends StatefulWidget {
     required this.onConversationTap,
     super.key,
     this.currentUserId,
+    /// When true, builds a [Column] of group cards for use inside another
+    /// scrollable (avoids nested [ListView]).
+    this.embedInParentScrollView = false,
+    this.padding,
+    this.itemSpacing,
+    /// Passed through to inner [ConversationTile]s (e.g. inbox with day headers).
+    this.showActivityTimeOnly = false,
   });
   final List<ConversationSummary> conversations;
   final int? currentUserId;
   final Function(ConversationSummary) onConversationTap;
+  final bool embedInParentScrollView;
+  final EdgeInsets? padding;
+  final double? itemSpacing;
+  final bool showActivityTimeOnly;
 
   @override
   State<GroupedConversationsList> createState() =>
@@ -134,9 +145,40 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.embedInParentScrollView) {
+      final gap = widget.itemSpacing ?? 10;
+      final children = <Widget>[];
+      for (var i = 0; i < _sortedListingIds.length; i++) {
+        if (i > 0) {
+          children.add(SizedBox(height: gap));
+        }
+        final listingId = _sortedListingIds[i];
+        final conversations = _groupedConversations[listingId] ?? const [];
+        final isExpanded = _expandedGroups[listingId] ?? false;
+        final listingTitle = conversations.isEmpty
+            ? ""
+            : resolvedConversationListingTitle(conversations.first);
+        children.add(
+          _buildGroupCard(
+            listingId: listingId,
+            listingTitle: listingTitle,
+            conversations: conversations,
+            isExpanded: isExpanded,
+          ),
+        );
+      }
+      return Padding(
+        padding: widget.padding ?? EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
+        ),
+      );
+    }
+
     return CommonListView(
-      padding: const EdgeInsets.all(16),
-      itemSpacing: 10,
+      padding: widget.padding ?? const EdgeInsets.all(16),
+      itemSpacing: widget.itemSpacing ?? 10,
       itemCount: _sortedListingIds.length,
       itemBuilder: (context, index) {
         final listingId = _sortedListingIds[index];
@@ -276,6 +318,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                                   widget.onConversationTap(conversation),
                               isGrouped:
                                   true, // Add this parameter to style differently
+                              showActivityTimeOnly: widget.showActivityTimeOnly,
                             ),
                           ),
                         ],

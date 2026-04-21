@@ -18,10 +18,13 @@ class OutgoingConversationTile extends StatelessWidget {
     required this.onTap,
     super.key,
     this.currentUserId,
+    /// When true (e.g. messages inbox with day headers), show clock time only — no calendar date in the tile.
+    this.showActivityTimeOnly = false,
   });
   final ConversationSummary conversation;
   final VoidCallback onTap;
   final int? currentUserId;
+  final bool showActivityTimeOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -153,6 +156,7 @@ class OutgoingConversationTile extends StatelessWidget {
                                     context,
                                     conversation.lastMessageAt ??
                                         conversation.updatedAt,
+                                    timeOnly: showActivityTimeOnly,
                                   ),
                                   style: TextStyle(
                                     fontSize: 12,
@@ -213,9 +217,20 @@ class OutgoingConversationTile extends StatelessWidget {
     );
   }
 
-  String _formatTime(BuildContext context, String dateTimeString) {
+  String _formatTime(
+    BuildContext context,
+    String dateTimeString, {
+    bool timeOnly = false,
+  }) {
     try {
       final dateTime = DateTime.parse(dateTimeString).toLocal();
+      if (timeOnly) {
+        final now = DateTime.now();
+        if (now.difference(dateTime) < const Duration(minutes: 1)) {
+          return L10n.get("now");
+        }
+        return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
+      }
       final now = DateTime.now();
       final difference = now.difference(dateTime);
 

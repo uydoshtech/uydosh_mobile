@@ -21,6 +21,8 @@ import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
+import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
+import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -31,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
 import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_tile.dart";
 
@@ -537,7 +540,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final cardColor = themeState.cardColor;
 
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           child: _buildToggleSwitch(
             context,
             incomingCount: _getUnreadCount(incoming),
@@ -666,48 +669,28 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return _buildEmptyStateForType(type);
     }
 
-    // For outgoing messages, show individual conversations without grouping
-    if (type == "outgoing") {
-      return _buildIndividualConversationsList(conversations);
-    }
-
-    // For incoming messages, use grouped view
-    return GroupedConversationsList(
-      conversations: conversations,
-      currentUserId: _currentUserId,
-      onConversationTap: (conversation) async {
-        HapticFeedbackUtils.impact();
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder:
-                (context) => ChatScreen(
-                  conversationId: conversation.id,
-                  listingId: conversation.listingId,
-                  otherUserInitials: StringUtils.extractInitials(
-                    conversation.otherUserName,
-                  ),
-                  otherUserName: conversation.otherUserName,
-                  otherUserId:
-                      conversation.initiatorId == _currentUserId
-                          ? conversation.participantId
-                          : conversation.initiatorId,
-                  otherUserAvatar: conversation.otherUserAvatar,
-                ),
-          ),
-        );
-        // didPopNext handles refresh when returning from chat screen
-      },
+    return _buildDayGroupedConversationsList(
+      conversations,
+      outgoingTiles: type == "outgoing",
     );
   }
 
-  Widget _buildIndividualConversationsList(
+  /// Calendar day (local midnight boundary) for last activity on a thread.
+  DateTime _activityCalendarDay(ConversationSummary c) {
+    final raw = c.lastMessageAt ?? c.updatedAt;
+    final dt = DateTime.parse(raw).toLocal();
+    return DateTime(dt.year, dt.month, dt.day);
+  }
+
+  String _activityDayKey(ConversationSummary c) {
+    final d = _activityCalendarDay(c);
+    return "${d.year}-${d.month.toString().padLeft(2, "0")}-${d.day.toString().padLeft(2, "0")}";
+  }
+
+  List<ConversationSummary> _sortConversationsForInbox(
     List<ConversationSummary> conversations,
   ) {
-    // Sort conversations: unread messages first, then by last message time (most recent first)
-    final sortedConversations = List<ConversationSummary>.from(
-      conversations,
-    )..sort((a, b) {
-      // Check if conversations have unread messages
+    return List<ConversationSummary>.from(conversations)..sort((a, b) {
       final aHasUnread =
           a.unreadCount != null &&
           a.unreadCount! > 0 &&
@@ -719,48 +702,141 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           _currentUserId != null &&
           b.lastMessageSenderId != _currentUserId;
 
-      // If one has unread and the other doesn't, prioritize the one with unread
       if (aHasUnread && !bHasUnread) return -1;
       if (!aHasUnread && bHasUnread) return 1;
 
-      // If both have same unread status, sort by last message time (most recent first)
       final aTime = a.lastMessageAt ?? a.updatedAt;
       final bTime = b.lastMessageAt ?? b.updatedAt;
       return bTime.compareTo(aTime);
     });
+  }
 
-    return CommonListView(
-      padding: const EdgeInsets.all(16),
-      itemSpacing: 10,
-      itemCount: sortedConversations.length,
-      itemBuilder: (context, index) {
-        final conversation = sortedConversations[index];
-        return OutgoingConversationTile(
-          conversation: conversation,
-          currentUserId: _currentUserId,
-          onTap: () async {
-            HapticFeedbackUtils.impact();
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder:
-                    (context) => ChatScreen(
-                      conversationId: conversation.id,
-                      listingId: conversation.listingId,
-                      otherUserInitials: StringUtils.extractInitials(
-                        conversation.otherUserName,
-                      ),
-                      otherUserName: conversation.otherUserName,
-                      otherUserId:
-                          conversation.initiatorId == _currentUserId
-                              ? conversation.participantId
-                              : conversation.initiatorId,
-                      otherUserAvatar: conversation.otherUserAvatar,
-                    ),
+  List<_InboxListEntry> _inboxEntriesWithDayHeaders(
+    List<ConversationSummary> conversations,
+  ) {
+    final sorted = _sortConversationsForInbox(conversations);
+    final entries = <_InboxListEntry>[];
+    String? lastDayKey;
+    for (final c in sorted) {
+      final key = _activityDayKey(c);
+      if (key != lastDayKey) {
+        lastDayKey = key;
+        entries.add(_InboxDayHeader(_activityCalendarDay(c)));
+      }
+      entries.add(_InboxConversationRow(c));
+    }
+    return entries;
+  }
+
+  /// Incoming: calendar day headers, then collapsible listing groups for that day.
+  List<_InboxListEntry> _incomingEntriesWithDaySections(
+    List<ConversationSummary> conversations,
+  ) {
+    final sorted = _sortConversationsForInbox(conversations);
+    final entries = <_InboxListEntry>[];
+    String? lastDayKey;
+    var dayBucket = <ConversationSummary>[];
+
+    void flushDay() {
+      if (dayBucket.isEmpty) {
+        return;
+      }
+      entries.add(_InboxIncomingDaySection(List<ConversationSummary>.from(dayBucket)));
+      dayBucket = [];
+    }
+
+    for (final c in sorted) {
+      final key = _activityDayKey(c);
+      if (key != lastDayKey) {
+        flushDay();
+        lastDayKey = key;
+        entries.add(_InboxDayHeader(_activityCalendarDay(c)));
+      }
+      dayBucket.add(c);
+    }
+    flushDay();
+    return entries;
+  }
+
+  Future<void> _openChatScreen(ConversationSummary conversation) async {
+    HapticFeedbackUtils.impact();
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) => ChatScreen(
+              conversationId: conversation.id,
+              listingId: conversation.listingId,
+              otherUserInitials: StringUtils.extractInitials(
+                conversation.otherUserName,
               ),
-            );
-            // didPopNext handles refresh when returning from chat screen
-          },
-        );
+              otherUserName: conversation.otherUserName,
+              otherUserId:
+                  conversation.initiatorId == _currentUserId
+                      ? conversation.participantId
+                      : conversation.initiatorId,
+              otherUserAvatar: conversation.otherUserAvatar,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildDayGroupedConversationsList(
+    List<ConversationSummary> conversations, {
+    required bool outgoingTiles,
+  }) {
+    final entries =
+        outgoingTiles
+            ? _inboxEntriesWithDayHeaders(conversations)
+            : _incomingEntriesWithDaySections(conversations);
+    return CommonListView(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      itemSpacing: 8,
+      itemCount: entries.length,
+      itemBuilder: (context, index) {
+        final entry = entries[index];
+        final isFirstRow = index == 0;
+        return switch (entry) {
+          _InboxDayHeader(:final dayStart) => DateHeaderWidget(
+            dateString: MessageGroupingUtils.formatDateHeader(
+              dayStart,
+              context,
+            ),
+            date: dayStart,
+            padding: isFirstRow
+                ? const EdgeInsets.only(top: 12, bottom: 10)
+                : null,
+          ),
+          _InboxIncomingDaySection(:final conversations) =>
+            GroupedConversationsList(
+              conversations: conversations,
+              currentUserId: _currentUserId,
+              embedInParentScrollView: true,
+              padding: EdgeInsets.zero,
+              itemSpacing: 8,
+              showActivityTimeOnly: true,
+              onConversationTap: _openChatScreen,
+            ),
+          _InboxConversationRow(:final conversation) =>
+            outgoingTiles
+                ? OutgoingConversationTile(
+                    conversation: conversation,
+                    currentUserId: _currentUserId,
+                    showActivityTimeOnly: true,
+                    onTap: () {
+                      _openChatScreen(conversation);
+                    },
+                  )
+                : ConversationTile(
+                    conversation: conversation,
+                    currentUserId: _currentUserId,
+                    isGrouped: false,
+                    showActivityTimeOnly: true,
+                    onTap: () {
+                      _openChatScreen(conversation);
+                    },
+                  ),
+        };
       },
     );
   }
@@ -846,6 +922,23 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       },
     );
   }
+}
+
+sealed class _InboxListEntry {}
+
+final class _InboxDayHeader extends _InboxListEntry {
+  _InboxDayHeader(this.dayStart);
+  final DateTime dayStart;
+}
+
+final class _InboxConversationRow extends _InboxListEntry {
+  _InboxConversationRow(this.conversation);
+  final ConversationSummary conversation;
+}
+
+final class _InboxIncomingDaySection extends _InboxListEntry {
+  _InboxIncomingDaySection(this.conversations);
+  final List<ConversationSummary> conversations;
 }
 
 class _ToggleTabContent extends StatelessWidget {

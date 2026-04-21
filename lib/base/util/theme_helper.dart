@@ -142,9 +142,14 @@ extension ThemeHelper on ThemeState {
   }
 
   /// Chat input bar background (container behind the field).
+  ///
+  /// Blue theme: mostly transparent so messages can show through when the bar
+  /// is stacked over the list (peer chat). Controls keep their own fills.
   Color get chatInputBarBackgroundColor {
     if (isLightTheme) return Colors.white;
-    if (isBlueTheme) return BlueThemeColors.background;
+    if (isBlueTheme) {
+      return BlueThemeColors.background.withValues(alpha: 0.2);
+    }
     return Colors.white;
   }
 

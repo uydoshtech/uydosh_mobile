@@ -157,83 +157,24 @@ class MessageGroupingUtils {
     return DateFormat("yyyy-MM-dd").format(localDate);
   }
 
-  /// Formats a date for display in the date header (public for lazy building)
+  /// Formats a date for display in the date header (public for lazy building).
+  ///
+  /// Uses the localized **Today** label when [date] falls on the current local
+  /// calendar day; otherwise `d MMMM yyyy` (e.g. English "20 April 2026").
   static String formatDateHeader(DateTime date, BuildContext context) {
-    // Convert server date to local timezone for proper comparison
     final localDate = date.toLocal();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final messageDate = DateTime(
+    final messageDay = DateTime(
       localDate.year,
       localDate.month,
       localDate.day,
     );
-
-    if (messageDate == today) {
+    if (messageDay == today) {
       return L10n.get("today");
-    } else if (messageDate == yesterday) {
-      return L10n.get("yesterday");
-    } else {
-      // For all other dates, show "DayOfWeek, dd Month YYYY" format
-      final dayName = _getLocalizedDayName(localDate.weekday, context);
-      final monthName = _getLocalizedMonthName(localDate.month, context);
-      return "$dayName, ${localDate.day} $monthName ${localDate.year}";
     }
-  }
-
-  /// Gets localized day name based on weekday number
-  static String _getLocalizedDayName(int weekday, BuildContext context) {
-    switch (weekday) {
-      case 1:
-        return L10n.get("monday");
-      case 2:
-        return L10n.get("tuesday");
-      case 3:
-        return L10n.get("wednesday");
-      case 4:
-        return L10n.get("thursday");
-      case 5:
-        return L10n.get("friday");
-      case 6:
-        return L10n.get("saturday");
-      case 7:
-        return L10n.get("sunday");
-      default:
-        return L10n.get("monday");
-    }
-  }
-
-  /// Gets localized month name based on month number
-  static String _getLocalizedMonthName(int month, BuildContext context) {
-    switch (month) {
-      case 1:
-        return L10n.get("january");
-      case 2:
-        return L10n.get("february");
-      case 3:
-        return L10n.get("march");
-      case 4:
-        return L10n.get("april");
-      case 5:
-        return L10n.get("may");
-      case 6:
-        return L10n.get("june");
-      case 7:
-        return L10n.get("july");
-      case 8:
-        return L10n.get("august");
-      case 9:
-        return L10n.get("september");
-      case 10:
-        return L10n.get("october");
-      case 11:
-        return L10n.get("november");
-      case 12:
-        return L10n.get("december");
-      default:
-        return L10n.get("january");
-    }
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat("d MMMM yyyy", localeName).format(localDate);
   }
 
   /// Groups messages by date and returns a map of date keys to message lists

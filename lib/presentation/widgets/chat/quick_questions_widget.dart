@@ -15,7 +15,7 @@ class QuickQuestionsWidget extends StatelessWidget {
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
-        final backgroundColor = themeState.backgroundColor;
+        final stripColor = themeState.chatInputBarBackgroundColor;
         final pillColor = themeState.pillColor;
         final pillTextColor = themeState.pillTextColor;
         final borderColor = themeState.borderColor;
@@ -25,7 +25,7 @@ class QuickQuestionsWidget extends StatelessWidget {
         return Container(
           padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPad),
           decoration: BoxDecoration(
-            color: backgroundColor,
+            color: stripColor,
             border: Border(bottom: BorderSide(color: borderColor, width: 0.5)),
           ),
           child: SingleChildScrollView(
