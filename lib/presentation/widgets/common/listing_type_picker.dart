@@ -21,6 +21,7 @@ class ListingTypePicker extends StatefulWidget {
     this.showArrows = true,
     this.useThemeColors = false,
     this.includeUnselected = false,
+    this.unselectedLabelKey = "not_selected",
     this.scrollController,
     this.useGlassPlate = false,
   });
@@ -32,6 +33,7 @@ class ListingTypePicker extends StatefulWidget {
   final double itemExtent;
   final bool showArrows;
   final bool includeUnselected;
+  final String unselectedLabelKey;
   final FixedExtentScrollController? scrollController;
   final bool useGlassPlate;
 
@@ -102,7 +104,8 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
       case 1:
         return AppColors.metroLine2;
       default:
-        return listingTypeId == 0 ? Colors.grey : AppColors.metroLine1;
+        if (listingTypeId == 0) return Colors.grey;
+        return AppColors.metroLine1;
     }
   }
 
@@ -183,7 +186,7 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
                         const SizedBox(width: 6),
                         Flexible(
                           child: L10n.text(
-                            "not_selected",
+                            widget.unselectedLabelKey,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,

@@ -12,6 +12,8 @@ import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -93,6 +95,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
   late final TransformationController _transformationController;
   /// Stations with at least one listing (from API). Empty set before load completes.
   Set<int> _stationIdsWithListings = {};
+  int _selectedListingTypeId = 0; // 0 = all
+  int _selectedGender = 0; // 0 = all
 
   @override
   void initState() {
@@ -109,6 +113,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     try {
       final ids = await getIt<IListingService>().getSubwayStationIdsWithListings(
         createdWithinDays: 30,
+        listingTypeId: _selectedListingTypeId > 0 ? _selectedListingTypeId : null,
+        gender: _selectedGender > 0 ? _selectedGender : null,
       );
       if (!mounted) return;
       setState(() => _stationIdsWithListings = ids.toSet());
@@ -715,6 +721,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                         data: AppTheme.getTheme(AppTheme.lightTheme),
                         child: Card(
                           elevation: 2,
+                          clipBehavior: Clip.antiAlias,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -778,6 +785,42 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                           ),
                         ),
                       ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ListingTypePicker(
+                            selectedListingTypeId: _selectedListingTypeId,
+                            onListingTypeChanged: (value) {
+                              setState(() => _selectedListingTypeId = value);
+                              _loadListingStationIds();
+                            },
+                            useThemeColors: true,
+                            showArrows: false,
+                            includeUnselected: true,
+                            unselectedLabelKey: "all",
+                            useGlassPlate: true,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GenderPicker(
+                            selectedGender: _selectedGender,
+                            onGenderChanged: (value) {
+                              setState(() => _selectedGender = value);
+                              _loadListingStationIds();
+                            },
+                            useThemeColors: true,
+                            showArrows: false,
+                            includeUnselected: true,
+                            unselectedLabelKey: "all",
+                            useGlassPlate: true,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

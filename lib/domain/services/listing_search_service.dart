@@ -75,6 +75,8 @@ abstract class IListingSearchService {
   /// Subway station IDs that have at least one active listing (single API round-trip).
   Future<List<int>> getSubwayStationIdsWithListings({
     int createdWithinDays = 30,
+    int? listingTypeId,
+    int? gender,
   });
 }
 
@@ -452,10 +454,20 @@ class ListingSearchService implements IListingSearchService {
   @override
   Future<List<int>> getSubwayStationIdsWithListings({
     int createdWithinDays = 30,
+    int? listingTypeId,
+    int? gender,
   }) async {
     try {
       final queryParams = <String, dynamic>{
-        if (createdWithinDays > 0) "createdWithinDays": createdWithinDays,
+        if (createdWithinDays > 0) ...{
+          "createdWithinDays": createdWithinDays,
+          "created_within_days": createdWithinDays,
+        },
+        if (listingTypeId != null) ...{
+          "listingTypeId": listingTypeId,
+          "listing_type_id": listingTypeId,
+        },
+        if (gender != null) "gender": gender,
       };
       final response = await _oauthApiClient.get<Map<String, dynamic>>(
         "/listings/subway-stations-with-listings",

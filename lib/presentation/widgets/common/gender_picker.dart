@@ -20,6 +20,7 @@ class GenderPicker extends StatefulWidget {
     this.showArrows = true,
     this.useThemeColors = false,
     this.includeUnselected = false,
+    this.unselectedLabelKey = "not_selected",
     this.scrollController,
     this.useGlassPlate = false,
   });
@@ -31,6 +32,7 @@ class GenderPicker extends StatefulWidget {
   final double itemExtent;
   final bool showArrows;
   final bool includeUnselected;
+  final String unselectedLabelKey;
   final FixedExtentScrollController? scrollController;
   final bool useGlassPlate;
 
@@ -100,7 +102,8 @@ class _GenderPickerState extends State<GenderPicker> {
         return Colors.blue;
       case 2:
       default:
-        return gender == 0 ? Colors.grey : Colors.red;
+        if (gender == 0) return Colors.grey;
+        return Colors.red;
     }
   }
 
@@ -173,7 +176,7 @@ class _GenderPickerState extends State<GenderPicker> {
                         const SizedBox(width: 6),
                         Flexible(
                           child: L10n.text(
-                            "not_selected",
+                            widget.unselectedLabelKey,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
