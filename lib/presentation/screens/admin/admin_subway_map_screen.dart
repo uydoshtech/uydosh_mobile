@@ -425,6 +425,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
   }
 
   void _openStationListings(BuildContext context, int stationId) {
+    final listingTypeId =
+        _selectedListingTypeId > 0 ? _selectedListingTypeId : null;
+    final gender = _selectedGender > 0 ? _selectedGender : null;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
@@ -432,6 +435,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
               create: (context) => ListingsBloc(getIt<IListingService>()),
               child: HomeScreen(
                 subwayStationId: stationId,
+                listingTypeId: listingTypeId,
+                gender: gender,
                 isSearchMode: true,
                 useExplicitFiltersOnly: true,
               ),
