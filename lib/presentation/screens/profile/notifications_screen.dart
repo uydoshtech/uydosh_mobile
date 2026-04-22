@@ -432,13 +432,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ),
         Positioned(
-          top: 4,
-          right: 4,
+          top: 0,
+          right: 0,
           child: IconButton(
             tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
             onPressed: onClose,
             icon: Icon(Icons.close, size: 18, color: fg),
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
             splashRadius: 18,
           ),

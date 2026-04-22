@@ -790,7 +790,6 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                         decoration: _fieldDecoration(
                           context,
                           labelText: L10n.get("admin_telegram_sync_import_user_label"),
-                          helperText: L10n.get("admin_telegram_sync_import_user_helper"),
                         ),
                         style: fieldStyle,
                         isExpanded: true,
