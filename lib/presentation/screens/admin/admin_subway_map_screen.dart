@@ -5,9 +5,9 @@ import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
@@ -75,11 +75,6 @@ class _TapTargetOverride {
     required this.dy,
     required this.widthDelta,
   });
-
-  const _TapTargetOverride.only({double dx = 0, double dy = 0, double widthDelta = 0})
-      : dx = dx,
-        dy = dy,
-        widthDelta = widthDelta;
 
   final double dx;
   final double dy;
@@ -525,11 +520,12 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     String svg,
     String language,
     Set<int> boldStationIds,
+    bool isBlueTheme,
   ) {
-    final key = _processSvgCacheKey(language, boldStationIds);
+    final key = "${_processSvgCacheKey(language, boldStationIds)}|${isBlueTheme ? "blue" : "light"}";
     return _processedSvgCache.putIfAbsent(
       key,
-      () => _processSvgImpl(svg, language, boldStationIds),
+      () => _processSvgImpl(svg, language, boldStationIds, isBlueTheme),
     );
   }
 
@@ -537,6 +533,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     String svg,
     String language,
     Set<int> boldStationIds,
+    bool isBlueTheme,
   ) {
     final withoutStyle = svg.replaceAll(
       RegExp(r"<style[\s\S]*?</style>"),
@@ -589,7 +586,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
     return flattenedSwitches
         .replaceAll(
           'class="st"',
-          'style="font-family:Arial,sans-serif;font-size:13px"',
+          isBlueTheme
+              ? 'style="font-family:Arial,sans-serif;font-size:13px;fill:#FFFFFF"'
+              : 'style="font-family:Arial,sans-serif;font-size:13px;fill:#111827"',
         )
         .replaceAll('class="mid"', 'style="text-anchor:middle"')
         .replaceAll('class="end"', 'style="text-anchor:end"')
@@ -641,7 +640,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
         .replaceAll('class="r4"', 'style="fill:#F59E0B"')
         .replaceAll(
           'class="intb"',
-          'style="fill:none;stroke:#000;stroke-width:9;stroke-linecap:round;stroke-linejoin:round"',
+          'style="fill:none;stroke:${isBlueTheme ? "#1A2A3A" : "#000"};stroke-width:9;stroke-linecap:round;stroke-linejoin:round"',
         )
         .replaceAll(
           'class="intf"',
@@ -651,9 +650,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: AppTheme.getTheme(AppTheme.lightTheme),
-      child: Scaffold(
+    return Scaffold(
       appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
@@ -670,9 +667,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     "${(scale * 100).round()}%",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -704,85 +701,91 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
           return ListenableBuilder(
             listenable: LanguageState(),
             builder: (context, child) {
+              // Intentionally ignore the app theme only for the map container,
+              // so the map stays consistent regardless of the current theme.
+              final isBlueTheme = false;
               return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final mapWidth = constraints.maxWidth;
-                        final mapHeight = constraints.maxHeight;
-                        final scale = math.min(
-                          mapWidth / _svgWidth,
-                          mapHeight / _svgHeight,
-                        );
-                        final contentWidth = _svgWidth * scale;
-                        final contentHeight = _svgHeight * scale;
-                        final offsetX = (mapWidth - contentWidth) / 2;
-                        final offsetY = (mapHeight - contentHeight) / 2;
-                        return InteractiveViewer(
-                          constrained: false,
-                          minScale: 0.6,
-                          maxScale: 8.0,
-                          boundaryMargin: const EdgeInsets.all(40),
-                          transformationController: _transformationController,
-                          child: SizedBox(
-                            key: _mapKey,
-                            width: mapWidth,
-                            height: mapHeight,
-                            child: RepaintBoundary(
-                              child: Stack(
-                                children: [
-                                  SvgPicture.string(
-                                    _processSvg(
-                                      mapData.rawSvg,
-                                      LanguageState().currentLanguage,
-                                      _stationIdsWithListings,
-                                    ),
-                                    width: mapWidth,
-                                    height: mapHeight,
-                                    fit: BoxFit.contain,
-                                    semanticsLabel: "Tashkent subway map",
-                                  ),
-                                ..._buildMapOverlays(
-                                  scale,
-                                  offsetX,
-                                  offsetY,
-                                  isBlueTheme: false,
-                                ),
-                                ..._buildStationTapTargets(
-                                  context,
-                                  mapData.stationLabels,
-                                  scale,
-                                  offsetX,
-                                  offsetY,
-                                  LanguageState().currentLanguage,
-                                ),
-                              ],
-                            ),
-                            ),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                      child: Theme(
+                        data: AppTheme.getTheme(AppTheme.lightTheme),
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        );
-                      },
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final mapWidth = constraints.maxWidth;
+                              final mapHeight = constraints.maxHeight;
+                              final scale = math.min(
+                                mapWidth / _svgWidth,
+                                mapHeight / _svgHeight,
+                              );
+                              final contentWidth = _svgWidth * scale;
+                              final contentHeight = _svgHeight * scale;
+                              final offsetX = (mapWidth - contentWidth) / 2;
+                              final offsetY = (mapHeight - contentHeight) / 2;
+                              return InteractiveViewer(
+                                constrained: false,
+                                minScale: 0.6,
+                                maxScale: 8.0,
+                                boundaryMargin: const EdgeInsets.all(40),
+                                transformationController: _transformationController,
+                                child: SizedBox(
+                                  key: _mapKey,
+                                  width: mapWidth,
+                                  height: mapHeight,
+                                  child: RepaintBoundary(
+                                    child: Stack(
+                                      children: [
+                                        SvgPicture.string(
+                                          _processSvg(
+                                            mapData.rawSvg,
+                                            LanguageState().currentLanguage,
+                                            _stationIdsWithListings,
+                                            isBlueTheme,
+                                          ),
+                                          width: mapWidth,
+                                          height: mapHeight,
+                                          fit: BoxFit.contain,
+                                          semanticsLabel: "Tashkent subway map",
+                                        ),
+                                        ..._buildMapOverlays(
+                                          scale,
+                                          offsetX,
+                                          offsetY,
+                                          isBlueTheme: isBlueTheme,
+                                        ),
+                                        ..._buildStationTapTargets(
+                                          context,
+                                          mapData.stationLabels,
+                                          scale,
+                                          offsetX,
+                                          offsetY,
+                                          LanguageState().currentLanguage,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           );
         },
-      );
-        },
       ),
-    ),
     );
   }
 }
