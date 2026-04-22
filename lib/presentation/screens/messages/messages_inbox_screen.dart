@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -28,11 +29,13 @@ import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
@@ -240,20 +243,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final backgroundColor = themeState.backgroundColor;
 
         return Scaffold(
+          extendBodyBehindAppBar:
+              widget.showCustomHeader && themeState.isBlueTheme,
           backgroundColor: backgroundColor,
-          body:
-              widget.showCustomHeader
-                  ? SafeArea(
-                    child: Column(
-                      children: [
-                        // Custom Header
-                        _buildCustomHeader(),
-                        // Content
-                        Expanded(child: _buildContent()),
-                      ],
-                    ),
-                  )
-                  : _buildContent(),
+          appBar: widget.showCustomHeader ? _buildCustomHeader() : null,
+          body: _buildContent(),
         );
       },
     );
@@ -330,58 +324,59 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     );
   }
 
-  Widget _buildCustomHeader() {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color:
-            Theme.of(context).appBarTheme.backgroundColor ??
-            Theme.of(context).colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-            width: 1,
+  PreferredSizeWidget _buildCustomHeader() {
+    final themeState = ThemeState();
+    final useLiquidGlass = themeState.isBlueTheme;
+    final appBarTheme = Theme.of(context).appBarTheme;
+    final appBarBackgroundColor =
+        appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface;
+    final onBarColor =
+        useLiquidGlass
+            ? (appBarTheme.foregroundColor ?? themeState.textColor)
+            : themeState.textColor;
+
+    return UydoshAppBar(
+      toolbarHeight: standardAppBarToolbarHeight,
+      leading: ThreeDAppBarIconButton.backLeading(context),
+      centerTitle: true,
+      title: Text(
+        L10n.get("messages"),
+        style:
+            appBarTheme.titleTextStyle?.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: onBarColor,
+            ) ??
+            TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: onBarColor,
+            ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      backgroundColor: useLiquidGlass ? Colors.transparent : appBarBackgroundColor,
+      surfaceTintColor:
+          useLiquidGlass ? Colors.transparent : appBarTheme.surfaceTintColor,
+      elevation: useLiquidGlass ? 0 : null,
+      scrolledUnderElevation: useLiquidGlass ? 0 : null,
+      shadowColor: useLiquidGlass ? Colors.transparent : appBarTheme.shadowColor,
+      forceMaterialTransparency: useLiquidGlass,
+      flexibleSpace:
+          useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
+      foregroundColor: onBarColor,
+      actions: [
+        Padding(
+          padding: const EdgeInsetsDirectional.only(end: 8),
+          child: IconButton(
+            onPressed: () => context.pushProfile(),
+            icon: AppBarProfileIcon(
+              iconSize: 26,
+              iconColor: onBarColor,
+            ),
           ),
         ),
-      ),
-      child: SizedBox(
-        height: standardAppBarToolbarHeight,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ThreeDAppBarIconButton.backLeading(context),
-            // Title
-            Expanded(
-              child: Text(
-                L10n.get("messages"),
-                style:
-                    Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ) ??
-                    TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            // Profile button (matching the original design)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: IconButton(
-                onPressed: () => context.pushProfile(),
-                icon: AppBarProfileIcon(
-                  iconSize: 26,
-                  iconColor:
-                      Theme.of(context).appBarTheme.foregroundColor ??
-                      Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
@@ -505,7 +500,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
     final shellGlassTop =
         widget.showCustomHeader
-            ? 0.0
+            ? (ThemeState().isBlueTheme
+                ? (kToolbarHeight +
+                    ThemeState().mainShellGlassExtraTopInset(context))
+                : 0.0)
             : ThemeState().mainShellGlassExtraTopInset(context);
 
     return Padding(
@@ -548,7 +546,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final primaryColor = themeState.primaryColor;
         final cardColor = themeState.cardColor;
 
-        return Container(
+        final content = Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           child: _buildToggleSwitch(
             context,
@@ -556,6 +554,31 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             outgoingCount: _getUnreadCount(outgoing),
             primaryColor: primaryColor,
             cardColor: cardColor,
+          ),
+        );
+
+        if (!themeState.isBlueTheme) {
+          return content;
+        }
+
+        const radius = BorderRadius.all(Radius.circular(20));
+        return ClipRRect(
+          borderRadius: radius,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                color: BlueThemeColors.background.withValues(alpha: 0.28),
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.10),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: content,
+            ),
           ),
         );
       },
@@ -968,6 +991,8 @@ class _ToggleTabContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final targetColor = isSelected ? selectedTextColor : unselectedTextColor;
+    final unreadColor = ThemeState().unreadIndicatorColor;
+    final unreadTextColor = ThemeState().unreadIndicatorTextColor;
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeInOut,
@@ -1003,15 +1028,15 @@ class _ToggleTabContent extends StatelessWidget {
                       child: Container(
                         width: 20,
                         height: 20,
-                        decoration: const BoxDecoration(
-                          color: AppColors.success,
+                        decoration: BoxDecoration(
+                          color: unreadColor,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
                           child: Text(
                             "$badgeCount",
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: unreadTextColor,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),

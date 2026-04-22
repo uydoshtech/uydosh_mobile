@@ -9,6 +9,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -23,6 +24,7 @@ import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_template_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
@@ -646,35 +648,64 @@ class _EditListingScreenState extends State<EditListingScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return PopScope(
-      canPop: _allowPopWithoutConfirm || !_isFormDirty(),
-      onPopInvokedWithResult: _onPopInvoked,
-      child: Scaffold(
-      appBar: UydoshAppBar(
-        title: L10n.text(
-          "edit",
-          style: theme.appBarTheme.titleTextStyle,
-        ),
-        backgroundColor:
-            theme.appBarTheme.backgroundColor ?? theme.colorScheme.primary,
-        foregroundColor:
-            theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
-        leading: ThreeDAppBarIconButton.backLeading(
-          context,
-          onPressed: () {
-            // Use maybePop so PopScope (unsaved changes) is respected; imperative
-            // Navigator.pop bypasses Route.popDisposition and always removes the route.
-            Navigator.of(context).maybePop();
-          },
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: _buildAppBarTrailingAction(theme),
-          ),
-        ],
-      ),
-      body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        final useLiquidGlassAppBar = themeState.isBlueTheme;
+        final appBarTheme = theme.appBarTheme;
+        final bodyTopPad =
+            useLiquidGlassAppBar
+                ? 16.0 + themeState.mainShellGlassExtraTopInset(context)
+                : 20.0;
+
+        return PopScope(
+          canPop: _allowPopWithoutConfirm || !_isFormDirty(),
+          onPopInvokedWithResult: _onPopInvoked,
+          child: Scaffold(
+            extendBodyBehindAppBar: useLiquidGlassAppBar,
+            appBar: UydoshAppBar(
+              title: L10n.text(
+                "edit",
+                style: appBarTheme.titleTextStyle,
+              ),
+              backgroundColor:
+                  useLiquidGlassAppBar
+                      ? Colors.transparent
+                      : appBarTheme.backgroundColor ?? theme.colorScheme.primary,
+              surfaceTintColor:
+                  useLiquidGlassAppBar
+                      ? Colors.transparent
+                      : appBarTheme.surfaceTintColor,
+              elevation: useLiquidGlassAppBar ? 0 : null,
+              scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
+              shadowColor:
+                  useLiquidGlassAppBar
+                      ? Colors.transparent
+                      : appBarTheme.shadowColor,
+              forceMaterialTransparency: useLiquidGlassAppBar,
+              flexibleSpace:
+                  useLiquidGlassAppBar
+                      ? const LiquidGlassAppBarFlexibleSpace()
+                      : null,
+              foregroundColor:
+                  appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
+              leading: ThreeDAppBarIconButton.backLeading(
+                context,
+                onPressed: () {
+                  // Use maybePop so PopScope (unsaved changes) is respected; imperative
+                  // Navigator.pop bypasses Route.popDisposition and always removes the route.
+                  Navigator.of(context).maybePop();
+                },
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: _buildAppBarTrailingAction(theme),
+                ),
+              ],
+            ),
+            body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
         listener: (context, state) {
           state.map(
             initial: (_) => setState(() => _isLoadingStations = false),
@@ -696,7 +727,7 @@ class _EditListingScreenState extends State<EditListingScreen>
           child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
+              padding: EdgeInsets.fromLTRB(16.0, bodyTopPad, 16.0, 16.0),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -1372,6 +1403,8 @@ class _EditListingScreenState extends State<EditListingScreen>
         ),
       ),
     ),
+    );
+      },
     );
   }
 

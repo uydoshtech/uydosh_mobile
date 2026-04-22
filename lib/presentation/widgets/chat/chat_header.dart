@@ -4,6 +4,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar_refresh_button.dart";
@@ -38,6 +39,12 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
         final themeState = ThemeState();
         final appBarBackgroundColor = themeState.appBarBackgroundColor;
         final textColor = themeState.textColor;
+        final useLiquidGlass = themeState.isBlueTheme;
+        final appBarTheme = Theme.of(context).appBarTheme;
+        final onBarColor =
+            useLiquidGlass
+                ? (appBarTheme.foregroundColor ?? textColor)
+                : textColor;
 
         return UydoshAppBar(
           leading: ThreeDAppBarIconButton.backLeading(context),
@@ -49,7 +56,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
                 child: Text(
                   displayName,
                   style: TextStyle(
-                    color: textColor,
+                    color: onBarColor,
                     fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
@@ -58,8 +65,18 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
               ),
             ],
           ),
-          backgroundColor: appBarBackgroundColor,
-          foregroundColor: textColor,
+          backgroundColor:
+              useLiquidGlass ? Colors.transparent : appBarBackgroundColor,
+          surfaceTintColor:
+              useLiquidGlass ? Colors.transparent : appBarTheme.surfaceTintColor,
+          elevation: useLiquidGlass ? 0 : null,
+          scrolledUnderElevation: useLiquidGlass ? 0 : null,
+          shadowColor:
+              useLiquidGlass ? Colors.transparent : appBarTheme.shadowColor,
+          forceMaterialTransparency: useLiquidGlass,
+          flexibleSpace:
+              useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
+          foregroundColor: onBarColor,
           actions: [
             Padding(
               padding: const EdgeInsetsDirectional.only(end: 8),
@@ -74,7 +91,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
               child: ActionDropdownMenu(
                 items: actionMenuItems,
                 icon: Icons.more_vert,
-                iconColor: textColor,
+                iconColor: onBarColor,
                 tooltip: L10n.get("actions"),
               ),
             ),

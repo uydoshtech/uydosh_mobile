@@ -1,6 +1,5 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
@@ -39,6 +38,8 @@ class OutgoingConversationTile extends StatelessWidget {
         final avatarColor = themeState.avatarColor;
         final avatarIconColor = themeState.avatarIconColor;
         final outlineVariant = Theme.of(context).colorScheme.outlineVariant;
+        final unreadColor = themeState.unreadIndicatorColor;
+        final unreadTextColor = themeState.unreadIndicatorTextColor;
 
         final hasLocation = conversation.locationNameUz != null ||
             conversation.locationNameRu != null ||
@@ -179,16 +180,16 @@ class OutgoingConversationTile extends StatelessWidget {
                             Container(
                               width: conversation.unreadCount! > 1 ? 20 : 12,
                               height: conversation.unreadCount! > 1 ? 20 : 12,
-                              decoration: const BoxDecoration(
-                                color: AppColors.success,
+                              decoration: BoxDecoration(
+                                color: unreadColor,
                                 shape: BoxShape.circle,
                               ),
                               child: conversation.unreadCount! > 1
                                   ? Center(
                                       child: Text(
                                         "${conversation.unreadCount!}",
-                                        style: const TextStyle(
-                                          color: Colors.white,
+                                        style: TextStyle(
+                                          color: unreadTextColor,
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                         ),

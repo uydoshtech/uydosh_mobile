@@ -16,6 +16,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -31,6 +32,7 @@ import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dar
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_template_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
@@ -474,70 +476,119 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar:
-          widget.showAppBar
-              ? UydoshAppBar(
-                leading: ThreeDAppBarIconButton.backLeading(context),
-                title: L10n.text(
-                  "create_listing_title",
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              )
-              : null,
-      body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
-        listener: (context, state) {
-          state.map(
-            initial: (_) => setState(() => _isLoadingStations = false),
-            loading: (_) => setState(() => _isLoadingStations = true),
-            loaded: (loadedState) => _onStationsLoaded(loadedState.stations),
-            error: (_) => setState(() => _isLoadingStations = false),
-          );
-        },
-        child: BlocListener<LocationsBloc, LocationsState>(
-          listener: (context, state) {
-            state.map(
-              initial: (_) => setState(() => _isLoadingLocations = false),
-              loading: (_) => setState(() => _isLoadingLocations = true),
-              loaded:
-                  (loadedState) => _onLocationsLoaded(loadedState.locations),
-              error: (_) => setState(() => _isLoadingLocations = false),
-            );
-          },
-          child: SafeArea(
-            child: SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Show different content based on authentication status
-                    ListenableBuilder(
-                      listenable: AuthenticationState(),
-                      builder: (context, child) {
-                        final isAuthenticated =
-                            AuthenticationState().isAuthenticated;
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        final theme = Theme.of(context);
+        final useLiquidGlassAppBar = widget.showAppBar && themeState.isBlueTheme;
+        final embeddedInGlassShell = !widget.showAppBar && themeState.isBlueTheme;
+        final appBarTheme = theme.appBarTheme;
+        final scrollTopPad =
+            embeddedInGlassShell
+                ? 16.0 + themeState.mainShellGlassExtraTopInset(context)
+                : 16.0;
 
-                        if (isAuthenticated) {
-                          // Show the regular form for authenticated users
-                          return _buildAuthenticatedForm();
-                        } else {
-                          // Show authentication prompt for unauthenticated users
-                          return _buildUnauthenticatedPrompt();
-                        }
-                      },
+        return Scaffold(
+          extendBodyBehindAppBar: useLiquidGlassAppBar,
+          appBar:
+              widget.showAppBar
+                  ? UydoshAppBar(
+                    leading: ThreeDAppBarIconButton.backLeading(context),
+                    title: L10n.text(
+                      "create_listing_title",
+                      style:
+                          appBarTheme.titleTextStyle?.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ) ??
+                          const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
-                  ],
+                    backgroundColor:
+                        useLiquidGlassAppBar
+                            ? Colors.transparent
+                            : appBarTheme.backgroundColor,
+                    surfaceTintColor:
+                        useLiquidGlassAppBar
+                            ? Colors.transparent
+                            : appBarTheme.surfaceTintColor,
+                    elevation: useLiquidGlassAppBar ? 0 : null,
+                    scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
+                    shadowColor:
+                        useLiquidGlassAppBar
+                            ? Colors.transparent
+                            : appBarTheme.shadowColor,
+                    forceMaterialTransparency: useLiquidGlassAppBar,
+                    flexibleSpace:
+                        useLiquidGlassAppBar
+                            ? const LiquidGlassAppBarFlexibleSpace()
+                            : null,
+                    foregroundColor: appBarTheme.foregroundColor,
+                  )
+                  : null,
+          body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
+            listener: (context, state) {
+              state.map(
+                initial: (_) => setState(() => _isLoadingStations = false),
+                loading: (_) => setState(() => _isLoadingStations = true),
+                loaded: (loadedState) => _onStationsLoaded(loadedState.stations),
+                error: (_) => setState(() => _isLoadingStations = false),
+              );
+            },
+            child: BlocListener<LocationsBloc, LocationsState>(
+              listener: (context, state) {
+                state.map(
+                  initial: (_) => setState(() => _isLoadingLocations = false),
+                  loading: (_) => setState(() => _isLoadingLocations = true),
+                  loaded:
+                      (loadedState) =>
+                          _onLocationsLoaded(loadedState.locations),
+                  error: (_) => setState(() => _isLoadingLocations = false),
+                );
+              },
+              child: SafeArea(
+                top: !embeddedInGlassShell,
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      16.0,
+                      scrollTopPad,
+                      16.0,
+                      16.0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Show different content based on authentication status
+                        ListenableBuilder(
+                          listenable: AuthenticationState(),
+                          builder: (context, child) {
+                            final isAuthenticated =
+                                AuthenticationState().isAuthenticated;
+
+                            if (isAuthenticated) {
+                              // Show the regular form for authenticated users
+                              return _buildAuthenticatedForm();
+                            } else {
+                              // Show authentication prompt for unauthenticated users
+                              return _buildUnauthenticatedPrompt();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

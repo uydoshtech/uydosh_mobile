@@ -211,6 +211,22 @@ extension ThemeHelper on ThemeState {
     return Colors.black;
   }
 
+  /// Unread / "new messages" indicator color (badges, dots).
+  ///
+  /// Separate from generic "success" green so we can tune contrast for the
+  /// dark blue theme without impacting success toasts, buttons, etc.
+  Color get unreadIndicatorColor {
+    if (isBlueTheme) return const Color(0xFF34D399); // emerald-400
+    return AppColors.success;
+  }
+
+  /// Text color for unread indicator badges (numbers inside the green dot).
+  Color get unreadIndicatorTextColor {
+    // Dark "ink" reads better on bright emerald at tiny sizes.
+    if (isBlueTheme) return const Color(0xFF0B1220);
+    return Colors.white;
+  }
+
   // --- Price badge specific (green/red status colors) ---
 
   /// Price badge active (green) color

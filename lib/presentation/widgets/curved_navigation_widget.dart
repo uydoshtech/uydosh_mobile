@@ -1,10 +1,12 @@
-import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "dart:math" as math;
+
+import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors, BlueThemeColors;
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -146,6 +148,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     final isSelected = widget.currentIndex == 2; // Conversations is at index 2
     final iconColor = isSelected ? Colors.white : _getIconColor(context);
     final textColor = isSelected ? Colors.white : _getTextColor(context);
+    final unreadColor = ThemeState().unreadIndicatorColor;
 
     final bubbleIcon = ThemeIcon(
       CupertinoIcons.bubble_left_bubble_right,
@@ -168,7 +171,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
               return widget.hasUnreadMessages
                   ? PulseThenBlinkDotWidget(
                       trigger: widget.incomingMessageTravelDotTrigger,
-                      color: AppColors.success,
+                      color: unreadColor,
                       size: 13,
                       blinkDuration: const Duration(milliseconds: 750),
                       borderColor: Colors.white,

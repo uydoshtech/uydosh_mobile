@@ -653,6 +653,7 @@ class _ChatScreenState extends State<ChatScreen> {
         final backgroundColor = themeState.backgroundColor;
 
         return Scaffold(
+          extendBodyBehindAppBar: themeState.isBlueTheme,
           backgroundColor: backgroundColor,
           appBar: ChatHeader(
             displayName: _getPeerDisplayName(context),
@@ -675,11 +676,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       fit: StackFit.expand,
                       children: [
                         Positioned.fill(
-                          child: Column(
-                            children: [
-                              ..._chatLeadingRibbonWidgets(),
-                              _messageScrollExpanded(),
-                            ],
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              top:
+                                  MediaQuery.paddingOf(context).top +
+                                  kToolbarHeight,
+                            ),
+                            child: Column(
+                              children: [
+                                ..._chatLeadingRibbonWidgets(),
+                                _messageScrollExpanded(),
+                              ],
+                            ),
                           ),
                         ),
                         Positioned(

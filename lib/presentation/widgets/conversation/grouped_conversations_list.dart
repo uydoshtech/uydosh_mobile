@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -213,6 +212,8 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         final textColor = themeState.cardTextColor;
         final secondaryTextColor = themeState.cardSecondaryTextColor;
         final iconColor = themeState.cardIconColor;
+        final unreadColor = themeState.unreadIndicatorColor;
+        final unreadTextColor = themeState.unreadIndicatorTextColor;
 
         // Get location and metro station info from the first conversation
         final firstConversation = conversations.first;
@@ -276,15 +277,15 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                       Container(
                         width: 20,
                         height: 20,
-                        decoration: const BoxDecoration(
-                          color: AppColors.success,
+                        decoration: BoxDecoration(
+                          color: unreadColor,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
                           child: Text(
                             "${_getGroupUnreadCount(conversations)}",
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: unreadTextColor,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
