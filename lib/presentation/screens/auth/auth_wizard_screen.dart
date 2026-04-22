@@ -122,11 +122,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     // Initialize auth service
     _authService = getIt<IAuthService>();
 
-    // Set the default language to Uzbek only for fresh onboarding
-    if (widget.initialPage == 0) {
-      LanguageState().setLanguage("uz");
-    }
-
     // Check if user already has a valid Firebase session
     if (!widget.skipExistingSessionCheck) {
       _checkExistingSession();

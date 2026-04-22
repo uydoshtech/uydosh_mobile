@@ -41,15 +41,48 @@ class LanguageState extends ChangeNotifier {
   String get currentLanguage => _currentLanguage;
   bool get isInitialized => _isInitialized;
 
+  static const Set<String> _supportedLanguageCodes = {"uz", "ru", "en"};
+
+  String _pickDeviceLanguageCode() {
+    try {
+      // Prefer the full list of preferred locales (Android can return multiple).
+      final locales = WidgetsBinding.instance.platformDispatcher.locales;
+      for (final locale in locales) {
+        final code = locale.languageCode.toLowerCase();
+        if (_supportedLanguageCodes.contains(code)) return code;
+      }
+
+      // Fallback to the single "current" locale if locales is empty.
+      final code =
+          WidgetsBinding.instance.platformDispatcher.locale.languageCode
+              .toLowerCase();
+      if (_supportedLanguageCodes.contains(code)) return code;
+    } catch (_) {
+      // Ignore and fall back to default.
+    }
+
+    return _currentLanguage;
+  }
+
   // Initialize and load saved language from storage
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
       final prefs = await SharedPreferences.getInstance();
+      final hasUserSelectedLanguage =
+          prefs.getBool(StorageKeys.hasUserSelectedLanguage) ?? false;
       final savedLanguage = prefs.getString(StorageKeys.selectedLanguage);
-      if (savedLanguage != null && savedLanguage.isNotEmpty) {
+      if (hasUserSelectedLanguage &&
+          savedLanguage != null &&
+          savedLanguage.isNotEmpty &&
+          _supportedLanguageCodes.contains(savedLanguage)) {
         _currentLanguage = savedLanguage;
+      } else {
+        // Until the user explicitly selects a language, we follow the device locale.
+        final deviceLanguage = _pickDeviceLanguageCode();
+        _currentLanguage = deviceLanguage;
+        await prefs.setString(StorageKeys.selectedLanguage, deviceLanguage);
       }
     } catch (e) {
       // If there"s an error loading, keep the default language
@@ -75,6 +108,7 @@ class LanguageState extends ChangeNotifier {
       try {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(StorageKeys.selectedLanguage, language);
+        await prefs.setBool(StorageKeys.hasUserSelectedLanguage, true);
       } catch (e) {
         // Handle error silently
       }
@@ -100,6 +134,7 @@ class LanguageState extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(StorageKeys.selectedLanguage);
+      await prefs.remove(StorageKeys.hasUserSelectedLanguage);
       _currentLanguage = "uz"; // Reset to default
       notifyListeners();
     } catch (e) {

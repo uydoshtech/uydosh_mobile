@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -136,7 +137,10 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
               return PrimaryButtonFactory.iconText(
                 onPressed: onPrimaryPressed,
                 icon: primaryIcon,
-                text: L10n.get(primaryLabelKey),
+                text:
+                    primaryLabelKey == "apply"
+                        ? context.l10n.apply
+                        : L10n.get(primaryLabelKey),
                 width: double.infinity,
                 borderRadius: BorderRadius.circular(20),
                 padding: const EdgeInsets.symmetric(vertical: 16),

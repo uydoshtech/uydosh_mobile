@@ -1,6 +1,7 @@
 // Storage keys for persistent data
 class StorageKeys {
   static const String selectedLanguage = "selected_language";
+  static const String hasUserSelectedLanguage = "has_user_selected_language";
   static const String favoriteListings = "favorite_listings";
   static const String selectedTheme = "selected_theme";
 }
