@@ -17,12 +17,15 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     this.peerAvatarUrl,
     this.peerInitials,
+    /// Opens the peer's profile (e.g. [ListingOwnerProfileScreen]) when set.
+    this.onPeerAvatarTap,
   });
   final String displayName;
   final String? peerAvatarUrl;
   final String? peerInitials;
   final VoidCallback onRefresh;
   final List<ActionMenuItem> actionMenuItems;
+  final VoidCallback? onPeerAvatarTap;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -40,11 +43,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
           leading: ThreeDAppBarIconButton.backLeading(context),
           title: Row(
             children: [
-              ChatAvatar(
-                isCurrentUser: false,
-                initials: peerInitials,
-                avatarUrl: peerAvatarUrl,
-              ),
+              _peerAvatar(),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -85,4 +84,29 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  Widget _peerAvatar() {
+    final avatar = ChatAvatar(
+      isCurrentUser: false,
+      initials: peerInitials,
+      avatarUrl: peerAvatarUrl,
+    );
+    final tap = onPeerAvatarTap;
+    if (tap == null) {
+      return avatar;
+    }
+    return Tooltip(
+      message: L10n.get("profile_interlocutor"),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: tap,
+            customBorder: const CircleBorder(),
+            child: avatar,
+          ),
+        ),
+      ),
+    );
+  }
 }

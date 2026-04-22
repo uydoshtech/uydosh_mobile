@@ -435,6 +435,7 @@ class _ChatScreenState extends State<ChatScreen> {
             displayName: _getPeerDisplayName(context),
             peerAvatarUrl: widget.otherUserAvatar,
             peerInitials: widget.otherUserInitials,
+            onPeerAvatarTap: _navigateToUserProfile,
             onRefresh: () {
               _refreshMessagesWithSkeleton();
             },
@@ -923,6 +924,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final otherUserId =
         widget.otherUserId ?? _getOtherUserIdFromMessages();
     if (otherUserId != null) {
+      HapticFeedbackUtils.selection();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder:
