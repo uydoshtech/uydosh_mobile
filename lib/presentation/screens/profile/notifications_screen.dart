@@ -28,6 +28,7 @@ import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/the_dot_drop_menu_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -904,6 +905,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final theme = Theme.of(context);
     final tooltipsEnabled = TooltipsState().enabled;
     final push = getIt<IPushNotificationService>();
+    final themeState = ThemeState();
+    final useLiquidGlassAppBar = themeState.isBlueTheme || themeState.isLightTheme;
     final showPushEnableCard = push.isSupported &&
         _pushStatus != null &&
         (_pushStatus == AuthorizationStatus.denied ||
@@ -911,70 +914,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final showAlertsExplainer =
         tooltipsEnabled && _showAlertsExplainer && !showPushEnableCard;
 
+    final topInset = MediaQuery.of(context).padding.top;
+    final contentTopPadding =
+        useLiquidGlassAppBar ? (topInset + kToolbarHeight + 8) : 8.0;
+
     return Scaffold(
-      appBar: UydoshAppBar(
-        leading: ThreeDAppBarIconButton.backLeading(context),
-        title: Text(L10n.get("menu_notifications")),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: TheDotDropMenuButton<String>(
-              enabled: !_loading && !_bulkWorking,
-              onSelected: (value) {
-                if (value == "disable_all") {
-                  _disableAllAlerts();
-                } else if (value == "delete_all") {
-                  _deleteAllAlerts();
-                }
-              },
-              itemBuilder: (menuContext) {
-                final enabled = _alerts.isNotEmpty;
-                return [
-                  PopupMenuItem(
-                    value: "disable_all",
-                    enabled: enabled,
-                    child: UydoshPopupMenuItemRow(
-                      icon: Icons.notifications_off_outlined,
-                      text: L10n.get("notifications_disable_all"),
-                      enabled: enabled,
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: "delete_all",
-                    enabled: enabled,
-                    child: UydoshPopupMenuItemRow(
-                      icon: Icons.delete_outline,
-                      text: L10n.get("notifications_delete_all"),
-                      enabled: enabled,
-                      destructive: true,
-                    ),
-                  ),
-                ];
-              },
-            ),
-          ),
-          if (_bulkWorking)
-            const Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-        ],
-      ),
+      extendBodyBehindAppBar: useLiquidGlassAppBar,
+      appBar: _buildAppBar(useLiquidGlassAppBar),
       body: _loading
           ? const Center(child: HouseLoadingIndicator())
           : UydoshRefreshIndicator(
               onRefresh: _load,
               child: _alerts.isEmpty
                   ? ListView(
-                      padding: const EdgeInsets.all(16),
+                      padding:
+                          EdgeInsets.fromLTRB(16, contentTopPadding, 16, 16),
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        _pushEnableCard(theme),
-                        const SizedBox(height: 12),
+                        if (showPushEnableCard) ...[
+                          _pushEnableCard(theme),
+                          const SizedBox(height: 12),
+                        ],
                         if (showAlertsExplainer)
                           _alertsExplainer(
                             theme,
@@ -1008,7 +968,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ],
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.all(16),
+                      padding:
+                          EdgeInsets.fromLTRB(16, contentTopPadding, 16, 16),
                       itemCount: _alerts.length +
                           (showAlertsExplainer ? 1 : 0) +
                           1,
@@ -1018,8 +979,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _pushEnableCard(theme),
-                              const SizedBox(height: 12),
+                              if (showPushEnableCard) ...[
+                                _pushEnableCard(theme),
+                                const SizedBox(height: 12),
+                              ],
                             ],
                           );
                         }
@@ -1162,6 +1125,73 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
             ),
       backgroundColor: ThemeState().backgroundColor,
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(bool useLiquidGlassAppBar) {
+    final appBarTheme = Theme.of(context).appBarTheme;
+
+    return UydoshAppBar(
+      leading: ThreeDAppBarIconButton.backLeading(context),
+      title: Text(L10n.get("menu_notifications")),
+      backgroundColor:
+          useLiquidGlassAppBar ? Colors.transparent : appBarTheme.backgroundColor,
+      surfaceTintColor:
+          useLiquidGlassAppBar ? Colors.transparent : appBarTheme.surfaceTintColor,
+      elevation: useLiquidGlassAppBar ? 0 : null,
+      scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
+      shadowColor: useLiquidGlassAppBar ? Colors.transparent : appBarTheme.shadowColor,
+      forceMaterialTransparency: useLiquidGlassAppBar,
+      flexibleSpace: useLiquidGlassAppBar ? const LiquidGlassAppBarFlexibleSpace() : null,
+      foregroundColor: appBarTheme.foregroundColor,
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: TheDotDropMenuButton<String>(
+            enabled: !_loading && !_bulkWorking,
+            onSelected: (value) {
+              if (value == "disable_all") {
+                _disableAllAlerts();
+              } else if (value == "delete_all") {
+                _deleteAllAlerts();
+              }
+            },
+            itemBuilder: (menuContext) {
+              final enabled = _alerts.isNotEmpty;
+              return [
+                PopupMenuItem(
+                  value: "disable_all",
+                  enabled: enabled,
+                  child: UydoshPopupMenuItemRow(
+                    icon: Icons.notifications_off_outlined,
+                    text: L10n.get("notifications_disable_all"),
+                    enabled: enabled,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: "delete_all",
+                  enabled: enabled,
+                  child: UydoshPopupMenuItemRow(
+                    icon: Icons.delete_outline,
+                    text: L10n.get("notifications_delete_all"),
+                    enabled: enabled,
+                    destructive: true,
+                  ),
+                ),
+              ];
+            },
+          ),
+        ),
+        if (_bulkWorking)
+          const Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+      ],
     );
   }
 }
