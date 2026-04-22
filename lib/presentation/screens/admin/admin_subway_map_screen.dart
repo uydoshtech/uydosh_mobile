@@ -4,9 +4,11 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
+import "package:flutter/foundation.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -90,13 +92,16 @@ class AdminSubwayMapScreen extends StatefulWidget {
   State<AdminSubwayMapScreen> createState() => _AdminSubwayMapScreenState();
 }
 
-class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
+class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
+    with SingleTickerProviderStateMixin {
   Key _mapKey = UniqueKey();
   late final TransformationController _transformationController;
   /// Stations with at least one listing (from API). Empty set before load completes.
   Set<int> _stationIdsWithListings = {};
   int _selectedListingTypeId = 0; // 0 = all
   int _selectedGender = 0; // 0 = all
+  bool _isLoadingStationIds = false;
+  late final AnimationController _refreshSpinController;
 
   @override
   void initState() {
@@ -106,26 +111,49 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
         ..translate(_initialMapShiftX, _initialMapShiftY)
         ..scale(1.3),
     );
+    _refreshSpinController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
     _loadListingStationIds();
   }
 
   Future<void> _loadListingStationIds() async {
+    if (_isLoadingStationIds) return;
+    setState(() => _isLoadingStationIds = true);
+    _refreshSpinController.repeat();
     try {
+      debugPrint(
+        "[AdminSubwayMap] loadStationIds: listingType=$_selectedListingTypeId gender=$_selectedGender",
+      );
+      logger.i(
+        "[AdminSubwayMap] loadStationIds: listingType=$_selectedListingTypeId gender=$_selectedGender",
+      );
       final ids = await getIt<IListingService>().getSubwayStationIdsWithListings(
         createdWithinDays: 30,
         listingTypeId: _selectedListingTypeId > 0 ? _selectedListingTypeId : null,
         gender: _selectedGender > 0 ? _selectedGender : null,
       );
       if (!mounted) return;
+      debugPrint("[AdminSubwayMap] stationIds returned: ${ids.length}");
+      logger.i("[AdminSubwayMap] stationIds returned: ${ids.length}");
       setState(() => _stationIdsWithListings = ids.toSet());
     } catch (_) {
       if (!mounted) return;
+      debugPrint("[AdminSubwayMap] loadStationIds failed");
+      logger.w("[AdminSubwayMap] loadStationIds failed");
       setState(() => _stationIdsWithListings = {});
+    } finally {
+      if (!mounted) return;
+      _refreshSpinController.stop();
+      _refreshSpinController.value = 0;
+      setState(() => _isLoadingStationIds = false);
     }
   }
 
   @override
   void dispose() {
+    _refreshSpinController.dispose();
     _transformationController.dispose();
     super.dispose();
   }
@@ -683,8 +711,13 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
             },
           ),
           IconButton(
-            icon: const ThemeIcon(Icons.refresh),
-            onPressed: () {
+            icon: RotationTransition(
+              turns: _refreshSpinController,
+              child: const ThemeIcon(Icons.refresh),
+            ),
+            onPressed: _isLoadingStationIds
+                ? null
+                : () {
               setState(() {
                 _mapKey = UniqueKey();
                 _transformationController.value = Matrix4.identity()
@@ -794,9 +827,11 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                         Expanded(
                           child: ListingTypePicker(
                             selectedListingTypeId: _selectedListingTypeId,
-                            onListingTypeChanged: (value) {
+                            onListingTypeChanged: (value) async {
+                              debugPrint("[AdminSubwayMap] listingType changed => $value");
+                              logger.i("[AdminSubwayMap] listingType changed => $value");
                               setState(() => _selectedListingTypeId = value);
-                              _loadListingStationIds();
+                              await _loadListingStationIds();
                             },
                             useThemeColors: true,
                             showArrows: false,
@@ -809,9 +844,11 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen> {
                         Expanded(
                           child: GenderPicker(
                             selectedGender: _selectedGender,
-                            onGenderChanged: (value) {
+                            onGenderChanged: (value) async {
+                              debugPrint("[AdminSubwayMap] gender changed => $value");
+                              logger.i("[AdminSubwayMap] gender changed => $value");
                               setState(() => _selectedGender = value);
-                              _loadListingStationIds();
+                              await _loadListingStationIds();
                             },
                             useThemeColors: true,
                             showArrows: false,

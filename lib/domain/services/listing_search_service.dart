@@ -6,6 +6,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/pageable_response.dart";
+import "package:flutter/foundation.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 abstract class IListingSearchService {
@@ -469,6 +470,9 @@ class ListingSearchService implements IListingSearchService {
         },
         if (gender != null) "gender": gender,
       };
+      debugPrint(
+        "[ListingSearchService] subway-stations-with-listings params=$queryParams",
+      );
       final response = await _oauthApiClient.get<Map<String, dynamic>>(
         "/listings/subway-stations-with-listings",
         (json) => json,
