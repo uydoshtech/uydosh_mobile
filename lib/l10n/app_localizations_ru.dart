@@ -692,6 +692,21 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settings => 'Настройки';
 
   @override
+  String get settings_section_account => 'Аккаунт';
+
+  @override
+  String get settings_section_preferences => 'Предпочтения';
+
+  @override
+  String get settings_section_experience => 'Удобства';
+
+  @override
+  String get settings_section_about => 'О приложении';
+
+  @override
+  String get settings_section_legal => 'Правовая информация';
+
+  @override
   String get theme => 'Тема';
 
   @override

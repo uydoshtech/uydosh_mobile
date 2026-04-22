@@ -1342,6 +1342,36 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settings;
 
+  /// No description provided for @settings_section_account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settings_section_account;
+
+  /// No description provided for @settings_section_preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get settings_section_preferences;
+
+  /// No description provided for @settings_section_experience.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get settings_section_experience;
+
+  /// No description provided for @settings_section_about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settings_section_about;
+
+  /// No description provided for @settings_section_legal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get settings_section_legal;
+
   /// No description provided for @theme.
   ///
   /// In en, this message translates to:

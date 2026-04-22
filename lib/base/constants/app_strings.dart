@@ -329,6 +329,11 @@ class AppStrings {
 
       // ===== THEME & APPEARANCE =====
       "settings": "Settings",
+      "settings_section_account": "Account",
+      "settings_section_preferences": "Preferences",
+      "settings_section_experience": "Experience",
+      "settings_section_about": "About",
+      "settings_section_legal": "Legal",
       "theme": "Theme",
       "blue_theme": "Blue",
       "light_theme": "Light",
@@ -1431,6 +1436,11 @@ class AppStrings {
 
       // ===== THEME & APPEARANCE =====
       "settings": "Настройки",
+      "settings_section_account": "Аккаунт",
+      "settings_section_preferences": "Предпочтения",
+      "settings_section_experience": "Удобства",
+      "settings_section_about": "О приложении",
+      "settings_section_legal": "Правовая информация",
       "theme": "Тема",
       "blue_theme": "Синяя",
       "light_theme": "Светлая",
@@ -2544,6 +2554,11 @@ class AppStrings {
 
       // ===== THEME & APPEARANCE =====
       "settings": "Sozlamalar",
+      "settings_section_account": "Hisob",
+      "settings_section_preferences": "Sozlamalar",
+      "settings_section_experience": "Qulayliklar",
+      "settings_section_about": "Ilova haqida",
+      "settings_section_legal": "Huquqiy ma'lumot",
       "theme": "Mavzu",
       "blue_theme": "Ko'k",
       "light_theme": "Yorug'",

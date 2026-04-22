@@ -5,7 +5,9 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -85,12 +87,34 @@ class _FaqScreenState extends State<FaqScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeState = ThemeState();
+    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final appBarTheme = Theme.of(context).appBarTheme;
+    final topInset =
+        useLiquidGlass ? (MediaQuery.paddingOf(context).top + kToolbarHeight) : 0.0;
+
     return Scaffold(
       backgroundColor: _getBackgroundColor(),
+      extendBodyBehindAppBar: useLiquidGlass,
       appBar: UydoshAppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+        backgroundColor:
+            useLiquidGlass
+                ? Colors.transparent
+                : (appBarTheme.backgroundColor ??
+                    Theme.of(context).colorScheme.surface),
+        surfaceTintColor:
+            useLiquidGlass ? Colors.transparent : appBarTheme.surfaceTintColor,
+        shadowColor: useLiquidGlass ? Colors.transparent : appBarTheme.shadowColor,
+        elevation: useLiquidGlass ? 0 : 0,
+        scrolledUnderElevation: useLiquidGlass ? 0 : null,
+        forceMaterialTransparency: useLiquidGlass,
+        flexibleSpace:
+            useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
+        foregroundColor:
+            useLiquidGlass
+                ? (appBarTheme.foregroundColor ?? themeState.textColor)
+                : appBarTheme.foregroundColor,
         title: Text(
           L10n.get("menu_faq"),
           style: TextStyle(
@@ -98,15 +122,12 @@ class _FaqScreenState extends State<FaqScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.fromLTRB(16, 16 + topInset, 16, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 24),
-
             // FAQ Items
             _buildFaqItem(
               index: 0,

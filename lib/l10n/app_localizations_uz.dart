@@ -696,6 +696,21 @@ class AppLocalizationsUz extends AppLocalizations {
   String get settings => 'Sozlamalar';
 
   @override
+  String get settings_section_account => 'Hisob';
+
+  @override
+  String get settings_section_preferences => 'Sozlamalar';
+
+  @override
+  String get settings_section_experience => 'Qulayliklar';
+
+  @override
+  String get settings_section_about => 'Ilova haqida';
+
+  @override
+  String get settings_section_legal => 'Huquqiy ma\'lumot';
+
+  @override
   String get theme => 'Mavzu';
 
   @override

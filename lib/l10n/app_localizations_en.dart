@@ -688,6 +688,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
+  String get settings_section_account => 'Account';
+
+  @override
+  String get settings_section_preferences => 'Preferences';
+
+  @override
+  String get settings_section_experience => 'Experience';
+
+  @override
+  String get settings_section_about => 'About';
+
+  @override
+  String get settings_section_legal => 'Legal';
+
+  @override
   String get theme => 'Theme';
 
   @override

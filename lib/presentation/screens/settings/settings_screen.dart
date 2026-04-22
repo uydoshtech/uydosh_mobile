@@ -82,6 +82,86 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Color _getCardColor(BuildContext context) {
+    final bg = _getBackgroundColor(context);
+    // Slight lift from background for neumorphic cards.
+    return Color.lerp(bg, Colors.white, ThemeState().isBlueTheme ? 0.06 : 0.12) ??
+        bg;
+  }
+
+  List<BoxShadow> _getNeumorphicShadows(BuildContext context) {
+    final isBlue = ThemeState().isBlueTheme;
+    final darkShadow =
+        (isBlue ? Colors.black : const Color(0xFF0B1220)).withValues(
+          alpha: isBlue ? 0.28 : 0.12,
+        );
+    final lightShadow = Colors.white.withValues(alpha: isBlue ? 0.10 : 0.75);
+
+    return [
+      BoxShadow(
+        color: darkShadow,
+        blurRadius: 18,
+        offset: const Offset(8, 10),
+      ),
+      BoxShadow(
+        color: lightShadow,
+        blurRadius: 18,
+        offset: const Offset(-8, -10),
+      ),
+    ];
+  }
+
+  Widget _buildSectionHeader(String titleKey) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+      child: Text(
+        L10n.get(titleKey).toUpperCase(),
+        style: TextStyle(
+          color: _getSecondaryTextColor(),
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.6,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard(BuildContext context, List<Widget> children) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      decoration: BoxDecoration(
+        color: _getCardColor(context),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: _getNeumorphicShadows(context),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: _withDividers(children),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _withDividers(List<Widget> children) {
+    if (children.isEmpty) return const [];
+    final divider = Divider(
+      height: 1,
+      thickness: 1,
+      color: ThemeState().isBlueTheme
+          ? Colors.white.withValues(alpha: 0.08)
+          : const Color(0xFFE5E7EB),
+    );
+
+    return [
+      for (var i = 0; i < children.length; i++) ...[
+        children[i],
+        if (i != children.length - 1) divider,
+      ],
+    ];
+  }
+
   // Get background color for light and blue themes
   Color _getBackgroundColor(BuildContext context) {
     final appBarColor = Theme.of(context).appBarTheme.backgroundColor;
@@ -109,24 +189,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       default:
         return BlueThemeColors.primary; // Default to blue theme background
     }
-  }
-
-  // Theme-aware divider method with better contrast for light theme
-  Widget _buildThemeAwareDivider() {
-    final currentTheme = ThemeState().currentTheme;
-    Color dividerColor;
-
-    switch (currentTheme) {
-      case AppTheme.blueTheme:
-        dividerColor = AppColors.textLight;
-      default:
-        // Use a darker color for better visibility in light theme
-        dividerColor = const Color(
-          0xFFD1D5DB,
-        ); // Medium gray for better contrast
-    }
-
-    return Divider(color: dividerColor, thickness: 1.0, height: 1.0);
   }
 
   /// Get localized theme name based on current language
@@ -174,75 +236,102 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.only(top: 8),
           children: [
-            // Profile menu item - Only show when user is authenticated
+            // ACCOUNT
             ListenableBuilder(
               listenable: AuthenticationState(),
               builder: (context, child) {
-                final isAuthenticated = AuthenticationState().isAuthenticated;
+                final authed = AuthenticationState().isAuthenticated;
+                if (!authed) return const SizedBox.shrink();
 
-                if (!isAuthenticated) {
-                  return const SizedBox.shrink();
-                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionHeader("settings_section_account"),
+                    _buildSectionCard(
+                      context,
+                      [
+                        _buildMenuItem(
+                          icon: Icons.person_outline,
+                          titleKey: "menu_profile",
+                          onTap: () {
+                            if (context.mounted) {
+                              context.pushProfile();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
 
-                return _buildMenuItem(
-                  icon: Icons.person_outline,
-                  titleKey: "menu_profile",
+            // PREFERENCES
+            _buildSectionHeader("settings_section_preferences"),
+            _buildSectionCard(
+              context,
+              [
+                _buildLanguageMenuItem(context),
+                _buildThemeMenuItem(context),
+              ],
+            ),
+
+            // EXPERIENCE
+            _buildSectionHeader("settings_section_experience"),
+            _buildSectionCard(
+              context,
+              [
+                _buildOnboardingToggleMenuItem(context),
+                _buildTooltipsToggleMenuItem(context),
+                _buildHapticFeedbackToggleMenuItem(context),
+                _buildSoundEffectsToggleMenuItem(context),
+                _buildAnimationsToggleMenuItems(context),
+              ],
+            ),
+
+            // ABOUT
+            _buildSectionHeader("settings_section_about"),
+            _buildSectionCard(
+              context,
+              [
+                _buildMenuItem(
+                  icon: Icons.info,
+                  titleKey: "menu_about",
                   onTap: () {
-                    if (context.mounted) {
-                      context.pushProfile();
-                    }
+                    _showAboutDialog(context);
                   },
-                );
-              },
+                ),
+              ],
             ),
 
-            // Only show divider if profile section is visible
-            ListenableBuilder(
-              listenable: AuthenticationState(),
-              builder: (context, child) {
-                final isAuthenticated = AuthenticationState().isAuthenticated;
-
-                if (!isAuthenticated) {
-                  return const SizedBox.shrink();
-                }
-
-                return _buildThemeAwareDivider();
-              },
+            // LEGAL
+            _buildSectionHeader("settings_section_legal"),
+            _buildSectionCard(
+              context,
+              [
+                _buildMenuItem(
+                  icon: Icons.privacy_tip,
+                  titleKey: "menu_privacy_policy",
+                  onTap: () {
+                    _openPrivacyPolicy(context);
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.description,
+                  titleKey: "menu_user_license_agreement",
+                  onTap: () {
+                    _showLegalDialog(
+                      context,
+                      titleKey: "user_license_agreement_title",
+                      bodyKey: "user_license_agreement_body",
+                    );
+                  },
+                ),
+              ],
             ),
 
-            _buildLanguageMenuItem(context),
-            _buildThemeMenuItem(context),
-            _buildOnboardingToggleMenuItem(context),
-            _buildTooltipsToggleMenuItem(context),
-            _buildHapticFeedbackToggleMenuItem(context),
-            _buildSoundEffectsToggleMenuItem(context),
-            _buildAnimationsToggleMenuItems(context),
-
-            _buildMenuItem(
-              icon: Icons.info,
-              titleKey: "menu_about",
-              onTap: () {
-                _showAboutDialog(context);
-              },
-            ),
-            _buildMenuItem(
-              icon: Icons.privacy_tip,
-              titleKey: "menu_privacy_policy",
-              onTap: () {
-                _openPrivacyPolicy(context);
-              },
-            ),
-            _buildMenuItem(
-              icon: Icons.description,
-              titleKey: "menu_user_license_agreement",
-              onTap: () {
-                _showLegalDialog(
-                  context,
-                  titleKey: "user_license_agreement_title",
-                  bodyKey: "user_license_agreement_body",
-                );
-              },
-            ),
+            // bottom breathing room
+            const SizedBox(height: 10),
           ],
         ),
       ),
