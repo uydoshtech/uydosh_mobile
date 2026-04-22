@@ -38,7 +38,6 @@ class AppStrings {
       "complete_profile_prompt_later": "Later",
       "compatibility_title": "Compatibility with you:",
       "compatibility_match_percentage": "Match: {percent}%",
-      "compatibility_match_placeholder": "Match: —",
       "compatibility_calculating": "Calculating match...",
       "compatibility_sign_in": "Sign in to see your compatibility",
       "na": "N/A",
@@ -49,7 +48,6 @@ class AppStrings {
       "im_from": "I'm from:",
 
       // ===== APP CORE =====
-      "welcome": "Hello",
       "user": "User",
       "welcome_title": "Welcome to UyDosh",
       "welcome_subtitle": "Find your perfect roommate or accommodation",
@@ -58,9 +56,6 @@ class AppStrings {
       "close": "Close",
       "cancel": "Cancel",
       "about_uy_dosh": "About UyDosh",
-      "privacy_policy_title": "Privacy Policy",
-      "privacy_policy_body":
-          "ОБНОВЛЁННЫЙ PRIVACY POLICY (без рекламы и подписок)\n\nLast updated: [DATE]\n\nUyDosh respects your privacy. This Privacy Policy explains how we collect and use data.\n\n⸻\n\n1. Data We Collect\n\na. Information You Provide\n\t•\tPhone number\n\t•\tName and profile info\n\t•\tListings and photos\n\t•\tMessages\n\nb. Automatically Collected Data\n\t•\tDevice type and OS\n\t•\tApp usage data\n\t•\tCrash diagnostics\n\nc. Location Data\n\t•\tApproximate location (only if enabled)\n\n⸻\n\n2. How We Use Data\n\nWe use data to:\n\t•\toperate the App\n\t•\tdisplay listings and maps\n\t•\tmaintain safety and moderation\n\t•\timprove functionality\n\n⸻\n\n3. Data Sharing\n\nWe do not sell personal data.\n\nWe may share data:\n\t•\twith service providers (hosting, analytics)\n\t•\tif required by law\n\t•\twith other users (only public profile/listing info)\n\n⸻\n\n4. Data Retention\n\nWe store data only as long as necessary.\nYou may request account and data deletion.\n\n⸻\n\n5. Security\n\nWe apply reasonable measures to protect data, but no system is fully secure.\n\n⸻\n\n6. User Rights\n\nYou may request:\n\t•\taccess to your data\n\t•\tcorrection\n\t•\tdeletion\n\nContact: support@uydosh.app\n\n⸻\n\n7. Children\n\nUyDosh is not intended for users under 18.\n\n⸻\n\n8. Third-Party Services\n\nThe App may use third-party services (e.g., maps). Their policies apply independently.\n\n⸻\n\n9. Updates\n\nWe may update this Policy. Changes take effect when published.\n\n⸻\n\n10. Contact\n\nsupport@uydosh.app",
       "user_license_agreement_title": "User License Agreement",
       "user_license_agreement_body":
           "ОБНОВЛЁННЫЙ EULA (MVP-версия)\n\nLast updated: [DATE]\n\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and UyDosh (\"we\", \"us\", \"our\") governing your use of the UyDosh mobile application (\"App\").\n\nBy accessing or using the App, you agree to this Agreement.\n\n⸻\n\n1. License\n\nWe grant you a limited, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes.\n\n⸻\n\n2. Eligibility\n\nYou must be at least 18 years old to use the App.\n\n⸻\n\n3. Accounts\n\nSome features require account creation.\nYou agree to provide accurate information and keep it up to date.\n\nWe may suspend or terminate accounts that violate this Agreement or pose safety risks.\n\n⸻\n\n4. User Content\n\nThe App allows users to post listings, descriptions, photos, and messages (\"User Content\").\n\nYou retain ownership of your content.\nBy posting content, you grant us a non-exclusive, worldwide license to host, display, and distribute it solely for operating the App.\n\nYou are fully responsible for your User Content.\n\n⸻\n\n5. Prohibited Use\n\nYou agree not to:\n\t•\tPost false, misleading, or illegal listings\n\t•\tHarass, threaten, or discriminate against others\n\t•\tImpersonate another person\n\t•\tUse the App for unlawful purposes\n\t•\tAttempt to access data or accounts without authorization\n\n⸻\n\n6. No Transactions or Guarantees\n\nUyDosh does not participate in rental agreements, payments, or negotiations between users.\n\nWe do not guarantee:\n\t•\taccuracy of listings\n\t•\tavailability of housing\n\t•\tbehavior or reliability of other users\n\nAll interactions occur at your own risk.\n\n⸻\n\n7. Moderation\n\nWe reserve the right to:\n\t•\tremove content\n\t•\trestrict visibility\n\t•\tsuspend or ban users\n\nbased on complaints, violations, or safety concerns.\n\n⸻\n\n8. Location Features\n\nThe App may use approximate location data to display nearby listings and map features.\nYou can disable location access in your device settings.\n\n⸻\n\n9. Disclaimer\n\nThe App is provided \"AS IS\" and \"AS AVAILABLE\".\nWe make no warranties regarding reliability, safety, or suitability.\n\n⸻\n\n10. Limitation of Liability\n\nUyDosh shall not be liable for indirect or consequential damages arising from App usage.\n\n⸻\n\n11. Termination\n\nWe may terminate your access at any time for violation of this Agreement.\n\n⸻\n\n12. Governing Law\n\nThis Agreement is governed by the laws of the jurisdiction where UyDosh operates.\n\n⸻\n\n13. Contact\n\nsupport@uydosh.app\n\n⸻",
@@ -111,7 +106,6 @@ class AppStrings {
       "conversations": "Messages",
       "messages": "Messages",
       "chat": "Chat",
-      "chat_with": "Chat with {name}",
       "chat_security_ribbon_title": "Protected chat",
       "chat_security_ribbon_body":
           "This chat is protected by AI anti‑fraud & scam filters to help keep you safe.",
@@ -168,7 +162,6 @@ class AppStrings {
           "Start a conversation from a listing to begin messaging",
       "today": "Today",
       "tomorrow": "Tomorrow",
-      "yesterday": "Yesterday",
       "in_days": "In {days} days",
       "monday": "Monday",
       "tuesday": "Tuesday",
@@ -188,7 +181,6 @@ class AppStrings {
       "quick_question_people_living":
           "How many people already live in apartment?",
       "private_room": "Private Room",
-      "private_room_only": "Private Room",
       "with_photo": "With photo",
       "search_filter_private_room": "Own room",
       "search_filter_with_photo": "Photos",
@@ -233,7 +225,6 @@ class AppStrings {
           "3D room scanning is turned off in app settings. It may be available again later.",
       "add_room_scan_3d": "Add 3D room scan",
       "replace_room_scan_3d": "Replace 3D room scan",
-      "room_scan_examples_label": "Example scans",
       "skip": "Skip",
       "view_room_3d": "View 3D room",
       "room_3d_open_error": "Could not open 3D model. Check your connection.",
@@ -249,22 +240,16 @@ class AppStrings {
 
       "profile_completed_success": "Profile completed successfully!",
       "profile_updated_success": "Profile updated successfully",
-      "favorite_added_success": "Added to favorites",
-      "favorite_removed_success": "Removed from favorites",
 
       "successfully_signed_in_google": "Successfully signed in with Google!",
 
       // ===== EMPTY STATES =====
-      "no_listings_found": "No listings found",
       "my_listings_empty_state": "You haven't created any listings yet.",
 
       "no_locations_available": "No locations available",
 
       "no_universities_available": "No universities available",
       "no_search_results": "No results...",
-      "try_refreshing": "Try refreshing or check back later",
-      "try_refining_search": "Try refining your search criteria",
-      "refine_search": "Refine Search",
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Subway line",
@@ -272,18 +257,13 @@ class AppStrings {
       "select_location": "Any district",
       "not_selected": "Not selected",
       "all": "All",
-      "search_location_or_metro_hint":
-          "Choose one option: district or metro station",
 
       "all_stations_count": "All {count} stations",
       "all_stations_explanation":
           "Search along the entire line <b>{line}</b> through <b>{count}</b> stations",
       "entire_line_stations": "Entire line {line}: {count} stations",
-      "metro_tutorial_search_hint":
-          "Search along metro line or by individual stations.",
       "metro_tutorial_line_hint": "Search listings on all metro line stations",
       "metro_tutorial_station_hint": "Search by particular metro stations",
-      "metro_tutorial_tap_to_continue": "Tap anywhere to continue",
       "select_region": "Choose region:",
       "select_region_profile_creation_title": "Where are you from?",
       "select_region_profile_creation_description":
@@ -356,9 +336,6 @@ class AppStrings {
       "about_feature_4": "• Verified and safe listings",
 
       // ===== METRO SYSTEM =====
-      "location_on_map": "Location",
-      "show_map": "Show map",
-      "hide_map": "Hide map",
       "open_in_yandex_maps": "Open in Yandex Maps",
       "open_in_yandex_maps_confirmation":
           "A browser with Yandex Maps will be opened.",
@@ -366,8 +343,6 @@ class AppStrings {
       // ===== LISTING DETAILS =====
       "listing_details": "Details",
       "author": "Author",
-      "show_details": "Show details",
-      "hide_details": "Hide details",
       "listing_views_by_others": "{count} views",
       "listing_views_stats_title": "View statistics",
       "listing_views_stats_empty": "No views yet",
@@ -380,7 +355,6 @@ class AppStrings {
       "error_promotion_once_per_week":
           "You can only promote a listing once per week",
 
-      "listing_title_hint": "Enter listing title",
       "listing_title_label": "Title",
 
       "listing_description_hint": "Enter listing text",
@@ -434,11 +408,9 @@ class AppStrings {
       "retake": "Retake",
       "use_photo": "Use Photo",
       "flash": "Flash",
-      "switch_camera": "Switch camera",
       "camera_unavailable": "Camera is unavailable",
       "error_picking_photo": "Couldn't pick the photo",
       "upload_profile_photo": "Upload profile photo",
-      "uploading_profile_photo": "Uploading photo…",
       "profile_photo_updated": "Profile photo updated",
       "error_uploading_profile_photo": "Couldn't upload profile photo",
       "crop_profile_photo": "Crop photo",
@@ -478,12 +450,8 @@ class AppStrings {
       "ui_animations": "UI animations",
       "ui_animations_description": "Motion effects like pulsing and swinging",
       "ui_animation_search_pulse": "Search button pulse",
-      "ui_animation_search_pulse_description":
-          "Pulsing highlight around search button",
       "ui_animation_bell_idle": "Bell idle swing",
-      "ui_animation_bell_idle_description": "Subtle swinging while visible",
       "ui_animation_bell_tap": "Bell tap animation",
-      "ui_animation_bell_tap_description": "Ring + swing on tap",
 
       // ===== LANGUAGE & LOCALIZATION =====
       "current_language": "English",
@@ -533,8 +501,6 @@ class AppStrings {
       "morning": "Morning",
       "evening": "Evening",
       "night": "Night",
-      "pets_okay": "Okay",
-      "pets_not_okay": "Not great",
       "pets_like_pets": "Like pets",
       "pets_dont_like_pets": "Don't like pets",
       "pets_have_cat": "Have a cat",
@@ -592,7 +558,6 @@ class AppStrings {
 
       // ===== MENU & NAVIGATION =====
       "menu_profile": "Profile",
-      "menu_home": "Listings",
       "menu_language": "Language",
 
       "menu_favorites": "Favorites",
@@ -642,13 +607,10 @@ class AppStrings {
       "admin_content_moderation_save_error": "Could not save setting",
 
       "admin_panel_section_telegram_sync": "Data import",
-      "admin_panel_section_area_price_cache": "Listing price benchmarks",
       "admin_telegram_sync_title": "Data import",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_limit_label": "Message limit",
       "admin_telegram_sync_import_user_label": "Listing owner user ID",
-      "admin_telegram_sync_import_user_helper":
-          "Admin account that will own imported listings after sync. Pick “DB sync only” to ingest messages without creating listings.",
       "admin_telegram_sync_import_user_sync_only":
           "DB sync only (no listing import)",
       "admin_telegram_sync_admins_loading": "Loading admin accounts…",
@@ -674,11 +636,7 @@ class AppStrings {
       "admin_telegram_sync_log_more": "… ({count} more)",
       "admin_telegram_sync_invalid_chat_limit":
           "Enter a chat (e.g. @roommateuz).",
-      "admin_telegram_sync_invalid_import_user":
-          "Listing owner user ID must be a positive number or empty.",
       "admin_area_price_cache_section_title": "Listing area price cache",
-      "admin_area_price_cache_intro":
-          "Rebuilds median/mean aggregates per metro station, line, and district (used on listing detail). Run after large Telegram imports.",
       "admin_area_price_cache_run": "Refresh area price cache",
       "admin_area_price_cache_running": "Rebuilding cache…",
       "admin_area_price_cache_screen_body":
@@ -754,14 +712,11 @@ class AppStrings {
       "admin_listing_creation_analytics_total": "Total in period",
       "admin_listing_creation_analytics_today": "Today",
       "admin_listing_creation_analytics_week": "This week",
-      "admin_listing_creation_analytics_by_day": "Listings by day",
       "admin_listing_creation_analytics_by_month": "Listings grouped by month",
       "admin_listing_creation_analytics_no_data":
           "No listing data in this period",
 
       "admin_district_heatmap_title": "District heat map",
-      "admin_district_heatmap_description":
-          "Listings by district with heat intensity based on volume.",
       "admin_district_heatmap_loading": "Loading district stats...",
       "admin_district_heatmap_error": "Failed to load district stats",
       "admin_district_heatmap_retry": "Retry",
@@ -772,8 +727,6 @@ class AppStrings {
       "admin_district_heatmap_no_data": "No district data available",
 
       "admin_subway_heatmap_title": "Subway line heat map",
-      "admin_subway_heatmap_description":
-          "Listings by subway line with heat intensity based on volume.",
       "admin_subway_heatmap_loading": "Loading subway line stats...",
       "admin_subway_heatmap_error": "Failed to load subway line stats",
       "admin_subway_heatmap_retry": "Retry",
@@ -784,9 +737,6 @@ class AppStrings {
       "admin_subway_heatmap_no_data": "No subway line data available",
 
       "admin_subway_map_title": "Subway map",
-      "admin_subway_map_description":
-          "Simplified map with lines and stations only.",
-      "error_loading_map": "Failed to load map",
 
       "admin_users_title": "Users",
       "admin_users_loading": "Loading users...",
@@ -800,7 +750,6 @@ class AppStrings {
       "admin_users_listings_count_error": "Unavailable",
       "admin_user_detail_title": "User details",
       "admin_user_detail_role_title": "Role management",
-      "admin_user_detail_role_label": "Role",
       "admin_user_detail_role_save": "Save role",
       "admin_user_detail_role_updated": "Role updated",
       "admin_user_detail_view_listings": "View listings",
@@ -838,7 +787,6 @@ class AppStrings {
       "admin_complaints_loading": "Loading complaints...",
       "admin_complaints_empty": "No complaints found",
       "admin_complaints_error": "Failed to load complaints",
-      "admin_complaints_filter_all": "All",
       "admin_complaints_filter_pending": "Pending",
       "admin_complaints_filter_resolved": "Resolved",
       "admin_complaints_filter_dismissed": "Dismissed",
@@ -888,8 +836,6 @@ class AppStrings {
       "admin_listing_complaints_empty": "No listings with complaints",
       "admin_listing_complaints_error":
           "Failed to load listings with complaints",
-      "admin_listing_complaints_last_reported": "Last complaint",
-      "admin_listing_complaints_categories": "Complaints",
       "admin_listing_complaints_categories_empty": "No complaint categories",
 
       // ===== FAQ CONTENT =====
@@ -948,21 +894,13 @@ class AppStrings {
       "achievements_title": "Achievements",
       "achievement_unlocked": "Achievement unlocked!",
       "achievement_first_steps": "First Steps",
-      "achievement_first_steps_desc": "Create your account",
       "achievement_profile_complete": "Profile Complete",
-      "achievement_profile_complete_desc": "Complete your profile 100%",
       "achievement_first_look": "First Look",
-      "achievement_first_look_desc": "View your first listing",
       "achievement_bookmarker": "Bookmarker",
-      "achievement_bookmarker_desc": "Add your first favorite",
       "achievement_ice_breaker": "Ice Breaker",
-      "achievement_ice_breaker_desc": "Send your first message",
       "achievement_first_listing": "First Listing",
-      "achievement_first_listing_desc": "Create your first listing",
       "achievement_returning_user": "Returning User",
-      "achievement_returning_user_desc": "Use the app 7 days in a row",
       "achievement_sharer": "Sharer",
-      "achievement_sharer_desc": "Share your first listing",
       "achievements_empty": "No achievements yet",
       "achievements_empty_desc": "Complete actions to unlock achievements",
       "achievements_auth_prompt": "Log in to view your achievements",
@@ -975,7 +913,6 @@ class AppStrings {
 
       // ===== CREATE & EDIT LISTING =====
       "create_listing_title": "Publish",
-      "edit_listing": "Edit Listing",
       "edit_profile": "Edit Profile",
       "updating_listing": "Updating...",
       "creating_listing": "Creating...",
@@ -1030,15 +967,10 @@ class AppStrings {
           "Station {station} is already covered by your {line} line alert.",
       "search_alert_permission":
           "Enable notifications in settings to receive alerts.",
-      "search_alert_updated": "Alert updated.",
-      "tutorial_search_title": "Search for listings",
       "tutorial_search_description":
           "Tap here to filter listings by location, price, room type, and more.",
       "tutorial_profile_description":
           "Your profile and account settings are here.",
-      "tutorial_got_it": "Got it",
-      "tutorial_metro_description":
-          "Choose a metro line, then pick a station to filter by location.",
       "tutorial_alert_bell_description":
           "You can add an alert and be notified about new listings matching your search criteria.",
       "tutorial_notifications_bell_description":
@@ -1075,7 +1007,6 @@ class AppStrings {
       "sign_in_with_phone_description":
           "We'll text you a 6-digit code to confirm your number.",
       "auth_separator_or": "or",
-      "phone_number_hint": "Phone number",
       "phone_number_example": "+998 90 123 45 67",
       "phone_send_code": "Send code",
       "phone_resend_code": "Resend code",
@@ -1153,7 +1084,6 @@ class AppStrings {
       "complete_profile_prompt_later": "Позже",
       "compatibility_title": "Совместимость с вами:",
       "compatibility_match_percentage": "Совпадение: {percent}%",
-      "compatibility_match_placeholder": "Совпадение: —",
       "compatibility_calculating": "Считаем совпадение...",
       "compatibility_sign_in": "Войдите, чтобы увидеть совместимость",
       "na": "Н/Д",
@@ -1164,7 +1094,6 @@ class AppStrings {
       "im_from": "Я из:",
 
       // ===== APP CORE =====
-      "welcome": "Привет",
       "user": "Пользователь",
       "welcome_title": "Добро пожаловать в UyDosh",
       "welcome_subtitle": "Найди идеального соседа или жильё",
@@ -1173,9 +1102,6 @@ class AppStrings {
       "close": "Закрыть",
       "cancel": "Отмена",
       "about_uy_dosh": "Об UyDosh",
-      "privacy_policy_title": "Политика конфиденциальности",
-      "privacy_policy_body":
-          "ОБНОВЛЁННЫЙ PRIVACY POLICY (без рекламы и подписок)\n\nLast updated: [DATE]\n\nUyDosh respects your privacy. This Privacy Policy explains how we collect and use data.\n\n⸻\n\n1. Data We Collect\n\na. Information You Provide\n\t•\tPhone number\n\t•\tName and profile info\n\t•\tListings and photos\n\t•\tMessages\n\nb. Automatically Collected Data\n\t•\tDevice type and OS\n\t•\tApp usage data\n\t•\tCrash diagnostics\n\nc. Location Data\n\t•\tApproximate location (only if enabled)\n\n⸻\n\n2. How We Use Data\n\nWe use data to:\n\t•\toperate the App\n\t•\tdisplay listings and maps\n\t•\tmaintain safety and moderation\n\t•\timprove functionality\n\n⸻\n\n3. Data Sharing\n\nWe do not sell personal data.\n\nWe may share data:\n\t•\twith service providers (hosting, analytics)\n\t•\tif required by law\n\t•\twith other users (only public profile/listing info)\n\n⸻\n\n4. Data Retention\n\nWe store data only as long as necessary.\nYou may request account and data deletion.\n\n⸻\n\n5. Security\n\nWe apply reasonable measures to protect data, but no system is fully secure.\n\n⸻\n\n6. User Rights\n\nYou may request:\n\t•\taccess to your data\n\t•\tcorrection\n\t•\tdeletion\n\nContact: support@uydosh.app\n\n⸻\n\n7. Children\n\nUyDosh is not intended for users under 18.\n\n⸻\n\n8. Third-Party Services\n\nThe App may use third-party services (e.g., maps). Their policies apply independently.\n\n⸻\n\n9. Updates\n\nWe may update this Policy. Changes take effect when published.\n\n⸻\n\n10. Contact\n\nsupport@uydosh.app",
       "user_license_agreement_title": "Лицензионное соглашение пользователя",
       "user_license_agreement_body":
           "ОБНОВЛЁННЫЙ EULA (MVP-версия)\n\nLast updated: [DATE]\n\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and UyDosh (\"we\", \"us\", \"our\") governing your use of the UyDosh mobile application (\"App\").\n\nBy accessing or using the App, you agree to this Agreement.\n\n⸻\n\n1. License\n\nWe grant you a limited, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes.\n\n⸻\n\n2. Eligibility\n\nYou must be at least 18 years old to use the App.\n\n⸻\n\n3. Accounts\n\nSome features require account creation.\nYou agree to provide accurate information and keep it up to date.\n\nWe may suspend or terminate accounts that violate this Agreement or pose safety risks.\n\n⸻\n\n4. User Content\n\nThe App allows users to post listings, descriptions, photos, and messages (\"User Content\").\n\nYou retain ownership of your content.\nBy posting content, you grant us a non-exclusive, worldwide license to host, display, and distribute it solely for operating the App.\n\nYou are fully responsible for your User Content.\n\n⸻\n\n5. Prohibited Use\n\nYou agree not to:\n\t•\tPost false, misleading, or illegal listings\n\t•\tHarass, threaten, or discriminate against others\n\t•\tImpersonate another person\n\t•\tUse the App for unlawful purposes\n\t•\tAttempt to access data or accounts without authorization\n\n⸻\n\n6. No Transactions or Guarantees\n\nUyDosh does not participate in rental agreements, payments, or negotiations between users.\n\nWe do not guarantee:\n\t•\taccuracy of listings\n\t•\tavailability of housing\n\t•\tbehavior or reliability of other users\n\nAll interactions occur at your own risk.\n\n⸻\n\n7. Moderation\n\nWe reserve the right to:\n\t•\tremove content\n\t•\trestrict visibility\n\t•\tsuspend or ban users\n\nbased on complaints, violations, or safety concerns.\n\n⸻\n\n8. Location Features\n\nThe App may use approximate location data to display nearby listings and map features.\nYou can disable location access in your device settings.\n\n⸻\n\n9. Disclaimer\n\nThe App is provided \"AS IS\" and \"AS AVAILABLE\".\nWe make no warranties regarding reliability, safety, or suitability.\n\n⸻\n\n10. Limitation of Liability\n\nUyDosh shall not be liable for indirect or consequential damages arising from App usage.\n\n⸻\n\n11. Termination\n\nWe may terminate your access at any time for violation of this Agreement.\n\n⸻\n\n12. Governing Law\n\nThis Agreement is governed by the laws of the jurisdiction where UyDosh operates.\n\n⸻\n\n13. Contact\n\nsupport@uydosh.app\n\n⸻",
@@ -1223,7 +1149,6 @@ class AppStrings {
       "conversations": "Сообщения",
       "messages": "Сообщения",
       "chat": "Чат",
-      "chat_with": "Чат с {name}",
       "chat_security_ribbon_title": "Защищённый чат",
       "chat_security_ribbon_body":
           "Чат защищён AI‑фильтрами от мошенничества и скама, чтобы вам было безопаснее общаться.",
@@ -1283,7 +1208,6 @@ class AppStrings {
           "Начните разговор с объявления, чтобы начать общение",
       "today": "Сегодня",
       "tomorrow": "Завтра",
-      "yesterday": "Вчера",
       "in_days": "Через {days} дней",
       "monday": "Понедельник",
       "tuesday": "Вторник",
@@ -1302,7 +1226,6 @@ class AppStrings {
       "any_date": "Любая дата",
       "quick_question_people_living": "Сколько людей уже живет в квартире?",
       "private_room": "Отдельная комната",
-      "private_room_only": "Отдельная комната",
       "with_photo": "С фото",
       "search_filter_private_room": "Отдельная комната",
       "search_filter_with_photo": "С фото",
@@ -1348,7 +1271,6 @@ class AppStrings {
           "3D-сканирование комнаты отключено в настройках приложения. Позже оно может снова стать доступным.",
       "add_room_scan_3d": "Добавить 3D-скан комнаты",
       "replace_room_scan_3d": "Заменить 3D-скан комнаты",
-      "room_scan_examples_label": "Примеры сканов",
       "skip": "Пропустить",
       "view_room_3d": "Смотреть комнату в 3D",
       "room_3d_open_error":
@@ -1366,22 +1288,16 @@ class AppStrings {
 
       "profile_completed_success": "Профиль успешно завершен!",
       "profile_updated_success": "Профиль успешно обновлен",
-      "favorite_added_success": "Добавлено в избранное",
-      "favorite_removed_success": "Удалено из избранного",
 
       "successfully_signed_in_google": "Успешный вход через Google!",
 
       // ===== EMPTY STATES =====
-      "no_listings_found": "Объявления не найдены",
       "my_listings_empty_state": "Вы еще не создали ни одного объявления.",
 
       "no_locations_available": "Районы недоступны",
 
       "no_universities_available": "Университеты недоступны",
       "no_search_results": "Нет результатов...",
-      "try_refreshing": "Попробуйте обновить или проверьте позже",
-      "try_refining_search": "Попробуйте уточнить критерии поиска",
-      "refine_search": "Уточнить поиск",
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Линия метро",
@@ -1389,19 +1305,14 @@ class AppStrings {
       "select_location": "Любой район",
       "not_selected": "Не выбрано",
       "all": "Все",
-      "search_location_or_metro_hint":
-          "Выберите один вариант: район или станцию метро",
 
       "all_stations_count": "Все {count} станций",
       "all_stations_explanation":
           "Поиск вдоль ВСЕЙ линии <b>{line}</b> по <b>{count}</b> станциям",
       "entire_line_stations": "Вся линия {line}: {count} станций",
-      "metro_tutorial_search_hint":
-          "Поиск по линии метро или по отдельным станциям.",
       "metro_tutorial_line_hint":
           "Поиск объявлений на всех станциях линий метро",
       "metro_tutorial_station_hint": "Поиск по конкретным станциям метро",
-      "metro_tutorial_tap_to_continue": "Нажмите, чтобы продолжить",
       "select_region": "Выберите область",
       "select_region_profile_creation_title": "Откуда вы?",
       "select_region_profile_creation_description":
@@ -1475,9 +1386,6 @@ class AppStrings {
       "about_feature_4": "Проверенные и безопасные объявления",
 
       // ===== METRO SYSTEM =====
-      "location_on_map": "Локация",
-      "show_map": "Показать карту",
-      "hide_map": "Скрыть карту",
       "open_in_yandex_maps": "Открыть в Яндекс Картах",
       "open_in_yandex_maps_confirmation":
           "Браузер с Яндекс Картами будет открыт.",
@@ -1485,8 +1393,6 @@ class AppStrings {
       // ===== LISTING DETAILS =====
       "listing_details": "Детали",
       "author": "Автор",
-      "show_details": "Показать детали",
-      "hide_details": "Скрыть детали",
       "listing_views_by_others": "{count} просмотров",
       "listing_views_stats_title": "Статистика просмотров",
       "listing_views_stats_empty": "Пока нет просмотров",
@@ -1499,7 +1405,6 @@ class AppStrings {
       "error_promotion_once_per_week":
           "Вы можете поднять объявление только раз в неделю",
 
-      "listing_title_hint": "Введите заголовок объявления",
       "listing_title_label": "Заголовок",
 
       "listing_description_hint": "Введите текст объявления",
@@ -1553,11 +1458,9 @@ class AppStrings {
       "retake": "Переснять",
       "use_photo": "Использовать",
       "flash": "Вспышка",
-      "switch_camera": "Сменить камеру",
       "camera_unavailable": "Камера недоступна",
       "error_picking_photo": "Не удалось загрузить фото",
       "upload_profile_photo": "Загрузить фото профиля",
-      "uploading_profile_photo": "Загрузка фото…",
       "profile_photo_updated": "Фото профиля обновлено",
       "error_uploading_profile_photo": "Не удалось загрузить фото профиля",
       "crop_profile_photo": "Обрезать фото",
@@ -1596,11 +1499,8 @@ class AppStrings {
       "ui_animations": "Анимации интерфейса",
       "ui_animations_description": "Эффекты движения: пульсация и качание",
       "ui_animation_search_pulse": "Пульсация кнопки поиска",
-      "ui_animation_search_pulse_description": "Подсветка вокруг кнопки поиска",
       "ui_animation_bell_idle": "Качание колокольчика",
-      "ui_animation_bell_idle_description": "Лёгкое качание, пока видно",
       "ui_animation_bell_tap": "Анимация колокольчика при тапе",
-      "ui_animation_bell_tap_description": "Кольцо + качание при нажатии",
 
       // ===== LANGUAGE & LOCALIZATION =====
       "current_language": "Русский",
@@ -1651,8 +1551,6 @@ class AppStrings {
       "morning": "Утро",
       "evening": "Вечер",
       "night": "Ночь",
-      "pets_okay": "Нормальное",
-      "pets_not_okay": "Не очень",
       "pets_like_pets": "Люблю животных",
       "pets_dont_like_pets": "Не люблю животных",
       "pets_have_cat": "Есть кот",
@@ -1711,7 +1609,6 @@ class AppStrings {
 
       // ===== MENU & NAVIGATION =====
       "menu_profile": "Профиль",
-      "menu_home": "Объявления",
       "menu_language": "Язык",
 
       "menu_favorites": "Избранное",
@@ -1764,13 +1661,10 @@ class AppStrings {
       "admin_content_moderation_save_error": "Не удалось сохранить настройку",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
-      "admin_panel_section_area_price_cache": "Ориентиры по ценам",
       "admin_telegram_sync_title": "Импорт данных",
       "admin_telegram_sync_chat_label": "Чат",
       "admin_telegram_sync_limit_label": "Лимит сообщений",
       "admin_telegram_sync_import_user_label": "ID владельца объявлений",
-      "admin_telegram_sync_import_user_helper":
-          "Аккаунт администратора, от имени которого создаются импортированные объявления. «Только синк БД» — без создания объявлений.",
       "admin_telegram_sync_import_user_sync_only":
           "Только синк БД (без импорта объявлений)",
       "admin_telegram_sync_admins_loading": "Загрузка списка админов…",
@@ -1796,11 +1690,7 @@ class AppStrings {
       "admin_telegram_sync_log_more": "… (ещё {count})",
       "admin_telegram_sync_invalid_chat_limit":
           "Укажите чат (например @roommateuz).",
-      "admin_telegram_sync_invalid_import_user":
-          "ID пользователя должен быть положительным числом или пустым.",
       "admin_area_price_cache_section_title": "Кэш цен по району объявления",
-      "admin_area_price_cache_intro":
-          "Пересчитывает медиану и среднее по станциям, линиям метро и районам (оринтир на карточке объявления). Запускайте после крупных импортов из Telegram.",
       "admin_area_price_cache_run": "Обновить кэш цен",
       "admin_area_price_cache_running": "Пересчёт кэша…",
       "admin_area_price_cache_screen_body":
@@ -1875,14 +1765,11 @@ class AppStrings {
       "admin_listing_creation_analytics_total": "Всего за период",
       "admin_listing_creation_analytics_today": "Сегодня",
       "admin_listing_creation_analytics_week": "За неделю",
-      "admin_listing_creation_analytics_by_day": "Объявления по дням",
       "admin_listing_creation_analytics_by_month": "Объявления по месяцам",
       "admin_listing_creation_analytics_no_data":
           "Нет данных за выбранный период",
 
       "admin_district_heatmap_title": "Тепловая карта районов",
-      "admin_district_heatmap_description":
-          "Объявления по районам с цветовой интенсивностью.",
       "admin_district_heatmap_loading": "Загрузка статистики по районам...",
       "admin_district_heatmap_error":
           "Не удалось загрузить статистику по районам",
@@ -1894,8 +1781,6 @@ class AppStrings {
       "admin_district_heatmap_no_data": "Нет данных по районам",
 
       "admin_subway_heatmap_title": "Тепловая карта линий метро",
-      "admin_subway_heatmap_description":
-          "Объявления по линиям метро с цветовой интенсивностью.",
       "admin_subway_heatmap_loading": "Загрузка статистики по линиям метро...",
       "admin_subway_heatmap_error":
           "Не удалось загрузить статистику по линиям метро",
@@ -1907,8 +1792,6 @@ class AppStrings {
       "admin_subway_heatmap_no_data": "Нет данных по линиям метро",
 
       "admin_subway_map_title": "Схема метро",
-      "admin_subway_map_description": "Упрощенная схема с линиями и станциями.",
-      "error_loading_map": "Не удалось загрузить карту",
 
       "admin_users_title": "Пользователи",
       "admin_users_loading": "Загрузка пользователей...",
@@ -1922,7 +1805,6 @@ class AppStrings {
       "admin_users_listings_count_error": "Недоступно",
       "admin_user_detail_title": "Пользователь",
       "admin_user_detail_role_title": "Управление ролью",
-      "admin_user_detail_role_label": "Роль",
       "admin_user_detail_role_save": "Сохранить роль",
       "admin_user_detail_role_updated": "Роль обновлена",
       "admin_user_detail_view_listings": "Объявления пользователя",
@@ -1960,7 +1842,6 @@ class AppStrings {
       "admin_complaints_loading": "Загрузка жалоб...",
       "admin_complaints_empty": "Жалобы не найдены",
       "admin_complaints_error": "Не удалось загрузить жалобы",
-      "admin_complaints_filter_all": "Все",
       "admin_complaints_filter_pending": "В ожидании",
       "admin_complaints_filter_resolved": "Решено",
       "admin_complaints_filter_dismissed": "Отклонено",
@@ -2008,8 +1889,6 @@ class AppStrings {
       "admin_listing_complaints_empty": "Объявлений с жалобами нет",
       "admin_listing_complaints_error":
           "Не удалось загрузить объявления с жалобами",
-      "admin_listing_complaints_last_reported": "Последняя жалоба",
-      "admin_listing_complaints_categories": "Жалобы",
       "admin_listing_complaints_categories_empty": "Нет категорий жалоб",
 
       // ===== FAQ CONTENT =====
@@ -2067,21 +1946,13 @@ class AppStrings {
       "achievements_title": "Достижения",
       "achievement_unlocked": "Достижение разблокировано!",
       "achievement_first_steps": "Первые шаги",
-      "achievement_first_steps_desc": "Создайте аккаунт",
       "achievement_profile_complete": "Профиль заполнен",
-      "achievement_profile_complete_desc": "Заполните профиль на 100%",
       "achievement_first_look": "Первый взгляд",
-      "achievement_first_look_desc": "Просмотрите первое объявление",
       "achievement_bookmarker": "В закладках",
-      "achievement_bookmarker_desc": "Добавьте первое избранное",
       "achievement_ice_breaker": "Разговор начат",
-      "achievement_ice_breaker_desc": "Отправьте первое сообщение",
       "achievement_first_listing": "Первое объявление",
-      "achievement_first_listing_desc": "Создайте первое объявление",
       "achievement_returning_user": "Постоянный пользователь",
-      "achievement_returning_user_desc": "Используйте приложение 7 дней подряд",
       "achievement_sharer": "Поделился",
-      "achievement_sharer_desc": "Поделитесь первым объявлением",
       "achievements_empty": "Пока нет достижений",
       "achievements_empty_desc":
           "Выполняйте действия, чтобы разблокировать достижения",
@@ -2096,7 +1967,6 @@ class AppStrings {
 
       // ===== CREATE & EDIT LISTING =====
       "create_listing_title": "Опубликовать",
-      "edit_listing": "Редактировать объявление",
       "edit_profile": "Редактировать профиль",
       "updating_listing": "Обновляется...",
       "creating_listing": "Создается...",
@@ -2152,15 +2022,10 @@ class AppStrings {
           "Станция {station} уже входит в ваше оповещение по линии {line}.",
       "search_alert_permission":
           "Включите уведомления в настройках, чтобы получать оповещения.",
-      "search_alert_updated": "Оповещение обновлено.",
-      "tutorial_search_title": "Поиск объявлений",
       "tutorial_search_description":
           "Нажмите здесь, чтобы фильтровать объявления по району, цене, типу комнаты и другим параметрам.",
       "tutorial_profile_description":
           "Здесь находятся ваш профиль и настройки аккаунта.",
-      "tutorial_got_it": "Понятно",
-      "tutorial_metro_description":
-          "Выберите линию метро, затем станцию для фильтрации по местоположению.",
       "tutorial_alert_bell_description":
           "Вы можете добавить уведомление и получать оповещения о новых объявлениях по вашим критериям поиска.",
       "tutorial_notifications_bell_description":
@@ -2197,7 +2062,6 @@ class AppStrings {
       "sign_in_with_phone_description":
           "Мы отправим SMS с 6-значным кодом для подтверждения номера.",
       "auth_separator_or": "или",
-      "phone_number_hint": "Номер телефона",
       "phone_number_example": "+998 90 123 45 67",
       "phone_send_code": "Отправить код",
       "phone_resend_code": "Отправить код ещё раз",
@@ -2275,7 +2139,6 @@ class AppStrings {
       "complete_profile_prompt_later": "Keyinroq",
       "compatibility_title": "Siz bilan moslik:",
       "compatibility_match_percentage": "Moslik: {percent}%",
-      "compatibility_match_placeholder": "Moslik: —",
       "compatibility_calculating": "Moslik hisoblanmoqda...",
       "compatibility_sign_in": "Moslikni ko'rish uchun tizimga kiring",
       "na": "N/A",
@@ -2286,7 +2149,6 @@ class AppStrings {
       "im_from": "Men:",
 
       // ===== APP CORE =====
-      "welcome": "Salom",
       "user": "Foydalanuvchi",
       "welcome_title": "UyDosh ga xush kelibsiz",
       "welcome_subtitle": "Mukammal xonadon yoki turar joy toping",
@@ -2295,9 +2157,6 @@ class AppStrings {
       "close": "Yopish",
       "cancel": "Bekor qilish",
       "about_uy_dosh": "UyDosh haqida",
-      "privacy_policy_title": "Maxfiylik siyosati",
-      "privacy_policy_body":
-          "ОБНОВЛЁННЫЙ PRIVACY POLICY (без рекламы и подписок)\n\nLast updated: [DATE]\n\nUyDosh respects your privacy. This Privacy Policy explains how we collect and use data.\n\n⸻\n\n1. Data We Collect\n\na. Information You Provide\n\t•\tPhone number\n\t•\tName and profile info\n\t•\tListings and photos\n\t•\tMessages\n\nb. Automatically Collected Data\n\t•\tDevice type and OS\n\t•\tApp usage data\n\t•\tCrash diagnostics\n\nc. Location Data\n\t•\tApproximate location (only if enabled)\n\n⸻\n\n2. How We Use Data\n\nWe use data to:\n\t•\toperate the App\n\t•\tdisplay listings and maps\n\t•\tmaintain safety and moderation\n\t•\timprove functionality\n\n⸻\n\n3. Data Sharing\n\nWe do not sell personal data.\n\nWe may share data:\n\t•\twith service providers (hosting, analytics)\n\t•\tif required by law\n\t•\twith other users (only public profile/listing info)\n\n⸻\n\n4. Data Retention\n\nWe store data only as long as necessary.\nYou may request account and data deletion.\n\n⸻\n\n5. Security\n\nWe apply reasonable measures to protect data, but no system is fully secure.\n\n⸻\n\n6. User Rights\n\nYou may request:\n\t•\taccess to your data\n\t•\tcorrection\n\t•\tdeletion\n\nContact: support@uydosh.app\n\n⸻\n\n7. Children\n\nUyDosh is not intended for users under 18.\n\n⸻\n\n8. Third-Party Services\n\nThe App may use third-party services (e.g., maps). Their policies apply independently.\n\n⸻\n\n9. Updates\n\nWe may update this Policy. Changes take effect when published.\n\n⸻\n\n10. Contact\n\nsupport@uydosh.app",
       "user_license_agreement_title": "Foydalanuvchi litsenziya shartnomasi",
       "user_license_agreement_body":
           "ОБНОВЛЁННЫЙ EULA (MVP-версия)\n\nLast updated: [DATE]\n\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and UyDosh (\"we\", \"us\", \"our\") governing your use of the UyDosh mobile application (\"App\").\n\nBy accessing or using the App, you agree to this Agreement.\n\n⸻\n\n1. License\n\nWe grant you a limited, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes.\n\n⸻\n\n2. Eligibility\n\nYou must be at least 18 years old to use the App.\n\n⸻\n\n3. Accounts\n\nSome features require account creation.\nYou agree to provide accurate information and keep it up to date.\n\nWe may suspend or terminate accounts that violate this Agreement or pose safety risks.\n\n⸻\n\n4. User Content\n\nThe App allows users to post listings, descriptions, photos, and messages (\"User Content\").\n\nYou retain ownership of your content.\nBy posting content, you grant us a non-exclusive, worldwide license to host, display, and distribute it solely for operating the App.\n\nYou are fully responsible for your User Content.\n\n⸻\n\n5. Prohibited Use\n\nYou agree not to:\n\t•\tPost false, misleading, or illegal listings\n\t•\tHarass, threaten, or discriminate against others\n\t•\tImpersonate another person\n\t•\tUse the App for unlawful purposes\n\t•\tAttempt to access data or accounts without authorization\n\n⸻\n\n6. No Transactions or Guarantees\n\nUyDosh does not participate in rental agreements, payments, or negotiations between users.\n\nWe do not guarantee:\n\t•\taccuracy of listings\n\t•\tavailability of housing\n\t•\tbehavior or reliability of other users\n\nAll interactions occur at your own risk.\n\n⸻\n\n7. Moderation\n\nWe reserve the right to:\n\t•\tremove content\n\t•\trestrict visibility\n\t•\tsuspend or ban users\n\nbased on complaints, violations, or safety concerns.\n\n⸻\n\n8. Location Features\n\nThe App may use approximate location data to display nearby listings and map features.\nYou can disable location access in your device settings.\n\n⸻\n\n9. Disclaimer\n\nThe App is provided \"AS IS\" and \"AS AVAILABLE\".\nWe make no warranties regarding reliability, safety, or suitability.\n\n⸻\n\n10. Limitation of Liability\n\nUyDosh shall not be liable for indirect or consequential damages arising from App usage.\n\n⸻\n\n11. Termination\n\nWe may terminate your access at any time for violation of this Agreement.\n\n⸻\n\n12. Governing Law\n\nThis Agreement is governed by the laws of the jurisdiction where UyDosh operates.\n\n⸻\n\n13. Contact\n\nsupport@uydosh.app\n\n⸻",
@@ -2347,7 +2206,6 @@ class AppStrings {
       "conversations": "Xabarlar",
       "messages": "Xabarlar",
       "chat": "Chat",
-      "chat_with": "{name} bilan chat",
       "chat_security_ribbon_title": "Himoyalangan chat",
       "chat_security_ribbon_body":
           "Bu chat AI anti‑firibgarlik va scam filtrlari bilan himoyalangan — xavfsizroq muloqot uchun.",
@@ -2409,7 +2267,6 @@ class AppStrings {
           "Xabar almashishni boshlash uchun e'londan suhbatni boshlang",
       "today": "Bugun",
       "tomorrow": "Ertaga",
-      "yesterday": "Kecha",
       "in_days": "{days} kundan keyin",
       "monday": "Dushanba",
       "tuesday": "Seshanba",
@@ -2429,7 +2286,6 @@ class AppStrings {
       "any_date": "Har qanday sanasi",
       "quick_question_people_living": "Kvartiraga necha kishi yashaydi?",
       "private_room": "Shaxsiy xona",
-      "private_room_only": "Shaxsiy xona",
       "with_photo": "Surat bilan",
       "search_filter_private_room": "Shaxsiy xona",
       "search_filter_with_photo": "Suratli",
@@ -2477,7 +2333,6 @@ class AppStrings {
           "3D xona skanlash ilova sozlamalarida o'chirilgan. Keyinroq yana yoqilishi mumkin.",
       "add_room_scan_3d": "3D xona skanini qo'shish",
       "replace_room_scan_3d": "3D xona skanini almashtirish",
-      "room_scan_examples_label": "Skan namunalari",
       "skip": "O'tkazib yuborish",
       "view_room_3d": "3D xonani ko'rish",
       "room_3d_open_error": "3D modelni ochib bo'lmadi. Internetni tekshiring.",
@@ -2494,23 +2349,17 @@ class AppStrings {
 
       "profile_completed_success": "Profil muvaffaqiyatli to'ldirildi!",
       "profile_updated_success": "Profil muvaffaqiyatli yangilandi",
-      "favorite_added_success": "Sevimlilar qo'shildi",
-      "favorite_removed_success": "Sevimlilardan o'chirildi",
 
       "successfully_signed_in_google":
           "Google orqali muvaffaqiyatli kirdingiz!",
 
       // ===== EMPTY STATES =====
-      "no_listings_found": "E'lonlar topilmadi",
       "my_listings_empty_state": "Siz hali hech qanday e'lon yaratmagansiz.",
 
       "no_locations_available": "Tumanlar mavjud emas",
 
       "no_universities_available": "Universitetlar mavjud emas",
       "no_search_results": "Natija topilmadi...",
-      "try_refreshing": "Yangilashni sinab ko'ring yoki keyinroq tekshiring",
-      "try_refining_search": "Qidiruv mezonlarini aniqlashni sinab ko'ring",
-      "refine_search": "Qidiruvni aniqlash",
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Liniyani tanlang",
@@ -2518,20 +2367,15 @@ class AppStrings {
       "select_location": "Har qanday tuman",
       "not_selected": "Tanlanmagan",
       "all": "Barchasi",
-      "search_location_or_metro_hint":
-          "Bitta variantni tanlang: tuman yoki metro bekati",
 
       "all_stations_count": "Barcha {count} bekatlar",
       "all_stations_explanation":
           "Liniya <b>{line}</b> bo'ylab <b>{count}</b> bekat orqali qidiruv",
       "entire_line_stations": "Butun liniya {line}: {count} bekat",
-      "metro_tutorial_search_hint":
-          "Metro liniyasi bo'ylab yoki alohida bekatlar bo'yicha qidiruv.",
       "metro_tutorial_line_hint":
           "Barcha metro liniyasi stansiyalarida e'lonlarni qidiring",
       "metro_tutorial_station_hint":
           "Muayyan metro stansiyalari bo'yicha qidiruv",
-      "metro_tutorial_tap_to_continue": "Davom etish uchun bosing",
       "select_region": "Tumanni tanlang",
       "select_region_profile_creation_title": "Qayerdansiz?",
       "select_region_profile_creation_description":
@@ -2605,9 +2449,6 @@ class AppStrings {
       "about_feature_4": "• Tekshirilgan va xavfsiz e'lonlar",
 
       // ===== METRO SYSTEM =====
-      "location_on_map": "Xaritadagi joylashuv",
-      "show_map": "Xaritani ko'rsatish",
-      "hide_map": "Xaritani yashirish",
       "open_in_yandex_maps": "Yandex Xaritalarida ochish",
       "open_in_yandex_maps_confirmation":
           "Brauzerda Yandex Xaritalari ochiladi.",
@@ -2615,8 +2456,6 @@ class AppStrings {
       // ===== LISTING DETAILS =====
       "listing_details": "Tafsilotlar",
       "author": "Muallif",
-      "show_details": "Tafsilotlarni ko'rsatish",
-      "hide_details": "Tafsilotlarni yashirish",
       "listing_views_by_others": "{count} ko'rilgan",
       "listing_views_stats_title": "Ko'rish statistikasi",
       "listing_views_stats_empty": "Hali ko'rishlar yo'q",
@@ -2629,7 +2468,6 @@ class AppStrings {
       "error_promotion_once_per_week":
           "E'loni haftada faqat bir marta yuqoriga ko'tarish mumkin",
 
-      "listing_title_hint": "E'lon sarlavhasini kiriting",
       "listing_title_label": "Sarlavha",
 
       "listing_description_hint": "E'lon matnini kiriting",
@@ -2684,11 +2522,9 @@ class AppStrings {
       "retake": "Qayta olish",
       "use_photo": "Foydalanish",
       "flash": "Chaqnoq",
-      "switch_camera": "Kamerani almashtirish",
       "camera_unavailable": "Kamera mavjud emas",
       "error_picking_photo": "Rasmni yuklab bo'lmadi",
       "upload_profile_photo": "Profil rasmini yuklash",
-      "uploading_profile_photo": "Rasm yuklanmoqda…",
       "profile_photo_updated": "Profil rasmi yangilandi",
       "error_uploading_profile_photo": "Profil rasmini yuklab bo'lmadi",
       "crop_profile_photo": "Rasmni kesish",
@@ -2728,13 +2564,8 @@ class AppStrings {
       "ui_animations": "Interfeys animatsiyalari",
       "ui_animations_description": "Pulsatsiya va tebranish kabi effektlar",
       "ui_animation_search_pulse": "Qidiruv tugmasi pulsatsiyasi",
-      "ui_animation_search_pulse_description":
-          "Qidiruv tugmasi atrofida pulsatsiya",
       "ui_animation_bell_idle": "Qo‘ng‘iroq tebranishi",
-      "ui_animation_bell_idle_description":
-          "Ko‘rinib turganda yengil tebranish",
       "ui_animation_bell_tap": "Qo‘ng‘iroq bosish animatsiyasi",
-      "ui_animation_bell_tap_description": "Bosilganda halqa + tebranish",
 
       // ===== LANGUAGE & LOCALIZATION =====
       "current_language": "O'zbekcha",
@@ -2785,8 +2616,6 @@ class AppStrings {
       "morning": "Ertalab",
       "evening": "Kechqurun",
       "night": "Tun",
-      "pets_okay": "Yaxshi",
-      "pets_not_okay": "Unchalik emas",
       "pets_like_pets": "Hayvonlarni yaxshi ko'raman",
       "pets_dont_like_pets": "Hayvonlarni yoqtirmayman",
       "pets_have_cat": "Menda mushuk bor",
@@ -2845,7 +2674,6 @@ class AppStrings {
 
       // ===== MENU & NAVIGATION =====
       "menu_profile": "Profil",
-      "menu_home": "E'lonlar",
       "menu_language": "Til",
 
       "menu_favorites": "Sevimlilar",
@@ -2899,13 +2727,10 @@ class AppStrings {
       "admin_content_moderation_save_error": "Sozlama saqlanmadi",
 
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
-      "admin_panel_section_area_price_cache": "Narx bo‘yicha orientirlar",
       "admin_telegram_sync_title": "Maʼlumot importi",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_limit_label": "Xabar limiti",
       "admin_telegram_sync_import_user_label": "E’lon egasi user ID",
-      "admin_telegram_sync_import_user_helper":
-          "Sinxrondan keyin import qilinadigan e’lonlar egasi bo‘ladigan admin. «Faqat DB sinxron» — e’lon yaratmasdan.",
       "admin_telegram_sync_import_user_sync_only":
           "Faqat DB sinxron (e’lon importisiz)",
       "admin_telegram_sync_admins_loading": "Adminlar ro‘yxati yuklanmoqda…",
@@ -2930,11 +2755,7 @@ class AppStrings {
       "admin_telegram_sync_log_more": "… (yana {count})",
       "admin_telegram_sync_invalid_chat_limit":
           "Chat kiriting (masalan @roommateuz).",
-      "admin_telegram_sync_invalid_import_user":
-          "Foydalanuvchi ID musbat son yoki bo‘sh bo‘lishi kerak.",
       "admin_area_price_cache_section_title": "E’lon hududi narxlari keshi",
-      "admin_area_price_cache_intro":
-          "Metro bekati, liniya va tuman bo‘yicha median va o‘rtacha narxni qayta hisoblaydi (e’lon tafsilotida). Katta Telegram importidan keyin ishga tushiring.",
       "admin_area_price_cache_run": "Narx keshini yangilash",
       "admin_area_price_cache_running": "Kesh qayta hisoblanmoqda…",
       "admin_area_price_cache_screen_body":
@@ -3012,14 +2833,11 @@ class AppStrings {
       "admin_listing_creation_analytics_total": "Davrdagi jami",
       "admin_listing_creation_analytics_today": "Bugun",
       "admin_listing_creation_analytics_week": "Haftada",
-      "admin_listing_creation_analytics_by_day": "Kunlar bo'yicha e'lonlar",
       "admin_listing_creation_analytics_by_month": "Oylar bo'yicha e'lonlar",
       "admin_listing_creation_analytics_no_data":
           "Tanlangan davrda ma'lumot yo'q",
 
       "admin_district_heatmap_title": "Tumanlar issiqlik xaritasi",
-      "admin_district_heatmap_description":
-          "E'lonlar tumanlar bo'yicha rang zichligi bilan ko'rsatiladi.",
       "admin_district_heatmap_loading": "Tumanlar statistikasi yuklanmoqda...",
       "admin_district_heatmap_error": "Tumanlar statistikasi yuklanmadi",
       "admin_district_heatmap_retry": "Qayta urinish",
@@ -3030,8 +2848,6 @@ class AppStrings {
       "admin_district_heatmap_no_data": "Tumanlar bo'yicha ma'lumot yo'q",
 
       "admin_subway_heatmap_title": "Metro liniyalari issiqlik xaritasi",
-      "admin_subway_heatmap_description":
-          "E'lonlar metro liniyalari bo'yicha rang zichligi bilan ko'rsatiladi.",
       "admin_subway_heatmap_loading":
           "Metro liniyalari statistikasi yuklanmoqda...",
       "admin_subway_heatmap_error": "Metro liniyalari statistikasi yuklanmadi",
@@ -3043,9 +2859,6 @@ class AppStrings {
       "admin_subway_heatmap_no_data": "Metro liniyalari bo'yicha ma'lumot yo'q",
 
       "admin_subway_map_title": "Metro sxemasi",
-      "admin_subway_map_description":
-          "Faqat yo'nalishlar va bekatlardan iborat soddalashtirilgan sxema.",
-      "error_loading_map": "Xaritani yuklab bo'lmadi",
 
       "admin_users_title": "Foydalanuvchilar",
       "admin_users_loading": "Foydalanuvchilar yuklanmoqda...",
@@ -3059,7 +2872,6 @@ class AppStrings {
       "admin_users_listings_count_error": "Mavjud emas",
       "admin_user_detail_title": "Foydalanuvchi",
       "admin_user_detail_role_title": "Rolni boshqarish",
-      "admin_user_detail_role_label": "Rol",
       "admin_user_detail_role_save": "Rolni saqlash",
       "admin_user_detail_role_updated": "Rol yangilandi",
       "admin_user_detail_view_listings": "E'lonlarni ko'rish",
@@ -3097,7 +2909,6 @@ class AppStrings {
       "admin_complaints_loading": "Shikoyatlar yuklanmoqda...",
       "admin_complaints_empty": "Shikoyatlar topilmadi",
       "admin_complaints_error": "Shikoyatlarni yuklashda xatolik",
-      "admin_complaints_filter_all": "Barchasi",
       "admin_complaints_filter_pending": "Kutilmoqda",
       "admin_complaints_filter_resolved": "Hal qilindi",
       "admin_complaints_filter_dismissed": "Rad etildi",
@@ -3145,8 +2956,6 @@ class AppStrings {
       "admin_listing_complaints_empty": "Shikoyatli e'lonlar yo'q",
       "admin_listing_complaints_error":
           "Shikoyatli e'lonlarni yuklashda xatolik",
-      "admin_listing_complaints_last_reported": "So'nggi shikoyat",
-      "admin_listing_complaints_categories": "Shikoyatlar",
       "admin_listing_complaints_categories_empty":
           "Shikoyat kategoriyalari yo'q",
 
@@ -3207,21 +3016,13 @@ class AppStrings {
       "achievements_title": "Yutuqlar",
       "achievement_unlocked": "Yutuq ochildi!",
       "achievement_first_steps": "Birinchi qadamlar",
-      "achievement_first_steps_desc": "Hisob yarating",
       "achievement_profile_complete": "Profil to'liq",
-      "achievement_profile_complete_desc": "Profilni 100% to'ldiring",
       "achievement_first_look": "Birinchi qarash",
-      "achievement_first_look_desc": "Birinchi e'loningizni ko'ring",
       "achievement_bookmarker": "Sevimlilar",
-      "achievement_bookmarker_desc": "Birinchi sevimlini qo'shing",
       "achievement_ice_breaker": "Suhbat boshlovchi",
-      "achievement_ice_breaker_desc": "Birinchi xabaringizni yuboring",
       "achievement_first_listing": "Birinchi e'lon",
-      "achievement_first_listing_desc": "Birinchi e'loningizni yarating",
       "achievement_returning_user": "Doimiy foydalanuvchi",
-      "achievement_returning_user_desc": "Ilovani 7 kun ketma-ket ishlating",
       "achievement_sharer": "Ulashuvchi",
-      "achievement_sharer_desc": "Birinchi e'loningizni ulashing",
       "achievements_empty": "Hali yutuqlar yo'q",
       "achievements_empty_desc":
           "Yutuqlarni ochish uchun harakatlarni bajaring",
@@ -3237,7 +3038,6 @@ class AppStrings {
 
       // ===== CREATE & EDIT LISTING =====
       "create_listing_title": "E'lon qilish",
-      "edit_listing": "E'lonni tahrirlash",
       "edit_profile": "Profilni tahrirlash",
       "updating_listing": "Yangilanmoqda...",
       "creating_listing": "Yaratilmoqda...",
@@ -3293,15 +3093,10 @@ class AppStrings {
           "{station} bekati allaqachon {line} liniyasi bo‘yicha bildirishnomangizga kiradi.",
       "search_alert_permission":
           "Bildirishnomalar uchun sozlamalarda ruxsat bering.",
-      "search_alert_updated": "Bildirishnoma yangilandi.",
-      "tutorial_search_title": "E'lonlarni qidirish",
       "tutorial_search_description":
           "E'lonlarni tuman, narx, xona turi va boshqa parametrlar bo'yicha filtrlash uchun bosing.",
       "tutorial_profile_description":
           "Profilingiz va hisob sozlamalari shu yerda.",
-      "tutorial_got_it": "Tushundim",
-      "tutorial_metro_description":
-          "Metro liniyasini tanlang, keyin joylashuv bo'yicha filtrlash uchun stansiyani tanlang.",
       "tutorial_alert_bell_description":
           "Qidiruv mezonlaringizga mos yangi e'lonlar chiqsa, bildirishnoma qo'shib xabardor bo'lib turishingiz mumkin.",
       "tutorial_notifications_bell_description":
@@ -3338,7 +3133,6 @@ class AppStrings {
       "sign_in_with_phone_description":
           "Raqamingizni tasdiqlash uchun 6 xonali kod yuboramiz.",
       "auth_separator_or": "yoki",
-      "phone_number_hint": "Telefon raqami",
       "phone_number_example": "+998 90 123 45 67",
       "phone_send_code": "Kod yuborish",
       "phone_resend_code": "Kodni qayta yuborish",
