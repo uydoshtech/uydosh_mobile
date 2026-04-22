@@ -5,6 +5,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -21,6 +22,7 @@ class ListingTypePicker extends StatefulWidget {
     this.useThemeColors = false,
     this.includeUnselected = false,
     this.scrollController,
+    this.useGlassPlate = false,
   });
 
   final int selectedListingTypeId;
@@ -31,6 +33,7 @@ class ListingTypePicker extends StatefulWidget {
   final bool showArrows;
   final bool includeUnselected;
   final FixedExtentScrollController? scrollController;
+  final bool useGlassPlate;
 
   @override
   State<ListingTypePicker> createState() => _ListingTypePickerState();
@@ -107,10 +110,7 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(context, theme: theme),
-      height: widget.height,
-      child: Row(
+    final wheel = Row(
         children: [
           Expanded(
             child: CupertinoPicker(
@@ -201,7 +201,9 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
             Container(
               width: 24,
               decoration: BoxDecoration(
-                color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                color: theme.colorScheme.outline.withValues(
+                  alpha: widget.useGlassPlate ? 0.06 : 0.1,
+                ),
                 borderRadius:
                     ThreeDSurfaceStyle.wheelPickerPlateArrowStripBorderRadius,
               ),
@@ -222,7 +224,23 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
               ),
             ),
         ],
+      );
+
+    if (widget.useGlassPlate) {
+      return LiquidGlassPlate(
+        height: widget.height,
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        child: wheel,
+      );
+    }
+
+    return Container(
+      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+        context,
+        theme: theme,
       ),
+      height: widget.height,
+      child: wheel,
     );
   }
 }

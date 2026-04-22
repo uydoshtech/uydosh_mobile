@@ -5,6 +5,7 @@ import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -32,6 +33,7 @@ class SearchBottomSheetPrimaryFilters extends StatelessWidget {
             onListingTypeChanged: onListingTypeChanged,
             useThemeColors: true,
             showArrows: false,
+            useGlassPlate: true,
           ),
         ),
         const SizedBox(width: 12),
@@ -41,6 +43,7 @@ class SearchBottomSheetPrimaryFilters extends StatelessWidget {
             onGenderChanged: onGenderChanged,
             useThemeColors: true,
             showArrows: false,
+            useGlassPlate: true,
           ),
         ),
       ],
@@ -79,6 +82,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
           initialMinPrice: searchFiltersState.minPrice,
           initialMaxPrice: searchFiltersState.maxPrice,
           onPriceRangeChanged: onPriceRangeChanged,
+          useGlassPlate: true,
         ),
         const SizedBox(height: 15),
 
@@ -174,53 +178,48 @@ class _SearchSheetFilterToggle extends StatelessWidget {
     final border = _getBorderColor();
     final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-        context,
-        theme: theme,
+    return LiquidGlassPlate(
+      height: 56,
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+      padding: const EdgeInsetsDirectional.only(
+        start: 8,
+        end: 4,
+        top: 4,
+        bottom: 4,
       ),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.only(
-          start: 8,
-          end: 4,
-          top: 4,
-          bottom: 4,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ThemeIcon(icon, size: 20, color: iconColor),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.2,
-                  fontWeight: emphasized ? FontWeight.w600 : FontWeight.w400,
-                  color: fg,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ThemeIcon(icon, size: 20, color: iconColor),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.2,
+                fontWeight: emphasized ? FontWeight.w600 : FontWeight.w400,
+                color: fg,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            NeumorphicToggle(
-              value: value,
-              activeAccentColor: border,
-              activeTrackColor: border.withValues(alpha: 0.3),
-              inactiveThumbColor:
-                  isDark
-                      ? theme.colorScheme.onSurfaceVariant.withOpacity(0.7)
-                      : Colors.grey.shade600,
-              inactiveTrackColor:
-                  isDark
-                      ? theme.colorScheme.onSurfaceVariant.withOpacity(0.3)
-                      : Colors.grey.shade300,
-              onChanged: onChanged,
-            ),
-          ],
-        ),
+          ),
+          NeumorphicToggle(
+            value: value,
+            activeAccentColor: border,
+            activeTrackColor: border.withValues(alpha: 0.3),
+            inactiveThumbColor:
+                isDark
+                    ? theme.colorScheme.onSurfaceVariant.withOpacity(0.7)
+                    : Colors.grey.shade600,
+            inactiveTrackColor:
+                isDark
+                    ? theme.colorScheme.onSurfaceVariant.withOpacity(0.3)
+                    : Colors.grey.shade300,
+            onChanged: onChanged,
+          ),
+        ],
       ),
     );
   }

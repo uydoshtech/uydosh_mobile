@@ -6,6 +6,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Data class for BlocSelector to reduce unnecessary rebuilds
@@ -115,6 +116,7 @@ class SearchBottomSheetLocationSection extends StatelessWidget {
           onMetroReset: onMetroReset,
           useColoredIcons: true,
           showArrows: false,
+          useGlassPlate: true,
         );
       },
     );
@@ -125,9 +127,9 @@ class SearchBottomSheetLocationSection extends StatelessWidget {
     ThemeData theme, {
     bool isLoading = false,
   }) {
-    return Container(
-      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(context, theme: theme),
+    return LiquidGlassPlate(
       height: 80,
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
       child: isLoading
           ? Center(
               child: CircularProgressIndicator(

@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -41,12 +42,9 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
         Expanded(
           child: TutorialTargetWrapper(
             key: metroLineTutorialKey,
-            child: Container(
-              decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                context,
-                theme: theme,
-              ),
+            child: LiquidGlassPlate(
               height: 80,
+              borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
               child: Row(
                 children: [
                   Expanded(
@@ -153,12 +151,9 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
   }
 
   Widget _buildMetroStationPicker(BuildContext context, ThemeData theme) {
-    return Container(
-      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-        context,
-        theme: theme,
-      ),
+    return LiquidGlassPlate(
       height: 80,
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
       child: Row(
         children: [
           Expanded(
@@ -260,12 +255,9 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
   }
 
   Widget _buildMetroStationPlaceholder(BuildContext context, ThemeData theme) {
-    return Container(
-      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-        context,
-        theme: theme,
-      ),
+    return LiquidGlassPlate(
       height: 80,
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
       child: Center(
         child: Text(
           L10n.get("select_metro_line_title"),

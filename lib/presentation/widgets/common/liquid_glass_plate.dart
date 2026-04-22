@@ -1,0 +1,86 @@
+import "dart:ui" show ImageFilter;
+
+import "package:flutter/material.dart";
+
+/// Lightweight “glass” plate for controls that sit on top of a blurred sheet.
+///
+/// Intentionally subtle: low shadow, thin border, and a gentle tint gradient.
+class LiquidGlassPlate extends StatelessWidget {
+  const LiquidGlassPlate({
+    required this.child,
+    super.key,
+    this.height,
+    this.borderRadius = const BorderRadius.all(Radius.circular(12)),
+    this.sigma = 14,
+    this.padding,
+    this.clipBehavior = Clip.antiAlias,
+  });
+
+  final Widget child;
+  final double? height;
+  final BorderRadius borderRadius;
+  final double sigma;
+  final EdgeInsetsGeometry? padding;
+  final Clip clipBehavior;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final surfaceTint =
+        Color.lerp(theme.colorScheme.surface, theme.colorScheme.primary, 0.10) ??
+        theme.colorScheme.surface;
+
+    final content = Padding(
+      padding: padding ?? EdgeInsets.zero,
+      child: child,
+    );
+
+    return SizedBox(
+      height: height,
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        clipBehavior: clipBehavior,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: isDark ? sigma : (sigma + 4),
+            sigmaY: isDark ? sigma : (sigma + 4),
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: isDark ? 0.08 : 0.46),
+                  surfaceTint.withValues(alpha: isDark ? 0.28 : 0.74),
+                  theme.colorScheme.surface.withValues(
+                    alpha: isDark ? 0.18 : 0.64,
+                  ),
+                ],
+                stops: const [0.0, 0.55, 1.0],
+              ),
+              border: Border.all(
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: isDark ? 0.12 : 0.14,
+                ),
+                width: 0.6,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.07),
+                  blurRadius: isDark ? 14 : 12,
+                  spreadRadius: isDark ? 0.5 : 0.2,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: content,
+          ),
+        ),
+      ),
+    );
+  }
+}
+

@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/padded_slider_value_indicator_shape.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -16,6 +17,7 @@ class PriceRangePicker extends StatefulWidget {
     this.initialMaxPrice = 250.0,
     this.useSinglePrice = false,
     this.showErrorBorder = false,
+    this.useGlassPlate = false,
   });
 
   final Function(double minPrice, double maxPrice) onPriceRangeChanged;
@@ -27,6 +29,7 @@ class PriceRangePicker extends StatefulWidget {
   final bool useSinglePrice;
   /// When true, draws a pulsing red outline to highlight a missing selection.
   final bool showErrorBorder;
+  final bool useGlassPlate;
 
   @override
   State<PriceRangePicker> createState() => _PriceRangePickerState();
@@ -121,14 +124,9 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
       return sliderColor.withValues(alpha: 0.2);
     }
 
-    return Container(
-      margin: const EdgeInsets.all(5),
-      child: WheelPickerPlateContainer(
-        theme: theme,
-        showErrorBorder: widget.showErrorBorder,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
         children: [
           if (!widget.useSinglePrice)
             // Min price label on the left (range mode only)
@@ -267,8 +265,32 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
             ),
           ),
         ],
+      ),
+    );
+
+    if (widget.useGlassPlate) {
+      Widget plate = LiquidGlassPlate(
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        child: content,
+      );
+      if (widget.showErrorBorder) {
+        plate = DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+            border: Border.all(color: theme.colorScheme.error, width: 1.5),
           ),
-        ),
+          child: plate,
+        );
+      }
+      return Container(margin: const EdgeInsets.all(5), child: plate);
+    }
+
+    return Container(
+      margin: const EdgeInsets.all(5),
+      child: WheelPickerPlateContainer(
+        theme: theme,
+        showErrorBorder: widget.showErrorBorder,
+        child: content,
       ),
     );
   }

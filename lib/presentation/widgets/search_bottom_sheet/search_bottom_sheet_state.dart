@@ -584,6 +584,14 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final radius = const BorderRadius.only(
+      topLeft: Radius.circular(20),
+      topRight: Radius.circular(20),
+    );
+    final surfaceTint =
+        Color.lerp(theme.colorScheme.surface, theme.colorScheme.primary, 0.08) ??
+        theme.colorScheme.surface;
 
     return BlocListener<SubwayStationsBloc, SubwayStationsState>(
       listener: (context, state) {
@@ -595,16 +603,51 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         );
       },
       child: Container(
-        height: _cachedSheetHeight ??= MediaQuery.of(context).size.height * 0.7 + 30,
+        height: _cachedSheetHeight ??=
+            MediaQuery.of(context).size.height * 0.7 + 30,
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
+          borderRadius: radius,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.10),
+              blurRadius: isDark ? 28 : 22,
+              spreadRadius: isDark ? 2 : 1,
+              offset: const Offset(0, -10),
+            ),
+          ],
         ),
-        child: Column(
-          children: [
+        child: ClipRRect(
+          borderRadius: radius,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: isDark ? 22 : 26,
+              sigmaY: isDark ? 22 : 26,
+            ),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    // Light theme should look “milky” rather than darkened.
+                    Colors.white.withValues(alpha: isDark ? 0.10 : 0.62),
+                    surfaceTint.withValues(alpha: isDark ? 0.42 : 0.88),
+                    theme.colorScheme.surface.withValues(
+                      alpha: isDark ? 0.32 : 0.86,
+                    ),
+                  ],
+                  stops: const [0.0, 0.45, 1.0],
+                ),
+                border: Border.all(
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: isDark ? 0.12 : 0.14,
+                  ),
+                  width: 0.6,
+                ),
+              ),
+              child: Column(
+                children: [
             // Handle bar
             Container(
               margin: const EdgeInsets.only(top: 12),
@@ -822,6 +865,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               ),
             ),
           ],
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -5,6 +5,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -29,6 +30,7 @@ class LocationPicker extends StatefulWidget {
     this.useColoredIcons = false,
     this.showArrows = true,
     this.scrollController,
+    this.useGlassPlate = false,
   });
 
   final List<Location> locations;
@@ -47,6 +49,7 @@ class LocationPicker extends StatefulWidget {
   final bool useColoredIcons;
   final bool showArrows;
   final FixedExtentScrollController? scrollController;
+  final bool useGlassPlate;
 
   @override
   State<LocationPicker> createState() => _LocationPickerState();
@@ -135,25 +138,28 @@ class _LocationPickerState extends State<LocationPicker> {
     final iconColor = theme.colorScheme.onSurfaceVariant;
 
     if (widget.isLoading) {
+      final loadingChild = Center(
+        child: CircularProgressIndicator(color: theme.colorScheme.primary),
+      );
+      if (widget.useGlassPlate) {
+        return LiquidGlassPlate(
+          height: widget.height,
+          borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+          child: loadingChild,
+        );
+      }
       return WheelPickerPlateChrome(
         height: widget.height,
         theme: theme,
         showErrorBorder: widget.showError,
-        child: Center(
-          child: CircularProgressIndicator(color: theme.colorScheme.primary),
-        ),
+        child: loadingChild,
       );
     }
 
     final selectionOverlayFill =
         theme.colorScheme.onSurface.withValues(alpha: isBlueTheme ? 0.14 : 0.07);
 
-    return WheelPickerPlateChrome(
-      key: widget.containerKey != null ? ValueKey(widget.containerKey) : null,
-      height: widget.height,
-      theme: theme,
-      showErrorBorder: widget.showError,
-      child: Row(
+    final wheel = Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
@@ -278,7 +284,23 @@ class _LocationPickerState extends State<LocationPicker> {
               ),
             ),
         ],
-      ),
+      );
+
+    if (widget.useGlassPlate) {
+      return LiquidGlassPlate(
+        key: widget.containerKey != null ? ValueKey(widget.containerKey) : null,
+        height: widget.height,
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        child: wheel,
+      );
+    }
+
+    return WheelPickerPlateChrome(
+      key: widget.containerKey != null ? ValueKey(widget.containerKey) : null,
+      height: widget.height,
+      theme: theme,
+      showErrorBorder: widget.showError,
+      child: wheel,
     );
   }
 
