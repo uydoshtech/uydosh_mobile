@@ -167,7 +167,10 @@ extension ThemeHelper on ThemeState {
   /// Extra top inset for tab scroll views when the main shell uses a liquid-glass
   /// app bar ([Scaffold.extendBodyBehindAppBar]). Add to your normal top padding.
   double mainShellGlassExtraTopInset(BuildContext context) {
-    if (!isBlueTheme) return 0;
+    // MainNavigation enables liquid-glass AppBar for both blue and light themes.
+    // When enabled, body is rendered behind the AppBar, so lists must offset by
+    // the device top padding to avoid content appearing under the header.
+    if (!(isBlueTheme || isLightTheme)) return 0;
     return MediaQuery.paddingOf(context).top + 8;
   }
 

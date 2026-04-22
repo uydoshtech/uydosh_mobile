@@ -39,7 +39,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
         final themeState = ThemeState();
         final appBarBackgroundColor = themeState.appBarBackgroundColor;
         final textColor = themeState.textColor;
-        final useLiquidGlass = themeState.isBlueTheme;
+        final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
         final appBarTheme = Theme.of(context).appBarTheme;
         final onBarColor =
             useLiquidGlass

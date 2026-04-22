@@ -1,5 +1,6 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "dart:ui";
+
+import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/cupertino.dart";
@@ -37,6 +38,8 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
+
+typedef _AsyncBoolPredicate = Future<bool> Function();
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _BurgerMenuProfileData {
@@ -82,95 +85,6 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   String? _cachedGoogleDisplayName;
   String? _cachedGooglePhotoUrl;
 
-  Color _drawerGlassTintColor(BuildContext context) {
-    // Tint uses the same screen canvas color as the home background.
-    final base = ThemeState().backgroundColor;
-    final brightness = ThemeData.estimateBrightnessForColor(base);
-    if (brightness == Brightness.dark) return base.withValues(alpha: 0.32);
-    return base.withValues(alpha: 0.48);
-  }
-
-  Color _drawerGlassBorderColor(BuildContext context) {
-    final tint = _drawerGlassTintColor(context);
-    return Color.lerp(tint, Colors.white, 0.65)!.withValues(alpha: 0.55);
-  }
-
-  // Theme-aware color helper methods
-  Color _getTextColor() {
-    final currentTheme = ThemeState().currentTheme;
-    switch (currentTheme) {
-      case AppTheme.blueTheme:
-        return AppColors.textLight;
-      case AppTheme.lightTheme:
-      default:
-        return Colors.black; // Black text for light theme
-    }
-  }
-
-  Color _getSecondaryTextColor() {
-    final currentTheme = ThemeState().currentTheme;
-    switch (currentTheme) {
-      case AppTheme.blueTheme:
-        return AppColors.textLight70;
-      case AppTheme.lightTheme:
-      default:
-        return Colors.grey[600]!; // Dark grey for secondary text in light theme
-    }
-  }
-
-  Color _getIconColor() {
-    final currentTheme = ThemeState().currentTheme;
-    switch (currentTheme) {
-      case AppTheme.blueTheme:
-        return AppColors.textLight;
-      case AppTheme.lightTheme:
-      default:
-        return Colors.black;
-    }
-  }
-
-  Color _getSecondaryIconColor() {
-    final currentTheme = ThemeState().currentTheme;
-    switch (currentTheme) {
-      case AppTheme.blueTheme:
-        return AppColors.textLight70;
-      case AppTheme.lightTheme:
-      default:
-        return Colors
-            .grey[600]!; // Dark grey for secondary icons in light theme
-    }
-  }
-
-  Color _getBorderColor() {
-    final currentTheme = ThemeState().currentTheme;
-    switch (currentTheme) {
-      case AppTheme.blueTheme:
-        return AppColors.textLight;
-      case AppTheme.lightTheme:
-      default:
-        return Colors.grey[400]!; // Light grey border for light theme
-    }
-  }
-
-  // Theme-aware divider method with better contrast for light theme
-  Widget _buildThemeAwareDivider() {
-    final currentTheme = ThemeState().currentTheme;
-    Color dividerColor;
-
-    switch (currentTheme) {
-      case AppTheme.blueTheme:
-        dividerColor = AppColors.textLight;
-      case AppTheme.lightTheme:
-      default:
-        // Use a darker color for better visibility in light theme
-        dividerColor = const Color(
-          0xFFD1D5DB,
-        ); // Medium gray for better contrast
-    }
-
-    return Divider(color: dividerColor, thickness: 1.0, height: 1.0);
-  }
-
   @override
   void initState() {
     super.initState();
@@ -214,654 +128,49 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       child: ListenableBuilder(
         listenable: ThemeState(),
         builder: (context, _) {
-          return ClipRRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: _drawerGlassTintColor(context),
-                  border: Border(
-                    right: BorderSide(
-                      color: _drawerGlassBorderColor(context),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: SafeArea(
-                  child: Column(
+          return _DrawerGlassSurface(
+            child: SafeArea(
+              child: ListenableBuilder(
+                listenable: AuthenticationState(),
+                builder: (context, __) {
+                  final isAuthenticated = AuthenticationState().isAuthenticated;
+                  return Column(
                     children: [
-                      // Menu Items
                       Expanded(
                         child: ListView(
                           padding: const EdgeInsets.only(top: 100),
                           children: [
-                            // Profile Logo (Round with person icon) and Name - Reserve space when logged out
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-
-                                if (!isAuthenticated) {
-                                  // Reserve space for avatar area when not authenticated
-                                  return Container(
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 16,
-                                    ),
-                                    height: 80 + 12 + 24,
-                                    child: const SizedBox.shrink(),
-                                  );
-                                }
-
-                                // Show profile section when authenticated
-                                return Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 16,
-                                  ),
-                                  child: Center(
-                                    child: Column(
-                                      children: [
-                                        ThreeDPillButton(
-                                          borderRadius: const BorderRadius.all(
-                                            Radius.circular(999),
-                                          ),
-                                          padding: EdgeInsets.zero,
-                                          onPressed: () {
-                                            HapticFeedbackUtils.impact();
-                                            Navigator.pop(context);
-                                            if (context.mounted) {
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                  builder:
-                                                      (context) =>
-                                                          const ProfileScreen(),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                          child: Semantics(
-                                            label: L10n.get("profile"),
-                                            button: true,
-                                            child: SizedBox(
-                                              width: 80,
-                                              height: 80,
-                                              child: ClipOval(
-                                                child: _buildProfilePicture(),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        // Profile Name below the logo
-                                        BlocSelector<
-                                          CurrentUserProfileBloc,
-                                          CurrentUserProfileState,
-                                          _BurgerMenuProfileData
-                                        >(
-                                          selector: (state) => state.map(
-                                            initial:
-                                                (_) =>
-                                                    const _BurgerMenuProfileData(
-                                                      isLoading: true,
-                                                      hasError: false,
-                                                      errorMessage: "",
-                                                      profile: null,
-                                                    ),
-                                            loading:
-                                                (_) =>
-                                                    const _BurgerMenuProfileData(
-                                                      isLoading: true,
-                                                      hasError: false,
-                                                      errorMessage: "",
-                                                      profile: null,
-                                                    ),
-                                            loaded: (loadedState) =>
-                                                _BurgerMenuProfileData(
-                                                  isLoading: false,
-                                                  hasError: false,
-                                                  errorMessage: "",
-                                                  profile: loadedState.profile,
-                                                ),
-                                            error:
-                                                (_) =>
-                                                    const _BurgerMenuProfileData(
-                                                      isLoading: false,
-                                                      hasError: true,
-                                                      errorMessage: "",
-                                                      profile: null,
-                                                    ),
-                                          ),
-                                          builder: (context, data) {
-                                            if (data.isLoading) {
-                                              return Text(
-                                                L10n.get("loading..."),
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: _getSecondaryTextColor(),
-                                                ),
-                                              );
-                                            }
-
-                                            if (data.hasError ||
-                                                data.profile == null) {
-                                              // Fallback to Google name when profile unavailable
-                                              final fallbackName =
-                                                  (_cachedGoogleDisplayName ??
-                                                          "")
-                                                      .trim();
-                                              return Text(
-                                                fallbackName.isNotEmpty
-                                                    ? fallbackName
-                                                    : L10n.get("user"),
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: fallbackName.isNotEmpty
-                                                      ? _getTextColor()
-                                                      : _getSecondaryTextColor(),
-                                                ),
-                                              );
-                                            }
-
-                                            // Prefer profile name (populated on account creation) over Google name
-                                            final displayName =
-                                                (data.profile!.name
-                                                                ?.trim()
-                                                                .isNotEmpty ??
-                                                            false
-                                                        ? data.profile!.name
-                                                        : null) ??
-                                                    _cachedGoogleDisplayName ??
-                                                    L10n.get("user");
-                                            return Text(
-                                              displayName,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: _getTextColor(),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    ),
+                            _DrawerProfileHeader(
+                              isAuthenticated: isAuthenticated,
+                              cachedGoogleDisplayName: _cachedGoogleDisplayName,
+                              profilePicture: _ProfilePicture(
+                                photoUrl: _cachedGooglePhotoUrl ??
+                                    FirebaseAuth.instance.currentUser?.photoURL,
+                              ),
+                              onOpenProfile: () {
+                                HapticFeedbackUtils.impact();
+                                Navigator.pop(context);
+                                if (!context.mounted) return;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ProfileScreen(),
                                   ),
                                 );
                               },
                             ),
-
-                            // Always show divider after profile section (reserved space)
-                            _buildThemeAwareDivider(),
-
-                            // Profile menu item - Only show when user is logged in
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-
-                                if (!isAuthenticated) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                return _buildMenuItem(
-                                  icon: Icons.person_outline,
-                                  titleKey: "menu_profile",
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    if (context.mounted) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  const ProfileScreen(),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-
-                            // Add Listing menu item - Only show when user is logged in
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-
-                                if (!isAuthenticated) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                return _buildMenuItem(
-                                  icon: Icons.add,
-                                  titleKey: "menu_add_listing",
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    // Navigate to create listing using MainNavigation
-                                    if (context.mounted) {
-                                      debugPrint(
-                                        "🍔 Burger Menu: Navigating to Add Listing (index 3)",
-                                      );
-                                      debugPrint(
-                                        "🍔 Burger Menu: mainNavigationKey: $mainNavigationKey",
-                                      );
-                                      debugPrint(
-                                        "🍔 Burger Menu: mainNavigationKey.currentState: ${mainNavigationKey.currentState}",
-                                      );
-                                      if (mainNavigationKey.currentState !=
-                                          null) {
-                                        mainNavigationKey.currentState!
-                                            .navigateToIndex(3);
-                                        debugPrint(
-                                          "🍔 Burger Menu: Navigation successful",
-                                        );
-                                      } else {
-                                        debugPrint(
-                                          "❌ Burger Menu: mainNavigationKey.currentState is null",
-                                        );
-                                        // Fallback: try to navigate using Navigator
-                                        debugPrint(
-                                          "🍔 Burger Menu: Attempting fallback navigation...",
-                                        );
-                                        Navigator.of(context).pushReplacement(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const MainNavigation(
-                                                  initialIndex: 3,
-                                                ),
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-
-                            // My Listings menu item - Only show when user is logged in
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-
-                                if (!isAuthenticated) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                return _buildMenuItem(
-                                  icon: Icons.list_alt,
-                                  titleKey: "menu_my_listings",
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    // Navigate to user listings screen
-                                    if (context.mounted) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => BlocProvider(
-                                            create: (context) {
-                                              return ListingsBloc(
-                                                getIt<IListingService>(),
-                                              );
-                                            },
-                                            child: const UserListingsScreen(),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-
-                            // Favorites menu item - Only show when user is logged in
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-
-                                if (!isAuthenticated) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                return _buildMenuItem(
-                                  icon: CupertinoIcons.suit_heart,
-                                  titleKey: "menu_favorites",
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    // Navigate to favorites screen using MainNavigation
-                                    if (context.mounted) {
-                                      debugPrint(
-                                        "🍔 Burger Menu: Navigating to Favorites (index 1)",
-                                      );
-                                      debugPrint(
-                                        "🍔 Burger Menu: mainNavigationKey: $mainNavigationKey",
-                                      );
-                                      debugPrint(
-                                        "🍔 Burger Menu: mainNavigationKey.currentState: ${mainNavigationKey.currentState}",
-                                      );
-                                      if (mainNavigationKey.currentState !=
-                                          null) {
-                                        mainNavigationKey.currentState!
-                                            .navigateToIndex(1);
-                                        debugPrint(
-                                          "🍔 Burger Menu: Navigation successful",
-                                        );
-                                      } else {
-                                        debugPrint(
-                                          "❌ Burger Menu: mainNavigationKey.currentState is null",
-                                        );
-                                        // Fallback: try to navigate using Navigator
-                                        debugPrint(
-                                          "🍔 Burger Menu: Attempting fallback navigation...",
-                                        );
-                                        Navigator.of(context).pushReplacement(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const MainNavigation(
-                                                  initialIndex: 1,
-                                                ),
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-
-                            // History menu item - Only show when user is logged in (tenants and landlords)
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-
-                                if (!isAuthenticated) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                return _buildMenuItem(
-                                  icon: Icons.history,
-                                  titleKey: "menu_history",
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    if (context.mounted) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const ViewHistoryScreen(),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-
-                            // Messages menu item - Only show when user is logged in
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-
-                                if (!isAuthenticated) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                return _buildMenuItem(
-                                  icon: Icons.mail_outline,
-                                  titleKey: "menu_messages",
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    // Navigate to messages screen
-                                    if (context.mounted) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute<void>(
-                                          builder: (context) =>
-                                              const PushedMessagesInboxScaffold(),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-
-                            // Notifications menu item - Only show when user is logged in
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-
-                                if (!isAuthenticated) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                return _buildMenuItem(
-                                  icon: Icons.notifications_none_outlined,
-                                  titleKey: "menu_notifications",
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    if (context.mounted) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const NotificationsScreen(),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-
-                            _buildThemeAwareDivider(),
-
-                            // Settings menu item
-                            _buildMenuItem(
-                              icon: Icons.settings,
-                              titleKey: "menu_settings",
-                              onTap: () {
-                                Navigator.pop(context);
-                                // Navigate to settings screen
-                                if (context.mounted) {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SettingsScreen(),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-
-                            // Enable Notifications - only when supported and permission denied
-                            FutureBuilder<AuthorizationStatus?>(
-                              future:
-                                  getIt<IPushNotificationService>().isSupported
-                                      ? getIt<IPushNotificationService>()
-                                          .getNotificationStatus()
-                                      : Future.value(null),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData || snapshot.data == null) {
-                                  return const SizedBox.shrink();
-                                }
-                                final status = snapshot.data!;
-                                if (status != AuthorizationStatus.denied &&
-                                    status !=
-                                        AuthorizationStatus.notDetermined) {
-                                  return const SizedBox.shrink();
-                                }
-                                return _buildMenuItem(
-                                  icon: Icons.notifications_outlined,
-                                  titleKey: "menu_enable_notifications",
-                                  onTap: () async {
-                                    Navigator.pop(context);
-                                    final granted =
-                                        await getIt<IPushNotificationService>()
-                                            .requestPermissionAndRegister();
-                                    if (context.mounted) {
-                                      if (granted) {
-                                        ToastTheme.showSuccess(
-                                          context,
-                                          message: L10n.get(
-                                            "notifications_enabled",
-                                          ),
-                                        );
-                                      } else {
-                                        ToastTheme.showInfo(
-                                          context,
-                                          message: L10n.get(
-                                            "notifications_enable_in_settings",
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-
-                            // FAQ menu item
-                            _buildMenuItem(
-                              icon: Icons.help_outline,
-                              titleKey: "menu_faq",
-                              onTap: () {
-                                Navigator.pop(context);
-                                // Navigate to FAQ screen
-                                if (context.mounted) {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const FaqScreen(),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-
-                            // Admin panel - Only show when user is admin
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-                                if (!isAuthenticated) {
-                                  return const SizedBox.shrink();
-                                }
-                                return FutureBuilder<String?>(
-                                  future: SessionManager.getUserRole(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    if (snapshot.data != "admin") {
-                                      return const SizedBox.shrink();
-                                    }
-                                    return _buildMenuItem(
-                                      icon: Icons.admin_panel_settings,
-                                      titleKey: "menu_admin_panel",
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        if (context.mounted) {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const AdminPanelScreen(),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-
-                            // Registration/Auth menu item - Show different text based on auth status
-                            ListenableBuilder(
-                              listenable: AuthenticationState(),
-                              builder: (context, child) {
-                                final isAuthenticated =
-                                    AuthenticationState().isAuthenticated;
-
-                                final logoutColor =
-                                    isAuthenticated ? AppColors.error : null;
-                                return _buildMenuItem(
-                                  icon: isAuthenticated
-                                      ? Icons.logout
-                                      : Icons.person_add,
-                                  titleKey: isAuthenticated
-                                      ? "menu_logout"
-                                      : "menu_registration",
-                                  iconColor: logoutColor,
-                                  textColor: logoutColor,
-                                  trailingColor: logoutColor,
-                                  onTap: () {
-                                    if (isAuthenticated) {
-                                      // Logout user - show dialog first, then close drawer
-                                      _showLogoutDialog(context);
-                                    } else {
-                                      // Navigate to registration/auth wizard
-                                      Navigator.pop(context);
-                                      if (context.mounted) {
-                                        context.pushAuthWizard();
-                                      }
-                                    }
-                                  },
-                                );
-                              },
+                            const _DrawerDivider(),
+                            ..._buildMenuItems(
+                              context,
+                              isAuthenticated: isAuthenticated,
                             ),
                           ],
                         ),
                       ),
-
-                      // Footer
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        child: FutureBuilder<String>(
-                          future: VersionService.getVersion(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              // Format version to remove the "+" and make it look cleaner
-                              final version = snapshot.data!;
-                              final formattedVersion = version.replaceAll(
-                                "+",
-                                ".",
-                              );
-                              return Text(
-                                "v$formattedVersion",
-                                style: TextStyle(
-                                  color: _getSecondaryTextColor(),
-                                  fontSize: 12,
-                                ),
-                              );
-                            }
-
-                            final formattedVersion = AppVersion.fullVersion
-                                .replaceAll("+", ".");
-                            return Text(
-                              "v$formattedVersion",
-                              style: TextStyle(
-                                color: _getSecondaryTextColor(),
-                                fontSize: 12,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                      const _DrawerFooter(),
                     ],
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           );
@@ -870,37 +179,214 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
     );
   }
 
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String titleKey,
-    required VoidCallback onTap,
-    String? subtitleKey,
-    Color? iconColor,
-    Color? textColor,
-    Color? trailingColor,
+  List<Widget> _buildMenuItems(
+    BuildContext context, {
+    required bool isAuthenticated,
   }) {
-    return UydoshMenuItem(
-      icon: icon,
-      title: L10n.text(
-        titleKey,
-        style: TextStyle(
-          fontWeight: FontWeight.w500,
-          color: textColor ?? _getTextColor(),
+    final items = <Widget>[];
+
+    void addItem(_DrawerItemSpec spec) {
+      items.add(_DrawerMenuItem.fromSpec(spec));
+    }
+
+    void addDivider() {
+      items.add(const _DrawerDivider());
+    }
+
+    if (isAuthenticated) {
+      addItem(
+        _DrawerItemSpec(
+          icon: Icons.person_outline,
+          titleKey: "menu_profile",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            );
+          },
         ),
-      ),
-      subtitle:
-          subtitleKey != null
-              ? L10n.text(
-                subtitleKey,
-                style: TextStyle(
-                  color: textColor ?? _getSecondaryTextColor(),
+      );
+
+      addItem(
+        _DrawerItemSpec(
+          icon: Icons.add,
+          titleKey: "menu_add_listing",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            _navigateToMainIndex(context, 3);
+          },
+        ),
+      );
+
+      addItem(
+        _DrawerItemSpec(
+          icon: Icons.list_alt,
+          titleKey: "menu_my_listings",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                  create: (context) {
+                    return ListingsBloc(getIt<IListingService>());
+                  },
+                  child: const UserListingsScreen(),
                 ),
-              )
-              : null,
-      onTap: onTap,
-      iconColor: iconColor ?? _getIconColor(),
-      textColor: textColor ?? _getTextColor(),
-      trailingColor: trailingColor ?? _getSecondaryIconColor(),
+              ),
+            );
+          },
+        ),
+      );
+
+      addItem(
+        _DrawerItemSpec(
+          icon: CupertinoIcons.suit_heart,
+          titleKey: "menu_favorites",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            _navigateToMainIndex(context, 1);
+          },
+        ),
+      );
+
+      addItem(
+        _DrawerItemSpec(
+          icon: Icons.history,
+          titleKey: "menu_history",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const ViewHistoryScreen()),
+            );
+          },
+        ),
+      );
+
+      addItem(
+        _DrawerItemSpec(
+          icon: Icons.mail_outline,
+          titleKey: "menu_messages",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => const PushedMessagesInboxScaffold(),
+              ),
+            );
+          },
+        ),
+      );
+
+      addItem(
+        _DrawerItemSpec(
+          icon: Icons.notifications_none_outlined,
+          titleKey: "menu_notifications",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const NotificationsScreen(),
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    addDivider();
+
+    addItem(
+      _DrawerItemSpec(
+        icon: Icons.settings,
+        titleKey: "menu_settings",
+        onTap: () {
+          Navigator.pop(context);
+          if (!context.mounted) return;
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const SettingsScreen()),
+          );
+        },
+      ),
+    );
+
+    items.add(const _EnableNotificationsMenuItem());
+
+    addItem(
+      _DrawerItemSpec(
+        icon: Icons.help_outline,
+        titleKey: "menu_faq",
+        onTap: () {
+          Navigator.pop(context);
+          if (!context.mounted) return;
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const FaqScreen()),
+          );
+        },
+      ),
+    );
+
+    if (isAuthenticated) {
+      items.add(
+        _AsyncVisibleMenuItem(
+          isVisible: () async => (await SessionManager.getUserRole()) == "admin",
+          child: _DrawerMenuItem.fromSpec(
+            _DrawerItemSpec(
+              icon: Icons.admin_panel_settings,
+              titleKey: "menu_admin_panel",
+              onTap: () {
+                Navigator.pop(context);
+                if (!context.mounted) return;
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AdminPanelScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    }
+
+    final logoutColor = isAuthenticated ? AppColors.error : null;
+    addItem(
+      _DrawerItemSpec(
+        icon: isAuthenticated ? Icons.logout : Icons.person_add,
+        titleKey: isAuthenticated ? "menu_logout" : "menu_registration",
+        iconColor: logoutColor,
+        textColor: logoutColor,
+        trailingColor: logoutColor,
+        onTap: () {
+          if (isAuthenticated) {
+            _showLogoutDialog(context);
+            return;
+          }
+          Navigator.pop(context);
+          if (context.mounted) context.pushAuthWizard();
+        },
+      ),
+    );
+
+    return items;
+  }
+
+  void _navigateToMainIndex(BuildContext context, int index) {
+    final navState = mainNavigationKey.currentState;
+    if (navState != null) {
+      navState.navigateToIndex(index);
+      return;
+    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => MainNavigation(initialIndex: index),
+      ),
     );
   }
 
@@ -920,39 +406,413 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       },
     );
   }
+}
 
-  // Build profile picture - shows Google profile picture if available, fallback to icon
-  Widget _buildProfilePicture() {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final photoUrl = _cachedGooglePhotoUrl ?? currentUser?.photoURL;
+final class _DrawerColors {
+  const _DrawerColors._();
 
-    if (photoUrl != null) {
-      // Show Google profile picture
-      return ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: photoUrl,
-          width: 80,
-          height: 80,
-          fit: BoxFit.cover,
-          memCacheWidth: 160, // 2x for high DPI displays
-          memCacheHeight: 160,
-          fadeInDuration: const Duration(milliseconds: 300),
-          fadeInCurve: Curves.easeOut,
-          placeholder:
-              (context, url) => Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(_getBorderColor()),
-                  strokeWidth: 3,
-                ),
+  static Color text() {
+    final currentTheme = ThemeState().currentTheme;
+    return switch (currentTheme) {
+      AppTheme.blueTheme => AppColors.textLight,
+      AppTheme.lightTheme => Colors.black,
+      _ => Colors.black,
+    };
+  }
+
+  static Color secondaryText() {
+    final currentTheme = ThemeState().currentTheme;
+    return switch (currentTheme) {
+      AppTheme.blueTheme => AppColors.textLight70,
+      AppTheme.lightTheme => Colors.grey[600]!,
+      _ => Colors.grey[600]!,
+    };
+  }
+
+  static Color icon() => text();
+
+  static Color secondaryIcon() => secondaryText();
+
+  static Color border() {
+    final currentTheme = ThemeState().currentTheme;
+    return switch (currentTheme) {
+      AppTheme.blueTheme => AppColors.textLight,
+      AppTheme.lightTheme => Colors.grey[400]!,
+      _ => Colors.grey[400]!,
+    };
+  }
+
+  static Color divider() {
+    final currentTheme = ThemeState().currentTheme;
+    return switch (currentTheme) {
+      AppTheme.blueTheme => AppColors.textLight,
+      AppTheme.lightTheme => const Color(0xFFD1D5DB),
+      _ => const Color(0xFFD1D5DB),
+    };
+  }
+
+  static Color glassTint(BuildContext context) {
+    final base = ThemeState().backgroundColor;
+    final brightness = ThemeData.estimateBrightnessForColor(base);
+    if (brightness == Brightness.dark) return base.withValues(alpha: 0.32);
+    return base.withValues(alpha: 0.48);
+  }
+
+  static Color glassBorder(BuildContext context) {
+    final tint = glassTint(context);
+    return Color.lerp(tint, Colors.white, 0.65)!.withValues(alpha: 0.55);
+  }
+}
+
+class _DrawerGlassSurface extends StatelessWidget {
+  const _DrawerGlassSurface({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: _DrawerColors.glassTint(context),
+            border: Border(
+              right: BorderSide(
+                color: _DrawerColors.glassBorder(context),
+                width: 1,
               ),
-          errorWidget:
-              (context, url, error) =>
-                  ThemeIcon(Icons.person, color: _getBorderColor(), size: 40),
+            ),
+          ),
+          child: child,
         ),
+      ),
+    );
+  }
+}
+
+class _DrawerDivider extends StatelessWidget {
+  const _DrawerDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(color: _DrawerColors.divider(), thickness: 1, height: 1);
+  }
+}
+
+class _DrawerFooter extends StatelessWidget {
+  const _DrawerFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: FutureBuilder<String>(
+        future: VersionService.getVersion(),
+        builder: (context, snapshot) {
+          final version =
+              (snapshot.data ?? AppVersion.fullVersion).replaceAll("+", ".");
+          return Text(
+            "v$version",
+            style: TextStyle(
+              color: _DrawerColors.secondaryText(),
+              fontSize: 12,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DrawerProfileHeader extends StatelessWidget {
+  const _DrawerProfileHeader({
+    required this.isAuthenticated,
+    required this.cachedGoogleDisplayName,
+    required this.profilePicture,
+    required this.onOpenProfile,
+  });
+
+  final bool isAuthenticated;
+  final String? cachedGoogleDisplayName;
+  final Widget profilePicture;
+  final VoidCallback onOpenProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isAuthenticated) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        height: 80 + 12 + 24,
+        child: const SizedBox.shrink(),
       );
     }
 
-    // Fallback to standard person icon
-    return ThemeIcon(Icons.person, color: _getBorderColor(), size: 40);
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Center(
+        child: Column(
+          children: [
+            ThreeDPillButton(
+              borderRadius: const BorderRadius.all(Radius.circular(999)),
+              padding: EdgeInsets.zero,
+              onPressed: onOpenProfile,
+              child: Semantics(
+                label: L10n.get("profile"),
+                button: true,
+                child: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: ClipOval(child: profilePicture),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            BlocSelector<
+              CurrentUserProfileBloc,
+              CurrentUserProfileState,
+              _BurgerMenuProfileData
+            >(
+              selector: (state) => state.map(
+                initial: (_) => const _BurgerMenuProfileData(
+                  isLoading: true,
+                  hasError: false,
+                  errorMessage: "",
+                  profile: null,
+                ),
+                loading: (_) => const _BurgerMenuProfileData(
+                  isLoading: true,
+                  hasError: false,
+                  errorMessage: "",
+                  profile: null,
+                ),
+                loaded: (loadedState) => _BurgerMenuProfileData(
+                  isLoading: false,
+                  hasError: false,
+                  errorMessage: "",
+                  profile: loadedState.profile,
+                ),
+                error: (_) => const _BurgerMenuProfileData(
+                  isLoading: false,
+                  hasError: true,
+                  errorMessage: "",
+                  profile: null,
+                ),
+              ),
+              builder: (context, data) {
+                if (data.isLoading) {
+                  return Text(
+                    L10n.get("loading..."),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: _DrawerColors.secondaryText(),
+                    ),
+                  );
+                }
+
+                if (data.hasError || data.profile == null) {
+                  final fallbackName = (cachedGoogleDisplayName ?? "").trim();
+                  return Text(
+                    fallbackName.isNotEmpty ? fallbackName : L10n.get("user"),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: fallbackName.isNotEmpty
+                          ? _DrawerColors.text()
+                          : _DrawerColors.secondaryText(),
+                    ),
+                  );
+                }
+
+                final profileName = data.profile!.name?.trim();
+                final displayName =
+                    (profileName != null && profileName.isNotEmpty)
+                        ? profileName
+                        : (cachedGoogleDisplayName?.trim().isNotEmpty ?? false)
+                        ? cachedGoogleDisplayName!.trim()
+                        : L10n.get("user");
+
+                return Text(
+                  displayName,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: _DrawerColors.text(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfilePicture extends StatelessWidget {
+  const _ProfilePicture({required this.photoUrl});
+  final String? photoUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final url = photoUrl;
+    if (url == null) {
+      return ThemeIcon(Icons.person, color: _DrawerColors.border(), size: 40);
+    }
+
+    return ClipOval(
+      child: CachedNetworkImage(
+        imageUrl: url,
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
+        memCacheWidth: 160,
+        memCacheHeight: 160,
+        fadeInDuration: const Duration(milliseconds: 300),
+        fadeInCurve: Curves.easeOut,
+        placeholder: (context, url) => Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(_DrawerColors.border()),
+            strokeWidth: 3,
+          ),
+        ),
+        errorWidget: (context, url, error) => ThemeIcon(
+          Icons.person,
+          color: _DrawerColors.border(),
+          size: 40,
+        ),
+      ),
+    );
+  }
+}
+
+final class _DrawerItemSpec {
+  const _DrawerItemSpec({
+    required this.icon,
+    required this.titleKey,
+    required this.onTap,
+    this.iconColor,
+    this.textColor,
+    this.trailingColor,
+  });
+
+  final IconData icon;
+  final String titleKey;
+  final VoidCallback onTap;
+  final Color? iconColor;
+  final Color? textColor;
+  final Color? trailingColor;
+}
+
+class _DrawerMenuItem extends StatelessWidget {
+  const _DrawerMenuItem({
+    required this.icon,
+    required this.titleKey,
+    required this.onTap,
+    this.iconColor,
+    this.textColor,
+    this.trailingColor,
+  });
+
+  factory _DrawerMenuItem.fromSpec(_DrawerItemSpec spec) {
+    return _DrawerMenuItem(
+      icon: spec.icon,
+      titleKey: spec.titleKey,
+      onTap: spec.onTap,
+      iconColor: spec.iconColor,
+      textColor: spec.textColor,
+      trailingColor: spec.trailingColor,
+    );
+  }
+
+  final IconData icon;
+  final String titleKey;
+  final VoidCallback onTap;
+  final Color? iconColor;
+  final Color? textColor;
+  final Color? trailingColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return UydoshMenuItem(
+      icon: icon,
+      title: L10n.text(
+        titleKey,
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          color: textColor ?? _DrawerColors.text(),
+        ),
+      ),
+      onTap: onTap,
+      iconColor: iconColor ?? _DrawerColors.icon(),
+      textColor: textColor ?? _DrawerColors.text(),
+      trailingColor: trailingColor ?? _DrawerColors.secondaryIcon(),
+    );
+  }
+}
+
+class _AsyncVisibleMenuItem extends StatelessWidget {
+  const _AsyncVisibleMenuItem({
+    required this.isVisible,
+    required this.child,
+  });
+
+  final _AsyncBoolPredicate isVisible;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: isVisible(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox.shrink();
+        }
+        if (snapshot.data != true) return const SizedBox.shrink();
+        return child;
+      },
+    );
+  }
+}
+
+class _EnableNotificationsMenuItem extends StatelessWidget {
+  const _EnableNotificationsMenuItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<AuthorizationStatus?>(
+      future: getIt<IPushNotificationService>().isSupported
+          ? getIt<IPushNotificationService>().getNotificationStatus()
+          : Future.value(null),
+      builder: (context, snapshot) {
+        final status = snapshot.data;
+        if (status == null) return const SizedBox.shrink();
+        if (status != AuthorizationStatus.denied &&
+            status != AuthorizationStatus.notDetermined) {
+          return const SizedBox.shrink();
+        }
+        return _DrawerMenuItem(
+          icon: Icons.notifications_outlined,
+          titleKey: "menu_enable_notifications",
+          onTap: () async {
+            Navigator.pop(context);
+            final granted = await getIt<IPushNotificationService>()
+                .requestPermissionAndRegister();
+            if (!context.mounted) return;
+            if (granted) {
+              ToastTheme.showSuccess(
+                context,
+                message: L10n.get("notifications_enabled"),
+              );
+            } else {
+              ToastTheme.showInfo(
+                context,
+                message: L10n.get("notifications_enable_in_settings"),
+              );
+            }
+          },
+        );
+      },
+    );
   }
 }

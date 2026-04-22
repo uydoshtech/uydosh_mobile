@@ -652,7 +652,7 @@ class _EditListingScreenState extends State<EditListingScreen>
       listenable: ThemeState(),
       builder: (context, _) {
         final themeState = ThemeState();
-        final useLiquidGlassAppBar = themeState.isBlueTheme;
+        final useLiquidGlassAppBar = themeState.isBlueTheme || themeState.isLightTheme;
         final appBarTheme = theme.appBarTheme;
         final bodyTopPad =
             useLiquidGlassAppBar

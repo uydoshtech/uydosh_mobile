@@ -717,7 +717,7 @@ class MainNavigationState extends State<MainNavigation>
       listenable: ThemeState(),
       builder: (context, _) {
         final themeState = ThemeState();
-        final useLiquidGlassAppBar = themeState.isBlueTheme;
+        final useLiquidGlassAppBar = themeState.isBlueTheme || themeState.isLightTheme;
         final appBarTheme = Theme.of(context).appBarTheme;
         return Scaffold(
           extendBodyBehindAppBar: useLiquidGlassAppBar,

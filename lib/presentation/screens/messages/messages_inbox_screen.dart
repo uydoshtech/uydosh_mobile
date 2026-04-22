@@ -244,7 +244,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
         return Scaffold(
           extendBodyBehindAppBar:
-              widget.showCustomHeader && themeState.isBlueTheme,
+              widget.showCustomHeader &&
+              (themeState.isBlueTheme || themeState.isLightTheme),
           backgroundColor: backgroundColor,
           appBar: widget.showCustomHeader ? _buildCustomHeader() : null,
           body: _buildContent(),
@@ -326,7 +327,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   PreferredSizeWidget _buildCustomHeader() {
     final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme;
+    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
     final appBarTheme = Theme.of(context).appBarTheme;
     final appBarBackgroundColor =
         appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface;
@@ -500,7 +501,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
     final shellGlassTop =
         widget.showCustomHeader
-            ? (ThemeState().isBlueTheme
+            ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
                 ? (kToolbarHeight +
                     ThemeState().mainShellGlassExtraTopInset(context))
                 : 0.0)
@@ -565,11 +566,19 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           ),
         );
 
-        if (!themeState.isBlueTheme) {
+        if (!(themeState.isBlueTheme || themeState.isLightTheme)) {
           return content;
         }
 
         const radius = BorderRadius.all(Radius.circular(20));
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final scheme = Theme.of(context).colorScheme;
+        final baseTint =
+            isDark
+                ? BlueThemeColors.background
+                : (Color.lerp(scheme.surface, scheme.primary, 0.06) ??
+                    scheme.surface);
+
         return ClipRRect(
           borderRadius: radius,
           child: Stack(
@@ -585,9 +594,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 decoration: BoxDecoration(
                   borderRadius: radius,
                   // Match the app bar glass: subtle tint + hairline edge.
-                  color: BlueThemeColors.background.withValues(alpha: 0.14),
+                  color: baseTint.withValues(alpha: isDark ? 0.14 : 0.16),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color:
+                        (isDark ? Colors.white : Colors.black).withValues(
+                          alpha: isDark ? 0.08 : 0.06,
+                        ),
                     width: 0.5,
                   ),
                 ),
@@ -608,7 +620,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     required Color cardColor,
   }) {
     final themeState = ThemeState();
-    final selectedTextColor = themeState.selectedTabTextColor;
+    final selectedTextColor =
+        ThemeData.estimateBrightnessForColor(primaryColor) == Brightness.dark
+            ? Colors.white
+            : Colors.black;
     final unselectedTextColor = themeState.unselectedTabTextColor;
 
     return Container(
@@ -659,6 +674,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     ),
                     child: _ToggleTabContent(
                       isSelected: _selectedTabIndex == 0,
+                      icon: Icons.inbox_outlined,
                       label: L10n.get("incoming"),
                       badgeCount: incomingCount,
                       selectedTextColor: selectedTextColor,
@@ -681,6 +697,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     ),
                     child: _ToggleTabContent(
                       isSelected: _selectedTabIndex == 1,
+                      icon: Icons.outbox_outlined,
                       label: L10n.get("outgoing"),
                       badgeCount: outgoingCount,
                       selectedTextColor: selectedTextColor,
@@ -991,6 +1008,7 @@ final class _InboxIncomingDaySection extends _InboxListEntry {
 class _ToggleTabContent extends StatelessWidget {
   const _ToggleTabContent({
     required this.isSelected,
+    required this.icon,
     required this.label,
     required this.badgeCount,
     required this.selectedTextColor,
@@ -998,6 +1016,7 @@ class _ToggleTabContent extends StatelessWidget {
   });
 
   final bool isSelected;
+  final IconData icon;
   final String label;
   final int badgeCount;
   final Color selectedTextColor;
@@ -1031,7 +1050,7 @@ class _ToggleTabContent extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ThemeIcon(Icons.mail, size: 18, color: targetColor),
+                  ThemeIcon(icon, size: 18, color: targetColor),
                   const SizedBox(width: 8),
                   Text(label),
                   if (badgeCount > 0) ...[

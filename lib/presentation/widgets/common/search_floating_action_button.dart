@@ -1,4 +1,7 @@
+import "dart:ui" show ImageFilter;
+
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -57,6 +60,8 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
         widget.foregroundColor ??
         (ThemeState().isBlueTheme ? Colors.white : Colors.black);
 
+    final themeState = ThemeState();
+    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
     final shadows = _pressed
         ? ThreeDSurfaceStyle.pressedShadows(context)
         : ThreeDSurfaceStyle.elevatedShadows(context);
@@ -87,16 +92,24 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
                 height: SearchFloatingActionButton._fabSize,
                 decoration: BoxDecoration(
                   borderRadius: radius,
-                  gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
                   boxShadow: shadows,
                 ),
-                child: Center(
-                  child: Icon(
-                    Icons.search,
-                    size: (widget.iconSize ?? 25.0) * 1.1,
-                    color: fg,
-                  ),
-                ),
+                child: useLiquidGlass
+                    ? _LiquidGlassFabFace(
+                        radius: radius,
+                        base: base,
+                        child: _FabIcon(size: widget.iconSize, color: fg),
+                      )
+                    : DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: radius,
+                          gradient: ThreeDSurfaceStyle.surfaceGradient(
+                            context,
+                            base,
+                          ),
+                        ),
+                        child: _FabIcon(size: widget.iconSize, color: fg),
+                      ),
               ),
             ),
           ),
@@ -123,5 +136,75 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
         currentMaxPrice: widget.searchFiltersState.maxPrice,
       );
     });
+  }
+}
+
+class _FabIcon extends StatelessWidget {
+  const _FabIcon({required this.size, required this.color});
+
+  final double? size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Icon(
+        Icons.search,
+        size: (size ?? 25.0) * 1.1,
+        color: color,
+      ),
+    );
+  }
+}
+
+class _LiquidGlassFabFace extends StatelessWidget {
+  const _LiquidGlassFabFace({
+    required this.radius,
+    required this.base,
+    required this.child,
+  });
+
+  final BorderRadius radius;
+  final Color base;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final scheme = theme.colorScheme;
+    final baseTint =
+        isDark
+            ? BlueThemeColors.background
+            : (Color.lerp(scheme.surface, scheme.primary, 0.08) ??
+                scheme.surface);
+    final stroke =
+        (isDark ? Colors.white : Colors.black).withValues(
+          alpha: isDark ? 0.12 : 0.08,
+        );
+
+    return ClipRRect(
+      borderRadius: radius,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            color: baseTint.withValues(alpha: isDark ? 0.38 : 0.62),
+            border: Border.all(color: stroke, width: 0.6),
+            gradient: RadialGradient(
+              center: const Alignment(-0.45, -0.55),
+              radius: 1.1,
+              colors: [
+                Colors.white.withValues(alpha: isDark ? 0.18 : 0.34),
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.65],
+            ),
+          ),
+          child: child,
+        ),
+      ),
+    );
   }
 }

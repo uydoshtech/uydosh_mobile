@@ -481,8 +481,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       builder: (context, _) {
         final themeState = ThemeState();
         final theme = Theme.of(context);
-        final useLiquidGlassAppBar = widget.showAppBar && themeState.isBlueTheme;
-        final embeddedInGlassShell = !widget.showAppBar && themeState.isBlueTheme;
+        final liquidGlassEnabled = themeState.isBlueTheme || themeState.isLightTheme;
+        final useLiquidGlassAppBar = widget.showAppBar && liquidGlassEnabled;
+        final embeddedInGlassShell = !widget.showAppBar && liquidGlassEnabled;
         final appBarTheme = theme.appBarTheme;
         final scrollTopPad =
             embeddedInGlassShell
