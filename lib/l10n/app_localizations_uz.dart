@@ -550,10 +550,6 @@ class AppLocalizationsUz extends AppLocalizations {
   String get not_selected => 'Tanlanmagan';
 
   @override
-  String get search_location_or_metro_hint =>
-      'Bitta variantni tanlang: tuman yoki metro bekati';
-
-  @override
   String all_stations_count(String count) {
     return 'Barcha $count bekatlar';
   }

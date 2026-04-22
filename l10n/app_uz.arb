@@ -236,7 +236,6 @@
   "select_metro_line_title": "Metro\nliniyasini tanlang",
   "select_location": "Har qanday tuman",
   "not_selected": "Tanlanmagan",
-  "search_location_or_metro_hint": "Bitta variantni tanlang: tuman yoki metro bekati",
   "all_stations_count": "Barcha {count} bekatlar",
   "@all_stations_count": {
     "placeholders": {

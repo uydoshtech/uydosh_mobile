@@ -1084,12 +1084,6 @@ abstract class AppLocalizations {
   /// **'Not selected'**
   String get not_selected;
 
-  /// No description provided for @search_location_or_metro_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose one option: district or metro station'**
-  String get search_location_or_metro_hint;
-
   /// No description provided for @all_stations_count.
   ///
   /// In en, this message translates to:

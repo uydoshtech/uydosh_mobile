@@ -236,7 +236,6 @@
   "select_metro_line_title": "Select\nsubway line",
   "select_location": "Any district",
   "not_selected": "Not selected",
-  "search_location_or_metro_hint": "Choose one option: district or metro station",
   "all_stations_count": "All {count} stations",
   "@all_stations_count": {
     "placeholders": {

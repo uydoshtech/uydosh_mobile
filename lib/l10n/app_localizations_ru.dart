@@ -547,10 +547,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get not_selected => 'Не выбрано';
 
   @override
-  String get search_location_or_metro_hint =>
-      'Выберите один вариант: район или станцию метро';
-
-  @override
   String all_stations_count(String count) {
     return 'Все $count станций';
   }

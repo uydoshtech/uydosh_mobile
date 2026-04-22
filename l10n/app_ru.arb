@@ -228,7 +228,6 @@
   "select_metro_line_title": "Выберите\nлинию метро",
   "select_location": "Любой район",
   "not_selected": "Не выбрано",
-  "search_location_or_metro_hint": "Выберите один вариант: район или станцию метро",
   "all_stations_count": "Все {count} станций",
   "@all_stations_count": {
     "placeholders": {

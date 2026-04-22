@@ -544,10 +544,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get not_selected => 'Not selected';
 
   @override
-  String get search_location_or_metro_hint =>
-      'Choose one option: district or metro station';
-
-  @override
   String all_stations_count(String count) {
     return 'All $count stations';
   }
