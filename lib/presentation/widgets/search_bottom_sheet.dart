@@ -75,6 +75,7 @@ class SearchBottomSheetWidget {
     BuildContext context, {
     bool replaceCurrentRoute = false,
     bool openedFromHomeScreen = false,
+    bool metroOnly = false,
     int? currentListingTypeId,
     int? currentLocationId,
     int? currentSubwayStationId,
@@ -109,19 +110,19 @@ class SearchBottomSheetWidget {
       isDismissible: true,
       enableDrag: true,
       barrierColor: Colors.black54,
-      builder:
-          (context) => MultiBlocProvider(
-            providers: [
-              // Provide ListingsBloc - either existing or new one
-              existingListingsBloc != null
-                  ? BlocProvider.value(value: existingListingsBloc)
-                  : BlocProvider(
-                    create: (context) => ListingsBloc(getIt<IListingService>()),
-                  ),
-              // Provide LocationsBloc - reuse if available to avoid refetch
-              existingLocationsBloc != null
-                  ? BlocProvider.value(value: existingLocationsBloc)
-                  : BlocProvider(
+      builder: (context) => MultiBlocProvider(
+        providers: [
+          // Provide ListingsBloc - either existing or new one
+          existingListingsBloc != null
+              ? BlocProvider.value(value: existingListingsBloc)
+              : BlocProvider(
+                  create: (context) => ListingsBloc(getIt<IListingService>()),
+                ),
+          if (!metroOnly) ...[
+            // Provide LocationsBloc - reuse if available to avoid refetch
+            existingLocationsBloc != null
+                ? BlocProvider.value(value: existingLocationsBloc)
+                : BlocProvider(
                     create: (context) {
                       final locationsBloc = LocationsBloc(
                         getIt<ILocationService>(),
@@ -130,38 +131,39 @@ class SearchBottomSheetWidget {
                       return locationsBloc;
                     },
                   ),
-              BlocProvider(
-                create:
-                    (context) =>
-                        SubwayStationsBloc(getIt<ISubwayStationService>()),
-              ),
-            ],
-            child: _SearchBottomSheetContent(
-              replaceCurrentRoute: replaceCurrentRoute,
-              openedFromHomeScreen: openedFromHomeScreen,
-              currentListingTypeId: currentListingTypeId,
-              currentLocationId: currentLocationId,
-              currentSubwayStationId: currentSubwayStationId,
-              currentSubwayLineId: currentSubwayLineId,
-              currentGender: currentGender,
-              currentMinPrice: currentMinPrice,
-              currentMaxPrice: currentMaxPrice,
-              currentPrivateRoom: currentPrivateRoom,
-              currentWithPhoto: currentWithPhoto,
-              onApply: onApply,
-              primaryLabelKey: primaryLabelKey,
-              primaryIcon: primaryIcon,
-            ),
+          ],
+          BlocProvider(
+            create: (context) =>
+                SubwayStationsBloc(getIt<ISubwayStationService>()),
           ),
+        ],
+        child: _SearchBottomSheetContent(
+          replaceCurrentRoute: replaceCurrentRoute,
+          openedFromHomeScreen: openedFromHomeScreen,
+          metroOnly: metroOnly,
+          currentListingTypeId: currentListingTypeId,
+          currentLocationId: currentLocationId,
+          currentSubwayStationId: currentSubwayStationId,
+          currentSubwayLineId: currentSubwayLineId,
+          currentGender: currentGender,
+          currentMinPrice: currentMinPrice,
+          currentMaxPrice: currentMaxPrice,
+          currentPrivateRoom: currentPrivateRoom,
+          currentWithPhoto: currentWithPhoto,
+          onApply: onApply,
+          primaryLabelKey: primaryLabelKey,
+          primaryIcon: primaryIcon,
+        ),
+      ),
     );
   }
 }
 
 class _SearchBottomSheetContent extends StatefulWidget {
-
   const _SearchBottomSheetContent({
     this.replaceCurrentRoute = false,
     this.openedFromHomeScreen = false,
+    this.metroOnly = false,
     this.currentListingTypeId,
     this.currentLocationId,
     this.currentSubwayStationId,
@@ -177,6 +179,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
   });
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
+  final bool metroOnly;
   final int? currentListingTypeId;
   final int? currentLocationId;
   final int? currentSubwayStationId;

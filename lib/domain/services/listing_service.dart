@@ -45,6 +45,10 @@ abstract class IListingService {
     int createdWithinDays = 30,
     int? listingTypeId,
     int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
   });
 
   Future<ListingDetail> getListingDetail(int listingId, {String? language});
@@ -230,11 +234,19 @@ class ListingService implements IListingService {
     int createdWithinDays = 30,
     int? listingTypeId,
     int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
   }) =>
       _searchService.getSubwayStationIdsWithListings(
         createdWithinDays: createdWithinDays,
         listingTypeId: listingTypeId,
         gender: gender,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        privateRoom: privateRoom,
+        withPhoto: withPhoto,
       );
 
   @override

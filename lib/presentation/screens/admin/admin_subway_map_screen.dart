@@ -46,6 +46,7 @@ class _StationLabel {
   final String label;
   final double x;
   final double y;
+
   /// "start" | "middle" | "end" - how (x,y) aligns to the text
   final String textAnchor;
 }
@@ -68,6 +69,7 @@ class _OverlayConfig {
   final double width;
   final double height;
   final bool useColorFilter;
+
   /// Multiplier for displayed width/height (e.g. 2.0 for bazaar_chorsu, monument2)
   final double sizeScale;
 }
@@ -98,13 +100,33 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
     with SingleTickerProviderStateMixin {
   Key _mapKey = UniqueKey();
   late final TransformationController _transformationController;
+
   /// Stations with at least one listing (from API). Empty set before load completes.
   Set<int> _stationIdsWithListings = {};
+
+  /// Per-station generation counter to restart highlight animation.
+  final Map<int, int> _highlightGen = {};
   int _selectedListingTypeId = 0; // 0 = all
   int _selectedGender = 0; // 0 = all
+  int _selectedSubwayLineId = 0; // 0 = all
+  double _selectedMinPrice = 0;
+  double _selectedMaxPrice = 0;
+  bool _selectedPrivateRoom = false;
+  bool _selectedWithPhoto = false;
   bool _isLoadingStationIds = false;
   late final AnimationController _refreshSpinController;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
+  // Admin map is used for metro-only search; hide non-metro POI overlays.
+  static const bool _showLocationOverlays = false;
+
+  Set<int> _getEffectiveUnderlineStationIds() {
+    final selectedLine = _selectedSubwayLineId;
+    if (selectedLine <= 0) return _stationIdsWithListings;
+    return _stationIdsWithListings.where((stationId) {
+      final st = MetroCache.getStationById(stationId);
+      return st != null && st.line == selectedLine;
+    }).toSet();
+  }
 
   @override
   void initState() {
@@ -132,15 +154,26 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
       logger.i(
         "[AdminSubwayMap] loadStationIds: listingType=$_selectedListingTypeId gender=$_selectedGender",
       );
-      final ids = await getIt<IListingService>().getSubwayStationIdsWithListings(
+      final ids =
+          await getIt<IListingService>().getSubwayStationIdsWithListings(
         createdWithinDays: 30,
-        listingTypeId: _selectedListingTypeId > 0 ? _selectedListingTypeId : null,
+        listingTypeId:
+            _selectedListingTypeId > 0 ? _selectedListingTypeId : null,
         gender: _selectedGender > 0 ? _selectedGender : null,
+        minPrice: _selectedMinPrice > 0 ? _selectedMinPrice : null,
+        maxPrice: _selectedMaxPrice > 0 ? _selectedMaxPrice : null,
+        privateRoom: _selectedPrivateRoom ? true : null,
+        withPhoto: _selectedWithPhoto ? true : null,
       );
       if (!mounted) return;
       debugPrint("[AdminSubwayMap] stationIds returned: ${ids.length}");
       logger.i("[AdminSubwayMap] stationIds returned: ${ids.length}");
-      setState(() => _stationIdsWithListings = ids.toSet());
+      final next = ids.toSet();
+      final newlyActivated = next.difference(_stationIdsWithListings);
+      setState(() => _stationIdsWithListings = next);
+      for (final stationId in newlyActivated) {
+        _triggerStationHighlight(stationId);
+      }
     } catch (_) {
       if (!mounted) return;
       debugPrint("[AdminSubwayMap] loadStationIds failed");
@@ -165,15 +198,20 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
   static const double _svgHeight = 1200;
   static const double _viewBoxMinX = -80;
   static const Offset _mapOffset = Offset(40, 80);
+
   /// stname_group in SVG has transform="translate(0,4)"
   static const double _stnameGroupOffsetY = 4.0;
+
   /// Approximate character width for 13px font (matches SVG station labels)
   static const double _charWidth = 7.0;
   static const double _tapTargetHeight = 16.0;
+
   /// Shift tap targets left to better align with SVG text
   static const double _tapTargetOffsetX = 15.0;
+
   /// Extra width for end-anchor text (Cyrillic often wider than estimate)
   static const double _endAnchorWidthExtra = 12.0;
+
   /// Extra width for start-anchor text
   static const double _startAnchorWidthExtra = 12.0;
   static const double _initialMapShiftX = -20;
@@ -183,59 +221,60 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
   /// Ordered by station ID (1–50). Tune dx, dy, widthDelta per station as needed.
   static const Map<int, _TapTargetOverride> _tapTargetOverrides = {
     // Line 1 – Chilanzar
-    1: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Chinor
-    2: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Yangikhayot
-    3: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Sergeli
-    4: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Uzgarish
-    5: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Chashtepa
-    6: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Almazar
-    7: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Chilanzar
-    8: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Mirzo Ulugbek
-    9: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),   // Novza
-    10: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),  // Milliy bog
-    11: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0),  // Xalqlar doʻstligi
-    12: _TapTargetOverride(dx: 70, dy: 0, widthDelta: -40),  // Paxtakor
-    13: _TapTargetOverride(dx: 20, dy: 0, widthDelta: -70),  // Mustaqil. Maydoni
-    14: _TapTargetOverride(dx: 20, dy: -8, widthDelta: -60),  // A. Temur Xiyoboni
-    15: _TapTargetOverride(dx: 10, dy: -6, widthDelta: -50),  // Hamid Olimjon
-    16: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -20),  // Pushkin
-    17: _TapTargetOverride(dx: 20, dy: -8, widthDelta: -60),  // Buyuk Ipak Yoli
+    1: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Chinor
+    2: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Yangikhayot
+    3: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Sergeli
+    4: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Uzgarish
+    5: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Chashtepa
+    6: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Almazar
+    7: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Chilanzar
+    8: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Mirzo Ulugbek
+    9: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Novza
+    10: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Milliy bog
+    11: _TapTargetOverride(dx: 20, dy: -8, widthDelta: 0), // Xalqlar doʻstligi
+    12: _TapTargetOverride(dx: 70, dy: 0, widthDelta: -40), // Paxtakor
+    13: _TapTargetOverride(dx: 20, dy: 0, widthDelta: -70), // Mustaqil. Maydoni
+    14: _TapTargetOverride(
+        dx: 20, dy: -8, widthDelta: -60), // A. Temur Xiyoboni
+    15: _TapTargetOverride(dx: 10, dy: -6, widthDelta: -50), // Hamid Olimjon
+    16: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -20), // Pushkin
+    17: _TapTargetOverride(dx: 20, dy: -8, widthDelta: -60), // Buyuk Ipak Yoli
     // Line 2 – Oʻzbekiston
-    18: _TapTargetOverride(dx: 100, dy: -5, widthDelta: -30),  // Beruniy
-    19: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -20),  // Tinchlik
-    20: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -20),  // Chorsu
-    21: _TapTargetOverride(dx: 20, dy: -7, widthDelta: -50),  // Gafur Gulom
-    22: _TapTargetOverride(dx: 120, dy: -10, widthDelta: -70),  // Alisher Navoiy
-    23: _TapTargetOverride(dx: 80, dy: -5, widthDelta: -50),  // Oʻzbekiston
-    24: _TapTargetOverride(dx: -70, dy: -4, widthDelta: -20),  // Kosmonavtlar
-    25: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -20),  // Oybek
-    26: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10),  // Toshkent
-    27: _TapTargetOverride(dx: 70, dy: -6, widthDelta: -20),  // Mashinasozlar
-    28: _TapTargetOverride(dx: 0, dy: -6, widthDelta: 0),  // Doʻstlik
+    18: _TapTargetOverride(dx: 100, dy: -5, widthDelta: -30), // Beruniy
+    19: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -20), // Tinchlik
+    20: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -20), // Chorsu
+    21: _TapTargetOverride(dx: 20, dy: -7, widthDelta: -50), // Gafur Gulom
+    22: _TapTargetOverride(dx: 120, dy: -10, widthDelta: -70), // Alisher Navoiy
+    23: _TapTargetOverride(dx: 80, dy: -5, widthDelta: -50), // Oʻzbekiston
+    24: _TapTargetOverride(dx: -70, dy: -4, widthDelta: -20), // Kosmonavtlar
+    25: _TapTargetOverride(dx: 20, dy: -6, widthDelta: -20), // Oybek
+    26: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10), // Toshkent
+    27: _TapTargetOverride(dx: 70, dy: -6, widthDelta: -20), // Mashinasozlar
+    28: _TapTargetOverride(dx: 0, dy: -6, widthDelta: 0), // Doʻstlik
     // Line 3 – Yunusobod
-    29: _TapTargetOverride(dx: 20, dy: -8, widthDelta: -20),  // Mingurik
-    30: _TapTargetOverride(dx: 160, dy: 0, widthDelta: -50),  // Yunus Rajabiy
-    31: _TapTargetOverride(dx: 130, dy: -8, widthDelta: -70),  // Abdulla Qodiriy
-    32: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20),  // Minor
-    33: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20),  // Bodomzor
-    34: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20),  // Shahriston
-    35: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20),  // Yunusobod
-    36: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20),  // Turkiston
+    29: _TapTargetOverride(dx: 20, dy: -8, widthDelta: -20), // Mingurik
+    30: _TapTargetOverride(dx: 160, dy: 0, widthDelta: -50), // Yunus Rajabiy
+    31: _TapTargetOverride(dx: 130, dy: -8, widthDelta: -70), // Abdulla Qodiriy
+    32: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20), // Minor
+    33: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20), // Bodomzor
+    34: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20), // Shahriston
+    35: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20), // Yunusobod
+    36: _TapTargetOverride(dx: 15, dy: -6, widthDelta: -20), // Turkiston
     // Line 4 – Halqa
-    37: _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0),  // Texnopark
-    38:  _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0),  // Yashnobod
-    39:  _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0),  // Tuzel
-    40:  _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0),  // Olmos
-    41:  _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0),  // Rohat
-    42:  _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0),  // Yangiobod
-    43:  _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0),  // Quyliuq
-    44: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10),  // Matonat
-    45: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10),  // Qiyot
-    46: _TapTargetOverride(dx: -5, dy: 0, widthDelta: -20),  // Tolarik
-    47: _TapTargetOverride(dx: -10, dy: 0, widthDelta: -20),  // Xonabod
-    48: _TapTargetOverride(dx: -20, dy: 0, widthDelta: -30),  // Quruvchilar
-    49: _TapTargetOverride(dx: 20, dy: 0, widthDelta: -20),  // Turon
-    50: _TapTargetOverride(dx:20, dy: 0, widthDelta: -20),  // Qipchoq
+    37: _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0), // Texnopark
+    38: _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0), // Yashnobod
+    39: _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0), // Tuzel
+    40: _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0), // Olmos
+    41: _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0), // Rohat
+    42: _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0), // Yangiobod
+    43: _TapTargetOverride(dx: 10, dy: -5, widthDelta: 0), // Quyliuq
+    44: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10), // Matonat
+    45: _TapTargetOverride(dx: 10, dy: 0, widthDelta: -10), // Qiyot
+    46: _TapTargetOverride(dx: -5, dy: 0, widthDelta: -20), // Tolarik
+    47: _TapTargetOverride(dx: -10, dy: 0, widthDelta: -20), // Xonabod
+    48: _TapTargetOverride(dx: -20, dy: 0, widthDelta: -30), // Quruvchilar
+    49: _TapTargetOverride(dx: 20, dy: 0, widthDelta: -20), // Turon
+    50: _TapTargetOverride(dx: 20, dy: 0, widthDelta: -20), // Qipchoq
   };
 
   static const String _svgAssetPath =
@@ -427,23 +466,33 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
         .trim();
   }
 
+  void _triggerStationHighlight(int stationId) {
+    if (!mounted) return;
+    setState(() {
+      _highlightGen[stationId] = (_highlightGen[stationId] ?? 0) + 1;
+    });
+    Future<void>.delayed(const Duration(milliseconds: 1100), () {
+      if (!mounted) return;
+      setState(() => _highlightGen.remove(stationId));
+    });
+  }
+
   void _openStationListings(BuildContext context, int stationId) {
     final listingTypeId =
         _selectedListingTypeId > 0 ? _selectedListingTypeId : null;
     final gender = _selectedGender > 0 ? _selectedGender : null;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (_) => BlocProvider(
-              create: (context) => ListingsBloc(getIt<IListingService>()),
-              child: HomeScreen(
-                subwayStationId: stationId,
-                listingTypeId: listingTypeId,
-                gender: gender,
-                isSearchMode: true,
-                useExplicitFiltersOnly: true,
-              ),
-            ),
+        builder: (_) => BlocProvider(
+          create: (context) => ListingsBloc(getIt<IListingService>()),
+          child: HomeScreen(
+            subwayStationId: stationId,
+            listingTypeId: listingTypeId,
+            gender: gender,
+            isSearchMode: true,
+            useExplicitFiltersOnly: true,
+          ),
+        ),
       ),
     );
   }
@@ -455,8 +504,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
     required bool isBlueTheme,
   }) {
     return _overlayConfigs.map((c) {
-      final screenX =
-          offsetX + (_mapOffset.dx + c.mapX - _viewBoxMinX) * scale;
+      final screenX = offsetX + (_mapOffset.dx + c.mapX - _viewBoxMinX) * scale;
       final screenY = offsetY + (_mapOffset.dy + c.mapY) * scale;
       final w = c.width * c.sizeScale;
       final h = c.height * c.sizeScale;
@@ -490,8 +538,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
     return stationLabels.map((label) {
       final override = _tapTargetOverrides[label.stationId];
       var posX = offsetX + (_mapOffset.dx + label.x - _viewBoxMinX) * scale;
-      var posY = offsetY +
-          (_mapOffset.dy + label.y + _stnameGroupOffsetY) * scale;
+      var posY =
+          offsetY + (_mapOffset.dy + label.y + _stnameGroupOffsetY) * scale;
       if (override != null) {
         posX += override.dx * scale;
         posY += override.dy * scale;
@@ -532,6 +580,103 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
     }).toList();
   }
 
+  List<Widget> _buildStationHighlights(
+    List<_StationLabel> stationLabels,
+    double scale,
+    double offsetX,
+    double offsetY,
+    String language, {
+    required bool isBlueTheme,
+  }) {
+    if (_highlightGen.isEmpty) return const [];
+
+    final items = <Widget>[];
+    for (final label in stationLabels) {
+      final gen = _highlightGen[label.stationId];
+      if (gen == null) continue;
+
+      final override = _tapTargetOverrides[label.stationId];
+      var posX = offsetX + (_mapOffset.dx + label.x - _viewBoxMinX) * scale;
+      var posY =
+          offsetY + (_mapOffset.dy + label.y + _stnameGroupOffsetY) * scale;
+      if (override != null) {
+        posX += override.dx * scale;
+        posY += override.dy * scale;
+      }
+
+      final displayName =
+          MetroCache.getStationDisplayName(label.stationId, language);
+      final textLen =
+          (displayName.isNotEmpty ? displayName : label.label).length;
+      final baseWidth = (textLen * _charWidth).clamp(40.0, 140.0);
+      final underlineWidth = baseWidth * scale;
+
+      final left = label.textAnchor == "end"
+          ? posX - underlineWidth - _tapTargetOffsetX * scale
+          : label.textAnchor == "middle"
+              ? posX - underlineWidth / 2
+              : posX - _tapTargetOffsetX * scale;
+
+      final underlineY = posY + 9 * scale;
+
+      final highlightColor = isBlueTheme
+          ? const Color(0xFF0B1220) // near-black (navy-ish)
+          : const Color(0xFF111827); // near-black (gray-900)
+
+      items.add(
+        Positioned(
+          key: ValueKey<String>("st_hl_${label.stationId}_$gen"),
+          left: left,
+          top: underlineY,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: const Duration(milliseconds: 520),
+            curve: Curves.easeOutCubic,
+            builder: (context, t, _) {
+              // Hold brighter longer, then fade.
+              final opacity = (t <= 0.82) ? 1.0 : (1 - (t - 0.82) / 0.18);
+              return Opacity(
+                opacity: opacity.clamp(0.0, 1.0),
+                child: Transform.scale(
+                  scale: 0.9 + 0.12 * t,
+                  alignment: Alignment.centerLeft,
+                  child: ClipRect(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: t.clamp(0.0, 1.0),
+                      child: Container(
+                        width: underlineWidth,
+                        height: math.max(3.0, 3.6 * scale),
+                        decoration: BoxDecoration(
+                          color: highlightColor,
+                          borderRadius: BorderRadius.circular(999),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withValues(alpha: 0.75),
+                              blurRadius: 18,
+                              spreadRadius: 3,
+                            ),
+                            BoxShadow(
+                              color: highlightColor.withValues(alpha: 0.40),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    return items;
+  }
+
   /// Select the text element matching [language] from switch content.
   /// SVG uses systemLanguage="ru", "en", "uz". Falls back to element without systemLanguage.
   static String? _selectTextForLanguage(String switchContent, String language) {
@@ -548,7 +693,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
       }
       if (sysLang == null) fallback = full;
     }
-    return langMatch ?? fallback ?? textRegExp.firstMatch(switchContent)?.group(0);
+    return langMatch ??
+        fallback ??
+        textRegExp.firstMatch(switchContent)?.group(0);
   }
 
   static final Map<String, String> _processedSvgCache = {};
@@ -563,11 +710,19 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
     String language,
     Set<int> boldStationIds,
     bool isBlueTheme,
+    int selectedSubwayLineId,
   ) {
-    final key = "${_processSvgCacheKey(language, boldStationIds)}|${isBlueTheme ? "blue" : "light"}";
+    final key =
+        "${_processSvgCacheKey(language, boldStationIds)}|${isBlueTheme ? "blue" : "light"}|line=$selectedSubwayLineId";
     return _processedSvgCache.putIfAbsent(
       key,
-      () => _processSvgImpl(svg, language, boldStationIds, isBlueTheme),
+      () => _processSvgImpl(
+        svg,
+        language,
+        boldStationIds,
+        isBlueTheme,
+        selectedSubwayLineId,
+      ),
     );
   }
 
@@ -576,6 +731,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
     String language,
     Set<int> boldStationIds,
     bool isBlueTheme,
+    int selectedSubwayLineId,
   ) {
     final withoutStyle = svg.replaceAll(
       RegExp(r"<style[\s\S]*?</style>"),
@@ -625,6 +781,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
         return "<g ${transformMatch.group(0)}>$inner</g>";
       },
     );
+
+    // Admin map should never visually focus/zoom by line selection.
+    // Keep the full map visible; line selection only affects search/tap targets.
     return flattenedSwitches
         .replaceAll(
           'class="st"',
@@ -651,7 +810,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
           '<g id="route4_stname">',
           '<g id="route4_stname" style="fill:#F59E0B">',
         )
-        .replaceAll('class="mebg"', 'style="fill:none;stroke:#fff;stroke-width:7"')
+        .replaceAll(
+            'class="mebg"', 'style="fill:none;stroke:#fff;stroke-width:7"')
         .replaceAll(
           'class="me p1"',
           'style="fill:none;stroke:#D60000;stroke-width:5"',
@@ -726,14 +886,14 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
             onPressed: _isLoadingStationIds
                 ? null
                 : () {
-              setState(() {
-                _mapKey = UniqueKey();
-                _transformationController.value = Matrix4.identity()
-                  ..translate(_initialMapShiftX, _initialMapShiftY)
-                  ..scale(1.3);
-              });
-              _loadListingStationIds();
-            },
+                    setState(() {
+                      _mapKey = UniqueKey();
+                      _transformationController.value = Matrix4.identity()
+                        ..translate(_initialMapShiftX, _initialMapShiftY)
+                        ..scale(1.3);
+                    });
+                    _loadListingStationIds();
+                  },
             tooltip: "Refresh map",
           ),
         ],
@@ -778,6 +938,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                               final contentHeight = _svgHeight * scale;
                               final offsetX = (mapWidth - contentWidth) / 2;
                               final offsetY = (mapHeight - contentHeight) / 2;
+
                               return Listener(
                                 behavior: HitTestBehavior.opaque,
                                 onPointerSignal: (event) {
@@ -808,8 +969,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                                             _processSvg(
                                               mapData.rawSvg,
                                               LanguageState().currentLanguage,
-                                              _stationIdsWithListings,
+                                              _getEffectiveUnderlineStationIds(),
                                               isBlueTheme,
+                                              _selectedSubwayLineId,
                                             ),
                                             width: mapWidth,
                                             height: mapHeight,
@@ -817,15 +979,35 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                                             semanticsLabel:
                                                 "Tashkent subway map",
                                           ),
-                                          ..._buildMapOverlays(
+                                          ..._buildStationHighlights(
+                                            mapData.stationLabels,
                                             scale,
                                             offsetX,
                                             offsetY,
+                                            LanguageState().currentLanguage,
                                             isBlueTheme: isBlueTheme,
                                           ),
+                                          if (_showLocationOverlays)
+                                            ..._buildMapOverlays(
+                                              scale,
+                                              offsetX,
+                                              offsetY,
+                                              isBlueTheme: isBlueTheme,
+                                            ),
                                           ..._buildStationTapTargets(
                                             context,
-                                            mapData.stationLabels,
+                                            _selectedSubwayLineId > 0
+                                                ? mapData.stationLabels
+                                                    .where((l) {
+                                                    final st = MetroCache
+                                                        .getStationById(
+                                                      l.stationId,
+                                                    );
+                                                    return st != null &&
+                                                        st.line ==
+                                                            _selectedSubwayLineId;
+                                                  }).toList()
+                                                : mapData.stationLabels,
                                             scale,
                                             offsetX,
                                             offsetY,
@@ -854,6 +1036,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                           SearchBottomSheetWidget.show(
                             context,
                             openedFromHomeScreen: false,
+                            metroOnly: true,
                             currentListingTypeId: _selectedListingTypeId,
                             currentGender: _selectedGender,
                             onApply: (result) async {
@@ -861,6 +1044,12 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                               setState(() {
                                 _selectedListingTypeId = result.listingTypeId;
                                 _selectedGender = result.gender ?? 0;
+                                _selectedSubwayLineId =
+                                    result.subwayLineId ?? 0;
+                                _selectedMinPrice = result.minPrice;
+                                _selectedMaxPrice = result.maxPrice;
+                                _selectedPrivateRoom = result.privateRoom;
+                                _selectedWithPhoto = result.withPhoto;
                               });
                               await _loadListingStationIds();
                             },

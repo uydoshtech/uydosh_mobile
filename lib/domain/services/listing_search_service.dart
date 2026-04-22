@@ -78,6 +78,10 @@ abstract class IListingSearchService {
     int createdWithinDays = 30,
     int? listingTypeId,
     int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
   });
 }
 
@@ -457,6 +461,10 @@ class ListingSearchService implements IListingSearchService {
     int createdWithinDays = 30,
     int? listingTypeId,
     int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
   }) async {
     try {
       final queryParams = <String, dynamic>{
@@ -469,6 +477,22 @@ class ListingSearchService implements IListingSearchService {
           "listing_type_id": listingTypeId,
         },
         if (gender != null) "gender": gender,
+        if (minPrice != null) ...{
+          "minPrice": minPrice,
+          "min_price": minPrice,
+        },
+        if (maxPrice != null) ...{
+          "maxPrice": maxPrice,
+          "max_price": maxPrice,
+        },
+        if (privateRoom != null) ...{
+          "privateRoom": privateRoom,
+          "private_room": privateRoom,
+        },
+        if (withPhoto != null) ...{
+          "withPhoto": withPhoto,
+          "with_photo": withPhoto,
+        },
       };
       debugPrint(
         "[ListingSearchService] subway-stations-with-listings params=$queryParams",
