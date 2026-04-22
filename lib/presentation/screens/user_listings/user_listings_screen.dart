@@ -155,6 +155,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
       appBar: CommonAppBar(
         title: L10n.get("menu_my_listings"),
         showBackButton: true,
+        liquidGlass: true,
       ),
       body: BlocListener<ListingsBloc, ListingsState>(
         listener: (context, state) {

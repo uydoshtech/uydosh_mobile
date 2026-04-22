@@ -557,19 +557,19 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final primaryColor = themeState.primaryColor;
         final cardColor = themeState.cardColor;
 
-        final content = Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: _buildToggleSwitch(
-            context,
-            incomingCount: _getUnreadCount(incoming),
-            outgoingCount: _getUnreadCount(outgoing),
-            primaryColor: primaryColor,
-            cardColor: cardColor,
-          ),
+        final switcher = _buildToggleSwitch(
+          context,
+          incomingCount: _getUnreadCount(incoming),
+          outgoingCount: _getUnreadCount(outgoing),
+          primaryColor: primaryColor,
+          cardColor: cardColor,
         );
 
         if (!(themeState.isBlueTheme || themeState.isLightTheme)) {
-          return content;
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: switcher,
+          );
         }
 
         const radius = BorderRadius.all(Radius.circular(20));
@@ -581,25 +581,38 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 : (Color.lerp(scheme.surface, scheme.primary, 0.06) ??
                     scheme.surface);
 
-        return ClipRRect(
-          borderRadius: radius,
+        // Important: don't clip the switch itself, otherwise its drop shadow
+        // gets cut off at the bottom. Only the glass background is clipped.
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              // Blur is subtle on flat backgrounds, so we also apply a clear glass tint.
               Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                  child: const SizedBox.expand(),
-                ),
-              ),
-              DecoratedBox(
-                decoration: BoxDecoration(
+                child: ClipRRect(
                   borderRadius: radius,
-                  // Match the app bar glass: subtle tint + hairline edge.
-                  color: baseTint.withValues(alpha: isDark ? 0.10 : 0.12),
+                  child: Stack(
+                    children: [
+                      // Blur is subtle on flat backgrounds, so we also apply a clear glass tint.
+                      Positioned.fill(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                          child: const SizedBox.expand(),
+                        ),
+                      ),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: radius,
+                          // Match the app bar glass: subtle tint + hairline edge.
+                          color: baseTint.withValues(alpha: isDark ? 0.10 : 0.12),
+                        ),
+                        child: const SizedBox.expand(),
+                      ),
+                    ],
+                  ),
                 ),
-                child: content,
               ),
+              switcher,
             ],
           ),
         );
@@ -862,7 +875,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             ),
             date: dayStart,
             padding: isFirstRow
-                ? const EdgeInsets.only(top: 12, bottom: 10)
+                ? const EdgeInsets.only(top: 8, bottom: 6)
                 : null,
           ),
           _InboxIncomingDaySection(:final conversations) =>

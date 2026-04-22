@@ -1,3 +1,5 @@
+import "dart:ui";
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -18,6 +20,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.foregroundColor,
     this.elevation,
     this.automaticallyImplyLeading = true,
+    this.liquidGlass = true,
   });
 
   final String title;
@@ -29,6 +32,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color? foregroundColor;
   final double? elevation;
   final bool automaticallyImplyLeading;
+  final bool liquidGlass;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +42,12 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
         (injectDefaultBack
             ? ThreeDAppBarIconButton.backLeading(context)
             : null);
+
+    final theme = Theme.of(context);
+    final appBarTheme = theme.appBarTheme;
+    final defaultBg = backgroundColor ?? appBarTheme.backgroundColor;
+    final resolvedBg =
+        liquidGlass ? Colors.transparent : (defaultBg ?? Colors.transparent);
 
     return UydoshAppBar(
       title:
@@ -72,13 +82,16 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
               ),
-      backgroundColor:
-          backgroundColor ?? Theme.of(context).appBarTheme.backgroundColor,
+      backgroundColor: resolvedBg,
       foregroundColor:
           foregroundColor ??
           Theme.of(context).appBarTheme.foregroundColor ??
           AppColors.textLight,
       elevation: elevation ?? 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      forceMaterialTransparency: liquidGlass,
+      flexibleSpace: liquidGlass ? const _LiquidGlassAppBarBackground() : null,
       automaticallyImplyLeading:
           automaticallyImplyLeading && showBackButton && !injectDefaultBack,
       leading: effectiveLeading,
@@ -89,4 +102,59 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(standardAppBarToolbarHeight);
+}
+
+class _LiquidGlassAppBarBackground extends StatelessWidget {
+  const _LiquidGlassAppBarBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final base =
+        theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface;
+    // "Liquid glass": blur + translucent tint + subtle highlights/border.
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                base.withOpacity(0.28),
+                base.withOpacity(0.12),
+              ],
+            ),
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.white.withOpacity(0.14),
+                width: 1,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.10),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white.withOpacity(0.10),
+                  Colors.white.withOpacity(0.00),
+                ],
+              ),
+            ),
+            child: const SizedBox.expand(),
+          ),
+        ),
+      ),
+    );
+  }
 }

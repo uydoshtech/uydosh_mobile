@@ -27,7 +27,7 @@ class DateHeaderWidget extends StatelessWidget {
         final dividerColor = _getThemeAwareDividerColor(themeState);
 
         final effectivePadding =
-            padding ?? const EdgeInsets.symmetric(vertical: 16);
+            padding ?? const EdgeInsets.symmetric(vertical: 8);
         return Container(
           width: double.infinity,
           padding: effectivePadding,
@@ -49,7 +49,7 @@ class DateHeaderWidget extends StatelessWidget {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
                   child: Text(
                     dateString,
                     textAlign: TextAlign.center,
