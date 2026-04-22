@@ -676,6 +676,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get confirm => 'Подтвердить';
 
   @override
+  String get apply => 'Применить';
+
+  @override
   String get next => 'Далее';
 
   @override

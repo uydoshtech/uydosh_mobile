@@ -680,6 +680,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get confirm => 'Tasdiqlash';
 
   @override
+  String get apply => 'Qoʻllash';
+
+  @override
   String get next => 'Keyingi';
 
   @override

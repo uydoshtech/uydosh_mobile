@@ -116,11 +116,26 @@ class $AssetsMapElementsGen {
 class $AssetsSoundsGen {
   const $AssetsSoundsGen();
 
+  /// File path: assets/sounds/SOURCES.md
+  String get sources => 'assets/sounds/SOURCES.md';
+
   /// File path: assets/sounds/click.wav
   String get click => 'assets/sounds/click.wav';
 
+  /// File path: assets/sounds/error.wav
+  String get error => 'assets/sounds/error.wav';
+
+  /// File path: assets/sounds/like.wav
+  String get like => 'assets/sounds/like.wav';
+
+  /// File path: assets/sounds/success.wav
+  String get success => 'assets/sounds/success.wav';
+
+  /// File path: assets/sounds/whoosh_refresh.wav
+  String get whooshRefresh => 'assets/sounds/whoosh_refresh.wav';
+
   /// List of all assets
-  List<String> get values => [click];
+  List<String> get values => [sources, click, error, like, success, whooshRefresh];
 }
 
 class $AssetsIconComponentsGen {

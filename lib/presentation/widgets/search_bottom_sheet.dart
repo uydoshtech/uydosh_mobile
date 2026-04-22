@@ -38,6 +38,30 @@ import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.da
 
 part "search_bottom_sheet/search_bottom_sheet_state.dart";
 
+class SearchBottomSheetResult {
+  const SearchBottomSheetResult({
+    required this.listingTypeId,
+    required this.gender,
+    required this.locationId,
+    required this.subwayStationId,
+    required this.subwayLineId,
+    required this.minPrice,
+    required this.maxPrice,
+    required this.privateRoom,
+    required this.withPhoto,
+  });
+
+  final int listingTypeId;
+  final int? gender;
+  final int? locationId;
+  final int? subwayStationId;
+  final int? subwayLineId;
+  final double minPrice;
+  final double maxPrice;
+  final bool privateRoom;
+  final bool withPhoto;
+}
+
 /// Reusable search bottom sheet widget that can be used throughout the app
 ///
 /// Features:
@@ -60,6 +84,9 @@ class SearchBottomSheetWidget {
     double? currentMaxPrice,
     bool? currentPrivateRoom,
     bool? currentWithPhoto,
+    void Function(SearchBottomSheetResult result)? onApply,
+    String primaryLabelKey = "search",
+    IconData primaryIcon = Icons.search,
   }) {
     // Try to get existing blocs from context to avoid redundant fetches
     ListingsBloc? existingListingsBloc;
@@ -121,6 +148,9 @@ class SearchBottomSheetWidget {
               currentMaxPrice: currentMaxPrice,
               currentPrivateRoom: currentPrivateRoom,
               currentWithPhoto: currentWithPhoto,
+              onApply: onApply,
+              primaryLabelKey: primaryLabelKey,
+              primaryIcon: primaryIcon,
             ),
           ),
     );
@@ -141,6 +171,9 @@ class _SearchBottomSheetContent extends StatefulWidget {
     this.currentMaxPrice,
     this.currentPrivateRoom,
     this.currentWithPhoto,
+    this.onApply,
+    this.primaryLabelKey = "search",
+    this.primaryIcon = Icons.search,
   });
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
@@ -153,6 +186,9 @@ class _SearchBottomSheetContent extends StatefulWidget {
   final double? currentMaxPrice;
   final bool? currentPrivateRoom;
   final bool? currentWithPhoto;
+  final void Function(SearchBottomSheetResult result)? onApply;
+  final String primaryLabelKey;
+  final IconData primaryIcon;
 
   @override
   State<_SearchBottomSheetContent> createState() =>

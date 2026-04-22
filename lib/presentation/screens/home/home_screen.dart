@@ -1120,7 +1120,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         selector: (state) => state.map(
           initial: (_) => null,
           loading: (_) => null,
-          loaded: (loadedState) => loadedState.listings.length,
+          loaded: (loadedState) => loadedState.total,
           error: (_) => null,
         ),
         builder: (context, count) {

@@ -21,7 +21,7 @@ mixin _$ListingsState {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-            List<Listing> listings, bool hasMore, int currentPage)
+            List<Listing> listings, bool hasMore, int currentPage, int? total)
         loaded,
     required TResult Function(String message) error,
   }) =>
@@ -30,7 +30,8 @@ mixin _$ListingsState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult? Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult? Function(String message)? error,
   }) =>
@@ -39,7 +40,8 @@ mixin _$ListingsState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -137,7 +139,7 @@ class _$$InitialImplImpl implements _$InitialImpl {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-            List<Listing> listings, bool hasMore, int currentPage)
+            List<Listing> listings, bool hasMore, int currentPage, int? total)
         loaded,
     required TResult Function(String message) error,
   }) {
@@ -149,7 +151,8 @@ class _$$InitialImplImpl implements _$InitialImpl {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult? Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult? Function(String message)? error,
   }) {
@@ -161,7 +164,8 @@ class _$$InitialImplImpl implements _$InitialImpl {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -258,7 +262,7 @@ class _$$LoadingImplImpl implements _$LoadingImpl {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-            List<Listing> listings, bool hasMore, int currentPage)
+            List<Listing> listings, bool hasMore, int currentPage, int? total)
         loaded,
     required TResult Function(String message) error,
   }) {
@@ -270,7 +274,8 @@ class _$$LoadingImplImpl implements _$LoadingImpl {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult? Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult? Function(String message)? error,
   }) {
@@ -282,7 +287,8 @@ class _$$LoadingImplImpl implements _$LoadingImpl {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -341,7 +347,8 @@ abstract class _$$$LoadedImplImplCopyWith<$Res> {
           _$$LoadedImplImpl value, $Res Function(_$$LoadedImplImpl) then) =
       __$$$LoadedImplImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({List<Listing> listings, bool hasMore, int currentPage});
+  $Res call(
+      {List<Listing> listings, bool hasMore, int currentPage, int? total});
 }
 
 /// @nodoc
@@ -360,6 +367,7 @@ class __$$$LoadedImplImplCopyWithImpl<$Res>
     Object? listings = null,
     Object? hasMore = null,
     Object? currentPage = null,
+    Object? total = freezed,
   }) {
     return _then(_$$LoadedImplImpl(
       listings: null == listings
@@ -374,6 +382,10 @@ class __$$$LoadedImplImplCopyWithImpl<$Res>
           ? _value.currentPage
           : currentPage // ignore: cast_nullable_to_non_nullable
               as int,
+      total: freezed == total
+          ? _value.total
+          : total // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -384,7 +396,8 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
   const _$$LoadedImplImpl(
       {required final List<Listing> listings,
       required this.hasMore,
-      required this.currentPage})
+      required this.currentPage,
+      this.total})
       : _listings = listings;
 
   final List<Listing> _listings;
@@ -400,9 +413,14 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
   @override
   final int currentPage;
 
+  /// Total results count from API (stable across pagination).
+  /// Null when the underlying endpoint doesn't provide totals.
+  @override
+  final int? total;
+
   @override
   String toString() {
-    return 'ListingsState.loaded(listings: $listings, hasMore: $hasMore, currentPage: $currentPage)';
+    return 'ListingsState.loaded(listings: $listings, hasMore: $hasMore, currentPage: $currentPage, total: $total)';
   }
 
   @override
@@ -413,12 +431,17 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
             const DeepCollectionEquality().equals(other._listings, _listings) &&
             (identical(other.hasMore, hasMore) || other.hasMore == hasMore) &&
             (identical(other.currentPage, currentPage) ||
-                other.currentPage == currentPage));
+                other.currentPage == currentPage) &&
+            (identical(other.total, total) || other.total == total));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType,
-      const DeepCollectionEquality().hash(_listings), hasMore, currentPage);
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(_listings),
+      hasMore,
+      currentPage,
+      total);
 
   /// Create a copy of ListingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -434,11 +457,11 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-            List<Listing> listings, bool hasMore, int currentPage)
+            List<Listing> listings, bool hasMore, int currentPage, int? total)
         loaded,
     required TResult Function(String message) error,
   }) {
-    return loaded(listings, hasMore, currentPage);
+    return loaded(listings, hasMore, currentPage, total);
   }
 
   @override
@@ -446,11 +469,12 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult? Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult? Function(String message)? error,
   }) {
-    return loaded?.call(listings, hasMore, currentPage);
+    return loaded?.call(listings, hasMore, currentPage, total);
   }
 
   @override
@@ -458,13 +482,14 @@ class _$$LoadedImplImpl implements _$LoadedImpl {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
     if (loaded != null) {
-      return loaded(listings, hasMore, currentPage);
+      return loaded(listings, hasMore, currentPage, total);
     }
     return orElse();
   }
@@ -511,11 +536,16 @@ abstract class _$LoadedImpl implements ListingsState {
   const factory _$LoadedImpl(
       {required final List<Listing> listings,
       required final bool hasMore,
-      required final int currentPage}) = _$$LoadedImplImpl;
+      required final int currentPage,
+      final int? total}) = _$$LoadedImplImpl;
 
   List<Listing> get listings;
   bool get hasMore;
   int get currentPage;
+
+  /// Total results count from API (stable across pagination).
+  /// Null when the underlying endpoint doesn't provide totals.
+  int? get total;
 
   /// Create a copy of ListingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -595,7 +625,7 @@ class _$$ErrorImplImpl implements _$ErrorImpl {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(
-            List<Listing> listings, bool hasMore, int currentPage)
+            List<Listing> listings, bool hasMore, int currentPage, int? total)
         loaded,
     required TResult Function(String message) error,
   }) {
@@ -607,7 +637,8 @@ class _$$ErrorImplImpl implements _$ErrorImpl {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult? Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult? Function(String message)? error,
   }) {
@@ -619,7 +650,8 @@ class _$$ErrorImplImpl implements _$ErrorImpl {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Listing> listings, bool hasMore, int currentPage)?
+    TResult Function(
+            List<Listing> listings, bool hasMore, int currentPage, int? total)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),

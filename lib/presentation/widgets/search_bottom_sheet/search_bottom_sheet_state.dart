@@ -842,8 +842,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                               setState(() {});
                             },
                             onPrimaryPressed: _performSearch,
-                            primaryLabelKey: "search",
-                            primaryIcon: Icons.search,
+                            primaryLabelKey: widget.primaryLabelKey,
+                            primaryIcon: widget.primaryIcon,
                           ),
                         ],
                       ),
@@ -887,6 +887,24 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     // Navigate to home screen with search parameters
     Navigator.pop(context);
+
+    final apply = widget.onApply;
+    if (apply != null) {
+      apply(
+        SearchBottomSheetResult(
+          listingTypeId: listingTypeId,
+          gender: gender > 0 ? gender : null,
+          locationId: locationId,
+          subwayStationId: subwayStationId,
+          subwayLineId: subwayLine > 0 ? subwayLine : null,
+          minPrice: minPrice,
+          maxPrice: maxPrice,
+          privateRoom: privateRoom,
+          withPhoto: withPhoto,
+        ),
+      );
+      return;
+    }
 
     if (widget.replaceCurrentRoute) {
       Navigator.pushReplacement(

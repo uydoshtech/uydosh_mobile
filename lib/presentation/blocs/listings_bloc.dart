@@ -30,6 +30,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   int _currentPage = 1;
   bool _hasMore = true;
   List<Listing> _currentListings = [];
+  int? _totalResults;
 
   // Store search context for load more operations
   int? _lastListingTypeId;
@@ -61,6 +62,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _currentPage = 1;
       _hasMore = true;
       _currentListings = [];
+      _totalResults = null;
     }
 
     emit(const ListingsState.loading());
@@ -103,6 +105,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final newListings = response.data;
       FavoritesState().syncFromListings(newListings);
       _hasMore = (page + 1) <= response.totalPages && newListings.isNotEmpty;
+      _totalResults = response.total;
 
       if (isRefresh) {
         _currentListings = newListings;
@@ -113,6 +116,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       emit(
         ListingsState.loaded(
           listings: _currentListings,
+          total: _totalResults,
           hasMore: _hasMore,
           currentPage: _currentPage,
         ),
@@ -176,6 +180,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         emit(
           ListingsState.loaded(
             listings: updatedListings,
+            total: _totalResults,
             hasMore: _hasMore,
             currentPage: _currentPage,
           ),
@@ -208,12 +213,14 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         FavoritesState().syncFromListings(newListings);
         _hasMore =
             (_currentPage + 1) <= response.totalPages && newListings.isNotEmpty;
+        _totalResults ??= response.total;
 
         final updatedListings = [...currentListings, ...newListings];
 
         emit(
           ListingsState.loaded(
             listings: updatedListings,
+            total: _totalResults,
             hasMore: _hasMore,
             currentPage: _currentPage,
           ),
@@ -232,12 +239,14 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         FavoritesState().syncFromListings(newListings);
         _hasMore =
             (_currentPage + 1) <= response.totalPages && newListings.isNotEmpty;
+        _totalResults ??= response.total;
 
         final updatedListings = [...currentListings, ...newListings];
 
         emit(
           ListingsState.loaded(
             listings: updatedListings,
+            total: _totalResults,
             hasMore: _hasMore,
             currentPage: _currentPage,
           ),
@@ -268,6 +277,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _currentPage = 1;
       _hasMore = true;
       _currentListings = [];
+      _totalResults = null;
     }
 
     _stationOnlyMode = true;
@@ -346,6 +356,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       emit(
         ListingsState.loaded(
           listings: _currentListings,
+          total: _totalResults,
           hasMore: _hasMore,
           currentPage: _currentPage,
         ),
@@ -374,6 +385,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _currentPage = 1;
       _hasMore = true;
       _currentListings = [];
+      _totalResults = null;
     }
 
     emit(const ListingsState.loading());
@@ -430,6 +442,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       emit(
         ListingsState.loaded(
           listings: _currentListings,
+          total: _totalResults,
           hasMore: _hasMore,
           currentPage: _currentPage,
         ),
@@ -459,6 +472,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _currentPage = 1;
       _hasMore = true;
       _currentListings = [];
+      _totalResults = null;
     }
 
     // Store search parameters for load more operations
@@ -597,10 +611,12 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       }
 
       _hasMore = listings.length >= limit;
+      _totalResults = response.total;
 
       emit(
         ListingsState.loaded(
           listings: _currentListings,
+          total: _totalResults,
           hasMore: _hasMore,
           currentPage: _currentPage,
         ),
@@ -630,6 +646,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _currentPage = 1;
       _hasMore = true;
       _currentListings = [];
+      _totalResults = null;
     }
 
     emit(const ListingsState.loading());
@@ -661,6 +678,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
       final listings = response.data;
       _hasMore = (page + 1) <= response.totalPages && listings.isNotEmpty;
+      _totalResults = response.total;
 
       if (isRefresh) {
         _currentListings = listings;
@@ -671,6 +689,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       emit(
         ListingsState.loaded(
           listings: _currentListings,
+          total: _totalResults,
           hasMore: _hasMore,
           currentPage: _currentPage,
         ),

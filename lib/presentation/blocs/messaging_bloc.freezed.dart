@@ -154,12 +154,20 @@ class __$$MessagingInitialImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$MessagingInitialImpl implements MessagingInitial {
+class _$MessagingInitialImpl
+    with DiagnosticableTreeMixin
+    implements MessagingInitial {
   const _$MessagingInitialImpl();
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'MessagingState.initial()';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties..add(DiagnosticsProperty('type', 'MessagingState.initial'));
   }
 
   @override
@@ -315,12 +323,20 @@ class __$$MessagingLoadingImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$MessagingLoadingImpl implements MessagingLoading {
+class _$MessagingLoadingImpl
+    with DiagnosticableTreeMixin
+    implements MessagingLoading {
   const _$MessagingLoadingImpl();
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'MessagingState.loading()';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties..add(DiagnosticsProperty('type', 'MessagingState.loading'));
   }
 
   @override
@@ -501,7 +517,9 @@ class __$$ConversationsLoadedImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ConversationsLoadedImpl implements ConversationsLoaded {
+class _$ConversationsLoadedImpl
+    with DiagnosticableTreeMixin
+    implements ConversationsLoaded {
   const _$ConversationsLoadedImpl(
       {required final List<ConversationSummary> conversations,
       required this.hasMore,
@@ -522,8 +540,18 @@ class _$ConversationsLoadedImpl implements ConversationsLoaded {
   final int currentPage;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'MessagingState.conversationsLoaded(conversations: $conversations, hasMore: $hasMore, currentPage: $currentPage)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'MessagingState.conversationsLoaded'))
+      ..add(DiagnosticsProperty('conversations', conversations))
+      ..add(DiagnosticsProperty('hasMore', hasMore))
+      ..add(DiagnosticsProperty('currentPage', currentPage));
   }
 
   @override
@@ -711,12 +739,21 @@ class __$$ConversationsClearedImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ConversationsClearedImpl implements ConversationsCleared {
+class _$ConversationsClearedImpl
+    with DiagnosticableTreeMixin
+    implements ConversationsCleared {
   const _$ConversationsClearedImpl();
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'MessagingState.conversationsCleared()';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'MessagingState.conversationsCleared'));
   }
 
   @override
@@ -906,7 +943,9 @@ class __$$MessagesLoadedImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$MessagesLoadedImpl implements MessagesLoaded {
+class _$MessagesLoadedImpl
+    with DiagnosticableTreeMixin
+    implements MessagesLoaded {
   const _$MessagesLoadedImpl(
       {required final List<Message> messages,
       required this.hasMore,
@@ -930,8 +969,19 @@ class _$MessagesLoadedImpl implements MessagesLoaded {
   final int conversationId;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'MessagingState.messagesLoaded(messages: $messages, hasMore: $hasMore, currentPage: $currentPage, conversationId: $conversationId)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'MessagingState.messagesLoaded'))
+      ..add(DiagnosticsProperty('messages', messages))
+      ..add(DiagnosticsProperty('hasMore', hasMore))
+      ..add(DiagnosticsProperty('currentPage', currentPage))
+      ..add(DiagnosticsProperty('conversationId', conversationId));
   }
 
   @override
@@ -1149,15 +1199,25 @@ class __$$ConversationCreatedImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ConversationCreatedImpl implements ConversationCreated {
+class _$ConversationCreatedImpl
+    with DiagnosticableTreeMixin
+    implements ConversationCreated {
   const _$ConversationCreatedImpl({required this.conversation});
 
   @override
   final Conversation conversation;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'MessagingState.conversationCreated(conversation: $conversation)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'MessagingState.conversationCreated'))
+      ..add(DiagnosticsProperty('conversation', conversation));
   }
 
   @override
@@ -1360,15 +1420,23 @@ class __$$MessageSentImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$MessageSentImpl implements MessageSent {
+class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
   const _$MessageSentImpl({required this.message});
 
   @override
   final Message message;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'MessagingState.messageSent(message: $message)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'MessagingState.messageSent'))
+      ..add(DiagnosticsProperty('message', message));
   }
 
   @override
@@ -1562,7 +1630,9 @@ class __$$MessagesMarkedAsReadImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$MessagesMarkedAsReadImpl implements MessagesMarkedAsRead {
+class _$MessagesMarkedAsReadImpl
+    with DiagnosticableTreeMixin
+    implements MessagesMarkedAsRead {
   const _$MessagesMarkedAsReadImpl(
       {required this.conversationId, required this.markedCount});
 
@@ -1572,8 +1642,17 @@ class _$MessagesMarkedAsReadImpl implements MessagesMarkedAsRead {
   final int markedCount;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'MessagingState.messagesMarkedAsRead(conversationId: $conversationId, markedCount: $markedCount)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'MessagingState.messagesMarkedAsRead'))
+      ..add(DiagnosticsProperty('conversationId', conversationId))
+      ..add(DiagnosticsProperty('markedCount', markedCount));
   }
 
   @override
@@ -1769,15 +1848,25 @@ class __$$MessagingErrorImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$MessagingErrorImpl implements MessagingError {
+class _$MessagingErrorImpl
+    with DiagnosticableTreeMixin
+    implements MessagingError {
   const _$MessagingErrorImpl({required this.message});
 
   @override
   final String message;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'MessagingState.error(message: $message)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'MessagingState.error'))
+      ..add(DiagnosticsProperty('message', message));
   }
 
   @override

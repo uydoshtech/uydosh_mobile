@@ -672,6 +672,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirm => 'Confirm';
 
   @override
+  String get apply => 'Apply';
+
+  @override
   String get next => 'Next';
 
   @override

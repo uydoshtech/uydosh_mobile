@@ -1,5 +1,6 @@
 import "dart:math" as math;
 
+import "package:flutter/gestures.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -14,12 +15,13 @@ import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
-import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
+import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/search_floating_action_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 
 class _MapData {
   const _MapData({
@@ -102,6 +104,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
   int _selectedGender = 0; // 0 = all
   bool _isLoadingStationIds = false;
   late final AnimationController _refreshSpinController;
+  final SearchFiltersState _searchFiltersState = SearchFiltersState();
 
   @override
   void initState() {
@@ -775,46 +778,61 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                               final contentHeight = _svgHeight * scale;
                               final offsetX = (mapWidth - contentWidth) / 2;
                               final offsetY = (mapHeight - contentHeight) / 2;
-                              return InteractiveViewer(
-                                constrained: false,
-                                minScale: 0.6,
-                                maxScale: 8.0,
-                                boundaryMargin: const EdgeInsets.all(40),
-                                transformationController: _transformationController,
-                                child: SizedBox(
-                                  key: _mapKey,
-                                  width: mapWidth,
-                                  height: mapHeight,
-                                  child: RepaintBoundary(
-                                    child: Stack(
-                                      children: [
-                                        SvgPicture.string(
-                                          _processSvg(
-                                            mapData.rawSvg,
-                                            LanguageState().currentLanguage,
-                                            _stationIdsWithListings,
-                                            isBlueTheme,
+                              return Listener(
+                                behavior: HitTestBehavior.opaque,
+                                onPointerSignal: (event) {
+                                  if (event is! PointerScrollEvent) return;
+                                  final next =
+                                      _transformationController.value.clone()
+                                        ..translate(
+                                          -event.scrollDelta.dx,
+                                          -event.scrollDelta.dy,
+                                        );
+                                  _transformationController.value = next;
+                                },
+                                child: InteractiveViewer(
+                                  constrained: false,
+                                  minScale: 0.6,
+                                  maxScale: 8.0,
+                                  boundaryMargin: const EdgeInsets.all(40),
+                                  transformationController:
+                                      _transformationController,
+                                  child: SizedBox(
+                                    key: _mapKey,
+                                    width: mapWidth,
+                                    height: mapHeight,
+                                    child: RepaintBoundary(
+                                      child: Stack(
+                                        children: [
+                                          SvgPicture.string(
+                                            _processSvg(
+                                              mapData.rawSvg,
+                                              LanguageState().currentLanguage,
+                                              _stationIdsWithListings,
+                                              isBlueTheme,
+                                            ),
+                                            width: mapWidth,
+                                            height: mapHeight,
+                                            fit: BoxFit.contain,
+                                            semanticsLabel:
+                                                "Tashkent subway map",
                                           ),
-                                          width: mapWidth,
-                                          height: mapHeight,
-                                          fit: BoxFit.contain,
-                                          semanticsLabel: "Tashkent subway map",
-                                        ),
-                                        ..._buildMapOverlays(
-                                          scale,
-                                          offsetX,
-                                          offsetY,
-                                          isBlueTheme: isBlueTheme,
-                                        ),
-                                        ..._buildStationTapTargets(
-                                          context,
-                                          mapData.stationLabels,
-                                          scale,
-                                          offsetX,
-                                          offsetY,
-                                          LanguageState().currentLanguage,
-                                        ),
-                                      ],
+                                          ..._buildMapOverlays(
+                                            scale,
+                                            offsetX,
+                                            offsetY,
+                                            isBlueTheme: isBlueTheme,
+                                          ),
+                                          ..._buildStationTapTargets(
+                                            context,
+                                            mapData.stationLabels,
+                                            scale,
+                                            offsetX,
+                                            offsetY,
+                                            LanguageState().currentLanguage,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -827,42 +845,30 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ListingTypePicker(
-                            selectedListingTypeId: _selectedListingTypeId,
-                            onListingTypeChanged: (value) async {
-                              debugPrint("[AdminSubwayMap] listingType changed => $value");
-                              logger.i("[AdminSubwayMap] listingType changed => $value");
-                              setState(() => _selectedListingTypeId = value);
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: SearchFloatingActionButton(
+                        searchFiltersState: _searchFiltersState,
+                        tooltip: L10n.get("search"),
+                        onPressed: () {
+                          SearchBottomSheetWidget.show(
+                            context,
+                            openedFromHomeScreen: false,
+                            currentListingTypeId: _selectedListingTypeId,
+                            currentGender: _selectedGender,
+                            onApply: (result) async {
+                              if (!mounted) return;
+                              setState(() {
+                                _selectedListingTypeId = result.listingTypeId;
+                                _selectedGender = result.gender ?? 0;
+                              });
                               await _loadListingStationIds();
                             },
-                            useThemeColors: true,
-                            showArrows: false,
-                            includeUnselected: true,
-                            unselectedLabelKey: "all",
-                            useGlassPlate: true,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GenderPicker(
-                            selectedGender: _selectedGender,
-                            onGenderChanged: (value) async {
-                              debugPrint("[AdminSubwayMap] gender changed => $value");
-                              logger.i("[AdminSubwayMap] gender changed => $value");
-                              setState(() => _selectedGender = value);
-                              await _loadListingStationIds();
-                            },
-                            useThemeColors: true,
-                            showArrows: false,
-                            includeUnselected: true,
-                            unselectedLabelKey: "all",
-                            useGlassPlate: true,
-                          ),
-                        ),
-                      ],
+                            primaryLabelKey: "apply",
+                            primaryIcon: Icons.check,
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
