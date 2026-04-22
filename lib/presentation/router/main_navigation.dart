@@ -40,6 +40,7 @@ import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -712,10 +713,31 @@ class MainNavigationState extends State<MainNavigation>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: UydoshAppBar(
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        final useLiquidGlassAppBar = themeState.isBlueTheme;
+        final appBarTheme = Theme.of(context).appBarTheme;
+        return Scaffold(
+          extendBodyBehindAppBar: useLiquidGlassAppBar,
+          appBar: UydoshAppBar(
+            backgroundColor:
+                useLiquidGlassAppBar
+                    ? Colors.transparent
+                    : appBarTheme.backgroundColor,
+            surfaceTintColor:
+                useLiquidGlassAppBar ? Colors.transparent : appBarTheme.surfaceTintColor,
+            elevation: useLiquidGlassAppBar ? 0 : null,
+            scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
+            shadowColor:
+                useLiquidGlassAppBar ? Colors.transparent : appBarTheme.shadowColor,
+            forceMaterialTransparency: useLiquidGlassAppBar,
+            flexibleSpace:
+                useLiquidGlassAppBar
+                    ? const LiquidGlassAppBarFlexibleSpace()
+                    : null,
+            foregroundColor: appBarTheme.foregroundColor,
         title: _getAppBarTitle(),
         leading: Padding(
           padding: const EdgeInsets.only(left: 8),
@@ -859,38 +881,40 @@ class MainNavigationState extends State<MainNavigation>
           ),
         ],
       ),
-      drawer: const BurgerMenuWidget(),
-      onDrawerChanged: (isOpened) {
-        if (isOpened) HapticFeedbackUtils.impact();
-      },
-      body: IndexedStack(index: _currentIndex, children: _getScreens()),
-      bottomNavigationBar: ListenableBuilder(
-        listenable: UnreadMessagesState(),
-        builder: (context, child) {
-          return CustomCurvedNavigationBar(
-            currentIndex: _currentIndex,
-            navigationKey: _bottomNavigationKey,
-            isAuthenticated: _isAuthenticated,
-            hasUnreadMessages: UnreadMessagesState().hasUnreadMessages,
-            incomingMessageTravelDotTrigger: _incomingMessageTravelDotTrigger,
-            onTap: (index) {
-              HapticFeedbackUtils.impact();
+          drawer: const BurgerMenuWidget(),
+          onDrawerChanged: (isOpened) {
+            if (isOpened) HapticFeedbackUtils.impact();
+          },
+          body: IndexedStack(index: _currentIndex, children: _getScreens()),
+          bottomNavigationBar: ListenableBuilder(
+            listenable: UnreadMessagesState(),
+            builder: (context, child) {
+              return CustomCurvedNavigationBar(
+                currentIndex: _currentIndex,
+                navigationKey: _bottomNavigationKey,
+                isAuthenticated: _isAuthenticated,
+                hasUnreadMessages: UnreadMessagesState().hasUnreadMessages,
+                incomingMessageTravelDotTrigger: _incomingMessageTravelDotTrigger,
+                onTap: (index) {
+                  HapticFeedbackUtils.impact();
 
-              // Handle authentication requirements
-              if ((index == 1 || index == 2) && !_isAuthenticated) {
-                // Favorites and Conversations require authentication
-                return; // Don"t navigate, stay on current screen
-              }
+                  // Handle authentication requirements
+                  if ((index == 1 || index == 2) && !_isAuthenticated) {
+                    // Favorites and Conversations require authentication
+                    return; // Don"t navigate, stay on current screen
+                  }
 
-              // Allow navigation to all tabs
-              setState(() {
-                _currentIndex = index;
-              });
-              _scheduleMaybeShowNotificationsBellTutorial();
+                  // Allow navigation to all tabs
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                  _scheduleMaybeShowNotificationsBellTutorial();
+                },
+              );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -898,4 +922,3 @@ class MainNavigationState extends State<MainNavigation>
 // Global key to access MainNavigation state
 final GlobalKey<MainNavigationState> mainNavigationKey =
     GlobalKey<MainNavigationState>();
-

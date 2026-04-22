@@ -164,6 +164,13 @@ extension ThemeHelper on ThemeState {
     return chatComposerFieldTextColor(context).withValues(alpha: 0.6);
   }
 
+  /// Extra top inset for tab scroll views when the main shell uses a liquid-glass
+  /// app bar ([Scaffold.extendBodyBehindAppBar]). Add to your normal top padding.
+  double mainShellGlassExtraTopInset(BuildContext context) {
+    if (!isBlueTheme) return 0;
+    return MediaQuery.paddingOf(context).top + 8;
+  }
+
   /// Chat input bar background (container behind the field).
   ///
   /// Blue theme: mostly transparent so messages can show through when the bar

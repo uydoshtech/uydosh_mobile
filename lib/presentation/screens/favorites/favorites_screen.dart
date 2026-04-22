@@ -9,6 +9,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -357,11 +358,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       return _buildEmptyState();
     }
 
+    final topPad = 16.0 + ThemeState().mainShellGlassExtraTopInset(context);
     return UydoshRefreshIndicator(
       onRefresh: () => _loadFavoriteListings(isRefresh: true),
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, 16.0),
           itemCount: _favoriteListings.length,
           itemSpacing: 16.0,
           itemBuilder: (context, index) {

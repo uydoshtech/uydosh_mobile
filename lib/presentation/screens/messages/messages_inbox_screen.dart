@@ -790,8 +790,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         outgoingTiles
             ? _inboxEntriesWithDayHeaders(conversations)
             : _incomingEntriesWithDaySections(conversations);
+    final listTop =
+        widget.showCustomHeader
+            ? 0.0
+            : ThemeState().mainShellGlassExtraTopInset(context);
     return CommonListView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: EdgeInsets.fromLTRB(16, listTop, 16, 16),
       itemSpacing: 8,
       itemCount: entries.length,
       itemBuilder: (context, index) {

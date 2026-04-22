@@ -19,6 +19,7 @@ import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
@@ -599,10 +600,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         // scrollables during rebuild can trigger a mouse_tracker assertion.
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final topPad = ThemeState().mainShellGlassExtraTopInset(context);
             return ListView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+              padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, 16.0),
               children: [
                 SizedBox(
                   height: constraints.maxHeight,
@@ -1017,8 +1019,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadingState() {
+    final topPad = 16.0 + ThemeState().mainShellGlassExtraTopInset(context);
     return CommonListView(
-      padding: const EdgeInsets.fromLTRB(14.0, 16.0, 14.0, 16.0),
+      padding: EdgeInsets.fromLTRB(14.0, topPad, 14.0, 16.0),
       itemSpacing: 16.0,
       itemCount: 6,
       itemBuilder: (context, index) => const ListingTileSkeleton(),
@@ -1031,6 +1034,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
           itemCount: listings.length,
+          padding: EdgeInsets.fromLTRB(
+            14.0,
+            16.0 + ThemeState().mainShellGlassExtraTopInset(context),
+            14.0,
+            16.0,
+          ),
           itemBuilder: (context, index) {
             final listing = listings[index];
             return ListingTile(
@@ -1045,7 +1054,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             );
           },
           controller: _scrollController,
-          padding: const EdgeInsets.fromLTRB(14.0, 16.0, 14.0, 16.0),
           showRefreshIndicator:
               false, // Already handled by UydoshRefreshIndicator wrapper
           showLoadMoreIndicator: hasMore,
