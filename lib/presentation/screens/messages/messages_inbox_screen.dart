@@ -503,12 +503,19 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             )
             .toList();
 
-    return Column(
-      children: [
-        // Tab buttons
-        _buildTabButtons(incomingConversations, outgoingConversations),
-        // Tab content
-        Expanded(
+    final shellGlassTop =
+        widget.showCustomHeader
+            ? 0.0
+            : ThemeState().mainShellGlassExtraTopInset(context);
+
+    return Padding(
+      padding: EdgeInsets.only(top: shellGlassTop),
+      child: Column(
+        children: [
+          // Tab buttons
+          _buildTabButtons(incomingConversations, outgoingConversations),
+          // Tab content
+          Expanded(
           child: UydoshRefreshIndicator(
             onRefresh: _onInboxPullRefresh,
             child: PullToRefreshStretchHaptics(
@@ -525,7 +532,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             ),
           ),
         ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -790,12 +798,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         outgoingTiles
             ? _inboxEntriesWithDayHeaders(conversations)
             : _incomingEntriesWithDaySections(conversations);
-    final listTop =
-        widget.showCustomHeader
-            ? 0.0
-            : ThemeState().mainShellGlassExtraTopInset(context);
     return CommonListView(
-      padding: EdgeInsets.fromLTRB(16, listTop, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       itemSpacing: 8,
       itemCount: entries.length,
       itemBuilder: (context, index) {
