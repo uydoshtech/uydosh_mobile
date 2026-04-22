@@ -7,6 +7,16 @@ class AppTheme {
   static const String lightTheme = "light";
   static const String messagingTheme = "messaging";
 
+  /// Global fallback fonts used when the default platform font lacks a glyph.
+  ///
+  /// This keeps the app’s primary typography (Roboto/SF) while providing a
+  /// wider Unicode coverage for user-generated content and translations.
+  static const List<String> fontFamilyFallback = <String>[
+    "NotoSans",
+    "NotoSansArabic",
+    "NotoSansSymbols2",
+  ];
+
   /// Shared alpha for popup menus and [DropdownButton] panels so content behind shows slightly.
   static const double menuOverlaySurfaceOpacity = 0.92;
 
@@ -48,6 +58,7 @@ class AppTheme {
   /// Blue theme (new)
   static ThemeData _getBlueTheme() {
     return ThemeData(
+      fontFamilyFallback: fontFamilyFallback,
       colorScheme: ColorScheme.fromSeed(
         seedColor: BlueThemeColors.primary,
         primary: BlueThemeColors.primary,
@@ -275,6 +286,7 @@ class AppTheme {
   /// Light theme (new)
   static ThemeData _getLightTheme() {
     return ThemeData(
+      fontFamilyFallback: fontFamilyFallback,
       colorScheme: ColorScheme.fromSeed(
         seedColor: LightThemeColors.primary,
         primary: LightThemeColors.primary,
@@ -472,6 +484,7 @@ class AppTheme {
   /// Messaging theme - Dark blue background with white cards (based on the image)
   static ThemeData _getMessagingTheme() {
     return ThemeData(
+      fontFamilyFallback: fontFamilyFallback,
       colorScheme: ColorScheme.fromSeed(
         seedColor: MessagingThemeColors.primary,
         primary: MessagingThemeColors.primary,

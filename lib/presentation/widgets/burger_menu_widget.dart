@@ -138,7 +138,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                     children: [
                       Expanded(
                         child: ListView(
-                          padding: const EdgeInsets.only(top: 100),
+                          padding: const EdgeInsets.only(top: 16),
                           children: [
                             _DrawerProfileHeader(
                               isAuthenticated: isAuthenticated,
@@ -444,11 +444,12 @@ final class _DrawerColors {
 
   static Color divider() {
     final currentTheme = ThemeState().currentTheme;
-    return switch (currentTheme) {
+    final base = switch (currentTheme) {
       AppTheme.blueTheme => AppColors.textLight,
       AppTheme.lightTheme => const Color(0xFFD1D5DB),
       _ => const Color(0xFFD1D5DB),
     };
+    return base.withValues(alpha: 0.18);
   }
 
   static Color glassTint(BuildContext context) {
@@ -476,12 +477,6 @@ class _DrawerGlassSurface extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: _DrawerColors.glassTint(context),
-            border: Border(
-              right: BorderSide(
-                color: _DrawerColors.glassBorder(context),
-                width: 1,
-              ),
-            ),
           ),
           child: child,
         ),
@@ -495,7 +490,13 @@ class _DrawerDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Divider(color: _DrawerColors.divider(), thickness: 1, height: 1);
+    return Divider(
+      color: _DrawerColors.divider(),
+      thickness: 0.5,
+      height: 24,
+      indent: 16,
+      endIndent: 16,
+    );
   }
 }
 
@@ -505,7 +506,7 @@ class _DrawerFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: FutureBuilder<String>(
         future: VersionService.getVersion(),
         builder: (context, snapshot) {
@@ -541,14 +542,14 @@ class _DrawerProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!isAuthenticated) {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        height: 80 + 12 + 24,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        height: 64 + 10 + 22,
         child: const SizedBox.shrink(),
       );
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Center(
         child: Column(
           children: [
@@ -560,13 +561,13 @@ class _DrawerProfileHeader extends StatelessWidget {
                 label: L10n.get("profile"),
                 button: true,
                 child: SizedBox(
-                  width: 80,
-                  height: 80,
+                  width: 64,
+                  height: 64,
                   child: ClipOval(child: profilePicture),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             BlocSelector<
               CurrentUserProfileBloc,
               CurrentUserProfileState,
@@ -635,7 +636,7 @@ class _DrawerProfileHeader extends StatelessWidget {
                 return Text(
                   displayName,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: _DrawerColors.text(),
                   ),
@@ -663,11 +664,11 @@ class _ProfilePicture extends StatelessWidget {
     return ClipOval(
       child: CachedNetworkImage(
         imageUrl: url,
-        width: 80,
-        height: 80,
+        width: 64,
+        height: 64,
         fit: BoxFit.cover,
-        memCacheWidth: 160,
-        memCacheHeight: 160,
+        memCacheWidth: 128,
+        memCacheHeight: 128,
         fadeInDuration: const Duration(milliseconds: 300),
         fadeInCurve: Curves.easeOut,
         placeholder: (context, url) => Center(
