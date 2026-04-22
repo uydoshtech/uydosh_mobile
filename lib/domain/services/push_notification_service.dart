@@ -25,7 +25,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 abstract class IPushNotificationService {
-  /// Initialize FCM: request permission, get token, set up handlers.
+  /// Initialize FCM wiring without prompting the OS permission alert.
+  ///
+  /// Important: do NOT call `requestPermission` here. We want the app to start
+  /// without the iOS permission modal; permission should be requested from an
+  /// explicit user action (e.g. Notifications screen, creating an alert).
   Future<void> initialize();
 
   /// Register the current FCM token with the backend (call after auth).
@@ -101,24 +105,14 @@ class PushNotificationService implements IPushNotificationService {
     try {
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-      // Set up handlers BEFORE requesting permission so onTokenRefresh is
-      // wired even if the user denies the permission prompt this session —
-      // otherwise a later approval (or background APNs delivery) would be lost.
+      // Set up handlers early. Even if permission is not granted yet, this
+      // keeps `onTokenRefresh` wired for the moment APNs/FCM delivers a token
+      // after the user enables notifications later.
       _setupMessageHandlers();
 
-      final settings = await FirebaseMessaging.instance.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-      logger.d(
-        "📲 FCM permission status: ${settings.authorizationStatus.name}",
-      );
-
-      if (settings.authorizationStatus == AuthorizationStatus.denied) {
-        logger.d("📲 Push notification permission denied");
-        return;
-      }
+      // Do NOT request permission here (would show iOS system modal on launch).
+      final settings = await FirebaseMessaging.instance.getNotificationSettings();
+      logger.d("📲 FCM permission status (no prompt): ${settings.authorizationStatus.name}");
 
       final initialMessage =
           await FirebaseMessaging.instance.getInitialMessage();

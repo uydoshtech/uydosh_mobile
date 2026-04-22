@@ -5,12 +5,17 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
+import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_inset_container.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -89,6 +94,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
 
   final IAdminTelegramSyncService _service = getIt<IAdminTelegramSyncService>();
   final IAdminUserService _adminUserService = getIt<IAdminUserService>();
+  final IAdminAreaPriceCacheService _areaPriceCacheService =
+      getIt<IAdminAreaPriceCacheService>();
   final _chatController = TextEditingController(text: "@roommateuz");
   final _exportMaxRowsController = TextEditingController(text: "100000");
 
@@ -108,6 +115,10 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   bool _clearingIngested = false;
   TelegramSyncRunResult? _lastResult;
   String? _errorText;
+
+  bool _refreshingAreaPriceCache = false;
+  AreaPriceCacheRefreshResult? _areaPriceCacheResult;
+  String? _areaPriceCacheErrorText;
 
   @override
   void initState() {
@@ -358,6 +369,28 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     }
   }
 
+  Future<void> _refreshAreaPriceCache() async {
+    setState(() {
+      _refreshingAreaPriceCache = true;
+      _areaPriceCacheErrorText = null;
+      _areaPriceCacheResult = null;
+    });
+    try {
+      final r = await _areaPriceCacheService.refreshCache();
+      if (!mounted) return;
+      setState(() {
+        _areaPriceCacheResult = r;
+        _refreshingAreaPriceCache = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _areaPriceCacheErrorText = e.toString();
+        _refreshingAreaPriceCache = false;
+      });
+    }
+  }
+
   Widget _bulletLine(
     String text, {
     EdgeInsetsGeometry padding = const EdgeInsets.only(bottom: 6),
@@ -405,10 +438,14 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           style: sectionTitleStyle,
         ),
         const SizedBox(height: 8),
-        _bulletLine("scanned=${r.sync.scanned}"),
-        _bulletLine("created=$created"),
-        _bulletLine("skippedNoPeer=${r.sync.skippedNoPeer}"),
-        _bulletLine("skippedBroadcast=${r.sync.skippedBroadcast}"),
+        _bulletLine("${L10n.get("admin_telegram_sync_log_scanned")}: ${r.sync.scanned}"),
+        _bulletLine("${L10n.get("admin_telegram_sync_log_created")}: $created"),
+        _bulletLine(
+          "${L10n.get("admin_telegram_sync_log_skipped_no_peer")}: ${r.sync.skippedNoPeer}",
+        ),
+        _bulletLine(
+          "${L10n.get("admin_telegram_sync_log_skipped_broadcast")}: ${r.sync.skippedBroadcast}",
+        ),
       ],
     );
 
@@ -422,20 +459,40 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                 style: sectionTitleStyle,
               ),
               const SizedBox(height: 8),
-              _bulletLine("created=${li.imported}"),
-              _bulletLine("skippedEmpty=${li.skippedEmpty}"),
-              _bulletLine("skippedBroadcast=${li.skippedBroadcast}"),
-              _bulletLine("skippedNoType=${li.skippedNoListingType}"),
-              _bulletLine("skippedFailed=${li.skippedFailed}"),
+              _bulletLine(
+                "${L10n.get("admin_telegram_sync_log_created")}: ${li.imported}",
+              ),
+              _bulletLine(
+                "${L10n.get("admin_telegram_sync_log_skipped_empty")}: ${li.skippedEmpty}",
+              ),
+              _bulletLine(
+                "${L10n.get("admin_telegram_sync_log_skipped_broadcast")}: ${li.skippedBroadcast}",
+              ),
+              _bulletLine(
+                "${L10n.get("admin_telegram_sync_log_skipped_no_type")}: ${li.skippedNoListingType}",
+              ),
+              _bulletLine(
+                "${L10n.get("admin_telegram_sync_log_skipped_failed")}: ${li.skippedFailed}",
+              ),
               if (li.errors.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                SelectableText("errors:", style: sectionTitleStyle),
+                SelectableText(
+                  L10n.get("admin_telegram_sync_log_errors_title"),
+                  style: sectionTitleStyle,
+                ),
                 const SizedBox(height: 6),
                 ...li.errors.take(12).map((e) => _bulletLine(e, indent: 12)),
                 if (li.errors.length > 12)
                   Padding(
                     padding: const EdgeInsets.only(left: 12, top: 2),
-                    child: SelectableText("… (${li.errors.length - 12} more)"),
+                    child: SelectableText(
+                      L10n.getWithParams(
+                        "admin_telegram_sync_log_more",
+                        params: {
+                          "count": (li.errors.length - 12).toString(),
+                        },
+                      ),
+                    ),
                   ),
               ],
             ],
@@ -515,40 +572,46 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     String? helperText,
   }) {
     final theme = Theme.of(context);
-    if (!ThemeState().isBlueTheme) {
-      return InputDecoration(
-        labelText: labelText,
-        helperText: helperText,
-        border: const OutlineInputBorder(),
-      );
-    }
-    final outline = theme.colorScheme.outline;
+    // We render fields inside [NeumorphicInsetContainer], so borders must be
+    // transparent and compact.
     return InputDecoration(
       labelText: labelText,
       helperText: helperText,
-      filled: true,
-      fillColor: BlueThemeColors.surface,
-      labelStyle: const TextStyle(color: BlueThemeColors.textSecondary),
-      floatingLabelStyle: const TextStyle(color: BlueThemeColors.primaryLight),
-      helperStyle: const TextStyle(color: BlueThemeColors.textHint),
-      border: OutlineInputBorder(
-        borderRadius: _kFieldBorderRadius,
-        borderSide: BorderSide(color: outline),
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+      filled: false,
+      fillColor: Colors.transparent,
+      labelStyle: TextStyle(
+        color: ThemeState().isBlueTheme
+            ? BlueThemeColors.textSecondary
+            : theme.colorScheme.onSurfaceVariant,
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: _kFieldBorderRadius,
-        borderSide: BorderSide(color: outline),
+      floatingLabelStyle: TextStyle(
+        color: ThemeState().isBlueTheme
+            ? BlueThemeColors.primaryLight
+            : theme.colorScheme.primary,
+      ),
+      helperStyle: TextStyle(
+        color: ThemeState().isBlueTheme
+            ? BlueThemeColors.textHint
+            : theme.colorScheme.onSurfaceVariant,
+      ),
+      border: const OutlineInputBorder(
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide.none,
       ),
       focusedBorder: const OutlineInputBorder(
-        borderRadius: _kFieldBorderRadius,
-        borderSide: BorderSide(
-          color: BlueThemeColors.inputFocused,
-          width: 2,
-        ),
+        borderSide: BorderSide.none,
       ),
       errorBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.transparent),
         borderRadius: _kFieldBorderRadius,
-        borderSide: BorderSide(color: theme.colorScheme.error),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.transparent),
+        borderRadius: _kFieldBorderRadius,
       ),
     );
   }
@@ -559,17 +622,13 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     final fieldStyle = isBlue
         ? const TextStyle(color: BlueThemeColors.textPrimary, fontSize: 16)
         : null;
-    final primaryFullWidthStyle = isBlue
-        ? FilledButton.styleFrom(
-            backgroundColor: BlueThemeColors.buttonPrimary,
-            foregroundColor: BlueThemeColors.textPrimary,
-            minimumSize: const Size(double.infinity, 48),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          )
-        : FilledButton.styleFrom(
-            minimumSize: const Size(double.infinity, 48),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          );
+    final primaryButtonBase =
+        isBlue ? BlueThemeColors.buttonPrimary : ThemeState().cardColor;
+    final primaryButtonText = isBlue
+        ? BlueThemeColors.textPrimary
+        : Theme.of(context).colorScheme.onSurface;
+    final primaryButtonPadding =
+        const EdgeInsets.symmetric(horizontal: 20, vertical: 12);
 
     return Scaffold(
       appBar: UydoshAppBar(
@@ -622,14 +681,18 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                   icon: Icons.sync,
                 ),
                 children: [
-                  TextField(
-                    controller: _chatController,
-                    style: fieldStyle,
-                    decoration: _fieldDecoration(
-                      context,
-                      labelText: L10n.get("admin_telegram_sync_chat_label"),
+                  NeumorphicInsetContainer(
+                    borderRadius: const BorderRadius.all(Radius.circular(12)),
+                    backgroundColor: isBlue ? BlueThemeColors.surface : null,
+                    child: TextField(
+                      controller: _chatController,
+                      style: fieldStyle,
+                      decoration: _fieldDecoration(
+                        context,
+                        labelText: L10n.get("admin_telegram_sync_chat_label"),
+                      ),
+                      autocorrect: false,
                     ),
-                    autocorrect: false,
                   ),
                   const SizedBox(height: 16),
                   if (_loadingAdmins)
@@ -673,11 +736,15 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                         fontSize: 12,
                       ),
                     ),
-                    FilledButton.icon(
-                      style: primaryFullWidthStyle,
+                    PrimaryButtonFactory.iconTextCentered(
                       onPressed: _loadAdmins,
-                      icon: const ThemeIcon(Icons.refresh),
-                      label: Text(L10n.get("admin_telegram_sync_admins_retry")),
+                      icon: Icons.refresh,
+                      text: L10n.get("admin_telegram_sync_admins_retry"),
+                      width: double.infinity,
+                      height: 48,
+                      padding: primaryButtonPadding,
+                      surfaceGradientBase: primaryButtonBase,
+                      textColor: primaryButtonText,
                     ),
                   ] else ...[
                     if (_adminUsers.isEmpty)
@@ -693,39 +760,43 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                               ),
                         ),
                       ),
-                    DropdownButtonFormField<int?>(
-                      // Controlled after async load; `value` is required (`initialValue` resets on rebuild).
-                      // ignore: deprecated_member_use
-                      value: _selectedImportUserId,
-                      items: [
-                        DropdownMenuItem<int?>(
-                          value: null,
-                          child: Text(
-                            L10n.get("admin_telegram_sync_import_user_sync_only"),
-                          ),
-                        ),
-                        ..._adminUsers.map(
-                          (u) => DropdownMenuItem<int?>(
-                            value: u.id,
+                    NeumorphicInsetContainer(
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                      backgroundColor: isBlue ? BlueThemeColors.surface : null,
+                      child: DropdownButtonFormField<int?>(
+                        // Controlled after async load; `value` is required (`initialValue` resets on rebuild).
+                        // ignore: deprecated_member_use
+                        value: _selectedImportUserId,
+                        items: [
+                          DropdownMenuItem<int?>(
+                            value: null,
                             child: Text(
-                              _adminDropdownLabel(u),
-                              overflow: TextOverflow.ellipsis,
+                              L10n.get("admin_telegram_sync_import_user_sync_only"),
                             ),
                           ),
+                          ..._adminUsers.map(
+                            (u) => DropdownMenuItem<int?>(
+                              value: u.id,
+                              child: Text(
+                                _adminDropdownLabel(u),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: _running
+                            ? null
+                            : (v) => setState(() => _selectedImportUserId = v),
+                        decoration: _fieldDecoration(
+                          context,
+                          labelText: L10n.get("admin_telegram_sync_import_user_label"),
+                          helperText: L10n.get("admin_telegram_sync_import_user_helper"),
                         ),
-                      ],
-                      onChanged: _running
-                          ? null
-                          : (v) => setState(() => _selectedImportUserId = v),
-                      decoration: _fieldDecoration(
-                        context,
-                        labelText: L10n.get("admin_telegram_sync_import_user_label"),
-                        helperText: L10n.get("admin_telegram_sync_import_user_helper"),
+                        style: fieldStyle,
+                        isExpanded: true,
+                        dropdownColor: isBlue ? BlueThemeColors.surface : null,
+                        iconEnabledColor: isBlue ? BlueThemeColors.textPrimary : null,
                       ),
-                      style: fieldStyle,
-                      isExpanded: true,
-                      dropdownColor: isBlue ? BlueThemeColors.surface : null,
-                      iconEnabledColor: isBlue ? BlueThemeColors.textPrimary : null,
                     ),
                   ],
                   const SizedBox(height: 8),
@@ -806,30 +877,122 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  FilledButton.icon(
-                    style: primaryFullWidthStyle,
+                  PrimaryButton(
                     onPressed: _running ? null : _run,
-                    icon: _running
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: isBlue
-                                  ? BlueThemeColors.textPrimary
-                                  : Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          )
-                        : const ThemeIcon(Icons.sync),
-                    label: Text(
-                      _running
-                          ? L10n.get("admin_telegram_sync_running")
-                          : L10n.get("admin_telegram_sync_run"),
+                    width: double.infinity,
+                    height: 48,
+                    padding: primaryButtonPadding,
+                    surfaceGradientBase: primaryButtonBase,
+                    textColor: primaryButtonText,
+                    isLoading: _running,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const ThemeIcon(Icons.sync),
+                        const SizedBox(width: 8),
+                        Text(
+                          _running
+                              ? L10n.get("admin_telegram_sync_running")
+                              : L10n.get("admin_telegram_sync_run"),
+                        ),
+                      ],
                     ),
                   ),
                   if (_lastResult != null) ...[
                     const SizedBox(height: 20),
                     _resultView(_lastResult!),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _neumorphicTile(
+            context: context,
+            clipBehavior: Clip.antiAlias,
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                dividerColor: Colors.transparent,
+                expansionTileTheme: const ExpansionTileThemeData(
+                  backgroundColor: Colors.transparent,
+                  collapsedBackgroundColor: Colors.transparent,
+                ),
+              ),
+              child: ExpansionTile(
+                initiallyExpanded: false,
+                onExpansionChanged: (expanded) {
+                  if (expanded) HapticFeedbackUtils.impact();
+                },
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                collapsedShape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                title: _expansionSectionTitle(
+                  context,
+                  title: L10n.get("admin_area_price_cache_section_title"),
+                  icon: Icons.analytics_outlined,
+                ),
+                children: [
+                  Text(
+                    L10n.get("admin_area_price_cache_screen_body"),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  PrimaryButton(
+                    onPressed: _refreshingAreaPriceCache ? null : _refreshAreaPriceCache,
+                    width: double.infinity,
+                    height: 48,
+                    padding: primaryButtonPadding,
+                    surfaceGradientBase: primaryButtonBase,
+                    textColor: primaryButtonText,
+                    isLoading: _refreshingAreaPriceCache,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const ThemeIcon(Icons.analytics_outlined),
+                        const SizedBox(width: 8),
+                        Text(
+                          _refreshingAreaPriceCache
+                              ? L10n.get("admin_area_price_cache_running")
+                              : L10n.get("admin_area_price_cache_run"),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_areaPriceCacheErrorText != null) ...[
+                    const SizedBox(height: 16),
+                    SelectableText(
+                      _areaPriceCacheErrorText!,
+                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    ),
+                  ],
+                  if (_areaPriceCacheResult != null) ...[
+                    const SizedBox(height: 16),
+                    SelectableText(
+                      L10n.get("admin_telegram_sync_result_header"),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    _bulletLine(
+                      "• Duration: ${_areaPriceCacheResult!.durationMs} ms",
+                      padding: const EdgeInsets.only(bottom: 4),
+                    ),
+                    _bulletLine(
+                      "• Cache rows: ${_areaPriceCacheResult!.rowCount}",
+                      padding: const EdgeInsets.only(bottom: 4),
+                    ),
+                    _bulletLine(
+                      "• Source listings: ${_areaPriceCacheResult!.listingCount}",
+                      padding: EdgeInsets.zero,
+                    ),
                   ],
                 ],
               ),
@@ -873,37 +1036,41 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: _exportMaxRowsController,
-                    style: fieldStyle,
-                    decoration: _fieldDecoration(
-                      context,
-                      labelText: L10n.get("admin_telegram_export_max_rows_label"),
+                  NeumorphicInsetContainer(
+                    borderRadius: const BorderRadius.all(Radius.circular(12)),
+                    backgroundColor: isBlue ? BlueThemeColors.surface : null,
+                    child: TextField(
+                      controller: _exportMaxRowsController,
+                      style: fieldStyle,
+                      decoration: _fieldDecoration(
+                        context,
+                        labelText: L10n.get("admin_telegram_export_max_rows_label"),
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      enabled: !_exporting,
                     ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    enabled: !_exporting,
                   ),
                   const SizedBox(height: 16),
-                  FilledButton.icon(
-                    style: primaryFullWidthStyle,
+                  PrimaryButton(
                     onPressed: (_running || _exporting) ? null : _downloadExport,
-                    icon: _exporting
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: isBlue
-                                  ? BlueThemeColors.textPrimary
-                                  : Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          )
-                        : const ThemeIcon(Icons.download_outlined),
-                    label: Text(
-                      _exporting
-                          ? L10n.get("admin_telegram_export_running")
-                          : L10n.get("admin_telegram_export_download"),
+                    width: double.infinity,
+                    height: 48,
+                    padding: primaryButtonPadding,
+                    surfaceGradientBase: primaryButtonBase,
+                    textColor: primaryButtonText,
+                    isLoading: _exporting,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const ThemeIcon(Icons.download_outlined),
+                        const SizedBox(width: 8),
+                        Text(
+                          _exporting
+                              ? L10n.get("admin_telegram_export_running")
+                              : L10n.get("admin_telegram_export_download"),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -920,15 +1087,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   Widget _buildDangerZone(BuildContext context, {required bool isBlue}) {
     final theme = Theme.of(context);
     final errorColor = theme.colorScheme.error;
-    final onErrorColor = theme.colorScheme.onError;
     final busy = _running || _exporting || _clearingListings || _clearingIngested;
-
-    final dangerButtonStyle = FilledButton.styleFrom(
-      backgroundColor: errorColor,
-      foregroundColor: onErrorColor,
-      minimumSize: const Size(double.infinity, 48),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-    );
+    final pad = const EdgeInsets.symmetric(horizontal: 20, vertical: 12);
 
     return _neumorphicTile(
       context: context,
@@ -978,44 +1138,34 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            FilledButton.icon(
-              style: dangerButtonStyle,
+            GhostButtonFactory.iconTextCentered(
               onPressed: busy ? null : _clearAllListings,
-              icon: _clearingListings
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: onErrorColor,
-                      ),
-                    )
-                  : const ThemeIcon(Icons.delete_sweep_outlined),
-              label: Text(
-                _clearingListings
-                    ? L10n.get("admin_data_import_clear_listings_running")
-                    : L10n.get("admin_data_import_clear_listings_button"),
-              ),
+              icon: Icons.delete_sweep_outlined,
+              text: _clearingListings
+                  ? L10n.get("admin_data_import_clear_listings_running")
+                  : L10n.get("admin_data_import_clear_listings_button"),
+              width: double.infinity,
+              height: 48,
+              padding: pad,
+              borderColor: errorColor,
+              textColor: errorColor,
+              iconColor: errorColor,
+              isLoading: _clearingListings,
             ),
             const SizedBox(height: 12),
-            FilledButton.icon(
-              style: dangerButtonStyle,
+            GhostButtonFactory.iconTextCentered(
               onPressed: busy ? null : _clearIngestedMessages,
-              icon: _clearingIngested
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: onErrorColor,
-                      ),
-                    )
-                  : const ThemeIcon(Icons.delete_outline),
-              label: Text(
-                _clearingIngested
-                    ? L10n.get("admin_data_import_clear_ingested_running")
-                    : L10n.get("admin_data_import_clear_ingested_button"),
-              ),
+              icon: Icons.delete_outline,
+              text: _clearingIngested
+                  ? L10n.get("admin_data_import_clear_ingested_running")
+                  : L10n.get("admin_data_import_clear_ingested_button"),
+              width: double.infinity,
+              height: 48,
+              padding: pad,
+              borderColor: errorColor,
+              textColor: errorColor,
+              iconColor: errorColor,
+              isLoading: _clearingIngested,
             ),
           ],
         ),

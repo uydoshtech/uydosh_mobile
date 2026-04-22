@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/screens/admin/admin_area_price_cache_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_content_moderation_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
@@ -213,18 +212,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => const AdminTelegramSyncScreen(),
-                    ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
-                icon: Icons.insights_outlined,
-                titleKey: "admin_panel_section_area_price_cache",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AdminAreaPriceCacheScreen(),
                     ),
                   );
                 },

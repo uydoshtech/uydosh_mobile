@@ -40,35 +40,34 @@ class PushedMessagesInboxScaffold extends StatelessWidget {
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: ListenableBuilder(
-              listenable: Listenable.merge([
-                AuthenticationState(),
-                ActiveSearchAlertsState(),
-              ]),
-              builder: (context, _) {
-                final signedIn = AuthenticationState().isAuthenticated;
-                final activeAlerts =
-                    signedIn && ActiveSearchAlertsState().hasActiveEnabledAlerts;
-                return ThreeDAppBarIconButton(
+          ListenableBuilder(
+            listenable: Listenable.merge([
+              AuthenticationState(),
+              ActiveSearchAlertsState(),
+            ]),
+            builder: (context, _) {
+              final signedIn = AuthenticationState().isAuthenticated;
+              if (!signedIn) return const SizedBox.shrink();
+
+              final activeAlerts =
+                  ActiveSearchAlertsState().hasActiveEnabledAlerts;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: ThreeDAppBarIconButton(
                   borderRadius: const BorderRadius.all(Radius.circular(999)),
                   iconData: activeAlerts
                       ? Icons.notifications
                       : Icons.notifications_none_outlined,
                   onPressed: () {
-                    if (!AuthenticationState().isAuthenticated) {
-                      context.pushReplaceAuthWizard();
-                      return;
-                    }
                     context.pushNotifications();
                   },
                   semanticsLabel: activeAlerts
                       ? "${L10n.get("menu_notifications")}, ${L10n.get("notifications_appbar_semantics_active_alerts")}"
                       : L10n.get("menu_notifications"),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
           Padding(
             padding: const EdgeInsets.only(right: 16),

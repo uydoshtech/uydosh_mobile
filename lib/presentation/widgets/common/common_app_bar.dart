@@ -96,6 +96,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
           automaticallyImplyLeading && showBackButton && !injectDefaultBack,
       leading: effectiveLeading,
       actions: actions,
+      actionsPadding: const EdgeInsets.only(right: 8),
       centerTitle: centerTitle,
     );
   }
@@ -125,12 +126,6 @@ class _LiquidGlassAppBarBackground extends StatelessWidget {
                 base.withOpacity(0.28),
                 base.withOpacity(0.12),
               ],
-            ),
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.white.withOpacity(0.14),
-                width: 1,
-              ),
             ),
             boxShadow: [
               BoxShadow(

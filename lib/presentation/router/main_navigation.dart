@@ -755,18 +755,21 @@ class MainNavigationState extends State<MainNavigation>
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: ListenableBuilder(
-              listenable: Listenable.merge([
-                AuthenticationState(),
-                ActiveSearchAlertsState(),
-              ]),
-              builder: (context, _) {
-                final signedIn = AuthenticationState().isAuthenticated;
-                final activeAlerts =
-                    signedIn && ActiveSearchAlertsState().hasActiveEnabledAlerts;
-                return TutorialTargetWrapper(
+          ListenableBuilder(
+            listenable: Listenable.merge([
+              AuthenticationState(),
+              ActiveSearchAlertsState(),
+            ]),
+            builder: (context, _) {
+              final signedIn = AuthenticationState().isAuthenticated;
+              if (!signedIn) return const SizedBox.shrink();
+
+              final activeAlerts =
+                  ActiveSearchAlertsState().hasActiveEnabledAlerts;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: TutorialTargetWrapper(
                   key: notificationsBellTutorialKey,
                   child: _threeDAppBarIconButton(
                     borderRadius: const BorderRadius.all(Radius.circular(999)),
@@ -774,19 +777,15 @@ class MainNavigationState extends State<MainNavigation>
                         ? Icons.notifications
                         : Icons.notifications_none_outlined,
                     onPressed: () {
-                      if (!AuthenticationState().isAuthenticated) {
-                        context.pushReplaceAuthWizard();
-                        return;
-                      }
                       context.pushNotifications();
                     },
                     semanticsLabel: activeAlerts
                         ? "${L10n.get("menu_notifications")}, ${L10n.get("notifications_appbar_semantics_active_alerts")}"
                         : L10n.get("menu_notifications"),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
           // Profile button on the right side with proper margin
           Padding(

@@ -137,6 +137,9 @@ class AppStrings {
       "view_listing": "View Listing",
       "menu_messages": "Messages",
       "menu_notifications": "Notifications",
+      "menu_enable_notifications": "Enable notifications",
+      "notifications_enabled": "Notifications enabled",
+      "notifications_enable_in_settings": "Please enable notifications in Settings",
       "notifications_appbar_semantics_active_alerts": "Active search alerts",
       "notifications_empty": "No saved alerts yet.",
       "notifications_alerts_explainer":
@@ -615,8 +618,6 @@ class AppStrings {
       "admin_panel_category_settings": "Application Settings",
       "admin_panel_section_content_moderation": "Client configuration",
       "admin_content_moderation_title": "Client configuration",
-      "admin_content_moderation_description":
-          "Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).",
       "admin_client_settings_show_listing_contacts":
           "Show listing contact details",
       "admin_client_settings_show_listing_contacts_description":
@@ -662,6 +663,15 @@ class AppStrings {
       "admin_telegram_sync_result_header": "Result",
       "admin_telegram_sync_sync_section": "DB sync",
       "admin_telegram_sync_listing_section": "Listing import",
+      "admin_telegram_sync_log_scanned": "scanned",
+      "admin_telegram_sync_log_created": "created",
+      "admin_telegram_sync_log_skipped_no_peer": "skippedNoPeer",
+      "admin_telegram_sync_log_skipped_broadcast": "skippedBroadcast",
+      "admin_telegram_sync_log_skipped_empty": "skippedEmpty",
+      "admin_telegram_sync_log_skipped_no_type": "skippedNoType",
+      "admin_telegram_sync_log_skipped_failed": "skippedFailed",
+      "admin_telegram_sync_log_errors_title": "Errors:",
+      "admin_telegram_sync_log_more": "… ({count} more)",
       "admin_telegram_sync_invalid_chat_limit":
           "Enter a chat (e.g. @roommateuz).",
       "admin_telegram_sync_invalid_import_user":
@@ -1240,6 +1250,10 @@ class AppStrings {
       "view_listing": "Посмотреть объявление",
       "menu_messages": "Сообщения",
       "menu_notifications": "Уведомления",
+      "menu_enable_notifications": "Включить уведомления",
+      "notifications_enabled": "Уведомления включены",
+      "notifications_enable_in_settings":
+          "Включите уведомления в настройках приложения",
       "notifications_appbar_semantics_active_alerts":
           "Есть активные оповещения о поиске",
       "notifications_empty": "Пока нет сохранённых оповещений.",
@@ -1723,8 +1737,6 @@ class AppStrings {
       "admin_panel_category_settings": "Настройки приложения",
       "admin_panel_section_content_moderation": "Настройки клиента",
       "admin_content_moderation_title": "Настройки клиента",
-      "admin_content_moderation_description":
-          "Модерация фото (сервер): если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).",
       "admin_client_settings_show_listing_contacts":
           "Показывать контакты в объявлениях",
       "admin_client_settings_show_listing_contacts_description":
@@ -1773,6 +1785,15 @@ class AppStrings {
       "admin_telegram_sync_result_header": "Результат",
       "admin_telegram_sync_sync_section": "Синк БД",
       "admin_telegram_sync_listing_section": "Импорт объявлений",
+      "admin_telegram_sync_log_scanned": "просканировано",
+      "admin_telegram_sync_log_created": "создано",
+      "admin_telegram_sync_log_skipped_no_peer": "пропущеноБезПира",
+      "admin_telegram_sync_log_skipped_broadcast": "пропущеноБродкаст",
+      "admin_telegram_sync_log_skipped_empty": "пропущеноПустое",
+      "admin_telegram_sync_log_skipped_no_type": "пропущеноБезТипа",
+      "admin_telegram_sync_log_skipped_failed": "пропущеноСОшибкой",
+      "admin_telegram_sync_log_errors_title": "Ошибки:",
+      "admin_telegram_sync_log_more": "… (ещё {count})",
       "admin_telegram_sync_invalid_chat_limit":
           "Укажите чат (например @roommateuz).",
       "admin_telegram_sync_invalid_import_user":
@@ -2353,6 +2374,10 @@ class AppStrings {
       "view_listing": "E'lonni ko'rish",
       "menu_messages": "Xabarlar",
       "menu_notifications": "Bildirishnomalar",
+      "menu_enable_notifications": "Bildirishnomalarni yoqish",
+      "notifications_enabled": "Bildirishnomalar yoqildi",
+      "notifications_enable_in_settings":
+          "Ilova sozlamalarida bildirishnomalarni yoqing",
       "notifications_appbar_semantics_active_alerts":
           "Faol qidiruv bildirishnomalari",
       "notifications_empty": "Hozircha saqlangan bildirishnomalar yo'q.",
@@ -2846,8 +2871,6 @@ class AppStrings {
       "admin_panel_category_settings": "Ilova sozlamalari",
       "admin_panel_section_content_moderation": "Klient sozlamalari",
       "admin_content_moderation_title": "Klient sozlamalari",
-      "admin_content_moderation_description":
-          "Foto moderatsiyasi (server): yoqilganda, yuklangan fotolar nojo'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O'chirilganda tekshirish va xiralashtirish o'tkazilmaydi (AWS Rekognition chaqiruvlari yo'q).",
       "admin_client_settings_show_listing_contacts":
           "Eʼlondagi kontaktlarni ko‘rsatish",
       "admin_client_settings_show_listing_contacts_description":
@@ -2896,6 +2919,15 @@ class AppStrings {
       "admin_telegram_sync_result_header": "Natija",
       "admin_telegram_sync_sync_section": "DB sinxron",
       "admin_telegram_sync_listing_section": "E’lon importi",
+      "admin_telegram_sync_log_scanned": "ko‘rib chiqildi",
+      "admin_telegram_sync_log_created": "yaratildi",
+      "admin_telegram_sync_log_skipped_no_peer": "peerYo‘qO‘tkazibYuborildi",
+      "admin_telegram_sync_log_skipped_broadcast": "broadcastO‘tkazibYuborildi",
+      "admin_telegram_sync_log_skipped_empty": "bo‘shO‘tkazibYuborildi",
+      "admin_telegram_sync_log_skipped_no_type": "turiYo‘qO‘tkazibYuborildi",
+      "admin_telegram_sync_log_skipped_failed": "xatoBilanO‘tkazibYuborildi",
+      "admin_telegram_sync_log_errors_title": "Xatolar:",
+      "admin_telegram_sync_log_more": "… (yana {count})",
       "admin_telegram_sync_invalid_chat_limit":
           "Chat kiriting (masalan @roommateuz).",
       "admin_telegram_sync_invalid_import_user":

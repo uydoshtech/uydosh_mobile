@@ -54,12 +54,132 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   List<SearchAlert> _alerts = const [];
   bool _showAlertsExplainer = true;
 
+  AuthorizationStatus? _pushStatus;
+  bool _pushStatusLoading = false;
+
   bool _pushDebugExpanded = false;
   bool _pushDebugLoading = false;
   String? _pushPermission;
   String? _apnsTokenPreview;
   String? _fcmTokenPreview;
   bool _hasBackendSessionToken = false;
+
+  Future<void> _loadPushStatus() async {
+    final push = getIt<IPushNotificationService>();
+    if (!push.isSupported) return;
+    setState(() => _pushStatusLoading = true);
+    try {
+      final status = await push.getNotificationStatus();
+      if (!mounted) return;
+      setState(() => _pushStatus = status);
+    } finally {
+      if (!mounted) return;
+      setState(() => _pushStatusLoading = false);
+    }
+  }
+
+  Widget _pushEnableCard(ThemeData theme) {
+    final push = getIt<IPushNotificationService>();
+    if (!push.isSupported) return const SizedBox.shrink();
+
+    final status = _pushStatus;
+    if (status == null) return const SizedBox.shrink();
+    final needsEnable = status == AuthorizationStatus.denied ||
+        status == AuthorizationStatus.notDetermined;
+    if (!needsEnable) return const SizedBox.shrink();
+
+    final bg = theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45);
+    final fg = theme.colorScheme.onSurfaceVariant;
+    final isDenied = status == AuthorizationStatus.denied;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(
+                  Icons.notifications_off_outlined,
+                  size: 18,
+                  color: fg,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  L10n.get("menu_enable_notifications"),
+                  style: TextStyle(
+                    color: fg,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (_pushStatusLoading)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isDenied
+                ? L10n.get("notifications_enable_in_settings")
+                : L10n.get("search_alert_permission"),
+            style: TextStyle(
+              color: fg,
+              fontSize: 13.5,
+              height: 1.25,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              FilledButton.icon(
+                onPressed: _pushStatusLoading
+                    ? null
+                    : () async {
+                        final ok = await push.requestPermissionAndRegister();
+                        if (!mounted) return;
+                        if (ok) {
+                          ToastTheme.showSuccess(
+                            context,
+                            message: L10n.get("notifications_enabled"),
+                          );
+                        } else {
+                          ToastTheme.showInfo(
+                            context,
+                            message: L10n.get("notifications_enable_in_settings"),
+                          );
+                        }
+                        await _loadPushStatus();
+                      },
+                icon: const Icon(Icons.notifications_outlined),
+                label: Text(L10n.get("menu_enable_notifications")),
+              ),
+              OutlinedButton(
+                onPressed: _pushStatusLoading ? null : () async => openAppSettings(),
+                child: Text(L10n.get("notifications_open_settings")),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _refreshPushDebug() async {
     setState(() => _pushDebugLoading = true);
@@ -183,8 +303,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _alertsExplainer(ThemeData theme, {required VoidCallback onClose}) {
+  Widget _alertsExplainer(
+    ThemeData theme, {
+    required VoidCallback onClose,
+    required AuthorizationStatus? pushStatus,
+  }) {
     final fg = theme.colorScheme.onSurfaceVariant;
+    final push = getIt<IPushNotificationService>();
+    // If status hasn't loaded (or failed to load), assume notifications are not enabled
+    // so the tip doesn't incorrectly promise push notifications.
+    final needsEnable = push.isSupported &&
+        (pushStatus == null ||
+            pushStatus == AuthorizationStatus.denied ||
+            pushStatus == AuthorizationStatus.notDetermined);
+    final isDenied = pushStatus == AuthorizationStatus.denied;
     return Stack(
       children: [
         Container(
@@ -208,14 +340,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: L10n.text(
-                      "notifications_alerts_explainer",
-                      style: TextStyle(
-                        color: fg,
-                        fontSize: 14,
-                        height: 1.25,
-                      ),
-                    ),
+                    child: needsEnable
+                        ? Text(
+                            isDenied
+                                ? L10n.get("notifications_enable_in_settings")
+                                : L10n.get("search_alert_permission"),
+                            style: TextStyle(
+                              color: fg,
+                              fontSize: 14,
+                              height: 1.25,
+                            ),
+                          )
+                        : L10n.text(
+                            "notifications_alerts_explainer",
+                            style: TextStyle(
+                              color: fg,
+                              fontSize: 14,
+                              height: 1.25,
+                            ),
+                          ),
                   ),
                 ],
               ),
@@ -235,6 +378,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: () async {
+                      if (needsEnable && !isDenied) {
+                        final ok = await push.requestPermissionAndRegister();
+                        if (!mounted) return;
+                        if (ok) {
+                          ToastTheme.showSuccess(
+                            context,
+                            message: L10n.get("notifications_enabled"),
+                          );
+                        } else {
+                          ToastTheme.showInfo(
+                            context,
+                            message: L10n.get("notifications_enable_in_settings"),
+                          );
+                        }
+                        await _loadPushStatus();
+                        return;
+                      }
                       await openAppSettings();
                     },
                     child: Builder(
@@ -247,7 +407,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(L10n.get("notifications_open_settings")),
+                              Text(
+                                needsEnable && !isDenied
+                                    ? L10n.get("menu_enable_notifications")
+                                    : L10n.get("notifications_open_settings"),
+                              ),
                               const SizedBox(height: 3),
                               SizedBox(
                                 height: 1.5,
@@ -286,6 +450,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
+    _loadPushStatus();
     _loadAlertsExplainerVisibility();
     _load();
     if (_pushDebugEnabled) {
@@ -738,6 +903,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tooltipsEnabled = TooltipsState().enabled;
+    final push = getIt<IPushNotificationService>();
+    final showPushEnableCard = push.isSupported &&
+        _pushStatus != null &&
+        (_pushStatus == AuthorizationStatus.denied ||
+            _pushStatus == AuthorizationStatus.notDetermined);
+    final showAlertsExplainer =
+        tooltipsEnabled && _showAlertsExplainer && !showPushEnableCard;
 
     return Scaffold(
       appBar: UydoshAppBar(
@@ -801,10 +973,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       padding: const EdgeInsets.all(16),
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        if (tooltipsEnabled && _showAlertsExplainer)
+                        _pushEnableCard(theme),
+                        const SizedBox(height: 12),
+                        if (showAlertsExplainer)
                           _alertsExplainer(
                             theme,
                             onClose: _dismissAlertsExplainer,
+                            pushStatus: _pushStatus,
                           ),
                         if (_pushDebugEnabled) ...[
                           const SizedBox(height: 12),
@@ -835,17 +1010,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: _alerts.length +
-                          ((tooltipsEnabled && _showAlertsExplainer) ? 1 : 0),
+                          (showAlertsExplainer ? 1 : 0) +
+                          1,
                       separatorBuilder: (_, i) => SizedBox(height: i == 0 ? 12 : 16),
                       itemBuilder: (context, i) {
-                        final showExplainer = tooltipsEnabled && _showAlertsExplainer;
-                        if (showExplainer && i == 0) {
+                        if (i == 0) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _pushEnableCard(theme),
+                              const SizedBox(height: 12),
+                            ],
+                          );
+                        }
+                        final adjustedIndex = i - 1;
+                        final showExplainer = showAlertsExplainer;
+                        if (showExplainer && adjustedIndex == 0) {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _alertsExplainer(
                                 theme,
                                 onClose: _dismissAlertsExplainer,
+                                pushStatus: _pushStatus,
                               ),
                               if (_pushDebugEnabled) ...[
                                 const SizedBox(height: 12),
@@ -855,7 +1042,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           );
                         }
 
-                        final a = _alerts[i - (showExplainer ? 1 : 0)];
+                        final a =
+                            _alerts[adjustedIndex - (showExplainer ? 1 : 0)];
                         final themeState = ThemeState();
                         return Theme(
                           data: theme.copyWith(

@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -247,6 +248,24 @@ class _AdminContentModerationScreenState
     );
   }
 
+  Widget _neumorphicRow(Widget child) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        cardTheme: Theme.of(context).cardTheme.copyWith(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      ),
+      child: ListingDetailTileShell(
+        clipBehavior: Clip.antiAlias,
+        margin: EdgeInsets.zero,
+        child: child,
+      ),
+    );
+  }
+
   Widget _buildBody(BuildContext context) {
     if (_isLoading) {
       return Center(
@@ -290,37 +309,32 @@ class _AdminContentModerationScreenState
     }
     return ListView(
       children: [
-        Text(
-          L10n.get("admin_content_moderation_description"),
-          style: TextStyle(
-            fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 4),
         ListenableBuilder(
           listenable: TooltipsState(),
           builder: (context, _) {
-            return ListTile(
-              leading: _isSavingTooltips
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const ThemeIcon(Icons.tips_and_updates_outlined),
-              title: Text(L10n.get("tooltips_toggle")),
-              subtitle: Text(
-                L10n.get("tooltips_toggle_description"),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+            return _neumorphicRow(
+              ListTile(
+                leading: _isSavingTooltips
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const ThemeIcon(Icons.tips_and_updates_outlined),
+                title: Text(L10n.get("tooltips_toggle")),
+                subtitle: Text(
+                  L10n.get("tooltips_toggle_description"),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              trailing: NeumorphicThemeAwareToggle(
-                value: TooltipsState().enabled,
-                enabled: !_isSavingTooltips,
-                onChanged: _onTooltipsEnabledChanged,
+                trailing: NeumorphicThemeAwareToggle(
+                  value: TooltipsState().enabled,
+                  enabled: !_isSavingTooltips,
+                  onChanged: _onTooltipsEnabledChanged,
+                ),
               ),
             );
           },
@@ -330,30 +344,32 @@ class _AdminContentModerationScreenState
           listenable: AdminFeatureFlagsState(),
           builder: (context, _) {
             final flags = AdminFeatureFlagsState();
-            return ListTile(
-              leading: _isSavingListingContacts
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const ThemeIcon(Icons.contact_phone),
-              title: Text(
-                L10n.get("admin_client_settings_show_listing_contacts"),
-              ),
-              subtitle: Text(
-                L10n.get(
-                  "admin_client_settings_show_listing_contacts_description",
+            return _neumorphicRow(
+              ListTile(
+                leading: _isSavingListingContacts
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const ThemeIcon(Icons.contact_phone),
+                title: Text(
+                  L10n.get("admin_client_settings_show_listing_contacts"),
                 ),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                subtitle: Text(
+                  L10n.get(
+                    "admin_client_settings_show_listing_contacts_description",
+                  ),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              trailing: NeumorphicThemeAwareToggle(
-                value: flags.showListingContacts,
-                enabled: !_isSavingListingContacts,
-                onChanged: _onShowListingContactsChanged,
+                trailing: NeumorphicThemeAwareToggle(
+                  value: flags.showListingContacts,
+                  enabled: !_isSavingListingContacts,
+                  onChanged: _onShowListingContactsChanged,
+                ),
               ),
             );
           },
@@ -363,115 +379,127 @@ class _AdminContentModerationScreenState
           listenable: AdminFeatureFlagsState(),
           builder: (context, _) {
             final flags = AdminFeatureFlagsState();
-            return ListTile(
-              leading: _isSavingPriceInsights
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const ThemeIcon(Icons.insights_outlined),
-              title: Text(L10n.get("admin_client_settings_show_price_insights")),
-              subtitle: Text(
-                L10n.get(
-                  "admin_client_settings_show_price_insights_description",
+            return _neumorphicRow(
+              ListTile(
+                leading: _isSavingPriceInsights
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const ThemeIcon(Icons.insights_outlined),
+                title: Text(
+                  L10n.get("admin_client_settings_show_price_insights"),
                 ),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                subtitle: Text(
+                  L10n.get(
+                    "admin_client_settings_show_price_insights_description",
+                  ),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              trailing: NeumorphicThemeAwareToggle(
-                value: flags.showPriceInsights,
-                enabled: !_isSavingPriceInsights,
-                onChanged: _onShowPriceInsightsChanged,
+                trailing: NeumorphicThemeAwareToggle(
+                  value: flags.showPriceInsights,
+                  enabled: !_isSavingPriceInsights,
+                  onChanged: _onShowPriceInsightsChanged,
+                ),
               ),
             );
           },
         ),
         const SizedBox(height: 16),
-        ListTile(
-          leading: _isSaving
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const ThemeIcon(Icons.blur_on_outlined),
-          title: Text(L10n.get("admin_content_moderation_blur_enabled")),
-          trailing: NeumorphicThemeAwareToggle(
-            value: _blurEnabled,
-            enabled: !_isSaving,
-            onChanged: _onChanged,
+        _neumorphicRow(
+          ListTile(
+            leading: _isSaving
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.blur_on_outlined),
+            title: Text(L10n.get("admin_content_moderation_blur_enabled")),
+            trailing: NeumorphicThemeAwareToggle(
+              value: _blurEnabled,
+              enabled: !_isSaving,
+              onChanged: _onChanged,
+            ),
           ),
         ),
         const SizedBox(height: 16),
-        ListTile(
-          leading: _isSavingGemini
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const ThemeIcon(Icons.auto_awesome_outlined),
-          title: Text(L10n.get("admin_client_config_hide_gemini_listing_ui")),
-          subtitle: Text(
-            L10n.get("admin_client_config_hide_gemini_listing_ui_description"),
-            style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+        _neumorphicRow(
+          ListTile(
+            leading: _isSavingGemini
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.auto_awesome_outlined),
+            title: Text(L10n.get("admin_client_config_hide_gemini_listing_ui")),
+            subtitle: Text(
+              L10n.get("admin_client_config_hide_gemini_listing_ui_description"),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
-          trailing: NeumorphicThemeAwareToggle(
-            value: _geminiListingUiEnabled,
-            enabled: !_isSavingGemini,
-            onChanged: _onGeminiEnabledChanged,
+            trailing: NeumorphicThemeAwareToggle(
+              value: _geminiListingUiEnabled,
+              enabled: !_isSavingGemini,
+              onChanged: _onGeminiEnabledChanged,
+            ),
           ),
         ),
         const SizedBox(height: 16),
-        ListTile(
-          leading: _isSavingLidar
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const ThemeIcon(Icons.view_in_ar),
-          title: Text(L10n.get("admin_client_config_disable_lidar_room_scan")),
-          subtitle: Text(
-            L10n.get("admin_client_config_disable_lidar_room_scan_description"),
-            style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+        _neumorphicRow(
+          ListTile(
+            leading: _isSavingLidar
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.view_in_ar),
+            title: Text(L10n.get("admin_client_config_disable_lidar_room_scan")),
+            subtitle: Text(
+              L10n.get("admin_client_config_disable_lidar_room_scan_description"),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
-          trailing: NeumorphicThemeAwareToggle(
-            value: _lidarRoomScanEnabled,
-            enabled: !_isSavingLidar,
-            onChanged: _onLidarEnabledChanged,
+            trailing: NeumorphicThemeAwareToggle(
+              value: _lidarRoomScanEnabled,
+              enabled: !_isSavingLidar,
+              onChanged: _onLidarEnabledChanged,
+            ),
           ),
         ),
         const SizedBox(height: 16),
-        ListTile(
-          leading: _isSavingCustomCamera
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const ThemeIcon(Icons.camera_alt_outlined),
-          title: Text(L10n.get("admin_client_config_disable_custom_camera")),
-          subtitle: Text(
-            L10n.get("admin_client_config_disable_custom_camera_description"),
-            style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+        _neumorphicRow(
+          ListTile(
+            leading: _isSavingCustomCamera
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.camera_alt_outlined),
+            title: Text(L10n.get("admin_client_config_disable_custom_camera")),
+            subtitle: Text(
+              L10n.get("admin_client_config_disable_custom_camera_description"),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
-          trailing: NeumorphicThemeAwareToggle(
-            value: _customCameraEnabled,
-            enabled: !_isSavingCustomCamera,
-            onChanged: _onCustomCameraEnabledChanged,
+            trailing: NeumorphicThemeAwareToggle(
+              value: _customCameraEnabled,
+              enabled: !_isSavingCustomCamera,
+              onChanged: _onCustomCameraEnabledChanged,
+            ),
           ),
         ),
       ],

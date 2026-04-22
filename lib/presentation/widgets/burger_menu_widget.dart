@@ -2,7 +2,6 @@ import "dart:ui";
 
 import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
-import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -21,7 +20,6 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
@@ -316,8 +314,6 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       ),
     );
 
-    items.add(const _EnableNotificationsMenuItem());
-
     addItem(
       _DrawerItemSpec(
         icon: Icons.help_outline,
@@ -457,11 +453,6 @@ final class _DrawerColors {
     final brightness = ThemeData.estimateBrightnessForColor(base);
     if (brightness == Brightness.dark) return base.withValues(alpha: 0.32);
     return base.withValues(alpha: 0.48);
-  }
-
-  static Color glassBorder(BuildContext context) {
-    final tint = glassTint(context);
-    return Color.lerp(tint, Colors.white, 0.65)!.withValues(alpha: 0.55);
   }
 }
 
@@ -771,48 +762,6 @@ class _AsyncVisibleMenuItem extends StatelessWidget {
         }
         if (snapshot.data != true) return const SizedBox.shrink();
         return child;
-      },
-    );
-  }
-}
-
-class _EnableNotificationsMenuItem extends StatelessWidget {
-  const _EnableNotificationsMenuItem();
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<AuthorizationStatus?>(
-      future: getIt<IPushNotificationService>().isSupported
-          ? getIt<IPushNotificationService>().getNotificationStatus()
-          : Future.value(null),
-      builder: (context, snapshot) {
-        final status = snapshot.data;
-        if (status == null) return const SizedBox.shrink();
-        if (status != AuthorizationStatus.denied &&
-            status != AuthorizationStatus.notDetermined) {
-          return const SizedBox.shrink();
-        }
-        return _DrawerMenuItem(
-          icon: Icons.notifications_outlined,
-          titleKey: "menu_enable_notifications",
-          onTap: () async {
-            Navigator.pop(context);
-            final granted = await getIt<IPushNotificationService>()
-                .requestPermissionAndRegister();
-            if (!context.mounted) return;
-            if (granted) {
-              ToastTheme.showSuccess(
-                context,
-                message: L10n.get("notifications_enabled"),
-              );
-            } else {
-              ToastTheme.showInfo(
-                context,
-                message: L10n.get("notifications_enable_in_settings"),
-              );
-            }
-          },
-        );
       },
     );
   }

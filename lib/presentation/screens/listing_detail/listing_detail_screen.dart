@@ -1,5 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:dio/dio.dart";
 import "package:flutter/services.dart";
@@ -766,6 +767,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
     HapticFeedbackUtils.impact();
     final url = _buildPhotoUrl(raw);
     try {
+      if (kIsWeb) {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+        return;
+      }
       final ok = await RoomUsdzViewerService.downloadAndPresent(
         url,
         listingId: listingDetail.id,
@@ -2068,7 +2073,8 @@ L10n.get("feature_listing_error",
         final hasPhotos =
             listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
         final show3d =
-            isIOSDevice && (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
+            (kIsWeb || isIOSDevice) &&
+            (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
 
         final sections = <Widget>[
           if (isOwner)
