@@ -14,6 +14,9 @@ class ProfileCompletionState extends ChangeNotifier {
   bool _hasEssentialInfo = true;
   bool _isInitialized = false;
 
+  /// Last known backend [UserProfile.avatarUrl] (may be relative). Used for app bar avatar.
+  String? _cachedAvatarUrl;
+
   /// Whether the profile is 100% complete
   bool get isProfileComplete => _isProfileComplete;
 
@@ -29,6 +32,9 @@ class ProfileCompletionState extends ChangeNotifier {
   /// Whether the state has been initialized with profile data
   bool get isInitialized => _isInitialized;
 
+  /// Raw avatar URL from the last [updateFromProfile] call (same as [UserProfile.avatarUrl]).
+  String? get cachedAvatarUrl => _cachedAvatarUrl;
+
   /// Calculate profile completion percent (0-100). Shared utility for app_router and profile_screen.
   static int completionPercent(UserProfile profile) {
     return _calculateProfileCompletionPercent(profile);
@@ -40,6 +46,7 @@ class ProfileCompletionState extends ChangeNotifier {
       _isProfileComplete = true;
       _hasEssentialInfo = true;
       _isInitialized = false;
+      _cachedAvatarUrl = null;
       notifyListeners();
       return;
     }
@@ -47,6 +54,9 @@ class ProfileCompletionState extends ChangeNotifier {
     final percent = _calculateProfileCompletionPercent(profile);
     final isComplete = percent >= 100;
     final hasEssential = _checkHasEssentialInfo(profile);
+    final newAvatarUrl = profile.avatarUrl;
+    final avatarChanged = _cachedAvatarUrl != newAvatarUrl;
+    _cachedAvatarUrl = newAvatarUrl;
 
     if (!isComplete && kDebugMode) {
       final missing = getMissingFields(profile);
@@ -57,7 +67,8 @@ class ProfileCompletionState extends ChangeNotifier {
 
     if (_isProfileComplete != isComplete ||
         _hasEssentialInfo != hasEssential ||
-        !_isInitialized) {
+        !_isInitialized ||
+        avatarChanged) {
       _isProfileComplete = isComplete;
       _hasEssentialInfo = hasEssential;
       _isInitialized = true;
@@ -70,6 +81,7 @@ class ProfileCompletionState extends ChangeNotifier {
     _isProfileComplete = true;
     _hasEssentialInfo = true;
     _isInitialized = false;
+    _cachedAvatarUrl = null;
     notifyListeners();
   }
 

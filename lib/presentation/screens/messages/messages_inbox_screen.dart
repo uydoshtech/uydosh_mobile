@@ -23,6 +23,7 @@ import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -370,9 +371,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               padding: const EdgeInsets.only(right: 8),
               child: IconButton(
                 onPressed: () => context.pushProfile(),
-                icon: ThemeIcon(
-                  Icons.person,
-                  color:
+                icon: AppBarProfileIcon(
+                  iconSize: 26,
+                  iconColor:
                       Theme.of(context).appBarTheme.foregroundColor ??
                       Theme.of(context).colorScheme.onSurface,
                 ),

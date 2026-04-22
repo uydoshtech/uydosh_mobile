@@ -37,6 +37,7 @@ import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -810,6 +811,13 @@ class MainNavigationState extends State<MainNavigation>
                             onPressed: () => context.pushProfile(),
                             semanticsLabel: L10n.get("profile"),
                             iconSize: 28,
+                            iconWidget: AppBarProfileIcon(
+                              iconSize: 28,
+                              iconColor:
+                                  ThemeState().isBlueTheme
+                                      ? Colors.white
+                                      : Colors.black,
+                            ),
                           ),
                           if (needsCompletion)
                             Positioned(
