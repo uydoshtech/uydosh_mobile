@@ -141,6 +141,29 @@ extension ThemeHelper on ThemeState {
     return Colors.white;
   }
 
+  /// Multiline chat composer fill — on blue theme matches listing
+  /// [WheelPickerPlateContainer] (`ColorScheme.surface`), not [inputBackgroundColor].
+  Color chatComposerFieldBackground(BuildContext context) {
+    if (isBlueTheme) return Theme.of(context).colorScheme.surface;
+    return inputBackgroundColor;
+  }
+
+  Color chatComposerFieldTextColor(BuildContext context) {
+    if (isBlueTheme) return Theme.of(context).colorScheme.onSurface;
+    final bg = chatComposerFieldBackground(context);
+    final brightness = ThemeData.estimateBrightnessForColor(bg);
+    return brightness == Brightness.dark ? Colors.white : Colors.black;
+  }
+
+  Color chatComposerFieldHintColor(BuildContext context) {
+    if (isBlueTheme) {
+      return Theme.of(
+        context,
+      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7);
+    }
+    return chatComposerFieldTextColor(context).withValues(alpha: 0.6);
+  }
+
   /// Chat input bar background (container behind the field).
   ///
   /// Blue theme: mostly transparent so messages can show through when the bar

@@ -5,6 +5,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 
 class ChatMessageInput extends StatelessWidget {
@@ -27,11 +28,9 @@ class ChatMessageInput extends StatelessWidget {
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
-        final inputBackgroundColor = themeState.inputBackgroundColor;
-        final inputFieldBrightness = ThemeData.estimateBrightnessForColor(inputBackgroundColor);
-        final inputFieldTextColor =
-            inputFieldBrightness == Brightness.dark ? Colors.white : Colors.black;
-        final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
+        final inputBackgroundColor = themeState.chatComposerFieldBackground(context);
+        final inputFieldTextColor = themeState.chatComposerFieldTextColor(context);
+        final inputFieldHintColor = themeState.chatComposerFieldHintColor(context);
         final sendButtonColor = themeState.sendButtonColor;
         final borderColor = themeState.borderColor;
         final scheme = Theme.of(context).colorScheme;
@@ -60,6 +59,10 @@ class ChatMessageInput extends StatelessWidget {
                   textColor: inputFieldTextColor,
                   hintColor: inputFieldHintColor,
                   cursorColor: inputFieldTextColor,
+                  borderRadius:
+                      themeState.isBlueTheme
+                          ? ThreeDSurfaceStyle.wheelPickerPlateRadius
+                          : const BorderRadius.all(Radius.circular(24)),
                   maxLines: null,
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.newline,

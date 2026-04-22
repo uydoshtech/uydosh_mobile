@@ -628,11 +628,11 @@ class _UserSupportChatThreadScreenState
           MediaQuery.viewPaddingOf(context).bottom,
           16.0,
         );
-        final inputFieldBg = themeState.inputBackgroundColor;
-        final inputFieldBrightness = ThemeData.estimateBrightnessForColor(inputFieldBg);
+        final inputFieldBg = themeState.chatComposerFieldBackground(context);
         final inputFieldTextColor =
-            inputFieldBrightness == Brightness.dark ? Colors.white : Colors.black;
-        final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
+            themeState.chatComposerFieldTextColor(context);
+        final inputFieldHintColor =
+            themeState.chatComposerFieldHintColor(context);
         final sendButtonBase = Color.lerp(
           scheme.surface,
           scheme.onSurface,
@@ -654,6 +654,10 @@ class _UserSupportChatThreadScreenState
                   textColor: inputFieldTextColor,
                   hintColor: inputFieldHintColor,
                   cursorColor: inputFieldTextColor,
+                  borderRadius:
+                      themeState.isBlueTheme
+                          ? ThreeDSurfaceStyle.wheelPickerPlateRadius
+                          : const BorderRadius.all(Radius.circular(24)),
                   maxLines: 3,
                   minLines: 1,
                   textCapitalization: TextCapitalization.sentences,

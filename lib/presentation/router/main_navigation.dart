@@ -17,6 +17,7 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
@@ -694,6 +695,8 @@ class MainNavigationState extends State<MainNavigation>
     double iconSize = 26,
     BorderRadius? borderRadius,
     Widget? iconWidget,
+    EdgeInsets padding = const EdgeInsets.all(6),
+    double contentSlotSize = 28,
   }) {
     return ThreeDAppBarIconButton(
       iconData: iconData,
@@ -702,6 +705,8 @@ class MainNavigationState extends State<MainNavigation>
       iconSize: iconSize,
       borderRadius: borderRadius,
       iconWidget: iconWidget,
+      padding: padding,
+      contentSlotSize: contentSlotSize,
     );
   }
 
@@ -799,6 +804,11 @@ class MainNavigationState extends State<MainNavigation>
                     builder: (context, child) {
                       final needsCompletion =
                           ProfileCompletionState().needsProfileCompletion;
+                      final hasAvatar =
+                          resolveAvatarUrl(
+                            ProfileCompletionState().cachedAvatarUrl,
+                          ) !=
+                          null;
 
                       return Stack(
                         clipBehavior: Clip.none,
@@ -811,8 +821,13 @@ class MainNavigationState extends State<MainNavigation>
                             onPressed: () => context.pushProfile(),
                             semanticsLabel: L10n.get("profile"),
                             iconSize: 28,
+                            padding:
+                                hasAvatar
+                                    ? EdgeInsets.zero
+                                    : const EdgeInsets.all(6),
+                            contentSlotSize: hasAvatar ? 40 : 28,
                             iconWidget: AppBarProfileIcon(
-                              iconSize: 28,
+                              iconSize: hasAvatar ? 40 : 28,
                               iconColor:
                                   ThemeState().isBlueTheme
                                       ? Colors.white

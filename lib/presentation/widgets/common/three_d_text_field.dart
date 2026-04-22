@@ -177,6 +177,10 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
                   decoration: InputDecoration(
                     hintText: widget.hintText,
                     hintStyle: TextStyle(color: effectiveHintColor),
+                    // Blue theme sets [InputDecorationTheme.fillColor] to white; without
+                    // an explicit fill here the TextField paints over our plate background.
+                    filled: true,
+                    fillColor: Colors.transparent,
                     border: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     enabledBorder: InputBorder.none,
@@ -198,4 +202,3 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
     );
   }
 }
-

@@ -699,13 +699,11 @@ class _AdminSupportChatThreadScreenState
           MediaQuery.viewPaddingOf(context).bottom,
           16.0,
         );
-        final inputFieldBg = themeState.inputBackgroundColor;
-        final inputFieldBrightness =
-            ThemeData.estimateBrightnessForColor(inputFieldBg);
-        final inputFieldTextColor = inputFieldBrightness == Brightness.dark
-            ? Colors.white
-            : Colors.black;
-        final inputFieldHintColor = inputFieldTextColor.withValues(alpha: 0.6);
+        final inputFieldBg = themeState.chatComposerFieldBackground(context);
+        final inputFieldTextColor =
+            themeState.chatComposerFieldTextColor(context);
+        final inputFieldHintColor =
+            themeState.chatComposerFieldHintColor(context);
         return Container(
           padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomInset),
           decoration: BoxDecoration(
@@ -722,6 +720,10 @@ class _AdminSupportChatThreadScreenState
                   textColor: inputFieldTextColor,
                   hintColor: inputFieldHintColor,
                   cursorColor: inputFieldTextColor,
+                  borderRadius:
+                      themeState.isBlueTheme
+                          ? ThreeDSurfaceStyle.wheelPickerPlateRadius
+                          : const BorderRadius.all(Radius.circular(24)),
                   maxLines: 3,
                   minLines: 1,
                   textCapitalization: TextCapitalization.sentences,

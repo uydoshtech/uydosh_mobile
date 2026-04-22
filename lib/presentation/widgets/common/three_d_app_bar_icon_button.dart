@@ -4,9 +4,13 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 
-/// 3D chrome for app bar icon actions. Defaults to a rounded square (same shape
-/// as the main navigation drawer button). Pass [borderRadius] for circular
-/// actions (e.g. profile).
+/// Neumorphic 3D chrome for app bar icon actions. Defaults to a rounded square
+/// (same shape as the main navigation drawer button). Pass [borderRadius] for
+/// circular actions (e.g. profile).
+///
+/// Use [padding] + [contentSlotSize] so the painted control matches neighbors
+/// (e.g. `padding: EdgeInsets.zero`, `contentSlotSize: 40` for a full-bleed
+/// circular avatar in a 40px neumorphic disc).
 class ThreeDAppBarIconButton extends StatelessWidget {
   const ThreeDAppBarIconButton({
     required this.iconData,
@@ -17,6 +21,7 @@ class ThreeDAppBarIconButton extends StatelessWidget {
     this.iconWidget,
     this.borderRadius,
     this.padding = const EdgeInsets.all(6),
+    this.contentSlotSize = 28,
   });
 
   /// Rounded square used by the main navigation drawer button.
@@ -31,6 +36,9 @@ class ThreeDAppBarIconButton extends StatelessWidget {
   final Widget? iconWidget;
   final BorderRadius? borderRadius;
   final EdgeInsets padding;
+
+  /// Width/height of the inner icon or [iconWidget] slot (before [padding]).
+  final double contentSlotSize;
 
   /// [AppBar.leading] layout: left inset + vertically centered control.
   static Widget leadingSlot({required Widget child}) {
@@ -67,30 +75,34 @@ class ThreeDAppBarIconButton extends StatelessWidget {
         HapticFeedbackUtils.impact();
         onPressed();
       },
-      child: ListenableBuilder(
-        listenable: ThemeState(),
-        builder: (context, _) {
-          final iconColor =
-              ThemeState().isBlueTheme ? Colors.white : Colors.black;
-          return Semantics(
-            label: semanticsLabel,
-            button: true,
-            child: SizedBox(
-              width: 28,
-              height: 28,
-              child: Center(
-                child:
-                    iconWidget ??
-                    ThemeIcon(
-                      iconData,
-                      color: iconColor,
-                      size: iconSize,
-                    ),
-              ),
-            ),
-          );
-        },
+      child: Semantics(
+        label: semanticsLabel,
+        button: true,
+        child: _iconContent(slot: contentSlotSize),
       ),
+    );
+  }
+
+  Widget _iconContent({required double slot}) {
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final iconColor =
+            ThemeState().isBlueTheme ? Colors.white : Colors.black;
+        return SizedBox(
+          width: slot,
+          height: slot,
+          child: Center(
+            child:
+                iconWidget ??
+                ThemeIcon(
+                  iconData,
+                  color: iconColor,
+                  size: iconSize,
+                ),
+          ),
+        );
+      },
     );
   }
 }
