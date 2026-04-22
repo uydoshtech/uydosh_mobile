@@ -51,29 +51,40 @@ class OutgoingConversationTile extends StatelessWidget {
             conversation.listingPrice != null && conversation.listingPrice! > 0;
 
         final resolvedAvatarUrl = resolveAvatarUrl(conversation.otherUserAvatar);
+        const avatarSize = 40.0;
 
         final avatarLeading = resolvedAvatarUrl != null
             ? ClipOval(
                 child: CachedNetworkImage(
                   imageUrl: resolvedAvatarUrl,
-                  width: 40,
-                  height: 40,
+                  width: avatarSize,
+                  height: avatarSize,
                   fit: BoxFit.cover,
                   memCacheWidth: 80,
                   memCacheHeight: 80,
-                  placeholder: (context, url) => Center(
-                    child: ConversationAvatarContent(
-                      conversation: conversation,
-                      iconColor: avatarIconColor,
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => CircleAvatar(
-                    backgroundColor: avatarColor,
-                    child: ConversationAvatarContent(
-                      conversation: conversation,
-                      iconColor: avatarIconColor,
-                    ),
-                  ),
+                  placeholder:
+                      (context, url) => SizedBox(
+                        width: avatarSize,
+                        height: avatarSize,
+                        child: Center(
+                          child: ConversationAvatarContent(
+                            conversation: conversation,
+                            iconColor: avatarIconColor,
+                          ),
+                        ),
+                      ),
+                  errorWidget:
+                      (context, url, error) => SizedBox(
+                        width: avatarSize,
+                        height: avatarSize,
+                        child: CircleAvatar(
+                          backgroundColor: avatarColor,
+                          child: ConversationAvatarContent(
+                            conversation: conversation,
+                            iconColor: avatarIconColor,
+                          ),
+                        ),
+                      ),
                 ),
               )
             : CircleAvatar(
@@ -177,33 +188,88 @@ class OutgoingConversationTile extends StatelessWidget {
                               currentUserId != null &&
                               conversation.lastMessageSenderId !=
                                   currentUserId) ...[
-                            Container(
-                              width: conversation.unreadCount! > 1 ? 20 : 12,
-                              height: conversation.unreadCount! > 1 ? 20 : 12,
-                              decoration: BoxDecoration(
-                                color: unreadColor,
-                                shape: BoxShape.circle,
-                              ),
-                              child: conversation.unreadCount! > 1
-                                  ? Center(
-                                      child: Text(
-                                        "${conversation.unreadCount!}",
-                                        style: TextStyle(
-                                          color: unreadTextColor,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
+                            SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: Align(
+                                alignment:
+                                    conversation.unreadCount! > 1
+                                        ? Alignment.center
+                                        : const Alignment(0, -0.12),
+                                child: Container(
+                                  width:
+                                      conversation.unreadCount! > 1 ? 18 : 11,
+                                  height:
+                                      conversation.unreadCount! > 1 ? 18 : 11,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color.lerp(
+                                              unreadColor,
+                                              Colors.white,
+                                              0.32,
+                                            ) ??
+                                            unreadColor,
+                                        Color.lerp(
+                                              unreadColor,
+                                              Colors.black,
+                                              0.22,
+                                            ) ??
+                                            unreadColor,
+                                      ],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.24,
                                         ),
+                                        blurRadius: 6,
+                                        offset: const Offset(-2, -2),
                                       ),
-                                    )
-                                  : null,
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.22,
+                                        ),
+                                        blurRadius: 6,
+                                        offset: const Offset(2, 2),
+                                      ),
+                                    ],
+                                    color:
+                                        conversation.unreadCount! > 1
+                                            ? null
+                                            : unreadColor,
+                                  ),
+                                  child: conversation.unreadCount! > 1
+                                      ? Center(
+                                          child: Text(
+                                            "${conversation.unreadCount!}",
+                                            style: TextStyle(
+                                              color: unreadTextColor,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 8),
                           ],
                           if (conversation.lastMessageAt != null)
-                            ThemeIcon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: iconColor,
+                            SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: Center(
+                                child: ThemeIcon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                  color: iconColor,
+                                ),
+                              ),
                             ),
                         ],
                       ),

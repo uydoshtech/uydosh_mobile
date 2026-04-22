@@ -502,8 +502,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     final shellGlassTop =
         widget.showCustomHeader
             ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
-                ? (kToolbarHeight +
-                    ThemeState().mainShellGlassExtraTopInset(context))
+                // When we render a liquid-glass app bar (transparent + blurred),
+                // allow content to scroll behind it (like Home) so the header
+                // actually blurs real content instead of a flat background.
+                ? ThemeState().mainShellGlassExtraTopInset(context)
                 : 0.0)
             : ThemeState().mainShellGlassExtraTopInset(context);
 
@@ -514,8 +516,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           // List scrolls "under" the glass tab switcher.
           Positioned.fill(
             child: Padding(
-              // 16 top + 48 switch + 16 bottom
-              padding: const EdgeInsets.only(top: 80),
+              // 8 top + 48 switch + 12 bottom
+              padding: const EdgeInsets.only(top: 68),
               child: UydoshRefreshIndicator(
                 onRefresh: _onInboxPullRefresh,
                 child: PullToRefreshStretchHaptics(
@@ -556,7 +558,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final cardColor = themeState.cardColor;
 
         final content = Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: _buildToggleSwitch(
             context,
             incomingCount: _getUnreadCount(incoming),
@@ -594,14 +596,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 decoration: BoxDecoration(
                   borderRadius: radius,
                   // Match the app bar glass: subtle tint + hairline edge.
-                  color: baseTint.withValues(alpha: isDark ? 0.14 : 0.16),
-                  border: Border.all(
-                    color:
-                        (isDark ? Colors.white : Colors.black).withValues(
-                          alpha: isDark ? 0.08 : 0.06,
-                        ),
-                    width: 0.5,
-                  ),
+                  color: baseTint.withValues(alpha: isDark ? 0.10 : 0.12),
                 ),
                 child: content,
               ),
@@ -674,8 +669,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     ),
                     child: _ToggleTabContent(
                       isSelected: _selectedTabIndex == 0,
-                      icon: Icons.inbox_outlined,
-                      label: L10n.get("incoming"),
+                      label: "Мои\nобъявления",
                       badgeCount: incomingCount,
                       selectedTextColor: selectedTextColor,
                       unselectedTextColor: unselectedTextColor,
@@ -697,8 +691,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     ),
                     child: _ToggleTabContent(
                       isSelected: _selectedTabIndex == 1,
-                      icon: Icons.outbox_outlined,
-                      label: L10n.get("outgoing"),
+                      label: "Чужие\nобъявления",
                       badgeCount: outgoingCount,
                       selectedTextColor: selectedTextColor,
                       unselectedTextColor: unselectedTextColor,
@@ -855,7 +848,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             : _incomingEntriesWithDaySections(conversations);
     return CommonListView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      itemSpacing: 8,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemSpacing: 12,
       itemCount: entries.length,
       itemBuilder: (context, index) {
         final entry = entries[index];
@@ -877,7 +871,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               currentUserId: _currentUserId,
               embedInParentScrollView: true,
               padding: EdgeInsets.zero,
-              itemSpacing: 8,
+              itemSpacing: 12,
               showActivityTimeOnly: true,
               onConversationTap: _openChatScreen,
             ),
@@ -1008,7 +1002,6 @@ final class _InboxIncomingDaySection extends _InboxListEntry {
 class _ToggleTabContent extends StatelessWidget {
   const _ToggleTabContent({
     required this.isSelected,
-    required this.icon,
     required this.label,
     required this.badgeCount,
     required this.selectedTextColor,
@@ -1016,7 +1009,6 @@ class _ToggleTabContent extends StatelessWidget {
   });
 
   final bool isSelected;
-  final IconData icon;
   final String label;
   final int badgeCount;
   final Color selectedTextColor;
@@ -1027,6 +1019,10 @@ class _ToggleTabContent extends StatelessWidget {
     final targetColor = isSelected ? selectedTextColor : unselectedTextColor;
     final unreadColor = ThemeState().unreadIndicatorColor;
     final unreadTextColor = ThemeState().unreadIndicatorTextColor;
+    final labelParts = label.split("\n");
+    final isTwoLine = labelParts.length == 2;
+    const twoLineFontSize = 13.0;
+    const twoLineHeight = 1.15;
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeInOut,
@@ -1046,39 +1042,109 @@ class _ToggleTabContent extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                 color: targetColor,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+              child: Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  ThemeIcon(icon, size: 18, color: targetColor),
-                  const SizedBox(width: 8),
-                  Text(label),
-                  if (badgeCount > 0) ...[
-                    const SizedBox(width: 8),
-                    AnimatedScale(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOut,
-                      scale: isSelected ? 1.0 : 0.96,
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: unreadColor,
-                          shape: BoxShape.circle,
+                  // Keep the icon+text centered regardless of badge visibility.
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ThemeIcon(Icons.mail, size: 18, color: targetColor),
+                      const SizedBox(width: 8),
+                      if (!isTwoLine)
+                        Text(label)
+                      else
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              labelParts[0],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: twoLineFontSize,
+                                height: twoLineHeight,
+                                fontWeight:
+                                    isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w600,
+                                color: targetColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              labelParts[1],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: twoLineFontSize,
+                                height: twoLineHeight,
+                                fontWeight:
+                                    isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w600,
+                                color: targetColor,
+                              ),
+                            ),
+                          ],
                         ),
-                        child: Center(
-                          child: Text(
-                            "$badgeCount",
-                            style: TextStyle(
-                              color: unreadTextColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  if (badgeCount > 0)
+                    PositionedDirectional(
+                      // Put the badge near the left side, without affecting centering.
+                      start: -34,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: AnimatedScale(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOut,
+                          scale: isSelected ? 1.0 : 0.96,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Color.lerp(unreadColor, Colors.white, 0.32) ??
+                                      unreadColor,
+                                  Color.lerp(unreadColor, Colors.black, 0.22) ??
+                                      unreadColor,
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withValues(alpha: 0.24),
+                                  blurRadius: 6,
+                                  offset: const Offset(-2, -2),
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.22),
+                                  blurRadius: 6,
+                                  offset: const Offset(2, 2),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                "$badgeCount",
+                                style: TextStyle(
+                                  color: unreadTextColor,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
                 ],
               ),
             ),

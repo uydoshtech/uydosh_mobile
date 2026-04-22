@@ -49,7 +49,7 @@ class DateHeaderWidget extends StatelessWidget {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   child: Text(
                     dateString,
                     textAlign: TextAlign.center,

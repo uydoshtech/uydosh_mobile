@@ -23,35 +23,34 @@ class AppBarProfileIcon extends StatelessWidget {
         final resolved = resolveAvatarUrl(
           ProfileCompletionState().cachedAvatarUrl,
         );
+        final fallback = SizedBox.square(
+          dimension: iconSize,
+          child: Center(
+            child: ThemeIcon(
+              Icons.person_outline,
+              color: iconColor,
+              size: iconSize,
+            ),
+          ),
+        );
         if (resolved == null) {
-          return ThemeIcon(
-            Icons.person_outline,
-            color: iconColor,
-            size: iconSize,
-          );
+          return fallback;
         }
         final dpr = MediaQuery.of(context).devicePixelRatio;
         final px = (iconSize * dpr).round();
-        return ClipOval(
-          child: CachedNetworkImage(
-            imageUrl: resolved,
-            width: iconSize,
-            height: iconSize,
-            fit: BoxFit.cover,
-            memCacheWidth: px,
-            memCacheHeight: px,
-            placeholder:
-                (context, url) => ThemeIcon(
-                  Icons.person_outline,
-                  color: iconColor,
-                  size: iconSize,
-                ),
-            errorWidget:
-                (context, url, error) => ThemeIcon(
-                  Icons.person_outline,
-                  color: iconColor,
-                  size: iconSize,
-                ),
+        return SizedBox.square(
+          dimension: iconSize,
+          child: ClipOval(
+            child: CachedNetworkImage(
+              imageUrl: resolved,
+              width: iconSize,
+              height: iconSize,
+              fit: BoxFit.cover,
+              memCacheWidth: px,
+              memCacheHeight: px,
+              placeholder: (context, url) => fallback,
+              errorWidget: (context, url, error) => fallback,
+            ),
           ),
         );
       },

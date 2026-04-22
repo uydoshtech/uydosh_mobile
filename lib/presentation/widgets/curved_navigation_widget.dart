@@ -172,12 +172,12 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
                   ? PulseThenBlinkDotWidget(
                       trigger: widget.incomingMessageTravelDotTrigger,
                       color: unreadColor,
-                      size: 13,
+                      size: 11,
                       blinkDuration: const Duration(milliseconds: 750),
                       borderColor: Colors.white,
                       borderWidth: 2,
                     )
-                  : const SizedBox(width: 13, height: 13);
+                  : const SizedBox(width: 11, height: 11);
             },
           ),
         ),
@@ -510,8 +510,28 @@ class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
             width: widget.size,
             height: widget.size,
             decoration: BoxDecoration(
-              color: widget.color,
               shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.lerp(widget.color, Colors.white, 0.32) ?? widget.color,
+                  Color.lerp(widget.color, Colors.black, 0.22) ?? widget.color,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.24),
+                  blurRadius: 6,
+                  offset: const Offset(-2, -2),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.22),
+                  blurRadius: 6,
+                  offset: const Offset(2, 2),
+                ),
+              ],
+              color: widget.borderColor != null ? null : widget.color,
               border: widget.borderColor != null
                   ? Border.all(
                       color: widget.borderColor!,

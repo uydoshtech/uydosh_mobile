@@ -14,13 +14,19 @@ class UydoshRefreshIndicator extends StatelessWidget {
     this.backgroundColor,
     this.displacement = 40.0,
     this.edgeOffset = 0.0,
-    this.notificationPredicate = defaultScrollNotificationPredicate,
+    this.notificationPredicate = _defaultUydoshNotificationPredicate,
     this.semanticsLabel,
     this.semanticsValue,
     this.strokeWidth = RefreshProgressIndicator.defaultStrokeWidth,
     this.triggerMode = RefreshIndicatorTriggerMode.onEdge,
     this.elevation = 2.0,
   });
+
+  /// In app shells (bottom tabs, stacked navigators) the primary scrollable can
+  /// end up with `depth > 0`, which makes Flutter's default predicate ignore it.
+  /// Accept depth 0-2 to keep pull-to-refresh working in nested layouts.
+  static bool _defaultUydoshNotificationPredicate(ScrollNotification n) =>
+      n.depth <= 2;
 
   final Future<void> Function() onRefresh;
   final Widget child;
@@ -36,17 +42,36 @@ class UydoshRefreshIndicator extends StatelessWidget {
   final double elevation;
 
   static Color themedForegroundColor(BuildContext context) {
-    if (ThemeState().currentTheme == AppTheme.blueTheme) {
-      return Colors.white;
+    final scheme = Theme.of(context).colorScheme;
+    final bg = Theme.of(context).scaffoldBackgroundColor;
+    final themeState = ThemeState();
+
+    // In the blue theme, the app often uses very light / glassy surfaces where a
+    // white spinner becomes effectively invisible. Prefer the theme primary there.
+    final primary = scheme.primary;
+    if (themeState.currentTheme == AppTheme.blueTheme) {
+      return primary;
     }
-    return Theme.of(context).colorScheme.primary;
+
+    // If primary is similar brightness to the page background, fallback to onSurface
+    // so the spinner remains visible while dragging (when background is subtle).
+    final primaryBrightness = ThemeData.estimateBrightnessForColor(primary);
+    final bgBrightness = ThemeData.estimateBrightnessForColor(bg);
+    if (primaryBrightness == bgBrightness) {
+      return scheme.onSurface;
+    }
+    return primary;
   }
 
   static Color themedBackgroundColor(BuildContext context) {
-    if (ThemeState().currentTheme == AppTheme.blueTheme) {
-      return Colors.white.withValues(alpha: 0.2);
-    }
-    return Colors.transparent;
+    final scheme = Theme.of(context).colorScheme;
+    final themeState = ThemeState();
+
+    // Always give the indicator its own "surface" so it can't disappear against
+    // white/glass headers in any theme.
+    final mix = themeState.currentTheme == AppTheme.blueTheme ? 0.10 : 0.06;
+    final base = Color.lerp(scheme.surface, scheme.primary, mix) ?? scheme.surface;
+    return base.withValues(alpha: 0.96);
   }
 
   @override

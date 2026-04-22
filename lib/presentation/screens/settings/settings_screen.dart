@@ -113,7 +113,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(String titleKey) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+      // Keep the section label visually separated from the card below.
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
       child: Text(
         L10n.get(titleKey).toUpperCase(),
         style: TextStyle(

@@ -295,6 +295,7 @@ class ConversationCard extends StatelessWidget {
   });
   final ConversationSummary conversation;
   final VoidCallback onTap;
+  static const _avatarSize = 40.0;
 
   @override
   Widget build(BuildContext context) {
@@ -312,23 +313,33 @@ class ConversationCard extends StatelessWidget {
             ? ClipOval(
                 child: CachedNetworkImage(
                   imageUrl: resolvedAvatarUrl,
-                  width: 40,
-                  height: 40,
+                  width: _avatarSize,
+                  height: _avatarSize,
                   fit: BoxFit.cover,
                   memCacheWidth: 80,
                   memCacheHeight: 80,
                   placeholder:
-                      (context, url) => Center(
-                        child: ThemeIcon(
-                          Icons.person,
-                          color: Theme.of(context).colorScheme.onSurface,
+                      (context, url) => SizedBox(
+                        width: _avatarSize,
+                        height: _avatarSize,
+                        child: Center(
+                          child: ThemeIcon(
+                            Icons.person,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                       ),
                   errorWidget:
-                      (context, url, error) => Center(
-                        child: ThemeIcon(
-                          Icons.person,
-                          color: Theme.of(context).colorScheme.onSurface,
+                      (context, url, error) => SizedBox(
+                        width: _avatarSize,
+                        height: _avatarSize,
+                        child: Center(
+                          child: ThemeIcon(
+                            Icons.person,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                       ),
                 ),
@@ -336,6 +347,7 @@ class ConversationCard extends StatelessWidget {
             : CircleAvatar(
                 child: ThemeIcon(
                   Icons.person,
+                  size: 18,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),

@@ -275,18 +275,39 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                     // Unread count indicator for the group
                     if (_getGroupUnreadCount(conversations) > 0) ...[
                       Container(
-                        width: 20,
-                        height: 20,
+                        width: 18,
+                        height: 18,
                         decoration: BoxDecoration(
-                          color: unreadColor,
                           shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color.lerp(unreadColor, Colors.white, 0.32) ??
+                                  unreadColor,
+                              Color.lerp(unreadColor, Colors.black, 0.22) ??
+                                  unreadColor,
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withValues(alpha: 0.24),
+                              blurRadius: 6,
+                              offset: const Offset(-2, -2),
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.22),
+                              blurRadius: 6,
+                              offset: const Offset(2, 2),
+                            ),
+                          ],
                         ),
                         child: Center(
                           child: Text(
                             "${_getGroupUnreadCount(conversations)}",
                             style: TextStyle(
                               color: unreadTextColor,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

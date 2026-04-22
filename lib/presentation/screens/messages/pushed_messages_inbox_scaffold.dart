@@ -1,4 +1,3 @@
-import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -81,9 +80,10 @@ class PushedMessagesInboxScaffold extends StatelessWidget {
                 if (!isAuthenticated) {
                   return ThreeDAppBarIconButton(
                     borderRadius: const BorderRadius.all(Radius.circular(999)),
-                    iconData: CupertinoIcons.person_circle,
+                    iconData: Icons.person_outline,
                     onPressed: () => context.pushReplaceAuthWizard(),
                     semanticsLabel: L10n.get("profile"),
+                    iconSize: 28,
                   );
                 }
 

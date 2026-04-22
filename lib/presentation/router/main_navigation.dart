@@ -2,7 +2,6 @@ import "dart:async" show unawaited;
 
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:firebase_auth/firebase_auth.dart";
-import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
@@ -803,7 +802,7 @@ class MainNavigationState extends State<MainNavigation>
                   if (!isAuthenticated) {
                     return _threeDAppBarIconButton(
                       borderRadius: const BorderRadius.all(Radius.circular(999)),
-                      iconData: CupertinoIcons.person_circle,
+                      iconData: Icons.person_outline,
                       onPressed: () {
                         context.pushReplaceAuthWizard().then((_) {
                           if (mounted) {
@@ -814,6 +813,7 @@ class MainNavigationState extends State<MainNavigation>
                         });
                       },
                       semanticsLabel: L10n.get("profile"),
+                      iconSize: 28,
                     );
                   }
 
