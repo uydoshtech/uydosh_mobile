@@ -593,25 +593,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// the viewport (welcome / empty states).
   Widget _buildPullToRefreshAroundFillChild(Widget child) {
     final topPad = ThemeState().mainShellGlassExtraTopInset(context);
-    return UydoshRefreshIndicator(
+    return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
-      // Home is mounted inside a nested tab shell + stacks; scroll notifications
-      // can end up deeper than Flutter's default predicate expects.
-      notificationPredicate: (n) => n.depth <= 6,
-      triggerMode: RefreshIndicatorTriggerMode.anywhere,
-      // High-contrast, but theme-aware (avoid harsh black on dark theme).
-      color:
-          Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black,
-      backgroundColor:
-          Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF2A2A2A)
-              : Colors.white,
-      // Home tab sits under the main shell glass header; offset the indicator so
-      // the spinner isn't hidden behind the glass.
       edgeOffset: topPad,
-      displacement: 28,
       child: PullToRefreshStretchHaptics(
         // Use a single scrollable with a single box child.
         // This avoids a Flutter web edge-case where swapping sliver vs. box
@@ -1048,24 +1032,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Widget _buildLoadedState(List<Listing> listings, bool hasMore) {
     final topInset = ThemeState().mainShellGlassExtraTopInset(context);
     final topPadding = 16.0 + topInset;
-    return UydoshRefreshIndicator(
+    return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
-      // In the Home tab the primary scrollable can end up deeper than 2 due to
-      // the main navigation shell composition.
-      notificationPredicate: (n) => n.depth <= 6,
-      triggerMode: RefreshIndicatorTriggerMode.anywhere,
-      // High-contrast, but theme-aware (avoid harsh black on dark theme).
-      color:
-          Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black,
-      backgroundColor:
-          Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF2A2A2A)
-              : Colors.white,
-      // Match list's top padding so the spinner appears below the glass header.
       edgeOffset: topPadding,
-      displacement: 28,
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
           itemCount: listings.length,

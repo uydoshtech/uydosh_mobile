@@ -518,8 +518,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             child: Padding(
               // 8 top + 48 switch + 12 bottom
               padding: const EdgeInsets.only(top: 68),
-              child: UydoshRefreshIndicator(
+              child: UydoshRefreshIndicator.mainShell(
                 onRefresh: _onInboxPullRefresh,
+                // The scrollable is already positioned under the switch (68px),
+                // so keep the indicator anchored to the top of this area.
+                edgeOffset: 0.0,
                 child: PullToRefreshStretchHaptics(
                   child:
                       _selectedTabIndex == 0

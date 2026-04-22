@@ -121,24 +121,28 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
         // Search / save alert
         SizedBox(
           width: double.infinity,
-          child: PrimaryButton(
-            onPressed: onPrimaryPressed,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            borderRadius: BorderRadius.circular(10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(primaryIcon, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  L10n.get(primaryLabelKey),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+          child: Builder(
+            builder: (context) {
+              // Match Create Listing CTA typography and pill radius.
+              final label = Theme.of(context).textTheme.labelLarge;
+              final baseSize = label?.fontSize ?? 14;
+              final textStyle =
+                  label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
+                  TextStyle(
+                    fontSize: baseSize * 1.2,
+                    height: 1.0,
+                    fontWeight: FontWeight.w500,
+                  );
+              return PrimaryButtonFactory.iconText(
+                onPressed: onPrimaryPressed,
+                icon: primaryIcon,
+                text: L10n.get(primaryLabelKey),
+                width: double.infinity,
+                borderRadius: BorderRadius.circular(20),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                textStyle: textStyle,
+              );
+            },
           ),
         ),
         const SizedBox(height: 16),

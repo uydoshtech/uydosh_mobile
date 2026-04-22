@@ -22,11 +22,35 @@ class UydoshRefreshIndicator extends StatelessWidget {
     this.elevation = 2.0,
   });
 
+  /// Preset for screens hosted under the main shell "glass" header/tab stacks.
+  ///
+  /// - Uses high-contrast colors (black/white) like Home.
+  /// - Allows deeper notification depths (tab shells / nested stacks).
+  /// - Offsets the spinner via [edgeOffset] so it isn't hidden behind headers.
+  const UydoshRefreshIndicator.mainShell({
+    required this.onRefresh,
+    required this.child,
+    required this.edgeOffset,
+    super.key,
+    this.notificationPredicate = _mainShellNotificationPredicate,
+    this.displacement = 28.0,
+    this.triggerMode = RefreshIndicatorTriggerMode.anywhere,
+    this.semanticsLabel,
+    this.semanticsValue,
+    this.strokeWidth = RefreshProgressIndicator.defaultStrokeWidth,
+    this.elevation = 2.0,
+  })  : color = null,
+        backgroundColor = null;
+
   /// In app shells (bottom tabs, stacked navigators) the primary scrollable can
   /// end up with `depth > 0`, which makes Flutter's default predicate ignore it.
   /// Accept depth 0-2 to keep pull-to-refresh working in nested layouts.
   static bool _defaultUydoshNotificationPredicate(ScrollNotification n) =>
       n.depth <= 2;
+
+  /// Main navigation shell composition can make depth fairly deep.
+  static bool _mainShellNotificationPredicate(ScrollNotification n) =>
+      n.depth <= 6;
 
   final Future<void> Function() onRefresh;
   final Widget child;
@@ -79,6 +103,16 @@ class UydoshRefreshIndicator extends StatelessWidget {
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, _) {
+        final isMainShell = color == null && backgroundColor == null;
+        final highContrastColor =
+            Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black;
+        final highContrastBg =
+            Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF2A2A2A)
+                : Colors.white;
+
         return RefreshIndicator(
           displacement: displacement,
           edgeOffset: edgeOffset,
@@ -87,8 +121,12 @@ class UydoshRefreshIndicator extends StatelessWidget {
             SoundService().playLike();
             await onRefresh();
           },
-          color: color ?? themedForegroundColor(context),
-          backgroundColor: backgroundColor ?? themedBackgroundColor(context),
+          color: isMainShell
+              ? highContrastColor
+              : (color ?? themedForegroundColor(context)),
+          backgroundColor: isMainShell
+              ? highContrastBg
+              : (backgroundColor ?? themedBackgroundColor(context)),
           notificationPredicate: notificationPredicate,
           semanticsLabel: semanticsLabel,
           semanticsValue: semanticsValue,

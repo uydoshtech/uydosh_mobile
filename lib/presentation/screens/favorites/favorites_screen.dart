@@ -359,8 +359,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
 
     final topPad = 16.0 + ThemeState().mainShellGlassExtraTopInset(context);
-    return UydoshRefreshIndicator(
+    return UydoshRefreshIndicator.mainShell(
       onRefresh: () => _loadFavoriteListings(isRefresh: true),
+      edgeOffset: topPad,
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
           padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, 16.0),
@@ -476,8 +477,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildEmptyState() {
-    return UydoshRefreshIndicator(
+    final topPad = ThemeState().mainShellGlassExtraTopInset(context);
+    return UydoshRefreshIndicator.mainShell(
       onRefresh: () => _loadFavoriteListings(isRefresh: true),
+      edgeOffset: topPad,
       child: PullToRefreshStretchHaptics(
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
