@@ -610,6 +610,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
           (displayName.isNotEmpty ? displayName : label.label).length;
       final baseWidth = (textLen * _charWidth).clamp(40.0, 140.0);
       final underlineWidth = baseWidth * scale;
+      final pillWidth = underlineWidth + 14 * scale;
+      final pillHeight = math.max(14.0, _tapTargetHeight * scale);
 
       final left = label.textAnchor == "end"
           ? posX - underlineWidth - _tapTargetOffsetX * scale
@@ -618,6 +620,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
               : posX - _tapTargetOffsetX * scale;
 
       final underlineY = posY + 9 * scale;
+      final pillTop = posY - pillHeight / 2;
 
       final highlightColor = isBlueTheme
           ? const Color(0xFF0B1220) // near-black (navy-ish)
@@ -640,30 +643,66 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                 child: Transform.scale(
                   scale: 0.9 + 0.12 * t,
                   alignment: Alignment.centerLeft,
-                  child: ClipRect(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: t.clamp(0.0, 1.0),
-                      child: Container(
-                        width: underlineWidth,
-                        height: math.max(3.0, 3.6 * scale),
-                        decoration: BoxDecoration(
-                          color: highlightColor,
-                          borderRadius: BorderRadius.circular(999),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.white.withValues(alpha: 0.75),
-                              blurRadius: 18,
-                              spreadRadius: 3,
+                  child: SizedBox(
+                    width: pillWidth,
+                    height: pillHeight + 12 * scale,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned(
+                          left: 0,
+                          top: pillTop - underlineY,
+                          child: Container(
+                            width: pillWidth,
+                            height: pillHeight,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.88),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: highlightColor.withValues(alpha: 0.55),
+                                width: math.max(1.0, 1.2 * scale),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withValues(alpha: 0.65),
+                                  blurRadius: 18,
+                                  spreadRadius: 2,
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.18),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                              ],
                             ),
-                            BoxShadow(
-                              color: highlightColor.withValues(alpha: 0.40),
-                              blurRadius: 10,
-                              spreadRadius: 1,
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                        Positioned(
+                          left: 7 * scale,
+                          top: 0,
+                          child: ClipRect(
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: t.clamp(0.0, 1.0),
+                              child: Container(
+                                width: underlineWidth,
+                                height: math.max(3.5, 4.2 * scale),
+                                decoration: BoxDecoration(
+                                  color: highlightColor,
+                                  borderRadius: BorderRadius.circular(999),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.white.withValues(alpha: 0.70),
+                                      blurRadius: 14,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
