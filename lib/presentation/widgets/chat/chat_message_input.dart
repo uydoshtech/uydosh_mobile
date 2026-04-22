@@ -15,12 +15,16 @@ class ChatMessageInput extends StatelessWidget {
     required this.onSend,
     required this.isSendingMessage,
     this.focusNode,
+    this.blendWithGlassBackdrop = false,
     super.key,
   });
   final TextEditingController controller;
   final FocusNode? focusNode;
   final VoidCallback onSend;
   final bool isSendingMessage;
+
+  /// When true, no bar fill (used with a parent [BackdropFilter] glass panel).
+  final bool blendWithGlassBackdrop;
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +46,22 @@ class ChatMessageInput extends StatelessWidget {
 
         // Bottom safe area is handled below this bar (e.g. quick questions row);
         // avoid stacking large bottom padding here or it reads as empty space.
+        final barDecoration =
+            blendWithGlassBackdrop
+                ? BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: scheme.onSurface.withValues(alpha: 0.10),
+                    ),
+                  ),
+                )
+                : BoxDecoration(
+                  color: themeState.chatInputBarBackgroundColor,
+                  border: Border(top: BorderSide(color: borderColor)),
+                );
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          decoration: BoxDecoration(
-            color: themeState.chatInputBarBackgroundColor,
-            border: Border(top: BorderSide(color: borderColor)),
-          ),
+          decoration: barDecoration,
           child: Row(
             children: [
               Expanded(

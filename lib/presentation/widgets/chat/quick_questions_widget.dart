@@ -6,8 +6,15 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 class QuickQuestionsWidget extends StatelessWidget {
 
-  const QuickQuestionsWidget({required this.onQuestionTap, super.key});
+  const QuickQuestionsWidget({
+    required this.onQuestionTap,
+    this.blendWithGlassBackdrop = false,
+    super.key,
+  });
   final Function(String) onQuestionTap;
+
+  /// When true, strip has no fill (parent provides frosted glass).
+  final bool blendWithGlassBackdrop;
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +29,18 @@ class QuickQuestionsWidget extends StatelessWidget {
         final bottomPad =
             MediaQuery.viewPaddingOf(context).bottom + 8;
 
+        final stripDecoration =
+            blendWithGlassBackdrop
+                ? const BoxDecoration()
+                : BoxDecoration(
+                  color: stripColor,
+                  border: Border(
+                    bottom: BorderSide(color: borderColor, width: 0.5),
+                  ),
+                );
         return Container(
           padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPad),
-          decoration: BoxDecoration(
-            color: stripColor,
-            border: Border(bottom: BorderSide(color: borderColor, width: 0.5)),
-          ),
+          decoration: stripDecoration,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(

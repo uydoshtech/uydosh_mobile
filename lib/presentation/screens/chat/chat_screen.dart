@@ -1,9 +1,12 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "dart:async";
+import "dart:ui" show ImageFilter;
+
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -99,6 +102,9 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _lastIncomingSoundMessageId;
 
   static const Duration _minSkeletonDuration = Duration(milliseconds: 450);
+
+  /// Reserve space so the last messages clear the stacked glass composer (blue theme).
+  static const double _glassComposerEstimatedHeight = 196;
 
   /// Memoized output of [MessageGroupingUtils.groupMessagesAsItems] — invalidated when
   /// [messages] reference, [_currentUserId], or [_newMessageIds] meaningfully change.
@@ -421,6 +427,223 @@ class _ChatScreenState extends State<ChatScreen> {
     return L10n.get("chat");
   }
 
+  EdgeInsets _messagesListPadding(BuildContext context) {
+    const base = EdgeInsets.all(16);
+    if (!ThemeState().isBlueTheme) return base;
+    final extra =
+        _glassComposerEstimatedHeight +
+        MediaQuery.viewPaddingOf(context).bottom;
+    return base.copyWith(bottom: base.bottom + extra);
+  }
+
+  Widget _chatComposerWithListener({required bool blendWithGlassBackdrop}) {
+    return BlocListener<MessagingBloc, MessagingState>(
+      listener: (context, state) {
+        state.when(
+          initial: () {},
+          loading: () {},
+          conversationsLoaded: (conversations, hasMore, currentPage) {},
+          conversationsCleared: () {},
+          messagesLoaded:
+              (messages, hasMore, currentPage, conversationId) {},
+          conversationCreated: (conversation) {},
+          messageSent: (message) {
+            setState(() {
+              _isSendingMessage = false;
+            });
+            HapticFeedbackUtils.impact();
+          },
+          messagesMarkedAsRead: (conversationId, markedCount) {},
+          error: (message) {
+            setState(() {
+              _isSendingMessage = false;
+            });
+            if (message.contains("USER_BLOCKED")) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          },
+        );
+      },
+      child: ChatMessageInput(
+        controller: _messageController,
+        focusNode: _messageFocusNode,
+        onSend: _sendMessage,
+        isSendingMessage: _isSendingMessage,
+        blendWithGlassBackdrop: blendWithGlassBackdrop,
+      ),
+    );
+  }
+
+  Widget _blueGlassComposerPanel() {
+    const topRadius = BorderRadius.vertical(top: Radius.circular(20));
+    return ClipRRect(
+      borderRadius: topRadius,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: topRadius,
+            color: BlueThemeColors.background.withValues(alpha: 0.44),
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _chatComposerWithListener(blendWithGlassBackdrop: true),
+              QuickQuestionsWidget(
+                onQuestionTap: _onQuestionTap,
+                blendWithGlassBackdrop: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _chatLeadingRibbonWidgets() {
+    return [
+      if (_showSecurityRibbon)
+        ChatSecurityRibbon(onClose: _dismissSecurityRibbon),
+      if (_safetyWarningTitle != null && _safetyWarningBody != null)
+        ChatSafetyWarningRibbon(
+          title: _safetyWarningTitle!,
+          body: _safetyWarningBody!,
+          severity: _safetyWarningSeverity,
+          onClose: _dismissSafetyWarning,
+        ),
+    ];
+  }
+
+  Widget _messageScrollExpanded() {
+    return Expanded(
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<MessagingBloc, MessagingState>(
+            listener: (context, state) {
+              state.when(
+                initial: () {},
+                loading: () {},
+                conversationsLoaded:
+                    (conversations, hasMore, currentPage) {},
+                conversationsCleared: () {},
+                messagesLoaded: (
+                  messages,
+                  hasMore,
+                  currentPage,
+                  conversationId,
+                ) {
+                  setState(() {
+                    _applyMessagesAndMarkNewOnes(messages);
+                  });
+                  _finishRefreshSkeletonIfNeeded();
+                  context.read<MessagingBloc>().add(
+                    MarkMessagesAsRead(conversationId: conversationId),
+                  );
+
+                  final latestMessage =
+                      messages.isNotEmpty ? messages.last : null;
+                  final latest = latestMessage?.content;
+                  final latestSenderId = latestMessage?.senderId;
+                  if (latest != null &&
+                      latestSenderId != null &&
+                      _currentUserId != null &&
+                      latestSenderId != _currentUserId) {
+                    _maybeRunSafetyCheck(triggerText: latest);
+                  }
+                },
+                conversationCreated: (conversation) {},
+                messageSent: (message) {
+                  setState(() {
+                    _messages = [..._messages, message];
+                    _newMessageIds.clear();
+                    _newMessageIds.add(message.id);
+                  });
+                  _messageController.clear();
+                  _scrollToBottom();
+                  HapticFeedbackUtils.impact();
+                },
+                messagesMarkedAsRead: (conversationId, markedCount) {},
+                error: (message) {
+                  _finishRefreshSkeletonIfNeeded();
+                },
+              );
+            },
+          ),
+          BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
+            listener: (context, state) {
+              state.when(
+                initial: () {},
+                loading: () {},
+                loaded: (profile) {
+                  setState(() {
+                    _currentUserProfile = profile;
+                  });
+                },
+                error: (message) {
+                  logger.d(
+                    "❌ [ChatScreen] Error loading current user profile: $message",
+                  );
+                },
+              );
+            },
+          ),
+        ],
+        child: BlocBuilder<MessagingBloc, MessagingState>(
+          buildWhen: (previous, current) {
+            if (_messages.isNotEmpty) {
+              return false;
+            }
+            return previous != current;
+          },
+          builder: (context, state) {
+            if (_showRefreshSkeleton) {
+              return const ChatMessagesSkeleton();
+            }
+            if (_messages.isNotEmpty) {
+              return _buildMessagesList(_messages);
+            }
+            return state.when(
+              initial: _buildLoadingState,
+              loading: _buildLoadingState,
+              conversationsLoaded:
+                  (conversations, hasMore, currentPage) =>
+                      _hasLoadedMessagesForConversation
+                          ? _buildMessagesList(_messages)
+                          : _buildLoadingState(),
+              conversationsCleared: _buildEmptyState,
+              messagesLoaded:
+                  (
+                    messages,
+                    hasMore,
+                    currentPage,
+                    conversationId,
+                  ) => _buildMessagesList(messages),
+              conversationCreated:
+                  (conversation) =>
+                      _hasLoadedMessagesForConversation
+                          ? _buildMessagesList(_messages)
+                          : _buildLoadingState(),
+              messageSent: (message) => _buildEmptyState(),
+              messagesMarkedAsRead:
+                  (conversationId, markedCount) => _buildEmptyState(),
+              error: _buildErrorState,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -446,200 +669,39 @@ class _ChatScreenState extends State<ChatScreen> {
               // Hide keyboard when tapping outside of text input
               FocusScope.of(context).unfocus();
             },
-            child: Column(
-                children: [
-                  if (_showSecurityRibbon)
-                    ChatSecurityRibbon(onClose: _dismissSecurityRibbon),
-                  if (_safetyWarningTitle != null && _safetyWarningBody != null)
-                    ChatSafetyWarningRibbon(
-                      title: _safetyWarningTitle!,
-                      body: _safetyWarningBody!,
-                      severity: _safetyWarningSeverity,
-                      onClose: _dismissSafetyWarning,
-                    ),
-                  Expanded(
-                    child: MultiBlocListener(
-                      listeners: [
-                        BlocListener<MessagingBloc, MessagingState>(
-                          listener: (context, state) {
-                            state.when(
-                              initial: () {},
-                              loading: () {},
-                              conversationsLoaded:
-                                  (conversations, hasMore, currentPage) {},
-                              conversationsCleared: () {},
-                              messagesLoaded: (
-                                messages,
-                                hasMore,
-                                currentPage,
-                                conversationId,
-                              ) {
-                                // Store messages in widget state
-                                setState(() {
-                                  _applyMessagesAndMarkNewOnes(messages);
-                                });
-                                _finishRefreshSkeletonIfNeeded();
-                                // Mark messages as read after they're loaded
-                                context.read<MessagingBloc>().add(
-                                      MarkMessagesAsRead(
-                                        conversationId: conversationId,
-                                      ),
-                                    );
-
-                                // MVP1: client trigger → server safety check (non-blocking)
-                                final latestMessage =
-                                    messages.isNotEmpty ? messages.last : null;
-                                final latest = latestMessage?.content;
-                                final latestSenderId = latestMessage?.senderId;
-                                // Only warn the potential victim: trigger checks on incoming messages.
-                                if (latest != null &&
-                                    latestSenderId != null &&
-                                    _currentUserId != null &&
-                                    latestSenderId != _currentUserId) {
-                                  _maybeRunSafetyCheck(triggerText: latest);
-                                }
-                              },
-                              conversationCreated: (conversation) {},
-                              messageSent: (message) {
-                                // Add the new message to the local messages list
-                                setState(() {
-                                  _messages = [..._messages, message];
-                                  // Clear all previous new message IDs and only mark the newest one
-                                  _newMessageIds.clear();
-                                  _newMessageIds.add(
-                                    message.id,
-                                  ); // Mark this message as new for animation
-                                });
-                                // Clear the input and scroll to bottom
-                                _messageController.clear();
-                                _scrollToBottom();
-                                // Haptic feedback (sound plays on send button press)
-                                HapticFeedbackUtils.impact();
-                              },
-                              messagesMarkedAsRead:
-                                  (conversationId, markedCount) {},
-                              error: (message) {
-                                _finishRefreshSkeletonIfNeeded();
-                              },
-                            );
-                          },
+            child:
+                themeState.isBlueTheme
+                    ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Positioned.fill(
+                          child: Column(
+                            children: [
+                              ..._chatLeadingRibbonWidgets(),
+                              _messageScrollExpanded(),
+                            ],
+                          ),
                         ),
-                        BlocListener<
-                          CurrentUserProfileBloc,
-                          CurrentUserProfileState
-                        >(
-                          listener: (context, state) {
-                            state.when(
-                              initial: () {},
-                              loading: () {},
-                              loaded: (profile) {
-                                setState(() {
-                                  _currentUserProfile = profile;
-                                });
-                              },
-                              error: (message) {
-                                logger.d(
-                                  "❌ [ChatScreen] Error loading current user profile: $message",
-                                );
-                              },
-                            );
-                          },
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: RepaintBoundary(
+                            child: _blueGlassComposerPanel(),
+                          ),
                         ),
                       ],
-                      child: BlocBuilder<MessagingBloc, MessagingState>(
-                        buildWhen: (previous, current) {
-                          if (_messages.isNotEmpty) {
-                            return false;
-                          }
-                          return previous != current;
-                        },
-                        builder: (context, state) {
-                          if (_showRefreshSkeleton) {
-                            return const ChatMessagesSkeleton();
-                          }
-                          // Once we have messages, always show them - the shared
-                          // MessagingBloc can be overwritten by MessagesInboxScreen
-                          // (e.g. RefreshConversations on messagesMarkedAsRead),
-                          // which would otherwise cause a blink and infinite loading.
-                          if (_messages.isNotEmpty) {
-                            return _buildMessagesList(_messages);
-                          }
-                          return state.when(
-                            initial: _buildLoadingState,
-                            loading: _buildLoadingState,
-                            conversationsLoaded:
-                                (conversations, hasMore, currentPage) =>
-                                    _hasLoadedMessagesForConversation
-                                        ? _buildMessagesList(_messages)
-                                        : _buildLoadingState(),
-                            conversationsCleared: _buildEmptyState,
-                            messagesLoaded:
-                                (
-                                  messages,
-                                  hasMore,
-                                  currentPage,
-                                  conversationId,
-                                ) => _buildMessagesList(messages),
-                            conversationCreated:
-                                (conversation) =>
-                                    _hasLoadedMessagesForConversation
-                                        ? _buildMessagesList(_messages)
-                                        : _buildLoadingState(),
-                            messageSent:
-                                (message) => _buildEmptyState(),
-                            messagesMarkedAsRead:
-                                (conversationId, markedCount) =>
-                                    _buildEmptyState(),
-                            error: _buildErrorState,
-                          );
-                        },
-                      ),
+                    )
+                    : Column(
+                      children: [
+                        ..._chatLeadingRibbonWidgets(),
+                        _messageScrollExpanded(),
+                        _chatComposerWithListener(
+                          blendWithGlassBackdrop: false,
+                        ),
+                        QuickQuestionsWidget(onQuestionTap: _onQuestionTap),
+                      ],
                     ),
-                  ),
-                  BlocListener<MessagingBloc, MessagingState>(
-                    listener: (context, state) {
-                      state.when(
-                        initial: () {},
-                        loading: () {},
-                        conversationsLoaded:
-                            (conversations, hasMore, currentPage) {},
-                        conversationsCleared: () {},
-                        messagesLoaded:
-                            (messages, hasMore, currentPage, conversationId) {},
-                        conversationCreated: (conversation) {},
-                        messageSent: (message) {
-                          setState(() {
-                            _isSendingMessage = false;
-                          });
-                          HapticFeedbackUtils.impact();
-                        },
-                        messagesMarkedAsRead:
-                            (conversationId, markedCount) {},
-                        error: (message) {
-                          setState(() {
-                            _isSendingMessage = false;
-                          });
-                          if (message.contains("USER_BLOCKED")) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(message),
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.error,
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    child: ChatMessageInput(
-                      controller: _messageController,
-                      focusNode: _messageFocusNode,
-                      onSend: _sendMessage,
-                      isSendingMessage: _isSendingMessage,
-                    ),
-                  ),
-                  QuickQuestionsWidget(onQuestionTap: _onQuestionTap),
-                ],
-              ),
           ),
         );
       },
@@ -708,7 +770,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return CommonListView(
       controller: _scrollController,
-      padding: const EdgeInsets.all(16),
+      padding: _messagesListPadding(context),
       reverse: true, // Show newest messages at bottom
       itemSpacing: 0, // Message grouping handles spacing
       itemCount: groupedItems.length,
