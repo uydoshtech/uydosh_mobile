@@ -508,28 +508,36 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
     return Padding(
       padding: EdgeInsets.only(top: shellGlassTop),
-      child: Column(
+      child: Stack(
         children: [
-          // Tab buttons
-          _buildTabButtons(incomingConversations, outgoingConversations),
-          // Tab content
-          Expanded(
-          child: UydoshRefreshIndicator(
-            onRefresh: _onInboxPullRefresh,
-            child: PullToRefreshStretchHaptics(
-              child:
-                  _selectedTabIndex == 0
-                      ? _buildConversationsList(
-                        incomingConversations,
-                        "incoming",
-                      )
-                      : _buildConversationsList(
-                        outgoingConversations,
-                        "outgoing",
-                      ),
+          // List scrolls "under" the glass tab switcher.
+          Positioned.fill(
+            child: Padding(
+              // 16 top + 48 switch + 16 bottom
+              padding: const EdgeInsets.only(top: 80),
+              child: UydoshRefreshIndicator(
+                onRefresh: _onInboxPullRefresh,
+                child: PullToRefreshStretchHaptics(
+                  child:
+                      _selectedTabIndex == 0
+                          ? _buildConversationsList(
+                            incomingConversations,
+                            "incoming",
+                          )
+                          : _buildConversationsList(
+                            outgoingConversations,
+                            "outgoing",
+                          ),
+                ),
+              ),
             ),
           ),
-        ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            child: _buildTabButtons(incomingConversations, outgoingConversations),
+          ),
         ],
       ),
     );
@@ -564,21 +572,28 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         const radius = BorderRadius.all(Radius.circular(20));
         return ClipRRect(
           borderRadius: radius,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                color: BlueThemeColors.background.withValues(alpha: 0.28),
-                border: Border(
-                  bottom: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.10),
+          child: Stack(
+            children: [
+              // Blur is subtle on flat backgrounds, so we also apply a clear glass tint.
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  // Match the app bar glass: subtle tint + hairline edge.
+                  color: BlueThemeColors.background.withValues(alpha: 0.14),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
                     width: 0.5,
                   ),
                 ),
+                child: content,
               ),
-              child: content,
-            ),
+            ],
           ),
         );
       },

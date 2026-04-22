@@ -1,4 +1,5 @@
 import "package:cached_network_image/cached_network_image.dart";
+import "dart:ui";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/cupertino.dart";
@@ -14,6 +15,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/version_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
@@ -79,6 +81,20 @@ class BurgerMenuWidget extends StatefulWidget {
 class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   String? _cachedGoogleDisplayName;
   String? _cachedGooglePhotoUrl;
+
+  Color _drawerGlassTintColor(BuildContext context) {
+    // Tint uses the same screen canvas color as the home background.
+    final base = ThemeState().backgroundColor;
+    final brightness = ThemeData.estimateBrightnessForColor(base);
+    if (brightness == Brightness.dark) return base.withValues(alpha: 0.32);
+    return base.withValues(alpha: 0.48);
+  }
+
+  Color _drawerGlassBorderColor(BuildContext context) {
+    final tint = _drawerGlassTintColor(context);
+    return Color.lerp(tint, Colors.white, 0.65)!.withValues(alpha: 0.55);
+  }
+
   // Theme-aware color helper methods
   Color _getTextColor() {
     final currentTheme = ThemeState().currentTheme;
@@ -193,611 +209,662 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       child: ListenableBuilder(
         listenable: ThemeState(),
         builder: (context, _) {
-          return Column(
-        children: [
-          // Menu Items
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(top: 100),
-              children: [
-                // Profile Logo (Round with person icon) and Name - Reserve space when logged out
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-
-                    if (!isAuthenticated) {
-                      // Reserve space for avatar area when not authenticated
-                      return Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 16,
-                        ),
-                        height:
-                            80 +
-                            12 +
-                            24, // Avatar height + spacing + text height
-                        child: const SizedBox.shrink(),
-                      );
-                    }
-
-                    // Show profile section when authenticated
-                    return Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
-                      ),
-                      child: Center(
-                        child: Column(
+          return ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: _drawerGlassTintColor(context),
+                  border: Border(
+                    right: BorderSide(
+                      color: _drawerGlassBorderColor(context),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: SafeArea(
+                  child: Column(
+                    children: [
+                      // Menu Items
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.only(top: 100),
                           children: [
-                            ThreeDPillButton(
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(999),
-                              ),
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                HapticFeedbackUtils.impact();
+                            // Profile Logo (Round with person icon) and Name - Reserve space when logged out
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+
+                                if (!isAuthenticated) {
+                                  // Reserve space for avatar area when not authenticated
+                                  return Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 16,
+                                    ),
+                                    height: 80 + 12 + 24,
+                                    child: const SizedBox.shrink(),
+                                  );
+                                }
+
+                                // Show profile section when authenticated
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 16,
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                      children: [
+                                        ThreeDPillButton(
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(999),
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                          onPressed: () {
+                                            HapticFeedbackUtils.impact();
+                                            Navigator.pop(context);
+                                            if (context.mounted) {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder:
+                                                      (context) =>
+                                                          const ProfileScreen(),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          child: Semantics(
+                                            label: L10n.get("profile"),
+                                            button: true,
+                                            child: SizedBox(
+                                              width: 80,
+                                              height: 80,
+                                              child: ClipOval(
+                                                child: _buildProfilePicture(),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        // Profile Name below the logo
+                                        BlocSelector<
+                                          CurrentUserProfileBloc,
+                                          CurrentUserProfileState,
+                                          _BurgerMenuProfileData
+                                        >(
+                                          selector: (state) => state.map(
+                                            initial:
+                                                (_) =>
+                                                    const _BurgerMenuProfileData(
+                                                      isLoading: true,
+                                                      hasError: false,
+                                                      errorMessage: "",
+                                                      profile: null,
+                                                    ),
+                                            loading:
+                                                (_) =>
+                                                    const _BurgerMenuProfileData(
+                                                      isLoading: true,
+                                                      hasError: false,
+                                                      errorMessage: "",
+                                                      profile: null,
+                                                    ),
+                                            loaded: (loadedState) =>
+                                                _BurgerMenuProfileData(
+                                                  isLoading: false,
+                                                  hasError: false,
+                                                  errorMessage: "",
+                                                  profile: loadedState.profile,
+                                                ),
+                                            error:
+                                                (_) =>
+                                                    const _BurgerMenuProfileData(
+                                                      isLoading: false,
+                                                      hasError: true,
+                                                      errorMessage: "",
+                                                      profile: null,
+                                                    ),
+                                          ),
+                                          builder: (context, data) {
+                                            if (data.isLoading) {
+                                              return Text(
+                                                L10n.get("loading..."),
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: _getSecondaryTextColor(),
+                                                ),
+                                              );
+                                            }
+
+                                            if (data.hasError ||
+                                                data.profile == null) {
+                                              // Fallback to Google name when profile unavailable
+                                              final fallbackName =
+                                                  (_cachedGoogleDisplayName ??
+                                                          "")
+                                                      .trim();
+                                              return Text(
+                                                fallbackName.isNotEmpty
+                                                    ? fallbackName
+                                                    : L10n.get("user"),
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: fallbackName.isNotEmpty
+                                                      ? _getTextColor()
+                                                      : _getSecondaryTextColor(),
+                                                ),
+                                              );
+                                            }
+
+                                            // Prefer profile name (populated on account creation) over Google name
+                                            final displayName =
+                                                (data.profile!.name
+                                                                ?.trim()
+                                                                .isNotEmpty ??
+                                                            false
+                                                        ? data.profile!.name
+                                                        : null) ??
+                                                    _cachedGoogleDisplayName ??
+                                                    L10n.get("user");
+                                            return Text(
+                                              displayName,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: _getTextColor(),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            // Always show divider after profile section (reserved space)
+                            _buildThemeAwareDivider(),
+
+                            // Profile menu item - Only show when user is logged in
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+
+                                if (!isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return _buildMenuItem(
+                                  icon: Icons.person_outline,
+                                  titleKey: "menu_profile",
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    if (context.mounted) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  const ProfileScreen(),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+
+                            // Add Listing menu item - Only show when user is logged in
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+
+                                if (!isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return _buildMenuItem(
+                                  icon: Icons.add,
+                                  titleKey: "menu_add_listing",
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    // Navigate to create listing using MainNavigation
+                                    if (context.mounted) {
+                                      debugPrint(
+                                        "🍔 Burger Menu: Navigating to Add Listing (index 3)",
+                                      );
+                                      debugPrint(
+                                        "🍔 Burger Menu: mainNavigationKey: $mainNavigationKey",
+                                      );
+                                      debugPrint(
+                                        "🍔 Burger Menu: mainNavigationKey.currentState: ${mainNavigationKey.currentState}",
+                                      );
+                                      if (mainNavigationKey.currentState !=
+                                          null) {
+                                        mainNavigationKey.currentState!
+                                            .navigateToIndex(3);
+                                        debugPrint(
+                                          "🍔 Burger Menu: Navigation successful",
+                                        );
+                                      } else {
+                                        debugPrint(
+                                          "❌ Burger Menu: mainNavigationKey.currentState is null",
+                                        );
+                                        // Fallback: try to navigate using Navigator
+                                        debugPrint(
+                                          "🍔 Burger Menu: Attempting fallback navigation...",
+                                        );
+                                        Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const MainNavigation(
+                                                  initialIndex: 3,
+                                                ),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+
+                            // My Listings menu item - Only show when user is logged in
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+
+                                if (!isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return _buildMenuItem(
+                                  icon: Icons.list_alt,
+                                  titleKey: "menu_my_listings",
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    // Navigate to user listings screen
+                                    if (context.mounted) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => BlocProvider(
+                                            create: (context) {
+                                              return ListingsBloc(
+                                                getIt<IListingService>(),
+                                              );
+                                            },
+                                            child: const UserListingsScreen(),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+
+                            // Favorites menu item - Only show when user is logged in
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+
+                                if (!isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return _buildMenuItem(
+                                  icon: CupertinoIcons.suit_heart,
+                                  titleKey: "menu_favorites",
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    // Navigate to favorites screen using MainNavigation
+                                    if (context.mounted) {
+                                      debugPrint(
+                                        "🍔 Burger Menu: Navigating to Favorites (index 1)",
+                                      );
+                                      debugPrint(
+                                        "🍔 Burger Menu: mainNavigationKey: $mainNavigationKey",
+                                      );
+                                      debugPrint(
+                                        "🍔 Burger Menu: mainNavigationKey.currentState: ${mainNavigationKey.currentState}",
+                                      );
+                                      if (mainNavigationKey.currentState !=
+                                          null) {
+                                        mainNavigationKey.currentState!
+                                            .navigateToIndex(1);
+                                        debugPrint(
+                                          "🍔 Burger Menu: Navigation successful",
+                                        );
+                                      } else {
+                                        debugPrint(
+                                          "❌ Burger Menu: mainNavigationKey.currentState is null",
+                                        );
+                                        // Fallback: try to navigate using Navigator
+                                        debugPrint(
+                                          "🍔 Burger Menu: Attempting fallback navigation...",
+                                        );
+                                        Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const MainNavigation(
+                                                  initialIndex: 1,
+                                                ),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+
+                            // History menu item - Only show when user is logged in (tenants and landlords)
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+
+                                if (!isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return _buildMenuItem(
+                                  icon: Icons.history,
+                                  titleKey: "menu_history",
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    if (context.mounted) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const ViewHistoryScreen(),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+
+                            // Messages menu item - Only show when user is logged in
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+
+                                if (!isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return _buildMenuItem(
+                                  icon: Icons.mail_outline,
+                                  titleKey: "menu_messages",
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    // Navigate to messages screen
+                                    if (context.mounted) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute<void>(
+                                          builder: (context) =>
+                                              const PushedMessagesInboxScaffold(),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+
+                            // Notifications menu item - Only show when user is logged in
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+
+                                if (!isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return _buildMenuItem(
+                                  icon: Icons.notifications_none_outlined,
+                                  titleKey: "menu_notifications",
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    if (context.mounted) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const NotificationsScreen(),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+
+                            _buildThemeAwareDivider(),
+
+                            // Settings menu item
+                            _buildMenuItem(
+                              icon: Icons.settings,
+                              titleKey: "menu_settings",
+                              onTap: () {
                                 Navigator.pop(context);
+                                // Navigate to settings screen
                                 if (context.mounted) {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder:
-                                          (context) => const ProfileScreen(),
+                                      builder: (context) =>
+                                          const SettingsScreen(),
                                     ),
                                   );
                                 }
                               },
-                              child: Semantics(
-                                label: L10n.get("profile"),
-                                button: true,
-                                child: SizedBox(
-                                  width: 80,
-                                  height: 80,
-                                  child: ClipOval(
-                                    child: _buildProfilePicture(),
-                                  ),
-                                ),
-                              ),
                             ),
-                            const SizedBox(height: 12),
-                            // Profile Name below the logo
-                            BlocSelector<
-                                CurrentUserProfileBloc,
-                                CurrentUserProfileState,
-                                _BurgerMenuProfileData
-                              >(
-                                selector:
-                                    (state) => state.map(
-                                      initial:
-                                          (_) => const _BurgerMenuProfileData(
-                                            isLoading: true,
-                                            hasError: false,
-                                            errorMessage: "",
-                                            profile: null,
-                                          ),
-                                      loading:
-                                          (_) => const _BurgerMenuProfileData(
-                                            isLoading: true,
-                                            hasError: false,
-                                            errorMessage: "",
-                                            profile: null,
-                                          ),
-                                      loaded:
-                                          (loadedState) =>
-                                              _BurgerMenuProfileData(
-                                                isLoading: false,
-                                                hasError: false,
-                                                errorMessage: "",
-                                                profile: loadedState.profile,
-                                              ),
-                                      error:
-                                          (_) => const _BurgerMenuProfileData(
-                                            isLoading: false,
-                                            hasError: true,
-                                            errorMessage: "",
-                                            profile: null,
-                                          ),
-                                    ),
-                                builder: (context, data) {
-                                  if (data.isLoading) {
-                                    return Text(
-                                      L10n.get("loading..."),
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: _getSecondaryTextColor(),
-                                      ),
-                                    );
-                                  }
 
-                                  if (data.hasError || data.profile == null) {
-                                    // Fallback to Google name when profile unavailable
-                                    final fallbackName =
-                                        (_cachedGoogleDisplayName ?? "").trim();
-                                    return Text(
-                                      fallbackName.isNotEmpty
-                                          ? fallbackName
-                                          : L10n.get("user"),
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: fallbackName.isNotEmpty
-                                            ? _getTextColor()
-                                            : _getSecondaryTextColor(),
-                                      ),
-                                    );
-                                  }
+                            // Enable Notifications - only when supported and permission denied
+                            FutureBuilder<AuthorizationStatus?>(
+                              future:
+                                  getIt<IPushNotificationService>().isSupported
+                                      ? getIt<IPushNotificationService>()
+                                          .getNotificationStatus()
+                                      : Future.value(null),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData || snapshot.data == null) {
+                                  return const SizedBox.shrink();
+                                }
+                                final status = snapshot.data!;
+                                if (status != AuthorizationStatus.denied &&
+                                    status !=
+                                        AuthorizationStatus.notDetermined) {
+                                  return const SizedBox.shrink();
+                                }
+                                return _buildMenuItem(
+                                  icon: Icons.notifications_outlined,
+                                  titleKey: "menu_enable_notifications",
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    final granted =
+                                        await getIt<IPushNotificationService>()
+                                            .requestPermissionAndRegister();
+                                    if (context.mounted) {
+                                      if (granted) {
+                                        ToastTheme.showSuccess(
+                                          context,
+                                          message: L10n.get(
+                                            "notifications_enabled",
+                                          ),
+                                        );
+                                      } else {
+                                        ToastTheme.showInfo(
+                                          context,
+                                          message: L10n.get(
+                                            "notifications_enable_in_settings",
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                );
+                              },
+                            ),
 
-                                  // Prefer profile name (populated on account creation) over Google name
-                                  final displayName =
-                                      (data.profile!.name?.trim().isNotEmpty ?? false
-                                              ? data.profile!.name
-                                              : null) ??
-                                      _cachedGoogleDisplayName ??
-                                      L10n.get("user");
-                                  return Text(
-                                    displayName,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: _getTextColor(),
+                            // FAQ menu item
+                            _buildMenuItem(
+                              icon: Icons.help_outline,
+                              titleKey: "menu_faq",
+                              onTap: () {
+                                Navigator.pop(context);
+                                // Navigate to FAQ screen
+                                if (context.mounted) {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => const FaqScreen(),
                                     ),
                                   );
-                                },
-                              ),
+                                }
+                              },
+                            ),
+
+                            // Admin panel - Only show when user is admin
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+                                if (!isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+                                return FutureBuilder<String?>(
+                                  future: SessionManager.getUserRole(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    if (snapshot.data != "admin") {
+                                      return const SizedBox.shrink();
+                                    }
+                                    return _buildMenuItem(
+                                      icon: Icons.admin_panel_settings,
+                                      titleKey: "menu_admin_panel",
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        if (context.mounted) {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const AdminPanelScreen(),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+
+                            // Registration/Auth menu item - Show different text based on auth status
+                            ListenableBuilder(
+                              listenable: AuthenticationState(),
+                              builder: (context, child) {
+                                final isAuthenticated =
+                                    AuthenticationState().isAuthenticated;
+
+                                final logoutColor =
+                                    isAuthenticated ? AppColors.error : null;
+                                return _buildMenuItem(
+                                  icon: isAuthenticated
+                                      ? Icons.logout
+                                      : Icons.person_add,
+                                  titleKey: isAuthenticated
+                                      ? "menu_logout"
+                                      : "menu_registration",
+                                  iconColor: logoutColor,
+                                  textColor: logoutColor,
+                                  trailingColor: logoutColor,
+                                  onTap: () {
+                                    if (isAuthenticated) {
+                                      // Logout user - show dialog first, then close drawer
+                                      _showLogoutDialog(context);
+                                    } else {
+                                      // Navigate to registration/auth wizard
+                                      Navigator.pop(context);
+                                      if (context.mounted) {
+                                        context.pushAuthWizard();
+                                      }
+                                    }
+                                  },
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),
-                    );
-                  },
-                ),
 
-                // Always show divider after profile section (reserved space)
-                _buildThemeAwareDivider(),
-
-                // Profile menu item - Only show when user is logged in
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-
-                    if (!isAuthenticated) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return _buildMenuItem(
-                      icon: Icons.person_outline,
-                      titleKey: "menu_profile",
-                      onTap: () {
-                        Navigator.pop(context);
-                        if (context.mounted) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const ProfileScreen(),
-                            ),
-                          );
-                        }
-                      },
-                    );
-                  },
-                ),
-
-                // Add Listing menu item - Only show when user is logged in
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-
-                    if (!isAuthenticated) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return _buildMenuItem(
-                      icon: Icons.add,
-                      titleKey: "menu_add_listing",
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Navigate to create listing using MainNavigation
-                        if (context.mounted) {
-                          debugPrint(
-                            "🍔 Burger Menu: Navigating to Add Listing (index 3)",
-                          );
-                          debugPrint(
-                            "🍔 Burger Menu: mainNavigationKey: $mainNavigationKey",
-                          );
-                          debugPrint(
-                            "🍔 Burger Menu: mainNavigationKey.currentState: ${mainNavigationKey.currentState}",
-                          );
-                          if (mainNavigationKey.currentState != null) {
-                            mainNavigationKey.currentState!.navigateToIndex(3);
-                            debugPrint("🍔 Burger Menu: Navigation successful");
-                          } else {
-                            debugPrint(
-                              "❌ Burger Menu: mainNavigationKey.currentState is null",
-                            );
-                            // Fallback: try to navigate using Navigator
-                            debugPrint(
-                              "🍔 Burger Menu: Attempting fallback navigation...",
-                            );
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder:
-                                    (context) =>
-                                        const MainNavigation(initialIndex: 3),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    );
-                  },
-                ),
-
-                // My Listings menu item - Only show when user is logged in
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-
-                    if (!isAuthenticated) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return _buildMenuItem(
-                      icon: Icons.list_alt,
-                      titleKey: "menu_my_listings",
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Navigate to user listings screen
-                        if (context.mounted) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => BlocProvider(
-                                    create: (context) {
-                                      return ListingsBloc(
-                                        getIt<IListingService>(),
-                                      );
-                                    },
-                                    child: const UserListingsScreen(),
-                                  ),
-                            ),
-                          );
-                        }
-                      },
-                    );
-                  },
-                ),
-
-                // Favorites menu item - Only show when user is logged in
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-
-                    if (!isAuthenticated) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return _buildMenuItem(
-                      icon: CupertinoIcons.suit_heart,
-                      titleKey: "menu_favorites",
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Navigate to favorites screen using MainNavigation
-                        if (context.mounted) {
-                          debugPrint(
-                            "🍔 Burger Menu: Navigating to Favorites (index 1)",
-                          );
-                          debugPrint(
-                            "🍔 Burger Menu: mainNavigationKey: $mainNavigationKey",
-                          );
-                          debugPrint(
-                            "🍔 Burger Menu: mainNavigationKey.currentState: ${mainNavigationKey.currentState}",
-                          );
-                          if (mainNavigationKey.currentState != null) {
-                            mainNavigationKey.currentState!.navigateToIndex(1);
-                            debugPrint("🍔 Burger Menu: Navigation successful");
-                          } else {
-                            debugPrint(
-                              "❌ Burger Menu: mainNavigationKey.currentState is null",
-                            );
-                            // Fallback: try to navigate using Navigator
-                            debugPrint(
-                              "🍔 Burger Menu: Attempting fallback navigation...",
-                            );
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder:
-                                    (context) =>
-                                        const MainNavigation(initialIndex: 1),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    );
-                  },
-                ),
-
-                // History menu item - Only show when user is logged in (tenants and landlords)
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-
-                    if (!isAuthenticated) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return _buildMenuItem(
-                      icon: Icons.history,
-                      titleKey: "menu_history",
-                      onTap: () {
-                        Navigator.pop(context);
-                        if (context.mounted) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => const ViewHistoryScreen(),
-                            ),
-                          );
-                        }
-                      },
-                    );
-                  },
-                ),
-
-                // Messages menu item - Only show when user is logged in
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-
-                    if (!isAuthenticated) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return _buildMenuItem(
-                      icon: Icons.mail_outline,
-                      titleKey: "menu_messages",
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Navigate to messages screen
-                        if (context.mounted) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (context) =>
-                                  const PushedMessagesInboxScaffold(),
-                            ),
-                          );
-                        }
-                      },
-                    );
-                  },
-                ),
-
-                // Notifications menu item - Only show when user is logged in
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-
-                    if (!isAuthenticated) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return _buildMenuItem(
-                      icon: Icons.notifications_none_outlined,
-                      titleKey: "menu_notifications",
-                      onTap: () {
-                        Navigator.pop(context);
-                        if (context.mounted) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const NotificationsScreen(),
-                            ),
-                          );
-                        }
-                      },
-                    );
-                  },
-                ),
-
-                _buildThemeAwareDivider(),
-
-                // Settings menu item
-                _buildMenuItem(
-                  icon: Icons.settings,
-                  titleKey: "menu_settings",
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navigate to settings screen
-                    if (context.mounted) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const SettingsScreen(),
-                        ),
-                      );
-                    }
-                  },
-                ),
-
-                // Enable Notifications - only when supported and permission denied
-                FutureBuilder<AuthorizationStatus?>(
-                  future: getIt<IPushNotificationService>().isSupported
-                      ? getIt<IPushNotificationService>().getNotificationStatus()
-                      : Future.value(null),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData || snapshot.data == null) {
-                      return const SizedBox.shrink();
-                    }
-                    final status = snapshot.data!;
-                    if (status != AuthorizationStatus.denied &&
-                        status != AuthorizationStatus.notDetermined) {
-                      return const SizedBox.shrink();
-                    }
-                    return _buildMenuItem(
-                      icon: Icons.notifications_outlined,
-                      titleKey: "menu_enable_notifications",
-                      onTap: () async {
-                        Navigator.pop(context);
-                        final granted = await getIt<IPushNotificationService>()
-                            .requestPermissionAndRegister();
-                        if (context.mounted) {
-                          if (granted) {
-                            ToastTheme.showSuccess(
-                              context,
-                              message: L10n.get("notifications_enabled"),
-                            );
-                          } else {
-                            ToastTheme.showInfo(
-                              context,
-                              message: L10n.get("notifications_enable_in_settings"),
-                            );
-                          }
-                        }
-                      },
-                    );
-                  },
-                ),
-
-                // FAQ menu item
-                _buildMenuItem(
-                  icon: Icons.help_outline,
-                  titleKey: "menu_faq",
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navigate to FAQ screen
-                    if (context.mounted) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const FaqScreen(),
-                        ),
-                      );
-                    }
-                  },
-                ),
-
-                // Admin panel - Only show when user is admin
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-                    if (!isAuthenticated) {
-                      return const SizedBox.shrink();
-                    }
-                    return FutureBuilder<String?>(
-                      future: SessionManager.getUserRole(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const SizedBox.shrink();
-                        }
-                        if (snapshot.data != "admin") {
-                          return const SizedBox.shrink();
-                        }
-                        return _buildMenuItem(
-                          icon: Icons.admin_panel_settings,
-                          titleKey: "menu_admin_panel",
-                          onTap: () {
-                            Navigator.pop(context);
-                            if (context.mounted) {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) =>
-                                          const AdminPanelScreen(),
+                      // Footer
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        child: FutureBuilder<String>(
+                          future: VersionService.getVersion(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              // Format version to remove the "+" and make it look cleaner
+                              final version = snapshot.data!;
+                              final formattedVersion = version.replaceAll(
+                                "+",
+                                ".",
+                              );
+                              return Text(
+                                "v$formattedVersion",
+                                style: TextStyle(
+                                  color: _getSecondaryTextColor(),
+                                  fontSize: 12,
                                 ),
                               );
                             }
+
+                            final formattedVersion = AppVersion.fullVersion
+                                .replaceAll("+", ".");
+                            return Text(
+                              "v$formattedVersion",
+                              style: TextStyle(
+                                color: _getSecondaryTextColor(),
+                                fontSize: 12,
+                              ),
+                            );
                           },
-                        );
-                      },
-                    );
-                  },
-                ),
-
-                // Registration/Auth menu item - Show different text based on auth status
-                ListenableBuilder(
-                  listenable: AuthenticationState(),
-                  builder: (context, child) {
-                    final isAuthenticated =
-                        AuthenticationState().isAuthenticated;
-
-                    final logoutColor =
-                        isAuthenticated ? AppColors.error : null;
-                    return _buildMenuItem(
-                      icon: isAuthenticated ? Icons.logout : Icons.person_add,
-                      titleKey:
-                          isAuthenticated ? "menu_logout" : "menu_registration",
-                      iconColor: logoutColor,
-                      textColor: logoutColor,
-                      trailingColor: logoutColor,
-                      onTap: () {
-                        if (isAuthenticated) {
-                          // Logout user - show dialog first, then close drawer
-                          _showLogoutDialog(context);
-                        } else {
-                          // Navigate to registration/auth wizard
-                          Navigator.pop(context);
-                          if (context.mounted) {
-                            context.pushAuthWizard();
-                          }
-                        }
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-
-          // Footer
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: FutureBuilder<String>(
-              future: VersionService.getVersion(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  // Format version to remove the "+" and make it look cleaner
-                  final version = snapshot.data!;
-                  final formattedVersion = version.replaceAll("+", ".");
-                  return Text(
-                    "v$formattedVersion",
-                    style: TextStyle(
-                      color: _getSecondaryTextColor(),
-                      fontSize: 12,
-                    ),
-                  );
-                }
-
-                final formattedVersion =
-                    AppVersion.fullVersion.replaceAll("+", ".");
-                return Text(
-                  "v$formattedVersion",
-                  style: TextStyle(
-                    color: _getSecondaryTextColor(),
-                    fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              },
+                ),
+              ),
             ),
-          ),
-        ],
-      );
+          );
         },
       ),
     );
