@@ -226,6 +226,10 @@ class AppLocalizationsUz extends AppLocalizations {
       'Bu yerda sizning ogohlantirishlaringiz.\nMos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.';
 
   @override
+  String get notifications_alerts_explainer_enabled =>
+      'Bildirishnomalar yoqilgan.\nBu yerda sizning ogohlantirishlaringiz. Mos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.';
+
+  @override
   String get notifications_open_settings => 'Sozlamalarni ochish';
 
   @override

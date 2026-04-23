@@ -323,6 +323,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             pushStatus == AuthorizationStatus.denied ||
             pushStatus == AuthorizationStatus.notDetermined);
     final isDenied = pushStatus == AuthorizationStatus.denied;
+    final isEnabled = push.isSupported && !needsEnable;
     return Stack(
       children: [
         Container(
@@ -358,7 +359,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             ),
                           )
                         : L10n.text(
-                            "notifications_alerts_explainer",
+                            isEnabled
+                                ? "notifications_alerts_explainer_enabled"
+                                : "notifications_alerts_explainer",
                             style: TextStyle(
                               color: fg,
                               fontSize: 14,

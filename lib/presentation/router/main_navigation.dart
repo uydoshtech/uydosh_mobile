@@ -841,8 +841,8 @@ class MainNavigationState extends State<MainNavigation>
                           ),
                           if (needsCompletion)
                             Positioned(
-                              right: 5,
-                              top: 22,
+                              right: -2,
+                              bottom: -2,
                               child: BlinkingDotWidget(
                                 color: AppColors.success,
                                 size: 12,

@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/notify_search_alert_app_bar_button.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
@@ -1373,13 +1374,15 @@ class _NotifySearchAlertGhostButtonState
             ? const EdgeInsets.symmetric(horizontal: 18, vertical: 18)
             : const EdgeInsets.symmetric(horizontal: 32, vertical: 21);
 
-        return GhostButton(
+        return PrimaryButton(
           onPressed: widget.onPressed == null ? null : _handlePressed,
           padding: padding,
-          borderRadius: BorderRadius.circular(10),
-          borderWidth: isBlueTheme ? 1.5 : 2.0,
-          borderColor:
-              isBlueTheme ? Colors.white.withValues(alpha: 0.14) : null,
+          width: double.infinity,
+          borderRadius: BorderRadius.circular(16),
+          // Match the blue neumorphic button used on create/edit listing.
+          surfaceGradientBase:
+              isBlueTheme ? BlueThemeColors.buttonPrimary : Colors.black,
+          textColor: Colors.white,
           child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
