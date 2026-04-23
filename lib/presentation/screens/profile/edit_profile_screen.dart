@@ -2,6 +2,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/cache/country_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -13,9 +14,11 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
+import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/country_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -69,6 +72,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       []; // Initialize to empty list to avoid LateInitializationError
   List<University> _universities =
       []; // Initialize to empty list to avoid LateInitializationError
+  List<Country> _countries = <Country>[];
+  late final ICountryService _countryService;
+  late ValueNotifier<String> _selectedCountryIso2;
   late ValueNotifier<bool> _isLoading;
   late ValueNotifier<bool> _isLoadingRegions;
   late ValueNotifier<bool> _isLoadingUniversities;
@@ -99,6 +105,11 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
     _selectedGender = ValueNotifier(widget.profile.gender ?? 1);
     _selectedRegionId = ValueNotifier(widget.profile.regionId);
+    // Country is derived from region (regions.country_id FK). Until we can
+    // resolve the server numeric country id → ISO2, default to Uzbekistan —
+    // the only seeded country whose regions we actually render today.
+    _selectedCountryIso2 = ValueNotifier(CountryCache.defaultIso2);
+    _countryService = getIt<ICountryService>();
     _selectedUniversityId = ValueNotifier(widget.profile.universityId);
     _isStudent = ValueNotifier(widget.profile.universityId != null);
     _selectedLanguage = ValueNotifier(
@@ -156,9 +167,26 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       ),
     );
 
+    _loadCountries();
     _loadRegions();
     _loadUniversities();
     _loadUserRole();
+  }
+
+  Future<void> _loadCountries() async {
+    try {
+      final countries = await _countryService.getCountries(
+        LanguageState().currentLanguage,
+      );
+      if (!mounted) return;
+      setState(() => _countries = countries);
+    } catch (error, stack) {
+      logger.e(
+        "Failed to load countries on edit profile screen",
+        error: error,
+        stackTrace: stack,
+      );
+    }
   }
 
   Future<void> _loadUserRole() async {
@@ -386,6 +414,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _telegramController.dispose();
     _selectedGender.dispose();
     _selectedRegionId.dispose();
+    _selectedCountryIso2.dispose();
     _selectedUniversityId.dispose();
     _isStudent.dispose();
     _selectedLanguage.dispose();
@@ -1452,31 +1481,202 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               ),
             ),
             const SizedBox(height: 8),
-            ValueListenableBuilder<bool>(
-              valueListenable: _isLoadingRegions,
-              builder: (context, isLoadingRegions, _) =>
-                  ValueListenableBuilder<int?>(
-                valueListenable: _selectedRegionId,
-                builder: (context, _, __) => _buildPickerTile(
-                  context,
-                  icon: Icons.location_on,
-                  iconColor: _selectedRegionId.value == null
-                      ? null
-                      : _getRegionIconColorForId(_selectedRegionId.value!),
-                  valueText: isLoadingRegions
-                      ? L10n.get("loading_regions")
-                      : _getSelectedRegionName(),
-                  isPlaceholder: _selectedRegionId.value == null,
-                  isLoading: isLoadingRegions,
-                  onTap: isLoadingRegions || _regions.isEmpty
-                      ? null
-                      : () => _showRegionPickerSheet(context),
-                ),
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildCountrySelectorTile(context)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildRegionSelectorTile(context)),
+              ],
             ),
           ],
         );
       },
+    );
+  }
+
+  /// Compact country tile that sits side-by-side with the region tile. Country
+  /// is UI-only state on this screen: the server derives country from the
+  /// selected region's `country_id`. Switching country clears an invalid
+  /// region selection.
+  Widget _buildCountrySelectorTile(BuildContext context) {
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedCountryIso2,
+      builder: (context, iso2, _) {
+        final country = CountryCache.getCountryByIso2(iso2);
+        final hasCountries = _countries.isNotEmpty;
+        return _buildCompactLocationTile(
+          context,
+          label: L10n.get("country"),
+          leading: country != null
+              ? Text(
+                  country.flag,
+                  style: const TextStyle(fontSize: 20, height: 1.1),
+                )
+              : const Icon(Icons.public, size: 20),
+          valueText: country != null
+              ? country.getLocalizedName(LanguageState().currentLanguage)
+              : L10n.get("tap_to_select_country"),
+          isPlaceholder: country == null,
+          onTap: hasCountries ? () => _showCountryPickerSheet(context) : null,
+        );
+      },
+    );
+  }
+
+  Widget _buildRegionSelectorTile(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isLoadingRegions,
+      builder: (context, isLoadingRegions, _) => ValueListenableBuilder<int?>(
+        valueListenable: _selectedRegionId,
+        builder: (context, regionId, __) => ValueListenableBuilder<String>(
+          valueListenable: _selectedCountryIso2,
+          builder: (context, iso2, ___) {
+            // Regions are seeded only for Uzbekistan right now. For any
+            // other country we show a gentle "not available" placeholder
+            // rather than an empty disabled picker.
+            final hasRegionsForCountry = iso2 == CountryCache.defaultIso2;
+            const tileIcon = Icons.location_city;
+            if (!hasRegionsForCountry) {
+              return _buildCompactLocationTile(
+                context,
+                label: L10n.get("city"),
+                leading: const Icon(tileIcon, size: 20),
+                valueText: L10n.get("no_regions_for_country"),
+                isPlaceholder: true,
+                onTap: null,
+              );
+            }
+
+            final iconColor = regionId == null
+                ? null
+                : _getRegionIconColorForId(regionId);
+            return _buildCompactLocationTile(
+              context,
+              label: L10n.get("city"),
+              leading: Icon(
+                tileIcon,
+                size: 20,
+                color: iconColor,
+              ),
+              valueText: isLoadingRegions
+                  ? L10n.get("loading_regions")
+                  : _getSelectedRegionName(),
+              isPlaceholder: regionId == null,
+              isLoading: isLoadingRegions,
+              onTap: isLoadingRegions || _regions.isEmpty
+                  ? null
+                  : () => _showRegionPickerSheet(context),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Compact card used for the side-by-side country/region tiles. Mirrors the
+  /// raised-neumorphic look of [_buildPickerTile] but in a denser layout with
+  /// a small label on top to disambiguate the two columns.
+  Widget _buildCompactLocationTile(
+    BuildContext context, {
+    required String label,
+    required Widget leading,
+    required String valueText,
+    required bool isPlaceholder,
+    required VoidCallback? onTap,
+    bool isLoading = false,
+  }) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
+    final labelColor =
+        isBlueTheme ? Colors.white70 : theme.colorScheme.onSurfaceVariant;
+    final valueColor = isPlaceholder
+        ? (isBlueTheme
+            ? Colors.white70
+            : theme.colorScheme.onSurfaceVariant)
+        : (isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
+    final chevronColor =
+        isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant;
+    final defaultLeadingColor =
+        isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap == null
+            ? null
+            : () {
+                HapticFeedbackUtils.impact();
+                SendSoundUtils.playSelectionSound();
+                onTap();
+              },
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.4,
+                    color: labelColor,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      child: Center(
+                        child: IconTheme.merge(
+                          data: IconThemeData(color: defaultLeadingColor),
+                          child: leading,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        valueText,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: isPlaceholder
+                              ? FontWeight.w500
+                              : FontWeight.w600,
+                          fontStyle: isLoading
+                              ? FontStyle.italic
+                              : FontStyle.normal,
+                          color: valueColor,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    ThemeIcon(
+                      Icons.arrow_drop_down,
+                      color: chevronColor,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1714,6 +1914,103 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showCountryPickerSheet(BuildContext context) {
+    // Guard against the picker opening before the async load finishes — the
+    // cache resolves synchronously, but being defensive avoids an empty wheel.
+    var countries = _countries;
+    if (countries.isEmpty) {
+      countries = CountryCache.getCountriesSortedByLanguage(
+        LanguageState().currentLanguage,
+      );
+    }
+    if (countries.isEmpty) {
+      logger.d("Country picker requested but country list is empty");
+      return;
+    }
+    var initialIndex = countries.indexWhere(
+      (c) => c.iso2 == _selectedCountryIso2.value,
+    );
+    if (initialIndex < 0) initialIndex = 0;
+
+    final controller =
+        FixedExtentScrollController(initialItem: initialIndex);
+    var pendingIso2 = countries[initialIndex].iso2;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return _buildPickerBottomSheet(
+          sheetContext: sheetContext,
+          title: L10n.get("select_country"),
+          controller: controller,
+          itemExtent: 48,
+          itemCount: countries.length,
+          itemBuilder: (index) =>
+              _buildCountryPickerSheetRow(sheetContext, countries[index]),
+          onSelectedItemChanged: (index) {
+            HapticFeedbackUtils.impact();
+            SendSoundUtils.playSelectionSound();
+            pendingIso2 = countries[index].iso2;
+          },
+          onConfirm: () {
+            final previousIso2 = _selectedCountryIso2.value;
+            _selectedCountryIso2.value = pendingIso2;
+            // Clear the region when moving away from a country whose regions
+            // we render (currently only UZ). Keep the existing region when
+            // staying within the same country.
+            if (previousIso2 != pendingIso2 &&
+                pendingIso2 != CountryCache.defaultIso2) {
+              _selectedRegionId.value = null;
+            }
+            Navigator.of(sheetContext).pop();
+          },
+        );
+      },
+    ).whenComplete(controller.dispose);
+  }
+
+  Widget _buildCountryPickerSheetRow(BuildContext context, Country country) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final textColor = isBlueTheme ? Colors.white : theme.colorScheme.onSurface;
+    final isoColor = textColor.withValues(alpha: 0.55);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(country.flag, style: const TextStyle(fontSize: 22)),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                country.getLocalizedName(LanguageState().currentLanguage),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              country.iso2,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isoColor,
+              ),
+            ),
+          ],
         ),
       ),
     );

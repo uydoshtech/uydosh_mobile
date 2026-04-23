@@ -16,6 +16,8 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/util/theme_helper.dart"
+    show ThemeHelper, liquidGlassAppBarMaterialColor;
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/room_usdz_viewer_service.dart";
@@ -76,11 +78,11 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
-
   const _ListingDetailIconsData({
     required this.isLoading,
     required this.hasError,
@@ -112,7 +114,6 @@ class _ListingDetailIconsData {
 }
 
 class _ListingDetailBodyData {
-
   const _ListingDetailBodyData({
     required this.isLoading,
     required this.hasError,
@@ -144,7 +145,6 @@ class _ListingDetailBodyData {
 }
 
 class ListingDetailScreen extends StatefulWidget {
-
   const ListingDetailScreen({required this.listingId, super.key});
   final int listingId;
 
@@ -161,6 +161,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   late final AnimationController _room3dRotateController;
   late PageController _pageController;
   late ScrollController _scrollController;
+
   /// Cached so [ListenableBuilder] around the app bar menu does not restart
   /// [FutureBuilder] and re-invoke [SessionManager.getUserRole] on every rebuild.
   late final Future<String?> _userRoleFuture = SessionManager.getUserRole();
@@ -216,8 +217,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     // Fetch listing details
     context.read<ListingDetailBloc>().add(
-      ListingDetailEvent.fetchListingDetail(id: widget.listingId),
-    );
+          ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+        );
   }
 
   @override
@@ -258,10 +259,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           // Get current state and update the listing"s isActive status
           final currentState = context.read<ListingDetailBloc>().state;
           currentState.map(
-            initial:
-                (_) => logger.d("🔄 Current state: initial - cannot update"),
-            loading:
-                (_) => logger.d("🔄 Current state: loading - cannot update"),
+            initial: (_) =>
+                logger.d("🔄 Current state: initial - cannot update"),
+            loading: (_) =>
+                logger.d("🔄 Current state: loading - cannot update"),
             loaded: (loadedState) {
               logger.d(
                 "🔄 Current listing active status: ${loadedState.listingDetail.isActive}",
@@ -276,16 +277,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
               );
 
               context.read<ListingDetailBloc>().add(
-                ListingDetailEvent.updateListingDetail(
-                  listingDetail: updatedListing,
-                ),
-              );
+                    ListingDetailEvent.updateListingDetail(
+                      listingDetail: updatedListing,
+                    ),
+                  );
 
               logger.d("✅ Listing status updated in BLoC state");
             },
-            error:
-                (errorState) =>
-                    logger.d("🔄 Current state: error - cannot update"),
+            error: (errorState) =>
+                logger.d("🔄 Current state: error - cannot update"),
           );
         }
 
@@ -307,7 +307,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       // Show error message
       ToastTheme.showError(
         context,
-        message: L10n.get("error_deactivating_listing",
+        message: L10n.get(
+          "error_deactivating_listing",
         ),
       );
     } finally {
@@ -469,7 +470,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       final profile =
           await getIt<IUserProfileService>().getUserProfile(listingUserId);
       if (!mounted) return;
-      final name = profile.name?.trim().isNotEmpty ?? false ? profile.name : null;
+      final name =
+          profile.name?.trim().isNotEmpty ?? false ? profile.name : null;
       pageBloc.setOwnerName(listingUserId, name);
     } catch (e) {
       logger.d("Error loading owner name: $e");
@@ -576,8 +578,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       return "$base ...";
     }
     if (complaintsCount != null) {
-      final countText =
-          L10n.get("complaints_count_short").replaceAll("{count}", complaintsCount.toString());
+      final countText = L10n.get("complaints_count_short")
+          .replaceAll("{count}", complaintsCount.toString());
       return "$base • $countText";
     }
     return base;
@@ -585,31 +587,20 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
   // Helper method to get the appropriate name based on current language
   String _getLocalizedName({
-    required String language, String? nameUz,
+    required String language,
+    String? nameUz,
     String? nameRu,
     String? nameEn,
   }) {
     switch (language) {
       case "uz":
-        return nameUz ??
-            nameRu ??
-            nameEn ??
-            L10n.get( "unknown");
+        return nameUz ?? nameRu ?? nameEn ?? L10n.get("unknown");
       case "ru":
-        return nameRu ??
-            nameUz ??
-            nameEn ??
-            L10n.get( "unknown");
+        return nameRu ?? nameUz ?? nameEn ?? L10n.get("unknown");
       case "en":
-        return nameRu ??
-            nameUz ??
-            nameEn ??
-            L10n.get( "unknown");
+        return nameRu ?? nameUz ?? nameEn ?? L10n.get("unknown");
       default:
-        return nameRu ??
-            nameUz ??
-            nameEn ??
-            L10n.get( "unknown");
+        return nameRu ?? nameUz ?? nameEn ?? L10n.get("unknown");
     }
   }
 
@@ -619,22 +610,23 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final currentState = context.read<ListingDetailBloc>().state;
 
     currentState.map(
-      initial:
-          (_) => _showShareError(
-            L10n.get("error_listing_not_loaded",
-            ),
-          ),
-      loading:
-          (_) => _showShareError(
-            L10n.get("error_listing_still_loading",
-            ),
-          ),
-      loaded: (loadedState) => _performShare(loadedState.listingDetail, context),
-      error:
-          (errorState) => _showShareError(
-            L10n.get("error_loading_listing_details",
-            ),
-          ),
+      initial: (_) => _showShareError(
+        L10n.get(
+          "error_listing_not_loaded",
+        ),
+      ),
+      loading: (_) => _showShareError(
+        L10n.get(
+          "error_listing_still_loading",
+        ),
+      ),
+      loaded: (loadedState) =>
+          _performShare(loadedState.listingDetail, context),
+      error: (errorState) => _showShareError(
+        L10n.get(
+          "error_loading_listing_details",
+        ),
+      ),
     );
   }
 
@@ -720,7 +712,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       language: language,
     );
     typeInfo = "\n🏠 $typeName";
-  
+
     // Build subway station info
     var subwayInfo = "";
     if (listingDetail.subwayStation != null) {
@@ -739,7 +731,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
 ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatPriceRangeWithYue(price, price)}
 
-📱 ${L10n.get( "check_out_listing_on_uydosh")}
+📱 ${L10n.get("check_out_listing_on_uydosh")}
 
 🔗 $deepLink""";
   }
@@ -841,11 +833,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
         if (photos != null && photos.isNotEmpty) {
           // Use ordered photos for the fullscreen viewer
           final orderedPhotos = _getOrderedPhotos(photos);
-          final photoUrls =
-              orderedPhotos
-                  .map((photo) => photo.photoUrl)
-                  .toList()
-                  .cast<String>();
+          final photoUrls = orderedPhotos
+              .map((photo) => photo.photoUrl)
+              .toList()
+              .cast<String>();
 
           // Adjust the initial index based on the new order
           final orderedInitialIndex = orderedPhotos.indexWhere(
@@ -854,13 +845,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
 
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder:
-                  (context) => FullScreenPhotoViewer(
-                    photoUrls: photoUrls,
-                    initialIndex:
-                        orderedInitialIndex >= 0 ? orderedInitialIndex : 0,
-                    baseUrl: EnvironmentUtil.basePath,
-                  ),
+              builder: (context) => FullScreenPhotoViewer(
+                photoUrls: photoUrls,
+                initialIndex:
+                    orderedInitialIndex >= 0 ? orderedInitialIndex : 0,
+                baseUrl: EnvironmentUtil.basePath,
+              ),
             ),
           );
         }
@@ -910,42 +900,40 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
     final currentState = context.read<ListingDetailBloc>().state;
 
     currentState.map(
-      initial:
-          (_) => _showEditError(
-            L10n.get("error_listing_not_loaded",
-            ),
-          ),
-      loading:
-          (_) => _showEditError(
-            L10n.get("error_listing_still_loading",
-            ),
-          ),
+      initial: (_) => _showEditError(
+        L10n.get(
+          "error_listing_not_loaded",
+        ),
+      ),
+      loading: (_) => _showEditError(
+        L10n.get(
+          "error_listing_still_loading",
+        ),
+      ),
       loaded: (loadedState) => _navigateToEdit(loadedState.listingDetail),
-      error:
-          (errorState) => _showEditError(
-            L10n.get("error_loading_listing_details",
-            ),
-          ),
+      error: (errorState) => _showEditError(
+        L10n.get(
+          "error_loading_listing_details",
+        ),
+      ),
     );
   }
 
   Future<void> _navigateToEdit(ListingDetail listingDetail) async {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (context) => MultiBlocProvider(
-              providers: [
-                BlocProvider<SubwayStationsBloc>(
-                  create:
-                      (context) =>
-                          SubwayStationsBloc(getIt<ISubwayStationService>()),
-                ),
-                BlocProvider<LocationsBloc>(
-                  create: (context) => LocationsBloc(getIt<ILocationService>()),
-                ),
-              ],
-              child: EditListingScreen(listingDetail: listingDetail),
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider<SubwayStationsBloc>(
+              create: (context) =>
+                  SubwayStationsBloc(getIt<ISubwayStationService>()),
             ),
+            BlocProvider<LocationsBloc>(
+              create: (context) => LocationsBloc(getIt<ILocationService>()),
+            ),
+          ],
+          child: EditListingScreen(listingDetail: listingDetail),
+        ),
       ),
     );
 
@@ -955,8 +943,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
 
       // Fetch fresh data from server (bloc emits loading then loaded)
       context.read<ListingDetailBloc>().add(
-        ListingDetailEvent.fetchListingDetail(id: widget.listingId),
-      );
+            ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+          );
     }
   }
 
@@ -969,22 +957,22 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
     final currentState = context.read<ListingDetailBloc>().state;
 
     currentState.map(
-      initial:
-          (_) => _showFeatureError(
-            L10n.get("error_listing_not_loaded",
-            ),
-          ),
-      loading:
-          (_) => _showFeatureError(
-            L10n.get("error_listing_still_loading",
-            ),
-          ),
+      initial: (_) => _showFeatureError(
+        L10n.get(
+          "error_listing_not_loaded",
+        ),
+      ),
+      loading: (_) => _showFeatureError(
+        L10n.get(
+          "error_listing_still_loading",
+        ),
+      ),
       loaded: (loadedState) => _performToggleFeature(loadedState.listingDetail),
-      error:
-          (errorState) => _showFeatureError(
-            L10n.get("error_loading_listing_details",
-            ),
-          ),
+      error: (errorState) => _showFeatureError(
+        L10n.get(
+          "error_loading_listing_details",
+        ),
+      ),
     );
   }
 
@@ -1014,12 +1002,14 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
 
   Future<void> _performToggleFeature(ListingDetail listingDetail) async {
     try {
-      final isPromoting = !ListingUtils.isCurrentlyFeaturedDetail(listingDetail);
+      final isPromoting =
+          !ListingUtils.isCurrentlyFeaturedDetail(listingDetail);
       if (isPromoting) {
         final canPromote = await _canPromoteListing();
         if (!canPromote) {
           _showFeatureError(
-L10n.get("error_promotion_once_per_week",
+            L10n.get(
+              "error_promotion_once_per_week",
             ),
           );
           return;
@@ -1037,12 +1027,13 @@ L10n.get("error_promotion_once_per_week",
 
       if (success) {
         // Show success message based on current state
-        final message =
-            ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
-                ? L10n.get("unfeature_listing_success",
-                )
-                : L10n.get("feature_listing_success",
-                );
+        final message = ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
+            ? L10n.get(
+                "unfeature_listing_success",
+              )
+            : L10n.get(
+                "feature_listing_success",
+              );
 
         ToastTheme.showSuccess(context, message: message);
 
@@ -1052,31 +1043,31 @@ L10n.get("error_promotion_once_per_week",
 
         // Update the listing detail with new featured state
         final updatedListingDetail = listingDetail.copyWith(
-          featuredAt:
-              !ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
-                  ? DateTime.now().toIso8601String()
-                  : null,
+          featuredAt: !ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
+              ? DateTime.now().toIso8601String()
+              : null,
         );
 
         // Update the bloc state
         context.read<ListingDetailBloc>().add(
-          ListingDetailEvent.updateListingDetail(
-            listingDetail: updatedListingDetail,
-          ),
-        );
+              ListingDetailEvent.updateListingDetail(
+                listingDetail: updatedListingDetail,
+              ),
+            );
 
         // Mark home screen for refresh since listing featured state changed
         HomeRefreshState().markForRefresh();
       } else {
         _showFeatureError(
-L10n.get("feature_listing_error",
+          L10n.get(
+            "feature_listing_error",
           ),
         );
       }
     } catch (e) {
       logger.e("Error toggling feature listing: $e");
       _showFeatureError(
-        L10n.get( "feature_listing_error"),
+        L10n.get("feature_listing_error"),
       );
     } finally {
       if (mounted) {
@@ -1119,27 +1110,31 @@ L10n.get("feature_listing_error",
         await favoritesState.toggleFavorite(widget.listingId);
 
         if (wasFavorite) {
-          getIt<AppAnalyticsService>().logFavoriteRemoved(listingId: widget.listingId);
+          getIt<AppAnalyticsService>()
+              .logFavoriteRemoved(listingId: widget.listingId);
         } else {
-          getIt<AppAnalyticsService>().logFavoriteAdded(listingId: widget.listingId);
+          getIt<AppAnalyticsService>()
+              .logFavoriteAdded(listingId: widget.listingId);
         }
 
         // Show success message
         ToastTheme.showSuccess(
           context,
-          message:
-              wasFavorite
-                  ? L10n.get("removed_from_favorites",
-                  )
-                  : L10n.get("added_to_favorites",
-                  ),
+          message: wasFavorite
+              ? L10n.get(
+                  "removed_from_favorites",
+                )
+              : L10n.get(
+                  "added_to_favorites",
+                ),
         );
       } else {
         // Show error message to user
         if (context.mounted) {
           ToastTheme.showError(
             context,
-            message: L10n.get("favorite_toggle_network_error",
+            message: L10n.get(
+              "favorite_toggle_network_error",
             ),
           );
         }
@@ -1150,7 +1145,8 @@ L10n.get("feature_listing_error",
       if (context.mounted) {
         ToastTheme.showError(
           context,
-          message: L10n.get("favorite_toggle_network_error",
+          message: L10n.get(
+            "favorite_toggle_network_error",
           ),
         );
       }
@@ -1240,8 +1236,12 @@ L10n.get("feature_listing_error",
       items.add(
         ActionMenuItem(
           value: "toggle_active",
-          icon: listingDetail.isActive ? Icons.pause_circle_outline : Icons.play_circle_outline,
-          textKey: listingDetail.isActive ? "deactivate_listing" : "activate_listing",
+          icon: listingDetail.isActive
+              ? Icons.pause_circle_outline
+              : Icons.play_circle_outline,
+          textKey: listingDetail.isActive
+              ? "deactivate_listing"
+              : "activate_listing",
           onPressed: () => _showToggleActiveConfirmation(listingDetail.id),
         ),
       );
@@ -1315,11 +1315,10 @@ L10n.get("feature_listing_error",
   Future<void> _createComplaint(ListingDetail listingDetail) async {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (context) => BlocProvider<ComplaintBloc>(
-              create: (context) => ComplaintBloc(getIt<IComplaintService>()),
-              child: CreateComplaintScreen(listingId: listingDetail.id),
-            ),
+        builder: (context) => BlocProvider<ComplaintBloc>(
+          create: (context) => ComplaintBloc(getIt<IComplaintService>()),
+          child: CreateComplaintScreen(listingId: listingDetail.id),
+        ),
       ),
     );
 
@@ -1327,7 +1326,8 @@ L10n.get("feature_listing_error",
     if (result == true) {
       ToastTheme.showSuccess(
         context,
-        message: L10n.get("complaint_created_success",
+        message: L10n.get(
+          "complaint_created_success",
         ),
       );
       _loadComplaintCount(listingDetail.id);
@@ -1337,11 +1337,10 @@ L10n.get("feature_listing_error",
   void _viewListingComplaints(int listingId) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (context) => BlocProvider<ComplaintBloc>(
-              create: (context) => ComplaintBloc(getIt<IComplaintService>()),
-              child: ListingComplaintsScreen(listingId: listingId),
-            ),
+        builder: (context) => BlocProvider<ComplaintBloc>(
+          create: (context) => ComplaintBloc(getIt<IComplaintService>()),
+          child: ListingComplaintsScreen(listingId: listingId),
+        ),
       ),
     );
   }
@@ -1361,7 +1360,8 @@ L10n.get("feature_listing_error",
         logger.d("❌ [Frontend] No current user ID found");
         ToastTheme.showError(
           context,
-          message: L10n.get("error_not_authenticated",
+          message: L10n.get(
+            "error_not_authenticated",
           ),
         );
         return;
@@ -1372,7 +1372,8 @@ L10n.get("feature_listing_error",
         logger.d("❌ [Frontend] User trying to message themselves");
         ToastTheme.showError(
           context,
-          message: L10n.get("error_cannot_message_self",
+          message: L10n.get(
+            "error_cannot_message_self",
           ),
         );
         return;
@@ -1421,10 +1422,10 @@ L10n.get("feature_listing_error",
           );
           try {
             final pageState = context.read<ListingDetailPageBloc>().state;
-            final displayName =
-                (pageState.ownerName != null && pageState.ownerName!.trim().isNotEmpty)
-                    ? pageState.ownerName!
-                    : listingDetail.user.email ?? "";
+            final displayName = (pageState.ownerName != null &&
+                    pageState.ownerName!.trim().isNotEmpty)
+                ? pageState.ownerName!
+                : listingDetail.user.email ?? "";
             final chatScreen = ChatScreen(
               conversationId: conversation.id,
               listingId: widget.listingId,
@@ -1457,7 +1458,8 @@ L10n.get("feature_listing_error",
         // Show success message
         ToastTheme.showSuccess(
           context,
-          message: L10n.get("conversation_created",
+          message: L10n.get(
+            "conversation_created",
           ),
         );
         return; // Exit early on success
@@ -1482,8 +1484,7 @@ L10n.get("feature_listing_error",
         final containsGenericMessage = errorMessage.contains("already exists");
 
         // Check for DioException with 400 status (which indicates "already exists")
-        final isDioException400 =
-            errorMessage.contains("DioException") &&
+        final isDioException400 = errorMessage.contains("DioException") &&
             errorMessage.contains("400");
 
         logger.d("🔍 [Frontend] Contains exact message: $containsExactMessage");
@@ -1496,8 +1497,7 @@ L10n.get("feature_listing_error",
         logger.d("🔍 [Frontend] Is DioException 400: $isDioException400");
 
         // Consider it an "already exists" error if we can detect it
-        final isAlreadyExistsError =
-            containsExactMessage ||
+        final isAlreadyExistsError = containsExactMessage ||
             containsPartialMessage ||
             containsGenericMessage ||
             isDioException400;
@@ -1547,20 +1547,19 @@ L10n.get("feature_listing_error",
               try {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder:
-                        (context) => ChatScreen(
-                          conversationId: existingConversation.id,
-                          listingId: widget.listingId,
-                          otherUserInitials: StringUtils.extractInitials(
-                            existingConversation.otherUserName,
-                          ),
-                          otherUserName: existingConversation.otherUserName,
-                          otherUserId:
-                              existingConversation.initiatorId == currentUserId
-                                  ? existingConversation.participantId
-                                  : existingConversation.initiatorId,
-                          otherUserAvatar: existingConversation.otherUserAvatar,
-                        ),
+                    builder: (context) => ChatScreen(
+                      conversationId: existingConversation.id,
+                      listingId: widget.listingId,
+                      otherUserInitials: StringUtils.extractInitials(
+                        existingConversation.otherUserName,
+                      ),
+                      otherUserName: existingConversation.otherUserName,
+                      otherUserId:
+                          existingConversation.initiatorId == currentUserId
+                              ? existingConversation.participantId
+                              : existingConversation.initiatorId,
+                      otherUserAvatar: existingConversation.otherUserAvatar,
+                    ),
                   ),
                 );
               } catch (navigationError) {
@@ -1575,7 +1574,8 @@ L10n.get("feature_listing_error",
             // Show info message
             ToastTheme.showInfo(
               context,
-              message: L10n.get("opening_existing_conversation",
+              message: L10n.get(
+                "opening_existing_conversation",
               ),
             );
             return; // Exit early on success
@@ -1599,7 +1599,8 @@ L10n.get("feature_listing_error",
       if (mounted) Navigator.of(context).pop();
 
       // Show error message with details
-      var errorMessage = L10n.get("conversation_failed",
+      var errorMessage = L10n.get(
+        "conversation_failed",
       );
       if (e.toString().contains("DioException")) {
         errorMessage = "Network error: ${e.toString()}";
@@ -1631,7 +1632,8 @@ L10n.get("feature_listing_error",
       if (coordinates == null) {
         ToastTheme.showError(
           context,
-          message: L10n.get("error_loading_listing_details",
+          message: L10n.get(
+            "error_loading_listing_details",
           ),
         );
         return;
@@ -1675,8 +1677,7 @@ L10n.get("feature_listing_error",
       }
 
       // Fallback to name-based lookup
-      final stationName =
-          listingDetail.subwayStation?.nameEn ??
+      final stationName = listingDetail.subwayStation?.nameEn ??
           listingDetail.subwayStation?.nameRu ??
           listingDetail.subwayStation?.nameUz;
 
@@ -1701,8 +1702,7 @@ L10n.get("feature_listing_error",
       }
 
       // Fallback to name-based lookup
-      final locationName =
-          listingDetail.location?.nameEn ??
+      final locationName = listingDetail.location?.nameEn ??
           listingDetail.location?.nameRu ??
           listingDetail.location?.nameUz;
 
@@ -1735,176 +1735,187 @@ L10n.get("feature_listing_error",
           error: (_) {},
         );
       },
-      child: Scaffold(
-        appBar: UydoshAppBar(
-          backgroundColor: _getAppBarBackgroundColor(),
-          foregroundColor:
-              Theme.of(context).appBarTheme.foregroundColor ??
-              AppColors.textLight,
-          centerTitle: true,
-          leading: ThreeDAppBarIconButton.backLeading(
-            context,
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: L10n.text(
-            "listing_details",
-            style: Theme.of(context).appBarTheme.titleTextStyle,
-            textAlign: TextAlign.center,
-          ),
-          actions: [
-            SizedBox(
-              width: kToolbarHeight,
-              child: Center(
-                child: BlocSelector<
-                  ListingDetailBloc,
-                  ListingDetailState,
-                  _ListingDetailIconsData
-                >(
-                  selector:
-                      (state) => state.map(
-                        initial:
-                            (_) => const _ListingDetailIconsData(
-                              isLoading: true,
-                              hasError: false,
-                              errorMessage: "",
-                              listingDetail: null,
-                            ),
-                        loading:
-                            (_) => const _ListingDetailIconsData(
-                              isLoading: true,
-                              hasError: false,
-                              errorMessage: "",
-                              listingDetail: null,
-                            ),
-                        loaded:
-                            (loadedState) => _ListingDetailIconsData(
-                              isLoading: false,
-                              hasError: false,
-                              errorMessage: "",
-                              listingDetail: loadedState.listingDetail,
-                            ),
-                        error:
-                            (errorState) => _ListingDetailIconsData(
-                              isLoading: false,
-                              hasError: true,
-                              errorMessage: errorState.message,
-                              listingDetail: null,
-                            ),
+      child: ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, _) {
+          final themeState = ThemeState();
+          final theme = Theme.of(context);
+          final appBarTheme = theme.appBarTheme;
+          final useLiquidGlassAppBar =
+              themeState.isBlueTheme || themeState.isLightTheme;
+          return Scaffold(
+            extendBodyBehindAppBar: useLiquidGlassAppBar,
+            appBar: UydoshAppBar(
+              backgroundColor: useLiquidGlassAppBar
+                  ? liquidGlassAppBarMaterialColor(context)
+                  : _getAppBarBackgroundColor(),
+              surfaceTintColor: useLiquidGlassAppBar
+                  ? Colors.transparent
+                  : appBarTheme.surfaceTintColor,
+              elevation: useLiquidGlassAppBar ? 0 : null,
+              scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
+              shadowColor: useLiquidGlassAppBar
+                  ? Colors.transparent
+                  : appBarTheme.shadowColor,
+              forceMaterialTransparency: useLiquidGlassAppBar,
+              flexibleSpace: useLiquidGlassAppBar
+                  ? const LiquidGlassAppBarFlexibleSpace()
+                  : null,
+              foregroundColor:
+                  appBarTheme.foregroundColor ?? AppColors.textLight,
+              centerTitle: true,
+              leading: ThreeDAppBarIconButton.backLeading(
+                context,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: L10n.text(
+                "listing_details",
+                style: appBarTheme.titleTextStyle,
+                textAlign: TextAlign.center,
+              ),
+              actions: [
+                SizedBox(
+                  width: kToolbarHeight,
+                  child: Center(
+                    child: BlocSelector<ListingDetailBloc, ListingDetailState,
+                        _ListingDetailIconsData>(
+                      selector: (state) => state.map(
+                        initial: (_) => const _ListingDetailIconsData(
+                          isLoading: true,
+                          hasError: false,
+                          errorMessage: "",
+                          listingDetail: null,
+                        ),
+                        loading: (_) => const _ListingDetailIconsData(
+                          isLoading: true,
+                          hasError: false,
+                          errorMessage: "",
+                          listingDetail: null,
+                        ),
+                        loaded: (loadedState) => _ListingDetailIconsData(
+                          isLoading: false,
+                          hasError: false,
+                          errorMessage: "",
+                          listingDetail: loadedState.listingDetail,
+                        ),
+                        error: (errorState) => _ListingDetailIconsData(
+                          isLoading: false,
+                          hasError: true,
+                          errorMessage: errorState.message,
+                          listingDetail: null,
+                        ),
                       ),
-                  builder: (context, data) {
-                    if (data.isLoading || data.listingDetail == null) {
-                      return const SizedBox.shrink();
-                    }
-
-                    final listingDetail = data.listingDetail!;
-                    return ListenableBuilder(
-                      listenable: Listenable.merge([
-                        AuthenticationState(),
-                        FavoritesState().listenableFor(widget.listingId),
-                      ]),
-                      builder: (context, _) {
-                        final isAuthenticated =
-                            AuthenticationState().isAuthenticated;
-                        if (!isAuthenticated) {
-                          return ActionDropdownMenu(
-                            items: _buildActionMenuItems(
-                              listingDetail,
-                              isAdmin: false,
-                            ),
-                          );
+                      builder: (context, data) {
+                        if (data.isLoading || data.listingDetail == null) {
+                          return const SizedBox.shrink();
                         }
-                        return FutureBuilder<String?>(
-                          future: _userRoleFuture,
-                          builder: (context, snapshot) {
-                            final isAdmin = snapshot.data == "admin";
-                            return ActionDropdownMenu(
-                              items: _buildActionMenuItems(
-                                listingDetail,
-                                isAdmin: isAdmin,
-                              ),
+
+                        final listingDetail = data.listingDetail!;
+                        return ListenableBuilder(
+                          listenable: Listenable.merge([
+                            AuthenticationState(),
+                            FavoritesState().listenableFor(widget.listingId),
+                          ]),
+                          builder: (context, _) {
+                            final isAuthenticated =
+                                AuthenticationState().isAuthenticated;
+                            if (!isAuthenticated) {
+                              return ActionDropdownMenu(
+                                items: _buildActionMenuItems(
+                                  listingDetail,
+                                  isAdmin: false,
+                                ),
+                              );
+                            }
+                            return FutureBuilder<String?>(
+                              future: _userRoleFuture,
+                              builder: (context, snapshot) {
+                                final isAdmin = snapshot.data == "admin";
+                                return ActionDropdownMenu(
+                                  items: _buildActionMenuItems(
+                                    listingDetail,
+                                    isAdmin: isAdmin,
+                                  ),
+                                );
+                              },
                             );
                           },
                         );
                       },
-                    );
-                  },
+                    ),
+                  ),
+                ),
+              ],
+              automaticallyImplyLeading: false,
+            ),
+            body: BlocSelector<ListingDetailBloc, ListingDetailState,
+                _ListingDetailBodyData>(
+              selector: (state) => state.map(
+                initial: (_) => const _ListingDetailBodyData(
+                  isLoading: true,
+                  hasError: false,
+                  errorMessage: "",
+                  listingDetail: null,
+                ),
+                loading: (_) => const _ListingDetailBodyData(
+                  isLoading: true,
+                  hasError: false,
+                  errorMessage: "",
+                  listingDetail: null,
+                ),
+                loaded: (loadedState) => _ListingDetailBodyData(
+                  isLoading: false,
+                  hasError: false,
+                  errorMessage: "",
+                  listingDetail: loadedState.listingDetail,
+                ),
+                error: (errorState) => _ListingDetailBodyData(
+                  isLoading: false,
+                  hasError: true,
+                  errorMessage: errorState.message,
+                  listingDetail: null,
                 ),
               ),
+              builder: (context, data) {
+                if (data.isLoading) {
+                  return data.listingDetail == null
+                      ? _buildInitialState()
+                      : _buildLoadingState();
+                }
+                if (data.hasError) {
+                  return _buildErrorState(data.errorMessage);
+                }
+                // Only rebuild the big static body when a field it directly uses
+                // changes. The 3 hot sub-sections below (owner toolbar,
+                // compatibility, complaints) have their own BlocSelectors that
+                // rebuild surgically on the relevant fields only, so we exclude
+                // those from the outer buildWhen.
+                return BlocBuilder<ListingDetailPageBloc,
+                    ListingDetailPageState>(
+                  buildWhen: (prev, curr) => prev.ownerName != curr.ownerName,
+                  builder: (context, pageState) =>
+                      _buildLoadedState(data.listingDetail!, pageState),
+                );
+              },
             ),
-          ],
-          automaticallyImplyLeading: false,
-        ),
-        body: BlocSelector<
-          ListingDetailBloc,
-          ListingDetailState,
-          _ListingDetailBodyData
-        >(
-          selector:
-              (state) => state.map(
-                initial:
-                    (_) => const _ListingDetailBodyData(
-                      isLoading: true,
-                      hasError: false,
-                      errorMessage: "",
-                      listingDetail: null,
-                    ),
-                loading:
-                    (_) => const _ListingDetailBodyData(
-                      isLoading: true,
-                      hasError: false,
-                      errorMessage: "",
-                      listingDetail: null,
-                    ),
-                loaded:
-                    (loadedState) => _ListingDetailBodyData(
-                      isLoading: false,
-                      hasError: false,
-                      errorMessage: "",
-                      listingDetail: loadedState.listingDetail,
-                    ),
-                error:
-                    (errorState) => _ListingDetailBodyData(
-                      isLoading: false,
-                      hasError: true,
-                      errorMessage: errorState.message,
-                      listingDetail: null,
-                    ),
-              ),
-          builder: (context, data) {
-            if (data.isLoading) {
-              return data.listingDetail == null
-                  ? _buildInitialState()
-                  : _buildLoadingState();
-            }
-            if (data.hasError) {
-              return _buildErrorState(data.errorMessage);
-            }
-            // Only rebuild the big static body when a field it directly uses
-            // changes. The 3 hot sub-sections below (owner toolbar,
-            // compatibility, complaints) have their own BlocSelectors that
-            // rebuild surgically on the relevant fields only, so we exclude
-            // those from the outer buildWhen.
-            return BlocBuilder<ListingDetailPageBloc, ListingDetailPageState>(
-              buildWhen: (prev, curr) => prev.ownerName != curr.ownerName,
-              builder: (context, pageState) =>
-                  _buildLoadedState(data.listingDetail!, pageState),
-            );
-          },
-        ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildInitialState() {
     return CenteredHouseLoadingIndicator(
-      text: L10n.get("loading_listing_details",
+      text: L10n.get(
+        "loading_listing_details",
       ),
     );
   }
 
   Widget _buildLoadingState() {
     return CenteredHouseLoadingIndicator(
-      text: L10n.get("loading_listing_details",
+      text: L10n.get(
+        "loading_listing_details",
       ),
       textStyle: TextStyle(
         color: _getLoadingTextColor(),
@@ -1950,10 +1961,9 @@ L10n.get("feature_listing_error",
         differences: compat.differences,
         telegramHandle: listingDetail.contactTelegram,
         phoneNumber: listingDetail.contactPhone,
-        onTelegram:
-            (listingDetail.contactTelegram?.trim().isNotEmpty ?? false)
-                ? () => _openTelegramChat(listingDetail.contactTelegram!)
-                : null,
+        onTelegram: (listingDetail.contactTelegram?.trim().isNotEmpty ?? false)
+            ? () => _openTelegramChat(listingDetail.contactTelegram!)
+            : null,
         onPhone: (listingDetail.contactPhone?.trim().isNotEmpty ?? false)
             ? () => _makePhoneCall(listingDetail.contactPhone!)
             : null,
@@ -2047,8 +2057,7 @@ L10n.get("feature_listing_error",
       listenable: LanguageState(),
       builder: (context, child) {
         final currentLanguage = LanguageState().currentLanguage;
-        final compatibilitySection =
-            _buildCompatibilitySection(listingDetail);
+        final compatibilitySection = _buildCompatibilitySection(listingDetail);
 
         // Pre-compute outside build: dates (avoids DateTime.parse in content card)
         final formattedMoveIn = listingDetail.moveInDate != null &&
@@ -2072,8 +2081,7 @@ L10n.get("feature_listing_error",
         final isOwner = UserListingState().isOwner(listingDetail.user.id);
         final hasPhotos =
             listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
-        final show3d =
-            (kIsWeb || isIOSDevice) &&
+        final show3d = (kIsWeb || isIOSDevice) &&
             (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
 
         final sections = <Widget>[
@@ -2100,8 +2108,8 @@ L10n.get("feature_listing_error",
             Theme(
               data: Theme.of(context).copyWith(
                 cardTheme: Theme.of(context).cardTheme.copyWith(
-                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                ),
+                      margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                    ),
               ),
               child: ListingDetailPhotoSection(
                 photos: listingDetail.photos!,
@@ -2164,6 +2172,8 @@ L10n.get("feature_listing_error",
           ),
         ];
 
+        final themeState = ThemeState();
+        final topPad = 8.0 + themeState.mainShellGlassExtraTopInset(context);
         return Column(
           children: [
             Expanded(
@@ -2173,9 +2183,11 @@ L10n.get("feature_listing_error",
                   SliverPadding(
                     // Tight top: global [CardTheme.margin] is all(8); photo
                     // [ListingDetailPhotoSection] has zero top margin so the
-                    // carousel sits closer to the app bar.
-                    padding:
-                        const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 36.0),
+                    // carousel sits closer to the app bar. When the liquid
+                    // glass app bar is active the body renders behind the
+                    // header, so we add [mainShellGlassExtraTopInset] to keep
+                    // content clear of the transparent toolbar.
+                    padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, 36.0),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) => sections[index],
@@ -2216,7 +2228,8 @@ L10n.get("feature_listing_error",
           ),
           const SizedBox(height: 24),
           Text(
-            L10n.get("error_loading_listing_details",
+            L10n.get(
+              "error_loading_listing_details",
             ),
             style: const TextStyle(
               fontSize: 18,
@@ -2227,7 +2240,8 @@ L10n.get("feature_listing_error",
           ),
           const SizedBox(height: 12),
           Text(
-L10n.get("error_internet_connection",
+            L10n.get(
+              "error_internet_connection",
             ),
             style: const TextStyle(fontSize: 14, color: AppColors.textLight70),
             textAlign: TextAlign.center,
@@ -2236,11 +2250,11 @@ L10n.get("error_internet_connection",
           GhostButtonFactory.iconText(
             onPressed: () {
               context.read<ListingDetailBloc>().add(
-                ListingDetailEvent.fetchListingDetail(id: widget.listingId),
-              );
+                    ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+                  );
             },
             icon: Icons.refresh_rounded,
-            text: L10n.get( "retry"),
+            text: L10n.get("retry"),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
         ],
@@ -2253,16 +2267,14 @@ L10n.get("error_internet_connection",
   void _navigateToProfile(int userId, {String? phoneNumber}) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (context) => BlocProvider(
-              create:
-                  (context) =>
-                      ListingOwnerProfileBloc(getIt<IUserProfileService>()),
-              child: ListingOwnerProfileScreen(
-                userId: userId,
-                phoneNumber: phoneNumber,
-              ),
-            ),
+        builder: (context) => BlocProvider(
+          create: (context) =>
+              ListingOwnerProfileBloc(getIt<IUserProfileService>()),
+          child: ListingOwnerProfileScreen(
+            userId: userId,
+            phoneNumber: phoneNumber,
+          ),
+        ),
       ),
     );
   }
@@ -2306,8 +2318,11 @@ L10n.get("error_internet_connection",
       error: (_) => false,
     );
 
-    final titleKey = isCurrentlyActive ? "deactivate_listing" : "activate_listing";
-    final messageKey = isCurrentlyActive ? "deactivate_listing_confirmation" : "activate_listing_confirmation";
+    final titleKey =
+        isCurrentlyActive ? "deactivate_listing" : "activate_listing";
+    final messageKey = isCurrentlyActive
+        ? "deactivate_listing_confirmation"
+        : "activate_listing_confirmation";
 
     CommonConfirmationDialogs.showGenericConfirmation(
       context: context,
@@ -2343,7 +2358,8 @@ L10n.get("error_internet_connection",
         // Show success message
         ToastTheme.showSuccess(
           context,
-          message: L10n.get("delete_listing_success",
+          message: L10n.get(
+            "delete_listing_success",
           ),
         );
 
@@ -2361,7 +2377,8 @@ L10n.get("error_internet_connection",
       // Show error message
       ToastTheme.showError(
         context,
-        message: L10n.get("delete_listing_error",
+        message: L10n.get(
+          "delete_listing_error",
         ),
       );
     } finally {
