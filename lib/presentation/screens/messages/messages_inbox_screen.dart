@@ -582,10 +582,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final scheme = Theme.of(context).colorScheme;
         final baseTint =
-            isDark
-                ? BlueThemeColors.background
-                : (Color.lerp(scheme.surface, scheme.primary, 0.06) ??
-                    scheme.surface);
+            isDark ? BlueThemeColors.background : scheme.surface;
 
         // Important: don't clip the switch itself, otherwise its drop shadow
         // gets cut off at the bottom. Only the glass background is clipped.

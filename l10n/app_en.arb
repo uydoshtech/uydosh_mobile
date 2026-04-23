@@ -858,6 +858,7 @@
   "month": "month",
   "search_listings": "Search Listings",
   "search": "Search",
+  "filters_bar_label": "Filters",
   "search_alert_notify_me": "Notify me",
   "search_alert_login_required": "Sign in to get notifications for this search.",
   "search_alert_created": "You will be notified when matching listings are posted.",

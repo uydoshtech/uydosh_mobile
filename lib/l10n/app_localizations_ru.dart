@@ -2260,6 +2260,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get search => 'Поиск';
 
   @override
+  String get filters_bar_label => 'Фильтры';
+
+  @override
   String get search_alert_notify_me => 'Уведомлять';
 
   @override

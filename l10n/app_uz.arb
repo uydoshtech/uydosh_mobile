@@ -858,6 +858,7 @@
   "month": "oy",
   "search_listings": "E'lonlarni qidirish",
   "search": "Qidirish",
+  "filters_bar_label": "Filtrlar",
   "search_alert_notify_me": "Xabar berilsin",
   "search_alert_login_required": "Bu qidiruv bo'yicha bildirishnomalar uchun tizimga kiring.",
   "search_alert_created": "Mos e'lonlar chiqqanda xabar beramiz.",

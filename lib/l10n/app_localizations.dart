@@ -4288,6 +4288,12 @@ abstract class AppLocalizations {
   /// **'Search'**
   String get search;
 
+  /// No description provided for @filters_bar_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters_bar_label;
+
   /// No description provided for @search_alert_notify_me.
   ///
   /// In en, this message translates to:

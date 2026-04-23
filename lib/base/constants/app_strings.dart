@@ -953,6 +953,7 @@ class AppStrings {
       "search_listings": "Search Listings",
 
       "search": "Search",
+      "filters_bar_label": "Filters",
       "search_alert_notify_me": "Notify when available",
       "search_alert_login_required":
           "Sign in to get notifications for this search.",
@@ -2007,6 +2008,7 @@ class AppStrings {
       "search_listings": "Поиск объявлений",
 
       "search": "Поиск",
+      "filters_bar_label": "Фильтры",
       "search_alert_notify_me": "Уведомлять о появлении",
       "search_alert_login_required":
           "Войдите, чтобы получать уведомления по этому поиску.",
@@ -3079,6 +3081,7 @@ class AppStrings {
       "search_listings": "E'lonlarni qidirish",
 
       "search": "Qidirish",
+      "filters_bar_label": "Filtrlar",
       "search_alert_notify_me": "Paydo bo‘lsa xabar berish",
       "search_alert_login_required":
           "Bu qidiruv bo'yicha bildirishnomalar uchun tizimga kiring.",

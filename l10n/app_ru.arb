@@ -850,6 +850,7 @@
   "month": "месяц",
   "search_listings": "Поиск объявлений",
   "search": "Поиск",
+  "filters_bar_label": "Фильтры",
   "search_alert_notify_me": "Уведомлять",
   "search_alert_login_required": "Войдите, чтобы получать уведомления по этому поиску.",
   "search_alert_created": "Мы сообщим, когда появятся подходящие объявления.",

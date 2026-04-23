@@ -2281,6 +2281,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get search => 'Qidirish';
 
   @override
+  String get filters_bar_label => 'Filtrlar';
+
+  @override
   String get search_alert_notify_me => 'Xabar berilsin';
 
   @override

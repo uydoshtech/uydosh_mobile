@@ -591,43 +591,25 @@ class MainNavigationState extends State<MainNavigation>
 
   // Get the appropriate title for the current screen
   Widget _getAppBarTitle() {
+    final titleStyle =
+        Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ) ??
+        TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.onSurface,
+        );
     switch (_currentIndex) {
       case 0:
-        return L10n.text(
-          "home",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        );
+        return L10n.text("home", style: titleStyle);
       case 1:
-        return L10n.text(
-          "favorites_title",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        );
+        return L10n.text("favorites_title", style: titleStyle);
       case 2:
-        return L10n.text(
-          "conversations",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        );
+        return L10n.text("conversations", style: titleStyle);
       case 3:
-        return L10n.text(
-          "create_listing_title",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        );
+        return L10n.text("create_listing_title", style: titleStyle);
       default:
         return const SizedBox.shrink();
     }
@@ -720,6 +702,7 @@ class MainNavigationState extends State<MainNavigation>
         final useLiquidGlassAppBar = themeState.isBlueTheme || themeState.isLightTheme;
         final appBarTheme = Theme.of(context).appBarTheme;
         return Scaffold(
+          backgroundColor: themeState.backgroundColor,
           extendBodyBehindAppBar: useLiquidGlassAppBar,
           appBar: UydoshAppBar(
             backgroundColor:

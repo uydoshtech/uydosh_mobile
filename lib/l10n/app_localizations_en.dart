@@ -2244,6 +2244,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search => 'Search';
 
   @override
+  String get filters_bar_label => 'Filters';
+
+  @override
   String get search_alert_notify_me => 'Notify me';
 
   @override

@@ -622,7 +622,62 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
       );
     }
 
-    if (out.isEmpty) return <Widget>[];
+    if (out.isEmpty) {
+      final allLabel = L10n.get("all");
+      final isLight = Theme.of(context).brightness == Brightness.light;
+      final Color allChipBg;
+      final Color allChipFg;
+      final BoxBorder? allChipBorder;
+      final List<BoxShadow>? allChipShadow;
+      if (isLight) {
+        allChipBg = onSurface;
+        allChipFg = scheme.surface;
+        allChipBorder = null;
+        allChipShadow = ThreeDSurfaceStyle.elevatedShadows(context);
+      } else {
+        // Near-black pill + white type; thin ring so edge stays visible on dark scaffolds.
+        allChipBg = Color.lerp(Colors.black, scheme.surface, 0.06)!;
+        allChipFg = Colors.white;
+        allChipBorder = Border.all(
+          color: Colors.white.withValues(alpha: 0.14),
+          width: 1,
+        );
+        allChipShadow = [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.45),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ];
+      }
+      out.add(
+        Tooltip(
+          message: allLabel,
+          child: Container(
+            height: chipSize,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: allChipBg,
+              borderRadius: BorderRadius.circular(999),
+              border: allChipBorder,
+              boxShadow: allChipShadow,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              allLabel,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: allChipFg,
+                height: 1.0,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return [
       for (var i = 0; i < out.length; i++) ...[
@@ -1234,9 +1289,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                             builder: (context) {
                               final indicators =
                                   _metroAppliedFilterIndicators(context);
-                              if (indicators.isEmpty) {
-                                return const SizedBox.shrink();
-                              }
+                              final onBar =
+                                  Theme.of(context).colorScheme.onSurface;
                               return SizedBox(
                                 height: 56,
                                 child: Align(
@@ -1246,7 +1300,20 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
-                                      children: indicators,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "${L10n.get("filters_bar_label")} :",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: onBar,
+                                            height: 1.0,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        ...indicators,
+                                      ],
                                     ),
                                   ),
                                 ),

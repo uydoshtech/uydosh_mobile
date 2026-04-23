@@ -492,6 +492,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ThemeState().backgroundColor,
       appBar: widget.isSearchMode ? _buildSearchAppBar() : null,
       body: Stack(
         clipBehavior: Clip.none,
