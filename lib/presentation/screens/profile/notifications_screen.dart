@@ -1140,7 +1140,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       leading: ThreeDAppBarIconButton.backLeading(context),
       title: Text(L10n.get("menu_notifications")),
       backgroundColor:
-          useLiquidGlassAppBar ? Colors.transparent : appBarTheme.backgroundColor,
+          useLiquidGlassAppBar
+              ? liquidGlassAppBarMaterialColor(context)
+              : appBarTheme.backgroundColor,
       surfaceTintColor:
           useLiquidGlassAppBar ? Colors.transparent : appBarTheme.surfaceTintColor,
       elevation: useLiquidGlassAppBar ? 0 : null,

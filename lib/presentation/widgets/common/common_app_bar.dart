@@ -2,6 +2,7 @@ import "dart:ui";
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
@@ -47,7 +48,9 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     final appBarTheme = theme.appBarTheme;
     final defaultBg = backgroundColor ?? appBarTheme.backgroundColor;
     final resolvedBg =
-        liquidGlass ? Colors.transparent : (defaultBg ?? Colors.transparent);
+        liquidGlass
+            ? liquidGlassAppBarMaterialColor(context)
+            : (defaultBg ?? Colors.transparent);
 
     return UydoshAppBar(
       title:

@@ -440,12 +440,12 @@ final class _DrawerColors {
 
   static Color divider() {
     final currentTheme = ThemeState().currentTheme;
-    final base = switch (currentTheme) {
-      AppTheme.blueTheme => AppColors.textLight,
-      AppTheme.lightTheme => const Color(0xFFD1D5DB),
-      _ => const Color(0xFFD1D5DB),
+    return switch (currentTheme) {
+      AppTheme.blueTheme => AppColors.textLight.withValues(alpha: 0.18),
+      AppTheme.messagingTheme => MessagingThemeColors.divider,
+      AppTheme.lightTheme => LightThemeColors.divider,
+      _ => LightThemeColors.divider,
     };
-    return base.withValues(alpha: 0.18);
   }
 
   static Color glassTint(BuildContext context) {

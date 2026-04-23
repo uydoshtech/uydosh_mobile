@@ -356,7 +356,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      backgroundColor: useLiquidGlass ? Colors.transparent : appBarBackgroundColor,
+      backgroundColor:
+          useLiquidGlass
+              ? liquidGlassAppBarMaterialColor(context)
+              : appBarBackgroundColor,
       surfaceTintColor:
           useLiquidGlass ? Colors.transparent : appBarTheme.surfaceTintColor,
       elevation: useLiquidGlass ? 0 : null,

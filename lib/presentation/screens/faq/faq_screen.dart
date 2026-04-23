@@ -100,7 +100,7 @@ class _FaqScreenState extends State<FaqScreen> {
         leading: ThreeDAppBarIconButton.backLeading(context),
         backgroundColor:
             useLiquidGlass
-                ? Colors.transparent
+                ? liquidGlassAppBarMaterialColor(context)
                 : (appBarTheme.backgroundColor ??
                     Theme.of(context).colorScheme.surface),
         surfaceTintColor:

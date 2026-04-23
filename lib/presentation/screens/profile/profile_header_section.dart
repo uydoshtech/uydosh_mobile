@@ -4,47 +4,20 @@ import "package:flutter/material.dart";
 import "package:image_cropper/image_cropper.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/profile_role_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
-
-class _RoleBadge extends StatelessWidget {
-  const _RoleBadge({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final isBlueTheme = ThemeState().currentTheme == AppTheme.blueTheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: isBlueTheme ? BlueThemeColors.buttonPrimary : Colors.black,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-}
 
 class ProfileHeaderSection extends StatefulWidget {
   const ProfileHeaderSection({
@@ -286,7 +259,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
               ],
               if (widget.userRoleLoaded) ...[
                 const SizedBox(height: 4),
-                _RoleBadge(
+                ProfileRoleNeumorphicBadge(
                   label: widget.getRoleLabel(widget.userRole),
                 ),
               ],

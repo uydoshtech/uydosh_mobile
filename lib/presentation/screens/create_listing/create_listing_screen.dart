@@ -510,7 +510,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     ),
                     backgroundColor:
                         useLiquidGlassAppBar
-                            ? Colors.transparent
+                            ? liquidGlassAppBarMaterialColor(context)
                             : appBarTheme.backgroundColor,
                     surfaceTintColor:
                         useLiquidGlassAppBar

@@ -671,7 +671,7 @@ class _EditListingScreenState extends State<EditListingScreen>
               ),
               backgroundColor:
                   useLiquidGlassAppBar
-                      ? Colors.transparent
+                      ? liquidGlassAppBarMaterialColor(context)
                       : appBarTheme.backgroundColor ?? theme.colorScheme.primary,
               surfaceTintColor:
                   useLiquidGlassAppBar
@@ -1665,15 +1665,6 @@ class _EditListingScreenState extends State<EditListingScreen>
   Future<void> _deleteExistingPhoto(int index) async {
     final photo = _existingPhotos[index];
 
-    // Prevent deletion if this is the last photo and photos are required
-    if (_existingPhotos.length <= 1) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("cannot_delete_last_photo"),
-      );
-      return;
-    }
-
     // Show confirmation dialog
     final shouldDelete = await CommonConfirmationDialogs.showDeleteConfirmation(
       context: context,
@@ -1706,8 +1697,9 @@ class _EditListingScreenState extends State<EditListingScreen>
         int? newPrimaryPhotoId;
 
         if (shouldPromoteNewPrimary) {
-          // Get the ID of the photo that will become primary (first remaining photo)
-          newPrimaryPhotoId = _existingPhotos[0].id;
+          // First slot after removal: index 1 if we removed the lead photo, else index 0.
+          final nextIdx = index == 0 ? 1 : 0;
+          newPrimaryPhotoId = _existingPhotos[nextIdx].id;
         }
 
         // Remove photo from local state
@@ -1737,14 +1729,6 @@ class _EditListingScreenState extends State<EditListingScreen>
                 message: L10n.get("new_primary_photo_selected"),
               );
             });
-          } else if (wasPrimaryPhoto && remainingPhotosCount == 0) {
-            // If we deleted the last photo (which was primary), show a different message
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ToastTheme.showSuccess(
-                context,
-                message: L10n.get("last_photo_deleted"),
-              );
-            });
           }
         });
 
@@ -1753,11 +1737,18 @@ class _EditListingScreenState extends State<EditListingScreen>
           _updatePrimaryPhotoInBackend(newPrimaryPhotoId);
         }
 
-        // Show success message
-        ToastTheme.showSuccess(
-          context,
-          message: L10n.get("photo_deleted_success"),
-        );
+        // Show success message (avoid double toast when removing the last image)
+        if (remainingPhotosCount == 0) {
+          ToastTheme.showSuccess(
+            context,
+            message: L10n.get("last_photo_deleted"),
+          );
+        } else {
+          ToastTheme.showSuccess(
+            context,
+            message: L10n.get("photo_deleted_success"),
+          );
+        }
       } catch (e) {
         // Hide loading state
         setState(() {

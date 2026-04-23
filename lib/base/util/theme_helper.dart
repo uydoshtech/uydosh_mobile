@@ -24,6 +24,21 @@ class ThemePalette {
   }
 }
 
+/// [AppBar.backgroundColor] for liquid-glass toolbars ([forceMaterialTransparency]).
+///
+/// Flutter infers the default status bar appearance from this color’s luminance.
+/// [Colors.transparent] is treated as a dark surface (zero luminance), which
+/// incorrectly selects light status icons on a light UI. Pass an opaque light
+/// surface on [Brightness.light] so the OS keeps its usual styling; the bar does
+/// not paint this as a solid fill when transparency is forced.
+Color liquidGlassAppBarMaterialColor(BuildContext context) {
+  final theme = Theme.of(context);
+  if (theme.brightness == Brightness.dark) {
+    return Colors.transparent;
+  }
+  return theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface;
+}
+
 /// Extension on [ThemeState] providing theme-aware color helpers.
 /// Use these instead of duplicating _getThemeAware* logic across screens and widgets.
 extension ThemeHelper on ThemeState {

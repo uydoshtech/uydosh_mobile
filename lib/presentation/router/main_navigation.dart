@@ -16,6 +16,7 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -723,7 +724,7 @@ class MainNavigationState extends State<MainNavigation>
           appBar: UydoshAppBar(
             backgroundColor:
                 useLiquidGlassAppBar
-                    ? Colors.transparent
+                    ? liquidGlassAppBarMaterialColor(context)
                     : appBarTheme.backgroundColor,
             surfaceTintColor:
                 useLiquidGlassAppBar ? Colors.transparent : appBarTheme.surfaceTintColor,

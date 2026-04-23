@@ -259,22 +259,19 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          top: false,
-          bottom: false,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildPreviewLayer(),
-              _buildLogoWatermark(),
-              _buildTopBar(context),
-              _buildBottomBar(context),
-            ],
-          ),
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        top: false,
+        bottom: false,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildPreviewLayer(),
+            _buildLogoWatermark(),
+            _buildTopBar(context),
+            _buildBottomBar(context),
+          ],
         ),
       ),
     );

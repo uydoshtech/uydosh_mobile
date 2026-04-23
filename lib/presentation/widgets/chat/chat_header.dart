@@ -1,7 +1,8 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/util/theme_helper.dart"
+    show ThemeHelper, liquidGlassAppBarMaterialColor;
 import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
@@ -66,7 +67,9 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
             ],
           ),
           backgroundColor:
-              useLiquidGlass ? Colors.transparent : appBarBackgroundColor,
+              useLiquidGlass
+                  ? liquidGlassAppBarMaterialColor(context)
+                  : appBarBackgroundColor,
           surfaceTintColor:
               useLiquidGlass ? Colors.transparent : appBarTheme.surfaceTintColor,
           elevation: useLiquidGlass ? 0 : null,
