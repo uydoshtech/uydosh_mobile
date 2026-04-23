@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
@@ -10,13 +11,16 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AuthWizardProfilePage extends StatelessWidget {
   const AuthWizardProfilePage({
-    required this.profileScrollController, required this.nameController, required this.selectedGender, required this.onGenderSelected, required this.selectedRegionId, required this.regions, required this.onShowRegionPicker, required this.selectedRole, required this.onRoleSelected, required this.isStudent, required this.onStudentSelected, required this.selectedUniversity, required this.universities, required this.onShowUniversityPicker, required this.isLoadingRegions, required this.isLoadingUniversities, required this.getRegionName, required this.getUniversityName, super.key,
+    required this.profileScrollController, required this.nameController, required this.selectedGender, required this.onGenderSelected, required this.selectedCountry, required this.onShowCountryPicker, required this.getCountryName, required this.selectedRegionId, required this.regions, required this.onShowRegionPicker, required this.selectedRole, required this.onRoleSelected, required this.isStudent, required this.onStudentSelected, required this.selectedUniversity, required this.universities, required this.onShowUniversityPicker, required this.isLoadingRegions, required this.isLoadingUniversities, required this.getRegionName, required this.getUniversityName, super.key,
   });
 
   final ScrollController profileScrollController;
   final TextEditingController nameController;
   final int? selectedGender;
   final ValueChanged<int?> onGenderSelected;
+  final Country? selectedCountry;
+  final VoidCallback onShowCountryPicker;
+  final String Function(Country) getCountryName;
   final int? selectedRegionId;
   final List<Region> regions;
   final VoidCallback onShowRegionPicker;
@@ -157,18 +161,14 @@ class AuthWizardProfilePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            if (isLoadingRegions)
-              _buildLoadingCard(
-                context,
-                L10n.get("loading_regions"),
-              )
-            else if (regions.isNotEmpty)
-              _buildRegionSelector(context)
-            else if (!isLoadingRegions)
-              _buildEmptyCard(
-                context,
-                L10n.get("no_regions_available"),
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildCountrySelector(context)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildCitySelectorColumn(context)),
+              ],
+            ),
             const SizedBox(height: 32),
             L10n.text(
               "are_you_landlord_or_renter",
@@ -443,88 +443,151 @@ class AuthWizardProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildRegionSelector(BuildContext context) {
+  /// Country selector (compact, half-width). Always has a selection since
+  /// Uzbekistan is preselected on mount.
+  Widget _buildCountrySelector(BuildContext context) {
+    return _buildCompactSelectorShell(
+      context,
+      label: L10n.get("country"),
+      isSelected: selectedCountry != null,
+      onTap: onShowCountryPicker,
+      leading: selectedCountry != null
+          ? Text(
+              selectedCountry!.flag,
+              style: const TextStyle(fontSize: 22, height: 1.1),
+            )
+          : ThemeIcon(
+              Icons.public,
+              color: _getOnboardingTextSecondaryColor(context),
+              size: 22,
+            ),
+      value: selectedCountry != null
+          ? getCountryName(selectedCountry!)
+          : L10n.get("tap_to_select_country"),
+    );
+  }
+
+  /// Column that mirrors the country selector's height by using the same
+  /// compact shell, but additionally handles loading / empty states for
+  /// regions.
+  Widget _buildCitySelectorColumn(BuildContext context) {
+    if (isLoadingRegions) {
+      return _buildLoadingCard(context, L10n.get("loading_regions"));
+    }
+    if (regions.isEmpty) {
+      return _buildEmptyCard(
+        context,
+        L10n.get("no_regions_for_country"),
+      );
+    }
+    return _buildCitySelector(context);
+  }
+
+  Widget _buildCitySelector(BuildContext context) {
+    final hasSelection = selectedRegionId != null;
+    String? value;
+    if (hasSelection) {
+      try {
+        value = getRegionName(
+          regions.firstWhere((r) => r.id == selectedRegionId),
+        );
+      } catch (_) {
+        // Selected region id no longer in the filtered list (e.g. after
+        // changing country). Fall through to the placeholder.
+        value = null;
+      }
+    }
+
+    return _buildCompactSelectorShell(
+      context,
+      label: L10n.get("city"),
+      isSelected: value != null,
+      onTap: onShowRegionPicker,
+      leading: ThemeIcon(
+        Icons.location_city,
+        color: value != null
+            ? AuthWizardTheme.getSelectedButtonTextColor()
+            : _getOnboardingTextSecondaryColor(context),
+        size: 22,
+      ),
+      value: value ?? L10n.get("tap_to_select_region"),
+    );
+  }
+
+  /// Shared compact selector card used for both country and city. Shows a
+  /// small label on top and a `leading + value + chevron` row underneath.
+  /// Designed to fit comfortably in half of the onboarding content width.
+  Widget _buildCompactSelectorShell(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Widget leading,
+    required String value,
+  }) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: selectedRegionId != null
+        color: isSelected
             ? AuthWizardTheme.getSelectedButtonBackgroundColor()
             : _getOnboardingCardColor(context),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: selectedRegionId != null
+          color: isSelected
               ? AuthWizardTheme.getSelectedButtonBorderColor()
               : Colors.transparent,
           width: 2,
         ),
       ),
       child: PressableTransform(
-        onTap: onShowRegionPicker,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Row(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              ThemeIcon(
-                Icons.public,
-                color: selectedRegionId != null
-                    ? AuthWizardTheme.getSelectedButtonTextColor()
-                    : _getOnboardingTextSecondaryColor(context),
-                size: 24,
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (selectedRegionId != null) ...[
-                      Text(
-                        getRegionName(
-                          regions.firstWhere(
-                            (r) => r.id == selectedRegionId,
-                          ),
-                        ),
-                        style: TextStyle(
-                          color: AuthWizardTheme.getSelectedButtonTextColor(),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      L10n.text(
-                        "selected",
-                        style: TextStyle(
-                          color: AuthWizardTheme.getSelectedButtonTextColor(),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ] else ...[
-                      Text(
-                        L10n.get("tap_to_select_region"),
-                        style: TextStyle(
-                          color: _getOnboardingTextSecondaryColor(context),
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected
+                      ? AuthWizardTheme.getSelectedButtonTextColor()
+                            .withOpacity(0.8)
+                      : _getOnboardingTextSecondaryColor(context),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.4,
                 ),
               ),
-              ThemeIcon(
-                selectedRegionId != null
-                    ? Icons.check_circle
-                    : Icons.arrow_drop_down,
-                color: selectedRegionId != null
-                    ? AuthWizardTheme.getSelectedButtonTextColor()
-                    : _getOnboardingTextSecondaryColor(context),
-                size: 24,
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  SizedBox(width: 24, child: Center(child: leading)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        color: isSelected
+                            ? AuthWizardTheme.getSelectedButtonTextColor()
+                            : _getOnboardingTextColor(context),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  ThemeIcon(
+                    isSelected ? Icons.check_circle : Icons.arrow_drop_down,
+                    color: isSelected
+                        ? AuthWizardTheme.getSelectedButtonTextColor()
+                        : _getOnboardingTextSecondaryColor(context),
+                    size: 20,
+                  ),
+                ],
               ),
             ],
           ),

@@ -6,6 +6,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:google_sign_in/google_sign_in.dart";
+import "package:uy_dosh/base/cache/country_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -17,9 +18,11 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/create_profile_request.dart";
+import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/services/auth_service.dart";
+import "package:uy_dosh/domain/services/country_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
@@ -75,12 +78,37 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   late final IUniversityService _universityService;
   late final IUserProfileService _profileService;
 
+  // Country selection. The country list is backed by a static cache
+  // (see [CountryCache]) behind [ICountryService] so the picker never
+  // touches the network. Uzbekistan is preselected by default.
+  String _selectedCountryIso2 = CountryCache.defaultIso2;
+  List<Country> _countries = <Country>[];
+  late final ICountryService _countryService;
+
   // Region selection
   int? _selectedRegionId;
   List<Region> _regions = [];
   bool _isLoadingRegions = false;
   late final IRegionService _regionService;
   late final IAuthService _authService;
+
+  /// Regions shown to the user, filtered by the currently selected country.
+  /// Today the region cache only holds Uzbekistan regions, so any country
+  /// other than UZ produces an empty list (the UI then shows a
+  /// "not available" message).
+  List<Region> get _filteredRegions {
+    if (_selectedCountryIso2 == "UZ") return _regions;
+    return const <Region>[];
+  }
+
+  /// Selected [Country] looked up from the cache. Returns `null` only
+  /// during the very first frame before the cache finishes initializing,
+  /// after which it resolves synchronously.
+  Country? get _selectedCountry =>
+      CountryCache.getCountryByIso2(_selectedCountryIso2);
+
+  String _getCountryName(Country country) =>
+      country.getLocalizedName(LanguageState().currentLanguage);
 
   // Firebase Auth
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -123,6 +151,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     // Initialize region service
     _regionService = getIt<IRegionService>();
 
+    // Initialize country service (backed by a static CountryCache, so this
+    // never actually hits the network).
+    _countryService = getIt<ICountryService>();
+
     // Initialize auth service
     _authService = getIt<IAuthService>();
 
@@ -141,8 +173,27 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
     });
 
-    // Load regions when screen initializes
+    // Load regions + countries when screen initializes. Countries come
+    // from a static cache so this resolves synchronously in practice, but
+    // we await it to keep the loading contract consistent across data
+    // sources.
     _loadRegions();
+    _loadCountries();
+  }
+
+  Future<void> _loadCountries() async {
+    if (_countries.isNotEmpty) return;
+    try {
+      final countries = await _countryService.getCountries(
+        LanguageState().currentLanguage,
+      );
+      if (!mounted) return;
+      setState(() {
+        _countries = countries;
+      });
+    } catch (error) {
+      logger.d("Error loading countries: $error");
+    }
   }
 
   void _onNameChanged() {
@@ -833,10 +884,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   Future<void> _completeProfile() async {
-    // Profile setup - require name, gender, region, role, student status, and university if student
+    // Profile setup - require name, gender, role, student status, and
+    // university if student. A region is only required when the selected
+    // country is Uzbekistan (the only country we currently ship regions
+    // for); other countries intentionally allow a null regionId.
+    final requiresRegion = _selectedCountryIso2 == "UZ";
     if (_nameController.text.trim().isEmpty ||
         _selectedGender == null ||
-        _selectedRegionId == null ||
+        (requiresRegion && _selectedRegionId == null) ||
         _selectedRole == null ||
         _isStudent == null) {
       ToastTheme.showWarning(
@@ -1285,8 +1340,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           nameController: _nameController,
                           selectedGender: _selectedGender,
                           onGenderSelected: (v) => setState(() => _selectedGender = v),
+                          selectedCountry: _selectedCountry,
+                          onShowCountryPicker: _showCountryPicker,
+                          getCountryName: _getCountryName,
                           selectedRegionId: _selectedRegionId,
-                          regions: _regions,
+                          regions: _filteredRegions,
                           onShowRegionPicker: _showRegionPicker,
                           selectedRole: _selectedRole,
                           onRoleSelected: (v) => setState(() => _selectedRole = v),
@@ -1419,6 +1477,164 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _showCountryPicker() {
+    // Prefer the list already loaded via [ICountryService]. If the picker
+    // opens before the async load finished (shouldn't happen in practice
+    // — the cache resolves synchronously — but guard anyway), fall back
+    // to the cache directly.
+    var countries = _countries;
+    if (countries.isEmpty) {
+      countries = CountryCache.getCountriesSortedByLanguage(
+        LanguageState().currentLanguage,
+      );
+    }
+    if (countries.isEmpty) {
+      logger.d("Country picker requested but countries list is empty");
+      return;
+    }
+    // Ensure the CupertinoPicker opens on the currently selected country.
+    var initialIndex = countries.indexWhere(
+      (c) => c.iso2 == _selectedCountryIso2,
+    );
+    if (initialIndex < 0) initialIndex = 0;
+    // Seed the selection so if the user just confirms without scrolling,
+    // the highlighted item persists.
+    final seededIso2 = countries[initialIndex].iso2;
+    if (seededIso2 != _selectedCountryIso2) {
+      setState(() {
+        _selectedCountryIso2 = seededIso2;
+      });
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _buildCountryPicker(ctx, countries, initialIndex),
+    );
+  }
+
+  Widget _buildCountryPicker(
+    BuildContext context,
+    List<Country> countries,
+    int initialIndex,
+  ) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AuthWizardTheme.getBottomSheetBackgroundColor(),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AuthWizardTheme.getBottomSheetHandleColor(context),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text(
+              L10n.get("select_country"),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AuthWizardTheme.getBottomSheetTextColor(),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 220,
+            child: CupertinoPicker(
+              itemExtent: 44,
+              scrollController: FixedExtentScrollController(
+                initialItem: initialIndex,
+              ),
+              onSelectedItemChanged: (index) {
+                HapticFeedbackUtils.impact();
+                SendSoundUtils.playSelectionSound();
+                final previousIso2 = _selectedCountryIso2;
+                final newIso2 = countries[index].iso2;
+                setState(() {
+                  _selectedCountryIso2 = newIso2;
+                  // If the user switches away from Uzbekistan the city
+                  // list becomes empty, so drop any stale region
+                  // selection. When they come back to UZ we re-seed the
+                  // selection to the first region (same rule used on
+                  // initial load).
+                  if (previousIso2 != newIso2) {
+                    if (newIso2 == "UZ") {
+                      if (_regions.isNotEmpty && _selectedRegionId == null) {
+                        _selectedRegionId = _regions.first.id;
+                      }
+                    } else {
+                      _selectedRegionId = null;
+                    }
+                  }
+                });
+              },
+              children: countries
+                  .map(
+                    (country) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              country.flag,
+                              style: const TextStyle(fontSize: 22),
+                            ),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                _getCountryName(country),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: AuthWizardTheme
+                                      .getBottomSheetTextColor(),
+                                  height: 1.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              country.iso2,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: AuthWizardTheme
+                                    .getBottomSheetTextColor()
+                                    .withOpacity(0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: _buildBottomSheetConfirmButton(
+              context,
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

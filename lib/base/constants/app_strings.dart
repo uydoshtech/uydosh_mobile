@@ -281,6 +281,11 @@ class AppStrings {
       "please_select_university": "Please select a university",
       "tap_to_select_region": "Tap to select region",
       "no_regions_available": "No regions available",
+      "country": "Country",
+      "city": "City",
+      "select_country": "Select country",
+      "tap_to_select_country": "Tap to select country",
+      "no_regions_for_country": "No regions available for this country yet",
 
       // ===== ACTION BUTTONS =====
       "refresh": "Refresh",
@@ -1342,6 +1347,11 @@ class AppStrings {
       "please_select_university": "Пожалуйста, выберите университет",
       "tap_to_select_region": "Нажмите, чтобы выбрать район",
       "no_regions_available": "Районов недоступно",
+      "country": "Страна",
+      "city": "Город",
+      "select_country": "Выберите страну",
+      "tap_to_select_country": "Нажмите, чтобы выбрать страну",
+      "no_regions_for_country": "Для этой страны регионы пока недоступны",
 
       // ===== ACTION BUTTONS =====
       "refresh": "Обновить",
@@ -2416,6 +2426,11 @@ class AppStrings {
       "please_select_university": "Iltimos, universitetni tanlang",
       "tap_to_select_region": "Tumanni tanlash uchun bosing",
       "no_regions_available": "Tumanlar mavjud emas",
+      "country": "Davlat",
+      "city": "Shahar",
+      "select_country": "Davlatni tanlang",
+      "tap_to_select_country": "Davlatni tanlash uchun bosing",
+      "no_regions_for_country": "Bu davlat uchun hududlar hozircha mavjud emas",
 
       // ===== ACTION BUTTONS =====
       "refresh": "Yangilash",
