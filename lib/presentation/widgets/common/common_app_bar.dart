@@ -2,6 +2,7 @@ import "dart:ui";
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -116,23 +117,31 @@ class _LiquidGlassAppBarBackground extends StatelessWidget {
     final theme = Theme.of(context);
     final base =
         theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface;
-    // "Liquid glass": blur + translucent tint + subtle highlights/border.
+    final isLight = ThemeState().isLightTheme;
+    // "Liquid glass": blur + translucent tint + subtle highlights.
+    // Light theme: weaker tint so content behind the bar stays visible through the blur.
+    final blurSigma = isLight ? 22.0 : 18.0;
+    final tintHigh = isLight ? 0.12 : 0.28;
+    final tintLow = isLight ? 0.04 : 0.12;
+    final sheenHigh = isLight ? 0.05 : 0.10;
+    final shadowOpacity = isLight ? 0.06 : 0.10;
+
     return ClipRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                base.withOpacity(0.28),
-                base.withOpacity(0.12),
+                base.withValues(alpha: tintHigh),
+                base.withValues(alpha: tintLow),
               ],
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.10),
+                color: Colors.black.withValues(alpha: shadowOpacity),
                 blurRadius: 18,
                 offset: const Offset(0, 10),
               ),
@@ -144,8 +153,8 @@ class _LiquidGlassAppBarBackground extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.white.withOpacity(0.10),
-                  Colors.white.withOpacity(0.00),
+                  Colors.white.withValues(alpha: sheenHigh),
+                  Colors.white.withValues(alpha: 0),
                 ],
               ),
             ),

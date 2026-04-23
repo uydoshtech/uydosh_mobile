@@ -21,14 +21,19 @@ class LiquidGlassAppBarFlexibleSpace extends StatelessWidget {
             ? BlueThemeColors.background
             : (Color.lerp(scheme.surface, scheme.primary, 0.06) ?? scheme.surface);
 
+    // Light theme needs a much lower tint alpha so the blur reads as “glass”;
+    // ~0.72 looked like a solid bar over the scaffold.
+    final blurSigma = isDark ? 18.0 : 22.0;
+    final tintAlpha = isDark ? 0.44 : 0.24;
+
     return ClipRRect(
       borderRadius: _bottomRadius,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: _bottomRadius,
-            color: baseTint.withValues(alpha: isDark ? 0.44 : 0.72),
+            color: baseTint.withValues(alpha: tintAlpha),
             border: Border(
               bottom: BorderSide(
                 color:

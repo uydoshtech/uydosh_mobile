@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/search_floating_action_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
@@ -498,14 +499,13 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
     final onSurface = scheme.onSurface;
     const gap = SizedBox(width: 8);
     const chipSize = 36.0;
+    final chipBase = scheme.surface;
 
-    BoxDecoration chipDecoration({BorderRadius? radius}) {
+    BoxDecoration neumorphicChipDecoration({BorderRadius? radius}) {
       return BoxDecoration(
         borderRadius: radius ?? BorderRadius.circular(chipSize / 2),
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.9),
-        border: Border.all(
-          color: scheme.outline.withValues(alpha: 0.22),
-        ),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, chipBase),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       );
     }
 
@@ -515,7 +515,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
         child: Container(
           width: chipSize,
           height: chipSize,
-          decoration: chipDecoration(),
+          decoration: neumorphicChipDecoration(),
           child: Center(child: child),
         ),
       );
@@ -559,28 +559,32 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
         Tooltip(
           message: rangeLabel,
           child: Container(
-            constraints: const BoxConstraints(minHeight: chipSize),
-            padding: const EdgeInsets.only(left: 8, right: 10),
-            decoration: chipDecoration(
+            height: chipSize,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: neumorphicChipDecoration(
               radius: BorderRadius.circular(999),
             ),
             alignment: Alignment.center,
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Icon(
                   Icons.payments,
-                  size: 18,
+                  size: 16,
                   color: AppColors.success,
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 5),
                 Text(
                   rangeLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.clip,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: onSurface,
-                    height: 1.1,
+                    height: 1.0,
                   ),
                 ),
               ],
