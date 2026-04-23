@@ -8,6 +8,7 @@ part of 'region.dart';
 
 _$RegionImpl _$$RegionImplFromJson(Map<String, dynamic> json) => _$RegionImpl(
       id: (json['id'] as num).toInt(),
+      countryId: (json['country_id'] as num?)?.toInt(),
       name: json['name'] as String?,
       nameEn: json['name_en'] as String?,
       nameRu: json['name_ru'] as String?,
@@ -25,6 +26,7 @@ _$RegionImpl _$$RegionImplFromJson(Map<String, dynamic> json) => _$RegionImpl(
 Map<String, dynamic> _$$RegionImplToJson(_$RegionImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'country_id': instance.countryId,
       'name': instance.name,
       'name_en': instance.nameEn,
       'name_ru': instance.nameRu,

@@ -8,6 +8,7 @@ part "region.g.dart";
 class Region with _$Region implements IJsonEncodable {
   const factory Region({
     required int id,
+    @JsonKey(name: "country_id") int? countryId,
     @JsonKey(name: "name") String? name,
     @JsonKey(name: "name_en") String? nameEn,
     @JsonKey(name: "name_ru") String? nameRu,

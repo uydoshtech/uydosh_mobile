@@ -21,6 +21,8 @@ Region _$RegionFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Region {
   int get id => throw _privateConstructorUsedError;
+  @JsonKey(name: "country_id")
+  int? get countryId => throw _privateConstructorUsedError;
   @JsonKey(name: "name")
   String? get name => throw _privateConstructorUsedError;
   @JsonKey(name: "name_en")
@@ -62,6 +64,7 @@ abstract class $RegionCopyWith<$Res> {
   @useResult
   $Res call(
       {int id,
+      @JsonKey(name: "country_id") int? countryId,
       @JsonKey(name: "name") String? name,
       @JsonKey(name: "name_en") String? nameEn,
       @JsonKey(name: "name_ru") String? nameRu,
@@ -92,6 +95,7 @@ class _$RegionCopyWithImpl<$Res, $Val extends Region>
   @override
   $Res call({
     Object? id = null,
+    Object? countryId = freezed,
     Object? name = freezed,
     Object? nameEn = freezed,
     Object? nameRu = freezed,
@@ -110,6 +114,10 @@ class _$RegionCopyWithImpl<$Res, $Val extends Region>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
+      countryId: freezed == countryId
+          ? _value.countryId
+          : countryId // ignore: cast_nullable_to_non_nullable
+              as int?,
       name: freezed == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -171,6 +179,7 @@ abstract class _$$RegionImplCopyWith<$Res> implements $RegionCopyWith<$Res> {
   @useResult
   $Res call(
       {int id,
+      @JsonKey(name: "country_id") int? countryId,
       @JsonKey(name: "name") String? name,
       @JsonKey(name: "name_en") String? nameEn,
       @JsonKey(name: "name_ru") String? nameRu,
@@ -199,6 +208,7 @@ class __$$RegionImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? countryId = freezed,
     Object? name = freezed,
     Object? nameEn = freezed,
     Object? nameRu = freezed,
@@ -217,6 +227,10 @@ class __$$RegionImplCopyWithImpl<$Res>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
+      countryId: freezed == countryId
+          ? _value.countryId
+          : countryId // ignore: cast_nullable_to_non_nullable
+              as int?,
       name: freezed == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -274,6 +288,7 @@ class __$$RegionImplCopyWithImpl<$Res>
 class _$RegionImpl implements _Region {
   const _$RegionImpl(
       {required this.id,
+      @JsonKey(name: "country_id") this.countryId,
       @JsonKey(name: "name") this.name,
       @JsonKey(name: "name_en") this.nameEn,
       @JsonKey(name: "name_ru") this.nameRu,
@@ -292,6 +307,9 @@ class _$RegionImpl implements _Region {
 
   @override
   final int id;
+  @override
+  @JsonKey(name: "country_id")
+  final int? countryId;
   @override
   @JsonKey(name: "name")
   final String? name;
@@ -331,7 +349,7 @@ class _$RegionImpl implements _Region {
 
   @override
   String toString() {
-    return 'Region(id: $id, name: $name, nameEn: $nameEn, nameRu: $nameRu, nameUz: $nameUz, shortName: $shortName, shortNameEn: $shortNameEn, shortNameRu: $shortNameRu, shortNameUz: $shortNameUz, latitude: $latitude, longitude: $longitude, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Region(id: $id, countryId: $countryId, name: $name, nameEn: $nameEn, nameRu: $nameRu, nameUz: $nameUz, shortName: $shortName, shortNameEn: $shortNameEn, shortNameRu: $shortNameRu, shortNameUz: $shortNameUz, latitude: $latitude, longitude: $longitude, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -340,6 +358,8 @@ class _$RegionImpl implements _Region {
         (other.runtimeType == runtimeType &&
             other is _$RegionImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.countryId, countryId) ||
+                other.countryId == countryId) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.nameEn, nameEn) || other.nameEn == nameEn) &&
             (identical(other.nameRu, nameRu) || other.nameRu == nameRu) &&
@@ -367,6 +387,7 @@ class _$RegionImpl implements _Region {
   int get hashCode => Object.hash(
       runtimeType,
       id,
+      countryId,
       name,
       nameEn,
       nameRu,
@@ -399,6 +420,7 @@ class _$RegionImpl implements _Region {
 abstract class _Region implements Region {
   const factory _Region(
       {required final int id,
+      @JsonKey(name: "country_id") final int? countryId,
       @JsonKey(name: "name") final String? name,
       @JsonKey(name: "name_en") final String? nameEn,
       @JsonKey(name: "name_ru") final String? nameRu,
@@ -416,6 +438,9 @@ abstract class _Region implements Region {
 
   @override
   int get id;
+  @override
+  @JsonKey(name: "country_id")
+  int? get countryId;
   @override
   @JsonKey(name: "name")
   String? get name;

@@ -20,6 +20,7 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
       listingType: ListingTypeDetail.fromJson(
           json['listing_type'] as Map<String, dynamic>),
       description: json['description'] as String?,
+      cityId: (json['city_id'] as num?)?.toInt(),
       descriptionRu: json['description_ru'] as String?,
       descriptionEn: json['description_en'] as String?,
       descriptionUz: json['description_uz'] as String?,
@@ -65,6 +66,7 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'user': instance.user,
       'listing_type': instance.listingType,
       'description': instance.description,
+      'city_id': instance.cityId,
       'description_ru': instance.descriptionRu,
       'description_en': instance.descriptionEn,
       'description_uz': instance.descriptionUz,

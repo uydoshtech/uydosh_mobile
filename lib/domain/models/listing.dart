@@ -14,6 +14,7 @@ class Listing with _$Listing {
     @JsonKey(name: "listing_type_id") required int listingTypeId,
     @JsonKey(name: "price") required int price,
     @JsonKey(name: "is_active") required bool isActive, @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, @JsonKey(name: "description") String? description,
+    @JsonKey(name: "city_id") int? cityId,
     @JsonKey(name: "subway_station_id") int? subwayStationId,
     @JsonKey(name: "subway_line_id") int? subwayLineId,
     @JsonKey(name: "location_id") int? locationId,

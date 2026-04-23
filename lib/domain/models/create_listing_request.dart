@@ -10,6 +10,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
     required this.gender,
     required this.locationId,
     required this.amenityIds,
+    this.cityId,
     this.subwayStationId, // Made optional
     this.subwayLineId, // Add subway line ID parameter
     this.moveInDate, // Add move-in date parameter
@@ -23,6 +24,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
   final int gender;
   final int locationId;
   final List<int> amenityIds;
+  final int? cityId;
   final int? subwayStationId; // Made optional
   final int? subwayLineId; // Add subway line ID
   final String? moveInDate; // Add move-in date field
@@ -38,6 +40,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
       "description": description,
       "gender": gender,
       "locationId": locationId,
+      "cityId": cityId,
       "amenityIds": amenityIds,
       "subwayStationId":
           subwayStationId, // Always include, sends null when no metro station
