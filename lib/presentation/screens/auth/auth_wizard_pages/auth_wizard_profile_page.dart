@@ -1,13 +1,14 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_inset_container.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class AuthWizardProfilePage extends StatelessWidget {
   const AuthWizardProfilePage({
@@ -42,8 +43,41 @@ class AuthWizardProfilePage extends StatelessWidget {
   Color _getOnboardingTextSecondaryColor(BuildContext context) =>
       Theme.of(context).colorScheme.onSurfaceVariant;
 
-  Color _getOnboardingCardColor(BuildContext context) =>
-      Theme.of(context).colorScheme.surfaceContainerHighest;
+  /// Neutral card surface used as the raised neumorphic base. Kept close to the
+  /// onboarding background so the dual shadows do the talking.
+  Color _getRaisedSurfaceColor(BuildContext context) =>
+      Theme.of(context).colorScheme.surface;
+
+  /// Tinted surface used when a card is in its "selected" (recessed) state. We
+  /// fall back to the color scheme's primary for themes where
+  /// [AuthWizardTheme.getSelectedButtonBackgroundColor] is transparent.
+  Color _getSelectedSurfaceColor(BuildContext context) {
+    final selected = AuthWizardTheme.getSelectedButtonBackgroundColor();
+    if (selected == Colors.transparent) {
+      return Theme.of(context).colorScheme.primary;
+    }
+    return selected;
+  }
+
+  /// Raised vs. recessed decoration shared by every card-like tap target on
+  /// this page (gender, role, student, country, city, university). Selection
+  /// is conveyed through depth + a subtle colour tint rather than hard borders.
+  BoxDecoration _neumorphicCardDecoration(
+    BuildContext context, {
+    required bool isSelected,
+    BorderRadius borderRadius = const BorderRadius.all(Radius.circular(12)),
+  }) {
+    final base = isSelected
+        ? _getSelectedSurfaceColor(context)
+        : _getRaisedSurfaceColor(context);
+    return BoxDecoration(
+      borderRadius: borderRadius,
+      gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
+      boxShadow: isSelected
+          ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+          : ThreeDSurfaceStyle.elevatedShadows(context),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,11 +105,9 @@ class AuthWizardProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: _getOnboardingCardColor(context),
-                borderRadius: BorderRadius.circular(12),
-              ),
+            NeumorphicInsetContainer(
+              backgroundColor: _getRaisedSurfaceColor(context),
+              padding: EdgeInsets.zero,
               child: TextField(
                 controller: nameController,
                 keyboardType: TextInputType.text,
@@ -86,27 +118,9 @@ class AuthWizardProfilePage extends StatelessWidget {
                     color: _getOnboardingTextSecondaryColor(context)
                         .withOpacity(0.6),
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.cardBorder,
-                      width: 1.5,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.cardBorder,
-                      width: 1.5,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppColors.cardBorder.withOpacity(0.8),
-                      width: 2,
-                    ),
-                  ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                   contentPadding: const EdgeInsets.all(16),
                   prefixIcon: ThemeIcon(
                     Icons.person,
@@ -254,37 +268,35 @@ class AuthWizardProfilePage extends StatelessWidget {
   }
 
   Widget _buildLoadingCard(BuildContext context, String text) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: _getOnboardingTextColor(context).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: CenteredHouseLoadingIndicator(
-        text: text,
-        textStyle: TextStyle(
-          color: _getOnboardingTextColor(context),
-          fontSize: 16,
+    return DecoratedBox(
+      decoration: _neumorphicCardDecoration(context, isSelected: false),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: CenteredHouseLoadingIndicator(
+          text: text,
+          textStyle: TextStyle(
+            color: _getOnboardingTextColor(context),
+            fontSize: 16,
+          ),
+          size: 20,
         ),
-        size: 20,
       ),
     );
   }
 
   Widget _buildEmptyCard(BuildContext context, String text) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: _getOnboardingTextColor(context).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: _getOnboardingTextSecondaryColor(context),
-          fontSize: 16,
+    return DecoratedBox(
+      decoration: _neumorphicCardDecoration(context, isSelected: false),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: _getOnboardingTextSecondaryColor(context),
+            fontSize: 16,
+          ),
+          textAlign: TextAlign.center,
         ),
-        textAlign: TextAlign.center,
       ),
     );
   }
@@ -295,49 +307,12 @@ class AuthWizardProfilePage extends StatelessWidget {
     String label,
     IconData icon,
   ) {
-    final isSelected = selectedGender == gender;
-    return PressableTransform(
+    return _buildToggleOption(
+      context,
+      isSelected: selectedGender == gender,
+      label: label,
+      icon: icon,
       onTap: () => onGenderSelected(gender),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AuthWizardTheme.getSelectedButtonBackgroundColor()
-              : _getOnboardingTextColor(context).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? AuthWizardTheme.getSelectedButtonTextColor()
-                : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected
-                    ? AuthWizardTheme.getSelectedButtonTextColor()
-                    : _getOnboardingTextColor(context),
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(width: 12),
-            ThemeIcon(
-              icon,
-              color: isSelected
-                  ? AuthWizardTheme.getSelectedButtonTextColor()
-                  : _getOnboardingTextColor(context),
-              size: 20,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -347,49 +322,12 @@ class AuthWizardProfilePage extends StatelessWidget {
     String label,
     IconData icon,
   ) {
-    final isSelected = selectedRole == role;
-    return PressableTransform(
+    return _buildToggleOption(
+      context,
+      isSelected: selectedRole == role,
+      label: label,
+      icon: icon,
       onTap: () => onRoleSelected(role),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AuthWizardTheme.getSelectedButtonBackgroundColor()
-              : _getOnboardingTextColor(context).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? AuthWizardTheme.getSelectedButtonTextColor()
-                : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected
-                    ? AuthWizardTheme.getSelectedButtonTextColor()
-                    : _getOnboardingTextColor(context),
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(width: 12),
-            ThemeIcon(
-              icon,
-              color: isSelected
-                  ? AuthWizardTheme.getSelectedButtonTextColor()
-                  : _getOnboardingTextColor(context),
-              size: 20,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -399,45 +337,53 @@ class AuthWizardProfilePage extends StatelessWidget {
     String label,
     IconData icon,
   ) {
-    final isSelected = isStudent == studentValue;
-    return PressableTransform(
+    return _buildToggleOption(
+      context,
+      isSelected: isStudent == studentValue,
+      label: label,
+      icon: icon,
       onTap: () => onStudentSelected(studentValue),
+    );
+  }
+
+  /// Shared soft-UI pill used by the gender, role, and student toggles. Raised
+  /// neumorphic shell when unselected; recessed + tinted when selected.
+  Widget _buildToggleOption(
+    BuildContext context, {
+    required bool isSelected,
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    final contentColor = isSelected
+        ? AuthWizardTheme.getSelectedButtonTextColor()
+        : _getOnboardingTextColor(context);
+    return PressableTransform(
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.white
-              : _getOnboardingTextColor(context).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? Colors.black : Colors.transparent,
-            width: 2,
-          ),
+      child: DecoratedBox(
+        decoration: _neumorphicCardDecoration(
+          context,
+          isSelected: isSelected,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected
-                    ? Colors.black
-                    : _getOnboardingTextColor(context),
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: contentColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.left,
               ),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(width: 12),
-            ThemeIcon(
-              icon,
-              color: isSelected
-                  ? Colors.black
-                  : _getOnboardingTextColor(context),
-              size: 20,
-            ),
-          ],
+              const SizedBox(width: 12),
+              ThemeIcon(icon, color: contentColor, size: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -525,22 +471,14 @@ class AuthWizardProfilePage extends StatelessWidget {
     required Widget leading,
     required String value,
   }) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: isSelected
-            ? AuthWizardTheme.getSelectedButtonBackgroundColor()
-            : _getOnboardingCardColor(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isSelected
-              ? AuthWizardTheme.getSelectedButtonBorderColor()
-              : Colors.transparent,
-          width: 2,
+    return PressableTransform(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: DecoratedBox(
+        decoration: _neumorphicCardDecoration(
+          context,
+          isSelected: isSelected,
         ),
-      ),
-      child: PressableTransform(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           child: Column(
@@ -597,30 +535,24 @@ class AuthWizardProfilePage extends StatelessWidget {
   }
 
   Widget _buildUniversitySelector(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: selectedUniversity != null
-            ? AuthWizardTheme.getSelectedButtonBackgroundColor()
-            : _getOnboardingCardColor(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: selectedUniversity != null
-              ? AuthWizardTheme.getSelectedButtonBorderColor()
-              : Colors.transparent,
-          width: 2,
+    final isSelected = selectedUniversity != null;
+    final selectedTextColor = AuthWizardTheme.getSelectedButtonTextColor();
+    return PressableTransform(
+      onTap: onShowUniversityPicker,
+      borderRadius: BorderRadius.circular(12),
+      child: DecoratedBox(
+        decoration: _neumorphicCardDecoration(
+          context,
+          isSelected: isSelected,
         ),
-      ),
-      child: PressableTransform(
-        onTap: onShowUniversityPicker,
-        borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           child: Row(
             children: [
               ThemeIcon(
                 Icons.school,
-                color: selectedUniversity != null
-                    ? AuthWizardTheme.getSelectedButtonTextColor()
+                color: isSelected
+                    ? selectedTextColor
                     : _getOnboardingTextSecondaryColor(context),
                 size: 24,
               ),
@@ -629,11 +561,11 @@ class AuthWizardProfilePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (selectedUniversity != null) ...[
+                    if (isSelected) ...[
                       Text(
                         getUniversityName(selectedUniversity!),
                         style: TextStyle(
-                          color: AuthWizardTheme.getSelectedButtonTextColor(),
+                          color: selectedTextColor,
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           height: 1.2,
@@ -645,7 +577,7 @@ class AuthWizardProfilePage extends StatelessWidget {
                       L10n.text(
                         "selected",
                         style: TextStyle(
-                          color: AuthWizardTheme.getSelectedButtonTextColor(),
+                          color: selectedTextColor,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -667,11 +599,9 @@ class AuthWizardProfilePage extends StatelessWidget {
                 ),
               ),
               ThemeIcon(
-                selectedUniversity != null
-                    ? Icons.check_circle
-                    : Icons.arrow_drop_down,
-                color: selectedUniversity != null
-                    ? AuthWizardTheme.getSelectedButtonTextColor()
+                isSelected ? Icons.check_circle : Icons.arrow_drop_down,
+                color: isSelected
+                    ? selectedTextColor
                     : _getOnboardingTextSecondaryColor(context),
                 size: 24,
               ),
