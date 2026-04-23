@@ -828,22 +828,26 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           label: L10n.get(
                             "not_specified",
                           ),
+                          icon: Icons.not_interested,
                         ),
                         DropdownOption(
                           value: "morning",
                           label: L10n.get(
                             "morning",
                           ),
+                          icon: Icons.wb_sunny_outlined,
                         ),
                         DropdownOption(
                           value: "evening",
                           label: L10n.get(
                             "evening",
                           ),
+                          icon: Icons.wb_twilight,
                         ),
                         DropdownOption(
                           value: "night",
                           label: L10n.get("night"),
+                          icon: Icons.nights_stay_outlined,
                         ),
                       ],
                     ),
@@ -867,22 +871,26 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           label: L10n.get(
                             "not_specified",
                           ),
+                          icon: Icons.not_interested,
                         ),
                         DropdownOption(
                           value: "morning",
                           label: L10n.get(
                             "morning",
                           ),
+                          icon: Icons.wb_sunny_outlined,
                         ),
                         DropdownOption(
                           value: "evening",
                           label: L10n.get(
                             "evening",
                           ),
+                          icon: Icons.wb_twilight,
                         ),
                         DropdownOption(
                           value: "night",
                           label: L10n.get("night"),
+                          icon: Icons.nights_stay_outlined,
                         ),
                       ],
                     ),
@@ -999,24 +1007,28 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           label: L10n.get(
                             "not_specified",
                           ),
+                          icon: Icons.not_interested,
                         ),
                         DropdownOption(
                           value: "non-smoker",
                           label: L10n.get(
                             "non_smoker",
                           ),
+                          icon: Icons.smoke_free,
                         ),
                         DropdownOption(
                           value: "occasional",
                           label: L10n.get(
                             "occasional_smoker",
                           ),
+                          icon: Icons.smoking_rooms_outlined,
                         ),
                         DropdownOption(
                           value: "regular",
                           label: L10n.get(
                             "regular_smoker",
                           ),
+                          icon: Icons.smoking_rooms,
                         ),
                       ],
                     ),
@@ -1041,24 +1053,28 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           label: L10n.get(
                             "not_specified",
                           ),
+                          icon: Icons.not_interested,
                         ),
                         DropdownOption(
                           value: "non-drinker",
                           label: L10n.get(
                             "non_drinker",
                           ),
+                          icon: Icons.no_drinks,
                         ),
                         DropdownOption(
                           value: "occasional",
                           label: L10n.get(
                             "occasional_drinker",
                           ),
+                          icon: Icons.wine_bar_outlined,
                         ),
                         DropdownOption(
                           value: "regular",
                           label: L10n.get(
                             "regular_drinker",
                           ),
+                          icon: Icons.local_bar,
                         ),
                       ],
                     ),
@@ -1099,30 +1115,35 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           label: L10n.get(
                             "not_specified",
                           ),
+                          icon: Icons.not_interested,
                         ),
                         DropdownOption(
                           value: "like_pets",
                           label: L10n.get(
                             "pets_like_pets",
                           ),
+                          icon: Icons.pets,
                         ),
                         DropdownOption(
                           value: "dont_like_pets",
                           label: L10n.get(
                             "pets_dont_like_pets",
                           ),
+                          icon: Icons.block,
                         ),
                         DropdownOption(
                           value: "have_cat",
                           label: L10n.get(
                             "pets_have_cat",
                           ),
+                          icon: Icons.cruelty_free,
                         ),
                         DropdownOption(
                           value: "have_dog",
                           label: L10n.get(
                             "pets_have_dog",
                           ),
+                          icon: Icons.pets_outlined,
                         ),
                       ],
                     ),

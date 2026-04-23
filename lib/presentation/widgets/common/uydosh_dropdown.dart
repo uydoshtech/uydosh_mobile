@@ -5,10 +5,11 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable dropdown option for [UydoshDropdown].
 class DropdownOption {
-  const DropdownOption({required this.value, required this.label});
+  const DropdownOption({required this.value, required this.label, this.icon});
 
   final String? value;
   final String label;
+  final IconData? icon;
 }
 
 /// A reusable settings row with an icon, label, and dropdown.
@@ -107,16 +108,35 @@ class UydoshDropdown extends StatelessWidget {
                     options.map((option) {
                       return DropdownMenuItem<String?>(
                         value: option.value,
-                        child: Text(
-                          option.label,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color:
-                                isBlueTheme
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (option.icon != null) ...[
+                              ThemeIcon(
+                                option.icon,
+                                color: isBlueTheme
                                     ? Colors.white
                                     : (isLightTheme
-                                        ? Colors.grey[800]
+                                        ? Colors.grey[700]
                                         : Colors.grey[200]),
-                          ),
+                                size: 18,
+                              ),
+                              const SizedBox(width: 10),
+                            ],
+                            Flexible(
+                              child: Text(
+                                option.label,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: isBlueTheme
+                                      ? Colors.white
+                                      : (isLightTheme
+                                          ? Colors.grey[800]
+                                          : Colors.grey[200]),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     }).toList(),

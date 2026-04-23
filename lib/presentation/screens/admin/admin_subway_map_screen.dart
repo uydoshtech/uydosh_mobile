@@ -146,7 +146,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
     _loadListingStationIds();
   }
 
-  Future<void> _loadListingStationIds() async {
+  Future<void> _loadListingStationIds({bool animateAllMatches = false}) async {
     if (_isLoadingStationIds) return;
     setState(() => _isLoadingStationIds = true);
     _refreshSpinController.repeat();
@@ -172,10 +172,13 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
       debugPrint("[AdminSubwayMap] stationIds returned: ${ids.length}");
       logger.i("[AdminSubwayMap] stationIds returned: ${ids.length}");
       final next = ids.toSet();
-      final newlyActivated = next.difference(_stationIdsWithListings);
+      final prev = _stationIdsWithListings;
       setState(() => _stationIdsWithListings = next);
-      for (final stationId in newlyActivated) {
-        _triggerStationHighlight(stationId);
+      if (animateAllMatches) {
+        _triggerStationsHighlight(next);
+      } else {
+        final newlyActivated = next.difference(prev);
+        _triggerStationsHighlight(newlyActivated);
       }
     } catch (_) {
       if (!mounted) return;
@@ -470,13 +473,25 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
   }
 
   void _triggerStationHighlight(int stationId) {
+    _triggerStationsHighlight([stationId]);
+  }
+
+  void _triggerStationsHighlight(Iterable<int> stationIds) {
     if (!mounted) return;
+    final ids = stationIds.toSet();
+    if (ids.isEmpty) return;
     setState(() {
-      _highlightGen[stationId] = (_highlightGen[stationId] ?? 0) + 1;
+      for (final stationId in ids) {
+        _highlightGen[stationId] = (_highlightGen[stationId] ?? 0) + 1;
+      }
     });
     Future<void>.delayed(const Duration(milliseconds: 1100), () {
       if (!mounted) return;
-      setState(() => _highlightGen.remove(stationId));
+      setState(() {
+        for (final stationId in ids) {
+          _highlightGen.remove(stationId);
+        }
+      });
     });
   }
 
@@ -1360,7 +1375,9 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                                   _selectedPrivateRoom = result.privateRoom;
                                   _selectedWithPhoto = result.withPhoto;
                                 });
-                                await _loadListingStationIds();
+                                await _loadListingStationIds(
+                                  animateAllMatches: true,
+                                );
                               },
                               primaryLabelKey: "apply",
                               primaryIcon: Icons.check,

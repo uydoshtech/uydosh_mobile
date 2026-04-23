@@ -54,6 +54,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _bulkWorking = false;
   List<SearchAlert> _alerts = const [];
   bool _showAlertsExplainer = true;
+  final Set<int> _itemsBeingRemoved = {}; // Track items being removed for animation
+  final Map<int, ({SearchAlert alert, int index})> _optimisticallyRemoved =
+      {}; // Rollback buffer for optimistic removals
 
   AuthorizationStatus? _pushStatus;
   bool _pushStatusLoading = false;
@@ -548,6 +551,53 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     ActiveSearchAlertsState().syncFromAlerts(_alerts);
   }
 
+  void _deleteAlertAnimated(SearchAlert a, {required int index}) {
+    if (!mounted) return;
+    if (_itemsBeingRemoved.contains(a.id)) return;
+
+    const duration = Duration(milliseconds: 300);
+
+    // Save for rollback *before* we mutate the list.
+    if (!_optimisticallyRemoved.containsKey(a.id)) {
+      _optimisticallyRemoved[a.id] = (alert: a, index: index);
+    }
+
+    setState(() {
+      _itemsBeingRemoved.add(a.id);
+    });
+
+    // Optimistically remove from list after the animation finishes.
+    Future.delayed(duration, () {
+      if (!mounted) return;
+      setState(() {
+        _itemsBeingRemoved.remove(a.id);
+        _alerts = _alerts.where((x) => x.id != a.id).toList();
+      });
+      ActiveSearchAlertsState().syncFromAlerts(_alerts);
+    });
+
+    // Delete on backend; rollback on failure.
+    () async {
+      final ok = await getIt<ISearchAlertService>().deleteAlert(alertId: a.id);
+      if (!mounted) return;
+      if (ok) {
+        _optimisticallyRemoved.remove(a.id);
+        return;
+      }
+
+      final backup = _optimisticallyRemoved.remove(a.id);
+      if (backup == null) return;
+
+      setState(() {
+        _itemsBeingRemoved.remove(a.id);
+        final safeIndex = backup.index.clamp(0, _alerts.length);
+        _alerts = List<SearchAlert>.from(_alerts)..insert(safeIndex, backup.alert);
+      });
+      ActiveSearchAlertsState().syncFromAlerts(_alerts);
+      ToastTheme.showError(context, message: L10n.get("error_generic"));
+    }();
+  }
+
   Future<void> _disableAllAlerts() async {
     if (_bulkWorking) return;
     if (_alerts.isEmpty) return;
@@ -1015,8 +1065,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
                         final a =
                             _alerts[adjustedIndex - (showExplainer ? 1 : 0)];
+                        final alertIndex = adjustedIndex - (showExplainer ? 1 : 0);
                         final themeState = ThemeState();
-                        return Theme(
+                        final isRemoving = _itemsBeingRemoved.contains(a.id);
+                        const duration = Duration(milliseconds: 300);
+
+                        final card = Theme(
                           data: theme.copyWith(
                             cardTheme: theme.cardTheme.copyWith(
                               margin: EdgeInsets.zero,
@@ -1089,7 +1143,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             if (value == "toggle") {
                                               _toggleEnabled(a, !a.enabled);
                                             } else if (value == "delete") {
-                                              _deleteAlert(a);
+                                              _deleteAlertAnimated(
+                                                a,
+                                                index: alertIndex,
+                                              );
                                             }
                                           },
                                           itemBuilder: (menuContext) {
@@ -1128,6 +1185,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               ),
                             ),
                           ),
+                        );
+
+                        if (!isRemoving) return card;
+
+                        // Collapse + fade only while removing (match Favorites animation).
+                        return TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 1.0, end: 0.0),
+                          duration: duration,
+                          curve: Curves.easeInOutCubic,
+                          builder: (context, t, child) {
+                            return ClipRect(
+                              child: Align(
+                                alignment: Alignment.topCenter,
+                                heightFactor: t,
+                                child: Opacity(
+                                  opacity: t.clamp(0.0, 1.0),
+                                  child: child,
+                                ),
+                              ),
+                            );
+                          },
+                          child: card,
                         );
                       },
                     ),
