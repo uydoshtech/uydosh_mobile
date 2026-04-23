@@ -22,8 +22,9 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/app_badge_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
-import "package:uy_dosh/base/services/sound_service.dart";
+import "package:uy_dosh/base/services/reinstall_session_guard.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
@@ -95,6 +96,11 @@ void main() async {
     // Activate App Check BEFORE any Firebase Auth call (phone verification
     // requires it). Safe to await — non-fatal if it fails.
     await AppCheckBootstrap.activate();
+
+    // iOS: Firebase user can persist in Keychain after uninstall while prefs
+    // are cleared — sign out so we do not treat the user as logged in without
+    // a backend session. Android: prefs restore is limited via backup_rules.xml.
+    await ReinstallSessionGuard.clearStaleFirebaseSessionAfterReinstall();
 
     // Initialize Crashlytics (iOS/Android only; not supported on web)
     if (!kIsWeb) {

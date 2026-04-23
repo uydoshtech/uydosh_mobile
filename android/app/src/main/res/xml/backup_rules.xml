@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exclude Flutter SharedPreferences from Auto Backup so uninstall/reinstall
+     does not restore session_token and other local auth state. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
+</full-backup-content>
