@@ -10,6 +10,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -21,6 +22,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/search_floating_action_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 
 class _MapData {
@@ -475,6 +477,155 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
       if (!mounted) return;
       setState(() => _highlightGen.remove(stationId));
     });
+  }
+
+  String _localizedMetroLineName(int lineId) {
+    final names = MetroCache.metroLineNames[lineId];
+    if (names == null) return "";
+    final lang = LanguageState().currentLanguage;
+    return names[lang] ?? names["en"] ?? names.values.first;
+  }
+
+  bool get _hasCustomPriceRange {
+    if (_selectedMinPrice <= 0 && _selectedMaxPrice <= 0) return false;
+    const defaultMin = 10.0;
+    const defaultMax = 500.0;
+    return _selectedMinPrice != defaultMin || _selectedMaxPrice != defaultMax;
+  }
+
+  List<Widget> _metroAppliedFilterIndicators(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    const gap = SizedBox(width: 8);
+    const chipSize = 36.0;
+
+    BoxDecoration chipDecoration({BorderRadius? radius}) {
+      return BoxDecoration(
+        borderRadius: radius ?? BorderRadius.circular(chipSize / 2),
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.9),
+        border: Border.all(
+          color: scheme.outline.withValues(alpha: 0.22),
+        ),
+      );
+    }
+
+    Widget roundChip({required String tooltip, required Widget child}) {
+      return Tooltip(
+        message: tooltip,
+        child: Container(
+          width: chipSize,
+          height: chipSize,
+          decoration: chipDecoration(),
+          child: Center(child: child),
+        ),
+      );
+    }
+
+    final out = <Widget>[];
+
+    if (_selectedListingTypeId > 0) {
+      final code = ListingTypeHelper.getCodeFromId(_selectedListingTypeId);
+      out.add(
+        roundChip(
+          tooltip: ListingTypeHelper.getText(context, code),
+          child: Icon(
+            ListingTypeHelper.getIcon(code),
+            size: 20,
+            color: ListingTypeHelper.getColor(code),
+          ),
+        ),
+      );
+    }
+
+    if (_selectedGender > 0) {
+      final isMale = _selectedGender == 1;
+      out.add(
+        roundChip(
+          tooltip: L10n.get(isMale ? "male" : "female"),
+          child: Icon(
+            isMale ? Icons.male : Icons.female,
+            size: 22,
+            color: isMale ? Colors.blue : Colors.red,
+          ),
+        ),
+      );
+    }
+
+    if (_hasCustomPriceRange) {
+      final minS = _selectedMinPrice.round().toString();
+      final maxS = _selectedMaxPrice.round().toString();
+      final rangeLabel = "$minS–$maxS";
+      out.add(
+        Tooltip(
+          message: rangeLabel,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: chipSize),
+            padding: const EdgeInsets.only(left: 8, right: 10),
+            decoration: chipDecoration(
+              radius: BorderRadius.circular(999),
+            ),
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.payments,
+                  size: 18,
+                  color: AppColors.success,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  rangeLabel,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: onSurface,
+                    height: 1.1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_selectedSubwayLineId > 0) {
+      final trainColor = AppColors.getMetroLineColor(_selectedSubwayLineId);
+      out.add(
+        roundChip(
+          tooltip: _localizedMetroLineName(_selectedSubwayLineId),
+          child: ThemeIcon(Icons.train, color: trainColor, size: 22),
+        ),
+      );
+    }
+
+    if (_selectedWithPhoto) {
+      out.add(
+        roundChip(
+          tooltip: L10n.get("search_filter_with_photo"),
+          child: Icon(Icons.photo_camera_outlined, size: 19, color: onSurface),
+        ),
+      );
+    }
+
+    if (_selectedPrivateRoom) {
+      out.add(
+        roundChip(
+          tooltip: L10n.get("search_filter_private_room"),
+          child: Icon(Icons.lock_outline, size: 19, color: onSurface),
+        ),
+      );
+    }
+
+    if (out.isEmpty) return <Widget>[];
+
+    return [
+      for (var i = 0; i < out.length; i++) ...[
+        if (i > 0) gap,
+        out[i],
+      ],
+    ];
   }
 
   void _openStationListings(BuildContext context, int stationId) {
@@ -1065,38 +1216,87 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: SearchFloatingActionButton(
-                        searchFiltersState: _searchFiltersState,
-                        tooltip: L10n.get("search"),
-                        onPressed: () {
-                          SearchBottomSheetWidget.show(
-                            context,
-                            openedFromHomeScreen: false,
-                            metroOnly: true,
-                            currentListingTypeId: _selectedListingTypeId,
-                            currentGender: _selectedGender,
-                            onApply: (result) async {
-                              if (!mounted) return;
-                              setState(() {
-                                _selectedListingTypeId = result.listingTypeId;
-                                _selectedGender = result.gender ?? 0;
-                                _selectedSubwayLineId =
-                                    result.subwayLineId ?? 0;
-                                _selectedMinPrice = result.minPrice;
-                                _selectedMaxPrice = result.maxPrice;
-                                _selectedPrivateRoom = result.privateRoom;
-                                _selectedWithPhoto = result.withPhoto;
-                              });
-                              await _loadListingStationIds();
+                    padding: EdgeInsets.fromLTRB(
+                      8,
+                      0,
+                      8,
+                      22 + MediaQuery.paddingOf(context).bottom,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Builder(
+                            builder: (context) {
+                              final indicators =
+                                  _metroAppliedFilterIndicators(context);
+                              if (indicators.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return SizedBox(
+                                height: 56,
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: indicators,
+                                    ),
+                                  ),
+                                ),
+                              );
                             },
-                            primaryLabelKey: "apply",
-                            primaryIcon: Icons.check,
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        SearchFloatingActionButton(
+                          searchFiltersState: _searchFiltersState,
+                          tooltip: L10n.get("search"),
+                          onPressed: () {
+                            SearchBottomSheetWidget.show(
+                              context,
+                              openedFromHomeScreen: false,
+                              metroOnly: true,
+                              currentListingTypeId:
+                                  _selectedListingTypeId > 0
+                                      ? _selectedListingTypeId
+                                      : null,
+                              currentGender: _selectedGender > 0
+                                  ? _selectedGender
+                                  : null,
+                              currentSubwayLineId: _selectedSubwayLineId > 0
+                                  ? _selectedSubwayLineId
+                                  : null,
+                              currentMinPrice: _selectedMinPrice > 0
+                                  ? _selectedMinPrice
+                                  : null,
+                              currentMaxPrice: _selectedMaxPrice > 0
+                                  ? _selectedMaxPrice
+                                  : null,
+                              currentPrivateRoom: _selectedPrivateRoom,
+                              currentWithPhoto: _selectedWithPhoto,
+                              onApply: (result) async {
+                                if (!mounted) return;
+                                setState(() {
+                                  _selectedListingTypeId = result.listingTypeId;
+                                  _selectedGender = result.gender ?? 0;
+                                  _selectedSubwayLineId =
+                                      result.subwayLineId ?? 0;
+                                  _selectedMinPrice = result.minPrice;
+                                  _selectedMaxPrice = result.maxPrice;
+                                  _selectedPrivateRoom = result.privateRoom;
+                                  _selectedWithPhoto = result.withPhoto;
+                                });
+                                await _loadListingStationIds();
+                              },
+                              primaryLabelKey: "apply",
+                              primaryIcon: Icons.check,
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ],

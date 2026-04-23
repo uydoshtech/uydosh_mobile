@@ -1,13 +1,14 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
@@ -16,15 +17,13 @@ import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
-import "package:url_launcher/url_launcher.dart";
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -214,18 +213,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: UydoshAppBar(
-        leading: ThreeDAppBarIconButton.backLeading(context),
-        title: L10n.text(
-          "settings",
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color:
-                _getTextColor(),
-          ),
-        ),
+      appBar: CommonAppBar(
+        title: L10n.get("settings"),
+        showBackButton: true,
         centerTitle: true,
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         elevation: 0,
       ),
