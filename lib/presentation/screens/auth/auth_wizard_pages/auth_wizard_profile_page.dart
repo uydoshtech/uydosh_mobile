@@ -5,10 +5,10 @@ import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/neumorphic_inset_container.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 
 class AuthWizardProfilePage extends StatelessWidget {
   const AuthWizardProfilePage({
@@ -105,29 +105,11 @@ class AuthWizardProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            NeumorphicInsetContainer(
-              backgroundColor: _getRaisedSurfaceColor(context),
-              padding: EdgeInsets.zero,
-              child: TextField(
-                controller: nameController,
-                keyboardType: TextInputType.text,
-                style: TextStyle(color: AuthWizardTheme.getInputTextColor()),
-                decoration: InputDecoration(
-                  hintText: L10n.get("full_name_hint"),
-                  hintStyle: TextStyle(
-                    color: _getOnboardingTextSecondaryColor(context)
-                        .withOpacity(0.6),
-                  ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  contentPadding: const EdgeInsets.all(16),
-                  prefixIcon: ThemeIcon(
-                    Icons.person,
-                    color: _getOnboardingTextSecondaryColor(context),
-                  ),
-                ),
-              ),
+            ThreeDTextField(
+              controller: nameController,
+              hintText: L10n.get("full_name_hint"),
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 16),
             Row(
