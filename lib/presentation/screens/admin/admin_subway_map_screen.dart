@@ -116,8 +116,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
   bool _isLoadingStationIds = false;
   late final AnimationController _refreshSpinController;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
-  // Admin map is used for metro-only search; hide non-metro POI overlays.
-  static const bool _showLocationOverlays = false;
+  /// Landmarks drawn on top of the metro SVG (bazaar, TV tower, airport, etc.).
+  static const bool _showLocationOverlays = true;
 
   Set<int> _getEffectiveUnderlineStationIds() {
     final selectedLine = _selectedSubwayLineId;

@@ -96,6 +96,22 @@ class CustomOAuthInterceptor extends Interceptor {
       return super.onError(err, handler);
     }
 
+    // If the user has no session token at all, a 401 is expected and should
+    // NOT be treated as "session expired". This prevents forcing the auth
+    // wizard right after onboarding (or for signed-out browsing on Home).
+    final hasTokens = await tokenRepo.hasTokens();
+    if (!hasTokens) {
+      logger.d({
+        "request": {
+          "method": err.requestOptions.method,
+          "path": err.requestOptions.path,
+        },
+        "statusCode": statusCode,
+        "note": "401 with no local tokens — skipping session-expired redirect",
+      });
+      return super.onError(err, handler);
+    }
+
     if (alreadyRetried) {
       logger.e({
         "request": {

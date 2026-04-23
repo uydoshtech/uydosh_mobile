@@ -440,7 +440,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
               ],
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
             // Combined photos grid (existing + new photos)
             if (existingCount > 0 || selectedCount > 0) ...[
@@ -448,13 +448,16 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 key: ValueKey(
                   "combined_photos_${existingCount}_${selectedCount}_$primaryId",
                 ),
+                padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
-                  childAspectRatio: 1,
+                  // Wider-than-tall tiles shrink row height vs 1:1 squares (less
+                  // empty-looking area on edit/create listing with few photos).
+                  childAspectRatio: 1.35,
                 ),
                 itemCount: existingCount + selectedCount,
                 itemBuilder: (context, index) {
@@ -540,10 +543,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   imageUrl: _buildPhotoUrl(photo.photoUrl),
                   width: double.infinity,
                   height: double.infinity,
-                  fit: BoxFit.contain,
-                  // Pass only memCacheWidth so the raster preserves the
-                  // source aspect ratio (forcing both dims distorts
-                  // portrait photos).
+                  fit: BoxFit.cover,
                   memCacheWidth: 400,
                   fadeInDuration: const Duration(milliseconds: 200),
                   fadeInCurve: Curves.easeOut,
@@ -684,10 +684,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   File(photoPath),
                   width: double.infinity,
                   height: double.infinity,
-                  fit: BoxFit.contain,
-                  // Pass only cacheWidth so the raster preserves source
-                  // aspect ratio (forcing both dims distorts portrait
-                  // photos).
+                  fit: BoxFit.cover,
                   cacheWidth: 400,
                   errorBuilder: (context, error, stackTrace) {
                     return ThemeIcon(

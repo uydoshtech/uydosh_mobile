@@ -1,5 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:flutter/rendering.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -83,6 +84,31 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
   final VoidCallback onViewProfile;
   final VoidCallback onCompleteProfile;
 
+  static void _maybeAnimateScrollIntoView(
+    BuildContext ctx, {
+    required double alignment,
+    Duration duration = const Duration(milliseconds: 300),
+    Curve curve = Curves.easeInOut,
+  }) {
+    final scrollable = Scrollable.maybeOf(ctx);
+    final position = scrollable?.position;
+    if (position == null) return;
+
+    final renderObject = ctx.findRenderObject();
+    if (renderObject is! RenderBox) return;
+
+    final viewport = RenderAbstractViewport.of(renderObject);
+    if (viewport == null) return;
+
+    final target = viewport
+        .getOffsetToReveal(renderObject, alignment)
+        .offset
+        .clamp(position.minScrollExtent, position.maxScrollExtent);
+
+    if ((target - position.pixels).abs() < 8) return;
+    position.animateTo(target, duration: duration, curve: curve);
+  }
+
   static IconData _getLifestyleIcon(String labelKey) {
     switch (labelKey) {
       case "wakeup_time":
@@ -127,10 +153,13 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
     String? nine;
     if (d.startsWith("998") && d.length >= 12) {
       final rest = d.substring(3);
-      if (rest.length >= 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(rest.substring(0, 9))) {
+      if (rest.length >= 9 &&
+          RegExp(r"^9[0134679]\d{7}$").hasMatch(rest.substring(0, 9))) {
         nine = rest.substring(0, 9);
       }
-    } else if (d.startsWith("9") && d.length >= 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(d.substring(0, 9))) {
+    } else if (d.startsWith("9") &&
+        d.length >= 9 &&
+        RegExp(r"^9[0134679]\d{7}$").hasMatch(d.substring(0, 9))) {
       nine = d.substring(0, 9);
     } else if (d.length == 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(d)) {
       nine = d;
@@ -217,14 +246,8 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Future.delayed(const Duration(milliseconds: 250), () {
                 final context = sectionKey.currentContext;
-                if (context != null) {
-                  Scrollable.ensureVisible(
-                    context,
-                    alignment: 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                }
+                if (context == null || !context.mounted) return;
+                _maybeAnimateScrollIntoView(context, alignment: 0.0);
               });
             });
           },
@@ -321,7 +344,8 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
               ListenableBuilder(
                 listenable: AdminFeatureFlagsState(),
                 builder: (context, _) {
-                  final showContacts = AdminFeatureFlagsState().showListingContacts;
+                  final showContacts =
+                      AdminFeatureFlagsState().showListingContacts;
                   final hasTelegram = showContacts &&
                       (telegramHandle?.trim().isNotEmpty ?? false) &&
                       onTelegram != null;
@@ -334,240 +358,244 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  if (matches.isNotEmpty) ...[
-                    Text(
-                      L10n.get("compatibility_matches"),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: _getLocationTextColor(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ...matches.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ThemeIcon(
-                              _getLifestyleIcon(item.labelKey),
-                              size: 20,
-                              color: _getDescriptionTextColor(),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                "${item.label}: ${item.value}",
-                                style: TextStyle(
-                                  fontSize: 14,
+                      if (matches.isNotEmpty) ...[
+                        Text(
+                          L10n.get("compatibility_matches"),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: _getLocationTextColor(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...matches.map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ThemeIcon(
+                                  _getLifestyleIcon(item.labelKey),
+                                  size: 20,
                                   color: _getDescriptionTextColor(),
                                 ),
-                              ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "${item.label}: ${item.value}",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: _getDescriptionTextColor(),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (differences.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          L10n.get("compatibility_differences"),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: _getLocationTextColor(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...differences.map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ThemeIcon(
+                                  _getLifestyleIcon(item.labelKey),
+                                  size: 20,
+                                  color: _getDescriptionTextColor(),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: _getDescriptionTextColor(),
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text:
+                                              "${item.label}: ${item.currentText} ",
+                                        ),
+                                        WidgetSpan(
+                                          alignment:
+                                              PlaceholderAlignment.middle,
+                                          child: ThemeIcon(
+                                            Icons.compare_arrows,
+                                            size: 16,
+                                            color: _getDescriptionTextColor(),
+                                          ),
+                                        ),
+                                        TextSpan(text: " ${item.ownerText}"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (matches.isEmpty && differences.isEmpty)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            UydoshLinkButton(
+                              text: L10n.get("complete_profile"),
+                              onPressed: onCompleteProfile,
+                              color: _getIconColor(),
+                              outlined: true,
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  ],
-                  if (differences.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      L10n.get("compatibility_differences"),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: _getLocationTextColor(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ...differences.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 16),
+                      if (hasTelegram || hasPhone) ...[
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 10,
                           children: [
-                            ThemeIcon(
-                              _getLifestyleIcon(item.labelKey),
-                              size: 20,
-                              color: _getDescriptionTextColor(),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: RichText(
-                                text: TextSpan(
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: _getDescriptionTextColor(),
-                                  ),
+                            if (hasTelegram)
+                              GhostButton(
+                                onPressed: () {
+                                  HapticFeedbackUtils.impact();
+                                  onTelegram?.call();
+                                },
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
+                                borderWidth: 1.5,
+                                borderColor: _getIconColor(),
+                                textColor: _getDescriptionTextColor(),
+                                iconColor: _getIconColor(),
+                                textStyle: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    TextSpan(
-                                      text:
-                                          "${item.label}: ${item.currentText} ",
+                                    ThemeIcon(
+                                      Icons.telegram,
+                                      size: 18,
+                                      color: _getIconColor(),
                                     ),
-                                    WidgetSpan(
-                                      alignment: PlaceholderAlignment.middle,
-                                      child: ThemeIcon(
-                                        Icons.compare_arrows,
-                                        size: 16,
-                                        color: _getDescriptionTextColor(),
-                                      ),
-                                    ),
-                                    TextSpan(text: " ${item.ownerText}"),
+                                    const SizedBox(width: 8),
+                                    Text(L10n.get("open_in_telegram")),
                                   ],
                                 ),
                               ),
-                            ),
+                            if (hasPhone)
+                              GhostButton(
+                                onPressed: () {
+                                  HapticFeedbackUtils.impact();
+                                  onPhone?.call();
+                                },
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
+                                borderWidth: 1.5,
+                                borderColor: _getIconColor(),
+                                textColor: _getDescriptionTextColor(),
+                                iconColor: _getIconColor(),
+                                textStyle: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ThemeIcon(
+                                      Icons.phone,
+                                      size: 18,
+                                      color: _getIconColor(),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(phoneDisplay ??
+                                        L10n.get("contact_user")),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
-                      ),
-                    ),
-                  ],
-                  if (matches.isEmpty && differences.isEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        UydoshLinkButton(
-                          text: L10n.get("complete_profile"),
-                          onPressed: onCompleteProfile,
-                          color: _getIconColor(),
-                          outlined: true,
-                        ),
+                        const SizedBox(height: 14),
                       ],
-                    ),
-                  const SizedBox(height: 16),
-                  if (hasTelegram || hasPhone) ...[
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 10,
-                      children: [
-                        if (hasTelegram)
-                          GhostButton(
-                            onPressed: () {
-                              HapticFeedbackUtils.impact();
-                              onTelegram?.call();
-                            },
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            borderWidth: 1.5,
-                            borderColor: _getIconColor(),
-                            textColor: _getDescriptionTextColor(),
-                            iconColor: _getIconColor(),
-                            textStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ThemeIcon(
-                                  Icons.telegram,
-                                  size: 18,
-                                  color: _getIconColor(),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                HapticFeedbackUtils.impact();
+                                onMessage();
+                              },
+                              icon: ThemeIcon(
+                                Icons.chat_bubble_outline,
+                                size: 18,
+                                color: _getIconColor(),
+                              ),
+                              label: Text(
+                                L10n.get("message"),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: _getDescriptionTextColor(),
                                 ),
-                                const SizedBox(width: 8),
-                                Text(L10n.get("open_in_telegram")),
-                              ],
-                            ),
-                          ),
-                        if (hasPhone)
-                          GhostButton(
-                            onPressed: () {
-                              HapticFeedbackUtils.impact();
-                              onPhone?.call();
-                            },
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            borderWidth: 1.5,
-                            borderColor: _getIconColor(),
-                            textColor: _getDescriptionTextColor(),
-                            iconColor: _getIconColor(),
-                            textStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ThemeIcon(
-                                  Icons.phone,
-                                  size: 18,
-                                  color: _getIconColor(),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                side: BorderSide(color: _getIconColor()),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                const SizedBox(width: 8),
-                                Text(phoneDisplay ?? L10n.get("contact_user")),
-                              ],
+                              ),
                             ),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                  ],
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            onMessage();
-                          },
-                          icon: ThemeIcon(
-                            Icons.chat_bubble_outline,
-                            size: 18,
-                            color: _getIconColor(),
-                          ),
-                          label: Text(
-                            L10n.get("message"),
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: _getDescriptionTextColor(),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                HapticFeedbackUtils.impact();
+                                onViewProfile();
+                              },
+                              icon: ThemeIcon(
+                                Icons.person_outline,
+                                size: 18,
+                                color: _getIconColor(),
+                              ),
+                              label: Text(
+                                L10n.get("view_profile"),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: _getDescriptionTextColor(),
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                side: BorderSide(color: _getIconColor()),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
                             ),
                           ),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: _getIconColor()),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            onViewProfile();
-                          },
-                          icon: ThemeIcon(
-                            Icons.person_outline,
-                            size: 18,
-                            color: _getIconColor(),
-                          ),
-                          label: Text(
-                            L10n.get("view_profile"),
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: _getDescriptionTextColor(),
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: _getIconColor()),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                     ],
                   );
                 },

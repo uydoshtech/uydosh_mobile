@@ -65,7 +65,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   int? _selectedGender;
   bool? _isStudent = false; // Initialize to false instead of null
   String? _selectedRole; // "tenant" or "landlord"
-  String _selectedLanguage = "uz"; // Default to Uzbek
+  // Initialized in initState from LanguageState (saved/device locale).
+  String _selectedLanguage = "uz";
 
   // University selection
   University? _selectedUniversity;
@@ -109,6 +110,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     _pageController = PageController(initialPage: widget.initialPage);
     _currentPage = widget.initialPage;
     _nameController.addListener(_onNameChanged);
+    // Make the language selection step reflect the app's current locale
+    // (loaded during app startup via LanguageState.initialize()).
+    _selectedLanguage = LanguageState().currentLanguage;
 
     // Initialize university service
     _universityService = getIt<IUniversityService>();

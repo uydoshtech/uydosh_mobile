@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 
 /// Theme manager for switching between different app themes
@@ -341,6 +342,14 @@ class AppTheme {
         toolbarHeight: kToolbarHeight,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
+        // Transparent liquid-glass bars use `Colors.transparent`; Flutter would
+        // otherwise treat that as a dark background and apply light status
+        // icons (bad contrast on iOS / Android).
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
         titleTextStyle: TextStyle(
           color:
               LightThemeColors

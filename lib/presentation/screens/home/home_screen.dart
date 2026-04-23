@@ -589,10 +589,19 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
+  /// Extra top inset when the home feed sits under the main shell glass header.
+  /// Search mode pushes a route with a normal [AppBar], so the body is already
+  /// below the status bar — do not add status-bar padding again.
+  double _feedListGlassTopInset() {
+    if (widget.isSearchMode) return 0;
+    return ThemeState().mainShellGlassExtraTopInset(context);
+  }
+
   /// Scrollable wrapper so pull-to-refresh works when content is shorter than
   /// the viewport (welcome / empty states).
   Widget _buildPullToRefreshAroundFillChild(Widget child) {
-    final topPad = ThemeState().mainShellGlassExtraTopInset(context);
+    final topPad =
+        widget.isSearchMode ? 16.0 : ThemeState().mainShellGlassExtraTopInset(context);
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: topPad,
@@ -1020,7 +1029,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadingState() {
-    final topPad = 16.0 + ThemeState().mainShellGlassExtraTopInset(context);
+    final topPad = 16.0 + _feedListGlassTopInset();
     return CommonListView(
       padding: EdgeInsets.fromLTRB(14.0, topPad, 14.0, 16.0),
       itemSpacing: 16.0,
@@ -1030,8 +1039,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadedState(List<Listing> listings, bool hasMore) {
-    final topInset = ThemeState().mainShellGlassExtraTopInset(context);
-    final topPadding = 16.0 + topInset;
+    final topPadding = 16.0 + _feedListGlassTopInset();
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: topPadding,

@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:flutter/rendering.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -27,17 +28,44 @@ class ListingDetailMapSection extends StatefulWidget {
   final ListingDetail listingDetail;
   final String currentLanguage;
   final String Function({
-    required String language, String? nameUz,
+    required String language,
+    String? nameUz,
     String? nameRu,
     String? nameEn,
   }) getLocalizedName;
   final VoidCallback onOpenInYandexMaps;
 
   @override
-  State<ListingDetailMapSection> createState() => _ListingDetailMapSectionState();
+  State<ListingDetailMapSection> createState() =>
+      _ListingDetailMapSectionState();
 }
 
 class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
+  static void _maybeAnimateScrollIntoView(
+    BuildContext ctx, {
+    required double alignment,
+    Duration duration = const Duration(milliseconds: 300),
+    Curve curve = Curves.easeInOut,
+  }) {
+    final scrollable = Scrollable.maybeOf(ctx);
+    final position = scrollable?.position;
+    if (position == null) return;
+
+    final renderObject = ctx.findRenderObject();
+    if (renderObject is! RenderBox) return;
+
+    final viewport = RenderAbstractViewport.of(renderObject);
+    if (viewport == null) return;
+
+    final target = viewport
+        .getOffsetToReveal(renderObject, alignment)
+        .offset
+        .clamp(position.minScrollExtent, position.maxScrollExtent);
+
+    if ((target - position.pixels).abs() < 8) return;
+    position.animateTo(target, duration: duration, curve: curve);
+  }
+
   void _onExpansionChanged(bool isExpanded) {
     HapticFeedbackUtils.impact();
     if (isExpanded) {
@@ -45,14 +73,8 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
         Future.delayed(const Duration(milliseconds: 350), () {
           if (!mounted) return;
           final ctx = widget.sectionKey.currentContext;
-          if (ctx != null && ctx.mounted) {
-            Scrollable.ensureVisible(
-              ctx,
-              alignment: 1.0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
-          }
+          if (ctx == null || !ctx.mounted) return;
+          _maybeAnimateScrollIntoView(ctx, alignment: 1.0);
         });
       });
     }

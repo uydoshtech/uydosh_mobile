@@ -145,37 +145,42 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              FilledButton.icon(
-                onPressed: _pushStatusLoading
-                    ? null
-                    : () async {
-                        final ok = await push.requestPermissionAndRegister();
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _pushStatusLoading
+                  ? null
+                  : () async {
+                      if (isDenied) {
+                        await openAppSettings();
                         if (!mounted) return;
-                        if (ok) {
-                          ToastTheme.showSuccess(
-                            context,
-                            message: L10n.get("notifications_enabled"),
-                          );
-                        } else {
-                          ToastTheme.showInfo(
-                            context,
-                            message: L10n.get("notifications_enable_in_settings"),
-                          );
-                        }
                         await _loadPushStatus();
-                      },
-                icon: const Icon(Icons.notifications_outlined),
-                label: Text(L10n.get("menu_enable_notifications")),
+                        return;
+                      }
+                      final ok = await push.requestPermissionAndRegister();
+                      if (!mounted) return;
+                      if (ok) {
+                        ToastTheme.showSuccess(
+                          context,
+                          message: L10n.get("notifications_enabled"),
+                        );
+                      } else {
+                        ToastTheme.showInfo(
+                          context,
+                          message: L10n.get("notifications_enable_in_settings"),
+                        );
+                      }
+                      await _loadPushStatus();
+                    },
+              icon: Icon(
+                isDenied ? Icons.settings_outlined : Icons.notifications_outlined,
               ),
-              OutlinedButton(
-                onPressed: _pushStatusLoading ? null : () async => openAppSettings(),
-                child: Text(L10n.get("notifications_open_settings")),
+              label: Text(
+                isDenied
+                    ? L10n.get("notifications_open_settings")
+                    : L10n.get("menu_enable_notifications"),
               ),
-            ],
+            ),
           ),
         ],
       ),
