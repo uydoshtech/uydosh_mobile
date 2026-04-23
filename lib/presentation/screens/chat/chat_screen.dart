@@ -921,6 +921,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _messageController.clear();
 
+    // Dismiss the keyboard once the message has been submitted so the user
+    // sees the freshly sent message instead of the composer obscuring the list.
+    _messageFocusNode.unfocus();
+
     // Haptic + sound feedback on send (same as splash - always fires, bypasses app setting)
     HapticFeedback.mediumImpact();
     SendSoundUtils.playSendSound();
