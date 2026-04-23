@@ -1,6 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter/rendering.dart";
+import "dart:async";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -48,7 +49,7 @@ class CompatibilityDifference {
 
 /// Compatibility section widget for listing detail screen.
 /// Shows match percentage and expandable list of matches/differences.
-class ListingDetailCompatibilitySection extends StatelessWidget {
+class ListingDetailCompatibilitySection extends StatefulWidget {
   const ListingDetailCompatibilitySection({
     required this.listingDetail,
     required this.scrollController,
@@ -83,6 +84,21 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
   final VoidCallback onMessage;
   final VoidCallback onViewProfile;
   final VoidCallback onCompleteProfile;
+
+  @override
+  State<ListingDetailCompatibilitySection> createState() =>
+      _ListingDetailCompatibilitySectionState();
+}
+
+class _ListingDetailCompatibilitySectionState
+    extends State<ListingDetailCompatibilitySection> {
+  Timer? _scrollIntoViewTimer;
+
+  @override
+  void dispose() {
+    _scrollIntoViewTimer?.cancel();
+    super.dispose();
+  }
 
   static void _maybeAnimateScrollIntoView(
     BuildContext ctx, {
@@ -200,10 +216,29 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
   }
 
   Color _getCompatibilityPercentColor() {
-    if (compatibilityPercent == null) return _getDescriptionTextColor();
-    if (compatibilityPercent! >= 80) return AppColors.success;
-    if (compatibilityPercent! >= 60) return AppColors.warning;
+    if (widget.compatibilityPercent == null) return _getDescriptionTextColor();
+    if (widget.compatibilityPercent! >= 80) return AppColors.success;
+    if (widget.compatibilityPercent! >= 60) return AppColors.warning;
     return AppColors.error;
+  }
+
+  void _onExpansionChanged(bool isExpanded) {
+    HapticFeedbackUtils.impact();
+    if (!isExpanded) return;
+
+    // If the user quickly expands/collapses or other rebuilds happen, make sure
+    // we don't run multiple delayed scroll adjustments (that causes the
+    // visible "scroll up/down" jitter).
+    _scrollIntoViewTimer?.cancel();
+    _scrollIntoViewTimer = Timer(const Duration(milliseconds: 350), () async {
+      if (!mounted) return;
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return;
+
+      final ctx = widget.sectionKey.currentContext;
+      if (ctx == null || !ctx.mounted) return;
+      _maybeAnimateScrollIntoView(ctx, alignment: 0.0);
+    });
   }
 
   @override
@@ -211,46 +246,36 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
     AdminFeatureFlagsState().ensureLoaded();
 
     final isAuthenticated = AuthenticationState().isAuthenticated;
-    final isOwner = UserListingState().isOwner(listingDetail.user.id);
+    final isOwner = UserListingState().isOwner(widget.listingDetail.user.id);
 
     if (isOwner) {
       return const SizedBox.shrink();
     }
 
-    final percentText = compatibilityPercent == null
+    final percentText = widget.compatibilityPercent == null
         ? null
         : AppStrings.getWithParams(
             "compatibility_match_percentage",
             LanguageState().currentLanguage,
-            params: {"percent": compatibilityPercent!.toString()},
+            params: {"percent": widget.compatibilityPercent!.toString()},
           );
-    final headerPercentText = compatibilityPercent == null
+    final headerPercentText = widget.compatibilityPercent == null
         ? L10n.get("na")
-        : "$compatibilityPercent%";
+        : "${widget.compatibilityPercent}%";
 
     final isProfileComplete = ProfileCompletionState().isProfileComplete;
 
     final chevronColor = ListingDetailThemeHelper.locationTextColor;
 
     return ListingDetailTileShell(
-      key: sectionKey,
+      key: widget.sectionKey,
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           backgroundColor: Colors.transparent,
           collapsedBackgroundColor: Colors.transparent,
           initiallyExpanded: !isAuthenticated || !isProfileComplete,
-          onExpansionChanged: (isExpanded) {
-            HapticFeedbackUtils.impact();
-            if (!isExpanded) return;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              Future.delayed(const Duration(milliseconds: 300), () {
-                final context = sectionKey.currentContext;
-                if (context == null || !context.mounted) return;
-                _maybeAnimateScrollIntoView(context, alignment: 0.0);
-              });
-            });
-          },
+          onExpansionChanged: _onExpansionChanged,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: const BorderSide(color: Colors.transparent),
@@ -307,7 +332,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                   color: _getDescriptionTextColor(),
                 ),
               )
-            else if (isLoadingCompatibility)
+            else if (widget.isLoadingCompatibility)
               Row(
                 children: [
                   SizedBox(
@@ -328,13 +353,13 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                   ),
                 ],
               )
-            else if (compatibilityError != null || percentText == null)
+            else if (widget.compatibilityError != null || percentText == null)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   UydoshLinkButton(
                     text: L10n.get("complete_profile"),
-                    onPressed: onCompleteProfile,
+                    onPressed: widget.onCompleteProfile,
                     color: _getIconColor(),
                     outlined: true,
                   ),
@@ -347,18 +372,20 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                   final showContacts =
                       AdminFeatureFlagsState().showListingContacts;
                   final hasTelegram = showContacts &&
-                      (telegramHandle?.trim().isNotEmpty ?? false) &&
-                      onTelegram != null;
+                      (widget.telegramHandle?.trim().isNotEmpty ?? false) &&
+                      widget.onTelegram != null;
                   final hasPhone = showContacts &&
-                      (phoneNumber?.trim().isNotEmpty ?? false) &&
-                      onPhone != null;
+                      (widget.phoneNumber?.trim().isNotEmpty ?? false) &&
+                      widget.onPhone != null;
                   final phoneDisplay =
-                      hasPhone ? _formatUzbekPhoneDisplay(phoneNumber!) : null;
+                      hasPhone
+                          ? _formatUzbekPhoneDisplay(widget.phoneNumber!)
+                          : null;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (matches.isNotEmpty) ...[
+                      if (widget.matches.isNotEmpty) ...[
                         Text(
                           L10n.get("compatibility_matches"),
                           style: TextStyle(
@@ -368,7 +395,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        ...matches.map(
+                        ...widget.matches.map(
                           (item) => Padding(
                             padding: const EdgeInsets.only(bottom: 6),
                             child: Row(
@@ -394,7 +421,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                           ),
                         ),
                       ],
-                      if (differences.isNotEmpty) ...[
+                      if (widget.differences.isNotEmpty) ...[
                         const SizedBox(height: 12),
                         Text(
                           L10n.get("compatibility_differences"),
@@ -405,7 +432,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        ...differences.map(
+                        ...widget.differences.map(
                           (item) => Padding(
                             padding: const EdgeInsets.only(bottom: 6),
                             child: Row(
@@ -448,13 +475,13 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                           ),
                         ),
                       ],
-                      if (matches.isEmpty && differences.isEmpty)
+                      if (widget.matches.isEmpty && widget.differences.isEmpty)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             UydoshLinkButton(
                               text: L10n.get("complete_profile"),
-                              onPressed: onCompleteProfile,
+                              onPressed: widget.onCompleteProfile,
                               color: _getIconColor(),
                               outlined: true,
                             ),
@@ -470,7 +497,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                               GhostButton(
                                 onPressed: () {
                                   HapticFeedbackUtils.impact();
-                                  onTelegram?.call();
+                                  widget.onTelegram?.call();
                                 },
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 14,
@@ -501,7 +528,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                               GhostButton(
                                 onPressed: () {
                                   HapticFeedbackUtils.impact();
-                                  onPhone?.call();
+                                  widget.onPhone?.call();
                                 },
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 14,
@@ -539,7 +566,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                             child: OutlinedButton.icon(
                               onPressed: () {
                                 HapticFeedbackUtils.impact();
-                                onMessage();
+                                widget.onMessage();
                               },
                               icon: ThemeIcon(
                                 Icons.chat_bubble_outline,
@@ -569,7 +596,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
                             child: OutlinedButton.icon(
                               onPressed: () {
                                 HapticFeedbackUtils.impact();
-                                onViewProfile();
+                                widget.onViewProfile();
                               },
                               icon: ThemeIcon(
                                 Icons.person_outline,

@@ -397,7 +397,8 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     final completionPercent = ProfileCompletionState.completionPercent(profile);
     final completionFraction = completionPercent / 100;
     final missingKeys = ProfileCompletionState.getMissingFields(profile);
-    final missingLabels = missingKeys
+    final orderedMissingKeys = _orderMissingProfileFieldKeys(missingKeys);
+    final missingLabels = orderedMissingKeys
         .map(_labelForMissingProfileFieldKey)
         .toList()
       ..removeWhere((e) => e.trim().isEmpty);
@@ -559,5 +560,47 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
       default:
         return key;
     }
+  }
+
+  /// Order missing fields in the same sequence as Edit Profile controls.
+  static List<String> _orderMissingProfileFieldKeys(List<String> keys) {
+    const order = <String>[
+      // Basic info (top of edit profile screen)
+      "name",
+      "gender",
+      "region",
+      "university",
+      "aboutMe",
+      "telegram",
+
+      // Lifestyle section (as shown in edit profile screen)
+      "employed",
+      "wakeupTime",
+      "sleepTime",
+      "cleanliness",
+      "noiseLevel",
+      "sociability",
+      "guestsAllowed",
+      "smokingPreference",
+      "alcoholPreference",
+      "cookingHabits",
+      "petsPreference",
+    ];
+
+    final rank = <String, int>{};
+    for (var i = 0; i < order.length; i++) {
+      rank[order[i]] = i;
+    }
+
+    final sorted = [...keys];
+    sorted.sort((a, b) {
+      final ra = rank[a];
+      final rb = rank[b];
+      if (ra == null && rb == null) return a.compareTo(b);
+      if (ra == null) return 1;
+      if (rb == null) return -1;
+      return ra.compareTo(rb);
+    });
+    return sorted;
   }
 }
