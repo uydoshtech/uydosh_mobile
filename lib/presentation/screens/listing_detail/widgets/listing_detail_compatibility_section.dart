@@ -244,7 +244,7 @@ class ListingDetailCompatibilitySection extends StatelessWidget {
             HapticFeedbackUtils.impact();
             if (!isExpanded) return;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              Future.delayed(const Duration(milliseconds: 250), () {
+              Future.delayed(const Duration(milliseconds: 300), () {
                 final context = sectionKey.currentContext;
                 if (context == null || !context.mounted) return;
                 _maybeAnimateScrollIntoView(context, alignment: 0.0);

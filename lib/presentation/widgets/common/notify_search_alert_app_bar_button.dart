@@ -100,12 +100,23 @@ class _NotifySearchAlertAppBarButtonState
         curve: const Interval(0, 0.72, curve: Curves.easeOut),
       ),
     );
-    _tapRingOpacity = Tween<double>(begin: 0.5, end: 0).animate(
-      CurvedAnimation(
-        parent: _tapController,
-        curve: const Interval(0, 0.88, curve: Curves.easeOut),
+    // Opacity must be 0 at controller value 0: a Tween(begin: 0.5, end: 0) on an
+    // Interval starting at 0 still evaluates to 0.5 at rest (curve t = 0 → begin).
+    _tapRingOpacity = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0, end: 0.5).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 6,
       ),
-    );
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.5, end: 0).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 82,
+      ),
+      TweenSequenceItem(tween: ConstantTween<double>(0), weight: 12),
+    ]).animate(_tapController);
 
     _savedController = AnimationController(
       vsync: this,
@@ -171,12 +182,22 @@ class _NotifySearchAlertAppBarButtonState
         curve: const Interval(0.08, 0.82, curve: Curves.easeOut),
       ),
     );
-    _savedRingOpacity = Tween<double>(begin: 0.58, end: 0).animate(
-      CurvedAnimation(
-        parent: _savedController,
-        curve: const Interval(0.08, 1, curve: Curves.easeOut),
+    // Same rest-state issue: Interval(0.08, 1) with begin 0.58 still yields 0.58 at t=0.
+    _savedRingOpacity = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween<double>(0), weight: 8),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0, end: 0.58).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 14,
       ),
-    );
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.58, end: 0).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 78,
+      ),
+    ]).animate(_savedController);
 
     _animationSettings.addListener(_syncFromSettings);
     _syncFromSettings();
@@ -357,4 +378,3 @@ class _NotifySearchAlertAppBarButtonState
     );
   }
 }
-

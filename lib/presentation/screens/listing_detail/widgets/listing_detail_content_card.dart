@@ -25,7 +25,6 @@ class ListingDetailContentCard extends StatefulWidget {
     required this.currentLanguage,
     required this.getLocalizedName,
     this.onOpenInYandexMaps,
-    this.detailScrollController,
     this.formatMoveInDate,
     this.formattedMoveInDate,
     this.formattedPublicationDate,
@@ -40,9 +39,6 @@ class ListingDetailContentCard extends StatefulWidget {
   final String? ownerName;
   final VoidCallback? onAuthorTap;
   final VoidCallback? onOpenInYandexMaps;
-  /// Parent [SingleChildScrollView] — used to scroll to the bottom when the
-  /// inline location map is expanded.
-  final ScrollController? detailScrollController;
   /// Pre-formatted move-in date (avoids DateTime.parse in build).
   final String? formattedMoveInDate;
   /// Pre-formatted publication date (avoids DateTime.parse in build).
@@ -63,25 +59,26 @@ class ListingDetailContentCard extends StatefulWidget {
 }
 
 class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
+  final GlobalKey _inlineLocationExpansionKey = GlobalKey();
+
   void _onMapExpansionChanged(bool isExpanded) {
     HapticFeedbackUtils.impact();
     if (!isExpanded) return;
 
-    final scroll = widget.detailScrollController;
-    if (scroll == null) return;
-
+    // After [CustomScrollView] + sliver refactor, scrolling to
+    // [ScrollPosition.maxScrollExtent] scrolled past this tile into sections
+    // below and fought the expansion layout — use reveal for this tile only.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 350), () {
+      Future.delayed(const Duration(milliseconds: 300), () {
         if (!mounted) return;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          if (!scroll.hasClients) return;
-          scroll.animateTo(
-            scroll.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        });
+        final ctx = _inlineLocationExpansionKey.currentContext;
+        if (ctx == null || !ctx.mounted) return;
+        Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeInOut,
+          alignment: 0.0,
+        );
       });
     });
   }
@@ -348,6 +345,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     );
 
     return Container(
+      key: _inlineLocationExpansionKey,
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
