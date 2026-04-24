@@ -20,6 +20,7 @@ import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -360,35 +361,18 @@ class _ArchivedConversationsScreenState
 
   Widget _buildEmpty() {
     final themeState = ThemeState();
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ThemeIcon(
-              Icons.archive_outlined,
-              size: 56,
-              color: themeState.secondaryTextColor,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              L10n.get("no_archived_conversations"),
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: themeState.textColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              L10n.get("no_archived_conversations_description"),
-              textAlign: TextAlign.center,
-              style: TextStyle(color: themeState.secondaryTextColor),
-            ),
-          ],
-        ),
+    return UydoshEmptyColumn(
+      icon: Icons.archive_outlined,
+      iconSize: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      title: L10n.get("no_archived_conversations"),
+      subtitle: L10n.get("no_archived_conversations_description"),
+      titleStyle: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: themeState.textColor,
       ),
+      subtitleStyle: TextStyle(color: themeState.secondaryTextColor),
     );
   }
 

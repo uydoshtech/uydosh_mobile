@@ -196,38 +196,10 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ThemeIcon(
-            Icons.chat_bubble_outline,
-            size: 64,
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            L10n.get("no_conversations"),
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            L10n.get("start_conversation_from_listing"),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    return UydoshEmptyColumn(
+      icon: Icons.chat_bubble_outline,
+      title: L10n.get("no_conversations"),
+      subtitle: L10n.get("start_conversation_from_listing"),
     );
   }
 

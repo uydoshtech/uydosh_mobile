@@ -34,6 +34,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
@@ -1260,98 +1261,23 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   }
 
   Widget _buildEmptyStateForType(String type) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, child) {
-        final themeState = ThemeState();
-        final textColor = themeState.textColor;
-        final secondaryTextColor = themeState.secondaryTextColor;
-
-        // Archive entry point is surfaced via the floating pill button in
-        // the Scaffold (gated on [_hasArchivedChats]) — no inline row here.
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ThemeIcon(
-                  type == "incoming"
-                      ? Icons.inbox_outlined
-                      : Icons.mail_outline,
-                  size: 64,
-                  color: secondaryTextColor,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  type == "incoming"
-                      ? L10n.get("no_incoming_conversations")
-                      : L10n.get("no_outgoing_conversations"),
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                if (type == "incoming") ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    L10n.get("no_incoming_conversations_description"),
-                    style:
-                        TextStyle(fontSize: 16, color: secondaryTextColor),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        );
-      },
+    final isIncoming = type == "incoming";
+    return UydoshEmptyColumn(
+      icon: isIncoming ? Icons.inbox_outlined : Icons.mail_outline,
+      title: isIncoming
+          ? L10n.get("no_incoming_conversations")
+          : L10n.get("no_outgoing_conversations"),
+      subtitle: isIncoming
+          ? L10n.get("no_incoming_conversations_description")
+          : null,
     );
   }
 
   Widget _buildEmptyState() {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, child) {
-        final themeState = ThemeState();
-        final textColor = themeState.textColor;
-        final secondaryTextColor = themeState.secondaryTextColor;
-
-        // Archive entry point is surfaced via the floating pill button in
-        // the Scaffold (gated on [_hasArchivedChats]) — no inline row here.
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ThemeIcon(
-                  Icons.chat_bubble_outline,
-                  size: 64,
-                  color: secondaryTextColor,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  L10n.get("no_messages"),
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  L10n.get("no_messages_description"),
-                  style:
-                      TextStyle(fontSize: 16, color: secondaryTextColor),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    return UydoshEmptyColumn(
+      icon: Icons.chat_bubble_outline,
+      title: L10n.get("no_messages"),
+      subtitle: L10n.get("no_messages_description"),
     );
   }
 }
