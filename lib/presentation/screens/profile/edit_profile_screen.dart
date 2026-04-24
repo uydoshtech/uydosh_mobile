@@ -794,18 +794,21 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                     label: L10n.get(
                                       "role_admin",
                                     ),
+                                    icon: Icons.admin_panel_settings,
                                   ),
                                 DropdownOption(
                                   value: "landlord",
                                   label: L10n.get(
                                     "role_landlord",
                                   ),
+                                  icon: Icons.home_work,
                                 ),
                                 DropdownOption(
                                   value: "tenant",
                                   label: L10n.get(
                                     "role_tenant",
                                   ),
+                                  icon: Icons.key,
                                 ),
                               ],
                             ),

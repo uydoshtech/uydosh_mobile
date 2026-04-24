@@ -86,23 +86,24 @@ class ProfileCompletionState extends ChangeNotifier {
   }
 
   /// Essential info: name, gender, region, employed (role/student status).
-  /// If employed=false (student), university is also required.
+  /// University is part of the student toggle (inferred from universityId)
+  /// and is never treated as "missing" — non-students don't need it, and
+  /// students cannot save the edit form without selecting one.
   static bool _checkHasEssentialInfo(UserProfile profile) {
     if (!_hasText(profile.name)) return false;
     if (profile.gender == null) return false;
     if (profile.region == null && profile.regionId == null) return false;
     if (profile.employed == null) return false;
-    if (profile.employed == false &&
-        profile.university == null &&
-        profile.universityId == null) {
-      return false;
-    }
     return true;
   }
 
   static int _calculateProfileCompletionPercent(UserProfile profile) {
-    // Non-students (employed=true) don't need university; total = 16. Students need 17.
-    final totalFields = profile.employed ?? false ? 16 : 17;
+    // Students (inferred from having a university set) contribute an extra
+    // completed field, so the denominator grows to match. Non-students are
+    // evaluated against the base 16 fields — university is not required.
+    final isStudent =
+        profile.university != null || profile.universityId != null;
+    final totalFields = isStudent ? 17 : 16;
     final completedFields = _countCompletedProfileFields(profile);
     return ((completedFields / totalFields) * 100).round();
   }
@@ -116,10 +117,8 @@ class ProfileCompletionState extends ChangeNotifier {
     // "region filled". Some API responses (e.g. PUT /profiles/:id) return
     // only the id without the joined object, so checking one is not enough.
     if (profile.region != null || profile.regionId != null) completedFields++;
-    if (profile.employed == false) {
-      if (profile.university != null || profile.universityId != null) {
-        completedFields++;
-      }
+    if (profile.university != null || profile.universityId != null) {
+      completedFields++;
     }
     if (_hasText(profile.aboutMe)) completedFields++;
     if (_hasText(profile.telegram)) completedFields++;
@@ -143,18 +142,15 @@ class ProfileCompletionState extends ChangeNotifier {
   }
 
   /// Returns list of field names that are not populated (for debug).
-  /// Aligned with _countCompletedProfileFields. University only when employed=false (student).
+  /// Aligned with _countCompletedProfileFields. University is intentionally
+  /// omitted — it's optional for non-students and always present for students
+  /// (the edit form enforces selection), so it can never be "missing".
   static List<String> getMissingFields(UserProfile profile) {
     final missing = <String>[];
     if (!_hasText(profile.name)) missing.add("name");
     if (profile.gender == null) missing.add("gender");
     if (profile.region == null && profile.regionId == null) missing.add("region");
     if (profile.employed == null) missing.add("employed");
-    if (profile.employed == false &&
-        profile.university == null &&
-        profile.universityId == null) {
-      missing.add("university");
-    }
     if (!_hasText(profile.aboutMe)) missing.add("aboutMe");
     if (!_hasText(profile.telegram)) missing.add("telegram");
     if (profile.cleanliness == null) missing.add("cleanliness");
