@@ -27,6 +27,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/state/app_launch_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
@@ -52,6 +53,7 @@ import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dar
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/animated_svg_logo.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/quick_splash_logo.dart";
 
 // Global RouteObserver for handling navigation events
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
@@ -147,6 +149,9 @@ void main() async {
       AuthenticationState().initialize(),
       OnboardingState().initialize(),
       ThemeState().initialize(),
+      // Determines splash variant (full animated vs quick static). Cheap:
+      // a single SharedPreferences read + PackageInfo lookup.
+      AppLaunchState().initialize(),
     ]);
     // Kick off the remote-config loaders now but don't await them. They
     // resolve asynchronously and their consumers already tolerate the
@@ -185,6 +190,12 @@ void main() async {
     );
     logger.d(
       '🎓 Onboarding: ${OnboardingState().showOnboarding ? "ENABLED" : "DISABLED"}',
+    );
+    logger.d(
+      '🚀 Launch: firstEver=${AppLaunchState().isFirstLaunchEver}, '
+      'firstOfVersion=${AppLaunchState().isFirstLaunchOfCurrentVersion}, '
+      'lastOpenedVersion=${AppLaunchState().lastOpenedVersion}, '
+      'currentVersion=${AppLaunchState().currentVersion}',
     );
     logger.d(
       '📳 Haptics: ${HapticFeedbackState().isEnabled ? "ENABLED" : "DISABLED"}',
@@ -346,7 +357,11 @@ class _MyAppState extends State<MyApp> {
             ],
             supportedLocales: supportedLocales,
             locale: Locale(LanguageState().currentLanguage, ""),
-            home: kSkipSplashScreen ? _getInitialScreen() : const SplashScreen(),
+            home: kSkipSplashScreen
+                ? _getInitialScreen()
+                : (AppLaunchState().shouldShowFullSplash
+                    ? const SplashScreen()
+                    : const QuickSplashScreen()),
             builder: (context, child) {
               return _AchievementUnlockListener(
                 navigatorKey: widget.navigatorKey,
@@ -718,6 +733,184 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   );
                 },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Static, fast-display splash for warm/repeat launches.
+///
+/// Shown when [AppLaunchState.shouldShowFullSplash] is `false` (i.e. not the
+/// first launch ever and not the first launch of a new app version). Renders
+/// the same final composition as [SplashScreen] using [QuickSplashLogo], but
+/// without the multi-stage logo animation, slide-in text, or haptic feedback.
+/// A short fade-in keeps the transition smooth, then we navigate onward.
+class QuickSplashScreen extends StatefulWidget {
+  const QuickSplashScreen({super.key});
+
+  @override
+  State<QuickSplashScreen> createState() => _QuickSplashScreenState();
+}
+
+class _QuickSplashScreenState extends State<QuickSplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _fadeController;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    getIt<AppAnalyticsService>().logScreenView(screenName: "splash_quick");
+
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
+
+    _start();
+  }
+
+  Future<void> _start() async {
+    _fadeController.forward();
+    // Brief hold so the static branding is actually perceptible, then move
+    // on. Keep this snappy — the whole point of the quick splash is speed.
+    await Future.delayed(const Duration(milliseconds: 1700));
+    if (!mounted) return;
+
+    final onboardingState = OnboardingState();
+    if (onboardingState.showOnboarding &&
+        !onboardingState.hasSeenOnboardingScreens) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+      );
+    } else {
+      context.pushReplaceMainNavigation();
+    }
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
+
+  List<Color> _gradientColors() {
+    final themeState = ThemeState();
+    if (themeState.isBlueTheme) {
+      return [
+        BlueThemeColors.primaryLight,
+        BlueThemeColors.primaryDark,
+      ];
+    }
+    return [
+      LightThemeColors.background,
+      LightThemeColors.surface,
+    ];
+  }
+
+  Color _textColor() {
+    final themeState = ThemeState();
+    return themeState.isBlueTheme
+        ? AppColors.textLight
+        : LightThemeColors.textPrimary;
+  }
+
+  Color _secondaryTextColor() {
+    final themeState = ThemeState();
+    return themeState.isBlueTheme
+        ? AppColors.textLight70
+        : LightThemeColors.textSecondary;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) {
+        final width = MediaQuery.of(context).size.width;
+        return Scaffold(
+          body: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: _gradientColors(),
+                stops: const [0.0, 1.0],
+              ),
+            ),
+            child: Center(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+                    const QuickSplashLogo(size: 180),
+                    const SizedBox(height: 0),
+                    Center(
+                      child: Container(
+                        constraints: BoxConstraints(maxWidth: width * 0.9),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: "Uy",
+                                style: TextStyle(
+                                  fontSize: width < 400 ? 28 : 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFFFF0000),
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                              TextSpan(
+                                text: "Dosh",
+                                style: TextStyle(
+                                  fontSize: width < 400 ? 28 : 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: _textColor(),
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Center(
+                      child: Container(
+                        constraints: BoxConstraints(maxWidth: width * 0.8),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 32.0),
+                        child: Text(
+                          L10n.get("splash_subtitle"),
+                          style: TextStyle(
+                            fontSize: width < 400 ? 12.8 : 14.4,
+                            color: _secondaryTextColor(),
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                            height: 1.4,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
