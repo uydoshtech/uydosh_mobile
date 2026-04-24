@@ -631,6 +631,8 @@ class AppStrings {
       "admin_panel_section_telegram_sync": "Data import",
       "admin_telegram_sync_title": "Data import",
       "admin_telegram_sync_chat_label": "Chat",
+      "admin_telegram_sync_chat_custom_label": "Custom chat (@handle or id)",
+      "admin_telegram_sync_channel_custom": "Custom…",
       "admin_telegram_sync_limit_label": "Message limit",
       "admin_telegram_sync_import_user_label": "Listing owner user ID",
       "admin_telegram_sync_import_user_sync_only":
@@ -1715,6 +1717,8 @@ class AppStrings {
       "admin_panel_section_telegram_sync": "Импорт данных",
       "admin_telegram_sync_title": "Импорт данных",
       "admin_telegram_sync_chat_label": "Чат",
+      "admin_telegram_sync_chat_custom_label": "Другой чат (@handle или id)",
+      "admin_telegram_sync_channel_custom": "Другой…",
       "admin_telegram_sync_limit_label": "Лимит сообщений",
       "admin_telegram_sync_import_user_label": "ID владельца объявлений",
       "admin_telegram_sync_import_user_sync_only":
@@ -2811,6 +2815,8 @@ class AppStrings {
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
       "admin_telegram_sync_title": "Maʼlumot importi",
       "admin_telegram_sync_chat_label": "Chat",
+      "admin_telegram_sync_chat_custom_label": "Boshqa chat (@handle yoki id)",
+      "admin_telegram_sync_channel_custom": "Boshqa…",
       "admin_telegram_sync_limit_label": "Xabar limiti",
       "admin_telegram_sync_import_user_label": "E’lon egasi user ID",
       "admin_telegram_sync_import_user_sync_only":

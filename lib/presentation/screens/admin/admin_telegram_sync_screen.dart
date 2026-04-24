@@ -80,6 +80,19 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   /// Default listing owner after Telegram sync (Uydoshtech@gmail.com in production).
   static const int _kDefaultListingOwnerUserId = 86;
 
+  /// Telegram channels the daily cron scrapes. Rendered as items in the chat
+  /// dropdown; picking one sets [_chatController]. Keep in sync with
+  /// `env.TG_CHATS` in `uydosh_backend/.github/workflows/telegram-sync.yml`.
+  static const List<String> _kKnownChannels = [
+    "@roommateuz",
+    "@tashkentpodselenie",
+  ];
+
+  /// Sentinel value for the "Custom…" entry in the chat dropdown: switches the
+  /// UI to a free-text [TextField] so an admin can still target ad-hoc chats
+  /// that aren't part of the scheduled set.
+  static const String _kCustomChannelSentinel = "__custom__";
+
   /// Preset sync sizes (matches admin UX: small counts, then round hundreds,
   /// then +1000 steps up to 20000 for large backfills).
   static const List<int> _kMessageLimitChoices = [
@@ -96,8 +109,13 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   final IAdminUserService _adminUserService = getIt<IAdminUserService>();
   final IAdminAreaPriceCacheService _areaPriceCacheService =
       getIt<IAdminAreaPriceCacheService>();
-  final _chatController = TextEditingController(text: "@roommateuz");
+  final _chatController = TextEditingController(text: _kKnownChannels.first);
   final _exportMaxRowsController = TextEditingController(text: "100000");
+
+  /// Current selection in the chat dropdown. Holds either a handle from
+  /// [_kKnownChannels] or [_kCustomChannelSentinel] when the admin wants to
+  /// type a one-off chat target.
+  String _selectedChannel = _kKnownChannels.first;
 
   final List<AdminUser> _adminUsers = [];
   bool _loadingAdmins = true;
@@ -684,16 +702,79 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                   NeumorphicInsetContainer(
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                     backgroundColor: isBlue ? BlueThemeColors.surface : null,
-                    child: TextField(
-                      controller: _chatController,
-                      style: fieldStyle,
+                    child: DropdownButtonFormField<String>(
+                      // Controlled selection; `value` is required (the newer
+                      // `initialValue` resets on rebuild and would drop the
+                      // admin's choice every setState).
+                      // ignore: deprecated_member_use
+                      value: _selectedChannel,
+                      items: [
+                        for (final handle in _kKnownChannels)
+                          DropdownMenuItem<String>(
+                            value: handle,
+                            child: Text(
+                              handle,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        DropdownMenuItem<String>(
+                          value: _kCustomChannelSentinel,
+                          child: Text(
+                            L10n.get("admin_telegram_sync_channel_custom"),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                      onChanged: _running
+                          ? null
+                          : (v) {
+                              if (v == null) return;
+                              setState(() {
+                                _selectedChannel = v;
+                                if (v != _kCustomChannelSentinel) {
+                                  // Keep controller in sync so _run() reads the
+                                  // handle straight from it, same as before.
+                                  _chatController.text = v;
+                                  _chatController.selection =
+                                      TextSelection.fromPosition(
+                                    TextPosition(offset: v.length),
+                                  );
+                                } else {
+                                  _chatController.clear();
+                                }
+                              });
+                            },
                       decoration: _fieldDecoration(
                         context,
                         labelText: L10n.get("admin_telegram_sync_chat_label"),
                       ),
-                      autocorrect: false,
+                      style: fieldStyle,
+                      isExpanded: true,
+                      dropdownColor: isBlue ? BlueThemeColors.surface : null,
+                      iconEnabledColor:
+                          isBlue ? BlueThemeColors.textPrimary : null,
                     ),
                   ),
+                  if (_selectedChannel == _kCustomChannelSentinel) ...[
+                    const SizedBox(height: 12),
+                    NeumorphicInsetContainer(
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(12)),
+                      backgroundColor:
+                          isBlue ? BlueThemeColors.surface : null,
+                      child: TextField(
+                        controller: _chatController,
+                        style: fieldStyle,
+                        decoration: _fieldDecoration(
+                          context,
+                          labelText: L10n.get(
+                              "admin_telegram_sync_chat_custom_label"),
+                        ),
+                        autocorrect: false,
+                        enabled: !_running,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   if (_loadingAdmins)
                     Padding(
