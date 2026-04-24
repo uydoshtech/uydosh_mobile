@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
@@ -147,21 +148,13 @@ class _ArchivedConversationsScreenState
       });
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        // Explicit styling — under the app's blue theme the default
-        // SnackBar renders its content white-on-white (invisible text).
-        content: Text(
-          L10n.get("chat_unarchived"),
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.black.withValues(alpha: 0.9),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-      ),
+    // The bottom snackbar is reserved for the archive flow (it carries the
+    // Undo action). For the simple "moved back to inbox" confirmation we reuse
+    // the app-wide rolling top toast.
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ToastTheme.showSuccess(
+      context,
+      message: L10n.get("chat_unarchived"),
     );
   }
 
