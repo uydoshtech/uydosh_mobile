@@ -928,40 +928,44 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       showDragHandle: true,
       builder: (sheetCtx) {
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (hasUnread)
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasUnread)
+                  ListTile(
+                    leading: const ThemeIcon(Icons.mark_email_read_outlined),
+                    title:
+                        Text(L10n.get("mark_as_read", fallback: "Mark as read")),
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      context
+                          .read<MessagingBloc>()
+                          .add(MarkMessagesAsRead(
+                            conversationId: conversation.id,
+                          ));
+                    },
+                  ),
                 ListTile(
-                  leading: const ThemeIcon(Icons.mark_email_read_outlined),
-                  title: Text(L10n.get("mark_as_read", fallback: "Mark as read")),
-                  onTap: () {
-                    Navigator.of(sheetCtx).pop();
-                    context
-                        .read<MessagingBloc>()
-                        .add(MarkMessagesAsRead(
-                          conversationId: conversation.id,
-                        ));
-                  },
+                  leading: const ThemeIcon(Icons.archive_outlined),
+                  title: Text(L10n.get("archive")),
+                  enabled: !hasUnread,
+                  subtitle: hasUnread
+                      ? Text(
+                          L10n.get("archive_failed_has_unread"),
+                          style: const TextStyle(fontSize: 12),
+                        )
+                      : null,
+                  onTap: hasUnread
+                      ? null
+                      : () {
+                          Navigator.of(sheetCtx).pop();
+                          _archiveConversation(conversation);
+                        },
                 ),
-              ListTile(
-                leading: const ThemeIcon(Icons.archive_outlined),
-                title: Text(L10n.get("archive")),
-                enabled: !hasUnread,
-                subtitle: hasUnread
-                    ? Text(
-                        L10n.get("archive_failed_has_unread"),
-                        style: const TextStyle(fontSize: 12),
-                      )
-                    : null,
-                onTap: hasUnread
-                    ? null
-                    : () {
-                        Navigator.of(sheetCtx).pop();
-                        _archiveConversation(conversation);
-                      },
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -1513,12 +1517,11 @@ class _ToggleTabContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final targetColor = isSelected ? selectedTextColor : unselectedTextColor;
-    final unreadColor = ThemeState().unreadIndicatorColor;
-    final unreadTextColor = ThemeState().unreadIndicatorTextColor;
     final labelParts = label.split("\n");
     final isTwoLine = labelParts.length == 2;
     const twoLineFontSize = 13.0;
     const twoLineHeight = 1.15;
+    final hasUnread = badgeCount > 0;
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeInOut,
@@ -1538,108 +1541,67 @@ class _ToggleTabContent extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                 color: targetColor,
               ),
-              child: Stack(
-                clipBehavior: Clip.none,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Keep the icon+text centered regardless of badge visibility.
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
+                  Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       ThemeIcon(Icons.mail, size: 18, color: targetColor),
-                      const SizedBox(width: 8),
-                      if (!isTwoLine)
-                        Text(label)
-                      else
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              labelParts[0],
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: twoLineFontSize,
-                                height: twoLineHeight,
-                                fontWeight:
-                                    isSelected
-                                        ? FontWeight.w700
-                                        : FontWeight.w600,
-                                color: targetColor,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              labelParts[1],
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: twoLineFontSize,
-                                height: twoLineHeight,
-                                fontWeight:
-                                    isSelected
-                                        ? FontWeight.w700
-                                        : FontWeight.w600,
-                                color: targetColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                  if (badgeCount > 0)
-                    PositionedDirectional(
-                      // Put the badge near the left side, without affecting centering.
-                      start: -34,
-                      top: 0,
-                      bottom: 0,
-                      child: Center(
-                        child: AnimatedScale(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOut,
-                          scale: isSelected ? 1.0 : 0.96,
+                      if (hasUnread)
+                        Positioned(
+                          right: -3,
+                          top: -3,
                           child: Container(
-                            width: 18,
-                            height: 18,
-                            decoration: BoxDecoration(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppColors.success,
                               shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Color.lerp(unreadColor, Colors.white, 0.32) ??
-                                      unreadColor,
-                                  Color.lerp(unreadColor, Colors.black, 0.22) ??
-                                      unreadColor,
-                                ],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.24),
-                                  blurRadius: 6,
-                                  offset: const Offset(-2, -2),
-                                ),
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.22),
-                                  blurRadius: 6,
-                                  offset: const Offset(2, 2),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                "$badgeCount",
-                                style: TextStyle(
-                                  color: unreadTextColor,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
                             ),
                           ),
                         ),
-                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                  if (!isTwoLine)
+                    Text(label)
+                  else
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          labelParts[0],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: twoLineFontSize,
+                            height: twoLineHeight,
+                            fontWeight:
+                                isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
+                            color: targetColor,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          labelParts[1],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: twoLineFontSize,
+                            height: twoLineHeight,
+                            fontWeight:
+                                isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
+                            color: targetColor,
+                          ),
+                        ),
+                      ],
                     ),
                 ],
               ),

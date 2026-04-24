@@ -306,18 +306,21 @@ class _ArchivedConversationsScreenState
       showDragHandle: true,
       builder: (sheetCtx) {
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const ThemeIcon(Icons.unarchive_outlined),
-                title: Text(L10n.get("unarchive")),
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _unarchive(conversation);
-                },
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const ThemeIcon(Icons.unarchive_outlined),
+                  title: Text(L10n.get("unarchive")),
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    _unarchive(conversation);
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
