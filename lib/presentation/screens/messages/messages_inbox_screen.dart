@@ -448,7 +448,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         if (_hasArchivedChats)
           IconButton(
             tooltip: L10n.get("archived_chats"),
-            onPressed: _openArchivedConversations,
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              _openArchivedConversations();
+            },
             icon: ThemeIcon(
               Icons.archive_outlined,
               size: 24,
@@ -458,7 +461,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         Padding(
           padding: const EdgeInsetsDirectional.only(end: 8),
           child: IconButton(
-            onPressed: () => context.pushProfile(),
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              context.pushProfile();
+            },
             icon: AppBarProfileIcon(
               iconSize: 26,
               iconColor: onBarColor,

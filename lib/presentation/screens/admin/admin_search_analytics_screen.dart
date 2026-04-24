@@ -4,6 +4,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
@@ -556,7 +557,10 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
       spacingAfterTitle: 8,
       spacingBeforeButton: 20,
       retryButton: ElevatedButton.icon(
-        onPressed: _loadAnalytics,
+        onPressed: () {
+          HapticFeedbackUtils.impact();
+          _loadAnalytics();
+        },
         icon: const ThemeIcon(Icons.refresh),
         label: Text(L10n.get("admin_search_analytics_retry")),
       ),

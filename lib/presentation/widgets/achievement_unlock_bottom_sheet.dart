@@ -326,7 +326,10 @@ class _AchievementUnlockBottomSheetState
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    HapticFeedbackUtils.impact();
+                    Navigator.of(context).pop();
+                  },
                   style: isBlueTheme
                       ? FilledButton.styleFrom(
                           side: const BorderSide(color: Colors.white, width: 2),

@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 /// Soft informational "tip" card used at the top of screens to surface
 /// transient guidance (e.g. the notifications explainer, archived chats tip).
@@ -95,7 +96,10 @@ class UydoshInfoCalloutCard extends StatelessWidget {
           child: IconButton(
             tooltip: closeTooltip ??
                 MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: onClose,
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              onClose!();
+            },
             icon: Icon(Icons.close, size: 18, color: fg),
             padding: const EdgeInsets.all(4),
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),

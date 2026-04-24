@@ -6,6 +6,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/support_chat_message.dart";
 import "package:uy_dosh/domain/models/support_chat_thread.dart";
@@ -551,7 +552,10 @@ class _AdminSupportChatThreadScreenState
                       ? Colors.green.shade700
                       : null,
                 ),
-                onPressed: _toggleStatus,
+                onPressed: () {
+                  HapticFeedbackUtils.impact();
+                  _toggleStatus();
+                },
                 tooltip: widget.thread.status == "open"
                     ? L10n.get("admin_support_chat_close_thread")
                     : L10n.get("admin_support_chat_reopen_thread"),
@@ -701,7 +705,12 @@ class _AdminSupportChatThreadScreenState
               ),
               const SizedBox(width: 8),
               IconButton(
-                onPressed: _isSending ? null : _sendMessage,
+                onPressed: _isSending
+                    ? null
+                    : () {
+                        HapticFeedbackUtils.impact();
+                        _sendMessage();
+                      },
                 icon: _isSending
                     ? SizedBox(
                         width: 20,

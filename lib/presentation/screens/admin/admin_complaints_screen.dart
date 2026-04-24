@@ -4,6 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
@@ -399,7 +400,10 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
                       _buildStatusChip(context, complaint.status),
                       IconButton(
                         icon: const ThemeIcon(Icons.more_vert),
-                        onPressed: () => _showStatusMenu(complaint),
+                        onPressed: () {
+                          HapticFeedbackUtils.impact();
+                          _showStatusMenu(complaint);
+                        },
                       ),
                     ],
                   ),

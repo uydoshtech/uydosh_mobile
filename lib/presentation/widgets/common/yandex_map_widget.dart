@@ -6,6 +6,7 @@ import "package:uy_dosh/base/cache/coordinates_cache.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -235,7 +236,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 // Retry button if initialization failed
                 if (_retryCount > 0 && _retryCount < _maxRetries)
                   ElevatedButton.icon(
-                    onPressed: _retryMapInitialization,
+                    onPressed: () {
+                      HapticFeedbackUtils.impact();
+                      _retryMapInitialization();
+                    },
                     icon: const ThemeIcon(Icons.refresh, size: 16),
                     label: const Text("Retry"),
                     style: ElevatedButton.styleFrom(

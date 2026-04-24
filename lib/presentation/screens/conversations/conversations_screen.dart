@@ -4,6 +4,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
@@ -115,6 +116,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               padding: const EdgeInsets.only(right: 8),
               child: IconButton(
                 onPressed: () {
+                  HapticFeedbackUtils.impact();
                   context.read<MessagingBloc>().add(RefreshConversations());
                 },
                 icon: ThemeIcon(
@@ -190,6 +192,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       child: Center(
         child: ElevatedButton(
           onPressed: () {
+            HapticFeedbackUtils.impact();
             // Load more conversations
             context.read<MessagingBloc>().add(
               FetchConversations(page: 2),

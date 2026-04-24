@@ -1514,7 +1514,10 @@ class _EditListingScreenState extends State<EditListingScreen>
       return FadeTransition(
         opacity: _savePulseOpacity,
         child: IconButton(
-          onPressed: _submitForm,
+          onPressed: () {
+            HapticFeedbackUtils.impact();
+            _submitForm();
+          },
           icon: const ThemeIcon(Icons.save),
           tooltip: L10n.get("save_changes"),
         ),

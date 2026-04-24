@@ -7,6 +7,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -146,7 +147,10 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: _loadStats,
+                      onPressed: () {
+                        HapticFeedbackUtils.impact();
+                        _loadStats();
+                      },
                       child: Text(
                         L10n.get("retry"),
                       ),

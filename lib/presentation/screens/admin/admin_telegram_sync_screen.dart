@@ -257,7 +257,10 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           content: SingleChildScrollView(child: Text(body)),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                Navigator.of(ctx).pop(false);
+              },
               child: Text(L10n.get("cancel")),
             ),
             FilledButton(
@@ -265,7 +268,10 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                 backgroundColor: theme.colorScheme.error,
                 foregroundColor: theme.colorScheme.onError,
               ),
-              onPressed: () => Navigator.of(ctx).pop(true),
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                Navigator.of(ctx).pop(true);
+              },
               child: Text(confirmLabel),
             ),
           ],

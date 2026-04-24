@@ -260,7 +260,10 @@ class _LanguageAwareDatePickerDialogState
                               widget.firstDate.month,
                             ),
                           )
-                          ? _previousMonth
+                          ? () {
+                            HapticFeedbackUtils.impact();
+                            _previousMonth();
+                          }
                           : null,
                   icon: ThemeIcon(
                     Icons.chevron_left,
@@ -298,7 +301,10 @@ class _LanguageAwareDatePickerDialogState
                               widget.lastDate.month,
                             ),
                           )
-                          ? _nextMonth
+                          ? () {
+                            HapticFeedbackUtils.impact();
+                            _nextMonth();
+                          }
                           : null,
                   icon: ThemeIcon(
                     Icons.chevron_right,

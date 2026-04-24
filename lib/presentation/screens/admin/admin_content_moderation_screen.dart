@@ -300,7 +300,10 @@ class _AdminContentModerationScreenState
             ],
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: _load,
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                _load();
+              },
               child: Text(L10n.get("admin_search_analytics_retry")),
             ),
           ],

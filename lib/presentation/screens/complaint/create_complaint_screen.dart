@@ -265,7 +265,10 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
             child: ElevatedButton(
               onPressed:
                   _selectedCategory != null && !_isSubmitting
-                      ? _submitComplaint
+                      ? () {
+                        HapticFeedbackUtils.impact();
+                        _submitComplaint();
+                      }
                       : null,
               child:
                   _isSubmitting

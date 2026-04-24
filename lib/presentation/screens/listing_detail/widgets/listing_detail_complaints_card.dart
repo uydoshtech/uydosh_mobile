@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -24,7 +25,10 @@ class ListingDetailComplaintsCard extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: onPressed,
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              onPressed();
+            },
             icon: FadeTransition(
               opacity: warningBlinkAnimation,
               child: const ThemeIcon(Icons.report_outlined),

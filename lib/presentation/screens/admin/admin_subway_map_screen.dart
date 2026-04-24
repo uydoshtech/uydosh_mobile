@@ -12,6 +12,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
@@ -1150,6 +1151,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
             onPressed: _isLoadingStationIds
                 ? null
                 : () {
+                    HapticFeedbackUtils.impact();
                     setState(() {
                       _mapKey = UniqueKey();
                       _transformationController.value = Matrix4.identity()

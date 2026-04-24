@@ -9,6 +9,7 @@ import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -150,7 +151,10 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               Text(L10n.get("achievements_auth_prompt")),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () => context.pushReplaceAuthWizard(),
+                onPressed: () {
+                  HapticFeedbackUtils.impact();
+                  context.pushReplaceAuthWizard();
+                },
                 child: Text(L10n.get("sign_in")),
               ),
             ],

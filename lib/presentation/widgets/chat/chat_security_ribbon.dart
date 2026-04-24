@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ChatSecurityRibbon extends StatelessWidget {
@@ -70,7 +71,10 @@ class ChatSecurityRibbon extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                   icon: ThemeIcon(Icons.close, size: 18, color: ts.textColor),
-                  onPressed: onClose,
+                  onPressed: () {
+                    HapticFeedbackUtils.impact();
+                    onClose();
+                  },
                   tooltip: L10n.get("close"),
                 ),
               ],

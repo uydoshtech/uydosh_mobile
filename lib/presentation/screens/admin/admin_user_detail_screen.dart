@@ -5,6 +5,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/apple_device_model_name.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/models/admin_user_device.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
@@ -186,7 +187,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   IconButton(
                     tooltip: L10n.get("retry"),
                     icon: const ThemeIcon(Icons.refresh, size: 18),
-                    onPressed: _devicesLoading ? null : _loadDevices,
+                    onPressed: _devicesLoading
+                        ? null
+                        : () {
+                            HapticFeedbackUtils.impact();
+                            _loadDevices();
+                          },
                   ),
                   AnimatedRotation(
                     turns: _devicesExpanded ? 0.5 : 0,
@@ -454,7 +460,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: _blocking ? null : _unblockUser,
+                  onPressed: _blocking
+                      ? null
+                      : () {
+                          HapticFeedbackUtils.impact();
+                          _unblockUser();
+                        },
                   icon: _blocking
                       ? const SizedBox(
                           height: 18,
@@ -471,7 +482,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: _blocking ? null : _showBlockDialog,
+                  onPressed: _blocking
+                      ? null
+                      : () {
+                          HapticFeedbackUtils.impact();
+                          _showBlockDialog();
+                        },
                   icon: _blocking
                       ? const SizedBox(
                           height: 18,
@@ -535,6 +551,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   trailing: IconButton(
                     icon: const ThemeIcon(Icons.calendar_today),
                     onPressed: () async {
+                      HapticFeedbackUtils.impact();
                       final date = await showDatePicker(
                         context: context,
                         initialDate:
@@ -549,7 +566,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => setDialogState(() => blockedUntil = null),
+                  onPressed: () {
+                    HapticFeedbackUtils.impact();
+                    setDialogState(() => blockedUntil = null);
+                  },
                   child: Text(
                     L10n.get("admin_user_detail_block_permanent"),
                   ),
@@ -559,11 +579,15 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                Navigator.of(ctx).pop();
+              },
               child: Text(L10n.get("cancel")),
             ),
             ElevatedButton(
               onPressed: () {
+                HapticFeedbackUtils.impact();
                 Navigator.of(ctx).pop();
                 _blockUser(
                   reason: reasonController.text.trim().isEmpty
@@ -679,7 +703,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: !_saving && canSave ? _updateRole : null,
+                onPressed: !_saving && canSave
+                    ? () {
+                        HapticFeedbackUtils.impact();
+                        _updateRole();
+                      }
+                    : null,
                 child: _saving
                     ? const SizedBox(
                         height: 18,

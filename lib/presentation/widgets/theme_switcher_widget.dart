@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Widget for switching between different app themes
@@ -87,6 +88,7 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
                       side: BorderSide(color: Colors.grey.shade400, width: 1),
                     ),
                     onPressed: () async {
+                      HapticFeedbackUtils.impact();
                       // Apply theme globally and persist it
                       await _themeState.changeTheme(_selectedTheme);
 
@@ -105,7 +107,10 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
                     style: TextButton.styleFrom(
                       side: BorderSide(color: Colors.grey.shade400, width: 1),
                     ),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () {
+                      HapticFeedbackUtils.impact();
+                      Navigator.of(context).pop();
+                    },
                     child: Text(
                       AppStrings.get("cancel", _getCurrentLanguage(context)),
                     ),
@@ -234,6 +239,7 @@ class ThemeSwitcherButton extends StatelessWidget {
         return IconButton(
           icon: const ThemeIcon(Icons.palette),
           onPressed: () {
+            HapticFeedbackUtils.impact();
             _showThemeDialog(context, actualCurrentTheme);
           },
           tooltip: AppStrings.get("theme", _getCurrentLanguage(context)),

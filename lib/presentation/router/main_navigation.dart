@@ -425,6 +425,7 @@ class MainNavigationState extends State<MainNavigation>
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
+                        HapticFeedbackUtils.impact();
                         Navigator.of(sheetContext).pop();
                       },
                       child: Text(
@@ -436,6 +437,7 @@ class MainNavigationState extends State<MainNavigation>
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () async {
+                        HapticFeedbackUtils.impact();
                         Navigator.of(sheetContext).pop();
                         if (!mounted) return;
                         final profile =

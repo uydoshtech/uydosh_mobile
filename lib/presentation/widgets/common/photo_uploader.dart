@@ -159,7 +159,10 @@ class _PhotoUploaderState extends State<PhotoUploader>
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                Navigator.of(context).pop();
+              },
               child: Text(L10n.get("ok")),
             ),
           ],

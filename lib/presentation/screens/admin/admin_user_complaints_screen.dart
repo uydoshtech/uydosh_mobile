@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
@@ -295,7 +296,10 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
               _buildStatusChip(context, complaint.status),
               IconButton(
                 icon: const ThemeIcon(Icons.more_vert),
-                onPressed: () => _showStatusMenu(complaint),
+                onPressed: () {
+                  HapticFeedbackUtils.impact();
+                  _showStatusMenu(complaint);
+                },
               ),
             ],
           ),

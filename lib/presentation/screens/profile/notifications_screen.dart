@@ -372,6 +372,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             onPressed: () async {
+              HapticFeedbackUtils.impact();
               if (needsEnable && !isDenied) {
                 final ok = await push.requestPermissionAndRegister();
                 if (!mounted) return;

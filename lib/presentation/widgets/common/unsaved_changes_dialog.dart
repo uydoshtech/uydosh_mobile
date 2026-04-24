@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 /// Confirmation dialog shown when the user tries to leave an edit form with
 /// pending changes. Displays a localized title/message and a bullet list of
@@ -63,11 +64,17 @@ class _UnsavedChangesDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: () {
+            HapticFeedbackUtils.impact();
+            Navigator.of(context).pop(false);
+          },
           child: Text(L10n.get("keep_editing")),
         ),
         TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () {
+            HapticFeedbackUtils.impact();
+            Navigator.of(context).pop(true);
+          },
           style: TextButton.styleFrom(
             foregroundColor: theme.colorScheme.error,
           ),

@@ -213,7 +213,10 @@ class _PhotoPickerState extends State<PhotoPicker> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                Navigator.of(context).pop();
+              },
               child: Text(
                 L10n.get("close"),
                 style: const TextStyle(fontSize: 16),
@@ -318,8 +321,12 @@ class _PhotoPickerState extends State<PhotoPicker> {
                 ),
                 if (widget.selectedPhotos.length < widget.maxPhotos)
                   IconButton(
-                    onPressed:
-                        _isProcessingImage ? null : _showImageSourceDialog,
+                    onPressed: _isProcessingImage
+                        ? null
+                        : () {
+                            HapticFeedbackUtils.impact();
+                            _showImageSourceDialog();
+                          },
                     icon: DecoratedBox(
                       decoration: BoxDecoration(
                         color:

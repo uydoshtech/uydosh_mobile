@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/listing_creation_analytics_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
@@ -574,7 +575,10 @@ class _AdminListingCreationAnalyticsScreenState
       spacingAfterTitle: 8,
       spacingBeforeButton: 20,
       retryButton: ElevatedButton.icon(
-        onPressed: _loadAnalytics,
+        onPressed: () {
+          HapticFeedbackUtils.impact();
+          _loadAnalytics();
+        },
         icon: const ThemeIcon(Icons.refresh),
         label: Text(L10n.get("admin_listing_creation_analytics_retry")),
       ),

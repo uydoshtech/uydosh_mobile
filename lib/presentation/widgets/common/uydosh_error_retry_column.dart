@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Centered error state column: icon + (optional) title + (optional) detail +
@@ -135,7 +136,10 @@ class UydoshErrorRetryColumn extends StatelessWidget {
         (onRetry == null
             ? null
             : ElevatedButton(
-                onPressed: onRetry,
+                onPressed: () {
+                  HapticFeedbackUtils.impact();
+                  onRetry!();
+                },
                 child: Text(retryLabel ?? L10n.get("retry")),
               ));
     if (effectiveButton != null) {

@@ -1,6 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class SuspiciousMessageBottomSheet {
@@ -63,7 +64,10 @@ class SuspiciousMessageBottomSheet {
                       ),
                       IconButton(
                         visualDensity: VisualDensity.compact,
-                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        onPressed: () {
+                          HapticFeedbackUtils.impact();
+                          Navigator.of(sheetContext).pop();
+                        },
                         icon: ThemeIcon(
                           Icons.close,
                           color: scheme.onSurface.withValues(alpha: 0.75),
@@ -136,6 +140,7 @@ class SuspiciousMessageBottomSheet {
                         width: double.infinity,
                         child: FilledButton.icon(
                           onPressed: () {
+                            HapticFeedbackUtils.impact();
                             Navigator.of(sheetContext).pop();
                             onCopyPressed();
                           },
@@ -149,6 +154,7 @@ class SuspiciousMessageBottomSheet {
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () {
+                              HapticFeedbackUtils.impact();
                               Navigator.of(sheetContext).pop();
                               onReportPressed();
                             },
@@ -161,7 +167,10 @@ class SuspiciousMessageBottomSheet {
                       SizedBox(
                         width: double.infinity,
                         child: TextButton(
-                          onPressed: () => Navigator.of(sheetContext).pop(),
+                          onPressed: () {
+                            HapticFeedbackUtils.impact();
+                            Navigator.of(sheetContext).pop();
+                          },
                           child: Text(L10n.get("chat_safety_sheet_close")),
                         ),
                       ),
