@@ -252,31 +252,7 @@ class _ArchivedConversationsScreenState
             key: ValueKey("archived-swipe-${conversation.id}"),
             direction: DismissDirection.endToStart,
             onDismissed: (_) => _unarchive(conversation),
-            background: Container(
-              alignment: AlignmentDirectional.centerEnd,
-              padding: const EdgeInsetsDirectional.only(end: 24),
-              decoration: BoxDecoration(
-                color: ThemeState().primaryColor.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ThemeIcon(
-                    Icons.unarchive_outlined,
-                    color: ThemeState().primaryColor,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    L10n.get("unarchive"),
-                    style: TextStyle(
-                      color: ThemeState().primaryColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            background: _buildUnarchiveSwipeBackground(),
             child: ConversationTile(
               conversation: conversation,
               currentUserId: _currentUserId,
@@ -286,6 +262,48 @@ class _ArchivedConversationsScreenState
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildUnarchiveSwipeBackground() {
+    final themeState = ThemeState();
+    // Use a bright/contrasting tint so the indicator is actually visible on
+    // the dark blue canvas (primaryColor is near the background hue there).
+    final accent = themeState.isLightTheme ? Colors.black : Colors.white;
+    return Container(
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Stack(
+        children: [
+          PositionedDirectional(
+            top: 0,
+            bottom: 0,
+            end: 20,
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.unarchive_outlined,
+                    color: accent,
+                    size: 26,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    L10n.get("unarchive"),
+                    style: TextStyle(
+                      color: accent,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
