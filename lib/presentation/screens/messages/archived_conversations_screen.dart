@@ -123,7 +123,18 @@ class _ArchivedConversationsScreenState
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
-      SnackBar(content: Text(L10n.get("chat_unarchived"))),
+      SnackBar(
+        // Explicit styling — under the app's blue theme the default
+        // SnackBar renders its content white-on-white (invisible text).
+        content: Text(
+          L10n.get("chat_unarchived"),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.black.withValues(alpha: 0.9),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      ),
     );
   }
 

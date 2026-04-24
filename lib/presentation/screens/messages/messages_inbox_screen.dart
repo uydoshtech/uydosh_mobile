@@ -72,6 +72,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   late final VoidCallback _unreadMessagesListener;
   int _lastObservedUnreadCount = 0;
 
+  /// Conversations the user just archived but whose commit is still inside the
+  /// 5s undo window. They are hidden from every list/badge computation; the
+  /// real `ArchiveConversation` event only fires once the countdown elapses.
+  final Set<int> _pendingArchiveIds = <int>{};
+
   @override
   void initState() {
     super.initState();
@@ -233,7 +238,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   List<ConversationSummary> _visibleInboxConversations(
     List<ConversationSummary> conversations,
-  ) => conversations.where(conversationHasMessagesForInbox).toList();
+  ) => conversations
+      .where(conversationHasMessagesForInbox)
+      .where((c) => !_pendingArchiveIds.contains(c.id))
+      .toList();
 
   @override
   Widget build(BuildContext context) {
@@ -302,14 +310,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               // than the generic error screen. Other errors fall through
               // to the BlocBuilder's error state.
               if (message == archiveHasUnreadErrorCode && mounted) {
-                final messenger = ScaffoldMessenger.of(context);
-                messenger.hideCurrentSnackBar();
-                messenger.showSnackBar(
-                  SnackBar(
-                    content: Text(L10n.get("archive_failed_has_unread")),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                _showArchiveSnack(L10n.get("archive_failed_has_unread"));
               }
             },
           );
@@ -913,29 +914,141 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     );
   }
 
-  /// Dispatch the archive event and show a snackbar with undo. The
-  /// optimistic-removal path lives in [MessagingBloc]; this method only
-  /// owns the user-facing confirmation.
+  /// Hide the chat immediately and give the user a 5s Telegram-style undo
+  /// window before the archive is actually committed to the backend.
+  ///
+  /// While the window is open the conversation id lives in
+  /// [_pendingArchiveIds] — [_visibleInboxConversations] filters it out of the
+  /// list, tab counts and the global unread badge. Tapping undo cancels the
+  /// timer and drops the id from the pending set (chat reappears in place).
+  /// Expiring the timer dispatches [ArchiveConversation] to the bloc, which
+  /// performs the real optimistic removal + API call.
   void _archiveConversation(ConversationSummary conversation) {
     HapticFeedbackUtils.impact();
-    context
-        .read<MessagingBloc>()
-        .add(ArchiveConversation(conversationId: conversation.id));
 
+    final id = conversation.id;
+
+    setState(() {
+      _pendingArchiveIds.add(id);
+    });
+    // Recompute the unread badge right away so the home tab dot disappears
+    // synchronously with the ribbon, not after the bloc emits.
+    final cache = _lastDisplayedConversations;
+    if (cache != null) {
+      UnreadMessagesState().updateUnreadCount(
+        _calculateTotalUnreadCount(
+          cache.where((c) => !_pendingArchiveIds.contains(c.id)).toList(),
+        ),
+      );
+    }
+
+    // Capture refs up-front so commit() still works if the widget unmounts
+    // before the timer fires (e.g. user navigates away mid-window — we want
+    // the archive to land, not silently drop).
+    final bloc = context.read<MessagingBloc>();
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+
+    late final ScaffoldFeatureController<SnackBar, SnackBarClosedReason>
+        controller;
+
+    bool resolved = false;
+
+    void commit() {
+      if (resolved) return;
+      resolved = true;
+      bloc.add(ArchiveConversation(conversationId: id));
+      // Drop the id on the next microtask so the bloc's optimistic removal
+      // has already taken effect before this filter stops masking it —
+      // avoids a one-frame flash where the chat pops back in.
+      Future.microtask(() {
+        if (!mounted) return;
+        setState(() {
+          _pendingArchiveIds.remove(id);
+        });
+      });
+      controller.close();
+    }
+
+    void cancel() {
+      if (resolved) return;
+      resolved = true;
+      if (mounted) {
+        setState(() {
+          _pendingArchiveIds.remove(id);
+        });
+        // Restore the unread badge now that the chat is visible again.
+        final cache = _lastDisplayedConversations;
+        if (cache != null) {
+          UnreadMessagesState().updateUnreadCount(
+            _calculateTotalUnreadCount(
+              cache.where((c) => !_pendingArchiveIds.contains(c.id)).toList(),
+            ),
+          );
+        }
+      }
+      controller.close();
+    }
+
+    controller = messenger.showSnackBar(
+      SnackBar(
+        // The content drives dismissal via [commit]/[cancel]; keep the
+        // SnackBar itself alive well past the 5s window so our timer wins.
+        duration: const Duration(days: 1),
+        backgroundColor: Colors.black.withValues(alpha: 0.9),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 8, 8),
+        content: _ArchiveCountdownContent(
+          message: L10n.get("chat_archived"),
+          undoLabel: L10n.get("undo"),
+          duration: const Duration(seconds: 5),
+          accentColor: ThemeState().primaryColor,
+          onTimeout: commit,
+          onUndo: cancel,
+        ),
+      ),
+    );
+
+    // Safety net: if the SnackBar is dismissed externally (e.g. another
+    // snackbar preempts it) before the timer fires, commit the archive.
+    controller.closed.then((_) {
+      if (!resolved) commit();
+    });
+  }
+
+  /// Show a theme-consistent, auto-dismissing toast for archive flows.
+  ///
+  /// Explicit colors + floating behavior because the default Material
+  /// [SnackBar] rendered white-on-white under the blue theme (content text
+  /// invisible, making the ribbon look stuck). Kept internal to this screen
+  /// rather than promoted to ToastTheme because [SnackBarAction] doesn't
+  /// fit the existing toast helpers, which only show a message.
+  void _showArchiveSnack(
+    String message, {
+    String? undoLabel,
+    VoidCallback? onUndo,
+  }) {
+    if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(L10n.get("chat_archived")),
-        action: SnackBarAction(
-          label: L10n.get("undo"),
-          onPressed: () {
-            if (!mounted) return;
-            context
-                .read<MessagingBloc>()
-                .add(UnarchiveConversation(conversationId: conversation.id));
-          },
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
         ),
+        backgroundColor: Colors.black.withValues(alpha: 0.9),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        action: (undoLabel != null && onUndo != null)
+            ? SnackBarAction(
+                label: undoLabel,
+                textColor: ThemeState().primaryColor,
+                onPressed: onUndo,
+              )
+            : null,
       ),
     );
   }
@@ -956,12 +1069,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) async {
         if (hasUnread) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(L10n.get("archive_failed_has_unread")),
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          _showArchiveSnack(L10n.get("archive_failed_has_unread"));
           return false;
         }
         return true;
@@ -1347,6 +1455,127 @@ class _ToggleTabContent extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Snackbar body used for the "archive with 5s undo" ribbon.
+///
+/// Mirrors Telegram: the message sits on the left, a circular progress
+/// indicator shrinks clockwise around an undo icon on the right, and tapping
+/// anywhere on the trailing cluster (icon or label) cancels the archive.
+/// The surrounding [SnackBar] uses a long duration so timing is driven here.
+class _ArchiveCountdownContent extends StatefulWidget {
+  const _ArchiveCountdownContent({
+    required this.message,
+    required this.undoLabel,
+    required this.duration,
+    required this.accentColor,
+    required this.onTimeout,
+    required this.onUndo,
+  });
+
+  final String message;
+  final String undoLabel;
+  final Duration duration;
+  final Color accentColor;
+  final VoidCallback onTimeout;
+  final VoidCallback onUndo;
+
+  @override
+  State<_ArchiveCountdownContent> createState() =>
+      _ArchiveCountdownContentState();
+}
+
+class _ArchiveCountdownContentState extends State<_ArchiveCountdownContent>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          widget.onTimeout();
+        }
+      })
+      ..forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleUndo() {
+    if (!_controller.isAnimating && _controller.isCompleted) return;
+    _controller.stop();
+    widget.onUndo();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            widget.message,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+          ),
+        ),
+        const SizedBox(width: 12),
+        InkWell(
+          onTap: _handleUndo,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, _) => SizedBox.expand(
+                          child: CircularProgressIndicator(
+                            // Countdown: ring drains from full → empty.
+                            value: 1.0 - _controller.value,
+                            strokeWidth: 2.5,
+                            valueColor:
+                                AlwaysStoppedAnimation(widget.accentColor),
+                            backgroundColor:
+                                Colors.white.withValues(alpha: 0.18),
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.undo,
+                        size: 14,
+                        color: widget.accentColor,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  widget.undoLabel,
+                  style: TextStyle(
+                    color: widget.accentColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
