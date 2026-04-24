@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -564,50 +565,18 @@ class _AdminListingCreationAnalyticsScreenState
   }
 
   Widget _buildErrorState(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ThemeIcon(
-              Icons.error_outline,
-              size: 64,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              L10n.get("admin_listing_creation_analytics_error"),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                _errorMessage!,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _loadAnalytics,
-              icon: const ThemeIcon(Icons.refresh),
-              label: Text(
-                L10n.get("admin_listing_creation_analytics_retry"),
-              ),
-            ),
-          ],
-        ),
+    return UydoshErrorRetryColumn(
+      title: L10n.get("admin_listing_creation_analytics_error"),
+      message: _errorMessage,
+      messageMaxLines: 3,
+      messageOverflow: TextOverflow.ellipsis,
+      padding: const EdgeInsets.all(24),
+      spacingAfterTitle: 8,
+      spacingBeforeButton: 20,
+      retryButton: ElevatedButton.icon(
+        onPressed: _loadAnalytics,
+        icon: const ThemeIcon(Icons.refresh),
+        label: Text(L10n.get("admin_listing_creation_analytics_retry")),
       ),
     );
   }

@@ -20,10 +20,11 @@ import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_info_callout_card.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 
@@ -143,9 +144,8 @@ class _ArchivedConversationsScreenState
 
     if (mounted) {
       setState(() {
-        _conversations = _conversations
-            ?.where((c) => c.id != conversation.id)
-            .toList();
+        _conversations =
+            _conversations?.where((c) => c.id != conversation.id).toList();
       });
     }
 
@@ -311,51 +311,12 @@ class _ArchivedConversationsScreenState
 
   Widget _buildTip(ThemeData theme) {
     final fg = theme.colorScheme.onSurfaceVariant;
-    return Stack(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(16, 12, 40, 12),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest.withValues(
-              alpha: 0.55,
-            ),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Icon(Icons.info_outline, size: 17, color: fg),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  L10n.get("archived_chats_tip"),
-                  style: TextStyle(
-                    color: fg,
-                    fontSize: 14,
-                    height: 1.25,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          top: 0,
-          right: 0,
-          child: IconButton(
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: _dismissTip,
-            icon: Icon(Icons.close, size: 18, color: fg),
-            padding: const EdgeInsets.all(4),
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            splashRadius: 18,
-          ),
-        ),
-      ],
+    return UydoshInfoCalloutCard(
+      onClose: _dismissTip,
+      message: Text(
+        L10n.get("archived_chats_tip"),
+        style: TextStyle(color: fg, fontSize: 14, height: 1.25),
+      ),
     );
   }
 

@@ -8,7 +8,6 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
-import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -27,20 +26,21 @@ import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
@@ -474,87 +474,71 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   }
 
   Widget _buildErrorState(String message) {
-    // Check if this is an authentication error
-    final isAuthError =
-        message.contains("401") ||
+    final isAuthError = message.contains("401") ||
         message.contains("Unauthorized") ||
         message.contains("Invalid or expired session token") ||
         message.contains("Authentication required");
 
+    if (isAuthError) {
+      return ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, _) {
+          final themeState = ThemeState();
+          return AuthRequiredState(
+            message:
+                "Please log in again to view your messages. Your session may have expired.",
+            buttonLabel: "Log In Again",
+            iconSize: 64,
+            titleFontSize: 24,
+            iconColor: themeState.primaryColor,
+            titleColor: themeState.primaryColor,
+            messageColor: themeState.secondaryTextColor,
+            onLogin: AuthRequiredState.logoutAndReauthenticate(context),
+          );
+        },
+      );
+    }
+
     return ListenableBuilder(
       listenable: ThemeState(),
-      builder: (context, child) {
+      builder: (context, _) {
         final themeState = ThemeState();
-        final primaryColor = themeState.primaryColor;
-        final secondaryTextColor = themeState.secondaryTextColor;
         final buttonColor = themeState.buttonColor;
         final buttonTextColor = themeState.buttonTextColor;
 
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+        return UydoshErrorRetryColumn(
+          iconColor: AppColors.error,
+          title: "Error",
+          titleStyle: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.error,
+          ),
+          message: message,
+          messageStyle: TextStyle(
+            fontSize: 16,
+            color: themeState.secondaryTextColor,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          spacingAfterIcon: 16,
+          spacingAfterTitle: 8,
+          spacingBeforeButton: 24,
+          retryButton: ThreeDPillButton(
+            onPressed: _loadConversations,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            backgroundColor: buttonColor,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                ThemeIcon(
-                  isAuthError ? Icons.lock_outline : Icons.error_outline,
-                  size: 64,
-                  color: isAuthError ? primaryColor : AppColors.error,
-                ),
-                const SizedBox(height: 16),
+                ThemeIcon(Icons.refresh, size: 18, color: buttonTextColor),
+                const SizedBox(width: 8),
                 Text(
-                  isAuthError ? "Authentication Required" : "Error",
+                  L10n.get("retry"),
                   style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: isAuthError ? primaryColor : AppColors.error,
+                    fontWeight: FontWeight.w600,
+                    color: buttonTextColor,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  isAuthError
-                      ? "Please log in again to view your messages. Your session may have expired."
-                      : message,
-                  style: TextStyle(fontSize: 16, color: secondaryTextColor),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                if (isAuthError) ...[
-                  GhostButtonFactory.iconText(
-                    onPressed: () async {
-                      // Use centralized logout service
-                      await LogoutService().performLogout(context);
-                      // Navigate to auth wizard
-                      context.pushReplaceAuthWizard();
-                    },
-                    icon: Icons.login,
-                    text: "Log In Again",
-                  ),
-                ] else ...[
-                  ThreeDPillButton(
-                    onPressed: _loadConversations,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
-                    ),
-                    backgroundColor: buttonColor,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ThemeIcon(Icons.refresh, size: 18, color: buttonTextColor),
-                        const SizedBox(width: 8),
-                        Text(
-                          L10n.get("retry"),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: buttonTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ],
             ),
           ),

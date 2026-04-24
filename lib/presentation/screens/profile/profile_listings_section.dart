@@ -3,6 +3,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
@@ -167,7 +168,10 @@ class ProfileListingsSection extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedbackUtils.impact();
+        onTap();
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: double.infinity,
@@ -208,6 +212,7 @@ class ProfileListingsSection extends StatelessWidget {
       context,
       child: InkWell(
         onTap: () {
+          HapticFeedbackUtils.impact();
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => BlocProvider(

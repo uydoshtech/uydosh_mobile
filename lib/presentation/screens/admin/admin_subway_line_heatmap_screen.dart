@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -441,44 +442,11 @@ L10n.get("admin_subway_heatmap_count_label"),
   }
 
   Widget _buildErrorState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ThemeIcon(
-            Icons.error_outline,
-            size: 64,
-            color: Theme.of(context).colorScheme.error,
-          ),
-          const SizedBox(height: 12),
-          Text(
-L10n.get("admin_subway_heatmap_error"),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.error,
-            ),
-          ),
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              _errorMessage!,
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadCounts,
-            child: Text(
-              L10n.get("admin_subway_heatmap_retry"),
-            ),
-          ),
-        ],
-      ),
+    return UydoshErrorRetryColumn(
+      title: L10n.get("admin_subway_heatmap_error"),
+      message: _errorMessage,
+      onRetry: _loadCounts,
+      retryLabel: L10n.get("admin_subway_heatmap_retry"),
     );
   }
 

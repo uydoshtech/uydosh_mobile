@@ -29,8 +29,10 @@ import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
@@ -78,9 +80,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   int _defaultGenderFromProfile = 1; // Profile-based default for reset
   /// Roommate listing (type 2): single rent amount.
   double _roommatePrice = 0.0;
+
   /// Room-needed listing (type 1): budget range (API still stores one `price`).
   double _roomBudgetMin = 0.0;
   double _roomBudgetMax = 0.0;
+
   /// Whether the user has interacted with the price slider at least once.
   bool _priceTouched = false;
 
@@ -155,7 +159,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       if (!mounted) return;
       final listingTypeOptions = [2, 1];
       final genderOptions = [1, 2];
-      final listingTypeIndex = listingTypeOptions.indexOf(_selectedListingTypeId);
+      final listingTypeIndex =
+          listingTypeOptions.indexOf(_selectedListingTypeId);
       final genderIndex = genderOptions.indexOf(_selectedGender);
       _listingTypeScrollController?.animateToItem(
         listingTypeIndex >= 0 ? listingTypeIndex : 0,
@@ -177,10 +182,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     try {
       final response = await getIt<IOAuthApiClient>()
           .post<Map<String, dynamic>, _EmptyRequest>(
-            "/users/verify-session",
-            (json) => json as Map<String, dynamic>,
-            data: _EmptyRequest(),
-          );
+        "/users/verify-session",
+        (json) => json as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
       final user = response["user"];
       role = user is Map<String, dynamic> ? user["role"] as String? : null;
       if (role != null) await SessionManager.storeUserRole(role);
@@ -193,12 +198,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   /// Get profile gender (1 = male, 2 = female). Returns null if not available.
   Future<int?> _getProfileGender() async {
     var profile = await SessionManager.getCachedUserProfile();
-    if (profile?.gender != null && (profile!.gender == 1 || profile.gender == 2)) {
+    if (profile?.gender != null &&
+        (profile!.gender == 1 || profile.gender == 2)) {
       return profile.gender;
     }
     try {
       profile = await getIt<IUserProfileService>().getCurrentUserProfile();
-      if (profile.gender != null && (profile.gender == 1 || profile.gender == 2)) {
+      if (profile.gender != null &&
+          (profile.gender == 1 || profile.gender == 2)) {
         return profile.gender;
       }
     } catch (_) {}
@@ -213,8 +220,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     // Trigger the BLoC to fetch stations for the selected line
     context.read<SubwayStationsBloc>().add(
-      SubwayStationsEvent.fetchSubwayStationsByLine(line: line),
-    );
+          SubwayStationsEvent.fetchSubwayStationsByLine(line: line),
+        );
   }
 
   void _loadLocations() {
@@ -299,19 +306,20 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void _onLocationsLoaded(List<Location> locations) {
     setState(() {
       // Sort locations alphabetically by localized name
-      _currentLocations = List.from(locations)..sort((a, b) {
-        final aName = _getLocalizedName(
-          nameUz: a.shortNameUz,
-          nameRu: a.shortNameRu,
-          nameEn: a.shortNameEn,
-        );
-        final bName = _getLocalizedName(
-          nameUz: b.shortNameUz,
-          nameRu: b.shortNameRu,
-          nameEn: b.shortNameEn,
-        );
-        return aName.compareTo(bName);
-      });
+      _currentLocations = List.from(locations)
+        ..sort((a, b) {
+          final aName = _getLocalizedName(
+            nameUz: a.shortNameUz,
+            nameRu: a.shortNameRu,
+            nameEn: a.shortNameEn,
+          );
+          final bName = _getLocalizedName(
+            nameUz: b.shortNameUz,
+            nameRu: b.shortNameRu,
+            nameEn: b.shortNameEn,
+          );
+          return aName.compareTo(bName);
+        });
       _selectedLocationIndex = -1; // Keep unselected
       _isLoadingLocations = false;
     });
@@ -481,61 +489,56 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       builder: (context, _) {
         final themeState = ThemeState();
         final theme = Theme.of(context);
-        final liquidGlassEnabled = themeState.isBlueTheme || themeState.isLightTheme;
+        final liquidGlassEnabled =
+            themeState.isBlueTheme || themeState.isLightTheme;
         final useLiquidGlassAppBar = widget.showAppBar && liquidGlassEnabled;
         final embeddedInGlassShell = !widget.showAppBar && liquidGlassEnabled;
         final appBarTheme = theme.appBarTheme;
-        final scrollTopPad =
-            embeddedInGlassShell
-                ? 16.0 + themeState.mainShellGlassExtraTopInset(context)
-                : 16.0;
+        final scrollTopPad = embeddedInGlassShell
+            ? 16.0 + themeState.mainShellGlassExtraTopInset(context)
+            : 16.0;
 
         return Scaffold(
           extendBodyBehindAppBar: useLiquidGlassAppBar,
-          appBar:
-              widget.showAppBar
-                  ? UydoshAppBar(
-                    leading: ThreeDAppBarIconButton.backLeading(context),
-                    title: L10n.text(
-                      "create_listing_title",
-                      style:
-                          appBarTheme.titleTextStyle?.copyWith(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ) ??
-                          const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    backgroundColor:
-                        useLiquidGlassAppBar
-                            ? liquidGlassAppBarMaterialColor(context)
-                            : appBarTheme.backgroundColor,
-                    surfaceTintColor:
-                        useLiquidGlassAppBar
-                            ? Colors.transparent
-                            : appBarTheme.surfaceTintColor,
-                    elevation: useLiquidGlassAppBar ? 0 : null,
-                    scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
-                    shadowColor:
-                        useLiquidGlassAppBar
-                            ? Colors.transparent
-                            : appBarTheme.shadowColor,
-                    forceMaterialTransparency: useLiquidGlassAppBar,
-                    flexibleSpace:
-                        useLiquidGlassAppBar
-                            ? const LiquidGlassAppBarFlexibleSpace()
-                            : null,
-                    foregroundColor: appBarTheme.foregroundColor,
-                  )
-                  : null,
+          appBar: widget.showAppBar
+              ? UydoshAppBar(
+                  leading: ThreeDAppBarIconButton.backLeading(context),
+                  title: L10n.text(
+                    "create_listing_title",
+                    style: appBarTheme.titleTextStyle?.copyWith(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ) ??
+                        const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  backgroundColor: useLiquidGlassAppBar
+                      ? liquidGlassAppBarMaterialColor(context)
+                      : appBarTheme.backgroundColor,
+                  surfaceTintColor: useLiquidGlassAppBar
+                      ? Colors.transparent
+                      : appBarTheme.surfaceTintColor,
+                  elevation: useLiquidGlassAppBar ? 0 : null,
+                  scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
+                  shadowColor: useLiquidGlassAppBar
+                      ? Colors.transparent
+                      : appBarTheme.shadowColor,
+                  forceMaterialTransparency: useLiquidGlassAppBar,
+                  flexibleSpace: useLiquidGlassAppBar
+                      ? const LiquidGlassAppBarFlexibleSpace()
+                      : null,
+                  foregroundColor: appBarTheme.foregroundColor,
+                )
+              : null,
           body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
             listener: (context, state) {
               state.map(
                 initial: (_) => setState(() => _isLoadingStations = false),
                 loading: (_) => setState(() => _isLoadingStations = true),
-                loaded: (loadedState) => _onStationsLoaded(loadedState.stations),
+                loaded: (loadedState) =>
+                    _onStationsLoaded(loadedState.stations),
                 error: (_) => setState(() => _isLoadingStations = false),
               );
             },
@@ -544,46 +547,30 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 state.map(
                   initial: (_) => setState(() => _isLoadingLocations = false),
                   loading: (_) => setState(() => _isLoadingLocations = true),
-                  loaded:
-                      (loadedState) =>
-                          _onLocationsLoaded(loadedState.locations),
+                  loaded: (loadedState) =>
+                      _onLocationsLoaded(loadedState.locations),
                   error: (_) => setState(() => _isLoadingLocations = false),
                 );
               },
               child: SafeArea(
                 top: !embeddedInGlassShell,
-                child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      16.0,
-                      scrollTopPad,
-                      16.0,
-                      16.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Show different content based on authentication status
-                        ListenableBuilder(
-                          listenable: AuthenticationState(),
-                          builder: (context, child) {
-                            final isAuthenticated =
-                                AuthenticationState().isAuthenticated;
+                child: UydoshFormScrollBody(
+                  topPadding: scrollTopPad,
+                  children: [
+                    ListenableBuilder(
+                      listenable: AuthenticationState(),
+                      builder: (context, child) {
+                        final isAuthenticated =
+                            AuthenticationState().isAuthenticated;
 
-                            if (isAuthenticated) {
-                              // Show the regular form for authenticated users
-                              return _buildAuthenticatedForm();
-                            } else {
-                              // Show authentication prompt for unauthenticated users
-                              return _buildUnauthenticatedPrompt();
-                            }
-                          },
-                        ),
-                      ],
+                        if (isAuthenticated) {
+                          return _buildAuthenticatedForm();
+                        } else {
+                          return _buildUnauthenticatedPrompt();
+                        }
+                      },
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -728,186 +715,96 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         // Description Field
         L10n.inputField(
           "listing_description_hint",
-          builder:
-              (hintText) => WheelPickerPlateContainer(
-                showErrorBorder: _showDescriptionError,
-                theme: Theme.of(context),
-                child: AnimatedSize(
-                  duration: const Duration(milliseconds: 320),
-                  reverseDuration: const Duration(milliseconds: 320),
-                  curve: Curves.easeInOut,
-                  alignment: Alignment.topCenter,
-                  clipBehavior: Clip.hardEdge,
-                  child: TextFormField(
-                    controller: _descriptionController,
-                    onChanged: (value) {
-                      if (_showDescriptionError && value.trim().isNotEmpty) {
-                        setState(() {
-                          _showDescriptionError = false;
-                        });
-                      }
-                    },
-                    decoration: InputDecoration(
-                      hintText: hintText,
-                      hintStyle: TextStyle(
-                        color:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant.withOpacity(0.7)
-                                : Colors.grey[400],
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                    ),
-                    style: TextStyle(
-                      color:
-                          ThemeState().isLightTheme
-                              ? Colors.black
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    minLines:
-                        _descriptionBaseLines +
-                        (_isDescriptionExpanded
-                            ? _descriptionExpandedExtraLines
-                            : 0),
-                    maxLines:
-                        _descriptionBaseLines +
-                        (_isDescriptionExpanded
-                            ? _descriptionExpandedExtraLines
-                            : 0),
-                    maxLength: 1000,
-                    buildCounter: (
-                      context, {
-                      required currentLength,
-                      required isFocused,
-                      maxLength,
-                    }) {
-                      final max = maxLength ?? 0;
-                      final isNearLimit =
-                          max > 0 && (currentLength / max) >= 0.9;
-                      final counterColor =
-                          isNearLimit
-                              ? Colors.red
-                              : Theme.of(context).brightness == Brightness.dark
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant
-                                      .withOpacity(0.7)
-                                  : Colors.black;
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 4, bottom: 8),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.centerLeft,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  ListingDescriptionAiEnhanceButton(
-                                    controller: _descriptionController,
-                                    inlineWithCounter: true,
-                                  ),
-                                  ListingDescriptionTemplateButton(
-                                    controller: _descriptionController,
-                                    listingTypeId: _selectedListingTypeId,
-                                    gender: _selectedGender,
-                                    inlineWithCounter: true,
-                                  ),
-                                ],
-                              ),
-                              Positioned(
-                                right: -18,
-                                top: 0,
-                                bottom: 0,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "$currentLength/$maxLength",
-                                      style: TextStyle(
-                                        color: counterColor,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Semantics(
-                                      button: true,
-                                      label:
-                                          _isDescriptionExpanded
-                                              ? "Collapse description"
-                                              : "Expand description",
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(12),
-                                        onTap: () {
-                                          HapticFeedbackUtils.lightImpact();
-                                          setState(() {
-                                            _isDescriptionExpanded =
-                                                !_isDescriptionExpanded;
-                                          });
-                                        },
-                                        child: SizedBox(
-                                          width: 44,
-                                          height: 44,
-                                          child: Center(
-                                            child: AnimatedRotation(
-                                              turns:
-                                                  _isDescriptionExpanded
-                                                      ? 0.5
-                                                      : 0.0,
-                                              duration: const Duration(
-                                                milliseconds: 240,
-                                              ),
-                                              curve: Curves.easeInOut,
-                                              child: const Icon(
-                                                Icons.expand_more,
-                                                size: 20,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+          builder: (hintText) => WheelPickerPlateContainer(
+            showErrorBorder: _showDescriptionError,
+            theme: Theme.of(context),
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 320),
+              reverseDuration: const Duration(milliseconds: 320),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              clipBehavior: Clip.hardEdge,
+              child: TextFormField(
+                controller: _descriptionController,
+                onChanged: (value) {
+                  if (_showDescriptionError && value.trim().isNotEmpty) {
+                    setState(() {
+                      _showDescriptionError = false;
+                    });
+                  }
+                },
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant.withOpacity(0.7)
+                        : Colors.grey[400],
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
                   ),
                 ),
+                style: TextStyle(
+                  color: ThemeState().isLightTheme
+                      ? Colors.black
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                minLines: _descriptionBaseLines +
+                    (_isDescriptionExpanded
+                        ? _descriptionExpandedExtraLines
+                        : 0),
+                maxLines: _descriptionBaseLines +
+                    (_isDescriptionExpanded
+                        ? _descriptionExpandedExtraLines
+                        : 0),
+                maxLength: 1000,
+                buildCounter: (
+                  context, {
+                  required currentLength,
+                  required isFocused,
+                  maxLength,
+                }) {
+                  return DescriptionCounterToolbar(
+                    controller: _descriptionController,
+                    listingTypeId: _selectedListingTypeId,
+                    gender: _selectedGender,
+                    currentLength: currentLength,
+                    maxLength: maxLength ?? 0,
+                    isExpanded: _isDescriptionExpanded,
+                    onToggleExpanded: () => setState(() {
+                      _isDescriptionExpanded = !_isDescriptionExpanded;
+                    }),
+                    layout: DescriptionCounterToolbarLayout.stack,
+                  );
+                },
               ),
+            ),
+          ),
         ),
         const SizedBox(height: 16),
         // Amenities Section
@@ -935,223 +832,207 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               // Move-in Date Field (50% width)
               Expanded(
                 child: L10n.inputField(
-                "quick_question_move_in_date",
-                builder:
-                    (hintText) => Container(
-                      clipBehavior: Clip.antiAlias,
-                      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                        context,
-                        theme: Theme.of(context),
-                      ),
-                      child: ValueListenableBuilder<TextEditingValue>(
-                        valueListenable: _moveInDateController,
-                        builder: (context, value, child) {
-                          final isEmpty = value.text.isEmpty;
-                          final moveInDateLabel =
-                              L10n.get("move_in_date_label");
-                          final anyDateText = L10n.get("any_date").replaceAll("\n", " ");
-                          final displayValue = isEmpty ? anyDateText : value.text;
-                          final displayText = "$moveInDateLabel\n$displayValue";
-                          final displayStyle = TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                ThemeState().isLightTheme
-                                    ? Colors.black
-                                    : Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                          );
-                          final hintStyle = TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                ThemeState().isLightTheme
-                                    ? Colors.black
-                                    : Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                          );
-                          return GestureDetector(
-                            onTap: () async {
-                              HapticFeedbackUtils.impact();
-                              final firstDate = DateTime.now();
-                              final lastDate =
-                                  DateTime.now().add(
-                                    const Duration(days: 365),
-                                  );
-                              final existingDate =
-                                  _moveInDateValue.isNotEmpty
-                                      ? DateTime.tryParse(_moveInDateValue)
-                                      : null;
-                              final initialDate =
-                                  existingDate != null &&
-                                          !existingDate.isBefore(firstDate) &&
-                                          !existingDate.isAfter(lastDate)
-                                      ? existingDate
-                                      : firstDate;
-                              final picked =
-                                  await LanguageAwareDatePicker.showDatePicker(
-                                    context: context,
-                                    initialDate: initialDate,
-                                    firstDate: firstDate,
-                                    lastDate: lastDate,
-                                    helpText:
-                                        L10n.get("select_date"),
-                                        cancelText:
-                                        L10n.get("cancel"),
-                                        confirmText:
-                                        L10n.get("ok"),
-                                  );
-                              if (picked != null) {
-                                _moveInDateValue =
-                                    "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                                _moveInDateController.text =
-                                    _formatMoveInDateDisplay(picked);
-                              }
-                            },
-                            child: InputDecorator(
-                              decoration: InputDecoration(
-                                hintText: hintText,
-                                hintStyle: hintStyle,
-                                hintMaxLines: 2,
-                                border: OutlineInputBorder(
-                                  borderRadius:
-                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                                  borderSide: BorderSide.none,
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                                  borderSide: BorderSide(
-                                    color: _getBorderColor(),
-                                    width: 2,
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: Colors.transparent,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 16,
-                                ),
-                                prefixIcon: ThemeIcon(
-                                  CupertinoIcons.calendar,
-                                  size: 22,
-                                  color:
-                                      Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant
-                                          : Colors.grey[600],
+                  "quick_question_move_in_date",
+                  builder: (hintText) => Container(
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                      context,
+                      theme: Theme.of(context),
+                    ),
+                    child: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _moveInDateController,
+                      builder: (context, value, child) {
+                        final isEmpty = value.text.isEmpty;
+                        final moveInDateLabel = L10n.get("move_in_date_label");
+                        final anyDateText =
+                            L10n.get("any_date").replaceAll("\n", " ");
+                        final displayValue = isEmpty ? anyDateText : value.text;
+                        final displayText = "$moveInDateLabel\n$displayValue";
+                        final displayStyle = TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeState().isLightTheme
+                              ? Colors.black
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        );
+                        final hintStyle = TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeState().isLightTheme
+                              ? Colors.black
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        );
+                        return GestureDetector(
+                          onTap: () async {
+                            HapticFeedbackUtils.impact();
+                            final firstDate = DateTime.now();
+                            final lastDate = DateTime.now().add(
+                              const Duration(days: 365),
+                            );
+                            final existingDate = _moveInDateValue.isNotEmpty
+                                ? DateTime.tryParse(_moveInDateValue)
+                                : null;
+                            final initialDate = existingDate != null &&
+                                    !existingDate.isBefore(firstDate) &&
+                                    !existingDate.isAfter(lastDate)
+                                ? existingDate
+                                : firstDate;
+                            final picked =
+                                await LanguageAwareDatePicker.showDatePicker(
+                              context: context,
+                              initialDate: initialDate,
+                              firstDate: firstDate,
+                              lastDate: lastDate,
+                              helpText: L10n.get("select_date"),
+                              cancelText: L10n.get("cancel"),
+                              confirmText: L10n.get("ok"),
+                            );
+                            if (picked != null) {
+                              _moveInDateValue =
+                                  "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                              _moveInDateController.text =
+                                  _formatMoveInDateDisplay(picked);
+                            }
+                          },
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              hintText: hintText,
+                              hintStyle: hintStyle,
+                              hintMaxLines: 2,
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius:
+                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius:
+                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                borderSide: BorderSide(
+                                  color: _getBorderColor(),
+                                  width: 2,
                                 ),
                               ),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  displayText,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: isEmpty ? hintStyle : displayStyle,
-                                ),
+                              filled: true,
+                              fillColor: Colors.transparent,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 16,
+                              ),
+                              prefixIcon: ThemeIcon(
+                                CupertinoIcons.calendar,
+                                size: 22,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant
+                                    : Colors.grey[600],
                               ),
                             ),
-                          );
-                        },
-                      ),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                displayText,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: isEmpty ? hintStyle : displayStyle,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
+                  ),
+                ),
               ),
-            ),
               const SizedBox(width: 12),
               // Private Room Toggle (50% width)
               Expanded(
                 child: Container(
-                clipBehavior: Clip.antiAlias,
-                decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                  context,
-                  theme: Theme.of(context),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 16.0,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                    context,
+                    theme: Theme.of(context),
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ThemeIcon(
-                        Icons.lock_outline,
-                        color:
-                            _isPrivateRoom
-                                ? _getBorderColor()
-                                : (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant
-                                        .withOpacity(0.7)
-                                    : Colors.grey[600]),
-                        size: 22,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              L10n.get("private_room").replaceFirst(" ", "\n"),
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color:
-                                    ThemeState().isLightTheme
-                                        ? Colors.black
-                                        : Theme.of(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 16.0,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ThemeIcon(
+                          Icons.lock_outline,
+                          color: _isPrivateRoom
+                              ? _getBorderColor()
+                              : (Theme.of(context).brightness == Brightness.dark
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withOpacity(0.7)
+                                  : Colors.grey[600]),
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                L10n.get("private_room")
+                                    .replaceFirst(" ", "\n"),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: ThemeState().isLightTheme
+                                      ? Colors.black
+                                      : Theme.of(
                                           context,
                                         ).colorScheme.onSurfaceVariant,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      NeumorphicToggle(
-                        value: _isPrivateRoom,
-                        activeAccentColor: _getBorderColor(),
-                        activeTrackColor: _getBorderColor().withValues(
-                          alpha: 0.3,
+                        NeumorphicToggle(
+                          value: _isPrivateRoom,
+                          activeAccentColor: _getBorderColor(),
+                          activeTrackColor: _getBorderColor().withValues(
+                            alpha: 0.3,
+                          ),
+                          inactiveThumbColor:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withOpacity(0.7)
+                                  : Colors.grey.shade600,
+                          inactiveTrackColor:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withOpacity(0.3)
+                                  : Colors.grey.shade300,
+                          onChanged: (value) {
+                            HapticFeedbackUtils.impact();
+                            setState(() {
+                              _isPrivateRoom = value;
+                            });
+                          },
                         ),
-                        inactiveThumbColor:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant
-                                    .withOpacity(0.7)
-                                : Colors.grey.shade600,
-                        inactiveTrackColor:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant
-                                    .withOpacity(0.3)
-                                : Colors.grey.shade300,
-                        onChanged: (value) {
-                          HapticFeedbackUtils.impact();
-                          setState(() {
-                            _isPrivateRoom = value;
-                          });
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
             ],
           ),
         ),
@@ -1190,11 +1071,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             final baseSize = label?.fontSize ?? 14;
             final textStyle =
                 label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
-                TextStyle(
-                  fontSize: baseSize * 1.2,
-                  height: 1.0,
-                  fontWeight: FontWeight.w500,
-                );
+                    TextStyle(
+                      fontSize: baseSize * 1.2,
+                      height: 1.0,
+                      fontWeight: FontWeight.w500,
+                    );
             return PrimaryButtonFactory.iconText(
               onPressed: _isSubmitting ? null : _submitForm,
               icon: _isSubmitting ? Icons.hourglass_empty : Icons.add,
@@ -1402,18 +1283,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         locationId: selectedLocation.id,
         amenityIds: _selectedAmenityIds.toList(),
         subwayStationId: selectedStation?.id, // Now optional, moved to end
-        subwayLineId:
-            _selectedSubwayLine > 0
-                ? _selectedSubwayLine
-                : null, // Add subway line ID
+        subwayLineId: _selectedSubwayLine > 0
+            ? _selectedSubwayLine
+            : null, // Add subway line ID
         moveInDate: _moveInDateValue.isNotEmpty
             ? _moveInDateValue
             : null, // Only send date if selected
         privateRoom: _isPrivateRoom, // Add private room preference
-        photoPaths:
-            orderedPhotos.isNotEmpty
-                ? orderedPhotos
-                : null, // Upload photos with primary first (only for roommate needed)
+        photoPaths: orderedPhotos.isNotEmpty
+            ? orderedPhotos
+            : null, // Upload photos with primary first (only for roommate needed)
       );
 
       if (!mounted) return;
@@ -1511,7 +1390,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       });
     }
   }
-
 }
 
 class _EmptyRequest implements IJsonEncodable {

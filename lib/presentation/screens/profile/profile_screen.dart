@@ -507,6 +507,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
+                HapticFeedbackUtils.impact();
                 if (isSessionExpired) {
                   LogoutService().performLogout(context);
                 } else {
@@ -522,7 +523,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (!isSessionExpired) ...[
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () => _showLogoutDialog(context),
+                onPressed: () {
+                  HapticFeedbackUtils.impact();
+                  _showLogoutDialog(context);
+                },
                 child: Text(L10n.get("logout")),
               ),
             ],

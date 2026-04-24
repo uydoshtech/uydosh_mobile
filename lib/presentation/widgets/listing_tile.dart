@@ -767,6 +767,7 @@ class _ListingTileState extends State<ListingTile>
                                         fontSize: 14,
                                         color: _getLocationTextColor(),
                                       ),
+                                      maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -1218,26 +1219,34 @@ class _ListingTileState extends State<ListingTile>
         children: [
           ThemeIcon(Icons.train, color: _getLineColor(leftStation.line), size: 20),
           const SizedBox(width: 4),
-          Text(
-            _getLocalizedName(
-              nameUz: leftStation.nameUz,
-              nameRu: leftStation.nameRu,
-              nameEn: leftStation.nameEn,
+          Flexible(
+            child: Text(
+              _getLocalizedName(
+                nameUz: leftStation.nameUz,
+                nameRu: leftStation.nameRu,
+                nameEn: leftStation.nameEn,
+              ),
+              style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
           ),
           const SizedBox(width: 4),
           ThemeIcon(Icons.swap_horiz, color: _getLocationTextColor(), size: 16),
           const SizedBox(width: 4),
           ThemeIcon(Icons.train, color: _getLineColor(rightStation.line), size: 20),
           const SizedBox(width: 4),
-          Text(
-            _getLocalizedName(
-              nameUz: rightStation.nameUz,
-              nameRu: rightStation.nameRu,
-              nameEn: rightStation.nameEn,
+          Flexible(
+            child: Text(
+              _getLocalizedName(
+                nameUz: rightStation.nameUz,
+                nameRu: rightStation.nameRu,
+                nameEn: rightStation.nameEn,
+              ),
+              style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
           ),
         ],
       );
@@ -1255,6 +1264,8 @@ class _ListingTileState extends State<ListingTile>
                 nameEn: station.nameEn,
               ),
               style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

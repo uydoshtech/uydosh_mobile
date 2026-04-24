@@ -22,6 +22,9 @@ import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
+import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
@@ -43,7 +46,6 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 
 class EditListingScreen extends StatefulWidget {
-
   const EditListingScreen({required this.listingDetail, super.key});
   final ListingDetail listingDetail;
 
@@ -176,10 +178,9 @@ class _EditListingScreenState extends State<EditListingScreen>
     _moveInDateValue = moveInDate;
     if (_moveInDateValue.isNotEmpty) {
       final parsedDate = DateTime.tryParse(_moveInDateValue);
-      _moveInDateController.text =
-          parsedDate != null
-              ? _formatMoveInDateDisplay(parsedDate)
-              : _moveInDateValue;
+      _moveInDateController.text = parsedDate != null
+          ? _formatMoveInDateDisplay(parsedDate)
+          : _moveInDateValue;
     }
 
     _isPrivateRoom = widget.listingDetail.privateRoom ?? false;
@@ -192,7 +193,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     // Convert string code to integer ID: "roommate_needed" -> 2, "room_needed" -> 1
     _selectedListingTypeId =
         widget.listingDetail.listingType.code == "roommate_needed" ? 2 : 1;
-  
+
     // Set price (single value, stored as both min and max)
     _price = widget.listingDetail.price.toDouble();
 
@@ -230,8 +231,8 @@ class _EditListingScreenState extends State<EditListingScreen>
     });
 
     context.read<SubwayStationsBloc>().add(
-      SubwayStationsEvent.fetchSubwayStationsByLine(line: line),
-    );
+          SubwayStationsEvent.fetchSubwayStationsByLine(line: line),
+        );
   }
 
   String _formatMoveInDateDisplay(DateTime date) {
@@ -330,19 +331,20 @@ class _EditListingScreenState extends State<EditListingScreen>
   void _onLocationsLoaded(List<Location> locations) {
     setState(() {
       // Sort locations alphabetically by localized name
-      _currentLocations = List.from(locations)..sort((a, b) {
-        final aName = _getLocalizedName(
-          nameUz: a.shortNameUz,
-          nameRu: a.shortNameRu,
-          nameEn: a.shortNameEn,
-        );
-        final bName = _getLocalizedName(
-          nameUz: b.shortNameUz,
-          nameRu: b.shortNameRu,
-          nameEn: b.shortNameEn,
-        );
-        return aName.compareTo(bName);
-      });
+      _currentLocations = List.from(locations)
+        ..sort((a, b) {
+          final aName = _getLocalizedName(
+            nameUz: a.shortNameUz,
+            nameRu: a.shortNameRu,
+            nameEn: a.shortNameEn,
+          );
+          final bName = _getLocalizedName(
+            nameUz: b.shortNameUz,
+            nameRu: b.shortNameRu,
+            nameEn: b.shortNameEn,
+          );
+          return aName.compareTo(bName);
+        });
 
       // Index must be into [_currentLocations] (sorted), not the raw API list.
       if (widget.listingDetail.location != null) {
@@ -454,14 +456,17 @@ class _EditListingScreenState extends State<EditListingScreen>
       changed.add(label.isEmpty ? fallback : label);
     }
 
-    if (_normListingText(_titleController.text) != _normListingText(baseline.title)) {
+    if (_normListingText(_titleController.text) !=
+        _normListingText(baseline.title)) {
       addLabel("listing_title_label", fallback: "Title");
     }
-    if (_normListingText(_descriptionController.text) != _normListingText(_descriptionForEditing(baseline))) {
+    if (_normListingText(_descriptionController.text) !=
+        _normListingText(_descriptionForEditing(baseline))) {
       addLabel("listing_description_label", fallback: "Description");
     }
 
-    final baselineTypeId = baseline.listingType.code == "roommate_needed" ? 2 : 1;
+    final baselineTypeId =
+        baseline.listingType.code == "roommate_needed" ? 2 : 1;
     if (_selectedListingTypeId != baselineTypeId) {
       addLabel("listing_type_label", fallback: "Listing type");
     }
@@ -591,56 +596,20 @@ class _EditListingScreenState extends State<EditListingScreen>
     final baseline = widget.listingDetail;
     final changedFields = _computeChangedFieldLabels(
       baseline: baseline,
-      currentLocationId: _isLoadingLocations ? baseline.locationId : _currentLocationId(),
-      currentSubwayStationId:
-          _isLoadingStations ? baseline.subwayStationId : _currentSubwayStationId(),
+      currentLocationId:
+          _isLoadingLocations ? baseline.locationId : _currentLocationId(),
+      currentSubwayStationId: _isLoadingStations
+          ? baseline.subwayStationId
+          : _currentSubwayStationId(),
       currentSubwayLineId: _isLoadingStations
           ? baseline.subwayLineId
           : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null),
     );
-    final leave = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        final theme = Theme.of(ctx);
-        final changedPrefix = L10n.get("changed_fields");
-        final bullet = "•";
-        final contentText = changedFields.isEmpty
-            ? L10n.get("unsaved_changes_message")
-            : "${L10n.get("unsaved_changes_message")}\n\n$changedPrefix:\n$bullet ${changedFields.join("\n$bullet ")}";
-        return AlertDialog(
-          backgroundColor: theme.dialogTheme.backgroundColor,
-          title: Text(
-            L10n.get("unsaved_changes_title"),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-          content: Text(
-            contentText,
-            style: TextStyle(
-              fontSize: 16,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(L10n.get("keep_editing")),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              style: TextButton.styleFrom(
-                foregroundColor: theme.colorScheme.error,
-              ),
-              child: Text(L10n.get("leave_without_saving")),
-            ),
-          ],
-        );
-      },
+    final leave = await UnsavedChangesDialog.show(
+      context,
+      changedFieldLabels: changedFields,
     );
-    if (!mounted || !(leave ?? false)) return;
+    if (!mounted || !leave) return;
     Navigator.of(context).pop(result);
   }
 
@@ -652,12 +621,12 @@ class _EditListingScreenState extends State<EditListingScreen>
       listenable: ThemeState(),
       builder: (context, _) {
         final themeState = ThemeState();
-        final useLiquidGlassAppBar = themeState.isBlueTheme || themeState.isLightTheme;
+        final useLiquidGlassAppBar =
+            themeState.isBlueTheme || themeState.isLightTheme;
         final appBarTheme = theme.appBarTheme;
-        final bodyTopPad =
-            useLiquidGlassAppBar
-                ? 16.0 + themeState.mainShellGlassExtraTopInset(context)
-                : 20.0;
+        final bodyTopPad = useLiquidGlassAppBar
+            ? 16.0 + themeState.mainShellGlassExtraTopInset(context)
+            : 20.0;
 
         return PopScope(
           canPop: _allowPopWithoutConfirm || !_isFormDirty(),
@@ -669,25 +638,21 @@ class _EditListingScreenState extends State<EditListingScreen>
                 "edit",
                 style: appBarTheme.titleTextStyle,
               ),
-              backgroundColor:
-                  useLiquidGlassAppBar
-                      ? liquidGlassAppBarMaterialColor(context)
-                      : appBarTheme.backgroundColor ?? theme.colorScheme.primary,
-              surfaceTintColor:
-                  useLiquidGlassAppBar
-                      ? Colors.transparent
-                      : appBarTheme.surfaceTintColor,
+              backgroundColor: useLiquidGlassAppBar
+                  ? liquidGlassAppBarMaterialColor(context)
+                  : appBarTheme.backgroundColor ?? theme.colorScheme.primary,
+              surfaceTintColor: useLiquidGlassAppBar
+                  ? Colors.transparent
+                  : appBarTheme.surfaceTintColor,
               elevation: useLiquidGlassAppBar ? 0 : null,
               scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
-              shadowColor:
-                  useLiquidGlassAppBar
-                      ? Colors.transparent
-                      : appBarTheme.shadowColor,
+              shadowColor: useLiquidGlassAppBar
+                  ? Colors.transparent
+                  : appBarTheme.shadowColor,
               forceMaterialTransparency: useLiquidGlassAppBar,
-              flexibleSpace:
-                  useLiquidGlassAppBar
-                      ? const LiquidGlassAppBarFlexibleSpace()
-                      : null,
+              flexibleSpace: useLiquidGlassAppBar
+                  ? const LiquidGlassAppBarFlexibleSpace()
+                  : null,
               foregroundColor:
                   appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
               leading: ThreeDAppBarIconButton.backLeading(
@@ -706,346 +671,267 @@ class _EditListingScreenState extends State<EditListingScreen>
               ],
             ),
             body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
-        listener: (context, state) {
-          state.map(
-            initial: (_) => setState(() => _isLoadingStations = false),
-            loading: (_) => setState(() => _isLoadingStations = true),
-            loaded: (loadedState) => _onStationsLoaded(loadedState.stations),
-            error: (_) => setState(() => _isLoadingStations = false),
-          );
-        },
-        child: BlocListener<LocationsBloc, LocationsState>(
-          listener: (context, state) {
-            state.map(
-              initial: (_) => setState(() => _isLoadingLocations = false),
-              loading: (_) => setState(() => _isLoadingLocations = true),
-              loaded:
-                  (loadedState) => _onLocationsLoaded(loadedState.locations),
-              error: (_) => setState(() => _isLoadingLocations = false),
-            );
-          },
-          child: SingleChildScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16.0, bodyTopPad, 16.0, 16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Listing Type and Gender Selection - Side by Side
-                    Container(
-                      child: Row(
-                        children: [
-                          // Listing Type Selection (50% width)
-                          Expanded(
-                            child: ListingTypePicker(
-                              selectedListingTypeId: _selectedListingTypeId,
-                              scrollController: _listingTypeScrollController,
-                              onListingTypeChanged: (listingTypeId) {
-                                setState(() {
-                                  _selectedListingTypeId = listingTypeId;
-                                });
-                              },
-                              useThemeColors: true,
-                              showArrows: false,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Gender Selection (50% width)
-                          Expanded(
-                            child: GenderPicker(
-                              selectedGender: _selectedGender,
-                              scrollController: _genderScrollController,
-                              onGenderChanged: (gender) {
-                                setState(() {
-                                  _selectedGender = gender;
-                                });
-                              },
-                              useThemeColors: true,
-                              showArrows: false,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Metro Line and Station Selection (Third Row)
-                    ListingFormMetroSection(
-                      selectedSubwayLine: _selectedSubwayLine,
-                      selectedStationIndex: _selectedStationIndex,
-                      currentStations: _currentStations,
-                      isLoadingStations: _isLoadingStations,
-                      metroLineScrollController: _metroLineScrollController,
-                      metroStationScrollController: _metroStationScrollController,
-                      onLineChanged: (index) {
-                        setState(() {
-                          _selectedSubwayLine = index;
-                          if (index > 0) {
-                            _loadStationsForLine(index);
-                          } else {
-                            _currentStations = [];
-                            _selectedStationIndex = 0;
-                          }
-                        });
-                      },
-                      onStationChanged: (index) {
-                        setState(() {
-                          _selectedStationIndex = index;
-                          _syncLocationWithStation();
-                        });
-                      },
-                      onDismissKeyboard: _dismissKeyboard,
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ), // Space between metro fields and location
-                    // Location Field - Full Row
-                    LocationPicker(
-                      locations: _currentLocations,
-                      selectedLocationIndex: _selectedLocationIndex,
-                      scrollController: _locationScrollController,
-                      onLocationChanged: (locationIndex) {
-                        setState(() {
-                          _selectedLocationIndex = locationIndex;
-                          // Clear location error when user selects a location
-                          if (_showLocationError && locationIndex >= 0) {
-                            _showLocationError = false;
-                          }
-                        });
-                      },
-                      isLoading: _isLoadingLocations,
-                      useThemeColors: true,
-                      useColoredIcons: true,
-                      showError: _showLocationError,
-                      showArrows: false,
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ), // Space between location and price range
-                    // Price Field - Single handle, stored as both min and max
-                    PriceRangePicker(
-                      minPrice: 10.0,
-                      maxPrice: 500.0,
-                      initialMinPrice: _price,
-                      initialMaxPrice: _price,
-                      useSinglePrice: true,
-                      onPriceRangeChanged: (minPrice, maxPrice) {
-                        _dismissKeyboard();
-                        setState(() {
-                          _price = minPrice; // Same value for both in single mode
-                        });
-                      },
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ), // Space between price range and description
-
-                    // Description Field
-                    WheelPickerPlateContainer(
-                      showErrorBorder: _showDescriptionError,
-                      theme: theme,
-                      child: AnimatedSize(
-                        duration: const Duration(milliseconds: 320),
-                        reverseDuration: const Duration(milliseconds: 320),
-                        curve: Curves.easeInOut,
-                        alignment: Alignment.topCenter,
-                        clipBehavior: Clip.hardEdge,
-                        child: TextFormField(
-                          controller: _descriptionController,
-                          onChanged: (value) {
-                            // Clear error when user types
-                            if (_showDescriptionError &&
-                                value.trim().isNotEmpty) {
-                              setState(() {
-                                _showDescriptionError = false;
-                              });
-                            }
-                          },
-                          decoration: InputDecoration(
-                            hintText: L10n.get("listing_description_hint"),
-                            hintStyle: TextStyle(
-                              color:
-                                  Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? theme.colorScheme.onSurfaceVariant
-                                          .withOpacity(0.7)
-                                      : Colors.grey[400],
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.transparent,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
-                            ),
-                          ),
-                          style: TextStyle(
-                            color:
-                                ThemeState().isLightTheme
-                                    ? Colors.black
-                                    : theme.colorScheme.onSurfaceVariant,
-                          ),
-                          minLines:
-                              _descriptionBaseLines +
-                              (_isDescriptionExpanded
-                                  ? _descriptionExpandedExtraLines
-                                  : 0),
-                          maxLines:
-                              _descriptionBaseLines +
-                              (_isDescriptionExpanded
-                                  ? _descriptionExpandedExtraLines
-                                  : 0),
-                          maxLength: 1000,
-                          buildCounter: (
-                            context, {
-                            required currentLength,
-                            required isFocused,
-                            maxLength,
-                          }) {
-                            final max = maxLength ?? 0;
-                            final isNearLimit =
-                                max > 0 && (currentLength / max) >= 0.9;
-                            final counterColor =
-                                isNearLimit
-                                    ? Colors.red
-                                    : Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? theme.colorScheme.onSurfaceVariant
-                                            .withOpacity(0.7)
-                                        : Colors.black;
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 4, bottom: 8),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  ListingDescriptionAiEnhanceButton(
-                                    controller: _descriptionController,
-                                    inlineWithCounter: true,
-                                  ),
-                                  ListingDescriptionTemplateButton(
-                                    controller: _descriptionController,
-                                    listingTypeId: _selectedListingTypeId,
-                                    gender: _selectedGender,
-                                    inlineWithCounter: true,
-                                  ),
-                                  const Spacer(),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "$currentLength/$maxLength",
-                                        style: TextStyle(
-                                          color: counterColor,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Semantics(
-                                        button: true,
-                                        label:
-                                            _isDescriptionExpanded
-                                                ? "Collapse description"
-                                                : "Expand description",
-                                        child: InkWell(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          onTap: () {
-                                            HapticFeedbackUtils.lightImpact();
-                                            setState(() {
-                                              _isDescriptionExpanded =
-                                                  !_isDescriptionExpanded;
-                                            });
-                                          },
-                                          child: SizedBox(
-                                            width: 44,
-                                            height: 44,
-                                            child: Center(
-                                              child: AnimatedRotation(
-                                                turns:
-                                                    _isDescriptionExpanded
-                                                        ? 0.5
-                                                        : 0.0,
-                                                duration: const Duration(
-                                                  milliseconds: 240,
-                                                ),
-                                                curve: Curves.easeInOut,
-                                                child: const Icon(
-                                                  Icons.expand_more,
-                                                  size: 20,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+              listener: (context, state) {
+                state.map(
+                  initial: (_) => setState(() => _isLoadingStations = false),
+                  loading: (_) => setState(() => _isLoadingStations = true),
+                  loaded: (loadedState) =>
+                      _onStationsLoaded(loadedState.stations),
+                  error: (_) => setState(() => _isLoadingStations = false),
+                );
+              },
+              child: BlocListener<LocationsBloc, LocationsState>(
+                listener: (context, state) {
+                  state.map(
+                    initial: (_) => setState(() => _isLoadingLocations = false),
+                    loading: (_) => setState(() => _isLoadingLocations = true),
+                    loaded: (loadedState) =>
+                        _onLocationsLoaded(loadedState.locations),
+                    error: (_) => setState(() => _isLoadingLocations = false),
+                  );
+                },
+                child: Form(
+                  key: _formKey,
+                  child: UydoshFormScrollBody(
+                    topPadding: bodyTopPad,
+                    children: [
+                      // Listing Type and Gender Selection - Side by Side
+                      Container(
+                        child: Row(
+                          children: [
+                            // Listing Type Selection (50% width)
+                            Expanded(
+                              child: ListingTypePicker(
+                                selectedListingTypeId: _selectedListingTypeId,
+                                scrollController: _listingTypeScrollController,
+                                onListingTypeChanged: (listingTypeId) {
+                                  setState(() {
+                                    _selectedListingTypeId = listingTypeId;
+                                  });
+                                },
+                                useThemeColors: true,
+                                showArrows: false,
                               ),
-                            );
-                          },
+                            ),
+                            const SizedBox(width: 12),
+                            // Gender Selection (50% width)
+                            Expanded(
+                              child: GenderPicker(
+                                selectedGender: _selectedGender,
+                                scrollController: _genderScrollController,
+                                onGenderChanged: (gender) {
+                                  setState(() {
+                                    _selectedGender = gender;
+                                  });
+                                },
+                                useThemeColors: true,
+                                showArrows: false,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 10),
 
-                    const SizedBox(height: 10),
+                      // Metro Line and Station Selection (Third Row)
+                      ListingFormMetroSection(
+                        selectedSubwayLine: _selectedSubwayLine,
+                        selectedStationIndex: _selectedStationIndex,
+                        currentStations: _currentStations,
+                        isLoadingStations: _isLoadingStations,
+                        metroLineScrollController: _metroLineScrollController,
+                        metroStationScrollController:
+                            _metroStationScrollController,
+                        onLineChanged: (index) {
+                          setState(() {
+                            _selectedSubwayLine = index;
+                            if (index > 0) {
+                              _loadStationsForLine(index);
+                            } else {
+                              _currentStations = [];
+                              _selectedStationIndex = 0;
+                            }
+                          });
+                        },
+                        onStationChanged: (index) {
+                          setState(() {
+                            _selectedStationIndex = index;
+                            _syncLocationWithStation();
+                          });
+                        },
+                        onDismissKeyboard: _dismissKeyboard,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ), // Space between metro fields and location
+                      // Location Field - Full Row
+                      LocationPicker(
+                        locations: _currentLocations,
+                        selectedLocationIndex: _selectedLocationIndex,
+                        scrollController: _locationScrollController,
+                        onLocationChanged: (locationIndex) {
+                          setState(() {
+                            _selectedLocationIndex = locationIndex;
+                            // Clear location error when user selects a location
+                            if (_showLocationError && locationIndex >= 0) {
+                              _showLocationError = false;
+                            }
+                          });
+                        },
+                        isLoading: _isLoadingLocations,
+                        useThemeColors: true,
+                        useColoredIcons: true,
+                        showError: _showLocationError,
+                        showArrows: false,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ), // Space between location and price range
+                      // Price Field - Single handle, stored as both min and max
+                      PriceRangePicker(
+                        minPrice: 10.0,
+                        maxPrice: 500.0,
+                        initialMinPrice: _price,
+                        initialMaxPrice: _price,
+                        useSinglePrice: true,
+                        onPriceRangeChanged: (minPrice, maxPrice) {
+                          _dismissKeyboard();
+                          setState(() {
+                            _price =
+                                minPrice; // Same value for both in single mode
+                          });
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ), // Space between price range and description
 
-                    // Move-in Date and Private Room Row
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Move-in Date Field (50% width)
-                          Expanded(
-                            child: L10n.inputField(
-                            "quick_question_move_in_date",
-                            builder:
-                                (hintText) => Container(
+                      // Description Field
+                      WheelPickerPlateContainer(
+                        showErrorBorder: _showDescriptionError,
+                        theme: theme,
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 320),
+                          reverseDuration: const Duration(milliseconds: 320),
+                          curve: Curves.easeInOut,
+                          alignment: Alignment.topCenter,
+                          clipBehavior: Clip.hardEdge,
+                          child: TextFormField(
+                            controller: _descriptionController,
+                            onChanged: (value) {
+                              // Clear error when user types
+                              if (_showDescriptionError &&
+                                  value.trim().isNotEmpty) {
+                                setState(() {
+                                  _showDescriptionError = false;
+                                });
+                              }
+                            },
+                            decoration: InputDecoration(
+                              hintText: L10n.get("listing_description_hint"),
+                              hintStyle: TextStyle(
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? theme.colorScheme.onSurfaceVariant
+                                        .withOpacity(0.7)
+                                    : Colors.grey[400],
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius:
+                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius:
+                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                borderSide: BorderSide.none,
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius:
+                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius:
+                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.transparent,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                            ),
+                            style: TextStyle(
+                              color: ThemeState().isLightTheme
+                                  ? Colors.black
+                                  : theme.colorScheme.onSurfaceVariant,
+                            ),
+                            minLines: _descriptionBaseLines +
+                                (_isDescriptionExpanded
+                                    ? _descriptionExpandedExtraLines
+                                    : 0),
+                            maxLines: _descriptionBaseLines +
+                                (_isDescriptionExpanded
+                                    ? _descriptionExpandedExtraLines
+                                    : 0),
+                            maxLength: 1000,
+                            buildCounter: (
+                              context, {
+                              required currentLength,
+                              required isFocused,
+                              maxLength,
+                            }) {
+                              return DescriptionCounterToolbar(
+                                controller: _descriptionController,
+                                listingTypeId: _selectedListingTypeId,
+                                gender: _selectedGender,
+                                currentLength: currentLength,
+                                maxLength: maxLength ?? 0,
+                                isExpanded: _isDescriptionExpanded,
+                                onToggleExpanded: () => setState(() {
+                                  _isDescriptionExpanded =
+                                      !_isDescriptionExpanded;
+                                }),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Move-in Date and Private Room Row
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Move-in Date Field (50% width)
+                            Expanded(
+                              child: L10n.inputField(
+                                "quick_question_move_in_date",
+                                builder: (hintText) => Container(
                                   clipBehavior: Clip.antiAlias,
-                                  decoration:
-                                      ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                                  decoration: ThreeDSurfaceStyle
+                                      .wheelPickerPlateDecoration(
                                     context,
                                     theme: theme,
                                   ),
-                                  child: ValueListenableBuilder<
-                                    TextEditingValue
-                                  >(
+                                  child:
+                                      ValueListenableBuilder<TextEditingValue>(
                                     valueListenable: _moveInDateController,
                                     builder: (context, value, child) {
                                       final isEmpty = value.text.isEmpty;
                                       final moveInDateLabel =
                                           L10n.get("move_in_date_label");
-                                      final anyDateText =
-                                          L10n.get("any_date").replaceAll("\n", " ");
+                                      final anyDateText = L10n.get("any_date")
+                                          .replaceAll("\n", " ");
                                       final displayValue =
                                           isEmpty ? anyDateText : value.text;
                                       final displayText =
@@ -1053,35 +939,30 @@ class _EditListingScreenState extends State<EditListingScreen>
                                       final displayStyle = TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
-                                        color:
-                                            ThemeState().isLightTheme
-                                                ? Colors.black
-                                                : theme
-                                                    .colorScheme
-                                                    .onSurfaceVariant,
+                                        color: ThemeState().isLightTheme
+                                            ? Colors.black
+                                            : theme
+                                                .colorScheme.onSurfaceVariant,
                                       );
                                       final hintStyle = TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,
-                                        color:
-                                            ThemeState().isLightTheme
-                                                ? Colors.black
-                                                : theme
-                                                    .colorScheme
-                                                    .onSurfaceVariant,
+                                        color: ThemeState().isLightTheme
+                                            ? Colors.black
+                                            : theme
+                                                .colorScheme.onSurfaceVariant,
                                       );
                                       return GestureDetector(
                                         onTap: () async {
                                           final firstDate = DateTime.now();
-                                          final lastDate =
-                                              DateTime.now().add(
-                                                const Duration(days: 365),
-                                              );
+                                          final lastDate = DateTime.now().add(
+                                            const Duration(days: 365),
+                                          );
                                           final existingDate =
                                               _moveInDateValue.isNotEmpty
                                                   ? DateTime.tryParse(
-                                                    _moveInDateValue,
-                                                  )
+                                                      _moveInDateValue,
+                                                    )
                                                   : null;
                                           final initialDate =
                                               existingDate != null &&
@@ -1093,25 +974,24 @@ class _EditListingScreenState extends State<EditListingScreen>
                                                       )
                                                   ? existingDate
                                                   : firstDate;
-                                          final picked = await LanguageAwareDatePicker.showDatePicker(
+                                          final picked =
+                                              await LanguageAwareDatePicker
+                                                  .showDatePicker(
                                             context: context,
                                             initialDate: initialDate,
                                             firstDate: firstDate,
                                             lastDate: lastDate,
-                                            helpText:
-                                                L10n.get("select_date"),
-                                                cancelText:
-                                                L10n.get("cancel"),
-                                                confirmText:
-                                                L10n.get("ok"),
+                                            helpText: L10n.get("select_date"),
+                                            cancelText: L10n.get("cancel"),
+                                            confirmText: L10n.get("ok"),
                                           );
                                           if (picked != null) {
                                             _moveInDateValue =
                                                 "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                                             _moveInDateController.text =
                                                 _formatMoveInDateDisplay(
-                                                  picked,
-                                                );
+                                              picked,
+                                            );
                                           }
                                         },
                                         child: InputDecorator(
@@ -1141,21 +1021,19 @@ class _EditListingScreenState extends State<EditListingScreen>
                                             fillColor: Colors.transparent,
                                             contentPadding:
                                                 const EdgeInsets.symmetric(
-                                                  horizontal: 12,
-                                                  vertical: 16,
-                                                ),
+                                              horizontal: 12,
+                                              vertical: 16,
+                                            ),
                                             prefixIcon: ThemeIcon(
                                               CupertinoIcons.calendar,
                                               size: 22,
-                                              color:
-                                                  Theme.of(
-                                                            context,
-                                                          ).brightness ==
-                                                          Brightness.dark
-                                                      ? theme
-                                                          .colorScheme
-                                                          .onSurfaceVariant
-                                                      : Colors.grey[600],
+                                              color: Theme.of(
+                                                        context,
+                                                      ).brightness ==
+                                                      Brightness.dark
+                                                  ? theme.colorScheme
+                                                      .onSurfaceVariant
+                                                  : Colors.grey[600],
                                             ),
                                           ),
                                           child: Align(
@@ -1164,10 +1042,9 @@ class _EditListingScreenState extends State<EditListingScreen>
                                               displayText,
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
-                                              style:
-                                                  isEmpty
-                                                      ? hintStyle
-                                                      : displayStyle,
+                                              style: isEmpty
+                                                  ? hintStyle
+                                                  : displayStyle,
                                             ),
                                           ),
                                         ),
@@ -1175,235 +1052,235 @@ class _EditListingScreenState extends State<EditListingScreen>
                                     },
                                   ),
                                 ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Private Room Toggle (50% width)
-                        Expanded(
-                          child: Container(
-                            clipBehavior: Clip.antiAlias,
-                            decoration:
-                                ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                              context,
-                              theme: theme,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12.0,
-                                vertical: 16.0,
                               ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  ThemeIcon(
-                                    Icons.lock_outline,
-                                    color:
-                                        _isPrivateRoom
+                            ),
+                            const SizedBox(width: 12),
+                            // Private Room Toggle (50% width)
+                            Expanded(
+                              child: Container(
+                                clipBehavior: Clip.antiAlias,
+                                decoration: ThreeDSurfaceStyle
+                                    .wheelPickerPlateDecoration(
+                                  context,
+                                  theme: theme,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0,
+                                    vertical: 16.0,
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      ThemeIcon(
+                                        Icons.lock_outline,
+                                        color: _isPrivateRoom
                                             ? _getBorderColor()
                                             : (Theme.of(context).brightness ==
                                                     Brightness.dark
-                                                ? theme
-                                                    .colorScheme
+                                                ? theme.colorScheme
                                                     .onSurfaceVariant
                                                     .withOpacity(0.7)
                                                 : Colors.grey[600]),
-                                      size: 22,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          L10n.get("private_room").replaceFirst(" ", "\n"),
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                            color:
-                                                ThemeState().isLightTheme
+                                        size: 22,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              L10n.get("private_room")
+                                                  .replaceFirst(" ", "\n"),
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: ThemeState().isLightTheme
                                                     ? Colors.black
-                                                    : theme
-                                                        .colorScheme
+                                                    : theme.colorScheme
                                                         .onSurfaceVariant,
-                                          ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  NeumorphicToggle(
-                                    value: _isPrivateRoom,
-                                    activeAccentColor: _getBorderColor(),
-                                    activeTrackColor: _getBorderColor()
-                                        .withValues(alpha: 0.3),
-                                    inactiveThumbColor:
-                                        Theme.of(context).brightness ==
+                                      ),
+                                      NeumorphicToggle(
+                                        value: _isPrivateRoom,
+                                        activeAccentColor: _getBorderColor(),
+                                        activeTrackColor: _getBorderColor()
+                                            .withValues(alpha: 0.3),
+                                        inactiveThumbColor: Theme.of(context)
+                                                    .brightness ==
                                                 Brightness.dark
                                             ? theme.colorScheme.onSurfaceVariant
                                                 .withOpacity(0.7)
                                             : Colors.grey.shade600,
-                                    inactiveTrackColor:
-                                        Theme.of(context).brightness ==
+                                        inactiveTrackColor: Theme.of(context)
+                                                    .brightness ==
                                                 Brightness.dark
                                             ? theme.colorScheme.onSurfaceVariant
                                                 .withOpacity(0.3)
                                             : Colors.grey.shade300,
-                                    onChanged: (value) {
-                                      HapticFeedbackUtils.impact();
-                                      setState(() {
-                                        _isPrivateRoom = value;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Photos Section
-                    PhotoUploader(
-                      selectedPhotos: _selectedPhotos,
-                      onPhotosChanged: (photos) {
-                        logger.d("=== PHOTO SELECTION CHANGED ===");
-                        logger.d("Previous selected photos: $_selectedPhotos");
-                        logger.d("New selected photos: $photos");
-                        setState(() {
-                          _selectedPhotos = photos;
-                        });
-                        logger.d("Updated _selectedPhotos: $_selectedPhotos");
-                      },
-                      existingPhotos: _existingPhotos,
-                      onDeleteExistingPhoto: _deleteExistingPhoto,
-                      onMakePhotoPrimary: _makePhotoPrimary,
-                      onMakeNewPhotoPrimary: _makeNewPhotoPrimary,
-                      deletingPhotoIds: _deletingPhotoIds,
-                      makingPhotoPrimaryIds: _makingPhotoPrimaryIds,
-                      maxPhotos: 5,
-                      isRequired: false,
-                    ),
-
-                    ValueListenableBuilder<bool>(
-                      valueListenable:
-                          ClientLidarRoomScanConfig.lidarRoomScanDisabled,
-                      builder: (context, lidarDisabled, _) {
-                        if (!isIOSDevice || lidarDisabled) {
-                          return const SizedBox.shrink();
-                        }
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: () async {
-                                  HapticFeedbackUtils.impact();
-                                  final changed =
-                                      await Navigator.of(context).push<bool>(
-                                    MaterialPageRoute(
-                                      builder: (context) => RoomPlanScanScreen(
-                                        listingId: widget.listingDetail.id,
+                                        onChanged: (value) {
+                                          HapticFeedbackUtils.impact();
+                                          setState(() {
+                                            _isPrivateRoom = value;
+                                          });
+                                        },
                                       ),
-                                    ),
-                                  );
-                                  if (!mounted) return;
-                                  if (changed == true) {
-                                    setState(() => _roomScanChanged = true);
-                                  }
-                                },
-                                icon: ThemeIcon(
-                                  Icons.view_in_ar,
-                                  color: ThemeState().isBlueTheme
-                                      ? Colors.white
-                                      : null,
-                                ),
-                                label: Text(
-                                  L10n.get(
-                                    (_roomScanChanged ||
-                                            (widget.listingDetail.pointCloudUrl
-                                                    ?.isNotEmpty ??
-                                                false))
-                                        ? "replace_room_scan_3d"
-                                        : "add_room_scan_3d",
+                                    ],
                                   ),
-                                  style: ThemeState().isBlueTheme
-                                      ? const TextStyle(color: Colors.white)
-                                      : null,
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(44),
                                 ),
                               ),
                             ),
                           ],
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
 
-                    const SizedBox(height: 20),
+                      // Photos Section
+                      PhotoUploader(
+                        selectedPhotos: _selectedPhotos,
+                        onPhotosChanged: (photos) {
+                          logger.d("=== PHOTO SELECTION CHANGED ===");
+                          logger
+                              .d("Previous selected photos: $_selectedPhotos");
+                          logger.d("New selected photos: $photos");
+                          setState(() {
+                            _selectedPhotos = photos;
+                          });
+                          logger.d("Updated _selectedPhotos: $_selectedPhotos");
+                        },
+                        existingPhotos: _existingPhotos,
+                        onDeleteExistingPhoto: _deleteExistingPhoto,
+                        onMakePhotoPrimary: _makePhotoPrimary,
+                        onMakeNewPhotoPrimary: _makeNewPhotoPrimary,
+                        deletingPhotoIds: _deletingPhotoIds,
+                        makingPhotoPrimaryIds: _makingPhotoPrimaryIds,
+                        maxPhotos: 5,
+                        isRequired: false,
+                      ),
 
-                    // Amenities Section
-                    ListingFormAmenitiesSection(
-                      selectedAmenityIds: _selectedAmenityIds,
-                      onAmenityToggled: (amenityId) {
-                        setState(() {
-                          if (_selectedAmenityIds.contains(amenityId)) {
-                            _selectedAmenityIds.remove(amenityId);
-                          } else {
-                            _selectedAmenityIds.add(amenityId);
+                      ValueListenableBuilder<bool>(
+                        valueListenable:
+                            ClientLidarRoomScanConfig.lidarRoomScanDisabled,
+                        builder: (context, lidarDisabled, _) {
+                          if (!isIOSDevice || lidarDisabled) {
+                            return const SizedBox.shrink();
                           }
-                        });
-                      },
-                      onDismissKeyboard: _dismissKeyboard,
-                    ),
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    HapticFeedbackUtils.impact();
+                                    final changed =
+                                        await Navigator.of(context).push<bool>(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            RoomPlanScanScreen(
+                                          listingId: widget.listingDetail.id,
+                                        ),
+                                      ),
+                                    );
+                                    if (!mounted) return;
+                                    if (changed == true) {
+                                      setState(() => _roomScanChanged = true);
+                                    }
+                                  },
+                                  icon: ThemeIcon(
+                                    Icons.view_in_ar,
+                                    color: ThemeState().isBlueTheme
+                                        ? Colors.white
+                                        : null,
+                                  ),
+                                  label: Text(
+                                    L10n.get(
+                                      (_roomScanChanged ||
+                                              (widget
+                                                      .listingDetail
+                                                      .pointCloudUrl
+                                                      ?.isNotEmpty ??
+                                                  false))
+                                          ? "replace_room_scan_3d"
+                                          : "add_room_scan_3d",
+                                    ),
+                                    style: ThemeState().isBlueTheme
+                                        ? const TextStyle(color: Colors.white)
+                                        : null,
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    minimumSize: const Size.fromHeight(44),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
 
-                    const SizedBox(height: 26),
+                      const SizedBox(height: 20),
 
-                    Builder(
-                      builder: (context) {
-                        final label = Theme.of(context).textTheme.labelLarge;
-                        final baseSize = label?.fontSize ?? 14;
-                        final textStyle =
-                            label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
-                            TextStyle(
-                              fontSize: baseSize * 1.2,
-                              height: 1.0,
-                              fontWeight: FontWeight.w500,
-                            );
-                        return PrimaryButtonFactory.iconText(
-                          onPressed: _isSubmitting ? null : _submitForm,
-                          icon: Icons.save,
-                          text: L10n.get(
-                            _isSubmitting
-                                ? "updating_listing"
-                                : "update_listing_button",
-                          ),
-                          width: double.infinity,
-                          borderRadius: BorderRadius.circular(20),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          textStyle: textStyle,
-                          isLoading: _isSubmitting,
-                        );
-                      },
-                    ),
+                      // Amenities Section
+                      ListingFormAmenitiesSection(
+                        selectedAmenityIds: _selectedAmenityIds,
+                        onAmenityToggled: (amenityId) {
+                          setState(() {
+                            if (_selectedAmenityIds.contains(amenityId)) {
+                              _selectedAmenityIds.remove(amenityId);
+                            } else {
+                              _selectedAmenityIds.add(amenityId);
+                            }
+                          });
+                        },
+                        onDismissKeyboard: _dismissKeyboard,
+                      ),
 
-                    const SizedBox(height: 20),
-                  ],
+                      const SizedBox(height: 26),
+
+                      Builder(
+                        builder: (context) {
+                          final label = Theme.of(context).textTheme.labelLarge;
+                          final baseSize = label?.fontSize ?? 14;
+                          final textStyle = label?.copyWith(
+                                  fontSize: baseSize * 1.2, height: 1.0) ??
+                              TextStyle(
+                                fontSize: baseSize * 1.2,
+                                height: 1.0,
+                                fontWeight: FontWeight.w500,
+                              );
+                          return PrimaryButtonFactory.iconText(
+                            onPressed: _isSubmitting ? null : _submitForm,
+                            icon: Icons.save,
+                            text: L10n.get(
+                              _isSubmitting
+                                  ? "updating_listing"
+                                  : "update_listing_button",
+                            ),
+                            width: double.infinity,
+                            borderRadius: BorderRadius.circular(20),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            textStyle: textStyle,
+                            isLoading: _isSubmitting,
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
-    ),
-    );
+        );
       },
     );
   }
@@ -1507,10 +1384,9 @@ class _EditListingScreenState extends State<EditListingScreen>
         locationId: selectedLocation.id,
         amenityIds: _selectedAmenityIds.toList(),
         subwayStationId: selectedStation?.id, // Made optional, moved to end
-        subwayLineId:
-            _selectedSubwayLine > 0
-                ? _selectedSubwayLine
-                : null, // Add subway line ID
+        subwayLineId: _selectedSubwayLine > 0
+            ? _selectedSubwayLine
+            : null, // Add subway line ID
         moveInDate: _moveInDateValue.isNotEmpty
             ? _moveInDateValue
             : null, // Add move-in date
@@ -1562,7 +1438,8 @@ class _EditListingScreenState extends State<EditListingScreen>
         baseline: widget.listingDetail,
         currentLocationId: selectedLocation.id,
         currentSubwayStationId: selectedStation?.id,
-        currentSubwayLineId: _selectedSubwayLine > 0 ? _selectedSubwayLine : null,
+        currentSubwayLineId:
+            _selectedSubwayLine > 0 ? _selectedSubwayLine : null,
       );
       final baseSuccess = L10n.get("listing_updated_success");
       final changedPrefix = L10n.get("changed_fields", fallback: "Changed");

@@ -4,7 +4,6 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
-import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
@@ -14,6 +13,7 @@ import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -522,98 +522,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   Widget _buildErrorState() {
     return Builder(
-      builder:
-          (context) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ThemeIcon(
-                    Icons.error_outline,
-                    size: 80,
-                    color: _getEmptyStateIconColor(),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Authentication Required",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: _getEmptyStateTextColor(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Please log in again to view your favorites. Your session may have expired.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _getEmptyStateTextColor(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  GhostButtonFactory.iconText(
-                    onPressed: () async {
-                      // Use centralized logout service
-                      await LogoutService().performLogout(context);
-                      // Navigate to auth wizard
-                      context.pushReplaceAuthWizard();
-                    },
-                    icon: Icons.login,
-                    text: "Log In Again",
-                  ),
-                ],
-              ),
-            ),
-          ),
+      builder: (context) => AuthRequiredState(
+        icon: Icons.error_outline,
+        message:
+            "Please log in again to view your favorites. Your session may have expired.",
+        buttonLabel: "Log In Again",
+        iconColor: _getEmptyStateIconColor(),
+        textColor: _getEmptyStateTextColor(),
+        onLogin: AuthRequiredState.logoutAndReauthenticate(context),
+      ),
     );
   }
 
   Widget _buildAuthenticationRequiredState() {
     return Builder(
-      builder:
-          (context) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ThemeIcon(
-                    Icons.lock_outline,
-                    size: 80,
-                    color: _getEmptyStateIconColor(),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Authentication Required",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: _getEmptyStateTextColor(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Please log in to view your favorites.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _getEmptyStateTextColor(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  GhostButtonFactory.iconText(
-                    onPressed: () => context.pushReplaceAuthWizard(),
-                    icon: Icons.login,
-                    text: "Log In",
-                  ),
-                ],
-              ),
-            ),
-          ),
+      builder: (context) => AuthRequiredState(
+        message: "Please log in to view your favorites.",
+        buttonLabel: "Log In",
+        iconColor: _getEmptyStateIconColor(),
+        textColor: _getEmptyStateTextColor(),
+        onLogin: () => context.pushReplaceAuthWizard(),
+      ),
     );
   }
 

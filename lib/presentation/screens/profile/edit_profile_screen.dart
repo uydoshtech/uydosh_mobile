@@ -31,6 +31,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -361,49 +362,11 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   Future<void> _onPopInvoked(bool didPop, dynamic result) async {
     if (didPop) return;
     final changedFields = _computeChangedFieldLabels();
-    final leave = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        final theme = Theme.of(ctx);
-        final changedPrefix = L10n.get("changed_fields");
-        final bullet = "•";
-        final contentText = changedFields.isEmpty
-            ? L10n.get("unsaved_changes_message")
-            : "${L10n.get("unsaved_changes_message")}\n\n$changedPrefix:\n$bullet ${changedFields.join("\n$bullet ")}";
-        return AlertDialog(
-          backgroundColor: theme.dialogTheme.backgroundColor,
-          title: Text(
-            L10n.get("unsaved_changes_title"),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-          content: Text(
-            contentText,
-            style: TextStyle(
-              fontSize: 16,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(L10n.get("keep_editing")),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              style: TextButton.styleFrom(
-                foregroundColor: theme.colorScheme.error,
-              ),
-              child: Text(L10n.get("leave_without_saving")),
-            ),
-          ],
-        );
-      },
+    final leave = await UnsavedChangesDialog.show(
+      context,
+      changedFieldLabels: changedFields,
     );
-    if (!mounted || !(leave ?? false)) return;
+    if (!mounted || !leave) return;
     Navigator.of(context).pop(result);
   }
 

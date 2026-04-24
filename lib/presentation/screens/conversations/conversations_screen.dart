@@ -137,30 +137,11 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
   }
 
   Widget _buildErrorState(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ThemeIcon(
-            Icons.error_outline,
-            size: 64,
-            color: Theme.of(context).colorScheme.error,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyLarge,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              context.read<MessagingBloc>().add(RefreshConversations());
-            },
-            child: Text(L10n.get("retry")),
-          ),
-        ],
-      ),
+    return UydoshErrorRetryColumn(
+      message: message,
+      onRetry: () {
+        context.read<MessagingBloc>().add(RefreshConversations());
+      },
     );
   }
 

@@ -3,6 +3,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
@@ -89,7 +90,10 @@ class ProfileSettingsSection extends StatelessWidget {
     return _threeDProfileTile(
       context,
       child: InkWell(
-        onTap: onLogout,
+        onTap: () {
+          HapticFeedbackUtils.impact();
+          onLogout();
+        },
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
@@ -130,7 +134,10 @@ class ProfileSettingsSection extends StatelessWidget {
       context,
       borderColor: errorColor,
       child: InkWell(
-        onTap: onDeleteAccount,
+        onTap: () {
+          HapticFeedbackUtils.impact();
+          onDeleteAccount();
+        },
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,

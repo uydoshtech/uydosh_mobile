@@ -3,6 +3,7 @@ import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -71,6 +72,7 @@ class ProfileStatsSection extends StatelessWidget {
           children: [
             InkWell(
               onTap: () {
+                HapticFeedbackUtils.impact();
                 onExpandedSectionChanged(
                   expandedSectionIndex == 0 ? null : 0,
                 );
@@ -197,6 +199,7 @@ class ProfileStatsSection extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
+                  HapticFeedbackUtils.impact();
                   onExpandedSectionChanged(
                     expandedSectionIndex == 1 ? null : 1,
                   );
@@ -472,7 +475,10 @@ class ProfileStatsSection extends StatelessWidget {
 
     return InkWell(
       onTap: hasTelegram
-          ? () => _confirmOpenTelegram(profile.telegram!, context)
+          ? () {
+              HapticFeedbackUtils.impact();
+              _confirmOpenTelegram(profile.telegram!, context);
+            }
           : null,
       borderRadius: BorderRadius.circular(8),
       child: Padding(

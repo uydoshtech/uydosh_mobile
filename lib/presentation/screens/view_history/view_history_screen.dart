@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -16,7 +17,6 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Screen showing listings the user has viewed.
 class ViewHistoryScreen extends StatefulWidget {
@@ -304,45 +304,11 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
 
   Widget _buildAuthenticationRequiredState() {
     return Builder(
-      builder: (context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ThemeIcon(
-                Icons.lock_outline,
-                size: 80,
-                color: _getEmptyStateIconColor(),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                L10n.get("auth_required_title"),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: _getEmptyStateTextColor(),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                L10n.get("view_history_auth_prompt"),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: _getEmptyStateTextColor(),
-                ),
-              ),
-              const SizedBox(height: 24),
-              GhostButtonFactory.iconText(
-                onPressed: () => context.pushReplaceAuthWizard(),
-                icon: Icons.login,
-                text: L10n.get("menu_registration"),
-              ),
-            ],
-          ),
-        ),
+      builder: (context) => AuthRequiredState(
+        message: L10n.get("view_history_auth_prompt"),
+        iconColor: _getEmptyStateIconColor(),
+        textColor: _getEmptyStateTextColor(),
+        onLogin: () => context.pushReplaceAuthWizard(),
       ),
     );
   }

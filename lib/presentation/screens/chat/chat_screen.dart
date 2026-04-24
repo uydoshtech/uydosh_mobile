@@ -50,6 +50,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -723,44 +724,21 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildErrorState(String message) {
     final displayMessage = message.contains("USER_BLOCKED")
-        ? L10n.get("user_blocked_violation_message",
-            )
-            : (message.contains("DioException") ||
+        ? L10n.get("user_blocked_violation_message")
+        : (message.contains("DioException") ||
                 message.contains("bad response") ||
                 message.contains("status code"))
-            ? L10n.get("error_generic",
-                )
+            ? L10n.get("error_generic")
             : message;
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ThemeIcon(
-            Icons.error_outline,
-            size: 64,
-            color: Theme.of(context).colorScheme.error,
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              displayMessage,
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              context.read<MessagingBloc>().add(
-                    RefreshMessages(conversationId: widget.conversationId),
-                  );
-            },
-            child: Text(L10n.get("retry")),
-          ),
-        ],
-      ),
+    return UydoshErrorRetryColumn(
+      message: displayMessage,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      onRetry: () {
+        context.read<MessagingBloc>().add(
+              RefreshMessages(conversationId: widget.conversationId),
+            );
+      },
     );
   }
 

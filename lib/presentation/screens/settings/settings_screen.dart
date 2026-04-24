@@ -20,6 +20,7 @@ import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_info_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -679,52 +680,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: _getLanguageDialogBackgroundColor(),
-            title: Center(
-              child: L10n.text(
-                "about_uy_dosh",
-                style: TextStyle(
-                  fontSize: 24, // 1.5x larger
-                  fontWeight: FontWeight.bold,
-                  color: _getAboutModalTextColor(),
-                ),
-              ),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                L10n.text(
-                  "about_description",
-                  style: TextStyle(
-                    fontSize: 18, // 1.5x larger (16 -> 18)
-                    color: _getAboutModalTextColor(),
-                  ),
-                ),
-                const SizedBox(height: 12), // Increased spacing
-                _buildFeatureItem(context, "about_feature_1"),
-                _buildFeatureItem(context, "about_feature_2"),
-                _buildFeatureItem(context, "about_feature_3"),
-                _buildFeatureItem(context, "about_feature_4"),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  HapticFeedbackUtils.impact();
-                  Navigator.of(context).pop();
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.error,
-                ),
-                child: L10n.text("close"),
-              ),
-            ],
+    final textColor = _getAboutModalTextColor();
+    UydoshInfoDialog.show(
+      context,
+      backgroundColor: _getLanguageDialogBackgroundColor(),
+      title: L10n.text(
+        "about_uy_dosh",
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: textColor,
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          L10n.text(
+            "about_description",
+            style: TextStyle(fontSize: 18, color: textColor),
           ),
+          const SizedBox(height: 12),
+          _buildFeatureItem(context, "about_feature_1"),
+          _buildFeatureItem(context, "about_feature_2"),
+          _buildFeatureItem(context, "about_feature_3"),
+          _buildFeatureItem(context, "about_feature_4"),
+        ],
+      ),
     );
   }
 
@@ -733,43 +715,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String titleKey,
     required String bodyKey,
   }) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: _getLanguageDialogBackgroundColor(),
-            title: Center(
-              child: L10n.text(
-                titleKey,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: _getAboutModalTextColor(),
-                ),
-              ),
-            ),
-            content: SingleChildScrollView(
-              child: Text(
-                L10n.get(bodyKey),
-                style: TextStyle(
-                  fontSize: 16,
-                  color: _getAboutModalTextColor(),
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  HapticFeedbackUtils.impact();
-                  Navigator.of(context).pop();
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.error,
-                ),
-                child: L10n.text("close"),
-              ),
-            ],
-          ),
+    final textColor = _getAboutModalTextColor();
+    UydoshInfoDialog.show(
+      context,
+      backgroundColor: _getLanguageDialogBackgroundColor(),
+      scrollable: true,
+      title: L10n.text(
+        titleKey,
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
+      ),
+      content: Text(
+        L10n.get(bodyKey),
+        style: TextStyle(fontSize: 16, color: textColor),
+      ),
     );
   }
 

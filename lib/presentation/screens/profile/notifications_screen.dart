@@ -34,6 +34,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_info_callout_card.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
@@ -54,7 +55,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _bulkWorking = false;
   List<SearchAlert> _alerts = const [];
   bool _showAlertsExplainer = true;
-  final Set<int> _itemsBeingRemoved = {}; // Track items being removed for animation
+  final Set<int> _itemsBeingRemoved =
+      {}; // Track items being removed for animation
   final Map<int, ({SearchAlert alert, int index})> _optimisticallyRemoved =
       {}; // Rollback buffer for optimistic removals
 
@@ -92,7 +94,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         status == AuthorizationStatus.notDetermined;
     if (!needsEnable) return const SizedBox.shrink();
 
-    final bg = theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45);
+    final bg =
+        theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45);
     final fg = theme.colorScheme.onSurfaceVariant;
     final isDenied = status == AuthorizationStatus.denied;
 
@@ -176,7 +179,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       await _loadPushStatus();
                     },
               icon: Icon(
-                isDenied ? Icons.settings_outlined : Icons.notifications_outlined,
+                isDenied
+                    ? Icons.settings_outlined
+                    : Icons.notifications_outlined,
               ),
               label: Text(
                 isDenied
@@ -238,7 +243,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+        color:
+            theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(14),
       ),
       child: ExpansionTile(
@@ -327,135 +333,83 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             pushStatus == AuthorizationStatus.notDetermined);
     final isDenied = pushStatus == AuthorizationStatus.denied;
     final isEnabled = push.isSupported && !needsEnable;
-    return Stack(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(16, 12, 40, 12),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest.withValues(
-              alpha: 0.55,
+    final messageStyle = TextStyle(color: fg, fontSize: 14, height: 1.25);
+    return UydoshInfoCalloutCard(
+      onClose: onClose,
+      message: needsEnable
+          ? Text(
+              isDenied
+                  ? L10n.get("notifications_enable_in_settings")
+                  : L10n.get("search_alert_permission"),
+              style: messageStyle,
+            )
+          : L10n.text(
+              isEnabled
+                  ? "notifications_alerts_explainer_enabled"
+                  : "notifications_alerts_explainer",
+              style: messageStyle,
             ),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Icon(Icons.info_outline, size: 17, color: fg),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: needsEnable
-                        ? Text(
-                            isDenied
-                                ? L10n.get("notifications_enable_in_settings")
-                                : L10n.get("search_alert_permission"),
-                            style: TextStyle(
-                              color: fg,
-                              fontSize: 14,
-                              height: 1.25,
-                            ),
-                          )
-                        : L10n.text(
-                            isEnabled
-                                ? "notifications_alerts_explainer_enabled"
-                                : "notifications_alerts_explainer",
-                            style: TextStyle(
-                              color: fg,
-                              fontSize: 14,
-                              height: 1.25,
-                            ),
-                          ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 0,
-                        vertical: 6,
+      extra: Padding(
+        padding: const EdgeInsets.only(top: 6, left: 25),
+        child: SizedBox(
+          width: double.infinity,
+          child: TextButton(
+            style: TextButton.styleFrom(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            onPressed: () async {
+              if (needsEnable && !isDenied) {
+                final ok = await push.requestPermissionAndRegister();
+                if (!mounted) return;
+                if (ok) {
+                  ToastTheme.showSuccess(
+                    context,
+                    message: L10n.get("notifications_enabled"),
+                  );
+                } else {
+                  ToastTheme.showInfo(
+                    context,
+                    message: L10n.get("notifications_enable_in_settings"),
+                  );
+                }
+                await _loadPushStatus();
+                return;
+              }
+              await openAppSettings();
+            },
+            child: Builder(
+              builder: (context) {
+                final color = DefaultTextStyle.of(context).style.color ??
+                    Theme.of(context).colorScheme.primary;
+                return IntrinsicWidth(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        needsEnable && !isDenied
+                            ? L10n.get("menu_enable_notifications")
+                            : L10n.get("notifications_open_settings"),
                       ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    onPressed: () async {
-                      if (needsEnable && !isDenied) {
-                        final ok = await push.requestPermissionAndRegister();
-                        if (!mounted) return;
-                        if (ok) {
-                          ToastTheme.showSuccess(
-                            context,
-                            message: L10n.get("notifications_enabled"),
-                          );
-                        } else {
-                          ToastTheme.showInfo(
-                            context,
-                            message: L10n.get("notifications_enable_in_settings"),
-                          );
-                        }
-                        await _loadPushStatus();
-                        return;
-                      }
-                      await openAppSettings();
-                    },
-                    child: Builder(
-                      builder: (context) {
-                        final color =
-                            DefaultTextStyle.of(context).style.color ??
-                            Theme.of(context).colorScheme.primary;
-                        return IntrinsicWidth(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                needsEnable && !isDenied
-                                    ? L10n.get("menu_enable_notifications")
-                                    : L10n.get("notifications_open_settings"),
-                              ),
-                              const SizedBox(height: 3),
-                              SizedBox(
-                                height: 1.5,
-                                width: double.infinity,
-                                child: CustomPaint(
-                                  painter: _DottedLinePainter(color: color),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                      const SizedBox(height: 3),
+                      SizedBox(
+                        height: 1.5,
+                        width: double.infinity,
+                        child: CustomPaint(
+                          painter: _DottedLinePainter(color: color),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
         ),
-        Positioned(
-          top: 0,
-          right: 0,
-          child: IconButton(
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: onClose,
-            icon: Icon(Icons.close, size: 18, color: fg),
-            padding: const EdgeInsets.all(4),
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            splashRadius: 18,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -474,11 +428,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       // Persist default so it's visible/adjustable in device storage.
-      if (!prefs.containsKey(TooltipsState.keyNotificationsAlertsExplainerDismissed)) {
-        await prefs.setBool(TooltipsState.keyNotificationsAlertsExplainerDismissed, false);
+      if (!prefs.containsKey(
+          TooltipsState.keyNotificationsAlertsExplainerDismissed)) {
+        await prefs.setBool(
+            TooltipsState.keyNotificationsAlertsExplainerDismissed, false);
       }
-      final dismissed =
-          prefs.getBool(TooltipsState.keyNotificationsAlertsExplainerDismissed) ?? false;
+      final dismissed = prefs.getBool(
+              TooltipsState.keyNotificationsAlertsExplainerDismissed) ??
+          false;
       if (!mounted) return;
       setState(() => _showAlertsExplainer = !dismissed);
     } catch (_) {
@@ -490,7 +447,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     setState(() => _showAlertsExplainer = false);
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(TooltipsState.keyNotificationsAlertsExplainerDismissed, true);
+      await prefs.setBool(
+          TooltipsState.keyNotificationsAlertsExplainerDismissed, true);
     } catch (_) {}
   }
 
@@ -591,7 +549,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       setState(() {
         _itemsBeingRemoved.remove(a.id);
         final safeIndex = backup.index.clamp(0, _alerts.length);
-        _alerts = List<SearchAlert>.from(_alerts)..insert(safeIndex, backup.alert);
+        _alerts = List<SearchAlert>.from(_alerts)
+          ..insert(safeIndex, backup.alert);
       });
       ActiveSearchAlertsState().syncFromAlerts(_alerts);
       ToastTheme.showError(context, message: L10n.get("error_generic"));
@@ -727,10 +686,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         a.subwayStationIds != null && (a.subwayStationIds?.length ?? 0) > 1;
 
     // Prefer the line filter when the alert targets multiple stations ("entire line").
-    final subwayStationId =
-        (resolvedStationId != null && !hasMultipleStations) ? resolvedStationId : null;
-    final subwayLineId =
-        (subwayStationId == null) ? resolvedLineId : null;
+    final subwayStationId = (resolvedStationId != null && !hasMultipleStations)
+        ? resolvedStationId
+        : null;
+    final subwayLineId = (subwayStationId == null) ? resolvedLineId : null;
 
     // Best-effort keep persistent state aligned.
     // These setters are async; we don't want to block navigation on prefs writes.
@@ -964,7 +923,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final tooltipsEnabled = TooltipsState().enabled;
     final push = getIt<IPushNotificationService>();
     final themeState = ThemeState();
-    final useLiquidGlassAppBar = themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlassAppBar =
+        themeState.isBlueTheme || themeState.isLightTheme;
     final showPushEnableCard = push.isSupported &&
         _pushStatus != null &&
         (_pushStatus == AuthorizationStatus.denied ||
@@ -1028,10 +988,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   : ListView.separated(
                       padding:
                           EdgeInsets.fromLTRB(16, contentTopPadding, 16, 16),
-                      itemCount: _alerts.length +
-                          (showAlertsExplainer ? 1 : 0) +
-                          1,
-                      separatorBuilder: (_, i) => SizedBox(height: i == 0 ? 12 : 16),
+                      itemCount:
+                          _alerts.length + (showAlertsExplainer ? 1 : 0) + 1,
+                      separatorBuilder: (_, i) =>
+                          SizedBox(height: i == 0 ? 12 : 16),
                       itemBuilder: (context, i) {
                         if (i == 0) {
                           return Column(
@@ -1065,7 +1025,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
                         final a =
                             _alerts[adjustedIndex - (showExplainer ? 1 : 0)];
-                        final alertIndex = adjustedIndex - (showExplainer ? 1 : 0);
+                        final alertIndex =
+                            adjustedIndex - (showExplainer ? 1 : 0);
                         final themeState = ThemeState();
                         final isRemoving = _itemsBeingRemoved.contains(a.id);
                         const duration = Duration(milliseconds: 300);
@@ -1091,7 +1052,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(14),
-                                onTap: _bulkWorking ? null : () => _openAlertResults(a),
+                                onTap: _bulkWorking
+                                    ? null
+                                    : () => _openAlertResults(a),
                                 child: Padding(
                                   padding: const EdgeInsets.all(14),
                                   child: Stack(
@@ -1104,7 +1067,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           ThemeIcon(
                                             a.enabled
                                                 ? Icons.notifications
-                                                : Icons.notifications_none_outlined,
+                                                : Icons
+                                                    .notifications_none_outlined,
                                             color: ThemeState().isBlueTheme
                                                 ? Colors.white
                                                 : (a.enabled
@@ -1115,7 +1079,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           const SizedBox(width: 12),
                                           Expanded(
                                             child: Padding(
-                                              padding: const EdgeInsets.fromLTRB(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
                                                 0,
                                                 4,
                                                 48,
@@ -1221,17 +1186,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return UydoshAppBar(
       leading: ThreeDAppBarIconButton.backLeading(context),
       title: Text(L10n.get("menu_notifications")),
-      backgroundColor:
-          useLiquidGlassAppBar
-              ? liquidGlassAppBarMaterialColor(context)
-              : appBarTheme.backgroundColor,
-      surfaceTintColor:
-          useLiquidGlassAppBar ? Colors.transparent : appBarTheme.surfaceTintColor,
+      backgroundColor: useLiquidGlassAppBar
+          ? liquidGlassAppBarMaterialColor(context)
+          : appBarTheme.backgroundColor,
+      surfaceTintColor: useLiquidGlassAppBar
+          ? Colors.transparent
+          : appBarTheme.surfaceTintColor,
       elevation: useLiquidGlassAppBar ? 0 : null,
       scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
-      shadowColor: useLiquidGlassAppBar ? Colors.transparent : appBarTheme.shadowColor,
+      shadowColor:
+          useLiquidGlassAppBar ? Colors.transparent : appBarTheme.shadowColor,
       forceMaterialTransparency: useLiquidGlassAppBar,
-      flexibleSpace: useLiquidGlassAppBar ? const LiquidGlassAppBarFlexibleSpace() : null,
+      flexibleSpace:
+          useLiquidGlassAppBar ? const LiquidGlassAppBarFlexibleSpace() : null,
       foregroundColor: appBarTheme.foregroundColor,
       actions: [
         Padding(
