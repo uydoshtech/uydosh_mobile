@@ -63,7 +63,6 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
     required this.phoneNumber,
     required this.onTelegram,
     required this.onPhone,
-    required this.onMessage,
     required this.onViewProfile,
     required this.onCompleteProfile,
     super.key,
@@ -81,7 +80,6 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
   final String? phoneNumber;
   final VoidCallback? onTelegram;
   final VoidCallback? onPhone;
-  final VoidCallback onMessage;
   final VoidCallback onViewProfile;
   final VoidCallback onCompleteProfile;
 
@@ -377,9 +375,6 @@ class _ListingDetailCompatibilitySectionState
                 builder: (context, _) {
                   final showContacts =
                       AdminFeatureFlagsState().showListingContacts;
-                  final hasTelegram = showContacts &&
-                      (widget.telegramHandle?.trim().isNotEmpty ?? false) &&
-                      widget.onTelegram != null;
                   final hasPhone = showContacts &&
                       (widget.phoneNumber?.trim().isNotEmpty ?? false) &&
                       widget.onPhone != null;
@@ -493,141 +488,74 @@ class _ListingDetailCompatibilitySectionState
                             ),
                           ],
                         ),
-                      const SizedBox(height: 16),
-                      if (hasTelegram || hasPhone) ...[
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 10,
-                          children: [
-                            if (hasTelegram)
-                              GhostButton(
-                                onPressed: () {
-                                  HapticFeedbackUtils.impact();
-                                  widget.onTelegram?.call();
-                                },
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 10,
-                                ),
-                                borderWidth: 1.5,
-                                borderColor: _getIconColor(),
-                                textColor: _getDescriptionTextColor(),
-                                iconColor: _getIconColor(),
-                                textStyle: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ThemeIcon(
-                                      Icons.telegram,
-                                      size: 18,
-                                      color: _getIconColor(),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(L10n.get("open_in_telegram")),
-                                  ],
-                                ),
+                      // Telegram / in-app chat CTAs live in the sticky
+                      // [ListingDetailContactActionBar] at the bottom of the
+                      // screen (always reachable). Phone stays here because
+                      // it's a compat-adjacent conditional contact channel
+                      // (gated by admin flag + handle presence) and it's the
+                      // only inline contact we still surface in-section.
+                      if (hasPhone) ...[
+                        const SizedBox(height: 16),
+                        GhostButton(
+                          onPressed: () {
+                            HapticFeedbackUtils.impact();
+                            widget.onPhone?.call();
+                          },
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          borderWidth: 1.5,
+                          borderColor: _getIconColor(),
+                          textColor: _getDescriptionTextColor(),
+                          iconColor: _getIconColor(),
+                          textStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ThemeIcon(
+                                Icons.phone,
+                                size: 18,
+                                color: _getIconColor(),
                               ),
-                            if (hasPhone)
-                              GhostButton(
-                                onPressed: () {
-                                  HapticFeedbackUtils.impact();
-                                  widget.onPhone?.call();
-                                },
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 10,
-                                ),
-                                borderWidth: 1.5,
-                                borderColor: _getIconColor(),
-                                textColor: _getDescriptionTextColor(),
-                                iconColor: _getIconColor(),
-                                textStyle: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ThemeIcon(
-                                      Icons.phone,
-                                      size: 18,
-                                      color: _getIconColor(),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(phoneDisplay ??
-                                        L10n.get("contact_user")),
-                                  ],
-                                ),
-                              ),
-                          ],
+                              const SizedBox(width: 8),
+                              Text(phoneDisplay ?? L10n.get("contact_user")),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 14),
                       ],
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                HapticFeedbackUtils.impact();
-                                widget.onViewProfile();
-                              },
-                              icon: ThemeIcon(
-                                Icons.person_outline,
-                                size: 18,
-                                color: _getIconColor(),
-                              ),
-                              label: Text(
-                                L10n.get("view_profile"),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: _getDescriptionTextColor(),
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                side: BorderSide(color: _getIconColor()),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            HapticFeedbackUtils.impact();
+                            widget.onViewProfile();
+                          },
+                          icon: ThemeIcon(
+                            Icons.person_outline,
+                            size: 18,
+                            color: _getIconColor(),
+                          ),
+                          label: Text(
+                            L10n.get("view_profile"),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: _getDescriptionTextColor(),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                HapticFeedbackUtils.impact();
-                                widget.onMessage();
-                              },
-                              icon: ThemeIcon(
-                                Icons.chat_bubble_outline,
-                                size: 18,
-                                color: _getIconColor(),
-                              ),
-                              label: Text(
-                                L10n.get("message"),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: _getDescriptionTextColor(),
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                side: BorderSide(color: _getIconColor()),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            side: BorderSide(color: _getIconColor()),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   );

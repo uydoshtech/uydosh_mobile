@@ -61,6 +61,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_contact_action_bar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
@@ -1745,6 +1746,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
               themeState.isBlueTheme || themeState.isLightTheme;
           return Scaffold(
             extendBodyBehindAppBar: useLiquidGlassAppBar,
+            // Mirror [extendBodyBehindAppBar] for the bottom bar so the
+            // sticky [ListingDetailContactActionBar] can render a frosted
+            // backdrop blur over the scrolling body (liquid glass footer).
+            // The body's scroll padding compensates below so the last row
+            // of content still clears the bar.
+            extendBody: useLiquidGlassAppBar,
             appBar: UydoshAppBar(
               backgroundColor: useLiquidGlassAppBar
                   ? liquidGlassAppBarMaterialColor(context)
@@ -1898,9 +1905,73 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
                 );
               },
             ),
+            bottomNavigationBar: _buildContactActionBar(),
           );
         },
       ),
+    );
+  }
+
+  /// Sticky bottom action bar with "Message in chat" + "View profile" so
+  /// contacting the listing owner is always one tap away, independent of
+  /// whether the compatibility section is expanded/collapsed.
+  Widget? _buildContactActionBar() {
+    return BlocSelector<ListingDetailBloc, ListingDetailState,
+        _ListingDetailBodyData>(
+      selector: (state) => state.map(
+        initial: (_) => const _ListingDetailBodyData(
+          isLoading: true,
+          hasError: false,
+          errorMessage: "",
+          listingDetail: null,
+        ),
+        loading: (_) => const _ListingDetailBodyData(
+          isLoading: true,
+          hasError: false,
+          errorMessage: "",
+          listingDetail: null,
+        ),
+        loaded: (loadedState) => _ListingDetailBodyData(
+          isLoading: false,
+          hasError: false,
+          errorMessage: "",
+          listingDetail: loadedState.listingDetail,
+        ),
+        error: (errorState) => _ListingDetailBodyData(
+          isLoading: false,
+          hasError: true,
+          errorMessage: errorState.message,
+          listingDetail: null,
+        ),
+      ),
+      builder: (context, data) {
+        final listingDetail = data.listingDetail;
+        if (data.isLoading || data.hasError || listingDetail == null) {
+          return const SizedBox.shrink();
+        }
+        AdminFeatureFlagsState().ensureLoaded();
+        return ListenableBuilder(
+          listenable: Listenable.merge([
+            UserListingState(),
+            AdminFeatureFlagsState(),
+          ]),
+          builder: (context, _) {
+            if (UserListingState().isOwner(listingDetail.user.id)) {
+              return const SizedBox.shrink();
+            }
+            final showContacts =
+                AdminFeatureFlagsState().showListingContacts;
+            final telegramHandle = listingDetail.contactTelegram?.trim() ?? "";
+            final onTelegram = (showContacts && telegramHandle.isNotEmpty)
+                ? () => _openTelegramChat(listingDetail.contactTelegram!)
+                : null;
+            return ListingDetailContactActionBar(
+              onMessage: () => _startConversation(listingDetail),
+              onTelegram: onTelegram,
+            );
+          },
+        );
+      },
     );
   }
 
@@ -1967,7 +2038,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
         onPhone: (listingDetail.contactPhone?.trim().isNotEmpty ?? false)
             ? () => _makePhoneCall(listingDetail.contactPhone!)
             : null,
-        onMessage: () => _startConversation(listingDetail),
         onViewProfile: () => _navigateToProfile(listingDetail.user.id),
         onCompleteProfile: _navigateToOwnProfile,
       ),
@@ -2174,6 +2244,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
 
         final themeState = ThemeState();
         final topPad = 8.0 + themeState.mainShellGlassExtraTopInset(context);
+        // With [Scaffold.extendBody: true] the body flows under the sticky
+        // [ListingDetailContactActionBar]; Scaffold injects the bar height
+        // into [MediaQuery.padding.bottom] for the body, so reserving that
+        // here keeps the last row of content clear of the frosted footer.
+        final bottomPad = 36.0 + MediaQuery.paddingOf(context).bottom;
         return Column(
           children: [
             Expanded(
@@ -2187,7 +2262,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
                     // glass app bar is active the body renders behind the
                     // header, so we add [mainShellGlassExtraTopInset] to keep
                     // content clear of the transparent toolbar.
-                    padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, 36.0),
+                    padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, bottomPad),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) => sections[index],
