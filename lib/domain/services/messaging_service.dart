@@ -23,11 +23,13 @@ abstract class IMessagingService {
   Future<PageableResponse<ConversationSummary>> getConversations({
     int page = 1,
     int limit = 20,
+    bool archived = false,
   });
 
   Future<PageableResponse<ConversationSummary>> getParticipantConversations({
     int page = 1,
     int limit = 20,
+    bool archived = false,
   });
 
   Future<Conversation> getConversation(int conversationId);
@@ -38,6 +40,10 @@ abstract class IMessagingService {
   });
 
   Future<void> deleteConversation(int conversationId);
+
+  Future<void> archiveConversation(int conversationId);
+
+  Future<void> unarchiveConversation(int conversationId);
 
   // Messages
   Future<PageableResponse<Message>> getMessages({
@@ -110,6 +116,7 @@ class MessagingService implements IMessagingService {
   Future<PageableResponse<ConversationSummary>> getConversations({
     int page = 1,
     int limit = 20,
+    bool archived = false,
   }) async {
     try {
       await _checkAuthentication();
@@ -117,7 +124,11 @@ class MessagingService implements IMessagingService {
       final response = await _apiClient.get<Map<String, dynamic>>(
         "/conversations",
         (json) => json as Map<String, dynamic>,
-        queryParameters: {"page": page, "limit": limit},
+        queryParameters: {
+          "page": page,
+          "limit": limit,
+          if (archived) "archived": "true",
+        },
       );
 
       // Check if response is a list directly (not wrapped in an object)
@@ -196,11 +207,16 @@ class MessagingService implements IMessagingService {
   Future<PageableResponse<ConversationSummary>> getParticipantConversations({
     int page = 1,
     int limit = 20,
+    bool archived = false,
   }) async {
     try {
       await _checkAuthentication();
 
-      final queryParams = <String, dynamic>{"page": page, "limit": limit};
+      final queryParams = <String, dynamic>{
+        "page": page,
+        "limit": limit,
+        if (archived) "archived": "true",
+      };
 
       final response = await _apiClient.get<Map<String, dynamic>>(
         "/conversations/participant",
@@ -312,6 +328,41 @@ class MessagingService implements IMessagingService {
       );
     } catch (e) {
       throw Exception("Failed to delete conversation");
+    }
+  }
+
+  @override
+  Future<void> archiveConversation(int conversationId) async {
+    await _checkAuthentication();
+    try {
+      await _apiClient.put<void, _EmptyRequest>(
+        "/conversations/$conversationId/archive",
+        (json) {},
+        data: _EmptyRequest(),
+      );
+    } on DioException catch (e) {
+      // 409 → chat has unread messages; surface a stable marker the BLoC
+      // can detect without string-matching the localized error body.
+      if (e.response?.statusCode == 409) {
+        throw Exception("ARCHIVE_HAS_UNREAD");
+      }
+      throw Exception("Failed to archive conversation");
+    } catch (_) {
+      throw Exception("Failed to archive conversation");
+    }
+  }
+
+  @override
+  Future<void> unarchiveConversation(int conversationId) async {
+    await _checkAuthentication();
+    try {
+      await _apiClient.put<void, _EmptyRequest>(
+        "/conversations/$conversationId/unarchive",
+        (json) {},
+        data: _EmptyRequest(),
+      );
+    } catch (_) {
+      throw Exception("Failed to unarchive conversation");
     }
   }
 

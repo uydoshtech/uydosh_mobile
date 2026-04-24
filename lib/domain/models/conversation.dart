@@ -15,6 +15,7 @@ class Conversation with _$Conversation {
     @JsonKey(name: "is_active") required bool isActive, @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, @JsonKey(name: "last_message_at") String? lastMessageAt,
     @JsonKey(name: "last_message_content") String? lastMessageContent,
     @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
+    @JsonKey(name: "archived_at") String? archivedAt,
     // Related data
     Listing? listing,
     UserProfile? otherUser,
@@ -35,6 +36,7 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "is_active") required bool isActive, @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, @JsonKey(name: "last_message_at") String? lastMessageAt,
     @JsonKey(name: "last_message_content") String? lastMessageContent,
     @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
+    @JsonKey(name: "archived_at") String? archivedAt,
     // Summary data
     @JsonKey(name: "listing_title") String? listingTitle,
     @JsonKey(name: "listing_type_id") int? listingTypeId,

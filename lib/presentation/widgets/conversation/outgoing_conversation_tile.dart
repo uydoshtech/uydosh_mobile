@@ -19,11 +19,13 @@ class OutgoingConversationTile extends StatelessWidget {
     this.currentUserId,
     /// When true (e.g. messages inbox with day headers), show clock time only — no calendar date in the tile.
     this.showActivityTimeOnly = false,
+    this.onLongPress,
   });
   final ConversationSummary conversation;
   final VoidCallback onTap;
   final int? currentUserId;
   final bool showActivityTimeOnly;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -101,6 +103,7 @@ class OutgoingConversationTile extends StatelessWidget {
           margin: EdgeInsets.zero,
           child: InkWell(
             onTap: onTap,
+            onLongPress: onLongPress,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

@@ -21,6 +21,7 @@ import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/screens/messages/archived_conversations_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
@@ -296,7 +297,21 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               // Refresh conversations to get updated unread counts
               _loadConversations();
             },
-            error: (message) {},
+            error: (message) {
+              // Archive-specific error: surface a localized toast rather
+              // than the generic error screen. Other errors fall through
+              // to the BlocBuilder's error state.
+              if (message == archiveHasUnreadErrorCode && mounted) {
+                final messenger = ScaffoldMessenger.of(context);
+                messenger.hideCurrentSnackBar();
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(L10n.get("archive_failed_has_unread")),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
           );
         },
         child: BlocBuilder<MessagingBloc, MessagingState>(
@@ -370,6 +385,15 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
       foregroundColor: onBarColor,
       actions: [
+        IconButton(
+          tooltip: L10n.get("archived_chats"),
+          onPressed: _openArchivedConversations,
+          icon: ThemeIcon(
+            Icons.archive_outlined,
+            size: 24,
+            color: onBarColor,
+          ),
+        ),
         Padding(
           padding: const EdgeInsetsDirectional.only(end: 8),
           child: IconButton(
@@ -831,6 +855,157 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     return entries;
   }
 
+  /// Show the archive/read bottom sheet for a conversation. Runs the archive
+  /// flow (with unread-blocking + undo) so long-press and swipe-to-archive
+  /// share the exact same path — keeps error handling in one place.
+  Future<void> _promptConversationActions(
+    ConversationSummary conversation,
+  ) async {
+    HapticFeedbackUtils.impact();
+    if (!mounted) return;
+
+    final hasUnread = (conversation.unreadCount ?? 0) > 0 &&
+        _currentUserId != null &&
+        conversation.lastMessageSenderId != _currentUserId;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (hasUnread)
+                ListTile(
+                  leading: const ThemeIcon(Icons.mark_email_read_outlined),
+                  title: Text(L10n.get("mark_as_read", fallback: "Mark as read")),
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    context
+                        .read<MessagingBloc>()
+                        .add(MarkMessagesAsRead(
+                          conversationId: conversation.id,
+                        ));
+                  },
+                ),
+              ListTile(
+                leading: const ThemeIcon(Icons.archive_outlined),
+                title: Text(L10n.get("archive")),
+                enabled: !hasUnread,
+                subtitle: hasUnread
+                    ? Text(
+                        L10n.get("archive_failed_has_unread"),
+                        style: const TextStyle(fontSize: 12),
+                      )
+                    : null,
+                onTap: hasUnread
+                    ? null
+                    : () {
+                        Navigator.of(sheetCtx).pop();
+                        _archiveConversation(conversation);
+                      },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Dispatch the archive event and show a snackbar with undo. The
+  /// optimistic-removal path lives in [MessagingBloc]; this method only
+  /// owns the user-facing confirmation.
+  void _archiveConversation(ConversationSummary conversation) {
+    HapticFeedbackUtils.impact();
+    context
+        .read<MessagingBloc>()
+        .add(ArchiveConversation(conversationId: conversation.id));
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(L10n.get("chat_archived")),
+        action: SnackBarAction(
+          label: L10n.get("undo"),
+          onPressed: () {
+            if (!mounted) return;
+            context
+                .read<MessagingBloc>()
+                .add(UnarchiveConversation(conversationId: conversation.id));
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Wrap a tile in a leading-swipe [Dismissible] that archives on release.
+  /// Trailing-only swipe (end→start) — avoids conflicting with the chat list
+  /// scroll and mirrors WhatsApp/Telegram iOS behavior.
+  Widget _wrapWithArchiveSwipe({
+    required Widget child,
+    required ConversationSummary conversation,
+  }) {
+    final hasUnread = (conversation.unreadCount ?? 0) > 0 &&
+        _currentUserId != null &&
+        conversation.lastMessageSenderId != _currentUserId;
+
+    return Dismissible(
+      key: ValueKey("conv-swipe-${conversation.id}"),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async {
+        if (hasUnread) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(L10n.get("archive_failed_has_unread")),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          return false;
+        }
+        return true;
+      },
+      onDismissed: (_) => _archiveConversation(conversation),
+      background: Container(
+        alignment: AlignmentDirectional.centerEnd,
+        padding: const EdgeInsetsDirectional.only(end: 24),
+        decoration: BoxDecoration(
+          color: ThemeState().primaryColor.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ThemeIcon(Icons.archive_outlined, color: ThemeState().primaryColor),
+            const SizedBox(width: 8),
+            Text(
+              L10n.get("archive"),
+              style: TextStyle(
+                color: ThemeState().primaryColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  Future<void> _openArchivedConversations() async {
+    HapticFeedbackUtils.impact();
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const ArchivedConversationsScreen(),
+      ),
+    );
+    if (mounted) {
+      _loadConversations();
+    }
+  }
+
   Future<void> _openChatScreen(ConversationSummary conversation) async {
     HapticFeedbackUtils.impact();
     if (!mounted) return;
@@ -890,26 +1065,31 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               itemSpacing: 12,
               showActivityTimeOnly: true,
               onConversationTap: _openChatScreen,
+              onConversationLongPress: _promptConversationActions,
             ),
-          _InboxConversationRow(:final conversation) =>
-            outgoingTiles
-                ? OutgoingConversationTile(
-                    conversation: conversation,
-                    currentUserId: _currentUserId,
-                    showActivityTimeOnly: true,
-                    onTap: () {
-                      _openChatScreen(conversation);
-                    },
-                  )
-                : ConversationTile(
-                    conversation: conversation,
-                    currentUserId: _currentUserId,
-                    isGrouped: false,
-                    showActivityTimeOnly: true,
-                    onTap: () {
-                      _openChatScreen(conversation);
-                    },
-                  ),
+          _InboxConversationRow(:final conversation) => _wrapWithArchiveSwipe(
+              conversation: conversation,
+              child: outgoingTiles
+                  ? OutgoingConversationTile(
+                      conversation: conversation,
+                      currentUserId: _currentUserId,
+                      showActivityTimeOnly: true,
+                      onTap: () {
+                        _openChatScreen(conversation);
+                      },
+                      onLongPress: () => _promptConversationActions(conversation),
+                    )
+                  : ConversationTile(
+                      conversation: conversation,
+                      currentUserId: _currentUserId,
+                      isGrouped: false,
+                      showActivityTimeOnly: true,
+                      onTap: () {
+                        _openChatScreen(conversation);
+                      },
+                      onLongPress: () => _promptConversationActions(conversation),
+                    ),
+            ),
         };
       },
     );

@@ -159,6 +159,18 @@ class AppStrings {
       "no_messages": "No messages yet",
       "no_messages_description":
           "You haven't received any messages about your listings yet",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "archived": "Archived",
+      "archived_chats": "Archived chats",
+      "no_archived_conversations": "No archived chats",
+      "no_archived_conversations_description":
+          "Chats you archive will appear here",
+      "chat_archived": "Chat archived",
+      "chat_unarchived": "Chat moved back to inbox",
+      "archive_failed_has_unread":
+          "Can't archive: this chat has unread messages",
+      "undo": "Undo",
       "error_not_authenticated": "Please log in to start a conversation",
       "error_cannot_message_self": "You cannot message yourself",
       "start_conversation_from_listing":
@@ -1221,6 +1233,18 @@ class AppStrings {
       "no_messages": "Пока нет сообщений",
       "no_messages_description":
           "Вы еще не получили сообщений о ваших объявлениях",
+      "archive": "В архив",
+      "unarchive": "Из архива",
+      "archived": "Архив",
+      "archived_chats": "Архив чатов",
+      "no_archived_conversations": "В архиве пусто",
+      "no_archived_conversations_description":
+          "Архивированные чаты появятся здесь",
+      "chat_archived": "Чат в архиве",
+      "chat_unarchived": "Чат возвращён во входящие",
+      "archive_failed_has_unread":
+          "Нельзя архивировать чат с непрочитанными сообщениями",
+      "undo": "Отменить",
       "error_not_authenticated": "Войдите в систему, чтобы начать разговор",
       "error_cannot_message_self": "Вы не можете писать сообщения себе",
       "start_conversation_from_listing":
@@ -2296,6 +2320,18 @@ class AppStrings {
       "no_messages": "Hali xabarlar yo'q",
       "no_messages_description":
           "Siz hali e'lonlaringiz haqida xabar olmadingiz",
+      "archive": "Arxivlash",
+      "unarchive": "Arxivdan chiqarish",
+      "archived": "Arxiv",
+      "archived_chats": "Arxivdagi suhbatlar",
+      "no_archived_conversations": "Arxivda suhbatlar yo'q",
+      "no_archived_conversations_description":
+          "Arxivlangan suhbatlar shu yerda ko'rinadi",
+      "chat_archived": "Suhbat arxivga olindi",
+      "chat_unarchived": "Suhbat qayta kirish qutisiga qaytdi",
+      "archive_failed_has_unread":
+          "O'qilmagan xabari bor suhbatni arxivlab bo'lmaydi",
+      "undo": "Bekor qilish",
       "error_not_authenticated": "Suhbatni boshlash uchun tizimga kiring",
       "error_cannot_message_self": "O'zingizga xabar yubora olmaysiz",
       "start_conversation_from_listing":

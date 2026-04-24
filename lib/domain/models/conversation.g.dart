@@ -18,6 +18,7 @@ _$ConversationImpl _$$ConversationImplFromJson(Map<String, dynamic> json) =>
       lastMessageAt: json['last_message_at'] as String?,
       lastMessageContent: json['last_message_content'] as String?,
       lastMessageSenderId: (json['last_message_sender_id'] as num?)?.toInt(),
+      archivedAt: json['archived_at'] as String?,
       listing: json['listing'] == null
           ? null
           : Listing.fromJson(json['listing'] as Map<String, dynamic>),
@@ -39,6 +40,7 @@ Map<String, dynamic> _$$ConversationImplToJson(_$ConversationImpl instance) =>
       'last_message_at': instance.lastMessageAt,
       'last_message_content': instance.lastMessageContent,
       'last_message_sender_id': instance.lastMessageSenderId,
+      'archived_at': instance.archivedAt,
       'listing': instance.listing,
       'otherUser': instance.otherUser,
       'unread_count': instance.unreadCount,
@@ -57,6 +59,7 @@ _$ConversationSummaryImpl _$$ConversationSummaryImplFromJson(
       lastMessageAt: json['last_message_at'] as String?,
       lastMessageContent: json['last_message_content'] as String?,
       lastMessageSenderId: (json['last_message_sender_id'] as num?)?.toInt(),
+      archivedAt: json['archived_at'] as String?,
       listingTitle: json['listing_title'] as String?,
       listingTypeId: (json['listing_type_id'] as num?)?.toInt(),
       listingGender: (json['listing_gender'] as num?)?.toInt(),
@@ -94,6 +97,7 @@ Map<String, dynamic> _$$ConversationSummaryImplToJson(
       'last_message_at': instance.lastMessageAt,
       'last_message_content': instance.lastMessageContent,
       'last_message_sender_id': instance.lastMessageSenderId,
+      'archived_at': instance.archivedAt,
       'listing_title': instance.listingTitle,
       'listing_type_id': instance.listingTypeId,
       'listing_gender': instance.listingGender,

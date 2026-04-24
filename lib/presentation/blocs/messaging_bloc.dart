@@ -65,6 +65,25 @@ class MarkMessagesAsRead extends MessagingEvent {
 
 class RefreshConversations extends MessagingEvent {}
 
+/// Archive a conversation for the current user. The list UI listens for
+/// [MessagingError] emissions with code [archiveHasUnreadErrorCode] to show
+/// a targeted message when the server rejects the archive because the chat
+/// still has unread messages.
+class ArchiveConversation extends MessagingEvent {
+  ArchiveConversation({required this.conversationId});
+  final int conversationId;
+}
+
+class UnarchiveConversation extends MessagingEvent {
+  UnarchiveConversation({required this.conversationId});
+  final int conversationId;
+}
+
+/// Sentinel error marker surfaced through [MessagingError.message] when the
+/// backend returns 409 on archive (chat has unread). Kept as a simple string
+/// so UI code doesn't need to parse localized server text.
+const String archiveHasUnreadErrorCode = "ARCHIVE_HAS_UNREAD";
+
 class RefreshMessages extends MessagingEvent {
 
   RefreshMessages({required this.conversationId});
@@ -117,6 +136,8 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     on<RefreshConversations>(_onRefreshConversations);
     on<RefreshMessages>(_onRefreshMessages);
     on<ClearConversations>(_onClearConversations);
+    on<ArchiveConversation>(_onArchiveConversation);
+    on<UnarchiveConversation>(_onUnarchiveConversation);
   }
   final IMessagingService _messagingService;
   final IGamificationService _gamificationService;
@@ -398,5 +419,84 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     // Clear cached conversations and emit cleared state
     _cachedConversations.clear();
     emit(const MessagingState.conversationsCleared());
+  }
+
+  /// Optimistically drop the archived conversation from the currently
+  /// emitted list (and the local cache) so the inbox updates instantly.
+  /// On failure, the full list is refetched — simpler and more reliable
+  /// than tracking per-row ephemeral state, since a conversation can only
+  /// be archived from a list that's already on screen.
+  Future<void> _onArchiveConversation(
+    ArchiveConversation event,
+    Emitter<MessagingState> emit,
+  ) async {
+    _removeConversationFromCache(event.conversationId);
+    final prevState = state;
+    final optimistic = _withoutConversation(prevState, event.conversationId);
+    if (optimistic != null) {
+      emit(optimistic);
+    }
+
+    try {
+      await _messagingService.archiveConversation(event.conversationId);
+    } catch (e) {
+      final errorText = e.toString();
+      if (errorText.contains(archiveHasUnreadErrorCode)) {
+        // Emit the sentinel error so the UI can show a snackbar, then
+        // immediately restore the previous list so the user doesn't get
+        // stuck on the error screen. Listeners fire on each emit.
+        emit(const MessagingError(message: archiveHasUnreadErrorCode));
+        if (prevState is ConversationsLoaded) {
+          emit(prevState);
+        } else {
+          add(FetchConversations(page: 1));
+        }
+      } else {
+        emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
+        // Rollback: pull fresh data so the row reappears if the server
+        // rejected our optimistic removal.
+        add(FetchConversations(page: 1));
+      }
+    }
+  }
+
+  Future<void> _onUnarchiveConversation(
+    UnarchiveConversation event,
+    Emitter<MessagingState> emit,
+  ) async {
+    _removeConversationFromCache(event.conversationId);
+    final prevState = state;
+    final optimistic = _withoutConversation(prevState, event.conversationId);
+    if (optimistic != null) {
+      emit(optimistic);
+    }
+
+    try {
+      await _messagingService.unarchiveConversation(event.conversationId);
+    } catch (e) {
+      emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
+    }
+  }
+
+  void _removeConversationFromCache(int conversationId) {
+    _cachedConversations.removeWhere((c) => c.id == conversationId);
+  }
+
+  /// Produce a copy of [state] with [conversationId] removed from its list
+  /// payload, if the state currently carries one. Returns null when the
+  /// current state wouldn't benefit from an in-place patch (e.g. an error
+  /// screen or a messages view).
+  MessagingState? _withoutConversation(MessagingState state, int conversationId) {
+    if (state is ConversationsLoaded) {
+      final filtered = state.conversations
+          .where((c) => c.id != conversationId)
+          .toList();
+      return ConversationsLoaded(
+        conversations: filtered,
+        hasMore: state.hasMore,
+        currentPage: state.currentPage,
+      );
+    }
+    return null;
   }
 }

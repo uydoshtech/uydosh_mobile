@@ -20,12 +20,14 @@ class ConversationTile extends StatelessWidget {
     this.isGrouped = false,
     /// When true (e.g. messages inbox with day headers), show clock time only — no calendar date in the tile.
     this.showActivityTimeOnly = false,
+    this.onLongPress,
   });
   final ConversationSummary conversation;
   final VoidCallback onTap;
   final int? currentUserId;
   final bool isGrouped;
   final bool showActivityTimeOnly;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,7 @@ class ConversationTile extends StatelessWidget {
 
         final listTile = ListTile(
           onTap: onTap,
+          onLongPress: onLongPress,
           // Sit on parent [ThreeDElevatedSurface] gradient instead of a flat fill.
           tileColor: isGrouped ? Colors.transparent : null,
           leading: resolvedAvatarUrl != null

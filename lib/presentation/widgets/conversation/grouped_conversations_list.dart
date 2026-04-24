@@ -24,6 +24,7 @@ class GroupedConversationsList extends StatefulWidget {
     this.itemSpacing,
     /// Passed through to inner [ConversationTile]s (e.g. inbox with day headers).
     this.showActivityTimeOnly = false,
+    this.onConversationLongPress,
   });
   final List<ConversationSummary> conversations;
   final int? currentUserId;
@@ -32,6 +33,7 @@ class GroupedConversationsList extends StatefulWidget {
   final EdgeInsets? padding;
   final double? itemSpacing;
   final bool showActivityTimeOnly;
+  final Function(ConversationSummary)? onConversationLongPress;
 
   @override
   State<GroupedConversationsList> createState() =>
@@ -341,6 +343,12 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                               isGrouped:
                                   true, // Add this parameter to style differently
                               showActivityTimeOnly: widget.showActivityTimeOnly,
+                              onLongPress:
+                                  widget.onConversationLongPress == null
+                                      ? null
+                                      : () => widget.onConversationLongPress!(
+                                            conversation,
+                                          ),
                             ),
                           ),
                         ],
