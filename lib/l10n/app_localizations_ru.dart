@@ -359,6 +359,26 @@ class AppLocalizationsRu extends AppLocalizations {
       'Сколько людей уже живет в квартире?';
 
   @override
+  String get quick_question_total_price =>
+      'Какая итоговая цена со всеми коммунальными?';
+
+  @override
+  String get quick_question_can_visit_soon =>
+      'Можно прийти посмотреть на днях?';
+
+  @override
+  String get quick_question_seeker_move_in_when => 'Когда планируете заехать?';
+
+  @override
+  String get quick_question_seeker_budget => 'Какой у вас бюджет?';
+
+  @override
+  String get quick_question_seeker_how_long => 'На какой срок ищете?';
+
+  @override
+  String get quick_question_seeker_about_you => 'Расскажете немного о себе?';
+
+  @override
   String get private_room => 'Отдельная комната';
 
   @override

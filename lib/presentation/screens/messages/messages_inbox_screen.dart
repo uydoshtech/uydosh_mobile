@@ -1163,6 +1163,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             (context) => ChatScreen(
               conversationId: conversation.id,
               listingId: conversation.listingId,
+              listingTypeId: conversation.listingTypeId,
+              // Server convention: listing owner is always `participant_id`.
+              listingOwnerUserId: conversation.participantId,
               otherUserInitials: StringUtils.extractInitials(
                 conversation.otherUserName,
               ),

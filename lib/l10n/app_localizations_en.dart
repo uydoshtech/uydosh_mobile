@@ -355,6 +355,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'How many people already live in apartment?';
 
   @override
+  String get quick_question_total_price =>
+      'What is the total price including utilities?';
+
+  @override
+  String get quick_question_can_visit_soon => 'Can I come to see it soon?';
+
+  @override
+  String get quick_question_seeker_move_in_when =>
+      'When do you want to move in?';
+
+  @override
+  String get quick_question_seeker_budget => 'What is your budget?';
+
+  @override
+  String get quick_question_seeker_how_long =>
+      'How long are you looking to rent?';
+
+  @override
+  String get quick_question_seeker_about_you =>
+      'Could you tell me about yourself?';
+
+  @override
   String get private_room => 'Private Room';
 
   @override

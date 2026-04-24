@@ -249,6 +249,25 @@ class AppAnalyticsService {
     );
   }
 
+  Future<void> logQuickQuestionTapped({
+    required String questionKey,
+    required bool isViewerListingOwner,
+    int? conversationId,
+    int? listingId,
+    int? listingTypeId,
+  }) async {
+    await _analytics.logEvent(
+      name: "quick_question_tapped",
+      parameters: {
+        "question_key": questionKey,
+        "is_viewer_listing_owner": isViewerListingOwner ? 1 : 0,
+        if (conversationId != null) "conversation_id": conversationId,
+        if (listingId != null) "listing_id": listingId,
+        if (listingTypeId != null) "listing_type_id": listingTypeId,
+      },
+    );
+  }
+
   Future<void> logChatOpened({
     int? conversationId,
     int? listingId,

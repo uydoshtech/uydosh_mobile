@@ -1430,6 +1430,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
             final chatScreen = ChatScreen(
               conversationId: conversation.id,
               listingId: widget.listingId,
+              listingTypeId: listingDetail.listingTypeId,
+              listingOwnerUserId: listingDetail.user.id,
               otherUserInitials: StringUtils.extractInitials(displayName),
               otherUserName: displayName.isNotEmpty ? displayName : null,
               otherUserId: listingDetail.user.id,
@@ -1551,6 +1553,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
                     builder: (context) => ChatScreen(
                       conversationId: existingConversation.id,
                       listingId: widget.listingId,
+                      listingTypeId: existingConversation.listingTypeId,
+                      // Server convention: listing owner is `participant_id`.
+                      listingOwnerUserId: existingConversation.participantId,
                       otherUserInitials: StringUtils.extractInitials(
                         existingConversation.otherUserName,
                       ),

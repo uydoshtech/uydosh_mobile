@@ -228,6 +228,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             (context) => ChatScreen(
               conversationId: conversationId,
               listingId: conv?.listingId,
+              listingTypeId: conv?.listingTypeId,
+              // Server convention: listing owner is always `participant_id`.
+              listingOwnerUserId: conv?.participantId,
               otherUserInitials:
                   conv != null
                       ? StringUtils.extractInitials(conv.otherUserName)

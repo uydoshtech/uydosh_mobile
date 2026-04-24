@@ -3,15 +3,29 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/chat/quick_questions_config.dart";
 
 class QuickQuestionsWidget extends StatelessWidget {
 
   const QuickQuestionsWidget({
     required this.onQuestionTap,
+    this.listingTypeId,
+    this.isViewerListingOwner = false,
     this.blendWithGlassBackdrop = false,
     super.key,
   });
-  final Function(String) onQuestionTap;
+
+  /// Receives both the resolved (localized) question text and its l10n key.
+  /// The key is passed so callers can log analytics without re-matching text.
+  final void Function(String questionText, String questionKey) onQuestionTap;
+
+  /// Listing type that scopes the chip set. `null` falls back to the legacy
+  /// "asking about housing" set (pre-refactor behaviour).
+  final int? listingTypeId;
+
+  /// When the current viewer is the listing's author the chip set inverts —
+  /// they talk to a counterparty, not to themselves.
+  final bool isViewerListingOwner;
 
   /// When true, strip has no fill (parent provides frosted glass).
   final bool blendWithGlassBackdrop;
@@ -38,34 +52,24 @@ class QuickQuestionsWidget extends StatelessWidget {
                     bottom: BorderSide(color: borderColor, width: 0.5),
                   ),
                 );
+
+        final keys = quickQuestionKeysFor(
+          listingTypeId: listingTypeId,
+          isViewerListingOwner: isViewerListingOwner,
+        );
+
         return Container(
           padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPad),
           decoration: stripDecoration,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: [
-                _buildQuestionPill(
-                  context,
-                  L10n.get("quick_question_room_available"),
-                  pillColor,
-                  pillTextColor,
-                ),
-                const SizedBox(width: 8),
-                _buildQuestionPill(
-                  context,
-                  L10n.get("quick_question_move_in_date"),
-                  pillColor,
-                  pillTextColor,
-                ),
-                const SizedBox(width: 8),
-                _buildQuestionPill(
-                  context,
-                  L10n.get("quick_question_people_living"),
-                  pillColor,
-                  pillTextColor,
-                ),
-              ],
+              children: _buildPills(
+                context,
+                keys: keys,
+                pillColor: pillColor,
+                pillTextColor: pillTextColor,
+              ),
             ),
           ),
         );
@@ -73,17 +77,40 @@ class QuickQuestionsWidget extends StatelessWidget {
     );
   }
 
+  List<Widget> _buildPills(
+    BuildContext context, {
+    required List<String> keys,
+    required Color pillColor,
+    required Color pillTextColor,
+  }) {
+    final children = <Widget>[];
+    for (var i = 0; i < keys.length; i++) {
+      if (i > 0) children.add(const SizedBox(width: 8));
+      final key = keys[i];
+      children.add(
+        _buildQuestionPill(
+          context,
+          text: L10n.get(key),
+          questionKey: key,
+          backgroundColor: pillColor,
+          textColor: pillTextColor,
+        ),
+      );
+    }
+    return children;
+  }
+
   Widget _buildQuestionPill(
-    BuildContext context,
-    String text,
-    Color backgroundColor,
-    Color textColor,
-  ) {
+    BuildContext context, {
+    required String text,
+    required String questionKey,
+    required Color backgroundColor,
+    required Color textColor,
+  }) {
     return GestureDetector(
       onTap: () {
-        // Add light haptic feedback when tapping on quick question
         HapticFeedbackUtils.impact();
-        onQuestionTap(text);
+        onQuestionTap(text, questionKey);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

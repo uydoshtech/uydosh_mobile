@@ -61,6 +61,8 @@ class ChatScreen extends StatefulWidget {
   const ChatScreen({
     required this.conversationId, super.key,
     this.listingId,
+    this.listingTypeId,
+    this.listingOwnerUserId,
     this.otherUserInitials,
     this.otherUserName,
     this.otherUserId,
@@ -68,6 +70,16 @@ class ChatScreen extends StatefulWidget {
   }) : assert(conversationId > 0, "Conversation ID must be positive");
   final int conversationId;
   final int? listingId;
+
+  /// Scopes the quick-question chip set. Call-sites that know the listing
+  /// should pass this; callers without it (e.g. push deep-links) can omit and
+  /// the widget falls back to the legacy chip set.
+  final int? listingTypeId;
+
+  /// Owner of [listingId]. Used to detect whether the current viewer is the
+  /// listing author so quick-question chips can address the counterparty.
+  /// By server convention owner == `conversation.participant_id`.
+  final int? listingOwnerUserId;
   final String? otherUserInitials;
   final String? otherUserName;
   final int? otherUserId;
@@ -87,6 +99,13 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _hasLoadedMessagesForConversation = false; // Track if we've completed initial fetch (avoids loading when bloc is overwritten by RefreshConversations)
   final Set<int> _newMessageIds = {}; // Track which messages are new in this session
   UserProfile? _currentUserProfile; // Store the current user's profile
+  // Authoritative peer avatar URL for this session. Initialised from the
+  // constructor prop (what the previous screen knew), then overwritten with
+  // the freshly-fetched profile so newly-uploaded avatars show up without
+  // requiring the user to reopen the chat.
+  String? _peerAvatarUrl;
+  bool _peerProfileFetchInFlight = false;
+  int? _peerProfileFetchedForUserId;
   bool _showSecurityRibbon = true;
   String? _safetyWarningTitle;
   String? _safetyWarningBody;
@@ -161,6 +180,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController = TextEditingController();
     _scrollController = ScrollController();
     _messageFocusNode = FocusNode();
+    _peerAvatarUrl = widget.otherUserAvatar;
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _initializeChat());
     _loadSecurityRibbonState();
@@ -224,8 +244,37 @@ class _ChatScreenState extends State<ChatScreen> {
       context.read<MessagingBloc>().add(
             FetchMessages(conversationId: widget.conversationId),
           );
+      _refreshPeerAvatarIfPossible();
     } catch (e) {
       logger.d("❌ [ChatScreen] Error initializing chat: $e");
+    }
+  }
+
+  /// Lazily pulls the peer's profile so the header / bubbles show the most
+  /// recent avatar (and name) instead of a potentially stale value handed
+  /// down by the calling screen. Safe to call multiple times — dedupes via
+  /// [_peerProfileFetchInFlight] / [_peerProfileFetchedForUserId].
+  Future<void> _refreshPeerAvatarIfPossible() async {
+    final peerId = widget.otherUserId ?? _getOtherUserIdFromMessages();
+    if (peerId == null) return;
+    if (_peerProfileFetchInFlight) return;
+    if (_peerProfileFetchedForUserId == peerId) return;
+
+    _peerProfileFetchInFlight = true;
+    try {
+      final profile = await getIt<IUserProfileService>().getUserProfile(peerId);
+      if (!mounted) return;
+      _peerProfileFetchedForUserId = peerId;
+      final fetchedAvatar = profile.avatarUrl?.trim();
+      if (fetchedAvatar == null || fetchedAvatar.isEmpty) return;
+      if (fetchedAvatar == _peerAvatarUrl) return;
+      setState(() {
+        _peerAvatarUrl = fetchedAvatar;
+      });
+    } catch (e) {
+      logger.d("❌ [ChatScreen] Error fetching peer profile: $e");
+    } finally {
+      _peerProfileFetchInFlight = false;
     }
   }
 
@@ -578,6 +627,8 @@ class _ChatScreenState extends State<ChatScreen> {
               _chatComposerWithListener(blendWithGlassBackdrop: true),
               QuickQuestionsWidget(
                 onQuestionTap: _onQuestionTap,
+                listingTypeId: widget.listingTypeId,
+                isViewerListingOwner: _isViewerListingOwner,
                 blendWithGlassBackdrop: true,
               ),
             ],
@@ -623,6 +674,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     _applyMessagesAndMarkNewOnes(messages);
                   });
                   _finishRefreshSkeletonIfNeeded();
+                  _refreshPeerAvatarIfPossible();
                   context.read<MessagingBloc>().add(
                     MarkMessagesAsRead(conversationId: conversationId),
                   );
@@ -734,7 +786,7 @@ class _ChatScreenState extends State<ChatScreen> {
           backgroundColor: backgroundColor,
           appBar: ChatHeader(
             displayName: _getPeerDisplayName(context),
-            peerAvatarUrl: widget.otherUserAvatar,
+            peerAvatarUrl: _peerAvatarUrl,
             peerInitials: widget.otherUserInitials,
             onPeerAvatarTap: _navigateToUserProfile,
             onRefresh: () {
@@ -784,7 +836,11 @@ class _ChatScreenState extends State<ChatScreen> {
                         _chatComposerWithListener(
                           blendWithGlassBackdrop: false,
                         ),
-                        QuickQuestionsWidget(onQuestionTap: _onQuestionTap),
+                        QuickQuestionsWidget(
+                          onQuestionTap: _onQuestionTap,
+                          listingTypeId: widget.listingTypeId,
+                          isViewerListingOwner: _isViewerListingOwner,
+                        ),
                       ],
                     ),
           ),
@@ -873,7 +929,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 },
                 currentUserProfile: _currentUserProfile,
                 otherUserInitials: widget.otherUserInitials,
-                otherUserAvatarUrl: widget.otherUserAvatar,
+                otherUserAvatarUrl: _peerAvatarUrl,
                 translation: _translationsById[message.id],
                 showOriginal: _showOriginalMessageIds.contains(message.id),
                 onToggleTranslation: _translationsById[message.id] == null
@@ -980,7 +1036,14 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _onQuestionTap(String question) {
+  void _onQuestionTap(String question, String questionKey) {
+    getIt<AppAnalyticsService>().logQuickQuestionTapped(
+      conversationId: widget.conversationId,
+      listingId: widget.listingId,
+      listingTypeId: widget.listingTypeId,
+      isViewerListingOwner: _isViewerListingOwner,
+      questionKey: questionKey,
+    );
     // Add appropriate greeting based on current language
     final greeting = _getGreetingForCurrentLanguage();
     // Lowercase the first letter of the question
@@ -991,6 +1054,16 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.text = "$greeting $lowercasedQuestion";
     // Focus the text field to show the inserted text
     FocusScope.of(context).requestFocus(_messageFocusNode);
+  }
+
+  /// True when the signed-in user owns the backing listing. Only returns true
+  /// when we have both ids; unknowns fall through as `false` so chips default
+  /// to the "asking about housing" set.
+  bool get _isViewerListingOwner {
+    final currentId = _currentUserId;
+    final ownerId = widget.listingOwnerUserId;
+    if (currentId == null || ownerId == null) return false;
+    return currentId == ownerId;
   }
 
   String _getGreetingForCurrentLanguage() {
@@ -1068,7 +1141,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildProfileMenuIcon() {
-    final resolvedAvatarUrl = resolveAvatarUrl(widget.otherUserAvatar);
+    final resolvedAvatarUrl = resolveAvatarUrl(_peerAvatarUrl);
     if (resolvedAvatarUrl != null) {
       return ClipOval(
         child: CachedNetworkImage(

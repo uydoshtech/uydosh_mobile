@@ -167,6 +167,9 @@ class _ArchivedConversationsScreenState
         builder: (_) => ChatScreen(
           conversationId: conversation.id,
           listingId: conversation.listingId,
+          listingTypeId: conversation.listingTypeId,
+          // Server convention: listing owner is always `participant_id`.
+          listingOwnerUserId: conversation.participantId,
           otherUserInitials:
               StringUtils.extractInitials(conversation.otherUserName),
           otherUserName: conversation.otherUserName,

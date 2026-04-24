@@ -742,6 +742,42 @@ abstract class AppLocalizations {
   /// **'How many people already live in apartment?'**
   String get quick_question_people_living;
 
+  /// No description provided for @quick_question_total_price.
+  ///
+  /// In en, this message translates to:
+  /// **'What is the total price including utilities?'**
+  String get quick_question_total_price;
+
+  /// No description provided for @quick_question_can_visit_soon.
+  ///
+  /// In en, this message translates to:
+  /// **'Can I come to see it soon?'**
+  String get quick_question_can_visit_soon;
+
+  /// No description provided for @quick_question_seeker_move_in_when.
+  ///
+  /// In en, this message translates to:
+  /// **'When do you want to move in?'**
+  String get quick_question_seeker_move_in_when;
+
+  /// No description provided for @quick_question_seeker_budget.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your budget?'**
+  String get quick_question_seeker_budget;
+
+  /// No description provided for @quick_question_seeker_how_long.
+  ///
+  /// In en, this message translates to:
+  /// **'How long are you looking to rent?'**
+  String get quick_question_seeker_how_long;
+
+  /// No description provided for @quick_question_seeker_about_you.
+  ///
+  /// In en, this message translates to:
+  /// **'Could you tell me about yourself?'**
+  String get quick_question_seeker_about_you;
+
   /// No description provided for @private_room.
   ///
   /// In en, this message translates to:

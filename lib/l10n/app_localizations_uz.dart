@@ -357,6 +357,29 @@ class AppLocalizationsUz extends AppLocalizations {
   String get quick_question_people_living => 'Kvartiraga necha kishi yashaydi?';
 
   @override
+  String get quick_question_total_price =>
+      'Kommunal xarajatlar bilan umumiy narxi qancha?';
+
+  @override
+  String get quick_question_can_visit_soon =>
+      'Yaqin kunlarda ko\'rish uchun kelsam bo\'ladimi?';
+
+  @override
+  String get quick_question_seeker_move_in_when =>
+      'Qachon ko\'chib kelmoqchisiz?';
+
+  @override
+  String get quick_question_seeker_budget => 'Byudjetingiz qancha?';
+
+  @override
+  String get quick_question_seeker_how_long =>
+      'Qancha muddatga ijaraga qidiryapsiz?';
+
+  @override
+  String get quick_question_seeker_about_you =>
+      'O\'zingiz haqingizda biroz gapirib bering?';
+
+  @override
   String get private_room => 'Shaxsiy xona';
 
   @override

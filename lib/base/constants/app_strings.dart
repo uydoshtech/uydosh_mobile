@@ -197,6 +197,13 @@ class AppStrings {
       "any_date": "Any date",
       "quick_question_people_living":
           "How many people already live in apartment?",
+      "quick_question_total_price":
+          "What is the total price including utilities?",
+      "quick_question_can_visit_soon": "Can I come to see it soon?",
+      "quick_question_seeker_move_in_when": "When do you want to move in?",
+      "quick_question_seeker_budget": "What is your budget?",
+      "quick_question_seeker_how_long": "How long are you looking to rent?",
+      "quick_question_seeker_about_you": "Could you tell me about yourself?",
       "private_room": "Private Room",
       "with_photo": "With photo",
       "search_filter_private_room": "Own room",
@@ -1279,6 +1286,13 @@ class AppStrings {
       "quick_question_move_in_date": "Когда можно въехать?",
       "any_date": "Любая дата",
       "quick_question_people_living": "Сколько людей уже живет в квартире?",
+      "quick_question_total_price":
+          "Какая итоговая цена со всеми коммунальными?",
+      "quick_question_can_visit_soon": "Можно прийти посмотреть на днях?",
+      "quick_question_seeker_move_in_when": "Когда планируете заехать?",
+      "quick_question_seeker_budget": "Какой у вас бюджет?",
+      "quick_question_seeker_how_long": "На какой срок ищете?",
+      "quick_question_seeker_about_you": "Расскажете немного о себе?",
       "private_room": "Отдельная комната",
       "with_photo": "С фото",
       "search_filter_private_room": "Отдельная комната",
@@ -2376,6 +2390,17 @@ class AppStrings {
       "quick_question_move_in_date": "Ko'chib kelish sanasi qachon?",
       "any_date": "Har qanday sanasi",
       "quick_question_people_living": "Kvartiraga necha kishi yashaydi?",
+      "quick_question_total_price":
+          "Kommunal xarajatlar bilan umumiy narxi qancha?",
+      "quick_question_can_visit_soon":
+          "Yaqin kunlarda ko'rish uchun kelsam bo'ladimi?",
+      "quick_question_seeker_move_in_when":
+          "Qachon ko'chib kelmoqchisiz?",
+      "quick_question_seeker_budget": "Byudjetingiz qancha?",
+      "quick_question_seeker_how_long":
+          "Qancha muddatga ijaraga qidiryapsiz?",
+      "quick_question_seeker_about_you":
+          "O'zingiz haqingizda biroz gapirib bering?",
       "private_room": "Shaxsiy xona",
       "with_photo": "Surat bilan",
       "search_filter_private_room": "Shaxsiy xona",
