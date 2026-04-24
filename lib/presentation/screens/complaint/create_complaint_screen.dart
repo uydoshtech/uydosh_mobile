@@ -7,6 +7,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
@@ -285,6 +286,7 @@ L10n.get("submit_complaint"),
   }
 
   void _submitComplaint() {
+    HapticFeedbackUtils.impact();
     if (_selectedCategory == null) return;
 
     final descriptionText = _descriptionController.text.trim();

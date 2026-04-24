@@ -20,6 +20,7 @@ import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -159,6 +160,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               onPressed: _pushStatusLoading
                   ? null
                   : () async {
+                      HapticFeedbackUtils.impact();
                       if (isDenied) {
                         await openAppSettings();
                         if (!mounted) return;
@@ -278,13 +280,19 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             runSpacing: 10,
             children: [
               OutlinedButton(
-                onPressed: _pushDebugLoading ? null : _refreshPushDebug,
+                onPressed: _pushDebugLoading
+                    ? null
+                    : () {
+                        HapticFeedbackUtils.impact();
+                        _refreshPushDebug();
+                      },
                 child: const Text("Refresh"),
               ),
               OutlinedButton(
                 onPressed: _pushDebugLoading
                     ? null
                     : () async {
+                        HapticFeedbackUtils.impact();
                         final ok = await getIt<IPushNotificationService>()
                             .requestPermissionAndRegister();
                         if (!mounted) return;
@@ -302,6 +310,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 onPressed: _pushDebugLoading
                     ? null
                     : () async {
+                        HapticFeedbackUtils.impact();
                         await getIt<IPushNotificationService>()
                             .registerTokenWithBackend();
                         if (!mounted) return;

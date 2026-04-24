@@ -288,6 +288,12 @@ class _ListingDescriptionTranslationState
     if (target == _TranslationTarget.original) {
       return;
     }
+    // Avoid racing translations: ignore taps on other flags while one is
+    // already in flight. The corresponding button is rendered in a disabled
+    // state below, but guard here too in case of rapid/simultaneous taps.
+    if (_loadingLang != null) {
+      return;
+    }
     final code = _codeForTarget(target);
     setState(() {
       _error = null;
@@ -365,6 +371,9 @@ class _ListingDescriptionTranslationState
     final selected = _target == target;
     final code = _codeForTarget(target);
     final isLoading = code.isNotEmpty && _loadingLang == code;
+    // Disable sibling flags while a translation is in flight to prevent
+    // racing/interleaved requests when the user taps buttons quickly.
+    final isDisabled = _loadingLang != null && !isLoading;
 
     const pillHeight = 28.0;
     const radius = 14.0;
@@ -378,12 +387,12 @@ class _ListingDescriptionTranslationState
         ? ListingDetailThemeHelper.iconColor
         : Theme.of(context).colorScheme.primary;
 
-    return Tooltip(
+    final content = Tooltip(
       message: L10n.get(tooltipKey),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _onFlagTap(target),
+          onTap: isDisabled ? null : () => _onFlagTap(target),
           borderRadius: BorderRadius.circular(radius),
           child: Container(
             height: pillHeight,
@@ -414,6 +423,14 @@ class _ListingDescriptionTranslationState
         ),
       ),
     );
+
+    if (!isDisabled) {
+      return content;
+    }
+    return IgnorePointer(
+      ignoring: true,
+      child: Opacity(opacity: 0.45, child: content),
+    );
   }
 
   /// Compact control matching [_flagButton] size; tinted so it reads as “source text”
@@ -434,17 +451,21 @@ class _ListingDescriptionTranslationState
         ? ListingDetailThemeHelper.iconColor
         : scheme.primary.withValues(alpha: 0.9);
 
-    return Tooltip(
+    final isDisabled = _loadingLang != null;
+
+    final content = Tooltip(
       message: L10n.get("listing_show_original_description"),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            setState(() {
-              _target = _TranslationTarget.original;
-              _error = null;
-            });
-          },
+          onTap: isDisabled
+              ? null
+              : () {
+                  setState(() {
+                    _target = _TranslationTarget.original;
+                    _error = null;
+                  });
+                },
           borderRadius: BorderRadius.circular(radius),
           child: Container(
             height: pillHeight,
@@ -463,6 +484,14 @@ class _ListingDescriptionTranslationState
           ),
         ),
       ),
+    );
+
+    if (!isDisabled) {
+      return content;
+    }
+    return IgnorePointer(
+      ignoring: true,
+      child: Opacity(opacity: 0.45, child: content),
     );
   }
 

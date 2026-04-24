@@ -569,11 +569,17 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop("contact_support"),
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              Navigator.of(ctx).pop("contact_support");
+            },
             child: Text(L10n.get("menu_contact_support")),
           ),
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              Navigator.of(ctx).pop();
+            },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text(
               L10n.get("close"),
@@ -585,6 +591,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   void _nextPage() {
+    HapticFeedbackUtils.impact();
     // Check if current step is complete before allowing next
     if (_currentPage == 1 && !_isGoogleSignedIn) {
       // Show error message if trying to proceed without Google Sign-In
@@ -884,6 +891,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   Future<void> _completeProfile() async {
+    HapticFeedbackUtils.impact();
     // Profile setup - require name, gender, role, student status, and
     // university if student. A region is only required when the selected
     // country is Uzbekistan (the only country we currently ship regions
@@ -1223,6 +1231,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         ),
                         tooltip: L10n.get("close"),
                         onPressed: () {
+                          HapticFeedbackUtils.impact();
                           if (Navigator.of(context).canPop()) {
                             Navigator.of(context).pop();
                             return;

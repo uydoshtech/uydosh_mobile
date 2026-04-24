@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A themed text button with consistent styling
@@ -21,7 +22,12 @@ class TextButtonThemed extends StatelessWidget {
     final isLightTheme = theme.brightness == Brightness.light;
 
     return TextButton(
-      onPressed: onPressed,
+      onPressed: onPressed == null
+          ? null
+          : () {
+              HapticFeedbackUtils.impact();
+              onPressed!();
+            },
       style: TextButton.styleFrom(
         foregroundColor:
             isLightTheme

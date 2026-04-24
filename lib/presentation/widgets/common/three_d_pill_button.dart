@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class ThreeDPillButton extends StatefulWidget {
@@ -45,7 +46,12 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: widget.borderRadius,
-          onTap: widget.onPressed,
+          onTap: enabled
+              ? () {
+                  HapticFeedbackUtils.impact();
+                  widget.onPressed?.call();
+                }
+              : null,
           onHighlightChanged: enabled ? (v) => setState(() => _pressed = v) : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 90),

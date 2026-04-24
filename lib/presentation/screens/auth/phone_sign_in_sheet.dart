@@ -96,6 +96,7 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
   }
 
   Future<void> _onSendCode() async {
+    HapticFeedbackUtils.impact();
     final phone = _normalizePhone(_phoneController.text);
     if (!_phoneAuth.isValidE164(phone)) {
       ToastTheme.showWarning(
@@ -151,6 +152,7 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
   }
 
   Future<void> _onSubmitCode() async {
+    HapticFeedbackUtils.impact();
     final code = _codeController.text.trim();
     final verificationId = _verificationId;
     if (code.length != 6 || verificationId == null) {
@@ -334,7 +336,12 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
-              onPressed: _busy ? null : _prefillTestNumber,
+              onPressed: _busy
+                  ? null
+                  : () {
+                      HapticFeedbackUtils.impact();
+                      _prefillTestNumber();
+                    },
               icon: const Icon(Icons.science_outlined, size: 16),
               label: const Text("Use Firebase test number"),
               style: TextButton.styleFrom(

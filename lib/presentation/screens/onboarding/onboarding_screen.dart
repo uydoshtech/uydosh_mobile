@@ -259,6 +259,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         // Next/Get Started button
                         TextButtonThemedCenteredFactory.textIcon(
                           onPressed: () {
+                            HapticFeedbackUtils.impact();
                             if (_currentPage < 3) {
                               _pageController.nextPage(
                                 duration: const Duration(milliseconds: 300),

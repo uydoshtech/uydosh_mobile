@@ -175,7 +175,10 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
             ],
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _fetchThreads,
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                _fetchThreads();
+              },
               child: Text(L10n.get("retry")),
             ),
           ],
@@ -469,6 +472,7 @@ class _UserSupportChatThreadScreenState
     final body = _messageController.text.trim();
     if (body.isEmpty || _isSending) return;
 
+    HapticFeedbackUtils.impact();
     setState(() => _isSending = true);
     _messageController.clear();
 
@@ -670,13 +674,7 @@ class _UserSupportChatThreadScreenState
               ),
               const SizedBox(width: 8),
               ThreeDPillButton(
-                onPressed:
-                    _isSending
-                        ? null
-                        : () {
-                          HapticFeedbackUtils.impact();
-                          _sendMessage();
-                        },
+                onPressed: _isSending ? null : _sendMessage,
                 padding: const EdgeInsets.all(10),
                 backgroundColor: sendButtonBase,
                 borderSide: BorderSide(

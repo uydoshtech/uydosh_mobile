@@ -461,6 +461,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   }
 
   Future<void> _saveProfile() async {
+    HapticFeedbackUtils.impact();
     if (_nameController.text.trim().isEmpty) {
       SoundService().playError();
       ToastTheme.showError(
@@ -640,7 +641,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                       child: FadeTransition(
                         opacity: _savePulseOpacity,
                         child: IconButton(
-                          onPressed: _saveProfile,
+                          onPressed: () {
+                            HapticFeedbackUtils.impact();
+                            _saveProfile();
+                          },
                           icon: const ThemeIcon(Icons.save),
                           tooltip: L10n.get("save_changes"),
                         ),

@@ -3,6 +3,7 @@ import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -67,6 +68,7 @@ class _ListingDescriptionAiEnhanceButtonState
   }
 
   Future<void> _onPressed() async {
+    HapticFeedbackUtils.impact();
     final raw = widget.controller.text.trim();
     if (raw.isEmpty) {
       ToastTheme.showError(
