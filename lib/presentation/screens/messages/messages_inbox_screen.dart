@@ -18,6 +18,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
@@ -77,12 +78,24 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// real `ArchiveConversation` event only fires once the countdown elapses.
   final Set<int> _pendingArchiveIds = <int>{};
 
+  /// Whether the user currently has at least one archived conversation. Drives
+  /// visibility of the "Archive" entry points (app-bar action + pinned row) —
+  /// no archive folder is exposed when the folder would be empty.
+  ///
+  /// Probed directly against [IMessagingService] rather than threaded through
+  /// [MessagingBloc]: the bloc only hydrates the active (non-archived) list,
+  /// and piping an "archived-count" concern through it would complicate every
+  /// state variant for a single boolean.
+  bool _hasArchivedChats = false;
+  final IMessagingService _messagingService = getIt<IMessagingService>();
+
   @override
   void initState() {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "messages_inbox");
     _initializeUser();
     _loadConversations();
+    _refreshArchivedChatsFlag();
     WidgetsBinding.instance.addObserver(this);
 
     // Listen for authentication state changes to refresh conversations when user logs in
@@ -129,12 +142,16 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         // Refresh user ID and conversations when authentication state changes
         _initializeUser();
         _loadConversations();
+        _refreshArchivedChatsFlag();
       } else {
         // Clear conversations when user logs out
         logger.d(
           "🔍 [MessagesInboxScreen] User logged out, clearing conversations...",
         );
         context.read<MessagingBloc>().add(ClearConversations());
+        if (_hasArchivedChats) {
+          setState(() => _hasArchivedChats = false);
+        }
       }
     }
   }
@@ -163,6 +180,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     if (state == AppLifecycleState.resumed) {
       // Refresh conversations when app becomes active again
       _loadConversations();
+      _refreshArchivedChatsFlag();
     }
   }
 
@@ -170,12 +188,47 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   void didPopNext() {
     // Called when returning to this screen from another screen (e.g. ChatScreen)
     _loadConversations();
+    // User may have archived/unarchived from ChatScreen's overflow menu, or
+    // their last archived chat may have been auto-unarchived by a reply.
+    _refreshArchivedChatsFlag();
   }
 
   void _loadConversations() {
     logger.d("🔍 [MessagesInboxScreen] Loading conversations...");
     if (mounted) {
       context.read<MessagingBloc>().add(RefreshConversations());
+    }
+  }
+
+  /// Ask the server whether any archived conversation exists from either
+  /// perspective (initiator / participant). A single hit is enough — we only
+  /// need a boolean, so both probes cap at `limit: 1` to minimize payload.
+  ///
+  /// Failures are swallowed intentionally: a network hiccup shouldn't wipe
+  /// the archive entry point. We keep the previous value so a user who
+  /// already knows they have archived chats doesn't suddenly lose the row.
+  Future<void> _refreshArchivedChatsFlag() async {
+    if (!AuthenticationState().isAuthenticated) {
+      if (!mounted) return;
+      if (_hasArchivedChats) {
+        setState(() => _hasArchivedChats = false);
+      }
+      return;
+    }
+    try {
+      final responses = await Future.wait([
+        _messagingService.getConversations(archived: true, limit: 1),
+        _messagingService.getParticipantConversations(archived: true, limit: 1),
+      ]);
+      final hasAny = responses.any((r) => r.data.isNotEmpty);
+      if (!mounted) return;
+      if (_hasArchivedChats != hasAny) {
+        setState(() => _hasArchivedChats = hasAny);
+      }
+    } catch (e, stack) {
+      logger.d(
+        "🔍 [MessagesInboxScreen] Archived probe failed (keeping current flag): $e\n$stack",
+      );
     }
   }
 
@@ -386,15 +439,16 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
       foregroundColor: onBarColor,
       actions: [
-        IconButton(
-          tooltip: L10n.get("archived_chats"),
-          onPressed: _openArchivedConversations,
-          icon: ThemeIcon(
-            Icons.archive_outlined,
-            size: 24,
-            color: onBarColor,
+        if (_hasArchivedChats)
+          IconButton(
+            tooltip: L10n.get("archived_chats"),
+            onPressed: _openArchivedConversations,
+            icon: ThemeIcon(
+              Icons.archive_outlined,
+              size: 24,
+              color: onBarColor,
+            ),
           ),
-        ),
         Padding(
           padding: const EdgeInsetsDirectional.only(end: 8),
           child: IconButton(
@@ -965,6 +1019,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         if (!mounted) return;
         setState(() {
           _pendingArchiveIds.remove(id);
+          // First archive of the session: reveal the archive entry point
+          // without waiting for the next probe to round-trip.
+          _hasArchivedChats = true;
         });
       });
       controller.close();
@@ -1003,7 +1060,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           message: L10n.get("chat_archived"),
           undoLabel: L10n.get("undo"),
           duration: const Duration(seconds: 5),
-          accentColor: ThemeState().primaryColor,
+          accentColor: AppColors.error,
           onTimeout: commit,
           onUndo: cancel,
         ),
@@ -1111,6 +1168,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     );
     if (mounted) {
       _loadConversations();
+      // User may have unarchived their last archived chat; re-probe so the
+      // row/icon disappears if the archive is now empty.
+      _refreshArchivedChatsFlag();
     }
   }
 
@@ -1141,10 +1201,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     List<ConversationSummary> conversations, {
     required bool outgoingTiles,
   }) {
-    final entries =
-        outgoingTiles
-            ? _inboxEntriesWithDayHeaders(conversations)
-            : _incomingEntriesWithDaySections(conversations);
+    final entries = <_InboxListEntry>[
+      if (_hasArchivedChats) _InboxArchivedEntryRow(),
+      ...(outgoingTiles
+          ? _inboxEntriesWithDayHeaders(conversations)
+          : _incomingEntriesWithDaySections(conversations)),
+    ];
     return CommonListView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       physics: const AlwaysScrollableScrollPhysics(),
@@ -1154,6 +1216,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final entry = entries[index];
         final isFirstRow = index == 0;
         return switch (entry) {
+          _InboxArchivedEntryRow() => _ArchivedInboxRow(
+              onTap: _openArchivedConversations,
+            ),
           _InboxDayHeader(:final dayStart) => DateHeaderWidget(
             dateString: MessageGroupingUtils.formatDateHeader(
               dayStart,
@@ -1211,34 +1276,54 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final textColor = themeState.textColor;
         final secondaryTextColor = themeState.secondaryTextColor;
 
-        return Center(
+        // Pinned entry stays at the top of the tab even when it's empty —
+        // otherwise a user who archived everything has no way to reach
+        // [ArchivedConversationsScreen] from the inbox tab. Suppress it
+        // entirely when there's nothing to archive into.
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ThemeIcon(
-                type == "incoming" ? Icons.inbox_outlined : Icons.mail_outline,
-                size: 64,
-                color: secondaryTextColor,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                type == "incoming"
-                    ? L10n.get("no_incoming_conversations")
-                    : L10n.get("no_outgoing_conversations"),
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              if (type == "incoming") ...[
+              if (_hasArchivedChats) ...[
                 const SizedBox(height: 8),
-                Text(
-                  L10n.get("no_incoming_conversations_description"),
-                  style: TextStyle(fontSize: 16, color: secondaryTextColor),
-                  textAlign: TextAlign.center,
-                ),
+                _ArchivedInboxRow(onTap: _openArchivedConversations),
               ],
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ThemeIcon(
+                        type == "incoming"
+                            ? Icons.inbox_outlined
+                            : Icons.mail_outline,
+                        size: 64,
+                        color: secondaryTextColor,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        type == "incoming"
+                            ? L10n.get("no_incoming_conversations")
+                            : L10n.get("no_outgoing_conversations"),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                      if (type == "incoming") ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          L10n.get("no_incoming_conversations_description"),
+                          style:
+                              TextStyle(fontSize: 16, color: secondaryTextColor),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         );
@@ -1254,29 +1339,47 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final textColor = themeState.textColor;
         final secondaryTextColor = themeState.secondaryTextColor;
 
-        return Center(
+        // Keep the archive entry point reachable even when the inbox is
+        // completely empty — user may have archived everything. If the
+        // archive itself is empty too, drop the row so the empty state isn't
+        // cluttered by a shortcut that leads nowhere.
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ThemeIcon(
-                Icons.chat_bubble_outline,
-                size: 64,
-                color: secondaryTextColor,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                L10n.get("no_messages"),
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
+              if (_hasArchivedChats) ...[
+                const SizedBox(height: 8),
+                _ArchivedInboxRow(onTap: _openArchivedConversations),
+              ],
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ThemeIcon(
+                        Icons.chat_bubble_outline,
+                        size: 64,
+                        color: secondaryTextColor,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        L10n.get("no_messages"),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        L10n.get("no_messages_description"),
+                        style:
+                            TextStyle(fontSize: 16, color: secondaryTextColor),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                L10n.get("no_messages_description"),
-                style: TextStyle(fontSize: 16, color: secondaryTextColor),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -1301,6 +1404,95 @@ final class _InboxConversationRow extends _InboxListEntry {
 final class _InboxIncomingDaySection extends _InboxListEntry {
   _InboxIncomingDaySection(this.conversations);
   final List<ConversationSummary> conversations;
+}
+
+/// Pinned first-row entry point into [ArchivedConversationsScreen]. Mirrors
+/// Telegram's "Archived chats" row: lives inside the scroll view so it doesn't
+/// steal vertical space on a long inbox, but remains the first visible item
+/// so it's discoverable without threading an icon through every wrapping
+/// app-bar variant (bottom-nav / pushed / standalone).
+final class _InboxArchivedEntryRow extends _InboxListEntry {
+  _InboxArchivedEntryRow();
+}
+
+/// Tappable row that navigates to the archived conversations screen.
+///
+/// Styled to feel like a system shortcut (matches the surrounding tile
+/// height / corner radius) rather than a regular chat, so users can tell at
+/// a glance it's a navigation affordance.
+class _ArchivedInboxRow extends StatelessWidget {
+  const _ArchivedInboxRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        final cardColor = themeState.cardColor;
+        // primaryColor on the blue theme (0xFF1E3A5F) nearly matches the card
+        // background — using it for the leading icon makes the archive glyph
+        // invisible. cardIconColor is the theme-aware icon tint (grey in
+        // light, lighter blue in dark) designed for this case.
+        final iconColor = themeState.cardIconColor;
+        final textColor = themeState.textColor;
+        final secondaryTextColor = themeState.secondaryTextColor;
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Ink(
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: iconColor.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.archive_outlined,
+                        color: iconColor,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        L10n.get("archived_chats"),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: secondaryTextColor,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _ToggleTabContent extends StatelessWidget {
@@ -1488,94 +1680,134 @@ class _ArchiveCountdownContent extends StatefulWidget {
 }
 
 class _ArchiveCountdownContentState extends State<_ArchiveCountdownContent>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  static const Duration _fadeOutDuration = Duration(milliseconds: 320);
+
   late final AnimationController _controller;
+  late final AnimationController _fadeController;
+  bool _fadingOut = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.duration)
       ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          widget.onTimeout();
+        if (status == AnimationStatus.completed && !_fadingOut) {
+          _startFadeOut();
         }
       })
       ..forward();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: _fadeOutDuration,
+      value: 1.0,
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
+  void _startFadeOut() {
+    if (_fadingOut) return;
+    setState(() => _fadingOut = true);
+    _fadeController.reverse().whenComplete(() {
+      if (!mounted) return;
+      widget.onTimeout();
+    });
+  }
+
   void _handleUndo() {
-    if (!_controller.isAnimating && _controller.isCompleted) return;
+    // Disallow undo once we start fading out — archive is already committing.
+    if (_fadingOut) return;
+    if (_controller.isCompleted) return;
     _controller.stop();
     widget.onUndo();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            widget.message,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-          ),
-        ),
-        const SizedBox(width: 12),
-        InkWell(
-          onTap: _handleUndo,
-          borderRadius: BorderRadius.circular(24),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      AnimatedBuilder(
-                        animation: _controller,
-                        builder: (context, _) => SizedBox.expand(
-                          child: CircularProgressIndicator(
-                            // Countdown: ring drains from full → empty.
-                            value: 1.0 - _controller.value,
-                            strokeWidth: 2.5,
-                            valueColor:
-                                AlwaysStoppedAnimation(widget.accentColor),
-                            backgroundColor:
-                                Colors.white.withValues(alpha: 0.18),
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.undo,
-                        size: 14,
-                        color: widget.accentColor,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  widget.undoLabel,
-                  style: TextStyle(
-                    color: widget.accentColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+    final totalSeconds = widget.duration.inMilliseconds / 1000.0;
+    final totalSecondsCeil = totalSeconds.ceil();
+
+    return FadeTransition(
+      opacity: _fadeController,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              widget.message,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          InkWell(
+            onTap: _handleUndo,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 26,
+                    height: 26,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, _) => SizedBox.expand(
+                            child: CircularProgressIndicator(
+                              // Countdown: ring drains from full → empty.
+                              value: 1.0 - _controller.value,
+                              strokeWidth: 2.5,
+                              valueColor:
+                                  AlwaysStoppedAnimation(widget.accentColor),
+                              backgroundColor:
+                                  widget.accentColor.withValues(alpha: 0.22),
+                            ),
+                          ),
+                        ),
+                        AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, _) {
+                            final remaining = (totalSeconds *
+                                    (1.0 - _controller.value))
+                                .ceil()
+                                .clamp(1, totalSecondsCeil);
+                            return Text(
+                              "$remaining",
+                              style: TextStyle(
+                                color: widget.accentColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                height: 1.0,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    widget.undoLabel,
+                    style: TextStyle(
+                      color: widget.accentColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
