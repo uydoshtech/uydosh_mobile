@@ -226,18 +226,24 @@ class _ListingDetailCompatibilitySectionState
     HapticFeedbackUtils.impact();
     if (!isExpanded) return;
 
-    // If the user quickly expands/collapses or other rebuilds happen, make sure
-    // we don't run multiple delayed scroll adjustments (that causes the
-    // visible "scroll up/down" jitter).
+    // Measure the 350ms from a settled layout (after the tap's frame has
+    // flushed), matching the pattern in [ListingDetailMapSection] that fixed
+    // the same scroll-jitter there. Starting the Timer mid-frame and then
+    // awaiting `endOfFrame` inside it schedules an extra frame that shifts
+    // layout *between* our target calculation and the scroll animation,
+    // producing the visible "up then back down" jerk.
+    //
+    // Cancelling the pending Timer still protects against rapid
+    // expand/collapse queuing multiple scroll adjustments.
     _scrollIntoViewTimer?.cancel();
-    _scrollIntoViewTimer = Timer(const Duration(milliseconds: 350), () async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) return;
-
-      final ctx = widget.sectionKey.currentContext;
-      if (ctx == null || !ctx.mounted) return;
-      _maybeAnimateScrollIntoView(ctx, alignment: 0.0);
+      _scrollIntoViewTimer = Timer(const Duration(milliseconds: 350), () {
+        if (!mounted) return;
+        final ctx = widget.sectionKey.currentContext;
+        if (ctx == null || !ctx.mounted) return;
+        _maybeAnimateScrollIntoView(ctx, alignment: 0.0);
+      });
     });
   }
 
