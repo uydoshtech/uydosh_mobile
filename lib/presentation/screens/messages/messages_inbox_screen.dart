@@ -311,6 +311,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           backgroundColor: backgroundColor,
           appBar: widget.showCustomHeader ? _buildCustomHeader() : null,
           body: _buildContent(),
+          floatingActionButton: _hasArchivedChats
+              ? _ArchivedChatsFab(onPressed: _openArchivedConversations)
+              : null,
         );
       },
     );
@@ -1206,7 +1209,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     required bool outgoingTiles,
   }) {
     final entries = <_InboxListEntry>[
-      if (_hasArchivedChats) _InboxArchivedEntryRow(),
       ...(outgoingTiles
           ? _inboxEntriesWithDayHeaders(conversations)
           : _incomingEntriesWithDaySections(conversations)),
@@ -1220,9 +1222,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final entry = entries[index];
         final isFirstRow = index == 0;
         return switch (entry) {
-          _InboxArchivedEntryRow() => _ArchivedInboxRow(
-              onTap: _openArchivedConversations,
-            ),
           _InboxDayHeader(:final dayStart) => DateHeaderWidget(
             dateString: MessageGroupingUtils.formatDateHeader(
               dayStart,
@@ -1280,55 +1279,43 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final textColor = themeState.textColor;
         final secondaryTextColor = themeState.secondaryTextColor;
 
-        // Pinned entry stays at the top of the tab even when it's empty —
-        // otherwise a user who archived everything has no way to reach
-        // [ArchivedConversationsScreen] from the inbox tab. Suppress it
-        // entirely when there's nothing to archive into.
+        // Archive entry point is surfaced via the floating pill button in
+        // the Scaffold (gated on [_hasArchivedChats]) — no inline row here.
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              if (_hasArchivedChats) ...[
-                const SizedBox(height: 8),
-                _ArchivedInboxRow(onTap: _openArchivedConversations),
-              ],
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ThemeIcon(
-                        type == "incoming"
-                            ? Icons.inbox_outlined
-                            : Icons.mail_outline,
-                        size: 64,
-                        color: secondaryTextColor,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        type == "incoming"
-                            ? L10n.get("no_incoming_conversations")
-                            : L10n.get("no_outgoing_conversations"),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                        ),
-                      ),
-                      if (type == "incoming") ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          L10n.get("no_incoming_conversations_description"),
-                          style:
-                              TextStyle(fontSize: 16, color: secondaryTextColor),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ],
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ThemeIcon(
+                  type == "incoming"
+                      ? Icons.inbox_outlined
+                      : Icons.mail_outline,
+                  size: 64,
+                  color: secondaryTextColor,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  type == "incoming"
+                      ? L10n.get("no_incoming_conversations")
+                      : L10n.get("no_outgoing_conversations"),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
                   ),
                 ),
-              ),
-            ],
+                if (type == "incoming") ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    L10n.get("no_incoming_conversations_description"),
+                    style:
+                        TextStyle(fontSize: 16, color: secondaryTextColor),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
+            ),
           ),
         );
       },
@@ -1343,49 +1330,37 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final textColor = themeState.textColor;
         final secondaryTextColor = themeState.secondaryTextColor;
 
-        // Keep the archive entry point reachable even when the inbox is
-        // completely empty — user may have archived everything. If the
-        // archive itself is empty too, drop the row so the empty state isn't
-        // cluttered by a shortcut that leads nowhere.
+        // Archive entry point is surfaced via the floating pill button in
+        // the Scaffold (gated on [_hasArchivedChats]) — no inline row here.
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              if (_hasArchivedChats) ...[
-                const SizedBox(height: 8),
-                _ArchivedInboxRow(onTap: _openArchivedConversations),
-              ],
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ThemeIcon(
-                        Icons.chat_bubble_outline,
-                        size: 64,
-                        color: secondaryTextColor,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        L10n.get("no_messages"),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        L10n.get("no_messages_description"),
-                        style:
-                            TextStyle(fontSize: 16, color: secondaryTextColor),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ThemeIcon(
+                  Icons.chat_bubble_outline,
+                  size: 64,
+                  color: secondaryTextColor,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  L10n.get("no_messages"),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  L10n.get("no_messages_description"),
+                  style:
+                      TextStyle(fontSize: 16, color: secondaryTextColor),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -1410,24 +1385,16 @@ final class _InboxIncomingDaySection extends _InboxListEntry {
   final List<ConversationSummary> conversations;
 }
 
-/// Pinned first-row entry point into [ArchivedConversationsScreen]. Mirrors
-/// Telegram's "Archived chats" row: lives inside the scroll view so it doesn't
-/// steal vertical space on a long inbox, but remains the first visible item
-/// so it's discoverable without threading an icon through every wrapping
-/// app-bar variant (bottom-nav / pushed / standalone).
-final class _InboxArchivedEntryRow extends _InboxListEntry {
-  _InboxArchivedEntryRow();
-}
+/// Floating pill button that opens [ArchivedConversationsScreen]. Surfaced
+/// via [Scaffold.floatingActionButton] and gated on [_hasArchivedChats] so it
+/// never leads to an empty folder. Replaces the previous Telegram-style
+/// pinned first-row to keep the inbox scroll view purely message-oriented
+/// (the archive entry point follows the user's scroll instead of being
+/// pushed off-screen with the list).
+class _ArchivedChatsFab extends StatelessWidget {
+  const _ArchivedChatsFab({required this.onPressed});
 
-/// Tappable row that navigates to the archived conversations screen.
-///
-/// Styled to feel like a system shortcut (matches the surrounding tile
-/// height / corner radius) rather than a regular chat, so users can tell at
-/// a glance it's a navigation affordance.
-class _ArchivedInboxRow extends StatelessWidget {
-  const _ArchivedInboxRow({required this.onTap});
-
-  final VoidCallback onTap;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -1435,62 +1402,37 @@ class _ArchivedInboxRow extends StatelessWidget {
       listenable: ThemeState(),
       builder: (context, _) {
         final themeState = ThemeState();
-        final cardColor = themeState.cardColor;
-        // primaryColor on the blue theme (0xFF1E3A5F) nearly matches the card
-        // background — using it for the leading icon makes the archive glyph
-        // invisible. cardIconColor is the theme-aware icon tint (grey in
-        // light, lighter blue in dark) designed for this case.
+        // cardColor matches the surrounding inbox tiles so the pill reads as
+        // "part of this screen" rather than a flashy global CTA — archive is
+        // secondary navigation, not a primary action.
+        final backgroundColor = themeState.cardColor;
         final iconColor = themeState.cardIconColor;
         final textColor = themeState.textColor;
-        final secondaryTextColor = themeState.secondaryTextColor;
 
-        return Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(16),
-            child: Ink(
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: iconColor.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.archive_outlined,
-                        color: iconColor,
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        L10n.get("archived_chats"),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: textColor,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_right,
-                      color: secondaryTextColor,
-                      size: 20,
-                    ),
-                  ],
+        return Semantics(
+          button: true,
+          label: L10n.get("archived_chats"),
+          child: ThreeDPillButton(
+            onPressed: () {
+              HapticFeedbackUtils.selection();
+              onPressed();
+            },
+            backgroundColor: backgroundColor,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.archive_outlined, size: 20, color: iconColor),
+                const SizedBox(width: 8),
+                Text(
+                  L10n.get("archived_chats"),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         );

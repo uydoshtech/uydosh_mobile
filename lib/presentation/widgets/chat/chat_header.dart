@@ -58,7 +58,8 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
                   displayName,
                   style: TextStyle(
                     color: onBarColor,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

@@ -566,8 +566,8 @@ class _AdminSupportChatThreadScreenState
             title: Text(
               widget.thread.displayTitle,
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
                 color: themeState.textColor,
               ),
             ),

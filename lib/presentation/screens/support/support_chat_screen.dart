@@ -511,8 +511,8 @@ class _UserSupportChatThreadScreenState
             title: Text(
               L10n.get("contact_support_title"),
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
                 color: themeState.textColor,
               ),
             ),

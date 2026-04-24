@@ -119,7 +119,8 @@ class _FaqScreenState extends State<FaqScreen> {
           L10n.get("menu_faq"),
           style: TextStyle(
             color: _getTextColor(),
-            fontWeight: FontWeight.w600,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
