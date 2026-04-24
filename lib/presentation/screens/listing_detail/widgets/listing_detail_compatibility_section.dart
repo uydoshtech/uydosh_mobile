@@ -566,15 +566,15 @@ class _ListingDetailCompatibilitySectionState
                             child: OutlinedButton.icon(
                               onPressed: () {
                                 HapticFeedbackUtils.impact();
-                                widget.onMessage();
+                                widget.onViewProfile();
                               },
                               icon: ThemeIcon(
-                                Icons.chat_bubble_outline,
+                                Icons.person_outline,
                                 size: 18,
                                 color: _getIconColor(),
                               ),
                               label: Text(
-                                L10n.get("message"),
+                                L10n.get("view_profile"),
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -596,15 +596,15 @@ class _ListingDetailCompatibilitySectionState
                             child: OutlinedButton.icon(
                               onPressed: () {
                                 HapticFeedbackUtils.impact();
-                                widget.onViewProfile();
+                                widget.onMessage();
                               },
                               icon: ThemeIcon(
-                                Icons.person_outline,
+                                Icons.chat_bubble_outline,
                                 size: 18,
                                 color: _getIconColor(),
                               ),
                               label: Text(
-                                L10n.get("view_profile"),
+                                L10n.get("message"),
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
