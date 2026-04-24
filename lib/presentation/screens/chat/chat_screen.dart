@@ -21,6 +21,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
+import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -95,6 +96,14 @@ class _ChatScreenState extends State<ChatScreen> {
   final Map<int, String> _messageSafetyReasonById = {}; // messageId -> localized reason
   DateTime? _lastSafetyCheckAt;
   bool _safetyCheckInFlight = false;
+  // Lazily populated Gemini translations for text messages from the OTHER
+  // participant, keyed by message id. Filled on chat open + whenever new
+  // messages arrive via refresh/push. Surviving a translation request does
+  // NOT require a rebuild of the whole list because bubble widgets read
+  // from this map via their props.
+  final Map<int, MessageTranslation> _translationsById = {};
+  final Set<int> _showOriginalMessageIds = {};
+  final Set<int> _translationInFlightIds = {};
   bool _showRefreshSkeleton = false;
   DateTime? _refreshSkeletonStartedAt;
   Completer<void>? _refreshCompleter;
@@ -255,6 +264,72 @@ class _ChatScreenState extends State<ChatScreen> {
         if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
         SoundService().playIncomingMessage();
       });
+    }
+
+    // Kick off translation for any un-translated text messages from the
+    // other participant. Runs lazily (post-frame) so it never blocks the
+    // first paint of the chat.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _requestMissingTranslations();
+    });
+  }
+
+  /// Collects text messages from the other participant that we don't yet
+  /// have a translation for and asks the server to fill them in. Server
+  /// returns a mix of cached + freshly generated translations so calling
+  /// this aggressively (open, refresh, websocket) stays cheap when the
+  /// cache is warm.
+  Future<void> _requestMissingTranslations() async {
+    if (_currentUserId == null) return;
+    final candidateIds = <int>[];
+    for (final m in _messages) {
+      if (m.messageType != "text") continue;
+      if (m.senderId == _currentUserId) continue;
+      if ((m.isDeleted ?? false)) continue;
+      if (_translationsById.containsKey(m.id)) continue;
+      if (_translationInFlightIds.contains(m.id)) continue;
+      candidateIds.add(m.id);
+    }
+    if (candidateIds.isEmpty) return;
+    // Server caps at 50; pick the most recent page worth first so the
+    // messages currently on-screen translate first.
+    final idsToRequest = candidateIds.length > 50
+        ? candidateIds.sublist(candidateIds.length - 50)
+        : candidateIds;
+    _translationInFlightIds.addAll(idsToRequest);
+
+    try {
+      final service = getIt<IMessagingService>();
+      final resp = await service.translateUnseenMessages(
+        conversationId: widget.conversationId,
+        messageIds: idsToRequest,
+      );
+      if (!mounted) return;
+      final data = resp["data"];
+      if (data is! Map) return;
+      final target = data["target_language_code"];
+      final translations = data["translations"];
+      if (target is! String || translations is! List) return;
+      var changed = false;
+      for (final raw in translations) {
+        if (raw is! Map) continue;
+        final id = raw["message_id"];
+        final resolvedId = id is int ? id : int.tryParse("$id");
+        if (resolvedId == null) continue;
+        final translation = MessageTranslation.fromResponseItem(
+          raw.cast<String, dynamic>(),
+          target,
+        );
+        if (translation == null) continue;
+        _translationsById[resolvedId] = translation;
+        changed = true;
+      }
+      if (changed) setState(() {});
+    } catch (e) {
+      logger.d("💬 [ChatScreen] Translation request failed: $e");
+    } finally {
+      _translationInFlightIds.removeAll(idsToRequest);
     }
   }
 
@@ -799,6 +874,19 @@ class _ChatScreenState extends State<ChatScreen> {
                 currentUserProfile: _currentUserProfile,
                 otherUserInitials: widget.otherUserInitials,
                 otherUserAvatarUrl: widget.otherUserAvatar,
+                translation: _translationsById[message.id],
+                showOriginal: _showOriginalMessageIds.contains(message.id),
+                onToggleTranslation: _translationsById[message.id] == null
+                    ? null
+                    : () {
+                        setState(() {
+                          if (_showOriginalMessageIds.contains(message.id)) {
+                            _showOriginalMessageIds.remove(message.id);
+                          } else {
+                            _showOriginalMessageIds.add(message.id);
+                          }
+                        });
+                      },
               ),
           };
         },

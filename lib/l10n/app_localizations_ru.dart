@@ -862,6 +862,21 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_translation_unavailable => 'Перевод недоступен.';
 
   @override
+  String get chat_translated_from_en => 'Переведено с 🇺🇸';
+
+  @override
+  String get chat_translated_from_ru => 'Переведено с 🇷🇺';
+
+  @override
+  String get chat_translated_from_uz => 'Переведено с 🇺🇿';
+
+  @override
+  String get chat_show_original => 'Показать оригинал';
+
+  @override
+  String get chat_show_translation => 'Показать перевод';
+
+  @override
   String get listing_ai_enhance => 'Улучшить с AI';
 
   @override

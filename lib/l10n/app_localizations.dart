@@ -1654,6 +1654,36 @@ abstract class AppLocalizations {
   /// **'Translation unavailable.'**
   String get listing_translation_unavailable;
 
+  /// No description provided for @chat_translated_from_en.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated from 🇺🇸'**
+  String get chat_translated_from_en;
+
+  /// No description provided for @chat_translated_from_ru.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated from 🇷🇺'**
+  String get chat_translated_from_ru;
+
+  /// No description provided for @chat_translated_from_uz.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated from 🇺🇿'**
+  String get chat_translated_from_uz;
+
+  /// No description provided for @chat_show_original.
+  ///
+  /// In en, this message translates to:
+  /// **'Show original'**
+  String get chat_show_original;
+
+  /// No description provided for @chat_show_translation.
+  ///
+  /// In en, this message translates to:
+  /// **'Show translation'**
+  String get chat_show_translation;
+
   /// No description provided for @listing_ai_enhance.
   ///
   /// In en, this message translates to:

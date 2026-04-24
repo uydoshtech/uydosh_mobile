@@ -4,6 +4,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
+import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -20,6 +21,9 @@ class MessageBubble extends StatefulWidget {
     this.currentUserProfile,
     this.otherUserInitials,
     this.otherUserAvatarUrl,
+    this.translation,
+    this.showOriginal = false,
+    this.onToggleTranslation,
   });
   final Message message;
   final bool isCurrentUser;
@@ -35,6 +39,21 @@ class MessageBubble extends StatefulWidget {
   /// conversation. Takes precedence over the per-message sender avatar so
   /// the same image is shown even when a given message omits sender profile.
   final String? otherUserAvatarUrl;
+
+  /// Lazily-populated Gemini translation of [message] into the viewer's
+  /// preferred language. When non-null we render the translated text by
+  /// default and expose a "Show original" / "Show translation" toggle
+  /// footer — Airbnb-style.
+  final MessageTranslation? translation;
+
+  /// When true the bubble renders [message.content] even if [translation]
+  /// is available. Parent screen owns the toggle state so scroll off-screen
+  /// + back preserves it.
+  final bool showOriginal;
+
+  /// Invoked when the user taps the translation toggle. Parent is expected
+  /// to flip [showOriginal]. No-op when [translation] is null.
+  final VoidCallback? onToggleTranslation;
 
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
@@ -147,9 +166,18 @@ class _MessageBubbleState extends State<MessageBubble>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _buildMessageContent(
-                            widget.message.content,
+                            _displayText(),
                             textColor,
                           ),
+                          if (widget.translation != null) ...[
+                            const SizedBox(height: 4),
+                            _TranslationToggleRow(
+                              translation: widget.translation!,
+                              isShowingOriginal: widget.showOriginal,
+                              textColor: textColor,
+                              onTap: widget.onToggleTranslation,
+                            ),
+                          ],
                           const SizedBox(height: 4),
                           Row(
                             mainAxisSize: MainAxisSize.min,
@@ -317,6 +345,14 @@ class _MessageBubbleState extends State<MessageBubble>
     }
   }
 
+  /// Text to render inside the bubble — translation by default when
+  /// available, original when the user has toggled "Show original".
+  String _displayText() {
+    final t = widget.translation;
+    if (t == null || widget.showOriginal) return widget.message.content;
+    return t.translatedText;
+  }
+
   /// Build checkmarks for message status
   /// Single checkmark = sent, double checkmark = read by recipient
   Widget _buildCheckmarks(Color ownBubbleTextColor) {
@@ -330,6 +366,89 @@ class _MessageBubbleState extends State<MessageBubble>
           ? readColor
           : ownBubbleTextColor.withValues(alpha: 0.45),
     );
+  }
+}
+
+/// Small inline footer under a translated bubble: "Translated from 🇷🇺 ·
+/// Show original" (or "Show translation" when the user already toggled).
+/// Kept in the same bubble width so it reads as part of the message, à la
+/// Airbnb's message UI.
+class _TranslationToggleRow extends StatelessWidget {
+  const _TranslationToggleRow({
+    required this.translation,
+    required this.isShowingOriginal,
+    required this.textColor,
+    this.onTap,
+  });
+
+  final MessageTranslation translation;
+  final bool isShowingOriginal;
+  final Color textColor;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final prefixKey = _translatedFromKeyForSource(translation.sourceLanguageCode);
+    final prefix = prefixKey != null ? L10n.get(prefixKey) : null;
+    final toggleLabel = L10n.get(
+      isShowingOriginal ? "chat_show_translation" : "chat_show_original",
+    );
+    final subtleColor = textColor.withValues(alpha: 0.7);
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (prefix != null) ...[
+            Flexible(
+              child: Text(
+                prefix,
+                style: TextStyle(fontSize: 11, color: subtleColor),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              " · ",
+              style: TextStyle(fontSize: 11, color: subtleColor),
+            ),
+          ],
+          Flexible(
+            child: Text(
+              toggleLabel,
+              style: TextStyle(
+                fontSize: 11,
+                color: subtleColor,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.underline,
+                decorationColor: subtleColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Map Gemini's detected source language → localization key. We only
+  /// carry keys for the three languages the backend actually returns
+  /// ("en", "ru", "uz"); anything else (unknown, "other") falls back to
+  /// just "Show original" with no prefix.
+  static String? _translatedFromKeyForSource(String? source) {
+    switch (source) {
+      case "en":
+        return "chat_translated_from_en";
+      case "ru":
+        return "chat_translated_from_ru";
+      case "uz":
+        return "chat_translated_from_uz";
+      default:
+        return null;
+    }
   }
 }
 

@@ -856,6 +856,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_translation_unavailable => 'Translation unavailable.';
 
   @override
+  String get chat_translated_from_en => 'Translated from 🇺🇸';
+
+  @override
+  String get chat_translated_from_ru => 'Translated from 🇷🇺';
+
+  @override
+  String get chat_translated_from_uz => 'Translated from 🇺🇿';
+
+  @override
+  String get chat_show_original => 'Show original';
+
+  @override
+  String get chat_show_translation => 'Show translation';
+
+  @override
   String get listing_ai_enhance => 'Improve with AI';
 
   @override

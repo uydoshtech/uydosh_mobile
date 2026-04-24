@@ -77,6 +77,15 @@ abstract class IMessagingService {
     int limit = 8,
   });
 
+  /// Requests Gemini-backed translations for messages in [conversationId]
+  /// into the caller's `user_profile.preferred_language`. Server returns
+  /// both cached and freshly generated translations so the client can use
+  /// a single call as the source of truth. Capped to 50 ids per request.
+  Future<Map<String, dynamic>> translateUnseenMessages({
+    required int conversationId,
+    required List<int> messageIds,
+  });
+
   // Attachments
   Future<MessageAttachment> uploadAttachment({
     required int messageId,
@@ -607,6 +616,22 @@ class MessagingService implements IMessagingService {
   }
 
   @override
+  Future<Map<String, dynamic>> translateUnseenMessages({
+    required int conversationId,
+    required List<int> messageIds,
+  }) async {
+    await _checkAuthentication();
+    final ids = messageIds.take(50).toList();
+    final response =
+        await _apiClient.post<Map<String, dynamic>, IJsonEncodable>(
+      "/conversations/$conversationId/translate-unseen",
+      (json) => json as Map<String, dynamic>,
+      data: _TranslateUnseenRequest(messageIds: ids),
+    );
+    return response;
+  }
+
+  @override
   Future<MessageAttachment> uploadAttachment({
     required int messageId,
     required File file,
@@ -712,4 +737,12 @@ class _SafetyCheckRequest implements IJsonEncodable {
 
   @override
   Map<String, dynamic> toJson() => {"limit": limit};
+}
+
+class _TranslateUnseenRequest implements IJsonEncodable {
+  _TranslateUnseenRequest({required this.messageIds});
+  final List<int> messageIds;
+
+  @override
+  Map<String, dynamic> toJson() => {"message_ids": messageIds};
 }

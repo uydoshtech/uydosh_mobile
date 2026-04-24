@@ -867,6 +867,21 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_translation_unavailable => 'Tarjima mavjud emas.';
 
   @override
+  String get chat_translated_from_en => 'Tarjima: 🇺🇸';
+
+  @override
+  String get chat_translated_from_ru => 'Tarjima: 🇷🇺';
+
+  @override
+  String get chat_translated_from_uz => 'Tarjima: 🇺🇿';
+
+  @override
+  String get chat_show_original => 'Asl matnni ko‘rsatish';
+
+  @override
+  String get chat_show_translation => 'Tarjimani ko‘rsatish';
+
+  @override
   String get listing_ai_enhance => 'AI bilan yaxshilash';
 
   @override
