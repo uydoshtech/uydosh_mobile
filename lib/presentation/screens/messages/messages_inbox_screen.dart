@@ -35,8 +35,10 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexibl
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
@@ -366,7 +368,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               // than the generic error screen. Other errors fall through
               // to the BlocBuilder's error state.
               if (message == archiveHasUnreadErrorCode && mounted) {
-                _showArchiveSnack(L10n.get("archive_failed_has_unread"));
+                _showArchiveWarning(L10n.get("archive_failed_has_unread"));
               }
             },
           );
@@ -1059,17 +1061,28 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         // The content drives dismissal via [commit]/[cancel]; keep the
         // SnackBar itself alive well past the 5s window so our timer wins.
         duration: const Duration(days: 1),
-        backgroundColor: Colors.black.withValues(alpha: 0.9),
+        // Strip SnackBar chrome — the [ThreeDElevatedSurface] below is the
+        // visible banner (same neumorphic language as [ConversationTile] but
+        // sized for a transient ribbon).
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 8, 8),
-        content: _ArchiveCountdownContent(
-          message: L10n.get("chat_archived"),
-          undoLabel: L10n.get("undo"),
-          duration: const Duration(seconds: 5),
-          accentColor: AppColors.error,
-          onTimeout: commit,
-          onUndo: cancel,
+        padding: EdgeInsets.zero,
+        content: ThreeDElevatedSurface(
+          baseColor: ThemeState().cardColor,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 10, 10),
+            child: _ArchiveCountdownContent(
+              message: L10n.get("chat_archived"),
+              undoLabel: L10n.get("undo"),
+              duration: const Duration(seconds: 5),
+              accentColor: AppColors.error,
+              messageColor: ThemeState().cardTextColor,
+              onTimeout: commit,
+              onUndo: cancel,
+            ),
+          ),
         ),
       ),
     );
@@ -1081,40 +1094,15 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     });
   }
 
-  /// Show a theme-consistent, auto-dismissing toast for archive flows.
+  /// Show an archive-related warning as the shared rolling top toast.
   ///
-  /// Explicit colors + floating behavior because the default Material
-  /// [SnackBar] rendered white-on-white under the blue theme (content text
-  /// invisible, making the ribbon look stuck). Kept internal to this screen
-  /// rather than promoted to ToastTheme because [SnackBarAction] doesn't
-  /// fit the existing toast helpers, which only show a message.
-  void _showArchiveSnack(
-    String message, {
-    String? undoLabel,
-    VoidCallback? onUndo,
-  }) {
+  /// The bottom banner is reserved for the "chat archived" confirmation (it
+  /// owns the Undo countdown); other archive messages reuse [ToastTheme] for
+  /// consistency with the rest of the app.
+  void _showArchiveWarning(String message) {
     if (!mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.black.withValues(alpha: 0.9),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        action: (undoLabel != null && onUndo != null)
-            ? SnackBarAction(
-                label: undoLabel,
-                textColor: ThemeState().primaryColor,
-                onPressed: onUndo,
-              )
-            : null,
-      ),
-    );
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ToastTheme.showWarning(context, message: message);
   }
 
   /// Wrap a tile in a leading-swipe [Dismissible] that archives on release.
@@ -1133,7 +1121,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) async {
         if (hasUnread) {
-          _showArchiveSnack(L10n.get("archive_failed_has_unread"));
+          _showArchiveWarning(L10n.get("archive_failed_has_unread"));
           return false;
         }
         return true;
@@ -1567,6 +1555,7 @@ class _ArchiveCountdownContent extends StatefulWidget {
     required this.undoLabel,
     required this.duration,
     required this.accentColor,
+    required this.messageColor,
     required this.onTimeout,
     required this.onUndo,
   });
@@ -1575,6 +1564,7 @@ class _ArchiveCountdownContent extends StatefulWidget {
   final String undoLabel;
   final Duration duration;
   final Color accentColor;
+  final Color messageColor;
   final VoidCallback onTimeout;
   final VoidCallback onUndo;
 
@@ -1644,7 +1634,7 @@ class _ArchiveCountdownContentState extends State<_ArchiveCountdownContent>
           Expanded(
             child: Text(
               widget.message,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: TextStyle(color: widget.messageColor, fontSize: 14),
             ),
           ),
           const SizedBox(width: 12),
