@@ -227,7 +227,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notifications_alerts_explainer_enabled =>
-      'Уведомления включены.\nЗдесь ваши оповещения. Как только появится подходящее жильё или сосед — мы пришлём push-уведомление.';
+      'Уведомления включены.\n\nЗдесь ваши оповещения. Как только появится подходящее жильё или сосед — мы пришлём push-уведомление.';
 
   @override
   String get notifications_open_settings => 'Открыть настройки';

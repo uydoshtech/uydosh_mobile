@@ -462,6 +462,8 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
+    getIt<AppAnalyticsService>().logScreenView(screenName: "splash");
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,

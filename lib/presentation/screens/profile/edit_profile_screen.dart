@@ -5,6 +5,7 @@ import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/cache/country_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
@@ -95,6 +96,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "edit_profile");
 
     _nameController = TextEditingController(text: widget.profile.name ?? "");
     _aboutMeController = TextEditingController(

@@ -41,6 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "onboarding");
     getIt<AppAnalyticsService>().logOnboardingStarted();
     _setupRotateAnimation();
     _setupTrainAnimation();

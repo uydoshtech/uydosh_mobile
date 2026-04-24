@@ -511,7 +511,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifications_alerts_explainer_enabled.
   ///
   /// In en, this message translates to:
-  /// **'Notifications are enabled.\nHere are your alerts. As soon as matching housing or a neighbor appears — we\'ll send you a push notification.'**
+  /// **'Notifications are enabled.\n\nHere are your alerts. As soon as matching housing or a neighbor appears — we\'ll send you a push notification.'**
   String get notifications_alerts_explainer_enabled;
 
   /// No description provided for @notifications_open_settings.

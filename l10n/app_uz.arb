@@ -84,7 +84,7 @@
   "view_listing": "E'lonni ko'rish",
   "menu_messages": "Xabarlar",
   "notifications_alerts_explainer": "Bu yerda sizning ogohlantirishlaringiz.\nMos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.",
-  "notifications_alerts_explainer_enabled": "Bildirishnomalar yoqilgan.\nBu yerda sizning ogohlantirishlaringiz. Mos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.",
+  "notifications_alerts_explainer_enabled": "Bildirishnomalar yoqilgan.\n\nBu yerda sizning ogohlantirishlaringiz. Mos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.",
   "notifications_open_settings": "Sozlamalarni ochish",
   "type_message": "Xabar yozing...",
   "conversation_created": "Suhbat boshlandi",

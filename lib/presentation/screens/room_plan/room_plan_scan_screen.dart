@@ -4,6 +4,7 @@ import "package:flutter_roomplan/flutter_roomplan.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -48,6 +49,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
   @override
   void initState() {
     super.initState();
+    getIt<AppAnalyticsService>().logScreenView(screenName: "room_plan_scan");
 
     _iconRotationController = AnimationController(
       duration: const Duration(seconds: 3),

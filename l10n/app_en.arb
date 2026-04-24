@@ -84,7 +84,7 @@
   "view_listing": "View Listing",
   "menu_messages": "Messages",
   "notifications_alerts_explainer": "Here are your alerts.\nAs soon as matching housing or a neighbor appears — we'll send you a push notification.",
-  "notifications_alerts_explainer_enabled": "Notifications are enabled.\nHere are your alerts. As soon as matching housing or a neighbor appears — we'll send you a push notification.",
+  "notifications_alerts_explainer_enabled": "Notifications are enabled.\n\nHere are your alerts. As soon as matching housing or a neighbor appears — we'll send you a push notification.",
   "notifications_open_settings": "Open settings",
   "type_message": "Type a message...",
   "conversation_created": "Conversation started",

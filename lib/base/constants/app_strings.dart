@@ -140,7 +140,7 @@ class AppStrings {
       "notifications_alerts_explainer":
           "Here are your alerts.\nAs soon as matching housing or a neighbor appears, we'll let you know right away.",
       "notifications_alerts_explainer_enabled":
-          "Notifications are enabled.\nHere are your alerts. As soon as matching housing or a neighbor appears — we'll send you a push notification.",
+          "Notifications are enabled.\n\nHere are your alerts. As soon as matching housing or a neighbor appears — we'll send you a push notification.",
       "notifications_open_settings": "Open settings",
       "notifications_disable_all": "Disable all notifications",
       "notifications_delete_all": "Delete all notifications",
@@ -1230,7 +1230,7 @@ class AppStrings {
       "notifications_alerts_explainer":
           "Здесь ваши оповещения.\nКак только появится подходящее жильё или сосед — мы сразу сообщим.",
       "notifications_alerts_explainer_enabled":
-          "Уведомления включены.\nЗдесь ваши оповещения. Как только появится подходящее жильё или сосед — мы пришлём push-уведомление.",
+          "Уведомления включены.\n\nЗдесь ваши оповещения. Как только появится подходящее жильё или сосед — мы пришлём push-уведомление.",
       "notifications_open_settings": "Открыть настройки",
       "notifications_disable_all": "Отключить все уведомления",
       "notifications_delete_all": "Удалить все уведомления",
@@ -2331,7 +2331,7 @@ class AppStrings {
       "notifications_alerts_explainer":
           "Bu yerda sizning ogohlantirishlaringiz.\nMos uy-joy yoki qo‘shni paydo bo‘lishi bilan darhol xabar beramiz.",
       "notifications_alerts_explainer_enabled":
-          "Bildirishnomalar yoqilgan.\nBu yerda sizning ogohlantirishlaringiz. Mos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.",
+          "Bildirishnomalar yoqilgan.\n\nBu yerda sizning ogohlantirishlaringiz. Mos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.",
       "notifications_open_settings": "Sozlamalarni ochish",
       "notifications_disable_all": "Barcha bildirishnomalarni o‘chirish",
       "notifications_delete_all": "Barcha bildirishnomalarni o‘chirib tashlash",
