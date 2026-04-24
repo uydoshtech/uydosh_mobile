@@ -15,6 +15,9 @@ class TooltipsState extends ChangeNotifier {
   static const String keyNotificationsAlertsExplainerDismissed =
       "notifications_alerts_explainer_dismissed";
 
+  static const String keyArchivedChatsTipDismissed =
+      "archived_chats_tip_dismissed";
+
   static const String _keyTooltipsEnabled = "client_tooltips_enabled";
 
   bool _enabled = true;
@@ -68,6 +71,7 @@ class TooltipsState extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(keyNotificationsAlertsExplainerDismissed, false);
+      await prefs.setBool(keyArchivedChatsTipDismissed, false);
     } catch (e) {
       logger.d("Error resetting tooltip flags: $e");
     }

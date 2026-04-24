@@ -163,6 +163,8 @@ class AppStrings {
       "unarchive": "Unarchive",
       "archived": "Archived",
       "archived_chats": "Archived chats",
+      "archived_chats_tip":
+          "Long-press an archived chat to see actions, or swipe left to unarchive.",
       "no_archived_conversations": "No archived chats",
       "no_archived_conversations_description":
           "Chats you archive will appear here",
@@ -1237,6 +1239,8 @@ class AppStrings {
       "unarchive": "Из архива",
       "archived": "Архив",
       "archived_chats": "Архив чатов",
+      "archived_chats_tip":
+          "Удерживайте чат в архиве, чтобы открыть действия, или смахните влево, чтобы вернуть его во входящие.",
       "no_archived_conversations": "В архиве пусто",
       "no_archived_conversations_description":
           "Архивированные чаты появятся здесь",
@@ -2324,6 +2328,8 @@ class AppStrings {
       "unarchive": "Arxivdan chiqarish",
       "archived": "Arxiv",
       "archived_chats": "Arxivdagi suhbatlar",
+      "archived_chats_tip":
+          "Amallarni ko'rish uchun arxivdagi suhbatni bosib ushlab turing yoki qayta kirish qutisiga qaytarish uchun chapga suring.",
       "no_archived_conversations": "Arxivda suhbatlar yo'q",
       "no_archived_conversations_description":
           "Arxivlangan suhbatlar shu yerda ko'rinadi",

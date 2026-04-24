@@ -1,11 +1,13 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
@@ -43,17 +45,42 @@ class _ArchivedConversationsScreenState
   List<ConversationSummary>? _conversations;
   String? _error;
   bool _loading = false;
+  bool _showTip = false;
 
   @override
   void initState() {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "archived_chats");
+    _loadTipVisibility();
     _init();
   }
 
   Future<void> _init() async {
     _currentUserId = await SessionManager.getUserId();
     await _load();
+  }
+
+  Future<void> _loadTipVisibility() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (!prefs.containsKey(TooltipsState.keyArchivedChatsTipDismissed)) {
+        await prefs.setBool(TooltipsState.keyArchivedChatsTipDismissed, false);
+      }
+      final dismissed =
+          prefs.getBool(TooltipsState.keyArchivedChatsTipDismissed) ?? false;
+      if (!mounted) return;
+      setState(() => _showTip = !dismissed);
+    } catch (_) {
+      // If prefs are unavailable, keep default (hidden).
+    }
+  }
+
+  Future<void> _dismissTip() async {
+    setState(() => _showTip = false);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(TooltipsState.keyArchivedChatsTipDismissed, true);
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -212,6 +239,9 @@ class _ArchivedConversationsScreenState
       return _buildEmpty();
     }
 
+    final showTip = TooltipsState().enabled && _showTip;
+    final headerOffset = showTip ? 1 : 0;
+
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _load,
       edgeOffset: 0,
@@ -219,9 +249,12 @@ class _ArchivedConversationsScreenState
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         physics: const AlwaysScrollableScrollPhysics(),
         itemSpacing: 12,
-        itemCount: items.length,
+        itemCount: items.length + headerOffset,
         itemBuilder: (context, index) {
-          final conversation = items[index];
+          if (showTip && index == 0) {
+            return _buildTip(Theme.of(context));
+          }
+          final conversation = items[index - headerOffset];
           return Dismissible(
             key: ValueKey("archived-swipe-${conversation.id}"),
             direction: DismissDirection.endToStart,
@@ -261,6 +294,56 @@ class _ArchivedConversationsScreenState
           );
         },
       ),
+    );
+  }
+
+  Widget _buildTip(ThemeData theme) {
+    final fg = theme.colorScheme.onSurfaceVariant;
+    return Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 12, 40, 12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.55,
+            ),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(Icons.info_outline, size: 17, color: fg),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  L10n.get("archived_chats_tip"),
+                  style: TextStyle(
+                    color: fg,
+                    fontSize: 14,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: 0,
+          right: 0,
+          child: IconButton(
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: _dismissTip,
+            icon: Icon(Icons.close, size: 18, color: fg),
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            splashRadius: 18,
+          ),
+        ),
+      ],
     );
   }
 
