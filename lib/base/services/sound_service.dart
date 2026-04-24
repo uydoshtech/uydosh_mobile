@@ -77,17 +77,29 @@ class SoundService {
         await p.setPlayerMode(PlayerMode.lowLatency);
       }
 
-      // Be gentle with other audio (music/podcasts). For UI sfx we never want to
-      // aggressively steal focus.
+      // UI sfx must never interrupt or duck other audio the user is listening
+      // to (music apps, YouTube, podcasts, calls, etc.).
       //
-      // iOS: default AudioContextIOS respects silent switch depending on
-      // underlying session category used by the plugin; we do not force
-      // "play in silent mode" behavior.
+      // iOS: `AVAudioSessionCategory.playback` + `mixWithOthers` plays along
+      // with other audio sessions without pausing them. We deliberately do NOT
+      // use `ambient` because it is silenced by the Ring/Silent switch and
+      // would cause users to hear no UI sound at all when their phone is on
+      // silent (which is a common default).
+      //
+      // Android: request no audio focus (`AndroidAudioFocus.none`) so we do
+      // not duck or pause other players. Keep the stream tagged as `media`
+      // (music stream) so it is governed by the normal media volume slider
+      // rather than the notification/ring stream.
       final ctx = AudioContext(
         android: const AudioContextAndroid(
-          audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+          contentType: AndroidContentType.music,
+          usageType: AndroidUsageType.media,
+          audioFocus: AndroidAudioFocus.none,
         ),
-        iOS: AudioContextIOS(),
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.playback,
+          options: const {AVAudioSessionOptions.mixWithOthers},
+        ),
       );
 
       for (final p in players) {

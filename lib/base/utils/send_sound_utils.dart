@@ -26,11 +26,28 @@ class SendSoundUtils {
   /// (AbortError on web when stop/play race).
   static Future<void> _sendPlayerOperationFuture = Future<void>.value();
 
+  /// Audio context that mixes with other audio instead of interrupting it.
+  /// Ensures UI click/send sounds don't pause music, YouTube, or podcasts,
+  /// while still playing when the phone is on silent (iOS) and using the
+  /// standard media volume slider (Android).
+  static AudioContext _mixingContext() => AudioContext(
+        android: const AudioContextAndroid(
+          contentType: AndroidContentType.music,
+          usageType: AndroidUsageType.media,
+          audioFocus: AndroidAudioFocus.none,
+        ),
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.playback,
+          options: const {AVAudioSessionOptions.mixWithOthers},
+        ),
+      );
+
   static void _ensureSelectionPlayerReady() {
     if (_selectionPlayerInitialized) return;
     _selectionPlayerInitialized = true;
     _selectionPlayer.setPlayerMode(PlayerMode.lowLatency);
     _selectionPlayer.setVolume(1.0);
+    unawaited(_selectionPlayer.setAudioContext(_mixingContext()));
   }
 
   /// Ensures send player is configured for audioplayers 6.0+ compatibility.
@@ -38,14 +55,7 @@ class SendSoundUtils {
     _sendPlayerInitFuture ??= () async {
       await _player.setPlayerMode(PlayerMode.lowLatency);
       await _player.setVolume(1.0);
-      await _player.setAudioContext(
-        AudioContext(
-          android: const AudioContextAndroid(
-            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
-          ),
-          iOS: AudioContextIOS(),
-        ),
-      );
+      await _player.setAudioContext(_mixingContext());
     }();
     await _sendPlayerInitFuture;
   }
