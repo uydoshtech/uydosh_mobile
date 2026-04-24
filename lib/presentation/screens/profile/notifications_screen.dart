@@ -51,7 +51,8 @@ class NotificationsScreen extends StatefulWidget {
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
+class _NotificationsScreenState extends State<NotificationsScreen>
+    with WidgetsBindingObserver {
   bool _loading = true;
   bool _bulkWorking = false;
   List<SearchAlert> _alerts = const [];
@@ -417,12 +418,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     getIt<AppAnalyticsService>().logScreenView(screenName: "notifications");
     _loadPushStatus();
     _loadAlertsExplainerVisibility();
     _load();
     if (_pushDebugEnabled) {
       _refreshPushDebug();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // When returning from iOS/Android settings (or any background), the user
+    // may have toggled the system notifications permission. Re-check so the
+    // "Enable notifications" card / explainer reflects the current status.
+    if (state == AppLifecycleState.resumed) {
+      _loadPushStatus();
+      if (_pushDebugEnabled && _pushDebugExpanded) {
+        _refreshPushDebug();
+      }
     }
   }
 
@@ -944,7 +965,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: _loading
           ? const Center(child: HouseLoadingIndicator())
           : UydoshRefreshIndicator(
-              onRefresh: _load,
+              onRefresh: () async {
+                await Future.wait([_load(), _loadPushStatus()]);
+              },
               child: _alerts.isEmpty
                   ? ListView(
                       padding:
