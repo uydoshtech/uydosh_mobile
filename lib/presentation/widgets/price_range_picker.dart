@@ -125,14 +125,14 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
     }
 
     final content = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
           if (!widget.useSinglePrice)
             // Min price label on the left (range mode only)
             Container(
-              width: 64,
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+              width: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
               alignment: Alignment.center,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
@@ -245,8 +245,8 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
 
           // Price label on the right
           Container(
-            width: 64,
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+            width: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
             alignment: Alignment.center,
             child: FittedBox(
               fit: BoxFit.scaleDown,
