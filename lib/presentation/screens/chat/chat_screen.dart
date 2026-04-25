@@ -789,9 +789,6 @@ class _ChatScreenState extends State<ChatScreen> {
             peerAvatarUrl: _peerAvatarUrl,
             peerInitials: widget.otherUserInitials,
             onPeerAvatarTap: _navigateToUserProfile,
-            onRefresh: () {
-              _refreshMessagesWithSkeleton();
-            },
             actionMenuItems: _buildActionMenuItems(),
           ),
           body: GestureDetector(
@@ -1176,6 +1173,15 @@ class _ChatScreenState extends State<ChatScreen> {
     final items = <ActionMenuItem>[];
     final otherUserId =
         widget.otherUserId ?? _getOtherUserIdFromMessages();
+
+    items.add(
+      ActionMenuItem(
+        value: "refresh",
+        icon: Icons.refresh,
+        textKey: "refresh",
+        onPressed: _refreshMessagesWithSkeleton,
+      ),
+    );
 
     // Profile option - show when other user ID is available
     if (otherUserId != null) {

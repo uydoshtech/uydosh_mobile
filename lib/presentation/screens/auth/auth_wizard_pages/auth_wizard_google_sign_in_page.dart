@@ -5,6 +5,7 @@ import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -85,7 +86,10 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                             onTap:
                                 widget.isAuthenticating
                                     ? null
-                                    : widget.onSignInWithGoogle,
+                                    : () {
+                                      HapticFeedbackUtils.impact();
+                                      widget.onSignInWithGoogle();
+                                    },
                             borderRadius: BorderRadius.circular(22),
                             onHighlightChanged:
                                 _enabled

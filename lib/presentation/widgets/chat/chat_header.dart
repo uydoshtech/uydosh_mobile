@@ -8,13 +8,11 @@ import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar_refresh_button.dart";
 
 class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
 
   const ChatHeader({
     required this.displayName,
-    required this.onRefresh,
     required this.actionMenuItems,
     super.key,
     this.peerAvatarUrl,
@@ -25,7 +23,6 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   final String displayName;
   final String? peerAvatarUrl;
   final String? peerInitials;
-  final VoidCallback onRefresh;
   final List<ActionMenuItem> actionMenuItems;
   final VoidCallback? onPeerAvatarTap;
 
@@ -82,14 +79,6 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
               useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
           foregroundColor: onBarColor,
           actions: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 8),
-              child: Center(
-                child: UydoshAppBarRefreshButton(
-                  onPressed: onRefresh,
-                ),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: ActionDropdownMenu(
