@@ -146,6 +146,12 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Reserve space so the last messages clear the stacked glass composer (blue theme).
   static const double _glassComposerEstimatedHeight = 196;
 
+  /// Measured height of the stacked top ribbons (security / safety) in the blue
+  /// theme, where they're rendered as a glassy overlay above the scrollable
+  /// message list. Updated after layout via [_topRibbonsKey].
+  double _topRibbonsHeight = 0;
+  final GlobalKey _topRibbonsKey = GlobalKey();
+
   /// Memoized output of [MessageGroupingUtils.groupMessagesAsItems] — invalidated when
   /// [messages] reference, [_currentUserId], or [_newMessageIds] meaningfully change.
   List<MessageGroupListItem>? _cachedGroupedItems;
@@ -586,10 +592,35 @@ class _ChatScreenState extends State<ChatScreen> {
   EdgeInsets _messagesListPadding(BuildContext context) {
     const base = EdgeInsets.all(16);
     if (!ThemeState().isBlueTheme) return base;
-    final extra =
+    final extraBottom =
         _glassComposerEstimatedHeight +
         MediaQuery.viewPaddingOf(context).bottom;
-    return base.copyWith(bottom: base.bottom + extra);
+    return base.copyWith(
+      top: base.top + _topRibbonsHeight,
+      bottom: base.bottom + extraBottom,
+    );
+  }
+
+  /// Reads the currently-laid-out size of the stacked top ribbons and rebuilds
+  /// the screen with the new value if it differs. Used so the message list's
+  /// top padding always matches the floating glass overlay's true height
+  /// (which can change as ribbons appear/disappear or text wraps).
+  void _measureTopRibbonsAfterLayout() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = _topRibbonsKey.currentContext;
+      final box = ctx?.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize) {
+        if (_topRibbonsHeight != 0) {
+          setState(() => _topRibbonsHeight = 0);
+        }
+        return;
+      }
+      final h = box.size.height;
+      if ((h - _topRibbonsHeight).abs() > 0.5) {
+        setState(() => _topRibbonsHeight = h);
+      }
+    });
   }
 
   Widget _chatComposerWithListener({required bool blendWithGlassBackdrop}) {
@@ -832,33 +863,45 @@ class _ChatScreenState extends State<ChatScreen> {
             },
             child:
                 themeState.isBlueTheme
-                    ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Positioned.fill(
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              top:
-                                  MediaQuery.paddingOf(context).top +
-                                  kToolbarHeight,
+                    ? Builder(
+                      builder: (context) {
+                        _measureTopRibbonsAfterLayout();
+                        final topInset =
+                            MediaQuery.paddingOf(context).top + kToolbarHeight;
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Positioned.fill(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: topInset),
+                                child: _messageScrollExpanded(),
+                              ),
                             ),
-                            child: Column(
-                              children: [
-                                ..._chatLeadingRibbonWidgets(),
-                                _messageScrollExpanded(),
-                              ],
+                            Positioned(
+                              top: topInset,
+                              left: 0,
+                              right: 0,
+                              child: RepaintBoundary(
+                                child: KeyedSubtree(
+                                  key: _topRibbonsKey,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: _chatLeadingRibbonWidgets(),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: RepaintBoundary(
-                            child: _blueGlassComposerPanel(),
-                          ),
-                        ),
-                      ],
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: RepaintBoundary(
+                                child: _blueGlassComposerPanel(),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     )
                     : Column(
                       children: [

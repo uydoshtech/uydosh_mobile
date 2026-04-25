@@ -98,7 +98,7 @@ class ListingFormMetroSection extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const MLetterIcon(color: Colors.grey, size: 20),
+                      const MLetterIcon(color: Colors.black, size: 20),
                       const SizedBox(width: 6),
                       Flexible(
                         child: L10n.text(

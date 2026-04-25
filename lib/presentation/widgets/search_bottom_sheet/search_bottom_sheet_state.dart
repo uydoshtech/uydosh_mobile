@@ -626,34 +626,49 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         ),
         child: ClipRRect(
           borderRadius: radius,
+          // Apple's UIBlurEffect = saturation boost + heavy gaussian blur +
+          // a thin translucent tint. We compose those in order.
           child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: isDark ? 22 : 26,
-              sigmaY: isDark ? 22 : 26,
-            ),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    // Light theme should look “milky” rather than darkened.
-                    Colors.white.withValues(alpha: isDark ? 0.10 : 0.62),
-                    surfaceTint.withValues(alpha: isDark ? 0.42 : 0.88),
-                    theme.colorScheme.surface.withValues(
-                      alpha: isDark ? 0.32 : 0.86,
-                    ),
-                  ],
-                  stops: const [0.0, 0.45, 1.0],
-                ),
-                border: Border.all(
-                  color: (isDark ? Colors.white : Colors.black).withValues(
-                    alpha: isDark ? 0.12 : 0.14,
-                  ),
-                  width: 0.6,
-                ),
+            // Vibrancy: pull saturation up on whatever is behind the sheet so
+            // the blurred feed keeps its color identity (otherwise heavy
+            // blurs go grey).
+            filter: ColorFilter.matrix(_glassSaturationMatrix(
+              saturation: isDark ? 1.6 : 1.8,
+            )),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: isDark ? 32 : 40,
+                sigmaY: isDark ? 32 : 40,
               ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  // Very low-alpha tint - the blurred backdrop does the heavy
+                  // lifting visually, the tint just nudges it warm/cool to
+                  // match the theme.
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: isDark ? 0.04 : 0.22),
+                      surfaceTint.withValues(alpha: isDark ? 0.18 : 0.30),
+                      theme.colorScheme.surface.withValues(
+                        alpha: isDark ? 0.14 : 0.28,
+                      ),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
+                  // Subtle top highlight ("specular" edge) - a hallmark of
+                  // iOS glass surfaces. Side/bottom borders stay invisible.
+                  border: Border(
+                    top: BorderSide(
+                      color: (isDark ? Colors.white : Colors.white).withValues(
+                        alpha: isDark ? 0.18 : 0.55,
+                      ),
+                      width: 0.6,
+                    ),
+                  ),
+                ),
               child: Column(
                 children: [
                   // Handle bar
@@ -877,6 +892,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                 ],
               ),
             ),
+            ),
           ),
         ),
       ),
@@ -1046,4 +1062,26 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       ),
     );
   }
+}
+
+/// Returns a 4x5 color matrix that scales the saturation of a source image
+/// around its luminance. Values > 1 boost saturation (Apple "vibrancy"
+/// effect), 1.0 is identity, 0.0 produces grayscale.
+///
+/// Standard Rec. 601 luminance weights are used: 0.2126 R, 0.7152 G,
+/// 0.0722 B.
+List<double> _glassSaturationMatrix({required double saturation}) {
+  const lumR = 0.2126;
+  const lumG = 0.7152;
+  const lumB = 0.0722;
+  final invSat = 1 - saturation;
+  final r = invSat * lumR;
+  final g = invSat * lumG;
+  final b = invSat * lumB;
+  return <double>[
+    r + saturation, g, b, 0, 0,
+    r, g + saturation, b, 0, 0,
+    r, g, b + saturation, 0, 0,
+    0, 0, 0, 1, 0,
+  ];
 }

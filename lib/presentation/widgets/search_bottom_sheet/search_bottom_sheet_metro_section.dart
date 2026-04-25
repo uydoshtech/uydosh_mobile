@@ -63,7 +63,7 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               MLetterIcon(
-                                color: theme.colorScheme.onSurfaceVariant,
+                                color: Colors.black,
                                 size: 20,
                               ),
                               const SizedBox(width: 6),
