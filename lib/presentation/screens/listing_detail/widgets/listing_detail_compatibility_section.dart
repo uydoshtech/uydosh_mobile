@@ -4,8 +4,8 @@ import "package:flutter/rendering.dart";
 import "dart:async";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -247,8 +247,6 @@ class _ListingDetailCompatibilitySectionState
 
   @override
   Widget build(BuildContext context) {
-    AdminFeatureFlagsState().ensureLoaded();
-
     final isAuthenticated = AuthenticationState().isAuthenticated;
     final isOwner = UserListingState().isOwner(widget.listingDetail.user.id);
 
@@ -370,11 +368,10 @@ class _ListingDetailCompatibilitySectionState
                 ],
               )
             else
-              ListenableBuilder(
-                listenable: AdminFeatureFlagsState(),
-                builder: (context, _) {
-                  final showContacts =
-                      AdminFeatureFlagsState().showListingContacts;
+              ValueListenableBuilder<bool>(
+                valueListenable:
+                    ClientListingContactsConfig.showListingContacts,
+                builder: (context, showContacts, _) {
                   final hasPhone = showContacts &&
                       (widget.phoneNumber?.trim().isNotEmpty ?? false) &&
                       widget.onPhone != null;

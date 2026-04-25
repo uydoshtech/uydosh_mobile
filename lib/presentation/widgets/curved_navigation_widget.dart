@@ -278,8 +278,10 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   Color _getCurvedColor(BuildContext context) {
     // Use ThemeState to detect current theme
     if (ThemeState().isBlueTheme) {
-      // Blue theme - use lighter blue for curved part
-      return BlueThemeColors.primaryLight;
+      // Blue theme — deep navy "shelf" that matches the palette's navigation
+      // surface token. Reads as a weighted footer instead of a foreign mid-tone
+      // blue, and lets the active orb's bright accent do the talking.
+      return BlueThemeColors.navigationBackground;
     } else if (ThemeState().isLightTheme) {
       // Light theme - use gray-ish color for curved part
       return Colors.grey[600]!; // Using a medium gray instead of black
@@ -292,8 +294,10 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   Color _getButtonBackgroundColor(BuildContext context) {
     // Use ThemeState to detect current theme
     if (ThemeState().isBlueTheme) {
-      // Blue theme - use darker blue for selected button
-      return BlueThemeColors.primaryDark;
+      // Blue theme — bright brand blue for the active orb. High contrast against
+      // the dark navy bar so the selected tab is immediately legible, and ties
+      // the active state to the FAB / brand accent.
+      return BlueThemeColors.primaryLight;
     } else if (ThemeState().isLightTheme) {
       // Light theme - use black for selected button
       return Colors.black;

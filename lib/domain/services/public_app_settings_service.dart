@@ -8,6 +8,8 @@ abstract class IPublicAppSettingsService {
   Future<bool> getLidarRoomScanDisabled();
 
   Future<bool> getCustomCameraDisabled();
+
+  Future<bool> getListingContactsVisible();
 }
 
 class PublicAppSettingsService implements IPublicAppSettingsService {
@@ -68,6 +70,25 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
       return false;
     } catch (e) {
       logger.d("PublicAppSettingsService.getCustomCameraDisabled: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> getListingContactsVisible() async {
+    try {
+      final response = await _apiClient.get<dynamic>(
+        "/app/settings/listing-contacts-visible",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      if (response is Map) {
+        final map = Map<String, dynamic>.from(response);
+        return map["visible"] as bool? ?? false;
+      }
+      return false;
+    } catch (e) {
+      logger.d("PublicAppSettingsService.getListingContactsVisible: $e");
       rethrow;
     }
   }

@@ -77,13 +77,21 @@ abstract class IMessagingService {
     int limit = 8,
   });
 
-  /// Requests Gemini-backed translations for messages in [conversationId]
-  /// into the caller's `user_profile.preferred_language`. Server returns
-  /// both cached and freshly generated translations so the client can use
-  /// a single call as the source of truth. Capped to 50 ids per request.
+  /// Requests Gemini-backed translations for messages in [conversationId].
+  ///
+  /// By default the server uses the caller's
+  /// `user_profile.preferred_language`. Pass [targetLanguage] (`'en'`/`'ru'`/
+  /// `'uz'`) to override per-conversation — used by the chat screen's
+  /// "Translate to…" action so a viewer can read messages in a language other
+  /// than their app/profile default without flipping the global setting.
+  ///
+  /// Server returns both cached and freshly generated translations so the
+  /// client can use a single call as the source of truth. Capped to 50 ids
+  /// per request.
   Future<Map<String, dynamic>> translateUnseenMessages({
     required int conversationId,
     required List<int> messageIds,
+    String? targetLanguage,
   });
 
   // Attachments
@@ -619,6 +627,7 @@ class MessagingService implements IMessagingService {
   Future<Map<String, dynamic>> translateUnseenMessages({
     required int conversationId,
     required List<int> messageIds,
+    String? targetLanguage,
   }) async {
     await _checkAuthentication();
     final ids = messageIds.take(50).toList();
@@ -626,7 +635,10 @@ class MessagingService implements IMessagingService {
         await _apiClient.post<Map<String, dynamic>, IJsonEncodable>(
       "/conversations/$conversationId/translate-unseen",
       (json) => json as Map<String, dynamic>,
-      data: _TranslateUnseenRequest(messageIds: ids),
+      data: _TranslateUnseenRequest(
+        messageIds: ids,
+        targetLanguage: targetLanguage,
+      ),
     );
     return response;
   }
@@ -740,9 +752,14 @@ class _SafetyCheckRequest implements IJsonEncodable {
 }
 
 class _TranslateUnseenRequest implements IJsonEncodable {
-  _TranslateUnseenRequest({required this.messageIds});
+  _TranslateUnseenRequest({required this.messageIds, this.targetLanguage});
   final List<int> messageIds;
+  final String? targetLanguage;
 
   @override
-  Map<String, dynamic> toJson() => {"message_ids": messageIds};
+  Map<String, dynamic> toJson() => {
+        "message_ids": messageIds,
+        if (targetLanguage != null && targetLanguage!.isNotEmpty)
+          "target_language_code": targetLanguage,
+      };
 }

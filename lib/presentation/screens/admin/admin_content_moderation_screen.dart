@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
+import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
@@ -39,6 +40,7 @@ class _AdminContentModerationScreenState
   bool _isSavingLidar = false;
   bool _customCameraEnabled = true;
   bool _isSavingCustomCamera = false;
+  bool _listingContactsVisible = false;
   bool _isSavingListingContacts = false;
   bool _isSavingPriceInsights = false;
   bool _isSavingTooltips = false;
@@ -63,6 +65,8 @@ class _AdminContentModerationScreenState
       final lidarRes =
           await _settingsService.getLidarRoomScanDisabledSetting();
       final cameraRes = await _settingsService.getCustomCameraDisabledSetting();
+      final contactsRes =
+          await _settingsService.getListingContactsVisibleSetting();
       if (!mounted) return;
       setState(() {
         _blurEnabled = blurRes.enabled;
@@ -70,11 +74,15 @@ class _AdminContentModerationScreenState
         _geminiListingUiEnabled = !geminiRes.hidden;
         _lidarRoomScanEnabled = !lidarRes.disabled;
         _customCameraEnabled = !cameraRes.disabled;
+        _listingContactsVisible = contactsRes.visible;
         _isLoading = false;
       });
       ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
       ClientLidarRoomScanConfig.applyDisabled(disabled: !_lidarRoomScanEnabled);
       ClientCustomCameraConfig.applyDisabled(disabled: !_customCameraEnabled);
+      ClientListingContactsConfig.applyVisible(
+        visible: _listingContactsVisible,
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -196,7 +204,23 @@ class _AdminContentModerationScreenState
     setState(() => _isSavingListingContacts = true);
     try {
       HapticFeedbackUtils.impact();
-      await AdminFeatureFlagsState().setShowListingContacts(value);
+      final res = await _settingsService.setListingContactsVisible(
+        visible: value,
+      );
+      if (!mounted) return;
+      setState(() {
+        _listingContactsVisible = res.visible;
+      });
+      ClientListingContactsConfig.applyVisible(visible: res.visible);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "${L10n.get("admin_content_moderation_save_error")}: $e",
+          ),
+        ),
+      );
     } finally {
       if (!mounted) return;
       setState(() => _isSavingListingContacts = false);
@@ -343,39 +367,33 @@ class _AdminContentModerationScreenState
           },
         ),
         const SizedBox(height: 16),
-        ListenableBuilder(
-          listenable: AdminFeatureFlagsState(),
-          builder: (context, _) {
-            final flags = AdminFeatureFlagsState();
-            return _neumorphicRow(
-              ListTile(
-                leading: _isSavingListingContacts
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const ThemeIcon(Icons.contact_phone),
-                title: Text(
-                  L10n.get("admin_client_settings_show_listing_contacts"),
-                ),
-                subtitle: Text(
-                  L10n.get(
-                    "admin_client_settings_show_listing_contacts_description",
-                  ),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: NeumorphicThemeAwareToggle(
-                  value: flags.showListingContacts,
-                  enabled: !_isSavingListingContacts,
-                  onChanged: _onShowListingContactsChanged,
-                ),
+        _neumorphicRow(
+          ListTile(
+            leading: _isSavingListingContacts
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.contact_phone),
+            title: Text(
+              L10n.get("admin_client_settings_show_listing_contacts"),
+            ),
+            subtitle: Text(
+              L10n.get(
+                "admin_client_settings_show_listing_contacts_description",
               ),
-            );
-          },
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: NeumorphicThemeAwareToggle(
+              value: _listingContactsVisible,
+              enabled: !_isSavingListingContacts,
+              onChanged: _onShowListingContactsChanged,
+            ),
+          ),
         ),
         const SizedBox(height: 16),
         ListenableBuilder(

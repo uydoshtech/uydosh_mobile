@@ -266,4 +266,49 @@ class SessionManager {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_chatSecurityRibbonDismissedKey, true);
   }
+
+  // ===== Per-conversation translation prefs =====
+  // Keyed by conversationId so each chat remembers its own choice.
+  static String _chatShowOriginalKey(int conversationId) =>
+      "chat_show_original_$conversationId";
+  static String _chatTranslationTargetKey(int conversationId) =>
+      "chat_translation_target_$conversationId";
+
+  static Future<bool> getChatShowOriginal(int conversationId) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_chatShowOriginalKey(conversationId)) ?? false;
+  }
+
+  static Future<void> setChatShowOriginal(
+    int conversationId,
+    bool value,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (value) {
+      await prefs.setBool(_chatShowOriginalKey(conversationId), true);
+    } else {
+      await prefs.remove(_chatShowOriginalKey(conversationId));
+    }
+  }
+
+  /// Returns the per-chat target language override (e.g. `"ru"`) or `null`
+  /// when the chat should fall back to the user's profile language.
+  static Future<String?> getChatTranslationTarget(int conversationId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final v = prefs.getString(_chatTranslationTargetKey(conversationId));
+    if (v == null || v.isEmpty) return null;
+    return v;
+  }
+
+  static Future<void> setChatTranslationTarget(
+    int conversationId,
+    String? language,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (language == null || language.isEmpty) {
+      await prefs.remove(_chatTranslationTargetKey(conversationId));
+    } else {
+      await prefs.setString(_chatTranslationTargetKey(conversationId), language);
+    }
+  }
 }

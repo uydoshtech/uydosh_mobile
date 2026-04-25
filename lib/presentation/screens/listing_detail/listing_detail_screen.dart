@@ -22,6 +22,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/room_usdz_viewer_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
@@ -1954,25 +1955,25 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
         if (data.isLoading || data.hasError || listingDetail == null) {
           return const SizedBox.shrink();
         }
-        AdminFeatureFlagsState().ensureLoaded();
-        return ListenableBuilder(
-          listenable: Listenable.merge([
-            UserListingState(),
-            AdminFeatureFlagsState(),
-          ]),
-          builder: (context, _) {
-            if (UserListingState().isOwner(listingDetail.user.id)) {
-              return const SizedBox.shrink();
-            }
-            final showContacts =
-                AdminFeatureFlagsState().showListingContacts;
-            final telegramHandle = listingDetail.contactTelegram?.trim() ?? "";
-            final onTelegram = (showContacts && telegramHandle.isNotEmpty)
-                ? () => _openTelegramChat(listingDetail.contactTelegram!)
-                : null;
-            return ListingDetailContactActionBar(
-              onMessage: () => _startConversation(listingDetail),
-              onTelegram: onTelegram,
+        return ValueListenableBuilder<bool>(
+          valueListenable: ClientListingContactsConfig.showListingContacts,
+          builder: (context, showContacts, _) {
+            return ListenableBuilder(
+              listenable: UserListingState(),
+              builder: (context, _) {
+                if (UserListingState().isOwner(listingDetail.user.id)) {
+                  return const SizedBox.shrink();
+                }
+                final telegramHandle =
+                    listingDetail.contactTelegram?.trim() ?? "";
+                final onTelegram = (showContacts && telegramHandle.isNotEmpty)
+                    ? () => _openTelegramChat(listingDetail.contactTelegram!)
+                    : null;
+                return ListingDetailContactActionBar(
+                  onMessage: () => _startConversation(listingDetail),
+                  onTelegram: onTelegram,
+                );
+              },
             );
           },
         );

@@ -94,6 +94,27 @@ class _PatchCustomCameraDisabledRequest implements IJsonEncodable {
   dynamic toJson() => {"disabled": disabled};
 }
 
+class ListingContactsVisibleResponse {
+  ListingContactsVisibleResponse({required this.visible});
+
+  factory ListingContactsVisibleResponse.fromJson(Map<String, dynamic> json) {
+    return ListingContactsVisibleResponse(
+      visible: json["visible"] as bool? ?? false,
+    );
+  }
+
+  final bool visible;
+}
+
+class _PatchListingContactsVisibleRequest implements IJsonEncodable {
+  _PatchListingContactsVisibleRequest({required this.visible});
+
+  final bool visible;
+
+  @override
+  dynamic toJson() => {"visible": visible};
+}
+
 abstract class IAdminContentModerationSettingsService {
   Future<ContentModerationBlurResponse> getContentModerationBlurSetting();
 
@@ -117,6 +138,12 @@ abstract class IAdminContentModerationSettingsService {
 
   Future<CustomCameraDisabledResponse> setCustomCameraDisabled({
     required bool disabled,
+  });
+
+  Future<ListingContactsVisibleResponse> getListingContactsVisibleSetting();
+
+  Future<ListingContactsVisibleResponse> setListingContactsVisible({
+    required bool visible,
   });
 }
 
@@ -294,6 +321,50 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating custom camera disabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ListingContactsVisibleResponse>
+      getListingContactsVisibleSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/listing-contacts-visible",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return ListingContactsVisibleResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from listing contacts settings",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading listing contacts visible setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ListingContactsVisibleResponse> setListingContactsVisible({
+    required bool visible,
+  }) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/listing-contacts-visible",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchListingContactsVisibleRequest(visible: visible),
+      );
+      return ListingContactsVisibleResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from listing contacts settings",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating listing contacts visible setting: $e");
       rethrow;
     }
   }

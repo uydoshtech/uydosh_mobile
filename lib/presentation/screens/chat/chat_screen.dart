@@ -133,6 +133,14 @@ class _ChatScreenState extends State<ChatScreen> {
   final Map<int, MessageTranslation> _translationsById = {};
   final Set<int> _showOriginalMessageIds = {};
   final Set<int> _translationInFlightIds = {};
+
+  // Per-conversation translation prefs (persisted via SessionManager). The
+  // 3-dot menu lets the viewer:
+  //   - flip every bubble to its original text ("Show original messages"),
+  //   - request translations into a non-default language ("Translate to…").
+  // Both default to off / null on first open and survive screen re-entry.
+  bool _showOriginalAll = false;
+  String? _targetLanguageOverride;
   bool _showRefreshSkeleton = false;
   DateTime? _refreshSkeletonStartedAt;
   Completer<void>? _refreshCompleter;
@@ -145,12 +153,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// Reserve space so the last messages clear the stacked glass composer (blue theme).
   static const double _glassComposerEstimatedHeight = 196;
-
-  /// Measured height of the stacked top ribbons (security / safety) in the blue
-  /// theme, where they're rendered as a glassy overlay above the scrollable
-  /// message list. Updated after layout via [_topRibbonsKey].
-  double _topRibbonsHeight = 0;
-  final GlobalKey _topRibbonsKey = GlobalKey();
 
   /// Memoized output of [MessageGroupingUtils.groupMessagesAsItems] — invalidated when
   /// [messages] reference, [_currentUserId], or [_newMessageIds] meaningfully change.
@@ -198,7 +200,14 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageFocusNode = FocusNode();
     _peerAvatarUrl = widget.otherUserAvatar;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initializeChat());
+    // Load translation prefs FIRST so the very first /translate-unseen call
+    // already carries the persisted [_targetLanguageOverride]. Otherwise we'd
+    // briefly translate into the user's profile language and then re-fetch
+    // in the override language on the next refresh tick.
+    _loadTranslationPrefs().whenComplete(() {
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _initializeChat());
+    });
     _loadSecurityRibbonState();
 
     _lastObservedUnreadCount = UnreadMessagesState().unreadCount;
@@ -369,6 +378,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final resp = await service.translateUnseenMessages(
         conversationId: widget.conversationId,
         messageIds: idsToRequest,
+        targetLanguage: _targetLanguageOverride,
       );
       if (!mounted) return;
       final data = resp["data"];
@@ -416,6 +426,153 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (_) {
       // Ignore.
     }
+  }
+
+  /// Pulls the per-conversation translation prefs from local storage at chat
+  /// open. Failures fall back to defaults so a corrupt prefs entry can never
+  /// break chat rendering.
+  Future<void> _loadTranslationPrefs() async {
+    try {
+      final results = await Future.wait([
+        SessionManager.getChatShowOriginal(widget.conversationId),
+        SessionManager.getChatTranslationTarget(widget.conversationId),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _showOriginalAll = results[0] as bool;
+        _targetLanguageOverride = results[1] as String?;
+      });
+    } catch (_) {
+      // Defaults are already correct.
+    }
+  }
+
+  /// Toggles the "Show original messages" mode for this conversation. When ON
+  /// every bubble that has a translation falls back to rendering the original
+  /// text. The per-bubble translation toggle still works as an exception.
+  Future<void> _toggleShowOriginalAll() async {
+    HapticFeedbackUtils.impact();
+    final next = !_showOriginalAll;
+    setState(() {
+      _showOriginalAll = next;
+      // Clear per-message exceptions so the new global default is what the
+      // user actually sees — otherwise a previously-flipped bubble would be
+      // confusingly inverted relative to the new mode.
+      _showOriginalMessageIds.clear();
+    });
+    try {
+      await SessionManager.setChatShowOriginal(widget.conversationId, next);
+    } catch (_) {
+      // Best-effort persistence.
+    }
+  }
+
+  /// Switches the per-conversation target language. Pass `null` to clear the
+  /// override and fall back to the user's profile language. Drops cached
+  /// translations + in-flight markers so all visible messages re-fetch in the
+  /// new language on the next refresh tick.
+  Future<void> _setTargetLanguageOverride(String? language) async {
+    HapticFeedbackUtils.impact();
+    setState(() {
+      _targetLanguageOverride = language;
+      _translationsById.clear();
+      _translationInFlightIds.clear();
+      // Per-message overrides are about original-vs-translation, not language,
+      // so leaving them alone is fine here.
+    });
+    try {
+      await SessionManager.setChatTranslationTarget(
+        widget.conversationId,
+        language,
+      );
+    } catch (_) {
+      // Best-effort persistence.
+    }
+    // Kick off a re-fetch so users see translations in the new language
+    // without having to scroll/refresh manually.
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _requestMissingTranslations();
+    });
+  }
+
+  /// Bottom-sheet language picker for "Translate to…". Returns the chosen
+  /// language code, the empty string for "Auto", or `null` when the user
+  /// dismissed the sheet without picking. We treat empty-string and null
+  /// distinctly so dismiss is a no-op while explicit Auto clears the override.
+  Future<void> _openTranslateLanguagePicker() async {
+    final picked = await showModalBottomSheet<String?>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                  child: Text(
+                    L10n.get("chat_translate_picker_title"),
+                    style: Theme.of(sheetContext).textTheme.titleMedium,
+                  ),
+                ),
+                _buildTranslateLanguageTile(
+                  sheetContext: sheetContext,
+                  label: L10n.get("chat_translate_picker_auto"),
+                  selected: _targetLanguageOverride == null,
+                  onTap: () => Navigator.of(sheetContext).pop(""),
+                ),
+                _buildTranslateLanguageTile(
+                  sheetContext: sheetContext,
+                  label: LanguageDisplayHelper.getLanguageDisplayName("uz"),
+                  selected: _targetLanguageOverride == "uz",
+                  onTap: () => Navigator.of(sheetContext).pop("uz"),
+                ),
+                _buildTranslateLanguageTile(
+                  sheetContext: sheetContext,
+                  label: LanguageDisplayHelper.getLanguageDisplayName("ru"),
+                  selected: _targetLanguageOverride == "ru",
+                  onTap: () => Navigator.of(sheetContext).pop("ru"),
+                ),
+                _buildTranslateLanguageTile(
+                  sheetContext: sheetContext,
+                  label: LanguageDisplayHelper.getLanguageDisplayName("en"),
+                  selected: _targetLanguageOverride == "en",
+                  onTap: () => Navigator.of(sheetContext).pop("en"),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (!mounted || picked == null) return;
+    // Empty string === explicit "Auto", which clears the override.
+    await _setTargetLanguageOverride(picked.isEmpty ? null : picked);
+  }
+
+  Widget _buildTranslateLanguageTile({
+    required BuildContext sheetContext,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      title: Text(label),
+      trailing: selected
+          ? ThemeIcon(
+              Icons.check,
+              size: 20,
+              color: Theme.of(sheetContext).colorScheme.primary,
+            )
+          : null,
+      onTap: onTap,
+    );
   }
 
   String _localizedSafetyReason(String reason) {
@@ -592,35 +749,10 @@ class _ChatScreenState extends State<ChatScreen> {
   EdgeInsets _messagesListPadding(BuildContext context) {
     const base = EdgeInsets.all(16);
     if (!ThemeState().isBlueTheme) return base;
-    final extraBottom =
+    final extra =
         _glassComposerEstimatedHeight +
         MediaQuery.viewPaddingOf(context).bottom;
-    return base.copyWith(
-      top: base.top + _topRibbonsHeight,
-      bottom: base.bottom + extraBottom,
-    );
-  }
-
-  /// Reads the currently-laid-out size of the stacked top ribbons and rebuilds
-  /// the screen with the new value if it differs. Used so the message list's
-  /// top padding always matches the floating glass overlay's true height
-  /// (which can change as ribbons appear/disappear or text wraps).
-  void _measureTopRibbonsAfterLayout() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final ctx = _topRibbonsKey.currentContext;
-      final box = ctx?.findRenderObject() as RenderBox?;
-      if (box == null || !box.hasSize) {
-        if (_topRibbonsHeight != 0) {
-          setState(() => _topRibbonsHeight = 0);
-        }
-        return;
-      }
-      final h = box.size.height;
-      if ((h - _topRibbonsHeight).abs() > 0.5) {
-        setState(() => _topRibbonsHeight = h);
-      }
-    });
+    return base.copyWith(bottom: base.bottom + extra);
   }
 
   Widget _chatComposerWithListener({required bool blendWithGlassBackdrop}) {
@@ -863,45 +995,33 @@ class _ChatScreenState extends State<ChatScreen> {
             },
             child:
                 themeState.isBlueTheme
-                    ? Builder(
-                      builder: (context) {
-                        _measureTopRibbonsAfterLayout();
-                        final topInset =
-                            MediaQuery.paddingOf(context).top + kToolbarHeight;
-                        return Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Positioned.fill(
-                              child: Padding(
-                                padding: EdgeInsets.only(top: topInset),
-                                child: _messageScrollExpanded(),
-                              ),
+                    ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Positioned.fill(
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              top:
+                                  MediaQuery.paddingOf(context).top +
+                                  kToolbarHeight,
                             ),
-                            Positioned(
-                              top: topInset,
-                              left: 0,
-                              right: 0,
-                              child: RepaintBoundary(
-                                child: KeyedSubtree(
-                                  key: _topRibbonsKey,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: _chatLeadingRibbonWidgets(),
-                                  ),
-                                ),
-                              ),
+                            child: Column(
+                              children: [
+                                ..._chatLeadingRibbonWidgets(),
+                                _messageScrollExpanded(),
+                              ],
                             ),
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              child: RepaintBoundary(
-                                child: _blueGlassComposerPanel(),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
+                          ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: RepaintBoundary(
+                            child: _blueGlassComposerPanel(),
+                          ),
+                        ),
+                      ],
                     )
                     : Column(
                       children: [
@@ -1009,7 +1129,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 otherUserInitials: widget.otherUserInitials,
                 otherUserAvatarUrl: _peerAvatarUrl,
                 translation: _translationsById[message.id],
-                showOriginal: _showOriginalMessageIds.contains(message.id),
+                // The global "Show original messages" mode flips the default
+                // for every translated bubble; the per-message set acts as
+                // exceptions so taps on the in-bubble toggle still work.
+                showOriginal: _showOriginalAll
+                    ^ _showOriginalMessageIds.contains(message.id),
                 onToggleTranslation: _translationsById[message.id] == null
                     ? null
                     : () {
@@ -1288,6 +1412,29 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     }
+
+    // Translation controls. Both items are always visible: it's hard to know
+    // up front whether a chat will contain translations (incoming async), and
+    // hiding them until a translation arrives makes the controls feel
+    // unreliable. Tapping with no translations is a harmless no-op.
+    items.add(
+      ActionMenuItem(
+        value: "translate_to",
+        icon: Icons.translate,
+        textKey: "chat_menu_translate_to",
+        onPressed: _openTranslateLanguagePicker,
+      ),
+    );
+    items.add(
+      ActionMenuItem(
+        value: "show_original",
+        icon: _showOriginalAll ? Icons.translate : Icons.text_fields,
+        textKey: _showOriginalAll
+            ? "chat_menu_show_translated"
+            : "chat_menu_show_original",
+        onPressed: _toggleShowOriginalAll,
+      ),
+    );
 
     // Complain option - only show when listingId is available
     if (widget.listingId != null) {
