@@ -35,6 +35,7 @@ class AppStrings {
       "complete_profile_prompt_body":
           "Add your lifestyle preferences to get better matches.",
       "missing_fields_title": "Missing:",
+      "complete_profile_prompt_more": "+ {count} more",
       "complete_profile_prompt_cta": "Complete now",
       "complete_profile_prompt_later": "Later",
       "compatibility_title": "Compatibility with you:",
@@ -1125,6 +1126,7 @@ class AppStrings {
       "complete_profile_prompt_body":
           "Укажите предпочтения по образу жизни, чтобы получить лучшие совпадения.",
       "missing_fields_title": "Не заполнено:",
+      "complete_profile_prompt_more": "+ ещё {count}",
       "complete_profile_prompt_cta": "Заполнить сейчас",
       "complete_profile_prompt_later": "Позже",
       "compatibility_title": "Совместимость с вами:",
@@ -2224,6 +2226,7 @@ class AppStrings {
       "complete_profile_prompt_body":
           "Turmush tarzi bo'yicha xohishlarni qo'shing, mosliklar yaxshilanadi.",
       "missing_fields_title": "To'ldirilmagan:",
+      "complete_profile_prompt_more": "+ yana {count}",
       "complete_profile_prompt_cta": "Hozir to'ldirish",
       "complete_profile_prompt_later": "Keyinroq",
       "compatibility_title": "Siz bilan moslik:",

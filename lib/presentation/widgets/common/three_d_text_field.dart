@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/presentation/widgets/common/error_border_pulse.dart";
 
 class ThreeDTextField extends StatefulWidget {
   const ThreeDTextField({
@@ -19,6 +20,7 @@ class ThreeDTextField extends StatefulWidget {
     this.textColor,
     this.hintColor,
     this.cursorColor,
+    this.showErrorBorder = false,
   });
 
   final TextEditingController controller;
@@ -37,6 +39,11 @@ class ThreeDTextField extends StatefulWidget {
   final Color? textColor;
   final Color? hintColor;
   final Color? cursorColor;
+
+  /// When true, paints a gently pulsing red border around the field to
+  /// signal a failed validation pass. The border is an overlay (see
+  /// [ErrorBorderPulse]) and does not change the field's intrinsic size.
+  final bool showErrorBorder;
 
   @override
   State<ThreeDTextField> createState() => _ThreeDTextFieldState();
@@ -102,7 +109,10 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
     final innerDarkA = isDark ? (focused ? 0.16 : 0.22) : (focused ? 0.06 : 0.10);
     final innerLightA = isDark ? 0.05 : 0.78;
 
-    return DecoratedBox(
+    return ErrorBorderPulse(
+      showError: widget.showErrorBorder,
+      borderRadius: rim,
+      child: DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: rim,
         color: outerBg,
@@ -198,6 +208,7 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

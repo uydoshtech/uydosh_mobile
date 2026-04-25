@@ -38,12 +38,12 @@ abstract final class AuthWizardTheme {
     return Colors.transparent;
   }
 
-  static Color getSelectedButtonTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return Colors.white;
-    }
-    return Colors.black;
-  }
+  /// Content (label + icon) color for the *selected* state of auth-wizard
+  /// pill / card toggles. In both blue and light themes the selected surface
+  /// is filled with the primary color (deep blue / pure black respectively),
+  /// so the foreground is white in both cases — otherwise the label and icon
+  /// vanish into the dark fill.
+  static Color getSelectedButtonTextColor() => Colors.white;
 
   static Color getSelectedButtonBorderColor() {
     if (ThemeState().isBlueTheme) {

@@ -21,6 +21,15 @@
   "profile_completion_hint": "A completed profile means more accurate matches and comfortable co-living.",
   "complete_profile_prompt_title": "Complete your profile",
   "complete_profile_prompt_body": "Add your lifestyle preferences to get better matches.",
+  "complete_profile_prompt_more": "+ {count} more",
+  "@complete_profile_prompt_more": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
   "complete_profile_prompt_cta": "Complete now",
   "complete_profile_prompt_later": "Later",
   "compatibility_title": "Compatibility with you:",

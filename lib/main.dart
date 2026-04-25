@@ -107,6 +107,12 @@ void main() async {
     // Initialize Crashlytics (iOS/Android only; not supported on web)
     if (!kIsWeb) {
       FlutterError.onError = (errorDetails) {
+        // Capture extra diagnostic context (widget tree path, library, error
+        // category) as Crashlytics keys + log entries before recording.
+        // Stripped iOS release stacks lose the information collector lines
+        // that normally pinpoint the offending widget — promoting them to
+        // dedicated keys keeps that data visible in the Crashlytics UI.
+        _annotateCrashlyticsWithFlutterError(errorDetails);
         FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
         FlutterError.presentError(errorDetails);
       };
@@ -282,6 +288,73 @@ void main() async {
         ),
       ),
     );
+  }
+}
+
+/// Promote `FlutterErrorDetails` diagnostics (library, context summary, full
+/// rendered diagnostics — including the widget chain) to Crashlytics keys and
+/// log entries before recording the error. Helps debug release crashes whose
+/// frames are stripped of the trailing "Information:" block (e.g. the
+/// `Flexible inside Stack` parent-data cast assertion which only points at
+/// `Flexible.applyParentData` in the stack trace itself).
+void _annotateCrashlyticsWithFlutterError(FlutterErrorDetails details) {
+  try {
+    final crashlytics = FirebaseCrashlytics.instance;
+
+    // Error category / library tags.
+    final library = details.library ?? "unknown";
+    crashlytics.setCustomKey("flutter_error_library", library);
+
+    final ctx = details.context;
+    if (ctx != null) {
+      // `DiagnosticsNode.toString` keeps the human-readable context label
+      // (e.g. "while applying parent data" / "during build" / etc).
+      final ctxText = ctx.toString();
+      crashlytics.setCustomKey(
+        "flutter_error_context",
+        ctxText.length > 240 ? ctxText.substring(0, 240) : ctxText,
+      );
+    }
+
+    final summary = details.summary;
+    final summaryText = summary.toString();
+    crashlytics.setCustomKey(
+      "flutter_error_summary",
+      summaryText.length > 240 ? summaryText.substring(0, 240) : summaryText,
+    );
+
+    // Render the full diagnostic block (this is where Flutter prints
+    // "The relevant error-causing widget was X created by Y", file:line
+    // owners, and the widget tree path) and forward it to Crashlytics as
+    // log lines. Each `log()` call shows up under the crash's "Logs" tab.
+    final buffer = StringBuffer();
+    details.debugFillProperties(
+      DiagnosticPropertiesBuilder(),
+    ); // no-op safety
+    buffer.writeln(details.toStringShort());
+    buffer.writeln("Library: $library");
+    if (ctx != null) buffer.writeln("Context: $ctx");
+    final infoCollector = details.informationCollector;
+    if (infoCollector != null) {
+      for (final node in infoCollector()) {
+        buffer.writeln(node.toString());
+      }
+    }
+    // Stack of the exception (already in the report, but echoed here so the
+    // log block is self-contained when triaging from the Logs tab).
+    if (details.stack != null) {
+      buffer.writeln("--- stack ---");
+      buffer.writeln(details.stack);
+    }
+    // Crashlytics caps individual log entries at ~1 KB, so split.
+    const chunkSize = 900;
+    final text = buffer.toString();
+    for (var i = 0; i < text.length; i += chunkSize) {
+      final end = (i + chunkSize < text.length) ? i + chunkSize : text.length;
+      crashlytics.log(text.substring(i, end));
+    }
+  } catch (_) {
+    // Never let diagnostic enrichment swallow the original crash.
   }
 }
 

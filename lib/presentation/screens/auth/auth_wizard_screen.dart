@@ -71,6 +71,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   // Initialized in initState from LanguageState (saved/device locale).
   String _selectedLanguage = "uz";
 
+  /// Once the user attempts to submit the profile form with one or more
+  /// required fields empty, we flip this flag on so each empty control
+  /// renders a red pulsing border (see [AuthWizardProfilePage]). The
+  /// per-field "missing" getters below combine this flag with the current
+  /// value of each control, so the highlight automatically clears as soon
+  /// as the user fills the offending field — no manual reset wiring needed.
+  bool _showValidationErrors = false;
+
   // University selection
   University? _selectedUniversity;
   List<University> _universities = [];
@@ -109,6 +117,27 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   String _getCountryName(Country country) =>
       country.getLocalizedName(LanguageState().currentLanguage);
+
+  /// Per-field "missing" flags consumed by [AuthWizardProfilePage]. Each
+  /// returns true only after a failed submit attempt *and* while the
+  /// underlying value is still empty / unselected. The country field is
+  /// excluded because it always has a default (Uzbekistan).
+  bool get _nameMissing =>
+      _showValidationErrors && _nameController.text.trim().isEmpty;
+  bool get _genderMissing =>
+      _showValidationErrors && _selectedGender == null;
+  bool get _regionMissing =>
+      _showValidationErrors &&
+      _selectedCountryIso2 == "UZ" &&
+      _selectedRegionId == null;
+  bool get _roleMissing =>
+      _showValidationErrors && _selectedRole == null;
+  bool get _studentMissing =>
+      _showValidationErrors && _isStudent == null;
+  bool get _universityMissing =>
+      _showValidationErrors &&
+      (_isStudent ?? false) &&
+      _selectedUniversity == null;
 
   // Firebase Auth
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -1427,10 +1456,19 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             },
                           ),
                         ),
-                      if (_currentPage > 0 && _currentPage != 1)
+                      if (_currentPage > 0 &&
+                          (_currentPage != 1 || _isGoogleSignedIn))
                         const SizedBox(width: 20),
-                      // Hide next button on Google Sign-In page (page 1) since navigation happens automatically
-                      if (_currentPage != 1)
+                      // On the Google Sign-In page (page 1) we normally hide
+                      // the Next button because navigation happens
+                      // automatically after a successful sign-in. However, if
+                      // the user is *already* signed in (e.g. they signed in,
+                      // got moved to the profile page, then pressed "Back"),
+                      // they would otherwise have no way to move forward
+                      // again — only a Back button. Surface the Next button
+                      // in that case so the wizard isn't a dead-end.
+                      if (_currentPage != 1 ||
+                          (_currentPage == 1 && _isGoogleSignedIn))
                         Expanded(
                           child: Builder(
                             builder: (context) {

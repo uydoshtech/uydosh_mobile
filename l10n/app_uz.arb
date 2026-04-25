@@ -21,6 +21,15 @@
   "profile_completion_hint": "Profil to'liq bo'lsa, mosliklar aniqroq va qo'shnichilik qulayroq bo'ladi.",
   "complete_profile_prompt_title": "Profilni to'ldiring",
   "complete_profile_prompt_body": "Turmush tarzi bo'yicha xohishlarni qo'shing, mosliklar yaxshilanadi.",
+  "complete_profile_prompt_more": "+ yana {count}",
+  "@complete_profile_prompt_more": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
   "complete_profile_prompt_cta": "Hozir to'ldirish",
   "complete_profile_prompt_later": "Keyinroq",
   "compatibility_title": "Siz bilan moslik:",

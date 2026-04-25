@@ -328,8 +328,36 @@ class MainNavigationState extends State<MainNavigation>
     UserProfile profile,
   ) {
     final missingKeys = ProfileCompletionState.getMissingFields(profile);
-    final missingLabels = missingKeys.map(_labelForMissingProfileFieldKey).toList()
-      ..removeWhere((e) => e.trim().isEmpty);
+    // Split into essentials vs. nice-to-have lifestyle prefs so the prompt
+    // can lead with what actually matters and collapse the long tail. See
+    // [ProfileCompletionState.essentialFieldKeys].
+    final essentialKeys = missingKeys
+        .where(ProfileCompletionState.essentialFieldKeys.contains)
+        .toList();
+    final lifestyleKeys = missingKeys
+        .where((k) => !ProfileCompletionState.essentialFieldKeys.contains(k))
+        .toList();
+
+    String labelsFor(Iterable<String> keys) => keys
+        .map(_labelForMissingProfileFieldKey)
+        .where((e) => e.trim().isNotEmpty)
+        .join(", ");
+
+    // When essentials are missing, show all of them (typically 1–4) and
+    // collapse lifestyle into a "+ N more" footnote. When only lifestyle
+    // fields remain, show the first few and collapse the rest the same way.
+    const lifestylePreviewCap = 3;
+    final String primaryLabels;
+    final int hiddenCount;
+    if (essentialKeys.isNotEmpty) {
+      primaryLabels = labelsFor(essentialKeys);
+      hiddenCount = lifestyleKeys.length;
+    } else {
+      primaryLabels = labelsFor(lifestyleKeys.take(lifestylePreviewCap));
+      hiddenCount = (lifestyleKeys.length - lifestylePreviewCap)
+          .clamp(0, lifestyleKeys.length);
+    }
+    final hasAnyMissing = primaryLabels.isNotEmpty || hiddenCount > 0;
 
     showModalBottomSheet<void>(
       context: context,
@@ -401,7 +429,7 @@ class MainNavigationState extends State<MainNavigation>
                       fontWeight: FontWeight.w600,
                     ),
               ),
-              if (missingLabels.isNotEmpty) ...[
+              if (hasAnyMissing) ...[
                 const SizedBox(height: 10),
                 Text(
                   L10n.get("missing_fields_title"),
@@ -410,14 +438,29 @@ class MainNavigationState extends State<MainNavigation>
                       ),
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  // Usually only 1 field (e.g. 94%), but keep it robust.
-                  missingLabels.join(", "),
-                  style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
-                        color:
-                            Theme.of(sheetContext).colorScheme.onSurfaceVariant,
-                      ),
-                ),
+                if (primaryLabels.isNotEmpty)
+                  Text(
+                    primaryLabels,
+                    style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(sheetContext)
+                              .colorScheme
+                              .onSurfaceVariant,
+                        ),
+                  ),
+                if (hiddenCount > 0) ...[
+                  if (primaryLabels.isNotEmpty) const SizedBox(height: 4),
+                  Text(
+                    L10n.getWithParams(
+                      "complete_profile_prompt_more",
+                      params: {"count": hiddenCount.toString()},
+                    ),
+                    style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(sheetContext)
+                              .colorScheme
+                              .onSurfaceVariant,
+                        ),
+                  ),
+                ],
               ],
               const SizedBox(height: 16),
               Row(

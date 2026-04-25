@@ -4,6 +4,7 @@ import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/error_border_pulse.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -12,7 +13,34 @@ import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 
 class AuthWizardProfilePage extends StatelessWidget {
   const AuthWizardProfilePage({
-    required this.profileScrollController, required this.nameController, required this.selectedGender, required this.onGenderSelected, required this.selectedCountry, required this.onShowCountryPicker, required this.getCountryName, required this.selectedRegionId, required this.regions, required this.onShowRegionPicker, required this.selectedRole, required this.onRoleSelected, required this.isStudent, required this.onStudentSelected, required this.selectedUniversity, required this.universities, required this.onShowUniversityPicker, required this.isLoadingRegions, required this.isLoadingUniversities, required this.getRegionName, required this.getUniversityName, super.key,
+    required this.profileScrollController,
+    required this.nameController,
+    required this.selectedGender,
+    required this.onGenderSelected,
+    required this.selectedCountry,
+    required this.onShowCountryPicker,
+    required this.getCountryName,
+    required this.selectedRegionId,
+    required this.regions,
+    required this.onShowRegionPicker,
+    required this.selectedRole,
+    required this.onRoleSelected,
+    required this.isStudent,
+    required this.onStudentSelected,
+    required this.selectedUniversity,
+    required this.universities,
+    required this.onShowUniversityPicker,
+    required this.isLoadingRegions,
+    required this.isLoadingUniversities,
+    required this.getRegionName,
+    required this.getUniversityName,
+    super.key,
+    this.nameMissing = false,
+    this.genderMissing = false,
+    this.regionMissing = false,
+    this.roleMissing = false,
+    this.studentMissing = false,
+    this.universityMissing = false,
   });
 
   final ScrollController profileScrollController;
@@ -36,6 +64,20 @@ class AuthWizardProfilePage extends StatelessWidget {
   final bool isLoadingUniversities;
   final String Function(Region) getRegionName;
   final String Function(University) getUniversityName;
+
+  /// When true, the corresponding control(s) render a pulsing red border to
+  /// indicate that the user attempted to submit the form without filling
+  /// the field. The parent screen sets these flags after a failed
+  /// validation pass and resets them as the user touches each field.
+  ///
+  /// For groups (gender / role / student) the flag covers both pills in the
+  /// row so it's visually clear that *one of them* must be picked.
+  final bool nameMissing;
+  final bool genderMissing;
+  final bool regionMissing;
+  final bool roleMissing;
+  final bool studentMissing;
+  final bool universityMissing;
 
   Color _getOnboardingTextColor(BuildContext context) =>
       Theme.of(context).colorScheme.onSurface;
@@ -110,25 +152,32 @@ class AuthWizardProfilePage extends StatelessWidget {
               hintText: L10n.get("full_name_hint"),
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
+              showErrorBorder: nameMissing,
             ),
             const SizedBox(height: 16),
             Row(
               children: [
                 Flexible(
-                  child: _buildGenderOption(
-                    context,
-                    1,
-                    L10n.get("male"),
-                    Icons.male,
+                  child: ErrorBorderPulse(
+                    showError: genderMissing,
+                    child: _buildGenderOption(
+                      context,
+                      1,
+                      L10n.get("male"),
+                      Icons.male,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 20),
                 Flexible(
-                  child: _buildGenderOption(
-                    context,
-                    2,
-                    L10n.get("female"),
-                    Icons.female,
+                  child: ErrorBorderPulse(
+                    showError: genderMissing,
+                    child: _buildGenderOption(
+                      context,
+                      2,
+                      L10n.get("female"),
+                      Icons.female,
+                    ),
                   ),
                 ),
               ],
@@ -162,7 +211,12 @@ class AuthWizardProfilePage extends StatelessWidget {
               children: [
                 Expanded(child: _buildCountrySelector(context)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildCitySelectorColumn(context)),
+                Expanded(
+                  child: ErrorBorderPulse(
+                    showError: regionMissing,
+                    child: _buildCitySelectorColumn(context),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -178,20 +232,26 @@ class AuthWizardProfilePage extends StatelessWidget {
             Row(
               children: [
                 Flexible(
-                  child: _buildRoleOption(
-                    context,
-                    "landlord",
-                    L10n.get("role_landlord"),
-                    Icons.home_work,
+                  child: ErrorBorderPulse(
+                    showError: roleMissing,
+                    child: _buildRoleOption(
+                      context,
+                      "landlord",
+                      L10n.get("role_landlord"),
+                      Icons.home_work,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 20),
                 Flexible(
-                  child: _buildRoleOption(
-                    context,
-                    "tenant",
-                    L10n.get("role_tenant"),
-                    Icons.key,
+                  child: ErrorBorderPulse(
+                    showError: roleMissing,
+                    child: _buildRoleOption(
+                      context,
+                      "tenant",
+                      L10n.get("role_tenant"),
+                      Icons.key,
+                    ),
                   ),
                 ),
               ],
@@ -209,20 +269,26 @@ class AuthWizardProfilePage extends StatelessWidget {
             Row(
               children: [
                 Flexible(
-                  child: _buildStudentOption(
-                    context,
-                    true,
-                    L10n.get("yes_student"),
-                    Icons.school,
+                  child: ErrorBorderPulse(
+                    showError: studentMissing,
+                    child: _buildStudentOption(
+                      context,
+                      true,
+                      L10n.get("yes_student"),
+                      Icons.school,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 20),
                 Flexible(
-                  child: _buildStudentOption(
-                    context,
-                    false,
-                    L10n.get("no_student"),
-                    Icons.work,
+                  child: ErrorBorderPulse(
+                    showError: studentMissing,
+                    child: _buildStudentOption(
+                      context,
+                      false,
+                      L10n.get("no_student"),
+                      Icons.work,
+                    ),
                   ),
                 ),
               ],
@@ -235,7 +301,10 @@ class AuthWizardProfilePage extends StatelessWidget {
                   L10n.get("loading_universities"),
                 )
               else if (universities.isNotEmpty)
-                _buildUniversitySelector(context)
+                ErrorBorderPulse(
+                  showError: universityMissing,
+                  child: _buildUniversitySelector(context),
+                )
               else if (!isLoadingUniversities)
                 _buildEmptyCard(
                   context,

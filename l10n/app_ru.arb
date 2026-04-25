@@ -21,6 +21,15 @@
   "profile_completion_hint": "Заполненный профиль = более точные совпадения и комфортное соседство.",
   "complete_profile_prompt_title": "Заполните профиль",
   "complete_profile_prompt_body": "Укажите предпочтения по образу жизни, чтобы получить лучшие совпадения.",
+  "complete_profile_prompt_more": "+ ещё {count}",
+  "@complete_profile_prompt_more": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
   "complete_profile_prompt_cta": "Заполнить сейчас",
   "complete_profile_prompt_later": "Позже",
   "compatibility_title": "Совместимость с вами:",

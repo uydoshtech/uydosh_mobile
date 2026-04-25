@@ -35,6 +35,18 @@ class ProfileCompletionState extends ChangeNotifier {
   /// Raw avatar URL from the last [updateFromProfile] call (same as [UserProfile.avatarUrl]).
   String? get cachedAvatarUrl => _cachedAvatarUrl;
 
+  /// Field keys that gate basic usability of the profile (matching with other
+  /// users, role-based UI, etc.). Kept in sync with [_checkHasEssentialInfo]
+  /// and the keys produced by [getMissingFields]. Anything outside this set
+  /// is treated as a "lifestyle / nice-to-have" detail in surfaces like the
+  /// completion prompt, where we want to keep the visible list short.
+  static const Set<String> essentialFieldKeys = {
+    "name",
+    "gender",
+    "region",
+    "employed",
+  };
+
   /// Calculate profile completion percent (0-100). Shared utility for app_router and profile_screen.
   static int completionPercent(UserProfile profile) {
     return _calculateProfileCompletionPercent(profile);
