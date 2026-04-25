@@ -22,6 +22,7 @@ class MessageBubble extends StatefulWidget {
     this.otherUserInitials,
     this.otherUserAvatarUrl,
     this.translation,
+    this.isTranslating = false,
     this.showOriginal = false,
     this.onToggleTranslation,
   });
@@ -45,6 +46,11 @@ class MessageBubble extends StatefulWidget {
   /// default and expose a "Show original" / "Show translation" toggle
   /// footer — Airbnb-style.
   final MessageTranslation? translation;
+
+  /// Whether this message is currently being translated in the background.
+  /// When true and [translation] is still null, we show a small inline
+  /// "Translating…" indicator so users understand work is happening.
+  final bool isTranslating;
 
   /// When true the bubble renders [message.content] even if [translation]
   /// is available. Parent screen owns the toggle state so scroll off-screen
@@ -169,6 +175,11 @@ class _MessageBubbleState extends State<MessageBubble>
                             _displayText(),
                             textColor,
                           ),
+                          if (widget.translation == null &&
+                              widget.isTranslating) ...[
+                            const SizedBox(height: 6),
+                            _TranslationSkeleton(textColor: textColor),
+                          ],
                           if (widget.translation != null) ...[
                             const SizedBox(height: 4),
                             _TranslationToggleRow(
@@ -365,6 +376,53 @@ class _MessageBubbleState extends State<MessageBubble>
       color: isReadByRecipient
           ? readColor
           : ownBubbleTextColor.withValues(alpha: 0.45),
+    );
+  }
+}
+
+class _TranslationSkeleton extends StatelessWidget {
+  const _TranslationSkeleton({required this.textColor});
+
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    // A subtle 2-line skeleton that sits where translated text will appear.
+    // We avoid shimmer to keep it cheap and calm in a dense chat list.
+    final base = textColor.withValues(alpha: 0.16);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SkeletonBar(height: 10, widthFactor: 0.78, color: base),
+        const SizedBox(height: 6),
+        _SkeletonBar(height: 10, widthFactor: 0.52, color: base),
+      ],
+    );
+  }
+}
+
+class _SkeletonBar extends StatelessWidget {
+  const _SkeletonBar({
+    required this.height,
+    required this.widthFactor,
+    required this.color,
+  });
+
+  final double height;
+  final double widthFactor;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return FractionallySizedBox(
+      widthFactor: widthFactor.clamp(0.1, 1.0),
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(height / 2),
+        ),
+      ),
     );
   }
 }

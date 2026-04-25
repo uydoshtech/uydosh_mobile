@@ -127,7 +127,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     final cardBg = AppColors.warning;
 
     const fg = Color(0xFF1F1300);
-    final bodyFg = Colors.black.withValues(alpha: 0.72);
 
     // Button: black outlined "ghost" sitting on the warning tile.
     final buttonBorderColor = Colors.black.withValues(alpha: 0.85);
@@ -184,17 +183,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     ),
                   ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              isDenied
-                  ? L10n.get("notifications_enable_in_settings")
-                  : L10n.get("search_alert_permission"),
-              style: TextStyle(
-                color: bodyFg,
-                fontSize: 13.5,
-                height: 1.25,
-              ),
             ),
             const SizedBox(height: 12),
             SizedBox(

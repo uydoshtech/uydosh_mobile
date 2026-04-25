@@ -133,6 +133,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final Map<int, MessageTranslation> _translationsById = {};
   final Set<int> _showOriginalMessageIds = {};
   final Set<int> _translationInFlightIds = {};
+  final Set<int> _translationCompletedIds = {};
 
   // Per-conversation translation prefs (persisted via SessionManager). The
   // 3-dot menu lets the viewer:
@@ -356,13 +357,20 @@ class _ChatScreenState extends State<ChatScreen> {
   /// cache is warm.
   Future<void> _requestMissingTranslations() async {
     if (_currentUserId == null) return;
+    // Auto mode (no override) only translates messages from the OTHER
+    // participant — there's no point translating the viewer's own text into
+    // their own language. When the viewer explicitly picks "Translate to…",
+    // include their messages too: the user said "translate this chat", so
+    // showing a half-translated transcript would feel broken.
+    final translateOwnMessages = _targetLanguageOverride != null;
     final candidateIds = <int>[];
     for (final m in _messages) {
       if (m.messageType != "text") continue;
-      if (m.senderId == _currentUserId) continue;
+      if (!translateOwnMessages && m.senderId == _currentUserId) continue;
       if ((m.isDeleted ?? false)) continue;
       if (_translationsById.containsKey(m.id)) continue;
       if (_translationInFlightIds.contains(m.id)) continue;
+      if (_translationCompletedIds.contains(m.id)) continue;
       candidateIds.add(m.id);
     }
     if (candidateIds.isEmpty) return;
@@ -387,6 +395,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final translations = data["translations"];
       if (target is! String || translations is! List) return;
       var changed = false;
+      final returnedIds = <int>{};
       for (final raw in translations) {
         if (raw is! Map) continue;
         final id = raw["message_id"];
@@ -398,13 +407,43 @@ class _ChatScreenState extends State<ChatScreen> {
         );
         if (translation == null) continue;
         _translationsById[resolvedId] = translation;
+        returnedIds.add(resolvedId);
         changed = true;
+      }
+      // Mark ids we requested but didn't get back as "completed". The server
+      // intentionally omits same-language "translations" (where translated ==
+      // original) so the client doesn't draw a misleading footer; without this
+      // we'd repeatedly request those ids and never finish "Translate to…".
+      for (final id in idsToRequest) {
+        if (!returnedIds.contains(id)) {
+          _translationCompletedIds.add(id);
+        }
       }
       if (changed) setState(() {});
     } catch (e) {
       logger.d("💬 [ChatScreen] Translation request failed: $e");
     } finally {
       _translationInFlightIds.removeAll(idsToRequest);
+    }
+
+    // In explicit override mode, keep translating progressively in the
+    // background until the currently-loaded transcript is done.
+    if (!mounted || _targetLanguageOverride == null) return;
+    var hasMore = false;
+    for (final m in _messages) {
+      if (m.messageType != "text") continue;
+      if ((m.isDeleted ?? false)) continue;
+      if (_translationsById.containsKey(m.id)) continue;
+      if (_translationInFlightIds.contains(m.id)) continue;
+      if (_translationCompletedIds.contains(m.id)) continue;
+      hasMore = true;
+      break;
+    }
+    if (hasMore) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (!mounted) return;
+        _requestMissingTranslations();
+      });
     }
   }
 
@@ -477,6 +516,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _targetLanguageOverride = language;
       _translationsById.clear();
       _translationInFlightIds.clear();
+      _translationCompletedIds.clear();
       // Per-message overrides are about original-vs-translation, not language,
       // so leaving them alone is fine here.
     });
@@ -851,8 +891,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _messageScrollExpanded() {
     return Expanded(
-      child: MultiBlocListener(
-        listeners: [
+      child: Stack(
+        children: [
+          MultiBlocListener(
+            listeners: [
           BlocListener<MessagingBloc, MessagingState>(
             listener: (context, state) {
               state.when(
@@ -923,49 +965,62 @@ class _ChatScreenState extends State<ChatScreen> {
               );
             },
           ),
+            ],
+            child: BlocBuilder<MessagingBloc, MessagingState>(
+              buildWhen: (previous, current) {
+                if (_messages.isNotEmpty) {
+                  return false;
+                }
+                return previous != current;
+              },
+              builder: (context, state) {
+                if (_showRefreshSkeleton) {
+                  return const ChatMessagesSkeleton();
+                }
+                if (_messages.isNotEmpty) {
+                  return _buildMessagesList(_messages);
+                }
+                return state.when(
+                  initial: _buildLoadingState,
+                  loading: _buildLoadingState,
+                  conversationsLoaded:
+                      (conversations, hasMore, currentPage) =>
+                          _hasLoadedMessagesForConversation
+                              ? _buildMessagesList(_messages)
+                              : _buildLoadingState(),
+                  conversationsCleared: _buildEmptyState,
+                  messagesLoaded:
+                      (
+                        messages,
+                        hasMore,
+                        currentPage,
+                        conversationId,
+                      ) => _buildMessagesList(messages),
+                  conversationCreated:
+                      (conversation) =>
+                          _hasLoadedMessagesForConversation
+                              ? _buildMessagesList(_messages)
+                              : _buildLoadingState(),
+                  messageSent: (message) => _buildEmptyState(),
+                  messagesMarkedAsRead:
+                      (conversationId, markedCount) => _buildEmptyState(),
+                  error: _buildErrorState,
+                );
+              },
+            ),
+          ),
+          if (_targetLanguageOverride != null && _translationInFlightIds.isNotEmpty)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LinearProgressIndicator(
+                minHeight: 2,
+                color: Theme.of(context).colorScheme.primary,
+                backgroundColor: Colors.transparent,
+              ),
+            ),
         ],
-        child: BlocBuilder<MessagingBloc, MessagingState>(
-          buildWhen: (previous, current) {
-            if (_messages.isNotEmpty) {
-              return false;
-            }
-            return previous != current;
-          },
-          builder: (context, state) {
-            if (_showRefreshSkeleton) {
-              return const ChatMessagesSkeleton();
-            }
-            if (_messages.isNotEmpty) {
-              return _buildMessagesList(_messages);
-            }
-            return state.when(
-              initial: _buildLoadingState,
-              loading: _buildLoadingState,
-              conversationsLoaded:
-                  (conversations, hasMore, currentPage) =>
-                      _hasLoadedMessagesForConversation
-                          ? _buildMessagesList(_messages)
-                          : _buildLoadingState(),
-              conversationsCleared: _buildEmptyState,
-              messagesLoaded:
-                  (
-                    messages,
-                    hasMore,
-                    currentPage,
-                    conversationId,
-                  ) => _buildMessagesList(messages),
-              conversationCreated:
-                  (conversation) =>
-                      _hasLoadedMessagesForConversation
-                          ? _buildMessagesList(_messages)
-                          : _buildLoadingState(),
-              messageSent: (message) => _buildEmptyState(),
-              messagesMarkedAsRead:
-                  (conversationId, markedCount) => _buildEmptyState(),
-              error: _buildErrorState,
-            );
-          },
-        ),
       ),
     );
   }
@@ -1129,6 +1184,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 otherUserInitials: widget.otherUserInitials,
                 otherUserAvatarUrl: _peerAvatarUrl,
                 translation: _translationsById[message.id],
+                isTranslating: _translationInFlightIds.contains(message.id),
                 // The global "Show original messages" mode flips the default
                 // for every translated bubble; the per-message set acts as
                 // exceptions so taps on the in-bubble toggle still work.

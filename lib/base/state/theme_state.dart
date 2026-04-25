@@ -13,7 +13,7 @@ class ThemeState extends ChangeNotifier {
   ThemeState._internal();
   static final ThemeState _instance = ThemeState._internal();
 
-  String _currentTheme = AppTheme.lightTheme;
+  String _currentTheme = AppTheme.blueTheme;
   bool _isInitialized = false;
 
   /// Get the current theme name
@@ -34,7 +34,7 @@ class ThemeState extends ChangeNotifier {
       case AppTheme.blueTheme:
         return AppStrings.get("blue_theme", currentLanguage);
       default:
-        return AppStrings.get("light_theme", currentLanguage);
+        return AppStrings.get("blue_theme", currentLanguage);
     }
   }
 
@@ -50,7 +50,7 @@ class ThemeState extends ChangeNotifier {
       final savedTheme = prefs.getString(StorageKeys.selectedTheme);
       if (savedTheme != null && savedTheme.isNotEmpty) {
         _currentTheme =
-            savedTheme == "purple" ? AppTheme.lightTheme : savedTheme;
+            savedTheme == "purple" ? AppTheme.blueTheme : savedTheme;
         logger.d("Loaded saved theme: $_currentTheme");
       } else {
         logger.d("No saved theme found, using default: $_currentTheme");
@@ -112,7 +112,7 @@ class ThemeState extends ChangeNotifier {
           WidgetsBinding.instance.platformDispatcher.platformBrightness;
       final themeName = brightness == Brightness.dark
           ? AppTheme.blueTheme
-          : AppTheme.lightTheme;
+          : AppTheme.blueTheme;
 
       _currentTheme = themeName;
       await prefs.setString(StorageKeys.selectedTheme, themeName);
@@ -132,7 +132,7 @@ class ThemeState extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(StorageKeys.selectedTheme);
-      _currentTheme = AppTheme.lightTheme; // Reset to default
+      _currentTheme = AppTheme.blueTheme; // Reset to default
       notifyListeners();
     } catch (e) {
       logger.d("Error clearing saved theme: $e");
