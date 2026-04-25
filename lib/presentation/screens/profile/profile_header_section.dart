@@ -3,7 +3,6 @@ import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:image_cropper/image_cropper.dart";
 import "package:image_picker/image_picker.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -17,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/common/profile_role_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 class ProfileHeaderSection extends StatefulWidget {
@@ -213,33 +213,18 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                         bottom: 0,
                         child: _buildCameraBadge(context),
                       ),
-                    // Top-right: profile-completion tick (only when 100%),
-                    // so it doesn't collide with the edit affordance below.
-                    if (!widget.userBlocked && isComplete)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Tooltip(
-                          message: L10n.get("profile_completion"),
-                          child: Container(
-                            width: 22,
-                            height: 22,
-                            decoration: BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.surface,
-                                width: 2,
-                              ),
-                            ),
-                            child: const ThemeIcon(
-                              Icons.check,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+                    // Bottom-left: language flag indicator. Mirrors the camera
+                    // affordance on the right so the user can see at a glance
+                    // which language the app is currently rendering in.
+                    Positioned(
+                      left: 0,
+                      bottom: 0,
+                      child: ListenableBuilder(
+                        listenable: LanguageState(),
+                        builder: (context, _) =>
+                            _buildLanguageFlagBadge(context),
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -346,6 +331,45 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
             size: 18,
             color: Colors.white,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageFlagBadge(BuildContext context) {
+    final theme = Theme.of(context);
+    final languageCode = LanguageState().currentLanguage;
+    final flag = switch (languageCode) {
+      "en" => "🇺🇸",
+      "ru" => "🇷🇺",
+      "uz" => "🇺🇿",
+      _ => "🌐",
+    };
+    final tooltipKey = switch (languageCode) {
+      "en" => "language_english",
+      "ru" => "language_russian",
+      "uz" => "language_uzbek",
+      _ => "menu_language",
+    };
+
+    return Tooltip(
+      message: L10n.get(tooltipKey),
+      child: Container(
+        width: 36,
+        height: 36,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: theme.colorScheme.surface,
+            width: 2,
+          ),
+          boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+        ),
+        child: Text(
+          flag,
+          style: const TextStyle(fontSize: 20, height: 1),
         ),
       ),
     );

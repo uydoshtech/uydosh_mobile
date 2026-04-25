@@ -134,6 +134,8 @@ class AppStrings {
       "menu_messages": "Messages",
       "menu_notifications": "Notifications",
       "menu_enable_notifications": "Enable notifications",
+      "notifications_alert_match_header": "Notify me when there's a match for:",
+      "notifications_alert_match_header_paused": "Paused — would notify on match for:",
       "notifications_push_off_title": "Your {platform} push alerts are turned off",
       "notifications_enabled": "Notifications enabled",
       "notifications_enable_in_settings": "Please enable notifications in Settings",
@@ -1224,6 +1226,9 @@ class AppStrings {
       "menu_messages": "Сообщения",
       "menu_notifications": "Уведомления",
       "menu_enable_notifications": "Включить уведомления",
+      "notifications_alert_match_header": "Уведомить, когда появится:",
+      "notifications_alert_match_header_paused":
+          "Приостановлено — уведомили бы при совпадении:",
       "notifications_push_off_title":
           "Ваши push-уведомления {platform} отключены",
       "notifications_enabled": "Уведомления включены",
@@ -2328,6 +2333,9 @@ class AppStrings {
       "menu_messages": "Xabarlar",
       "menu_notifications": "Bildirishnomalar",
       "menu_enable_notifications": "Bildirishnomalarni yoqish",
+      "notifications_alert_match_header": "Mos kelganida xabar berish:",
+      "notifications_alert_match_header_paused":
+          "Vaqtincha to‘xtatilgan — moslik uchun xabar berilardi:",
       "notifications_push_off_title":
           "{platform} push-bildirishnomalaringiz o'chirilgan",
       "notifications_enabled": "Bildirishnomalar yoqildi",

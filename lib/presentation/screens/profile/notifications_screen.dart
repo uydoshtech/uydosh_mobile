@@ -1182,6 +1182,26 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
+                                                  Text(
+                                                    a.enabled
+                                                        ? L10n.get(
+                                                            "notifications_alert_match_header",
+                                                          )
+                                                        : L10n.get(
+                                                            "notifications_alert_match_header_paused",
+                                                          ),
+                                                    style: TextStyle(
+                                                      fontSize: 13.5,
+                                                      height: 1.2,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      letterSpacing: 0.1,
+                                                      color: theme
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8),
                                                   _summaryWidget(a, theme),
                                                 ],
                                               ),
