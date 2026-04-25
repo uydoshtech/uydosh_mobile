@@ -2,7 +2,6 @@
 
 import "package:dio/dio.dart";
 import "package:firebase_messaging/firebase_messaging.dart";
-import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart"
     show defaultTargetPlatform, kDebugMode, kIsWeb, TargetPlatform;
 import "package:flutter/material.dart";
@@ -900,6 +899,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           iconSize: 18,
           fontSize: 13,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+          useTintBackground: true,
+          tintAlpha: 0.1,
         ),
       );
     }
@@ -1156,19 +1157,51 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          ThemeIcon(
-                                            a.enabled
-                                                ? Icons.notifications
-                                                : Icons
-                                                    .notifications_none_outlined,
-                                            color: ThemeState().isBlueTheme
-                                                ? Colors.white
-                                                : (a.enabled
-                                                    ? theme.colorScheme.primary
-                                                    : theme.colorScheme
-                                                        .onSurfaceVariant),
+                                          Tooltip(
+                                            message: a.enabled
+                                                ? L10n.get("disable")
+                                                : L10n.get("enable"),
+                                            child: InkResponse(
+                                              radius: 22,
+                                              onTap: _bulkWorking
+                                                  ? null
+                                                  : () {
+                                                      HapticFeedbackUtils
+                                                          .impact();
+                                                      _toggleEnabled(
+                                                        a,
+                                                        !a.enabled,
+                                                      );
+                                                    },
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(4),
+                                                child: ThemeIcon(
+                                                  a.enabled
+                                                      ? Icons.notifications
+                                                      : Icons
+                                                          .notifications_off_outlined,
+                                                  color: ThemeState()
+                                                          .isBlueTheme
+                                                      ? (a.enabled
+                                                          ? Colors.white
+                                                          : Colors.white
+                                                              .withValues(
+                                                              alpha: 0.45,
+                                                            ))
+                                                      : (a.enabled
+                                                          ? theme.colorScheme
+                                                              .primary
+                                                          : theme.colorScheme
+                                                              .onSurfaceVariant
+                                                              .withValues(
+                                                              alpha: 0.55,
+                                                            )),
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                          const SizedBox(width: 12),
+                                          const SizedBox(width: 8),
                                           Expanded(
                                             child: Padding(
                                               padding:
@@ -1214,7 +1247,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                         right: 0,
                                         child: TheDotDropMenuButton<String>(
                                           enabled: !_bulkWorking,
-                                          icon: CupertinoIcons.pencil_circle,
                                           padding: EdgeInsets.zero,
                                           onSelected: (value) {
                                             if (value == "toggle") {

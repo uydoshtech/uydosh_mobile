@@ -213,18 +213,6 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                         bottom: 0,
                         child: _buildCameraBadge(context),
                       ),
-                    // Bottom-left: language flag indicator. Mirrors the camera
-                    // affordance on the right so the user can see at a glance
-                    // which language the app is currently rendering in.
-                    Positioned(
-                      left: 0,
-                      bottom: 0,
-                      child: ListenableBuilder(
-                        listenable: LanguageState(),
-                        builder: (context, _) =>
-                            _buildLanguageFlagBadge(context),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -244,8 +232,20 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
               ],
               if (widget.userRoleLoaded) ...[
                 const SizedBox(height: 4),
-                ProfileRoleNeumorphicBadge(
-                  label: widget.getRoleLabel(widget.userRole),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ProfileRoleNeumorphicBadge(
+                      label: widget.getRoleLabel(widget.userRole),
+                    ),
+                    const SizedBox(width: 8),
+                    ListenableBuilder(
+                      listenable: LanguageState(),
+                      builder: (context, _) =>
+                          _buildLanguageFlagChip(context),
+                    ),
+                  ],
                 ),
               ],
             ],
@@ -336,8 +336,10 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     );
   }
 
-  Widget _buildLanguageFlagBadge(BuildContext context) {
+  Widget _buildLanguageFlagChip(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final bg = theme.cardTheme.color ?? scheme.surface;
     final languageCode = LanguageState().currentLanguage;
     final flag = switch (languageCode) {
       "en" => "🇺🇸",
@@ -354,22 +356,18 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
 
     return Tooltip(
       message: L10n.get(tooltipKey),
-      child: Container(
-        width: 36,
-        height: 36,
-        alignment: Alignment.center,
+      child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: theme.colorScheme.surface,
-            width: 2,
-          ),
+          borderRadius: BorderRadius.circular(999),
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
           boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
         ),
-        child: Text(
-          flag,
-          style: const TextStyle(fontSize: 20, height: 1),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Text(
+            flag,
+            style: const TextStyle(fontSize: 14, height: 1.25),
+          ),
         ),
       ),
     );
