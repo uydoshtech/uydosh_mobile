@@ -926,38 +926,57 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     // country is Uzbekistan (the only country we currently ship regions
     // for); other countries intentionally allow a null regionId.
     final requiresRegion = _selectedCountryIso2 == "UZ";
-    if (_nameController.text.trim().isEmpty ||
+    final missingBaseField = _nameController.text.trim().isEmpty ||
         _selectedGender == null ||
         (requiresRegion && _selectedRegionId == null) ||
         _selectedRole == null ||
-        _isStudent == null) {
-      ToastTheme.showWarning(
-        context,
-        message: L10n.get("please_complete_all_fields"),
-      );
+        _isStudent == null;
+    final missingUniversity =
+        (_isStudent ?? false) && _selectedUniversity == null;
+
+    if (missingBaseField || missingUniversity) {
+      // Flip the screen-wide validation flag so every empty control on the
+      // profile page lights up with a pulsing red border (see
+      // [AuthWizardProfilePage] + [ErrorBorderPulse]). The toast remains as
+      // a coarse heads-up for screen readers / users who scrolled past the
+      // first invalid field.
+      setState(() {
+        _showValidationErrors = true;
+      });
+
+      if (missingUniversity && !missingBaseField) {
+        logger.d(
+          "❌ VALIDATION FAILED: User is student but no university selected",
+        );
+        logger.d("_isStudent: $_isStudent");
+        logger.d(
+          "_selectedUniversity: ${_selectedUniversity != null ? _getUniversityName(_selectedUniversity!) : "None"} (ID: ${_selectedUniversity?.id})",
+        );
+        logger.d("Available universities: ${_universities.length}");
+        if (_universities.isNotEmpty) {
+          logger.d(
+            "First available university: ${_getUniversityName(_universities.first)} (ID: ${_universities.first.id})",
+          );
+        }
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("please_select_university"),
+        );
+      } else {
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("please_complete_all_fields"),
+        );
+      }
       return;
     }
 
-    if ((_isStudent ?? false) && _selectedUniversity == null) {
-      logger.d(
-        "❌ VALIDATION FAILED: User is student but no university selected",
-      );
-      logger.d("_isStudent: $_isStudent");
-      logger.d(
-        "_selectedUniversity: ${_selectedUniversity != null ? _getUniversityName(_selectedUniversity!) : "None"} (ID: ${_selectedUniversity?.id})",
-      );
-      logger.d("Available universities: ${_universities.length}");
-      if (_universities.isNotEmpty) {
-        logger.d(
-          "First available university: ${_getUniversityName(_universities.first)} (ID: ${_universities.first.id})",
-        );
-      }
-
-      ToastTheme.showWarning(
-        context,
-        message: L10n.get("please_select_university"),
-      );
-      return;
+    // All required fields are populated — drop the validation highlight so
+    // the form returns to its neutral appearance while we submit.
+    if (_showValidationErrors) {
+      setState(() {
+        _showValidationErrors = false;
+      });
     }
 
     logger.d("✅ VALIDATION PASSED: All required fields are filled");
@@ -1395,6 +1414,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           isLoadingUniversities: _isLoadingUniversities,
                           getRegionName: _getRegionName,
                           getUniversityName: _getUniversityName,
+                          nameMissing: _nameMissing,
+                          genderMissing: _genderMissing,
+                          regionMissing: _regionMissing,
+                          roleMissing: _roleMissing,
+                          studentMissing: _studentMissing,
+                          universityMissing: _universityMissing,
                         ),
                       ],
                     ),
