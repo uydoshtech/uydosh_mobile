@@ -134,6 +134,7 @@ class AppStrings {
       "menu_messages": "Messages",
       "menu_notifications": "Notifications",
       "menu_enable_notifications": "Enable notifications",
+      "notifications_push_off_title": "Your {platform} push alerts are turned off",
       "notifications_enabled": "Notifications enabled",
       "notifications_enable_in_settings": "Please enable notifications in Settings",
       "notifications_appbar_semantics_active_alerts": "Active search alerts",
@@ -1223,6 +1224,8 @@ class AppStrings {
       "menu_messages": "Сообщения",
       "menu_notifications": "Уведомления",
       "menu_enable_notifications": "Включить уведомления",
+      "notifications_push_off_title":
+          "Ваши push-уведомления {platform} отключены",
       "notifications_enabled": "Уведомления включены",
       "notifications_enable_in_settings":
           "Включите уведомления в настройках приложения",
@@ -2325,6 +2328,8 @@ class AppStrings {
       "menu_messages": "Xabarlar",
       "menu_notifications": "Bildirishnomalar",
       "menu_enable_notifications": "Bildirishnomalarni yoqish",
+      "notifications_push_off_title":
+          "{platform} push-bildirishnomalaringiz o'chirilgan",
       "notifications_enabled": "Bildirishnomalar yoqildi",
       "notifications_enable_in_settings":
           "Ilova sozlamalarida bildirishnomalarni yoqing",

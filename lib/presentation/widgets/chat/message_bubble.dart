@@ -389,7 +389,15 @@ class _TranslationToggleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prefixKey = _translatedFromKeyForSource(translation.sourceLanguageCode);
-    final prefix = prefixKey != null ? L10n.get(prefixKey) : null;
+    final basePrefix = prefixKey != null ? L10n.get(prefixKey) : null;
+    final targetFlag = _flagForLanguage(translation.targetLanguageCode);
+    // Append "→ <target-flag>" so the viewer can see WHICH language the
+    // translation is in (today it's implicit = app UI language; making it
+    // explicit avoids confusion for multilingual users without adding any
+    // new switcher UI).
+    final prefix = basePrefix != null && targetFlag != null
+        ? "$basePrefix → $targetFlag"
+        : basePrefix;
     final toggleLabel = L10n.get(
       isShowingOriginal ? "chat_show_translation" : "chat_show_original",
     );
@@ -446,6 +454,21 @@ class _TranslationToggleRow extends StatelessWidget {
         return "chat_translated_from_ru";
       case "uz":
         return "chat_translated_from_uz";
+      default:
+        return null;
+    }
+  }
+
+  /// Flag emoji per supported translation target. Returns null for unknown
+  /// codes so the caller can omit the "→ flag" suffix gracefully.
+  static String? _flagForLanguage(String code) {
+    switch (code) {
+      case "en":
+        return "🇺🇸";
+      case "ru":
+        return "🇷🇺";
+      case "uz":
+        return "🇺🇿";
       default:
         return null;
     }

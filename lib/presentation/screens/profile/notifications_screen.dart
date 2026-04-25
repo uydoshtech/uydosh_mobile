@@ -3,7 +3,8 @@
 import "package:dio/dio.dart";
 import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/cupertino.dart";
-import "package:flutter/foundation.dart" show kDebugMode;
+import "package:flutter/foundation.dart"
+    show defaultTargetPlatform, kDebugMode, kIsWeb, TargetPlatform;
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:permission_handler/permission_handler.dart";
@@ -34,6 +35,7 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexibl
 import "package:uy_dosh/presentation/widgets/common/the_dot_drop_menu_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_info_callout_card.dart";
@@ -44,6 +46,11 @@ import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 const bool _pushDebugEnabled = kDebugMode;
+
+// Force-show the "Enable notifications" tile on web (Chrome) so the layout can
+// be tested without deploying to a real device. Push is not actually supported
+// on web; the button just won't do anything meaningful there.
+const bool _forceShowPushEnableCard = kIsWeb;
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -87,114 +94,163 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     }
   }
 
+  String _platformPushLabel() {
+    if (kIsWeb) return "iOS/Android";
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return "iOS";
+      case TargetPlatform.android:
+        return "Android";
+      default:
+        return "iOS/Android";
+    }
+  }
+
   Widget _pushEnableCard(ThemeData theme) {
     final push = getIt<IPushNotificationService>();
-    if (!push.isSupported) return const SizedBox.shrink();
+    if (!push.isSupported && !_forceShowPushEnableCard) {
+      return const SizedBox.shrink();
+    }
 
     final status = _pushStatus;
-    if (status == null) return const SizedBox.shrink();
-    final needsEnable = status == AuthorizationStatus.denied ||
+    if (status == null && !_forceShowPushEnableCard) {
+      return const SizedBox.shrink();
+    }
+    final needsEnable = _forceShowPushEnableCard ||
+        status == AuthorizationStatus.denied ||
         status == AuthorizationStatus.notDetermined;
     if (!needsEnable) return const SizedBox.shrink();
 
-    final bg =
-        theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45);
-    final fg = theme.colorScheme.onSurfaceVariant;
     final isDenied = status == AuthorizationStatus.denied;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+    // Warning-tinted "alert" tile, matching the orange ToastTheme.showWarning toast.
+    final cardBg = AppColors.warning;
+
+    const fg = Color(0xFF1F1300);
+    final bodyFg = Colors.black.withValues(alpha: 0.72);
+
+    // Button: black outlined "ghost" sitting on the warning tile.
+    final buttonBorderColor = Colors.black.withValues(alpha: 0.85);
+    const buttonFg = Color(0xFF1F1300);
+    final buttonBg = Colors.white.withValues(alpha: 0.18);
+
+    final platformLabel = _platformPushLabel();
+
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: bg,
         borderRadius: BorderRadius.circular(14),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardBg),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Icon(
-                  Icons.notifications_off_outlined,
-                  size: 18,
-                  color: fg,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  L10n.get("menu_enable_notifications"),
-                  style: TextStyle(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 2),
+                  child: Icon(
+                    Icons.notifications_off_outlined,
+                    size: 20,
                     color: fg,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-              if (_pushStatusLoading)
-                const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    L10n.getWithParams(
+                      "notifications_push_off_title",
+                      params: {"platform": platformLabel},
+                    ),
+                    style: const TextStyle(
+                      color: fg,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            isDenied
-                ? L10n.get("notifications_enable_in_settings")
-                : L10n.get("search_alert_permission"),
-            style: TextStyle(
-              color: fg,
-              fontSize: 13.5,
-              height: 1.25,
+                if (_pushStatusLoading)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(fg),
+                    ),
+                  ),
+              ],
             ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _pushStatusLoading
-                  ? null
-                  : () async {
-                      HapticFeedbackUtils.impact();
-                      if (isDenied) {
-                        await openAppSettings();
+            const SizedBox(height: 8),
+            Text(
+              isDenied
+                  ? L10n.get("notifications_enable_in_settings")
+                  : L10n.get("search_alert_permission"),
+              style: TextStyle(
+                color: bodyFg,
+                fontSize: 13.5,
+                height: 1.25,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: buttonBg,
+                  foregroundColor: buttonFg,
+                  side: BorderSide(color: buttonBorderColor, width: 1.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _pushStatusLoading
+                    ? null
+                    : () async {
+                        HapticFeedbackUtils.impact();
+                        if (isDenied) {
+                          await openAppSettings();
+                          if (!mounted) return;
+                          await _loadPushStatus();
+                          return;
+                        }
+                        final ok = await push.requestPermissionAndRegister();
                         if (!mounted) return;
+                        if (ok) {
+                          ToastTheme.showSuccess(
+                            context,
+                            message: L10n.get("notifications_enabled"),
+                          );
+                        } else {
+                          ToastTheme.showInfo(
+                            context,
+                            message:
+                                L10n.get("notifications_enable_in_settings"),
+                          );
+                        }
                         await _loadPushStatus();
-                        return;
-                      }
-                      final ok = await push.requestPermissionAndRegister();
-                      if (!mounted) return;
-                      if (ok) {
-                        ToastTheme.showSuccess(
-                          context,
-                          message: L10n.get("notifications_enabled"),
-                        );
-                      } else {
-                        ToastTheme.showInfo(
-                          context,
-                          message: L10n.get("notifications_enable_in_settings"),
-                        );
-                      }
-                      await _loadPushStatus();
-                    },
-              icon: Icon(
-                isDenied
-                    ? Icons.settings_outlined
-                    : Icons.notifications_outlined,
-              ),
-              label: Text(
-                isDenied
-                    ? L10n.get("notifications_open_settings")
-                    : L10n.get("menu_enable_notifications"),
+                      },
+                icon: Icon(
+                  isDenied
+                      ? Icons.settings_outlined
+                      : Icons.notifications_outlined,
+                ),
+                label: Text(
+                  isDenied
+                      ? L10n.get("notifications_open_settings")
+                      : L10n.get("menu_enable_notifications"),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -958,10 +1014,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     final themeState = ThemeState();
     final useLiquidGlassAppBar =
         themeState.isBlueTheme || themeState.isLightTheme;
-    final showPushEnableCard = push.isSupported &&
-        _pushStatus != null &&
-        (_pushStatus == AuthorizationStatus.denied ||
-            _pushStatus == AuthorizationStatus.notDetermined);
+    final showPushEnableCard = _forceShowPushEnableCard ||
+        (push.isSupported &&
+            _pushStatus != null &&
+            (_pushStatus == AuthorizationStatus.denied ||
+                _pushStatus == AuthorizationStatus.notDetermined));
     final showAlertsExplainer =
         tooltipsEnabled && _showAlertsExplainer && !showPushEnableCard;
 
