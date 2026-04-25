@@ -1,4 +1,5 @@
 import "package:flutter/foundation.dart";
+import "package:flutter/scheduler.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 
 /// Global state to track unread messages count
@@ -32,7 +33,24 @@ class UnreadMessagesState extends ChangeNotifier {
   void setActiveConversationId(int? conversationId) {
     if (_activeConversationId == conversationId) return;
     _activeConversationId = conversationId;
-    notifyListeners();
+    _safeNotifyListeners();
+  }
+
+  /// Notifies listeners, but defers the notification to the next frame if
+  /// we are currently inside a build/layout phase. This avoids
+  /// "setState() or markNeedsBuild() called during build" errors when the
+  /// state is mutated from another widget's `initState` while ancestor
+  /// `ListenableBuilder`s are still being built.
+  void _safeNotifyListeners() {
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    final isBuilding = phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks ||
+        phase == SchedulerPhase.transientCallbacks;
+    if (isBuilding) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => notifyListeners());
+    } else {
+      notifyListeners();
+    }
   }
 
   /// Update the unread messages count
