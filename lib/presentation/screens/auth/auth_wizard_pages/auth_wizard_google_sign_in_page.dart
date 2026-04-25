@@ -82,7 +82,8 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                             _pressed && _enabled ? 2 : 0,
                             0,
                           ),
-                          child: InkWell(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap:
                                 widget.isAuthenticating
                                     ? null
@@ -90,29 +91,33 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                                       HapticFeedbackUtils.impact();
                                       widget.onSignInWithGoogle();
                                     },
-                            borderRadius: BorderRadius.circular(22),
-                            onHighlightChanged:
+                            onTapDown:
                                 _enabled
-                                    ? (v) => setState(() => _pressed = v)
+                                    ? (_) => setState(() => _pressed = true)
                                     : null,
-                            child: Opacity(
-                              opacity: _enabled ? 1 : 0.55,
-                              child: ListenableBuilder(
-                                listenable: ThemeState(),
-                                builder: (context, child) {
-                                  final currentTheme =
-                                      ThemeState().currentTheme;
-                                  final svgAsset =
-                                      currentTheme == AppTheme.lightTheme
-                                          ? "assets/images/ios_dark_rd_ctn.svg"
-                                          : "assets/images/ios_neutral_rd_ctn.svg";
-                                  return SvgPicture.asset(
-                                    svgAsset,
-                                    width: 199,
-                                    height: 44,
-                                  );
-                                },
-                              ),
+                            onTapUp:
+                                _enabled
+                                    ? (_) => setState(() => _pressed = false)
+                                    : null,
+                            onTapCancel:
+                                _enabled
+                                    ? () => setState(() => _pressed = false)
+                                    : null,
+                            child: ListenableBuilder(
+                              listenable: ThemeState(),
+                              builder: (context, child) {
+                                final currentTheme =
+                                    ThemeState().currentTheme;
+                                final svgAsset =
+                                    currentTheme == AppTheme.lightTheme
+                                        ? "assets/images/ios_dark_rd_ctn.svg"
+                                        : "assets/images/ios_neutral_rd_ctn.svg";
+                                return SvgPicture.asset(
+                                  svgAsset,
+                                  width: 199,
+                                  height: 44,
+                                );
+                              },
                             ),
                           ),
                         ),
