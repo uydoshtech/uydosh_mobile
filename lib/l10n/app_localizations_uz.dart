@@ -74,6 +74,11 @@ class AppLocalizationsUz extends AppLocalizations {
       'Turmush tarzi bo\'yicha xohishlarni qo\'shing, mosliklar yaxshilanadi.';
 
   @override
+  String complete_profile_prompt_more(String count) {
+    return '+ yana $count';
+  }
+
+  @override
   String get complete_profile_prompt_cta => 'Hozir to\'ldirish';
 
   @override

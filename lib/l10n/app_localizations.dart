@@ -226,6 +226,12 @@ abstract class AppLocalizations {
   /// **'Add your lifestyle preferences to get better matches.'**
   String get complete_profile_prompt_body;
 
+  /// No description provided for @complete_profile_prompt_more.
+  ///
+  /// In en, this message translates to:
+  /// **'+ {count} more'**
+  String complete_profile_prompt_more(String count);
+
   /// No description provided for @complete_profile_prompt_cta.
   ///
   /// In en, this message translates to:

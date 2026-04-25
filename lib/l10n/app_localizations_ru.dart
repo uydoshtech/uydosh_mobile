@@ -74,6 +74,11 @@ class AppLocalizationsRu extends AppLocalizations {
       'Укажите предпочтения по образу жизни, чтобы получить лучшие совпадения.';
 
   @override
+  String complete_profile_prompt_more(String count) {
+    return '+ ещё $count';
+  }
+
+  @override
   String get complete_profile_prompt_cta => 'Заполнить сейчас';
 
   @override

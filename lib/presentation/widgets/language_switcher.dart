@@ -92,7 +92,18 @@ class LanguageState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setLanguage(String language) async {
+  /// Updates the in-memory + on-device language and (by default) syncs the
+  /// new value to the user's profile on the backend.
+  ///
+  /// Pass [persistToServer]=`false` from contexts where the change is purely
+  /// local — e.g. the auth wizard's language page (we don't yet know if the
+  /// user is new or returning, and a returning user's server-side
+  /// `preferred_language` should win at sign-in) or post-login reconciliation
+  /// from the server's value (we'd otherwise echo the value we just read).
+  Future<void> setLanguage(
+    String language, {
+    bool persistToServer = true,
+  }) async {
     if (_currentLanguage != language) {
       final fromLanguage = _currentLanguage;
       _currentLanguage = language;
@@ -114,15 +125,17 @@ class LanguageState extends ChangeNotifier {
       }
 
       // Sync to user profile so other users can see what language they speak
-      try {
-        if (await SessionManager.isAuthenticated()) {
-          final profileService = getIt<IUserProfileService>();
-          await profileService.updateProfile(
-            UpdateProfileRequest(preferredLanguage: language),
-          );
+      if (persistToServer) {
+        try {
+          if (await SessionManager.isAuthenticated()) {
+            final profileService = getIt<IUserProfileService>();
+            await profileService.updateProfile(
+              UpdateProfileRequest(preferredLanguage: language),
+            );
+          }
+        } catch (e) {
+          // Handle error silently - profile sync is best-effort
         }
-      } catch (e) {
-        // Handle error silently - profile sync is best-effort
       }
 
       notifyListeners();

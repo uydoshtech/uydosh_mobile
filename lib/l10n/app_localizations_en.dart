@@ -74,6 +74,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add your lifestyle preferences to get better matches.';
 
   @override
+  String complete_profile_prompt_more(String count) {
+    return '+ $count more';
+  }
+
+  @override
   String get complete_profile_prompt_cta => 'Complete now';
 
   @override

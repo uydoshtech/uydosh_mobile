@@ -505,6 +505,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         logger.d(
           "✅ Returning user with existing profile - skipping to main app",
         );
+        // The backend's `preferred_language` is authoritative for returning
+        // users; restore it locally so the wizard's pre-auth language pick
+        // doesn't shadow what they already saved.
+        _reconcileLanguageFromServerProfile(response);
         // Skip profile creation and go directly to main app
         if (mounted) {
           final nav = Navigator.of(context);
@@ -695,6 +699,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         logger.d(
           "✅ Returning user with existing profile - going directly to main app",
         );
+        // The backend's `preferred_language` is authoritative for returning
+        // users; restore it locally so the wizard's pre-auth language pick
+        // doesn't shadow what they already saved.
+        _reconcileLanguageFromServerProfile(response);
         // Go directly to main app
         if (mounted) {
           final nav = Navigator.of(context);
@@ -786,8 +794,32 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       _selectedLanguage = languageCode;
     });
 
-    // Change the app language
-    LanguageState().setLanguage(languageCode);
+    // Local-only update during the wizard. We don't yet know if this is a
+    // brand-new account or a returning user, so we must NOT push this pick
+    // to the backend — for returning users, their saved
+    // `preferred_language` should win after sign-in (see
+    // [_reconcileLanguageFromServerProfile]). For new users, the pick is
+    // sent through [CreateProfileRequest.preferredLanguage] in
+    // [_completeProfile].
+    LanguageState().setLanguage(languageCode, persistToServer: false);
+  }
+
+  /// After authenticating an existing user, align the local language with
+  /// the value stored on their server profile. This prevents the wizard's
+  /// pre-auth language pick from silently overwriting their saved
+  /// `preferred_language` (the backend value is authoritative for
+  /// returning users). The reconciliation itself is also local-only — we
+  /// pass `persistToServer: false` because the value already lives on the
+  /// server; pushing it back would just echo it.
+  void _reconcileLanguageFromServerProfile(Map<String, dynamic> response) {
+    final dynamic profile = response["profile"];
+    if (profile is! Map) return;
+    final dynamic raw = profile["preferred_language"];
+    if (raw is! String) return;
+    final serverLang = raw.trim();
+    if (serverLang.isEmpty) return;
+    if (serverLang == LanguageState().currentLanguage) return;
+    LanguageState().setLanguage(serverLang, persistToServer: false);
   }
 
   void _onStudentSelected(bool? value) {
