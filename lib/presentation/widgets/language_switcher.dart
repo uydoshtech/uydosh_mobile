@@ -2,15 +2,21 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/university_cache.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 // Utility class for language display names
@@ -249,6 +255,105 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
         ],
       ),
       body: widget.child,
+    );
+  }
+}
+
+/// Returns the unicode flag emoji for one of the app's supported languages.
+String languageFlagForCode(String code) {
+  return switch (code) {
+    "en" => "🇺🇸",
+    "ru" => "🇷🇺",
+    "uz" => "🇺🇿",
+    _ => "🌐",
+  };
+}
+
+/// Returns the localization key for the human-readable name of a language.
+String languageNameKeyForCode(String code) {
+  return switch (code) {
+    "en" => "language_english",
+    "ru" => "language_russian",
+    "uz" => "language_uzbek",
+    _ => "menu_language",
+  };
+}
+
+/// Opens the standard "select language" dialog. Used by both the settings
+/// screen and the profile-header flag chip so the picker behaves identically
+/// (theming, analytics, server sync, success toast) wherever it is invoked.
+Future<void> showLanguagePickerDialog(BuildContext context) async {
+  final backgroundColor = switch (ThemeState().currentTheme) {
+    AppTheme.lightTheme => Colors.white,
+    _ => BlueThemeColors.primary,
+  };
+  await showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      backgroundColor: backgroundColor,
+      title: Text(
+        L10n.get("select_language"),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: ThemeState().currentTheme == AppTheme.lightTheme
+              ? Colors.black
+              : Colors.white,
+        ),
+      ),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _LanguagePickerOption(code: "uz"),
+          _LanguagePickerOption(code: "ru"),
+          _LanguagePickerOption(code: "en"),
+        ],
+      ),
+    ),
+  );
+}
+
+class _LanguagePickerOption extends StatelessWidget {
+  const _LanguagePickerOption({required this.code});
+
+  final String code;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCurrent = LanguageState().currentLanguage == code;
+    final isLightTheme = ThemeState().currentTheme == AppTheme.lightTheme;
+    final textColor = isLightTheme ? Colors.black : Colors.white;
+    final nameKey = languageNameKeyForCode(code);
+
+    return ListTile(
+      leading: Text(
+        languageFlagForCode(code),
+        style: const TextStyle(fontSize: 24),
+      ),
+      title: L10n.text(
+        nameKey,
+        style: TextStyle(
+          fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+          color: textColor,
+        ),
+      ),
+      trailing: isCurrent
+          ? ThemeIcon(Icons.check, color: textColor)
+          : null,
+      onTap: () {
+        HapticFeedbackUtils.impact();
+        Navigator.pop(context);
+        LanguageState().setLanguage(code);
+        ToastTheme.showSuccess(
+          context,
+          message: AppStrings.getWithParams(
+            "language_changed_to",
+            LanguageState().currentLanguage,
+            params: {"language": L10n.get(nameKey)},
+          ),
+        );
+      },
     );
   }
 }

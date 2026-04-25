@@ -107,12 +107,22 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _peerProfileFetchInFlight = false;
   int? _peerProfileFetchedForUserId;
   bool _showSecurityRibbon = true;
-  String? _safetyWarningTitle;
-  String? _safetyWarningBody;
+  // Raw safety-warning state. We intentionally store the *raw* reason
+  // (Gemini's English string) and the severity, then re-derive the
+  // localized title + body on every build via [_titleForRiskLevel] and
+  // [_localizedSafetyReason]. This way:
+  //   1. Language switches re-render the ribbon in the new language
+  //      instead of leaving it frozen at check-time.
+  //   2. Code updates to the matcher take effect on the next build,
+  //      without having to wait for a fresh safety-check call.
+  bool _safetyWarningActive = false;
+  String _safetyWarningRawReason = "";
   ChatSafetyWarningSeverity _safetyWarningSeverity =
       ChatSafetyWarningSeverity.medium;
   final Map<int, String> _messageRiskById = {}; // messageId -> 'medium'|'high'
-  final Map<int, String> _messageSafetyReasonById = {}; // messageId -> localized reason
+  // Stores the raw (English) reason from Gemini. Localize on read via
+  // [_localizedSafetyReason] so language switches reflect immediately.
+  final Map<int, String> _messageSafetyReasonById = {};
   DateTime? _lastSafetyCheckAt;
   bool _safetyCheckInFlight = false;
   // Lazily populated Gemini translations for text messages from the OTHER
@@ -435,7 +445,16 @@ class _ChatScreenState extends State<ChatScreen> {
         lower.contains("iban") ||
         lower.contains("swift") ||
         lower.contains("crypto") ||
-        lower.contains("wallet")) {
+        lower.contains("wallet") ||
+        // Phishing-style reasons where the peer asks for the *viewer's*
+        // bank info (Gemini phrases this as "bank details", "routing
+        // number", "account number", "bank account"). Same localized
+        // bucket as outbound payment requests since both are
+        // payment-credential scams.
+        lower.contains("bank") ||
+        lower.contains("routing") ||
+        lower.contains("account number") ||
+        lower.contains("phishing")) {
       return L10n.get("chat_safety_reason_payment_request");
     }
 
@@ -477,7 +496,9 @@ class _ChatScreenState extends State<ChatScreen> {
               for (final id in ids) {
                 _messageRiskById[id] = risk!;
                 if (reason != null && reason.trim().isNotEmpty) {
-                  _messageSafetyReasonById[id] = _localizedSafetyReason(reason);
+                  // Store raw; localize at render time so language
+                  // switches and matcher updates take effect.
+                  _messageSafetyReasonById[id] = reason.trim();
                 }
               }
             });
@@ -486,18 +507,15 @@ class _ChatScreenState extends State<ChatScreen> {
         if (risk == "medium" || risk == "high") {
           if (!mounted) return;
           setState(() {
+            _safetyWarningActive = true;
             _safetyWarningSeverity =
                 risk == "high"
                     ? ChatSafetyWarningSeverity.high
                     : ChatSafetyWarningSeverity.medium;
-            _safetyWarningTitle =
-                risk == "high"
-                    ? L10n.get("chat_safety_warning_title_high")
-                    : L10n.get("chat_safety_warning_title_medium");
-            _safetyWarningBody =
+            _safetyWarningRawReason =
                 (reason != null && reason.trim().isNotEmpty)
-                    ? _localizedSafetyReason(reason)
-                    : L10n.get("chat_safety_warning_fallback");
+                    ? reason.trim()
+                    : "";
           });
         }
       }
@@ -510,10 +528,20 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _dismissSafetyWarning() {
     setState(() {
-      _safetyWarningTitle = null;
-      _safetyWarningBody = null;
+      _safetyWarningActive = false;
+      _safetyWarningRawReason = "";
       _safetyWarningSeverity = ChatSafetyWarningSeverity.medium;
     });
+  }
+
+  /// Resolves the ribbon body string for the current locale based on the
+  /// raw reason stashed by [_maybeRunSafetyCheck]. Empty raw reason →
+  /// generic localized fallback so the ribbon never goes blank.
+  String _resolvedSafetyWarningBody() {
+    if (_safetyWarningRawReason.isEmpty) {
+      return L10n.get("chat_safety_warning_fallback");
+    }
+    return _localizedSafetyReason(_safetyWarningRawReason);
   }
 
   String _titleForRiskLevel(String? riskLevel) {
@@ -526,8 +554,10 @@ class _ChatScreenState extends State<ChatScreen> {
     required Message message,
     required String riskLevel,
   }) async {
-    final reason = _messageSafetyReasonById[message.id] ??
-        L10n.get("chat_safety_warning_fallback");
+    final raw = _messageSafetyReasonById[message.id];
+    final reason = (raw == null || raw.isEmpty)
+        ? L10n.get("chat_safety_warning_fallback")
+        : _localizedSafetyReason(raw);
 
     await SuspiciousMessageBottomSheet.show(
       context,
@@ -642,10 +672,14 @@ class _ChatScreenState extends State<ChatScreen> {
     return [
       if (_showSecurityRibbon)
         ChatSecurityRibbon(onClose: _dismissSecurityRibbon),
-      if (_safetyWarningTitle != null && _safetyWarningBody != null)
+      if (_safetyWarningActive)
         ChatSafetyWarningRibbon(
-          title: _safetyWarningTitle!,
-          body: _safetyWarningBody!,
+          title: _titleForRiskLevel(
+            _safetyWarningSeverity == ChatSafetyWarningSeverity.high
+                ? "high"
+                : "medium",
+          ),
+          body: _resolvedSafetyWarningBody(),
           severity: _safetyWarningSeverity,
           onClose: _dismissSafetyWarning,
         ),
@@ -911,7 +945,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 isCurrentUser: isCurrentUser,
                 isLatest: isLatest,
                 riskLevel: _messageRiskById[message.id],
-                riskReason: _messageSafetyReasonById[message.id],
+                riskReason: () {
+                  final raw = _messageSafetyReasonById[message.id];
+                  if (raw == null || raw.isEmpty) return null;
+                  return _localizedSafetyReason(raw);
+                }(),
                 onRiskBadgeTap: () {
                   final riskLevel = _messageRiskById[message.id];
                   if (riskLevel == null) return;

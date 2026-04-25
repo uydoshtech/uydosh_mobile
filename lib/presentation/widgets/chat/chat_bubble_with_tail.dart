@@ -24,9 +24,12 @@ class ChatBubbleWithTail extends StatelessWidget {
       listenable: ThemeState(),
       builder: (context, _) {
         final themeState = ThemeState();
+        const blueThemeIncomingBubble = Color(0xFF3D5474);
         final bubbleColor = isFromCurrentUser
             ? Colors.white
-            : (themeState.isBlueTheme ? Colors.grey[700]! : Colors.grey[200]!);
+            : (themeState.isBlueTheme
+                ? blueThemeIncomingBubble
+                : Colors.grey[200]!);
         final borderColor = themeState.isLightTheme || themeState.isBlueTheme
             ? Colors.grey[300]!
             : Colors.grey[600]!;

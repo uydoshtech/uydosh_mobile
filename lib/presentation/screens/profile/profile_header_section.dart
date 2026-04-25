@@ -341,32 +341,45 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     final scheme = theme.colorScheme;
     final bg = theme.cardTheme.color ?? scheme.surface;
     final languageCode = LanguageState().currentLanguage;
-    final flag = switch (languageCode) {
-      "en" => "🇺🇸",
-      "ru" => "🇷🇺",
-      "uz" => "🇺🇿",
-      _ => "🌐",
-    };
-    final tooltipKey = switch (languageCode) {
-      "en" => "language_english",
-      "ru" => "language_russian",
-      "uz" => "language_uzbek",
-      _ => "menu_language",
-    };
+    final flag = languageFlagForCode(languageCode);
+    final nameKey = languageNameKeyForCode(languageCode);
 
     return Tooltip(
-      message: L10n.get(tooltipKey),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(999),
-          gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
-          boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: Text(
-            flag,
-            style: const TextStyle(fontSize: 14, height: 1.25),
+      message: L10n.get(nameKey),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedbackUtils.impact();
+          showLanguagePickerDialog(context);
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  flag,
+                  style: const TextStyle(fontSize: 16, height: 1.25),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  languageCode.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    height: 1.25,
+                    letterSpacing: 0.15,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
