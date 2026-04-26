@@ -1,4 +1,5 @@
 import "dart:math";
+import "dart:ui" show ImageFilter;
 
 import "package:confetti/confetti.dart";
 import "package:flutter/material.dart";
@@ -11,7 +12,6 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Bottom sheet shown when user unlocks an achievement.
 class AchievementUnlockBottomSheet extends StatefulWidget {
@@ -41,6 +41,9 @@ class AchievementUnlockBottomSheet extends StatefulWidget {
       useSafeArea: true,
       showDragHandle: true,
       backgroundColor: Colors.transparent,
+      // Apple-style glass: only the faintest hint of dimming so the screen
+      // reads cleanly through the BackdropFilter.
+      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (context) => AchievementUnlockBottomSheet(
         achievement: achievement,
         onDismiss: onDismiss,
@@ -258,82 +261,198 @@ class _AchievementUnlockBottomSheetState
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, _) {
+        final theme = Theme.of(context);
         final isLight = ThemeState().isLightTheme;
         final isBlueTheme = ThemeState().isBlueTheme;
-        final scheme = Theme.of(context).colorScheme;
-        final surface = scheme.surface;
+        final isDark = theme.brightness == Brightness.dark;
+        final scheme = theme.colorScheme;
         final iconColor = isLight
             ? Colors.black
             : (isBlueTheme ? Colors.white : scheme.primary);
+        final surfaceTint =
+            Color.lerp(scheme.surface, scheme.primary, 0.08) ?? scheme.surface;
+        const radius =
+            BorderRadius.vertical(top: Radius.circular(24));
 
         return Container(
           decoration: BoxDecoration(
-            gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
-          ),
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                L10n.get("achievement_unlocked"),
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: isLight ? Colors.black : scheme.primary,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
+            borderRadius: radius,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.10),
+                blurRadius: isDark ? 28 : 22,
+                spreadRadius: isDark ? 2 : 1,
+                offset: const Offset(0, -10),
               ),
-              const SizedBox(height: 18),
-              Container(
-                width: 84,
-                height: 84,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient:
-                      ThreeDSurfaceStyle.surfaceGradient(context, surface),
-                  boxShadow:
-                      ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: radius,
+            // Apple's UIBlurEffect = saturation boost + heavy gaussian blur +
+            // a thin translucent tint. We compose those in order.
+            child: BackdropFilter(
+              filter: ColorFilter.matrix(
+                _glassSaturationMatrix(saturation: isDark ? 1.6 : 1.8),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: isDark ? 32 : 40,
+                  sigmaY: isDark ? 32 : 40,
                 ),
-                child: Center(
-                  child: ThemeIcon(
-                    widget.achievement.icon,
-                    size: 38,
-                    color: iconColor,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: radius,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withValues(alpha: isDark ? 0.04 : 0.22),
+                        surfaceTint.withValues(alpha: isDark ? 0.18 : 0.30),
+                        scheme.surface.withValues(
+                          alpha: isDark ? 0.14 : 0.28,
+                        ),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.white.withValues(
+                          alpha: isDark ? 0.18 : 0.55,
+                        ),
+                        width: 0.6,
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          L10n.get("achievement_unlocked"),
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: isLight ? Colors.black : scheme.primary,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        _GlassBadge(
+                          isDark: isDark,
+                          surfaceTint: surfaceTint,
+                          child: ThemeIcon(
+                            widget.achievement.icon,
+                            size: 38,
+                            color: iconColor,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          title,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          description,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: GhostButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            neumorphicSoftUi: true,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Text(L10n.get("close")),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 14),
-              Text(
-                description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: GhostButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  neumorphicSoftUi: true,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Text(L10n.get("close")),
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },
     );
   }
+}
+
+/// Circular glass badge that mirrors the sheet's translucent treatment.
+class _GlassBadge extends StatelessWidget {
+  const _GlassBadge({
+    required this.isDark,
+    required this.surfaceTint,
+    required this.child,
+  });
+
+  final bool isDark;
+  final Color surfaceTint;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 84,
+      height: 84,
+      child: ClipOval(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: isDark ? 18 : 22,
+            sigmaY: isDark ? 18 : 22,
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: isDark ? 0.10 : 0.46),
+                  surfaceTint.withValues(alpha: isDark ? 0.30 : 0.40),
+                ],
+              ),
+              border: Border.all(
+                color: Colors.white.withValues(
+                  alpha: isDark ? 0.18 : 0.60,
+                ),
+                width: 0.8,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.10),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Center(child: child),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+List<double> _glassSaturationMatrix({required double saturation}) {
+  const lumR = 0.2126;
+  const lumG = 0.7152;
+  const lumB = 0.0722;
+  final invSat = 1 - saturation;
+  final r = invSat * lumR;
+  final g = invSat * lumG;
+  final b = invSat * lumB;
+  return <double>[
+    r + saturation, g, b, 0, 0,
+    r, g + saturation, b, 0, 0,
+    r, g, b + saturation, 0, 0,
+    0, 0, 0, 1, 0,
+  ];
 }
