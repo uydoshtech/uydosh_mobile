@@ -252,7 +252,7 @@
   "select_metro_line_title": "Metro\nliniyasini tanlang",
   "select_location": "Har qanday tuman",
   "not_selected": "Tanlanmagan",
-  "all_stations_count": "Barcha {count} bekatlar",
+  "all_stations_count": "Barcha {count} bekat",
   "@all_stations_count": {
     "placeholders": {
       "count": {

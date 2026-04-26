@@ -583,7 +583,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String all_stations_count(String count) {
-    return 'Barcha $count bekatlar';
+    return 'Barcha $count bekat';
   }
 
   @override

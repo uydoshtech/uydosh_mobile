@@ -257,7 +257,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${conversations.length} ${conversations.length == 1 ? L10n.get("conversation_count") : L10n.get("conversations_count")}',
+                      L10n.plural("conversations_count", conversations.length),
                       style: TextStyle(fontSize: 12, color: secondaryTextColor),
                     ),
                     // Location, metro, and price (same data as single conversation tiles)
