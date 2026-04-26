@@ -580,8 +580,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       return "$base ...";
     }
     if (complaintsCount != null) {
-      final countText = L10n.get("complaints_count_short")
-          .replaceAll("{count}", complaintsCount.toString());
+      final countText = L10n.plural(
+        "complaints_count_short",
+        complaintsCount,
+      );
       return "$base • $countText";
     }
     return base;

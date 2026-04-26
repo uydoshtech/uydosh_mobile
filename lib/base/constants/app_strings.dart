@@ -190,6 +190,8 @@ class AppStrings {
       "today": "Today",
       "tomorrow": "Tomorrow",
       "in_days": "In {days} days",
+      "in_days_one": "In {count} day",
+      "in_days_other": "In {count} days",
       "monday": "Monday",
       "tuesday": "Tuesday",
       "wednesday": "Wednesday",
@@ -293,9 +295,13 @@ class AppStrings {
       "all": "All",
 
       "all_stations_count": "All {count} stations",
+      "all_stations_count_one": "All {count} station",
+      "all_stations_count_other": "All {count} stations",
       "all_stations_explanation":
           "Search along the entire line <b>{line}</b> through <b>{count}</b> stations",
       "entire_line_stations": "Entire line {line}: {count} stations",
+      "entire_line_stations_one": "Entire line {line}: {count} station",
+      "entire_line_stations_other": "Entire line {line}: {count} stations",
       "metro_tutorial_line_hint": "Search listings on all metro line stations",
       "metro_tutorial_station_hint": "Search by particular metro stations",
       "select_region": "Choose region:",
@@ -383,6 +389,8 @@ class AppStrings {
       "listing_details": "Details",
       "author": "Author",
       "listing_views_by_others": "{count} views",
+      "listing_views_count_one": "{count} view",
+      "listing_views_count_other": "{count} views",
       "listing_views_stats_title": "View statistics",
       "listing_views_stats_empty": "No views yet",
       "error_loading_view_stats": "Error loading view statistics",
@@ -707,7 +715,7 @@ class AppStrings {
       "admin_data_import_clear_listings_confirm_body":
           "This wipes every row in the listings table. All photos, amenities, favorites, complaints, conversations and ingested Telegram messages that reference listings are deleted too. Sequence ids are reset. This cannot be undone.",
       "admin_data_import_clear_listings_done":
-          "Cleared {count} listings (and {ingested} ingested messages).",
+          "Cleared {listings_str} (and {ingested_str}).",
       "admin_data_import_clear_ingested_button":
           "Clear ingested Telegram messages",
       "admin_data_import_clear_ingested_running":
@@ -717,7 +725,11 @@ class AppStrings {
       "admin_data_import_clear_ingested_confirm_body":
           "This wipes every row in the telegram_ingested_messages table. Existing listings are kept. Sequence id is reset. This cannot be undone.",
       "admin_data_import_clear_ingested_done":
-          "Cleared {count} ingested messages.",
+          "Cleared {ingested_str}.",
+      "listings_count_one": "{count} listing",
+      "listings_count_other": "{count} listings",
+      "ingested_messages_count_one": "{count} ingested message",
+      "ingested_messages_count_other": "{count} ingested messages",
       "admin_data_import_clear_confirm_action": "Clear",
       "admin_panel_section_users": "Users",
       "admin_panel_section_support_chat": "Support chat",
@@ -736,6 +748,8 @@ class AppStrings {
       "admin_search_analytics_retry": "Retry",
       "admin_search_analytics_time_range": "Time range",
       "admin_search_analytics_days": "Last {days} days",
+      "admin_search_analytics_days_one": "Last {count} day",
+      "admin_search_analytics_days_other": "Last {count} days",
       "admin_search_analytics_all_time": "All time",
       "admin_search_analytics_total": "Total searches",
       "admin_search_analytics_today": "Today",
@@ -1106,6 +1120,8 @@ class AppStrings {
       "listing_complaints_header": "Complaints for the listing: {count}",
       "view_listing_complaints": "View listing complaints",
       "complaints_count_short": "{count} complaints",
+      "complaints_count_short_one": "{count} complaint",
+      "complaints_count_short_other": "{count} complaints",
       "no_listing_complaints": "No complaints for this listing yet",
     },
     "ru": {
@@ -1292,6 +1308,9 @@ class AppStrings {
       "today": "Сегодня",
       "tomorrow": "Завтра",
       "in_days": "Через {days} дней",
+      "in_days_one": "Через {count} день",
+      "in_days_few": "Через {count} дня",
+      "in_days_many": "Через {count} дней",
       "monday": "Понедельник",
       "tuesday": "Вторник",
       "wednesday": "Среда",
@@ -1397,9 +1416,15 @@ class AppStrings {
       "all": "Все",
 
       "all_stations_count": "Все {count} станций",
+      "all_stations_count_one": "Вся {count} станция",
+      "all_stations_count_few": "Все {count} станции",
+      "all_stations_count_many": "Все {count} станций",
       "all_stations_explanation":
           "Поиск вдоль ВСЕЙ линии <b>{line}</b> по <b>{count}</b> станциям",
       "entire_line_stations": "Вся линия {line}: {count} станций",
+      "entire_line_stations_one": "Вся линия {line}: {count} станция",
+      "entire_line_stations_few": "Вся линия {line}: {count} станции",
+      "entire_line_stations_many": "Вся линия {line}: {count} станций",
       "metro_tutorial_line_hint":
           "Поиск объявлений на всех станциях линий метро",
       "metro_tutorial_station_hint": "Поиск по конкретным станциям метро",
@@ -1489,6 +1514,9 @@ class AppStrings {
       "listing_details": "Детали",
       "author": "Автор",
       "listing_views_by_others": "{count} просмотров",
+      "listing_views_count_one": "{count} просмотр",
+      "listing_views_count_few": "{count} просмотра",
+      "listing_views_count_many": "{count} просмотров",
       "listing_views_stats_title": "Статистика просмотров",
       "listing_views_stats_empty": "Пока нет просмотров",
       "error_loading_view_stats": "Ошибка загрузки статистики просмотров",
@@ -1816,7 +1844,7 @@ class AppStrings {
       "admin_data_import_clear_listings_confirm_body":
           "Будут удалены все строки из таблицы listings. Также удалятся все фотографии, удобства, избранное, жалобы, чаты и загруженные сообщения из Telegram, ссылающиеся на объявления. ID-секвенсы сбросятся. Отменить нельзя.",
       "admin_data_import_clear_listings_done":
-          "Удалено {count} объявлений (и {ingested} сообщений).",
+          "Удалено {listings_str} (и {ingested_str}).",
       "admin_data_import_clear_ingested_button":
           "Очистить загруженные сообщения Telegram",
       "admin_data_import_clear_ingested_running":
@@ -1826,7 +1854,13 @@ class AppStrings {
       "admin_data_import_clear_ingested_confirm_body":
           "Будут удалены все строки из таблицы telegram_ingested_messages. Объявления остаются. ID-секвенс сбросится. Отменить нельзя.",
       "admin_data_import_clear_ingested_done":
-          "Удалено {count} загруженных сообщений.",
+          "Удалено {ingested_str}.",
+      "listings_count_one": "{count} объявление",
+      "listings_count_few": "{count} объявления",
+      "listings_count_many": "{count} объявлений",
+      "ingested_messages_count_one": "{count} загруженное сообщение",
+      "ingested_messages_count_few": "{count} загруженных сообщения",
+      "ingested_messages_count_many": "{count} загруженных сообщений",
       "admin_data_import_clear_confirm_action": "Очистить",
       "admin_panel_section_users": "Пользователи",
       "admin_panel_section_support_chat": "Поддержка",
@@ -1845,6 +1879,9 @@ class AppStrings {
       "admin_search_analytics_retry": "Повторить",
       "admin_search_analytics_time_range": "Период",
       "admin_search_analytics_days": "За {days} дн.",
+      "admin_search_analytics_days_one": "За {count} день",
+      "admin_search_analytics_days_few": "За {count} дня",
+      "admin_search_analytics_days_many": "За {count} дней",
       "admin_search_analytics_all_time": "Всё время",
       "admin_search_analytics_total": "Всего поисков",
       "admin_search_analytics_today": "Сегодня",
@@ -2217,6 +2254,9 @@ class AppStrings {
       "listing_complaints_header": "Жалобы по объявлению: {count}",
       "view_listing_complaints": "Показать жалобы",
       "complaints_count_short": "{count} жалоб",
+      "complaints_count_short_one": "{count} жалоба",
+      "complaints_count_short_few": "{count} жалобы",
+      "complaints_count_short_many": "{count} жалоб",
       "no_listing_complaints": "Жалоб по этому объявлению пока нет",
     },
     "uz": {
@@ -2407,6 +2447,7 @@ class AppStrings {
       "today": "Bugun",
       "tomorrow": "Ertaga",
       "in_days": "{days} kundan keyin",
+      "in_days_other": "{count} kundan keyin",
       "monday": "Dushanba",
       "tuesday": "Seshanba",
       "wednesday": "Chorshanba",
@@ -2519,9 +2560,11 @@ class AppStrings {
       "all": "Barchasi",
 
       "all_stations_count": "Barcha {count} bekatlar",
+      "all_stations_count_other": "Barcha {count} bekat",
       "all_stations_explanation":
           "Liniya <b>{line}</b> bo'ylab <b>{count}</b> bekat orqali qidiruv",
       "entire_line_stations": "Butun liniya {line}: {count} bekat",
+      "entire_line_stations_other": "Butun liniya {line}: {count} bekat",
       "metro_tutorial_line_hint":
           "Barcha metro liniyasi stansiyalarida e'lonlarni qidiring",
       "metro_tutorial_station_hint":
@@ -2612,6 +2655,7 @@ class AppStrings {
       "listing_details": "Tafsilotlar",
       "author": "Muallif",
       "listing_views_by_others": "{count} ko'rilgan",
+      "listing_views_count_other": "{count} ko'rilgan",
       "listing_views_stats_title": "Ko'rish statistikasi",
       "listing_views_stats_empty": "Hali ko'rishlar yo'q",
       "error_loading_view_stats": "Ko'rish statistikasini yuklashda xatolik",
@@ -2943,7 +2987,7 @@ class AppStrings {
       "admin_data_import_clear_listings_confirm_body":
           "Bu listings jadvalidagi barcha qatorlarni o'chiradi. Fotolar, qulayliklar, sevimlilar, shikoyatlar, suhbatlar va Telegram’dan yuklangan xabarlar ham o'chadi. ID-sekvenslar qayta boshlanadi. Qaytarib bo'lmaydi.",
       "admin_data_import_clear_listings_done":
-          "{count} e'lon ({ingested} yuklangan xabar bilan birga) tozalandi.",
+          "{listings_str} ({ingested_str} bilan birga) tozalandi.",
       "admin_data_import_clear_ingested_button":
           "Yuklangan Telegram xabarlarini tozalash",
       "admin_data_import_clear_ingested_running":
@@ -2953,7 +2997,9 @@ class AppStrings {
       "admin_data_import_clear_ingested_confirm_body":
           "Bu telegram_ingested_messages jadvalidagi barcha qatorlarni o'chiradi. E'lonlar saqlanib qoladi. ID-sekvens qayta boshlanadi. Qaytarib bo'lmaydi.",
       "admin_data_import_clear_ingested_done":
-          "{count} yuklangan xabar tozalandi.",
+          "{ingested_str} tozalandi.",
+      "listings_count_other": "{count} e'lon",
+      "ingested_messages_count_other": "{count} yuklangan xabar",
       "admin_data_import_clear_confirm_action": "Tozalash",
       "admin_panel_section_users": "Foydalanuvchilar",
       "admin_panel_section_support_chat": "Qo'llab-quvvatlash",
@@ -2973,6 +3019,7 @@ class AppStrings {
       "admin_search_analytics_retry": "Qayta urinish",
       "admin_search_analytics_time_range": "Davr",
       "admin_search_analytics_days": "So'nggi {days} kun",
+      "admin_search_analytics_days_other": "So'nggi {count} kun",
       "admin_search_analytics_all_time": "Barcha vaqt",
       "admin_search_analytics_total": "Jami qidiruvlar",
       "admin_search_analytics_today": "Bugun",
@@ -3348,6 +3395,7 @@ class AppStrings {
       "listing_complaints_header": "E'lon bo'yicha shikoyatlar: {count}",
       "view_listing_complaints": "Shikoyatlarni ko'rish",
       "complaints_count_short": "{count} ta shikoyat",
+      "complaints_count_short_other": "{count} ta shikoyat",
       "no_listing_complaints": "Bu e'lon bo'yicha hali shikoyatlar yo'q",
     },
   };

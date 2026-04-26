@@ -43,6 +43,7 @@ class UydoshLinkButton extends StatelessWidget {
     this.dashed = false,
     this.padding,
     this.alignment = Alignment.center,
+    this.maxLines,
     super.key,
   });
 
@@ -56,6 +57,11 @@ class UydoshLinkButton extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final AlignmentGeometry alignment;
 
+  /// When set, forces the label to render with at most this many lines.
+  /// Combined with no soft-wrap + ellipsis so the button intrinsically sizes
+  /// to a single-line label and doesn't grow vertically on narrow screens.
+  final int? maxLines;
+
   @override
   Widget build(BuildContext context) {
     final effectiveColor = color ??
@@ -67,14 +73,22 @@ class UydoshLinkButton extends StatelessWidget {
       color: effectiveColor,
     );
 
+    final labelText = Text(
+      text,
+      style: textStyle,
+      maxLines: maxLines,
+      softWrap: maxLines == null,
+      overflow: maxLines == null ? TextOverflow.clip : TextOverflow.ellipsis,
+    );
+
     final textWidget = outlined
-        ? Text(text, style: textStyle)
+        ? labelText
         : IntrinsicWidth(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(text, style: textStyle),
+                labelText,
                 const SizedBox(height: 1),
                 if (dashed)
                   SizedBox(

@@ -364,6 +364,7 @@ class _ListingDetailCompatibilitySectionState
                     onPressed: widget.onCompleteProfile,
                     color: _getIconColor(),
                     outlined: true,
+                    maxLines: 1,
                   ),
                 ],
               )
@@ -486,6 +487,7 @@ class _ListingDetailCompatibilitySectionState
                               onPressed: widget.onCompleteProfile,
                               color: _getIconColor(),
                               outlined: true,
+                              maxLines: 1,
                             ),
                           ],
                         ),

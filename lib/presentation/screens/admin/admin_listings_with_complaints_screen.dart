@@ -429,7 +429,7 @@ class _AdminListingsWithComplaintsScreenState
   }
 
   String _buildComplaintsCountLabel(BuildContext context, int count) {
-    return L10n.get("complaints_count_short").replaceAll("{count}", "$count");
+    return L10n.plural("complaints_count_short", count);
   }
 
   List<Widget> _buildCategoryWidgets(

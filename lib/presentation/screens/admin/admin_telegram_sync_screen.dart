@@ -302,8 +302,14 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         message: L10n.getWithParams(
           "admin_data_import_clear_listings_done",
           params: {
-            "count": "${r.listingsDeleted}",
-            "ingested": "${r.ingestedMessagesDeleted}",
+            "listings_str": L10n.plural(
+              "listings_count",
+              r.listingsDeleted,
+            ),
+            "ingested_str": L10n.plural(
+              "ingested_messages_count",
+              r.ingestedMessagesDeleted,
+            ),
           },
         ),
       );
@@ -341,7 +347,12 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         context,
         message: L10n.getWithParams(
           "admin_data_import_clear_ingested_done",
-          params: {"count": "${r.ingestedMessagesDeleted}"},
+          params: {
+            "ingested_str": L10n.plural(
+              "ingested_messages_count",
+              r.ingestedMessagesDeleted,
+            ),
+          },
         ),
       );
     } catch (e) {

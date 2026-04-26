@@ -173,6 +173,6 @@ class _PeriodPickerState extends State<PeriodPicker> {
     if (days == 0) {
       return L10n.get("admin_search_analytics_all_time");
     }
-    return L10n.get("admin_search_analytics_days").replaceAll("{days}", "$days");
+    return L10n.plural("admin_search_analytics_days", days);
   }
 }

@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/localization/plural.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Supported app locales (uz, ru, en).
@@ -52,6 +53,57 @@ class L10n {
       params: params,
       fallback: fallback,
     );
+  }
+
+  /// Get a localized, count-agreeing string for the current language.
+  ///
+  /// Looks up `<baseKey>_<category>` (e.g. `listing_views_count_few`) where
+  /// the category is one of `one` / `few` / `many` / `other` per CLDR rules
+  /// for the active language. Falls back through `_other`, `_many`, then the
+  /// bare [baseKey] so missing forms degrade gracefully.
+  ///
+  /// `{count}` is automatically substituted; pass extra placeholders via
+  /// [params] (those values override the auto-injected count if reused).
+  static String plural(
+    String baseKey,
+    int count, {
+    Map<String, String>? params,
+  }) {
+    return _plural(baseKey, count, currentLanguage, params: params);
+  }
+
+  /// Same as [plural] but for an explicit [language].
+  static String pluralForLanguage(
+    String baseKey,
+    int count,
+    String language, {
+    Map<String, String>? params,
+  }) {
+    return _plural(baseKey, count, language, params: params);
+  }
+
+  static String _plural(
+    String baseKey,
+    int count,
+    String language, {
+    Map<String, String>? params,
+  }) {
+    final category = Plural.category(count, language);
+    final mergedParams = <String, String>{
+      "count": count.toString(),
+      if (params != null) ...params,
+    };
+    for (final suffix in <String>{category, "other", "many", ""}) {
+      final key = suffix.isEmpty ? baseKey : "${baseKey}_$suffix";
+      if (AppStrings.hasKey(key, language)) {
+        return AppStrings.getWithParams(
+          key,
+          language,
+          params: mergedParams,
+        );
+      }
+    }
+    return baseKey;
   }
 
   /// Get localized string for a specific language (e.g. for share text).
@@ -124,6 +176,32 @@ class L10n {
       builder: (context, child) {
         return Text(
           getWithParams(key, params: params, fallback: fallback),
+          style: style,
+          textAlign: textAlign,
+          maxLines: maxLines,
+          overflow: overflow,
+        );
+      },
+    );
+  }
+
+  /// Returns a Text widget with a count-agreeing string that rebuilds when
+  /// language changes. See [plural] for key resolution rules.
+  static Widget pluralText(
+    String baseKey,
+    int count, {
+    Map<String, String>? params,
+    BuildContext? context,
+    TextStyle? style,
+    TextAlign? textAlign,
+    int? maxLines,
+    TextOverflow? overflow,
+  }) {
+    return ListenableBuilder(
+      listenable: LanguageState(),
+      builder: (context, child) {
+        return Text(
+          plural(baseKey, count, params: params),
           style: style,
           textAlign: textAlign,
           maxLines: maxLines,

@@ -220,7 +220,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
                     ),
                   ),
                   trailing: Text(
-                    L10n.get("listing_views_by_others").replaceAll("{count}", count.toString()),
+                    L10n.plural("listing_views_count", count),
                     style: TextStyle(
                       color: _getSecondaryTextColor(),
                       fontSize: 14,

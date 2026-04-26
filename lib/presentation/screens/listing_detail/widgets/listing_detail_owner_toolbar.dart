@@ -55,8 +55,7 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
                   const SizedBox(width: 6),
                   if (viewCount != null)
                     Text(
-                      L10n.get("listing_views_by_others")
-                          .replaceAll("{count}", viewCount.toString()),
+                      L10n.plural("listing_views_count", viewCount!),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

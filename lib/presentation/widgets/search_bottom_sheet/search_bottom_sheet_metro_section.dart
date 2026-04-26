@@ -183,9 +183,9 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
-                          L10n.get("all_stations_count").replaceAll(
-                            "{count}",
-                            "${currentStations.length}",
+                          L10n.plural(
+                            "all_stations_count",
+                            currentStations.length,
                           ),
                           style: TextStyle(
                             fontSize: 16,

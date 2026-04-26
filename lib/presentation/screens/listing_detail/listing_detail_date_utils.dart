@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/date_utils.dart" as app_date_utils;
 
@@ -20,10 +19,10 @@ class ListingDetailDateUtils {
       } else if (difference == 1) {
         return L10n.get("tomorrow");
       } else if (difference > 0 && difference <= 7) {
-        return AppStrings.getWithParams(
+        return L10n.pluralForLanguage(
           "in_days",
+          difference,
           currentLanguage,
-          params: {"days": difference.toString()},
         );
       } else {
         final monthKeys = [

@@ -371,8 +371,7 @@ class _ListingTileState extends State<ListingTile>
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    L10n.get("listing_views_by_others")
-                                        .replaceAll("{count}", count.toString()),
+                                    L10n.plural("listing_views_count", count),
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
@@ -950,10 +949,7 @@ class _ListingTileState extends State<ListingTile>
       } else if (difference == 1) {
         return L10n.get("tomorrow");
       } else if (difference > 0 && difference <= 7) {
-        return L10n.getWithParams(
-          "in_days",
-          params: {"days": difference.toString()},
-        );
+        return L10n.plural("in_days", difference);
       } else {
         // Format as "MMM dd, yyyy" for dates more than a week away
         final monthKeys = [

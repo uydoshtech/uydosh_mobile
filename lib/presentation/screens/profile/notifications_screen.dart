@@ -928,9 +928,10 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         _iconTextBadge(
           theme: theme,
           leading: MLetterIcon(size: 18, color: lineColor),
-          text: L10n.getWithParams(
+          text: L10n.plural(
             "entire_line_stations",
-            params: {"line": name, "count": "$stationsCount"},
+            stationsCount,
+            params: {"line": name},
           ),
           color: lineColor,
         ),
