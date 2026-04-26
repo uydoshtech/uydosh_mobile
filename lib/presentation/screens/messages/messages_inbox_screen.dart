@@ -1030,6 +1030,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     void cancel() {
       if (resolved) return;
       resolved = true;
+      HapticFeedbackUtils.impact();
       if (mounted) {
         setState(() {
           _pendingArchiveIds.remove(id);
@@ -1107,6 +1108,15 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         _currentUserId != null &&
         conversation.lastMessageSenderId != _currentUserId;
 
+    final ts = ThemeState();
+    // Blue theme uses `primaryColor == background`, so the old styling could
+    // make the swipe affordance invisible. Use a high-contrast white affordance
+    // on blue, and keep the existing primary-tinted affordance on light theme.
+    final swipeFgColor = ts.isBlueTheme ? Colors.white : ts.primaryColor;
+    final swipeBgColor = ts.isBlueTheme
+        ? Colors.white.withValues(alpha: 0.14)
+        : ts.primaryColor.withValues(alpha: 0.18);
+
     return Dismissible(
       key: ValueKey("conv-swipe-${conversation.id}"),
       direction: DismissDirection.endToStart,
@@ -1122,18 +1132,18 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         alignment: AlignmentDirectional.centerEnd,
         padding: const EdgeInsetsDirectional.only(end: 24),
         decoration: BoxDecoration(
-          color: ThemeState().primaryColor.withValues(alpha: 0.18),
+          color: swipeBgColor,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ThemeIcon(Icons.archive_outlined, color: ThemeState().primaryColor),
+            ThemeIcon(Icons.archive_outlined, color: swipeFgColor),
             const SizedBox(width: 8),
             Text(
               L10n.get("archive"),
               style: TextStyle(
-                color: ThemeState().primaryColor,
+                color: swipeFgColor,
                 fontWeight: FontWeight.w600,
               ),
             ),

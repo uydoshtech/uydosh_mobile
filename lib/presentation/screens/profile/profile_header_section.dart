@@ -11,7 +11,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
-import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_blinking_dot.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_role_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -461,16 +461,8 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
               Row(
                 children: [
                   if (!isComplete) ...[
-                    const SizedBox(
-                      width: 10,
-                      height: 10,
-                      child: BlinkingDotWidget(
-                        color: Colors.green,
-                        size: 10,
-                        duration: Duration(milliseconds: 1000),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
+                    const NeumorphicBlinkingDot(size: 10),
+                    const SizedBox(width: 6),
                   ],
                   Expanded(
                     child: Text(

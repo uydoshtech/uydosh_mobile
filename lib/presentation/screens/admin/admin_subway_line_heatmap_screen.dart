@@ -2,9 +2,11 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
@@ -223,9 +225,9 @@ class _AdminSubwayLineHeatmapScreenState
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
-                            childAspectRatio: 1.2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            mainAxisExtent: 128,
                           ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
@@ -320,6 +322,7 @@ class _AdminSubwayLineHeatmapScreenState
     final title = MetroCache.getLineName(lineId, language);
     final resolvedCount = count;
     final backgroundColor = _resolveTileColor(context, lineId, resolvedCount);
+    final lineColor = _getThemeAwareMetroLineColor(lineId);
     final textColor = _resolveTextColor(context, backgroundColor);
     final valueText =
         resolvedCount == null
@@ -334,23 +337,34 @@ class _AdminSubwayLineHeatmapScreenState
         borderRadius: BorderRadius.circular(12),
         onTap: () => _openLineListings(context, lineId),
         child: Ink(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
+            boxShadow: [
+              // Neumorphic "pressed" look on blue background:
+              // darker shadow bottom-right + lighter highlight top-left.
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 18,
+                offset: const Offset(8, 8),
+              ),
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.10),
+                blurRadius: 18,
+                offset: const Offset(-8, -8),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const ThemeIcon(
+                  ThemeIcon(
                     Icons.train,
                     size: 20,
-                    color: Colors.black,
+                    color: lineColor,
                   ),
                   const SizedBox(width: 6),
                   Expanded(
@@ -369,10 +383,10 @@ class _AdminSubwayLineHeatmapScreenState
               ),
               const Spacer(),
               Text(
-L10n.get("admin_subway_heatmap_count_label"),
+                L10n.get("admin_subway_heatmap_count_label"),
                 style: TextStyle(
                   fontSize: 10,
-                  color: textColor.withOpacity(0.8),
+                  color: textColor.withValues(alpha: 0.8),
                 ),
               ),
               const SizedBox(height: 4),
@@ -415,22 +429,60 @@ L10n.get("admin_subway_heatmap_count_label"),
 
   Color _resolveTileColor(BuildContext context, int lineId, int? count) {
     if (count == null) {
-      return Theme.of(context).colorScheme.surfaceContainerHighest;
+      return _resolveTileBaseColor(context);
     }
     if (count < 0) {
-      return Theme.of(context).colorScheme.errorContainer;
+      // Keep errors readable but still within the same "card" system.
+      return Color.lerp(
+            _resolveTileBaseColor(context),
+            Theme.of(context).colorScheme.errorContainer,
+            0.35,
+          ) ??
+          Theme.of(context).colorScheme.errorContainer;
     }
     final max = _maxCount;
     if (max <= 0) {
-      return Theme.of(context).colorScheme.surfaceContainerHighest;
+      return _resolveTileBaseColor(context);
     }
     final t = (count / max).clamp(0.0, 1.0);
-    return Color.lerp(
-          Theme.of(context).colorScheme.surfaceContainerHighest,
-          AppColors.getMetroLineColor(lineId),
-          t,
-        ) ??
-        AppColors.getMetroLineColor(lineId);
+    final lineColor = _getThemeAwareMetroLineColor(lineId);
+
+    // Light-blue neumorphic base + subtle line tint (so it's still a heatmap).
+    final base = _resolveTileBaseColor(context);
+    final tinted = Color.lerp(base, lineColor, (t * 0.45).clamp(0.0, 0.45));
+    return tinted ?? base;
+  }
+
+  Color _resolveTileBaseColor(BuildContext context) {
+    // Neumorphic cards should be slightly lighter than the app background.
+    // Use a stable light-blue derived from the blue theme palette; for light theme
+    // fall back to a very light neutral blue.
+    final theme = ThemeState().currentTheme;
+    if (theme == AppTheme.lightTheme) {
+      return const Color(0xFFEAF2FF);
+    }
+    return BlueThemeColors.primaryLight.withValues(alpha: 0.28);
+  }
+
+  Color _getThemeAwareMetroLineColor(int lineId) {
+    final theme = ThemeState().currentTheme;
+    if (theme == AppTheme.lightTheme) {
+      switch (lineId) {
+        case 1:
+          return LightThemeColors.metroLine1;
+        case 2:
+          return LightThemeColors.metroLine2;
+        case 3:
+          return LightThemeColors.metroLine3;
+        case 4:
+          return LightThemeColors.metroLine4;
+        default:
+          return LightThemeColors.textDisabled;
+      }
+    }
+
+    // Blue/messaging themes: use the blue palette’s metro colors (they differ from the legacy ones).
+    return BlueThemeColors.getMetroLineColor(lineId);
   }
 
   Color _resolveTextColor(BuildContext context, Color backgroundColor) {
@@ -453,7 +505,7 @@ L10n.get("admin_subway_heatmap_count_label"),
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Text(
-L10n.get("admin_subway_heatmap_no_data"),
+        L10n.get("admin_subway_heatmap_no_data"),
         style: TextStyle(
           fontSize: 14,
           color: Theme.of(context).colorScheme.onSurfaceVariant,

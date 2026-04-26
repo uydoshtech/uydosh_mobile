@@ -9,7 +9,9 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Bottom sheet shown when user unlocks an achievement.
 class AchievementUnlockBottomSheet extends StatefulWidget {
@@ -258,25 +260,18 @@ class _AchievementUnlockBottomSheetState
       builder: (context, _) {
         final isLight = ThemeState().isLightTheme;
         final isBlueTheme = ThemeState().isBlueTheme;
-        final badgeColor = isLight
-            ? Colors.transparent
-            : (isBlueTheme
-                ? Colors.white.withValues(alpha: 0.2)
-                : Colors.grey[200]!);
-        final badgeBorder = isLight
-            ? Border.all(color: Colors.black, width: 2)
-            : null;
+        final scheme = Theme.of(context).colorScheme;
+        final surface = scheme.surface;
         final iconColor = isLight
             ? Colors.black
-            : (isBlueTheme
-                ? Colors.white
-                : Theme.of(context).colorScheme.primary);
+            : (isBlueTheme ? Colors.white : scheme.primary);
 
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
             borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(20)),
+                const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
           ),
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
           child: Column(
@@ -285,28 +280,31 @@ class _AchievementUnlockBottomSheetState
               Text(
                 L10n.get("achievement_unlocked"),
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: isLight
-                      ? Colors.black
-                      : Theme.of(context).colorScheme.primary,
+                  color: isLight ? Colors.black : scheme.primary,
                   fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 18),
               Container(
-                width: 72,
-                height: 72,
+                width: 84,
+                height: 84,
                 decoration: BoxDecoration(
-                  color: badgeColor,
                   shape: BoxShape.circle,
-                  border: badgeBorder,
+                  gradient:
+                      ThreeDSurfaceStyle.surfaceGradient(context, surface),
+                  boxShadow:
+                      ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
                 ),
-                child: ThemeIcon(
-                  widget.achievement.icon,
-                  size: 36,
-                  color: iconColor,
+                child: Center(
+                  child: ThemeIcon(
+                    widget.achievement.icon,
+                    size: 38,
+                    color: iconColor,
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -314,27 +312,21 @@ class _AchievementUnlockBottomSheetState
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               Text(
                 description,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: scheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
-                    HapticFeedbackUtils.impact();
-                    Navigator.of(context).pop();
-                  },
-                  style: isBlueTheme
-                      ? FilledButton.styleFrom(
-                          side: const BorderSide(color: Colors.white, width: 2),
-                        )
-                      : null,
+                child: GhostButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  neumorphicSoftUi: true,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(L10n.get("close")),
                 ),
               ),
