@@ -2,20 +2,19 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/university_cache.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
-import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
@@ -282,36 +281,64 @@ String languageNameKeyForCode(String code) {
 /// Opens the standard "select language" dialog. Used by both the settings
 /// screen and the profile-header flag chip so the picker behaves identically
 /// (theming, analytics, server sync, success toast) wherever it is invoked.
+///
+/// The dialog itself is rendered with the app's neumorphic "soft UI" chrome
+/// — a recessed plate carrying raised language tiles — so it matches the
+/// rest of the surface system (auth wizard language page, settings cards).
 Future<void> showLanguagePickerDialog(BuildContext context) async {
-  final backgroundColor = switch (ThemeState().currentTheme) {
-    AppTheme.lightTheme => Colors.white,
-    _ => BlueThemeColors.primary,
-  };
   await showDialog<void>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      backgroundColor: backgroundColor,
-      title: Text(
-        L10n.get("select_language"),
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: ThemeState().currentTheme == AppTheme.lightTheme
-              ? Colors.black
-              : Colors.white,
+    barrierColor: Colors.black.withValues(alpha: 0.55),
+    builder: (dialogContext) => const _NeumorphicLanguagePickerDialog(),
+  );
+}
+
+class _NeumorphicLanguagePickerDialog extends StatelessWidget {
+  const _NeumorphicLanguagePickerDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final surface = scheme.surface;
+    const borderRadius = BorderRadius.all(Radius.circular(24));
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+          decoration: BoxDecoration(
+            borderRadius: borderRadius,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                L10n.get("select_language"),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const _LanguagePickerOption(code: "uz"),
+              const SizedBox(height: 12),
+              const _LanguagePickerOption(code: "ru"),
+              const SizedBox(height: 12),
+              const _LanguagePickerOption(code: "en"),
+            ],
+          ),
         ),
       ),
-      content: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _LanguagePickerOption(code: "uz"),
-          _LanguagePickerOption(code: "ru"),
-          _LanguagePickerOption(code: "en"),
-        ],
-      ),
-    ),
-  );
+    );
+  }
 }
 
 class _LanguagePickerOption extends StatelessWidget {
@@ -322,25 +349,12 @@ class _LanguagePickerOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCurrent = LanguageState().currentLanguage == code;
-    final isLightTheme = ThemeState().currentTheme == AppTheme.lightTheme;
-    final textColor = isLightTheme ? Colors.black : Colors.white;
+    final scheme = Theme.of(context).colorScheme;
+    final surface = scheme.surface;
     final nameKey = languageNameKeyForCode(code);
+    const borderRadius = BorderRadius.all(Radius.circular(14));
 
-    return ListTile(
-      leading: Text(
-        languageFlagForCode(code),
-        style: const TextStyle(fontSize: 24),
-      ),
-      title: L10n.text(
-        nameKey,
-        style: TextStyle(
-          fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-          color: textColor,
-        ),
-      ),
-      trailing: isCurrent
-          ? ThemeIcon(Icons.check, color: textColor)
-          : null,
+    return PressableTransform(
       onTap: () {
         HapticFeedbackUtils.impact();
         Navigator.pop(context);
@@ -354,6 +368,39 @@ class _LanguagePickerOption extends StatelessWidget {
           ),
         );
       },
+      borderRadius: borderRadius,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+          boxShadow: isCurrent
+              ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+              : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+        ),
+        child: Row(
+          children: [
+            Text(
+              languageFlagForCode(code),
+              style: const TextStyle(fontSize: 26),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: L10n.text(
+                nameKey,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            if (isCurrent)
+              ThemeIcon(Icons.check, color: scheme.onSurface, size: 22),
+          ],
+        ),
+      ),
     );
   }
 }
