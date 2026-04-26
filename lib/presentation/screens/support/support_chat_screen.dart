@@ -380,7 +380,9 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       return "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
     }
     if (diff.inDays == 1) return L10n.get("admin_support_chat_yesterday");
-    if (diff.inDays < 7) return "${diff.inDays} ${L10n.get("admin_support_chat_days_ago")}";
+    if (diff.inDays < 7) {
+      return L10n.plural("admin_support_chat_days_ago", diff.inDays);
+    }
     return "${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}";
   }
 }
