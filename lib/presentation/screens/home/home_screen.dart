@@ -19,6 +19,7 @@ import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
+import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
@@ -192,6 +193,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // Initialize authentication and favorites state
     AuthenticationState().initialize();
     FavoritesState().initialize();
+    // Need current user id so listing tiles can hide the favorite control
+    // on the user's own listings.
+    UserListingState().initialize();
 
     // Initialize search filters state
     _searchFiltersState.initialize();

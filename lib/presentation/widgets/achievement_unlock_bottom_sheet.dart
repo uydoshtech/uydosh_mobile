@@ -331,7 +331,9 @@ class _AchievementUnlockBottomSheetState
                         Text(
                           L10n.get("achievement_unlocked"),
                           style: theme.textTheme.labelLarge?.copyWith(
-                            color: isLight ? Colors.black : scheme.primary,
+                            color: isLight
+                                ? Colors.black
+                                : (isBlueTheme ? Colors.white : scheme.primary),
                             fontWeight: FontWeight.w600,
                             letterSpacing: 0.5,
                           ),

@@ -1311,6 +1311,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
       if (isIOSDevice &&
           mounted &&
+          listingTypeId != 1 &&
           !ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) {
         await Navigator.of(context).push<bool>(
           MaterialPageRoute(

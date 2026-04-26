@@ -1170,7 +1170,9 @@ class _EditListingScreenState extends State<EditListingScreen>
                         valueListenable:
                             ClientLidarRoomScanConfig.lidarRoomScanDisabled,
                         builder: (context, lidarDisabled, _) {
-                          if (!isIOSDevice || lidarDisabled) {
+                          if (!isIOSDevice ||
+                              lidarDisabled ||
+                              _selectedListingTypeId == 1) {
                             return const SizedBox.shrink();
                           }
                           return Column(

@@ -10,6 +10,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -512,12 +513,18 @@ class _ListingTileState extends State<ListingTile>
                             ListenableBuilder(
                               listenable: Listenable.merge([
                                 AuthenticationState(),
+                                UserListingState(),
                                 FavoritesState().listenableFor(
                                   widget.listing.id,
                                 ),
                               ]),
                               builder: (context, child) {
                                 if (!AuthenticationState().isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+                                // Owners can't favorite their own listing.
+                                if (UserListingState()
+                                    .isOwner(widget.listing.userId)) {
                                   return const SizedBox.shrink();
                                 }
 
@@ -604,12 +611,18 @@ class _ListingTileState extends State<ListingTile>
                             ListenableBuilder(
                               listenable: Listenable.merge([
                                 AuthenticationState(),
+                                UserListingState(),
                                 FavoritesState().listenableFor(
                                   widget.listing.id,
                                 ),
                               ]),
                               builder: (context, child) {
                                 if (!AuthenticationState().isAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+                                // Owners can't favorite their own listing.
+                                if (UserListingState()
+                                    .isOwner(widget.listing.userId)) {
                                   return const SizedBox.shrink();
                                 }
                                 final isFavorite = FavoritesState()
