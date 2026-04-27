@@ -9,7 +9,6 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
@@ -21,10 +20,9 @@ import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/search_floating_action_button.dart";
+import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
-import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 
 class _MapData {
@@ -490,212 +488,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
     });
   }
 
-  String _localizedMetroLineName(int lineId) {
-    final names = MetroCache.metroLineNames[lineId];
-    if (names == null) return "";
-    final lang = LanguageState().currentLanguage;
-    return names[lang] ?? names["en"] ?? names.values.first;
-  }
-
-  bool get _hasCustomPriceRange {
-    if (_selectedMinPrice <= 0 && _selectedMaxPrice <= 0) return false;
-    const defaultMin = 10.0;
-    const defaultMax = 500.0;
-    return _selectedMinPrice != defaultMin || _selectedMaxPrice != defaultMax;
-  }
-
-  List<Widget> _metroAppliedFilterIndicators(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final onSurface = scheme.onSurface;
-    const gap = SizedBox(width: 8);
-    const chipSize = 36.0;
-    final chipBase = scheme.surface;
-
-    BoxDecoration neumorphicChipDecoration({BorderRadius? radius}) {
-      return BoxDecoration(
-        borderRadius: radius ?? BorderRadius.circular(chipSize / 2),
-        gradient: ThreeDSurfaceStyle.surfaceGradient(context, chipBase),
-        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-      );
-    }
-
-    Widget roundChip({required String tooltip, required Widget child}) {
-      return Tooltip(
-        message: tooltip,
-        child: Container(
-          width: chipSize,
-          height: chipSize,
-          decoration: neumorphicChipDecoration(),
-          child: Center(child: child),
-        ),
-      );
-    }
-
-    final out = <Widget>[];
-
-    if (_selectedListingTypeId > 0) {
-      final code = ListingTypeHelper.getCodeFromId(_selectedListingTypeId);
-      out.add(
-        roundChip(
-          tooltip: ListingTypeHelper.getText(context, code),
-          child: Icon(
-            ListingTypeHelper.getIcon(code),
-            size: 20,
-            color: ListingTypeHelper.getColor(code),
-          ),
-        ),
-      );
-    }
-
-    if (_selectedGender > 0) {
-      final isMale = _selectedGender == 1;
-      out.add(
-        roundChip(
-          tooltip: L10n.get(isMale ? "male" : "female"),
-          child: Icon(
-            isMale ? Icons.male : Icons.female,
-            size: 22,
-            color: isMale ? Colors.blue : Colors.red,
-          ),
-        ),
-      );
-    }
-
-    if (_hasCustomPriceRange) {
-      final minS = _selectedMinPrice.round().toString();
-      final maxS = _selectedMaxPrice.round().toString();
-      final rangeLabel = "$minS–$maxS";
-      out.add(
-        Tooltip(
-          message: rangeLabel,
-          child: Container(
-            height: chipSize,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: neumorphicChipDecoration(
-              radius: BorderRadius.circular(999),
-            ),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.payments,
-                  size: 16,
-                  color: AppColors.success,
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  rangeLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: onSurface,
-                    height: 1.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (_selectedSubwayLineId > 0) {
-      final trainColor = AppColors.getMetroLineColor(_selectedSubwayLineId);
-      out.add(
-        roundChip(
-          tooltip: _localizedMetroLineName(_selectedSubwayLineId),
-          child: ThemeIcon(Icons.train, color: trainColor, size: 22),
-        ),
-      );
-    }
-
-    if (_selectedWithPhoto) {
-      out.add(
-        roundChip(
-          tooltip: L10n.get("search_filter_with_photo"),
-          child: Icon(Icons.photo_camera_outlined, size: 19, color: onSurface),
-        ),
-      );
-    }
-
-    if (_selectedPrivateRoom) {
-      out.add(
-        roundChip(
-          tooltip: L10n.get("search_filter_private_room"),
-          child: Icon(Icons.lock_outline, size: 19, color: onSurface),
-        ),
-      );
-    }
-
-    if (out.isEmpty) {
-      final allLabel = L10n.get("all");
-      final isLight = Theme.of(context).brightness == Brightness.light;
-      final Color allChipBg;
-      final Color allChipFg;
-      final BoxBorder? allChipBorder;
-      final List<BoxShadow>? allChipShadow;
-      if (isLight) {
-        allChipBg = onSurface;
-        allChipFg = scheme.surface;
-        allChipBorder = null;
-        allChipShadow = ThreeDSurfaceStyle.elevatedShadows(context);
-      } else {
-        // Near-black pill + white type; thin ring so edge stays visible on dark scaffolds.
-        allChipBg = Color.lerp(Colors.black, scheme.surface, 0.06)!;
-        allChipFg = Colors.white;
-        allChipBorder = Border.all(
-          color: Colors.white.withValues(alpha: 0.14),
-          width: 1,
-        );
-        allChipShadow = [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.45),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ];
-      }
-      out.add(
-        Tooltip(
-          message: allLabel,
-          child: Container(
-            height: chipSize,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: allChipBg,
-              borderRadius: BorderRadius.circular(999),
-              border: allChipBorder,
-              boxShadow: allChipShadow,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              allLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: allChipFg,
-                height: 1.0,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return [
-      for (var i = 0; i < out.length; i++) ...[
-        if (i > 0) gap,
-        out[i],
-      ],
-    ];
-  }
+  // Applied filter chips extracted to `AppliedSearchFiltersBar`.
 
   void _openStationListings(BuildContext context, int stationId) {
     final listingTypeId =
@@ -1298,34 +1091,27 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                         Expanded(
                           child: Builder(
                             builder: (context) {
-                              final indicators =
-                                  _metroAppliedFilterIndicators(context);
-                              final onBar =
-                                  Theme.of(context).colorScheme.onSurface;
                               return SizedBox(
                                 height: 56,
                                 child: Align(
                                   alignment: Alignment.centerLeft,
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "${L10n.get("filters_bar_label")} :",
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: onBar,
-                                            height: 1.0,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        ...indicators,
-                                      ],
-                                    ),
+                                  child: AppliedSearchFiltersBar(
+                                    onPressed: () {},
+                                    listingTypeId: _selectedListingTypeId > 0
+                                        ? _selectedListingTypeId
+                                        : null,
+                                    gender:
+                                        _selectedGender > 0 ? _selectedGender : null,
+                                    subwayLineId: _selectedSubwayLineId > 0
+                                        ? _selectedSubwayLineId
+                                        : null,
+                                    minPrice:
+                                        _selectedMinPrice > 0 ? _selectedMinPrice : null,
+                                    maxPrice:
+                                        _selectedMaxPrice > 0 ? _selectedMaxPrice : null,
+                                    privateRoom: _selectedPrivateRoom,
+                                    withPhoto: _selectedWithPhoto,
+                                    showLabel: true,
                                   ),
                                 ),
                               );

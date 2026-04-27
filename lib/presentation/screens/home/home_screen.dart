@@ -22,6 +22,7 @@ import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
@@ -40,6 +41,7 @@ import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_hapt
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
@@ -167,6 +169,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   bool _isCreatingSearchAlert = false;
   int _searchAlertCelebrationTick = 0;
   bool _inlineSearchActive = false;
+  static const double _inlineSearchRibbonHeight = 56.0;
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
@@ -499,77 +502,97 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
+    final listContent = BlocListener<ListingsBloc, ListingsState>(
+      listener: (context, state) {
+        // Reset loading flag when state changes
+        state.map(
+          initial: (_) {
+            _resetLoadMoreState();
+          },
+          loading: (_) {
+            _resetLoadMoreState();
+          },
+          loaded: (_) {
+            _resetLoadMoreState();
+          },
+          error: (_) {
+            _resetLoadMoreState();
+          },
+        );
+      },
+      child: BlocSelector<ListingsBloc, ListingsState, _HomeScreenData>(
+        selector: (state) => state.map(
+          initial: (_) => const _HomeScreenData(
+            isLoading: false,
+            hasError: false,
+            errorMessage: "",
+            listings: [],
+            hasMore: false,
+          ),
+          loading: (_) => const _HomeScreenData(
+            isLoading: true,
+            hasError: false,
+            errorMessage: "",
+            listings: [],
+            hasMore: false,
+          ),
+          loaded: (loadedState) => _HomeScreenData(
+            isLoading: false,
+            hasError: false,
+            errorMessage: "",
+            listings: loadedState.listings,
+            hasMore: loadedState.hasMore,
+          ),
+          error: (errorState) => _HomeScreenData(
+            isLoading: false,
+            hasError: true,
+            errorMessage: errorState.message,
+            listings: [],
+            hasMore: false,
+          ),
+        ),
+        builder: (context, data) {
+          if (data.isLoading) {
+            return _buildLoadingState();
+          }
+          if (data.hasError) {
+            return _buildErrorState(data.errorMessage);
+          }
+          if (data.listings.isEmpty) {
+            return (widget.isSearchMode || _inlineSearchActive)
+                ? _buildEmptySearchState()
+                : _buildInitialState();
+          }
+          return _buildLoadedState(data.listings, data.hasMore);
+        },
+      ),
+    );
+
     return Scaffold(
       backgroundColor: ThemeState().backgroundColor,
       appBar: widget.isSearchMode ? _buildSearchAppBar() : null,
       body: Stack(
         clipBehavior: Clip.none,
         children: [
-          BlocListener<ListingsBloc, ListingsState>(
-            listener: (context, state) {
-              // Reset loading flag when state changes
-              state.map(
-                initial: (_) {
-                  _resetLoadMoreState();
-                },
-                loading: (_) {
-                  _resetLoadMoreState();
-                },
-                loaded: (_) {
-                  _resetLoadMoreState();
-                },
-                error: (_) {
-                  _resetLoadMoreState();
-                },
-              );
-            },
-            child: BlocSelector<ListingsBloc, ListingsState, _HomeScreenData>(
-              selector: (state) => state.map(
-                initial: (_) => const _HomeScreenData(
-                  isLoading: false,
-                  hasError: false,
-                  errorMessage: "",
-                  listings: [],
-                  hasMore: false,
+          if (widget.isSearchMode)
+            listContent
+          else
+            Column(
+              children: [
+                SizedBox(
+                  height: math.max(
+                    0.0,
+                    ThemeState().mainShellGlassExtraTopInset(context) - 8.0,
+                  ),
                 ),
-                loading: (_) => const _HomeScreenData(
-                  isLoading: true,
-                  hasError: false,
-                  errorMessage: "",
-                  listings: [],
-                  hasMore: false,
-                ),
-                loaded: (loadedState) => _HomeScreenData(
-                  isLoading: false,
-                  hasError: false,
-                  errorMessage: "",
-                  listings: loadedState.listings,
-                  hasMore: loadedState.hasMore,
-                ),
-                error: (errorState) => _HomeScreenData(
-                  isLoading: false,
-                  hasError: true,
-                  errorMessage: errorState.message,
-                  listings: [],
-                  hasMore: false,
-                ),
-              ),
-              builder: (context, data) {
-                if (data.isLoading) {
-                  return _buildLoadingState();
-                }
-                if (data.hasError) {
-                  return _buildErrorState(data.errorMessage);
-                }
-                if (data.listings.isEmpty) {
-                  return (widget.isSearchMode || _inlineSearchActive)
-                      ? _buildEmptySearchState()
-                      : _buildInitialState();
-                }
-                return _buildLoadedState(data.listings, data.hasMore);
-              },
+                if (_inlineSearchActive)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                    child: _buildInlineFiltersRibbon(),
+                  ),
+                Expanded(child: listContent),
+              ],
             ),
-          ),
           // Positioned floating action button (wrapped for tutorial targeting)
           Positioned(
             right: 16,
@@ -585,6 +608,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     child: SearchFloatingActionButton(
                       searchFiltersState: _searchFiltersState,
                       onPressed: widget.isSearchMode ? null : _openInlineSearchFromFab,
+                      iconData: Icons.search,
                       replaceCurrentRoute: widget.isSearchMode,
                       openedFromHomeScreen: widget.isHomeTabActive,
                       elevation: ThemeState().isBlueTheme ? null : 8,
@@ -603,15 +627,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Search mode pushes a route with a normal [AppBar], so the body is already
   /// below the status bar — do not add status-bar padding again.
   double _feedListGlassTopInset() {
-    if (widget.isSearchMode) return 0;
-    return ThemeState().mainShellGlassExtraTopInset(context);
+    // Home (non-search) is now laid out with a pinned ribbon in a Column,
+    // so list paddings should not add the main shell glass inset again.
+    return 0;
   }
 
   /// Scrollable wrapper so pull-to-refresh works when content is shorter than
   /// the viewport (welcome / empty states).
   Widget _buildPullToRefreshAroundFillChild(Widget child) {
-    final topPad =
-        widget.isSearchMode ? 16.0 : ThemeState().mainShellGlassExtraTopInset(context);
+    final topPad = 16.0 + _feedListGlassTopInset();
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: topPad,
@@ -635,6 +659,85 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildInlineFiltersRibbon() {
+    return Container(
+      height: _inlineSearchRibbonHeight,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.red, width: 1),
+      ),
+      alignment: Alignment.centerLeft,
+      child: Row(
+        children: [
+          const ThemeIcon(Icons.tune, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            L10n.get("filters_bar_label"),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: _buildInlineFiltersChips()),
+          const SizedBox(width: 10),
+          BlocSelector<ListingsBloc, ListingsState, int?>(
+            selector: (state) => state.map(
+              initial: (_) => null,
+              loading: (_) => null,
+              loaded: (s) => s.total,
+              error: (_) => null,
+            ),
+            builder: (context, total) {
+              if (total == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Text(
+                  "$total",
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            icon: const ThemeIcon(Icons.close, size: 18),
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              _clearInlineSearchAndShowAll();
+            },
+            tooltip: L10n.get("close"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInlineFiltersChips() {
+    return AppliedSearchFiltersBar(
+      onPressed: _openInlineSearchFromFab,
+      listingTypeId: _searchFiltersState.selectedListingTypeId,
+      gender: _searchFiltersState.selectedGender,
+      locationId: _searchFiltersState.selectedLocationIndex > 0
+          ? _searchFiltersState.selectedLocationIndex
+          : null,
+      subwayStationId: _searchFiltersState.selectedStationId > 0
+          ? _searchFiltersState.selectedStationId
+          : null,
+      subwayLineId: _searchFiltersState.selectedSubwayLine > 0
+          ? _searchFiltersState.selectedSubwayLine
+          : null,
+      minPrice: _searchFiltersState.minPrice,
+      maxPrice: _searchFiltersState.maxPrice,
+      privateRoom: _searchFiltersState.privateRoom,
+      withPhoto: _searchFiltersState.withPhoto,
+      total: null,
+      showLabel: false,
+      alignRight: false,
+      height: _inlineSearchRibbonHeight,
     );
   }
 
@@ -1089,6 +1192,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
+  // Inline filter chips are rendered via `_buildInlineFiltersRibbon()`.
+
   void _openInlineSearchFromFab() {
     SearchBottomSheetWidget.show(
       context,
@@ -1132,6 +1237,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         if (mounted) {
           setState(() => _inlineSearchActive = true);
         }
+
         _performSearch();
       },
     );
@@ -1141,6 +1247,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (mounted) {
       setState(() => _inlineSearchActive = false);
     }
+    _dispatchFeedRefresh();
+  }
+
+  Future<void> _clearInlineSearchAndShowAll() async {
+    await _searchFiltersState.clearAllFilters();
+    if (!mounted) return;
+    setState(() => _inlineSearchActive = false);
     _dispatchFeedRefresh();
   }
 

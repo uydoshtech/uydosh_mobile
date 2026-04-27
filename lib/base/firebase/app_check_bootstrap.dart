@@ -1,5 +1,3 @@
-import "dart:io" show Platform;
-
 import "package:firebase_app_check/firebase_app_check.dart";
 import "package:flutter/foundation.dart" show kDebugMode, kIsWeb;
 import "package:uy_dosh/base/logger/logger.dart";
@@ -25,15 +23,24 @@ class AppCheckBootstrap {
 
   static Future<void> activate() async {
     try {
+      // On web, App Check requires a web provider (reCAPTCHA v3).
+      // Passing `null` can crash at runtime inside FlutterFire internals.
+      // If you haven't configured a site key yet, skip activation gracefully.
+      if (kIsWeb && _recaptchaSiteKey.isEmpty) {
+        logger.d(
+          "🛡️ App Check skipped on web: missing reCAPTCHA v3 site key. "
+          "Provide it via --dart-define FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY=...",
+        );
+        return;
+      }
+
       await FirebaseAppCheck.instance.activate(
         androidProvider:
             kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
         appleProvider: kDebugMode
             ? AppleProvider.debug
             : AppleProvider.appAttestWithDeviceCheckFallback,
-        webProvider: _recaptchaSiteKey.isNotEmpty
-            ? ReCaptchaV3Provider(_recaptchaSiteKey)
-            : null,
+        webProvider: kIsWeb ? ReCaptchaV3Provider(_recaptchaSiteKey) : null,
       );
       FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
 
@@ -45,13 +52,7 @@ class AppCheckBootstrap {
           "Firebase Console → App Check → Apps → Manage debug tokens.",
         );
       } else {
-        final platform = kIsWeb
-            ? "web"
-            : Platform.isAndroid
-                ? "Android (Play Integrity)"
-                : Platform.isIOS
-                    ? "iOS (App Attest)"
-                    : "other";
+        final platform = kIsWeb ? "web (reCAPTCHA v3)" : "native";
         logger.d("🛡️ App Check activated for $platform");
       }
     } catch (e, stackTrace) {

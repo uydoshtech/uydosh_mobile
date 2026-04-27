@@ -20,6 +20,7 @@ class SearchFloatingActionButton extends StatefulWidget {
     super.key,
     this.onPressed,
     this.tooltip,
+    this.iconData = Icons.search,
     this.backgroundColor,
     this.foregroundColor,
     this.iconSize = 25.0,
@@ -31,6 +32,7 @@ class SearchFloatingActionButton extends StatefulWidget {
   final SearchFiltersState searchFiltersState;
   final VoidCallback? onPressed;
   final String? tooltip;
+  final IconData iconData;
   final Color? backgroundColor;
   final Color? foregroundColor;
   final double? iconSize;
@@ -99,7 +101,11 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
                     ? _LiquidGlassFabFace(
                         radius: radius,
                         base: base,
-                        child: _FabIcon(size: widget.iconSize, color: fg),
+                        child: _FabIcon(
+                          iconData: widget.iconData,
+                          size: widget.iconSize,
+                          color: fg,
+                        ),
                       )
                     : DecoratedBox(
                         decoration: BoxDecoration(
@@ -109,7 +115,11 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
                             base,
                           ),
                         ),
-                        child: _FabIcon(size: widget.iconSize, color: fg),
+                        child: _FabIcon(
+                          iconData: widget.iconData,
+                          size: widget.iconSize,
+                          color: fg,
+                        ),
                       ),
               ),
             ),
@@ -141,8 +151,13 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
 }
 
 class _FabIcon extends StatelessWidget {
-  const _FabIcon({required this.size, required this.color});
+  const _FabIcon({
+    required this.iconData,
+    required this.size,
+    required this.color,
+  });
 
+  final IconData iconData;
   final double? size;
   final Color color;
 
@@ -150,7 +165,7 @@ class _FabIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Icon(
-        Icons.search,
+        iconData,
         size: (size ?? 25.0) * 1.1,
         color: color,
       ),
