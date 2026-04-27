@@ -25,7 +25,9 @@ fi
 TAG_SUFFIX="${VERSION_RAW//+/-}"
 TAG="android-${TAG_SUFFIX}"
 
-git fetch --prune --tags origin >/dev/null
+# Do not use --tags: remote "android-latest" (GitHub release tag) often moves and
+# would conflict with a stale local copy — fetch then fails with "would clobber existing tag".
+git fetch --prune origin >/dev/null
 
 SHA="$(git rev-parse --short HEAD)"
 
