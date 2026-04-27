@@ -78,7 +78,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   Timer? _unreadRefreshDebounce;
   late final VoidCallback _unreadMessagesListener;
   int _lastObservedUnreadCount = 0;
-  bool _isTopRoute = true;
 
   /// Conversations the user just archived but whose commit is still inside the
   /// 5s undo window. They are hidden from every list/badge computation; the
@@ -185,33 +184,19 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Refresh conversations when app becomes active again, but only when
-      // this screen is actually visible (not covered by a pushed route).
-      if (_isInboxVisibleAndActive()) {
-        _loadConversations();
-        _refreshArchivedChatsFlag();
-      }
+      // Refresh conversations when app becomes active again
+      _loadConversations();
+      _refreshArchivedChatsFlag();
     }
   }
 
   @override
   void didPopNext() {
     // Called when returning to this screen from another screen (e.g. ChatScreen)
-    _isTopRoute = true;
-    if (_isInboxVisibleAndActive()) {
-      _loadConversations();
-      // User may have archived/unarchived from ChatScreen's overflow menu, or
-      // their last archived chat may have been auto-unarchived by a reply.
-      _refreshArchivedChatsFlag();
-    }
-  }
-
-  @override
-  void didPushNext() {
-    // Another route was pushed on top of this screen (e.g. listing details).
-    // Keep the inbox mounted, but disable background refreshes until we are
-    // visible again.
-    _isTopRoute = false;
+    _loadConversations();
+    // User may have archived/unarchived from ChatScreen's overflow menu, or
+    // their last archived chat may have been auto-unarchived by a reply.
+    _refreshArchivedChatsFlag();
   }
 
   void _loadConversations() {
@@ -254,7 +239,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   }
 
   bool _isInboxVisibleAndActive() {
-    if (!_isTopRoute) return false;
     // If opened as a main tab, only refresh when that tab is selected.
     final tabSelected = widget.mainTabSelected;
     if (tabSelected != null) {
