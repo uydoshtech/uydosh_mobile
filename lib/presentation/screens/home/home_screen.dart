@@ -491,7 +491,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         ? (includeSafeFallbacks ? (widget.minPrice ?? 10.0) : widget.minPrice)
         : _searchFiltersState.minPrice;
     final maxPrice = fromExplicit
-        ? (includeSafeFallbacks ? (widget.maxPrice ?? 500.0) : widget.maxPrice)
+        ? (includeSafeFallbacks ? (widget.maxPrice ?? 1000.0) : widget.maxPrice)
         : _searchFiltersState.maxPrice;
 
     final privateRoom = fromExplicit
@@ -644,10 +644,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return base;
   }
 
+  /// When the inline filter ribbon is on, skip the extra 16px so the gap under
+  /// the ribbon matches the 8px used above it (`mainShellGlassExtraTopInset`).
+  double _feedListTopPadding() {
+    final inset = _feedListGlassTopInset();
+    if (_inlineSearchActive) return inset;
+    return 16.0 + inset;
+  }
+
   /// Scrollable wrapper so pull-to-refresh works when content is shorter than
   /// the viewport (welcome / empty states).
   Widget _buildPullToRefreshAroundFillChild(Widget child) {
-    final topPad = 16.0 + _feedListGlassTopInset();
+    final topPad = _feedListTopPadding();
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: topPad,
@@ -947,7 +955,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         subwayLineId: filters.subwayLineId,
         gender: filters.gender,
         minPrice: filters.minPrice ?? 10.0,
-        maxPrice: filters.maxPrice ?? 500.0,
+        maxPrice: filters.maxPrice ?? 1000.0,
         privateRoomOnly: filters.privateRoom ?? false,
         withPhotoOnly: filters.withPhoto ?? false,
       );
@@ -998,7 +1006,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadingState() {
-    final topPad = 16.0 + _feedListGlassTopInset();
+    final topPad = _feedListTopPadding();
     return CommonListView(
       padding: EdgeInsets.fromLTRB(14.0, topPad, 14.0, 16.0),
       itemSpacing: 16.0,
@@ -1008,7 +1016,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadedState(List<Listing> listings, bool hasMore) {
-    final topPadding = 16.0 + _feedListGlassTopInset();
+    final topPadding = _feedListTopPadding();
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: topPadding,

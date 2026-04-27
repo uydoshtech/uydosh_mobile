@@ -67,6 +67,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
       label: context.l10n.open_in_telegram,
       labelColor: secondaryTextColor,
       borderColor: accentColor,
+      expandToParentWidth: false,
     );
   }
 
@@ -99,7 +100,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
     }
     return Row(
       children: [
-        Expanded(child: Builder(builder: _telegramButton)),
+        IntrinsicWidth(child: Builder(builder: _telegramButton)),
         const SizedBox(width: 12),
         Expanded(child: Builder(builder: _chatButton)),
       ],
@@ -220,6 +221,8 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
     required this.borderColor,
     this.fillColor,
     this.fontWeight = FontWeight.w600,
+    /// False: width fits label; true: fill parent (full-width CTA).
+    this.expandToParentWidth = true,
   });
 
   final VoidCallback onPressed;
@@ -230,6 +233,7 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
   final Color borderColor;
   final Color? fillColor;
   final FontWeight fontWeight;
+  final bool expandToParentWidth;
 
   @override
   State<_GlassNeumorphicCtaButton> createState() =>
@@ -265,6 +269,85 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
         widget.fillColor != null ? base : base.withValues(alpha: isDark ? 0.38 : 0.55);
     final stroke = widget.borderColor.withValues(alpha: isDark ? 0.60 : 0.70);
     final useBackdropBlur = enableGlass && widget.fillColor == null;
+    final expand = widget.expandToParentWidth;
+
+    final labelRow = Row(
+      mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ThemeIcon(
+          widget.icon,
+          size: 18,
+          color: widget.iconColor,
+        ),
+        const SizedBox(width: 10),
+        if (expand)
+          Flexible(
+            child: Text(
+              widget.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: widget.fontWeight,
+                color: widget.labelColor,
+                height: 1.0,
+              ),
+            ),
+          )
+        else
+          Text(
+            widget.label,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: widget.fontWeight,
+              color: widget.labelColor,
+              height: 1.0,
+            ),
+          ),
+      ],
+    );
+
+    final face = DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        color: faceColor,
+        border: Border.all(color: stroke, width: 0.9),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(faceColor, Colors.white, isDark ? 0.10 : 0.18)!
+                .withValues(alpha: isDark ? 0.35 : 0.28),
+            faceColor.withValues(alpha: 0.0),
+          ],
+          stops: const [0.0, 0.62],
+        ),
+      ),
+      child: expand ? Center(child: labelRow) : labelRow,
+    );
+
+    final clippedFace = ClipRRect(
+      borderRadius: radius,
+      child: useBackdropBlur
+          ? Stack(
+              clipBehavior: Clip.hardEdge,
+              children: [
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: isDark ? 18 : 22,
+                      sigmaY: isDark ? 18 : 22,
+                    ),
+                    child: const SizedBox.shrink(),
+                  ),
+                ),
+                face,
+              ],
+            )
+          : face,
+    );
 
     return SizedBox(
       height: 48,
@@ -287,65 +370,25 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
               duration: const Duration(milliseconds: 90),
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(borderRadius: radius, boxShadow: shadows),
-              child: ClipRRect(
-                borderRadius: radius,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (useBackdropBlur)
-                      BackdropFilter(
-                        filter: ImageFilter.blur(
-                          sigmaX: isDark ? 18 : 22,
-                          sigmaY: isDark ? 18 : 22,
-                        ),
-                        child: const SizedBox.expand(),
-                      ),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: radius,
-                        color: faceColor,
-                        border: Border.all(color: stroke, width: 0.9),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color.lerp(faceColor, Colors.white, isDark ? 0.10 : 0.18)!
-                                .withValues(alpha: isDark ? 0.35 : 0.28),
-                            faceColor.withValues(alpha: 0.0),
-                          ],
-                          stops: const [0.0, 0.62],
-                        ),
-                      ),
-                      child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ThemeIcon(
-                              widget.icon,
-                              size: 18,
-                              color: widget.iconColor,
-                            ),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Text(
-                                widget.label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: widget.fontWeight,
-                                  color: widget.labelColor,
-                                  height: 1.0,
-                                ),
+              child: expand
+                  ? ClipRRect(
+                      borderRadius: radius,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (useBackdropBlur)
+                            BackdropFilter(
+                              filter: ImageFilter.blur(
+                                sigmaX: isDark ? 18 : 22,
+                                sigmaY: isDark ? 18 : 22,
                               ),
+                              child: const SizedBox.expand(),
                             ),
-                          ],
-                        ),
+                          face,
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                    )
+                  : clippedFace,
             ),
           ),
         ),

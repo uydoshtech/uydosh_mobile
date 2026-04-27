@@ -770,7 +770,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                       // Price Field - Single handle, stored as both min and max
                       PriceRangePicker(
                         minPrice: 10.0,
-                        maxPrice: 500.0,
+                        maxPrice: 1000.0,
                         initialMinPrice: _price,
                         initialMaxPrice: _price,
                         useSinglePrice: true,

@@ -87,7 +87,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool _priceTouched = false;
 
   static const double _priceSliderMin = 0.0;
-  static const double _priceSliderMax = 500.0;
+  static const double _priceSliderMax = 1000.0;
 
   bool get _pricePickerSingleHandle => _selectedListingTypeId == 2;
   bool _isPrivateRoom = false; // Add private room toggle

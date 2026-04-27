@@ -554,6 +554,7 @@ class _DrawerProfileHeader extends StatelessWidget {
             ThreeDPillButton(
               borderRadius: const BorderRadius.all(Radius.circular(999)),
               padding: EdgeInsets.zero,
+              neumorphicSoftUi: true,
               onPressed: onOpenProfile,
               child: Semantics(
                 label: L10n.get("profile"),

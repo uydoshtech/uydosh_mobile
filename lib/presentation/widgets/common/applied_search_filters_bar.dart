@@ -48,7 +48,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
   bool get _hasCustomPriceRange {
     if (minPrice == null && maxPrice == null) return false;
     const defaultMin = 10.0;
-    const defaultMax = 500.0;
+    const defaultMax = 1000.0;
     final minV = minPrice ?? defaultMin;
     final maxV = maxPrice ?? defaultMax;
     return minV != defaultMin || maxV != defaultMax;
@@ -181,7 +181,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
 
     if (_hasCustomPriceRange) {
       final minS = (minPrice ?? 10.0).round().toString();
-      final maxS = (maxPrice ?? 500.0).round().toString();
+      final maxS = (maxPrice ?? 1000.0).round().toString();
       final rangeLabel = "$minS–$maxS";
       out.add(
         Tooltip(

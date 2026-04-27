@@ -22,6 +22,7 @@ class ThreeDAppBarIconButton extends StatelessWidget {
     this.borderRadius,
     this.padding = const EdgeInsets.all(6),
     this.contentSlotSize = 28,
+    this.neumorphicSoftUi = false,
   });
 
   /// Rounded square used by the main navigation drawer button.
@@ -39,6 +40,9 @@ class ThreeDAppBarIconButton extends StatelessWidget {
 
   /// Width/height of the inner icon or [iconWidget] slot (before [padding]).
   final double contentSlotSize;
+
+  /// Soft raised / inset pressed chrome ([ThreeDPillButton.neumorphicSoftUi]).
+  final bool neumorphicSoftUi;
 
   /// [AppBar.leading] layout: left inset + vertically centered control.
   static Widget leadingSlot({required Widget child}) {
@@ -71,6 +75,7 @@ class ThreeDAppBarIconButton extends StatelessWidget {
     return ThreeDPillButton(
       padding: padding,
       borderRadius: radius,
+      neumorphicSoftUi: neumorphicSoftUi,
       onPressed: () {
         HapticFeedbackUtils.impact();
         onPressed();

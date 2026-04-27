@@ -11,6 +11,7 @@ class ThreeDPillButton extends StatefulWidget {
     this.borderRadius = const BorderRadius.all(Radius.circular(999)),
     this.backgroundColor,
     this.borderSide,
+    this.neumorphicSoftUi = false,
   });
 
   final Widget child;
@@ -19,6 +20,9 @@ class ThreeDPillButton extends StatefulWidget {
   final BorderRadius borderRadius;
   final Color? backgroundColor;
   final BorderSide? borderSide;
+
+  /// Flat [ColorScheme.surface] fill and soft dual shadows ([GhostButton]).
+  final bool neumorphicSoftUi;
 
   bool get _enabled => onPressed != null;
 
@@ -35,9 +39,17 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
     final bg = widget.backgroundColor ?? scheme.surface;
     final enabled = widget._enabled;
 
-    final shadows = _pressed || !enabled
-        ? ThreeDSurfaceStyle.pressedShadows(context)
-        : ThreeDSurfaceStyle.elevatedShadows(context);
+    final List<BoxShadow> shadows;
+    if (widget.neumorphicSoftUi) {
+      shadows =
+          _pressed && enabled
+              ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+              : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context);
+    } else {
+      shadows = _pressed || !enabled
+          ? ThreeDSurfaceStyle.pressedShadows(context)
+          : ThreeDSurfaceStyle.elevatedShadows(context);
+    }
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 90),
@@ -58,7 +70,11 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
             padding: widget.padding,
             decoration: BoxDecoration(
               borderRadius: widget.borderRadius,
-              gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
+              color: widget.neumorphicSoftUi ? bg : null,
+              gradient:
+                  widget.neumorphicSoftUi
+                      ? null
+                      : ThreeDSurfaceStyle.surfaceGradient(context, bg),
               boxShadow: shadows,
               border:
                   widget.borderSide == null ? null : Border.fromBorderSide(widget.borderSide!),

@@ -784,6 +784,7 @@ class MainNavigationState extends State<MainNavigation>
     Widget? iconWidget,
     EdgeInsets padding = const EdgeInsets.all(6),
     double contentSlotSize = 28,
+    bool neumorphicSoftUi = false,
   }) {
     return ThreeDAppBarIconButton(
       iconData: iconData,
@@ -794,6 +795,7 @@ class MainNavigationState extends State<MainNavigation>
       iconWidget: iconWidget,
       padding: padding,
       contentSlotSize: contentSlotSize,
+      neumorphicSoftUi: neumorphicSoftUi,
     );
   }
 
@@ -902,6 +904,7 @@ class MainNavigationState extends State<MainNavigation>
                       },
                       semanticsLabel: L10n.get("profile"),
                       iconSize: 28,
+                      neumorphicSoftUi: true,
                     );
                   }
 
@@ -936,6 +939,7 @@ class MainNavigationState extends State<MainNavigation>
                                     ? EdgeInsets.zero
                                     : const EdgeInsets.all(6),
                             contentSlotSize: hasAvatar ? 40 : 28,
+                            neumorphicSoftUi: true,
                             iconWidget: AppBarProfileIcon(
                               iconSize: hasAvatar ? 40 : 28,
                               iconColor:
