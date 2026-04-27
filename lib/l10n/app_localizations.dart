@@ -2149,7 +2149,7 @@ abstract class AppLocalizations {
   /// No description provided for @open_in_telegram.
   ///
   /// In en, this message translates to:
-  /// **'Message in Telegram'**
+  /// **'Telegram'**
   String get open_in_telegram;
 
   /// No description provided for @open_in_telegram_confirmation.

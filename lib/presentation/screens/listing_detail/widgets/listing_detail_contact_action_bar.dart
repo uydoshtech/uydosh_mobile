@@ -67,7 +67,6 @@ class ListingDetailContactActionBar extends StatelessWidget {
       label: context.l10n.open_in_telegram,
       labelColor: secondaryTextColor,
       borderColor: accentColor,
-      expandToParentWidth: false,
     );
   }
 
@@ -100,7 +99,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
     }
     return Row(
       children: [
-        IntrinsicWidth(child: Builder(builder: _telegramButton)),
+        Expanded(child: Builder(builder: _telegramButton)),
         const SizedBox(width: 12),
         Expanded(child: Builder(builder: _chatButton)),
       ],
@@ -221,8 +220,6 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
     required this.borderColor,
     this.fillColor,
     this.fontWeight = FontWeight.w600,
-    /// False: width fits label; true: fill parent (full-width CTA).
-    this.expandToParentWidth = true,
   });
 
   final VoidCallback onPressed;
@@ -233,7 +230,6 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
   final Color borderColor;
   final Color? fillColor;
   final FontWeight fontWeight;
-  final bool expandToParentWidth;
 
   @override
   State<_GlassNeumorphicCtaButton> createState() =>
@@ -269,10 +265,8 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
         widget.fillColor != null ? base : base.withValues(alpha: isDark ? 0.38 : 0.55);
     final stroke = widget.borderColor.withValues(alpha: isDark ? 0.60 : 0.70);
     final useBackdropBlur = enableGlass && widget.fillColor == null;
-    final expand = widget.expandToParentWidth;
 
     final labelRow = Row(
-      mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ThemeIcon(
@@ -281,24 +275,11 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
           color: widget.iconColor,
         ),
         const SizedBox(width: 10),
-        if (expand)
-          Flexible(
-            child: Text(
-              widget.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: widget.fontWeight,
-                color: widget.labelColor,
-                height: 1.0,
-              ),
-            ),
-          )
-        else
-          Text(
+        Flexible(
+          child: Text(
             widget.label,
             maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 14,
               fontWeight: widget.fontWeight,
@@ -306,6 +287,7 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
               height: 1.0,
             ),
           ),
+        ),
       ],
     );
 
@@ -325,28 +307,7 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
           stops: const [0.0, 0.62],
         ),
       ),
-      child: expand ? Center(child: labelRow) : labelRow,
-    );
-
-    final clippedFace = ClipRRect(
-      borderRadius: radius,
-      child: useBackdropBlur
-          ? Stack(
-              clipBehavior: Clip.hardEdge,
-              children: [
-                Positioned.fill(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: isDark ? 18 : 22,
-                      sigmaY: isDark ? 18 : 22,
-                    ),
-                    child: const SizedBox.shrink(),
-                  ),
-                ),
-                face,
-              ],
-            )
-          : face,
+      child: Center(child: labelRow),
     );
 
     return SizedBox(
@@ -370,25 +331,23 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
               duration: const Duration(milliseconds: 90),
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(borderRadius: radius, boxShadow: shadows),
-              child: expand
-                  ? ClipRRect(
-                      borderRadius: radius,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          if (useBackdropBlur)
-                            BackdropFilter(
-                              filter: ImageFilter.blur(
-                                sigmaX: isDark ? 18 : 22,
-                                sigmaY: isDark ? 18 : 22,
-                              ),
-                              child: const SizedBox.expand(),
-                            ),
-                          face,
-                        ],
+              child: ClipRRect(
+                borderRadius: radius,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (useBackdropBlur)
+                      BackdropFilter(
+                        filter: ImageFilter.blur(
+                          sigmaX: isDark ? 18 : 22,
+                          sigmaY: isDark ? 18 : 22,
+                        ),
+                        child: const SizedBox.expand(),
                       ),
-                    )
-                  : clippedFace,
+                    face,
+                  ],
+                ),
+              ),
             ),
           ),
         ),

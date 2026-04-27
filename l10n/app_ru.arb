@@ -493,7 +493,7 @@
   "rating": "Рейтинг",
   "about_me": "Обо мне",
   "telegram": "Telegram",
-  "open_in_telegram": "Написать в Telegram",
+  "open_in_telegram": "Telegram",
   "open_in_telegram_confirmation": "Telegram откроется в приложении или браузере.",
   "could_not_open_telegram": "Не удалось открыть Telegram",
   "could_not_make_call": "Не удалось начать звонок",

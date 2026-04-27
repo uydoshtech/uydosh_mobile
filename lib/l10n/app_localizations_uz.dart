@@ -1136,7 +1136,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get telegram => 'Telegram';
 
   @override
-  String get open_in_telegram => 'Telegramda yozish';
+  String get open_in_telegram => 'Telegram';
 
   @override
   String get open_in_telegram_confirmation =>

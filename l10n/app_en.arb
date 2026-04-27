@@ -501,7 +501,7 @@
   "rating": "Rating",
   "about_me": "About Me",
   "telegram": "Telegram",
-  "open_in_telegram": "Message in Telegram",
+  "open_in_telegram": "Telegram",
   "open_in_telegram_confirmation": "Telegram will be opened.",
   "could_not_open_telegram": "Could not open Telegram",
   "could_not_make_call": "Could not start a call",

@@ -1128,7 +1128,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get telegram => 'Telegram';
 
   @override
-  String get open_in_telegram => 'Написать в Telegram';
+  String get open_in_telegram => 'Telegram';
 
   @override
   String get open_in_telegram_confirmation =>

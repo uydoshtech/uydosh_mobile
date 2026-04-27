@@ -37,6 +37,7 @@ import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -83,6 +84,17 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+
+/// Label for listing author from profile when [UserProfile.name] is empty.
+String? _listingAuthorNameFromProfile(UserProfile profile) {
+  final name = profile.name?.trim();
+  if (name != null && name.isNotEmpty) return name;
+  final telegram = profile.telegram?.trim();
+  if (telegram != null && telegram.isNotEmpty) {
+    return telegram.startsWith("@") ? telegram : "@$telegram";
+  }
+  return null;
+}
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
 class _ListingDetailIconsData {
@@ -467,9 +479,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       final profile =
           await getIt<IUserProfileService>().getUserProfile(listingUserId);
       if (!mounted) return;
-      final name =
-          profile.name?.trim().isNotEmpty ?? false ? profile.name : null;
-      pageBloc.setOwnerName(listingUserId, name);
+      pageBloc.setOwnerName(
+        listingUserId,
+        _listingAuthorNameFromProfile(profile),
+      );
     } catch (e) {
       logger.d("Error loading owner name: $e");
     }
@@ -507,9 +520,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         percent: result.percent,
         matches: result.matches,
         differences: result.differences,
-        ownerName: ownerProfile.name?.trim().isNotEmpty ?? false
-            ? ownerProfile.name
-            : null,
+        ownerName: _listingAuthorNameFromProfile(ownerProfile),
       );
     } catch (e) {
       logger.d("Error loading compatibility: $e");

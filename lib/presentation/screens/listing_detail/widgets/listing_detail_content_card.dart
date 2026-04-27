@@ -59,6 +59,17 @@ class ListingDetailContentCard extends StatefulWidget {
 }
 
 class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
+  String _authorDisplayLabel() {
+    final fromProfile = (widget.ownerName ?? "").trim();
+    if (fromProfile.isNotEmpty) return fromProfile;
+    final user = widget.listingDetail.user;
+    final email = user.email?.trim();
+    if (email != null && email.isNotEmpty) return email;
+    final phone = user.phone?.trim();
+    if (phone != null && phone.isNotEmpty) return phone;
+    return L10n.get("na");
+  }
+
   final GlobalKey _inlineLocationExpansionKey = GlobalKey();
 
   void _onMapExpansionChanged(bool isExpanded) {
@@ -570,9 +581,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                                   ),
                                   if (widget.onAuthorTap != null)
                                     UydoshLinkButton(
-                                      text: (widget.ownerName ?? "").trim().isNotEmpty
-                                          ? widget.ownerName!
-                                          : L10n.get("na"),
+                                      text: _authorDisplayLabel(),
                                       onPressed: widget.onAuthorTap!,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -583,7 +592,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                                     )
                                   else
                                     Text(
-                                      widget.ownerName ?? L10n.get("na"),
+                                      _authorDisplayLabel(),
                                       style: TextStyle(
                                         fontSize: 15,
                                         color: ListingDetailThemeHelper
