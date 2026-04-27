@@ -72,6 +72,22 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_full_room_button", languageCode),
       "floorOnlyUnavailable":
           L10n.getForLanguage("room_3d_floor_only_unavailable", languageCode),
+      "zoomIn": L10n.getForLanguage("room_3d_zoom_in", languageCode),
+      "zoomOut": L10n.getForLanguage("room_3d_zoom_out", languageCode),
+      "viewModeLabel":
+          L10n.getForLanguage("room_3d_view_mode_label", languageCode),
+      "viewModeHint":
+          L10n.getForLanguage("room_3d_view_mode_hint", languageCode),
+      "materialsStyleLabel":
+          L10n.getForLanguage("room_3d_materials_style_label", languageCode),
+      "materialsStyleHint":
+          L10n.getForLanguage("room_3d_materials_style_hint", languageCode),
+      "materialsStylizedValue":
+          L10n.getForLanguage("room_3d_materials_style_value_stylized", languageCode),
+      "materialsRealValue":
+          L10n.getForLanguage("room_3d_materials_style_value_real", languageCode),
+      "brandMarkA11yLabel":
+          L10n.getForLanguage("app_name", languageCode, fallback: "UyDosh"),
       "onFloorTintRgb": _rgbHex6(AppColors.floorObject3dTint),
     };
     final ok = await _channel.invokeMethod<bool>("presentLocalFile", <String, dynamic>{

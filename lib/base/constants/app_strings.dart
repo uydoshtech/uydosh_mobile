@@ -252,11 +252,13 @@ class AppStrings {
       "listing_updated_success": "Listing updated successfully",
       "room_scan_title": "3D room scan",
       "room_scan_instructions":
-          "Scan your room with LiDAR (iPhone Pro or compatible iPad). After you finish, the model uploads to your listing.",
+          "Before starting the 3D scan\n\n• Turn on good lighting\n• Move slowly, avoid sudden movements\n• Hold your phone at chest level\n• Scan walls, corners, windows, and doors\n• Try to cover the whole room\n\nThis will help create an accurate 3D model of your home",
       "room_scan_start": "Start scan",
       "room_scan_uploading": "Uploading…",
       "room_scan_success": "3D scan saved",
       "room_scan_error": "Could not save scan. Try again.",
+      "room_scan_too_large":
+          "3D scan is too large to upload. Please try scanning a smaller area.",
       "room_scan_not_supported":
           "3D room scan requires an iPhone or iPad with LiDAR.",
       "room_scan_disabled_globally":
@@ -275,6 +277,16 @@ class AppStrings {
       "room_3d_full_room_button": "Full room",
       "room_3d_floor_only_unavailable":
           "No wall meshes were found by name in this file. Walls must be separate labeled objects in the 3D export.",
+      "room_3d_zoom_in": "Zoom in",
+      "room_3d_zoom_out": "Zoom out",
+      "room_3d_view_mode_label": "3D view mode",
+      "room_3d_view_mode_hint":
+          "Switch between full room, walls only, and furniture only.",
+      "room_3d_materials_style_label": "Materials style",
+      "room_3d_materials_style_hint":
+          "Toggle between real materials and stylized colors.",
+      "room_3d_materials_style_value_stylized": "Stylized",
+      "room_3d_materials_style_value_real": "Real",
 
       "profile_completed_success": "Profile completed successfully!",
       "profile_updated_success": "Profile updated successfully",
@@ -1378,11 +1390,13 @@ class AppStrings {
       "listing_updated_success": "Объявление успешно обновлено",
       "room_scan_title": "3D-скан комнаты",
       "room_scan_instructions":
-          "Отсканируйте комнату с помощью LiDAR (iPhone Pro или совместимый iPad). После завершения модель загрузится в объявление.",
+          "Перед началом 3D-сканирования\n\n• Включите хорошее освещение\n• Двигайтесь медленно, без резких движений\n• Держите телефон на уровне груди\n• Сканируйте стены, углы, окна и двери\n• Постарайтесь охватить всю комнату\n\nЭто поможет создать точную 3D-модель вашего жилья",
       "room_scan_start": "Начать сканирование",
       "room_scan_uploading": "Загрузка…",
       "room_scan_success": "3D-скан сохранён",
       "room_scan_error": "Не удалось сохранить скан. Попробуйте снова.",
+      "room_scan_too_large":
+          "3D-скан слишком большой для загрузки. Попробуйте отсканировать меньшую область.",
       "room_scan_not_supported": "3D-скан требует iPhone или iPad с LiDAR.",
       "room_scan_disabled_globally":
           "3D-сканирование комнаты отключено в настройках приложения. Позже оно может снова стать доступным.",
@@ -1402,6 +1416,16 @@ class AppStrings {
       "room_3d_full_room_button": "Вся комната",
       "room_3d_floor_only_unavailable":
           "В файле не найдены отдельные стены по имени. В экспорте стены должны быть отдельными объектами.",
+      "room_3d_zoom_in": "Приблизить",
+      "room_3d_zoom_out": "Отдалить",
+      "room_3d_view_mode_label": "Режим 3D-просмотра",
+      "room_3d_view_mode_hint":
+          "Переключайте между: вся комната, только стены и только предметы.",
+      "room_3d_materials_style_label": "Стиль материалов",
+      "room_3d_materials_style_hint":
+          "Переключайте между реальными материалами и стилизованными цветами.",
+      "room_3d_materials_style_value_stylized": "Стилизованный",
+      "room_3d_materials_style_value_real": "Реальный",
 
       "profile_completed_success": "Профиль успешно завершен!",
       "profile_updated_success": "Профиль успешно обновлен",
@@ -2526,11 +2550,13 @@ class AppStrings {
       "listing_updated_success": "E'lon muvaffaqiyatli yangilandi",
       "room_scan_title": "3D xona skani",
       "room_scan_instructions":
-          "Xonani LiDAR yordamida skanerlang (iPhone Pro yoki mos iPad). Tugagach, model e'loningizga yuklanadi.",
+          "3D skanlashni boshlashdan oldin\n\n• Yaxshi yoritishni yoqing\n• Sekin harakat qiling, keskin harakatlarsiz\n• Telefonni ko‘krak balandligida ushlang\n• Devorlar, burchaklar, derazalar va eshiklarni skanerlang\n• Butun xonani qamrab olishga harakat qiling\n\nBu uyingizning aniq 3D modelini yaratishga yordam beradi",
       "room_scan_start": "Skanlashni boshlash",
       "room_scan_uploading": "Yuklanmoqda…",
       "room_scan_success": "3D skan saqlandi",
       "room_scan_error": "Skanni saqlab bo'lmadi. Qayta urinib ko'ring.",
+      "room_scan_too_large":
+          "3D skan yuklash uchun juda katta. Iltimos, kichikroq hududni skanerlab ko'ring.",
       "room_scan_not_supported":
           "3D skan uchun LiDARli iPhone yoki iPad kerak.",
       "room_scan_disabled_globally":
@@ -2550,6 +2576,16 @@ class AppStrings {
       "room_3d_full_room_button": "Butun xona",
       "room_3d_floor_only_unavailable":
           "Bu faylda devorlar nomi bo'yicha topilmadi. 3D eksportda devorlar alohida obyektlar bo'lishi kerak.",
+      "room_3d_zoom_in": "Yaqinlashtirish",
+      "room_3d_zoom_out": "Uzoqlashtirish",
+      "room_3d_view_mode_label": "3D ko'rish rejimi",
+      "room_3d_view_mode_hint":
+          "Butun xona, faqat devorlar yoki faqat buyumlar rejimiga o'ting.",
+      "room_3d_materials_style_label": "Materiallar uslubi",
+      "room_3d_materials_style_hint":
+          "Haqiqiy materiallar va uslubiy ranglar orasida almashtiring.",
+      "room_3d_materials_style_value_stylized": "Uslubiy",
+      "room_3d_materials_style_value_real": "Haqiqiy",
 
       "profile_completed_success": "Profil muvaffaqiyatli to'ldirildi!",
       "profile_updated_success": "Profil muvaffaqiyatli yangilandi",

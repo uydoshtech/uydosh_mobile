@@ -12,6 +12,15 @@ struct RoomViewerStrings {
   let floorOnlyButtonTitle: String
   let fullRoomButtonTitle: String
   let floorOnlyUnavailableMessage: String
+  let zoomInA11yLabel: String
+  let zoomOutA11yLabel: String
+  let viewModeA11yLabel: String
+  let viewModeA11yHint: String
+  let materialsStyleA11yLabel: String
+  let materialsStyleA11yHint: String
+  let materialsStyleValueStylized: String
+  let materialsStyleValueReal: String
+  let brandMarkA11yLabel: String
   /// RGB hex `RRGGBB` from [AppColors.floorObject3dTint] (Material brown).
   let onFloorObjectTint: UIColor
 
@@ -24,6 +33,15 @@ struct RoomViewerStrings {
     floorOnlyButtonTitle: String,
     fullRoomButtonTitle: String,
     floorOnlyUnavailableMessage: String,
+    zoomInA11yLabel: String,
+    zoomOutA11yLabel: String,
+    viewModeA11yLabel: String,
+    viewModeA11yHint: String,
+    materialsStyleA11yLabel: String,
+    materialsStyleA11yHint: String,
+    materialsStyleValueStylized: String,
+    materialsStyleValueReal: String,
+    brandMarkA11yLabel: String,
     onFloorObjectTint: UIColor
   ) {
     self.title = title
@@ -34,6 +52,15 @@ struct RoomViewerStrings {
     self.floorOnlyButtonTitle = floorOnlyButtonTitle
     self.fullRoomButtonTitle = fullRoomButtonTitle
     self.floorOnlyUnavailableMessage = floorOnlyUnavailableMessage
+    self.zoomInA11yLabel = zoomInA11yLabel
+    self.zoomOutA11yLabel = zoomOutA11yLabel
+    self.viewModeA11yLabel = viewModeA11yLabel
+    self.viewModeA11yHint = viewModeA11yHint
+    self.materialsStyleA11yLabel = materialsStyleA11yLabel
+    self.materialsStyleA11yHint = materialsStyleA11yHint
+    self.materialsStyleValueStylized = materialsStyleValueStylized
+    self.materialsStyleValueReal = materialsStyleValueReal
+    self.brandMarkA11yLabel = brandMarkA11yLabel
     self.onFloorObjectTint = onFloorObjectTint
   }
 
@@ -54,6 +81,15 @@ struct RoomViewerStrings {
       fullRoomButtonTitle: dict["fullRoomButton"] ?? "Full room",
       floorOnlyUnavailableMessage: dict["floorOnlyUnavailable"]
         ?? "No wall meshes were found by name in this file.",
+      zoomInA11yLabel: dict["zoomIn"] ?? "Zoom in",
+      zoomOutA11yLabel: dict["zoomOut"] ?? "Zoom out",
+      viewModeA11yLabel: dict["viewModeLabel"] ?? "3D view mode",
+      viewModeA11yHint: dict["viewModeHint"] ?? "Switch between full room, walls only, and furniture only.",
+      materialsStyleA11yLabel: dict["materialsStyleLabel"] ?? "Materials style",
+      materialsStyleA11yHint: dict["materialsStyleHint"] ?? "Toggle between real materials and stylized colors.",
+      materialsStyleValueStylized: dict["materialsStylizedValue"] ?? "Stylized",
+      materialsStyleValueReal: dict["materialsRealValue"] ?? "Real",
+      brandMarkA11yLabel: dict["brandMarkA11yLabel"] ?? "UyDosh",
       onFloorObjectTint: Self.uiColorFromRgbHex6(dict["onFloorTintRgb"] ?? "795548")
     )
   }
@@ -81,6 +117,15 @@ struct RoomViewerStrings {
     fullRoomButtonTitle: "Full room",
     floorOnlyUnavailableMessage:
       "No wall meshes were found by name in this file.",
+    zoomInA11yLabel: "Zoom in",
+    zoomOutA11yLabel: "Zoom out",
+    viewModeA11yLabel: "3D view mode",
+    viewModeA11yHint: "Switch between full room, walls only, and furniture only.",
+    materialsStyleA11yLabel: "Materials style",
+    materialsStyleA11yHint: "Toggle between real materials and stylized colors.",
+    materialsStyleValueStylized: "Stylized",
+    materialsStyleValueReal: "Real",
+    brandMarkA11yLabel: "UyDosh",
     onFloorObjectTint: Self.uiColorFromRgbHex6("795548")
   )
 }
@@ -202,7 +247,7 @@ final class RoomUsdzViewerViewController: UIViewController {
     brandMarkView.translatesAutoresizingMaskIntoConstraints = false
     brandMarkView.accessibilityIgnoresInvertColors = true
     brandMarkView.isAccessibilityElement = true
-    brandMarkView.accessibilityLabel = "UiDosha"
+    brandMarkView.accessibilityLabel = strings.brandMarkA11yLabel
     view.addSubview(brandMarkView)
 
     // Make sure overlay controls remain tappable/draggable above SceneKit.
@@ -271,8 +316,8 @@ final class RoomUsdzViewerViewController: UIViewController {
       ])
     }
 
-    zoomInButton.accessibilityLabel = "Zoom in"
-    zoomOutButton.accessibilityLabel = "Zoom out"
+    zoomInButton.accessibilityLabel = strings.zoomInA11yLabel
+    zoomOutButton.accessibilityLabel = strings.zoomOutA11yLabel
     zoomInButton.addTarget(self, action: #selector(zoomInTapped), for: .touchUpInside)
     zoomOutButton.addTarget(self, action: #selector(zoomOutTapped), for: .touchUpInside)
 
@@ -347,8 +392,8 @@ final class RoomUsdzViewerViewController: UIViewController {
     modeControl.addTarget(self, action: #selector(modeChanged), for: .valueChanged)
 
     modeControl.isAccessibilityElement = true
-    modeControl.accessibilityLabel = "3D view mode"
-    modeControl.accessibilityHint = "Switch between full room, walls only, and furniture only."
+    modeControl.accessibilityLabel = strings.viewModeA11yLabel
+    modeControl.accessibilityHint = strings.viewModeA11yHint
   }
 
   private func setupMaterialsToggle() {
@@ -358,8 +403,8 @@ final class RoomUsdzViewerViewController: UIViewController {
       target: self,
       action: #selector(toggleMaterialsStyle)
     )
-    btn.accessibilityLabel = "Materials style"
-    btn.accessibilityHint = "Toggle between real materials and stylized colors."
+    btn.accessibilityLabel = strings.materialsStyleA11yLabel
+    btn.accessibilityHint = strings.materialsStyleA11yHint
     materialsBarButton = btn
     updateMaterialsButtonAppearance()
   }
@@ -368,7 +413,9 @@ final class RoomUsdzViewerViewController: UIViewController {
     // Stylized: paintbrush, Real: photo
     let name = useStylizedMaterials ? "paintbrush.fill" : "photo.fill.on.rectangle.fill"
     materialsBarButton?.image = UIImage(systemName: name)
-    materialsBarButton?.accessibilityValue = useStylizedMaterials ? "Stylized" : "Real"
+    materialsBarButton?.accessibilityValue = useStylizedMaterials
+      ? strings.materialsStyleValueStylized
+      : strings.materialsStyleValueReal
   }
 
 /// Minimal vector version of the UiDosha mark (U + roof + chimney) rendered as shape layers.

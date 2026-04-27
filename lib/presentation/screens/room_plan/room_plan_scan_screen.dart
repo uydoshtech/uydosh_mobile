@@ -94,7 +94,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
           ToastTheme.showError(
             context,
             message: isTooLarge
-                ? "3D scan is too large to upload. Please try scanning a smaller area."
+                ? L10n.get("room_scan_too_large")
                 : L10n.get("room_scan_error"),
           );
         } finally {
