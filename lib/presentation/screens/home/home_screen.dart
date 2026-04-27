@@ -3,8 +3,8 @@ import "dart:math" as math;
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -38,14 +38,13 @@ import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/notify_search_alert_app_bar_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
-import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
-import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
@@ -170,6 +169,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   int _searchAlertCelebrationTick = 0;
   bool _inlineSearchActive = false;
   static const double _inlineSearchRibbonHeight = 56.0;
+  static const String _kInlineSearchActivePrefsKey = "home_inline_search_active";
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
@@ -204,7 +204,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     UserListingState().initialize();
 
     // Initialize search filters state
-    _searchFiltersState.initialize();
+    _searchFiltersState.initialize().then((_) async {
+      if (!mounted) return;
+      await _restoreInlineSearchModeFromPrefs();
+    });
 
     // Apply profile-based defaults for listing type and gender when no saved prefs
     _searchFiltersState.ensureProfileDefaultsApplied();
@@ -231,6 +234,19 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // Show search button tutorial on first visit to browse screen (with delay)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
+    });
+  }
+
+  Future<void> _restoreInlineSearchModeFromPrefs() async {
+    if (widget.isSearchMode) return; // dedicated results screen manages itself
+    final prefs = await SharedPreferences.getInstance();
+    final active = prefs.getBool(_kInlineSearchActivePrefsKey) ?? false;
+    if (!mounted) return;
+    if (!active) return;
+    setState(() => _inlineSearchActive = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _performSearch();
     });
   }
 
@@ -574,24 +590,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       body: Stack(
         clipBehavior: Clip.none,
         children: [
-          if (widget.isSearchMode)
-            listContent
-          else
-            Column(
-              children: [
-                SizedBox(
-                  height: math.max(
-                    0.0,
-                    ThemeState().mainShellGlassExtraTopInset(context) - 8.0,
-                  ),
-                ),
-                if (_inlineSearchActive)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                    child: _buildInlineFiltersRibbon(),
-                  ),
-                Expanded(child: listContent),
-              ],
+          listContent,
+          if (!widget.isSearchMode && _inlineSearchActive)
+            Positioned(
+              left: 12,
+              right: 12,
+              top: ThemeState().mainShellGlassExtraTopInset(context),
+              child: _buildInlineFiltersRibbon(),
             ),
           // Positioned floating action button (wrapped for tutorial targeting)
           Positioned(
@@ -627,9 +632,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Search mode pushes a route with a normal [AppBar], so the body is already
   /// below the status bar — do not add status-bar padding again.
   double _feedListGlassTopInset() {
-    // Home (non-search) is now laid out with a pinned ribbon in a Column,
-    // so list paddings should not add the main shell glass inset again.
-    return 0;
+    // In main navigation (glass header), body renders behind the header.
+    // We pad list content down so it doesn't sit under the header/ribbon.
+    if (widget.isSearchMode) return 0;
+    final base = ThemeState().mainShellGlassExtraTopInset(context);
+    if (_inlineSearchActive) {
+      return base + _inlineSearchRibbonHeight + 8.0;
+    }
+    return base;
   }
 
   /// Scrollable wrapper so pull-to-refresh works when content is shorter than
@@ -663,23 +673,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildInlineFiltersRibbon() {
-    return Container(
+    return LiquidGlassPlate(
       height: _inlineSearchRibbonHeight,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.red, width: 1),
-      ),
-      alignment: Alignment.centerLeft,
+      borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
           const ThemeIcon(Icons.tune, size: 18),
-          const SizedBox(width: 8),
-          Text(
-            L10n.get("filters_bar_label"),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(child: _buildInlineFiltersChips()),
           const SizedBox(width: 10),
           BlocSelector<ListingsBloc, ListingsState, int?>(
@@ -693,9 +694,23 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               if (total == null) return const SizedBox.shrink();
               return Padding(
                 padding: const EdgeInsets.only(right: 10),
-                child: Text(
-                  "$total",
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: BlueThemeColors.background,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    "$total",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               );
             },
@@ -707,7 +722,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             icon: const ThemeIcon(Icons.close, size: 18),
             onPressed: () {
               HapticFeedbackUtils.impact();
-              _clearInlineSearchAndShowAll();
+              _exitInlineSearch();
             },
             tooltip: L10n.get("close"),
           ),
@@ -798,8 +813,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     color: _getWelcomeTitleColor(),
                   ),
                 ),
-                const SizedBox(height: 36),
-                _buildEmptySearchCriteriaSummary(),
                 const SizedBox(height: 22),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -855,153 +868,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         await Future<void>.delayed(const Duration(milliseconds: 120));
       }
     });
-  }
-
-  Widget _buildEmptySearchCriteriaSummary() {
-    final theme = Theme.of(context);
-    final lang = L10n.currentLanguage;
-
-    final filters = _resolveSearchFilters(
-      includeSafeFallbacks: true,
-      explicitNullFallsBackToState: true,
-    );
-
-    final chips = <Widget>[];
-
-    chips.add(
-      ListingTypeBadge(
-        listingTypeCode:
-            filters.listingTypeId == 1 ? "room_needed" : "roommate_needed",
-        fontSize: 13,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      ),
-    );
-
-    if (filters.locationId != null && filters.locationId! > 0) {
-      chips.add(
-        _criteriaChip(
-          icon: Icons.location_on_outlined,
-          text: LocationCache.getLocationShortName(filters.locationId!, lang),
-          color: AppColors.error,
-        ),
-      );
-    }
-
-    if (filters.subwayStationId != null && filters.subwayStationId! > 0) {
-      final station = MetroCache.getStationById(filters.subwayStationId!);
-      chips.add(
-        _criteriaChip(
-          icon: Icons.train,
-          text:
-              MetroCache.getStationDisplayName(filters.subwayStationId!, lang),
-          color: station == null
-              ? theme.colorScheme.onSurfaceVariant
-              : AppColors.getMetroLineColor(station.line),
-        ),
-      );
-    } else if (filters.subwayLineId != null && filters.subwayLineId! > 0) {
-      chips.add(
-        _criteriaChip(
-          icon: Icons.train_outlined,
-          text: MetroCache.getLineName(filters.subwayLineId!, lang),
-          color: AppColors.getMetroLineColor(filters.subwayLineId!),
-        ),
-      );
-    }
-
-    if (filters.gender != null &&
-        (filters.gender == 1 || filters.gender == 2)) {
-      chips.add(
-        _criteriaChip(
-          icon: filters.gender == 2 ? Icons.female : Icons.male,
-          text: filters.gender == 2 ? L10n.get("female") : L10n.get("male"),
-          color: filters.gender == 2
-              ? AppColors.genderFemale
-              : AppColors.genderMale,
-          tintAlpha: 0.12,
-        ),
-      );
-    }
-
-    chips.add(
-      PriceRangeBadge(
-        minPrice: (filters.minPrice ?? 10.0).round(),
-        maxPrice: (filters.maxPrice ?? 500.0).round(),
-        showCurrency: true,
-        showIcon: false,
-        isActive: true,
-        currencySymbol: "y.e.",
-        fontSize: 13,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        activeColor: AppColors.statusActive,
-        useTintBackground: true,
-        tintAlpha: 0.12,
-      ),
-    );
-
-    if (filters.privateRoom == true) {
-      chips.add(
-        _criteriaChip(
-          icon: Icons.lock_outline,
-          text: L10n.get("private_room"),
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-      );
-    }
-    if (filters.withPhoto == true) {
-      chips.add(
-        _criteriaChip(
-          icon: Icons.photo_camera_outlined,
-          text: L10n.get("search_filter_with_photo"),
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 8,
-        runSpacing: 8,
-        children: chips,
-      ),
-    );
-  }
-
-  Widget _criteriaChip({
-    required IconData icon,
-    required String text,
-    required Color color,
-    double tintAlpha = 0.1,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: tintAlpha),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color, width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ThemeIcon(icon, size: 18, color: color),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.15,
-              color: color,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _subscribeToSearchAlerts() async {
@@ -1237,6 +1103,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         if (mounted) {
           setState(() => _inlineSearchActive = true);
         }
+        SharedPreferences.getInstance().then((p) {
+          p.setBool(_kInlineSearchActivePrefsKey, true);
+        });
 
         _performSearch();
       },
@@ -1247,15 +1116,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (mounted) {
       setState(() => _inlineSearchActive = false);
     }
+    SharedPreferences.getInstance().then((p) {
+      p.setBool(_kInlineSearchActivePrefsKey, false);
+    });
     _dispatchFeedRefresh();
   }
 
-  Future<void> _clearInlineSearchAndShowAll() async {
-    await _searchFiltersState.clearAllFilters();
-    if (!mounted) return;
-    setState(() => _inlineSearchActive = false);
-    _dispatchFeedRefresh();
-  }
+  // NOTE: We intentionally do NOT clear persisted filters when dismissing the
+  // ribbon; it only exits inline-search mode and shows the full feed.
 
   void _pushFullSearchResultsRoute() {
     final locationId = _searchFiltersState.selectedLocationIndex;

@@ -22,14 +22,23 @@ class ListingTypeIconBadge extends StatelessWidget {
     final color = ListingTypeHelper.getColor(listingTypeCode);
     final icon = ListingTypeHelper.getIcon(listingTypeCode);
 
+    // "Looking for room" icon: a clearer, higher-contrast teal pairing.
+    // Matches the design direction from the provided screenshot.
+    final bool isRoomNeeded = listingTypeCode == "room_needed";
+    final Color effectiveBorderColor =
+        isRoomNeeded ? const Color(0xFF2A9DB1) : color;
+    final Color effectiveBackgroundColor = color.withValues(alpha: 0.1);
+    final Color effectiveIconColor =
+        isRoomNeeded ? const Color(0xFFE6F6FF) : color;
+
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: effectiveBackgroundColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color, width: 1),
+        border: Border.all(color: effectiveBorderColor, width: 1),
       ),
-      child: ThemeIcon(icon, color: color, size: size),
+      child: ThemeIcon(icon, color: effectiveIconColor, size: size),
     );
   }
 }

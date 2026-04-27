@@ -1,14 +1,13 @@
 import "package:flutter/material.dart";
-import "package:flutter_svg/flutter_svg.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/gen/assets.gen.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
+import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 class AppliedSearchFiltersBar extends StatelessWidget {
   const AppliedSearchFiltersBar({
@@ -319,12 +318,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SvgPicture.asset(
-                    Assets.images.tashkentSubwayMapSimple,
-                    width: 18,
-                    height: 18,
-                    colorFilter: ColorFilter.mode(trainColor, BlendMode.srcIn),
-                  ),
+                  MLetterIcon(color: trainColor, size: 20),
                   const SizedBox(width: 6),
                   Text(
                     lineName.isEmpty ? L10n.get("all") : lineName,
