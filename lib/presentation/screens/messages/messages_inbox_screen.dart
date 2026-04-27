@@ -934,7 +934,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
     await showModalBottomSheet<void>(
       context: context,
-      showDragHandle: true,
+      showDragHandle: false,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,

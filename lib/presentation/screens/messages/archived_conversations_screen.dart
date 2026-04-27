@@ -362,7 +362,7 @@ class _ArchivedConversationsScreenState
     if (!mounted) return;
     await showModalBottomSheet<void>(
       context: context,
-      showDragHandle: true,
+      showDragHandle: false,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
@@ -370,42 +370,66 @@ class _ArchivedConversationsScreenState
       builder: (sheetCtx) {
         final theme = Theme.of(sheetCtx);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));
-        final sheetMinHeight = MediaQuery.sizeOf(sheetCtx).height * 0.32;
+        final themeState = ThemeState();
+        // On the blue + glass surface, `primary` can be too close to the tint,
+        // making the label hard to read. Use a high-contrast foreground there.
+        final actionColor =
+            themeState.isBlueTheme ? Colors.white : theme.colorScheme.primary;
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: GlassBottomSheetSurface(
             borderRadius: radius,
             child: Material(
               type: MaterialType.transparency,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: sheetMinHeight),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // When `showDragHandle` is true, Flutter draws the handle in
-                      // the sheet's Material. We render our own so it sits on the
-                      // glass surface consistently.
-                      const SizedBox(height: 10),
-                      Container(
-                        width: 38,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(99),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // When `showDragHandle` is true, Flutter draws the handle in
+                    // the sheet's Material. We render our own so it sits on the
+                    // glass surface consistently.
+                    const SizedBox(height: 10),
+                    Container(
+                      width: 38,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    ListTileTheme(
+                      data: ListTileThemeData(
+                        visualDensity: VisualDensity.compact,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        minVerticalPadding: 10,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      ListTile(
-                        leading: const ThemeIcon(Icons.unarchive_outlined),
-                        title: Text(L10n.get("unarchive")),
+                      child: ListTile(
+                        leading: ThemeIcon(
+                          Icons.unarchive_outlined,
+                          color: actionColor,
+                        ),
+                        title: Text(
+                          L10n.get("unarchive"),
+                          style: TextStyle(
+                            color: actionColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         onTap: () {
                           Navigator.of(sheetCtx).pop();
                           _unarchive(conversation);
                         },
                       ),
-                      SizedBox(height: sheetMinHeight * 0.35),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
