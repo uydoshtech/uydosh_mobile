@@ -9,6 +9,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -161,7 +162,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         "❌ FavoritesScreen: User not authenticated, cannot load favorites",
       );
       if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _favoriteListings = [];
         _isLoading = false;
         _hasError = false; // No error, just not authenticated
@@ -210,7 +211,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           "❌ FavoritesScreen: User not authenticated, cannot load favorites",
         );
         if (!mounted) return;
-        setState(() {
+        setStateIfMounted(() {
           _favoriteListings = [];
           _isLoading = false;
           _hasError = false; // No error, just not authenticated
@@ -226,8 +227,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         limit: _pageLimit,
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         if (isRefresh) {
           _favoriteListings = favoriteListings;
         } else {
@@ -251,8 +251,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           e.toString().contains("Unauthorized") ||
           e.toString().contains("Invalid or expired session token");
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         if (isRefresh) {
           _favoriteListings = [];
         }
@@ -307,8 +306,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         limit: _pageLimit,
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _favoriteListings.addAll(moreFavorites);
         _hasMoreData = moreFavorites.length >= _pageLimit;
         _isLoadingMore = false;
@@ -320,8 +318,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     } catch (e) {
       logger.d("❌ FavoritesScreen: Error loading more favorites: $e");
       _currentPage--; // Revert page increment
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _isLoadingMore = false;
       });
     }

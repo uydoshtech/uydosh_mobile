@@ -17,6 +17,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/create_profile_request.dart";
 import "package:uy_dosh/domain/models/country.dart";
@@ -260,8 +261,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           logger.d(
             "🔐 AuthWizard: Firebase user exists but no backend session — authenticating with backend",
           );
-          if (!mounted) return;
-          setState(() => _isAuthenticating = true);
+          setStateIfMounted(() => _isAuthenticating = true);
 
           // Best-effort infer auth method from Firebase user data.
           final hasPhone = (user.phoneNumber ?? "").trim().isNotEmpty;
@@ -280,8 +280,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         // If anything goes wrong, keep the user in the wizard rather than
         // navigating into a state that will immediately 401-loop.
         logger.d("⚠️ AuthWizard: Existing session check failed: $e");
-        if (!mounted) return;
-        setState(() => _isAuthenticating = false);
+        setStateIfMounted(() => _isAuthenticating = false);
         return;
       } finally {
         if (mounted) setState(() => _isAuthenticating = false);
@@ -340,8 +339,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           await _crashlytics.setCustomKey("auth_step", "google_sign_in_cancelled");
           _crashlytics.log("AuthWizard: google_sign_in_cancelled");
         }
-        if (!mounted) return;
-        setState(() {
+        setStateIfMounted(() {
           _isAuthenticating = false;
         });
         return;
@@ -367,8 +365,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       await _auth.signInWithCredential(credential);
 
       // Update state immediately after Firebase authentication succeeds
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _isGoogleSignedIn = true;
       });
 
@@ -385,8 +382,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       // Now authenticate with your backend
       await _authenticateWithBackend();
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _isAuthenticating = false;
       });
 
