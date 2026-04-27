@@ -411,6 +411,8 @@
   "chat_translated_from_uz": "Translated from 🇺🇿",
   "chat_show_original": "Show original",
   "chat_show_translation": "Show translation",
+  "view_similar_results": "View similar",
+  "coming_soon": "Coming soon",
   "listing_ai_enhance": "Improve with AI",
   "listing_ai_enhance_empty": "Enter a description first.",
   "listing_ai_enhance_unavailable": "AI enhancement isn’t available on this device.",

@@ -1726,6 +1726,18 @@ abstract class AppLocalizations {
   /// **'Show translation'**
   String get chat_show_translation;
 
+  /// No description provided for @view_similar_results.
+  ///
+  /// In en, this message translates to:
+  /// **'View similar'**
+  String get view_similar_results;
+
+  /// No description provided for @coming_soon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get coming_soon;
+
   /// No description provided for @listing_ai_enhance.
   ///
   /// In en, this message translates to:

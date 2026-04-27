@@ -23,6 +23,7 @@ import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/main.dart";
@@ -43,6 +44,7 @@ import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.dart";
@@ -164,6 +166,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
   bool _isCreatingSearchAlert = false;
   int _searchAlertCelebrationTick = 0;
+  bool _inlineSearchActive = false;
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
@@ -392,7 +395,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   void _dispatchFeedRefresh() {
-    if (widget.isSearchMode) {
+    if (widget.isSearchMode || _inlineSearchActive) {
       _dispatchSearch(isRefresh: true);
     } else {
       context.read<ListingsBloc>().add(
@@ -559,7 +562,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   return _buildErrorState(data.errorMessage);
                 }
                 if (data.listings.isEmpty) {
-                  return widget.isSearchMode
+                  return (widget.isSearchMode || _inlineSearchActive)
                       ? _buildEmptySearchState()
                       : _buildInitialState();
                 }
@@ -581,6 +584,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     variant: TutorialPulseVariant.floatingActionButton,
                     child: SearchFloatingActionButton(
                       searchFiltersState: _searchFiltersState,
+                      onPressed: widget.isSearchMode ? null : _openInlineSearchFromFab,
                       replaceCurrentRoute: widget.isSearchMode,
                       openedFromHomeScreen: widget.isHomeTabActive,
                       elevation: ThemeState().isBlueTheme ? null : 8,
@@ -1085,6 +1089,88 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
+  void _openInlineSearchFromFab() {
+    SearchBottomSheetWidget.show(
+      context,
+      openedFromHomeScreen: widget.isHomeTabActive,
+      currentListingTypeId: _searchFiltersState.selectedListingTypeId,
+      currentLocationId: _searchFiltersState.selectedLocationIndex,
+      currentSubwayStationId: _searchFiltersState.selectedStationId,
+      currentSubwayLineId: _searchFiltersState.selectedSubwayLine,
+      currentGender: _searchFiltersState.selectedGender,
+      currentMinPrice: _searchFiltersState.minPrice,
+      currentMaxPrice: _searchFiltersState.maxPrice,
+      currentPrivateRoom: _searchFiltersState.privateRoom,
+      currentWithPhoto: _searchFiltersState.withPhoto,
+      onApply: (result) {
+        _searchFiltersState.setListingTypeId(result.listingTypeId);
+        _searchFiltersState.setGender(result.gender ?? 0);
+        _searchFiltersState.setPriceRange(result.minPrice, result.maxPrice);
+        _searchFiltersState.setPrivateRoom(result.privateRoom);
+        _searchFiltersState.setWithPhoto(result.withPhoto);
+
+        if (result.subwayLineId != null && (result.subwayLineId ?? 0) > 0) {
+          _searchFiltersState.setLocationIndex(0);
+          _searchFiltersState.setSubwayLine(result.subwayLineId!);
+        } else {
+          _searchFiltersState.setSubwayLine(0);
+        }
+
+        if (result.subwayStationId != null &&
+            (result.subwayStationId ?? 0) > 0) {
+          _searchFiltersState.setStationId(result.subwayStationId!);
+        } else {
+          _searchFiltersState.setStationId(0);
+        }
+
+        if (result.locationId != null && (result.locationId ?? 0) > 0) {
+          _searchFiltersState.setLocationIndex(result.locationId!);
+          _searchFiltersState.setSubwayLine(0);
+          _searchFiltersState.setStationId(0);
+        }
+
+        if (mounted) {
+          setState(() => _inlineSearchActive = true);
+        }
+        _performSearch();
+      },
+    );
+  }
+
+  void _exitInlineSearch() {
+    if (mounted) {
+      setState(() => _inlineSearchActive = false);
+    }
+    _dispatchFeedRefresh();
+  }
+
+  void _pushFullSearchResultsRoute() {
+    final locationId = _searchFiltersState.selectedLocationIndex;
+    final stationId = _searchFiltersState.selectedStationId;
+    final lineId = _searchFiltersState.selectedSubwayLine;
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => ListingsBloc(getIt<IListingService>()),
+          child: HomeScreen(
+            listingTypeId: _searchFiltersState.selectedListingTypeId,
+            locationId: locationId > 0 ? locationId : null,
+            subwayStationId: stationId > 0 ? stationId : null,
+            subwayLineId: lineId > 0 ? lineId : null,
+            gender: _searchFiltersState.selectedGender,
+            minPrice: _searchFiltersState.minPrice,
+            maxPrice: _searchFiltersState.maxPrice,
+            privateRoom: _searchFiltersState.privateRoom,
+            withPhoto: _searchFiltersState.withPhoto,
+            isSearchMode: true,
+            isHomeTabActive: false,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLoadMoreIndicator() {
     return CenteredHouseLoadingIndicator(
       text: L10n.get("loading_listings"),
@@ -1153,15 +1239,32 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               : Theme.of(context).colorScheme.primary),
       foregroundColor: appBarFg,
       elevation: 0,
-      leading: ThreeDAppBarIconButton.backLeading(
-        context,
-        onPressed: () {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
-        },
-      ),
+      leading: widget.isSearchMode
+          ? ThreeDAppBarIconButton.backLeading(
+              context,
+              onPressed: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              },
+            )
+          : ThreeDAppBarIconButton.leadingSlot(
+              child: ThreeDAppBarIconButton(
+                iconData: Icons.close,
+                onPressed: _exitInlineSearch,
+                semanticsLabel: L10n.get("close"),
+              ),
+            ),
       actions: [
+        if (!widget.isSearchMode)
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ThreeDAppBarIconButton(
+              iconData: Icons.open_in_new,
+              onPressed: _pushFullSearchResultsRoute,
+              semanticsLabel: L10n.get("search_results"),
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.only(right: 16.0),
           child: TutorialTargetWrapper(
@@ -1367,29 +1470,28 @@ class _NotifySearchAlertGhostButtonState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final ringColor = theme.colorScheme.primary;
-    final isBlueTheme = ThemeState().isBlueTheme;
     final idleEnabled = _animationSettings.bellIdleEnabled;
     final tapEnabled = _animationSettings.bellTapEnabled;
 
+    final label = theme.textTheme.labelLarge;
+    final baseSize = label?.fontSize ?? 14;
+    final textStyle =
+        label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
+        TextStyle(
+          fontSize: baseSize * 1.2,
+          height: 1.0,
+          fontWeight: FontWeight.w500,
+        );
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isNarrow = constraints.maxWidth > 0 && constraints.maxWidth < 360;
-        final padding = isNarrow
-            ? const EdgeInsets.symmetric(horizontal: 18, vertical: 18)
-            : const EdgeInsets.symmetric(horizontal: 32, vertical: 21);
-
         return PrimaryButton(
           onPressed: widget.onPressed == null ? null : _handlePressed,
-          padding: padding,
+          padding: const EdgeInsets.symmetric(vertical: 16),
           width: double.infinity,
-          borderRadius: BorderRadius.circular(16),
-          // Match the blue neumorphic button used on create/edit listing.
-          surfaceGradientBase:
-              isBlueTheme ? BlueThemeColors.buttonPrimary : Colors.black,
-          textColor: Colors.white,
+          borderRadius: BorderRadius.circular(20),
           child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
                 width: 30,
@@ -1445,13 +1547,13 @@ class _NotifySearchAlertGhostButtonState
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(
+              Flexible(
                 child: Text(
                   widget.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  softWrap: false,
+                  style: textStyle,
                 ),
               ),
             ],

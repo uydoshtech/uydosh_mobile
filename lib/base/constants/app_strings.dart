@@ -420,6 +420,8 @@ class AppStrings {
 
       "listing_description_hint": "Enter listing text",
       "listing_description_label": "Description",
+      "view_similar_results": "View similar",
+      "coming_soon": "Coming soon",
       "listing_price_label": "Price",
       "listing_translate_tooltip_en": "Translate to English",
       "listing_translate_tooltip_ru": "Translate to Russian",
@@ -1564,6 +1566,8 @@ class AppStrings {
 
       "listing_description_hint": "Введите текст объявления",
       "listing_description_label": "Описание",
+      "view_similar_results": "Похожие объявления",
+      "coming_soon": "Скоро будет",
       "listing_price_label": "Цена",
       "listing_translate_tooltip_en": "Перевести на английский",
       "listing_translate_tooltip_ru": "Перевести на русский",
@@ -2720,6 +2724,8 @@ class AppStrings {
 
       "listing_description_hint": "E'lon matnini kiriting",
       "listing_description_label": "Tavsif",
+      "view_similar_results": "O‘xshash e'lonlar",
+      "coming_soon": "Tez orada",
       "listing_price_label": "Narxi",
       "listing_translate_tooltip_en": "Inglizchaga tarjima qilish",
       "listing_translate_tooltip_ru": "Rus tiliga tarjima qilish",

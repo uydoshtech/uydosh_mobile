@@ -50,11 +50,13 @@ import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
+import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
+import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
@@ -2065,8 +2067,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
                     if (!AdminFeatureFlagsState().showPriceInsights) {
                       return const SizedBox.shrink();
                     }
-                    return ListingDetailAreaPriceStats(
-                      listingDetail: listingDetail,
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: ListingDetailAreaPriceStats(
+                        listingDetail: listingDetail,
+                      ),
                     );
                   },
                 ),
@@ -2105,6 +2110,93 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
                 Expanded(
                   child: Text(
                     L10n.get("view_room_3d"),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                ThemeIcon(
+                  Icons.chevron_right,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static int _roundToStep(int value, int step) {
+    if (step <= 0) return value;
+    return ((value + (step / 2)).floor() ~/ step) * step;
+  }
+
+  ({double min, double max})? _similarPriceRange(ListingDetail listingDetail) {
+    final p = listingDetail.price;
+    if (p <= 0) return null;
+
+    // Default band: ±20% with a minimum absolute width.
+    // For Tashkent listings this avoids overly narrow ranges for low prices.
+    final delta = (p * 0.20).round().clamp(0, 1 << 30);
+    final absFloor = 100000; // UZS-ish floor; tweak later when needed.
+    final d = delta < absFloor ? absFloor : delta;
+
+    final minRaw = (p - d) < 0 ? 0 : (p - d);
+    final maxRaw = p + d;
+    const step = 10000;
+    final minRounded = _roundToStep(minRaw, step);
+    final maxRounded = _roundToStep(maxRaw, step);
+    if (maxRounded <= 0 || maxRounded < minRounded) return null;
+    return (min: minRounded.toDouble(), max: maxRounded.toDouble());
+  }
+
+  void _openSimilarResults(ListingDetail listingDetail) {
+    final listingTypeId = listingDetail.listingTypeId;
+    final gender = listingDetail.gender;
+    final stationId = listingDetail.subwayStation?.id;
+    final locationId = listingDetail.location?.id;
+    final price = _similarPriceRange(listingDetail);
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => ListingsBloc(getIt<IListingService>()),
+          child: HomeScreen(
+            listingTypeId: listingTypeId,
+            subwayStationId: stationId,
+            locationId: stationId == null ? locationId : null,
+            gender: gender,
+            minPrice: price?.min,
+            maxPrice: price?.max,
+            isSearchMode: true,
+            useExplicitFiltersOnly: true,
+            isHomeTabActive: false,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _viewSimilarTile(ListingDetail listingDetail) {
+    return SizedBox(
+      width: double.infinity,
+      child: ListingDetailTileShell(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _openSimilarResults(listingDetail),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
+            child: Row(
+              children: [
+                ThemeIcon(
+                  Icons.auto_awesome_mosaic_outlined,
+                  color: ThemeState().isBlueTheme
+                      ? BlueThemeColors.textPrimary
+                      : Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    L10n.get("view_similar_results"),
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
@@ -2209,6 +2301,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
             ownerName: pageState.ownerName,
             onOpenInYandexMaps: () => _confirmOpenInYandexMaps(listingDetail),
             onAuthorTap: () => _navigateToProfile(listingDetail.user.id),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: _viewSimilarTile(listingDetail),
           ),
           if (compatibilitySection != null)
             Padding(

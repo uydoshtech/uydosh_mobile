@@ -902,6 +902,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get chat_show_translation => 'Показать перевод';
 
   @override
+  String get view_similar_results => 'Похожие объявления';
+
+  @override
+  String get coming_soon => 'Скоро будет';
+
+  @override
   String get listing_ai_enhance => 'Улучшить с AI';
 
   @override

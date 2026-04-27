@@ -910,6 +910,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get chat_show_translation => 'Tarjimani ko‘rsatish';
 
   @override
+  String get view_similar_results => 'O‘xshash e\'lonlar';
+
+  @override
+  String get coming_soon => 'Tez orada';
+
+  @override
   String get listing_ai_enhance => 'AI bilan yaxshilash';
 
   @override

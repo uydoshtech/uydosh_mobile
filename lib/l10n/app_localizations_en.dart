@@ -898,6 +898,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_show_translation => 'Show translation';
 
   @override
+  String get view_similar_results => 'View similar';
+
+  @override
+  String get coming_soon => 'Coming soon';
+
+  @override
   String get listing_ai_enhance => 'Improve with AI';
 
   @override
