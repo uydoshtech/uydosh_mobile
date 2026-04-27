@@ -65,6 +65,13 @@ bool get kSkipSplashScreen => kIsWeb;
 // TEMP (for testing): make home disappear and show the 3D scan welcome page.
 const bool kShowRoomPlanWelcomeInsteadOfHome = false;
 
+Future<void> _bootstrapSearchFiltersColdStart() async {
+  await SearchFiltersState().initialize();
+  if (!await SessionManager.isAuthenticated()) return;
+  await SearchFiltersState().hydrateFromBackendForCurrentUser();
+  await SearchFiltersState().ensureProfileDefaultsApplied();
+}
+
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
@@ -132,6 +139,10 @@ void main() async {
     // (e.g. server-backed client config fetches).
     await configureDependencies();
 
+    SessionManager.onSessionCleared = () {
+      SearchFiltersState().onSessionEnded();
+    };
+
     // Keep the OS app icon badge in sync with unread messages.
     // This will get corrected by server-backed refreshes (e.g. inbox load) shortly after launch.
     void syncBadge() {
@@ -173,7 +184,7 @@ void main() async {
     unawaited(HapticFeedbackState().initialize());
     unawaited(SoundEffectsState().initialize());
     unawaited(AnimationSettingsState().initialize());
-    unawaited(SearchFiltersState().initialize());
+    unawaited(_bootstrapSearchFiltersColdStart());
 
     logger.d(
       "🔐 Main: AuthenticationState initialized. Current status: ${AuthenticationState().isAuthenticated}",

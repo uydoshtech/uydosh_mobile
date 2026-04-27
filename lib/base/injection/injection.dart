@@ -34,6 +34,7 @@ import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/support_chat_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/services/user_search_filters_service.dart";
 
 final getIt = GetIt.instance;
 
@@ -82,6 +83,10 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<IUserProfileService>(
     () =>
         UserProfileService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IUserSearchFiltersService>(
+    () => UserSearchFiltersService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IAmenityService>(

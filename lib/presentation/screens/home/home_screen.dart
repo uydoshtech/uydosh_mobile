@@ -1,3 +1,4 @@
+import "dart:async" show unawaited;
 import "dart:math" as math;
 
 import "package:flutter/foundation.dart";
@@ -10,6 +11,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
@@ -204,14 +206,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // on the user's own listings.
     UserListingState().initialize();
 
-    // Initialize search filters state
-    _searchFiltersState.initialize().then((_) async {
-      if (!mounted) return;
-      await _restoreInlineSearchModeFromPrefs();
-    });
-
-    // Apply profile-based defaults for listing type and gender when no saved prefs
-    _searchFiltersState.ensureProfileDefaultsApplied();
+    unawaited(_bootstrapHomeSearchFilters());
 
     // Initialize search filters with current parameters if in search mode
     if (widget.isSearchMode) {
@@ -236,6 +231,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
     });
+  }
+
+  Future<void> _bootstrapHomeSearchFilters() async {
+    await _searchFiltersState.initialize();
+    if (!mounted) return;
+    if (await SessionManager.isAuthenticated()) {
+      await _searchFiltersState.hydrateFromBackendForCurrentUser();
+    }
+    if (!mounted) return;
+    await _searchFiltersState.ensureProfileDefaultsApplied();
+    if (!mounted) return;
+    await _restoreInlineSearchModeFromPrefs();
   }
 
   Future<void> _restoreInlineSearchModeFromPrefs() async {

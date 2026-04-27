@@ -1,3 +1,5 @@
+import "dart:async" show Timer, unawaited;
+
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
@@ -6,6 +8,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/services/user_search_filters_service.dart";
 
 // Global search filters state with ChangeNotifier for reactivity
 class SearchFiltersState extends ChangeNotifier {
@@ -27,6 +30,138 @@ class SearchFiltersState extends ChangeNotifier {
   bool _isInitialized = false;
   bool _profileDefaultsApplied = false;
   Future<void> _prefsWriteChain = Future<void>.value();
+  bool _suppressRemotePersist = false;
+  Timer? _remoteSaveDebounce;
+  static const Duration _remoteSaveDelay = Duration(milliseconds: 1600);
+  Future<void>? _hydrateFuture;
+
+  /// Clears debounce state when the backend session ends (logout / account switch).
+  void onSessionEnded() {
+    _remoteSaveDebounce?.cancel();
+    _remoteSaveDebounce = null;
+    _hydrateFuture = null;
+  }
+
+  /// Loads filters from `users.search_filters` for the signed-in user (server wins).
+  Future<void> hydrateFromBackendForCurrentUser() async {
+    if (_hydrateFuture != null) {
+      await _hydrateFuture;
+      return;
+    }
+    final run = _hydrateFromBackendImpl();
+    _hydrateFuture = run;
+    try {
+      await run;
+    } finally {
+      if (_hydrateFuture == run) {
+        _hydrateFuture = null;
+      }
+    }
+  }
+
+  Future<void> _hydrateFromBackendImpl() async {
+    if (!await SessionManager.isAuthenticated()) return;
+
+    _suppressRemotePersist = true;
+    try {
+      final map = await getIt<IUserSearchFiltersService>().fetchMe();
+      final raw = map["search_filters"];
+      if (raw is Map) {
+        await _applyServerFiltersToStateAndPrefs(Map<String, dynamic>.from(raw));
+        _profileDefaultsApplied = true;
+      } else {
+        await clearAllFilters(persistRemote: false);
+      }
+    } catch (e) {
+      logger.d("SearchFiltersState: hydrate failed: $e");
+    } finally {
+      _suppressRemotePersist = false;
+    }
+  }
+
+  Future<void> _applyServerFiltersToStateAndPrefs(Map<String, dynamic> m) async {
+    int readInt(String key, int fallback, {int min = 0, int max = 999999}) {
+      final v = m[key];
+      if (v is num) {
+        final i = v.toInt();
+        if (i >= min && i <= max) return i;
+      }
+      return fallback;
+    }
+
+    double readDouble(String key, double fallback) {
+      final v = m[key];
+      if (v is num) return v.toDouble();
+      return fallback;
+    }
+
+    bool readBool(String key, bool fallback) {
+      final v = m[key];
+      if (v is bool) return v;
+      return fallback;
+    }
+
+    _selectedListingTypeId = readInt("listing_type_id", 2, min: 1, max: 99);
+    _selectedLocationIndex = readInt("location_index", 0, min: 0, max: 9999);
+    _selectedSubwayLine = readInt("subway_line", 0, min: 0, max: 9999);
+    _selectedStationIndex = readInt("station_index", 0, min: 0, max: 9999);
+    _selectedStationId = readInt("station_id", 0, min: 0, max: 999999);
+    _selectedGender = readInt("gender", 1, min: 1, max: 2);
+    _minPrice = readDouble("min_price", 10.0);
+    _maxPrice = readDouble("max_price", 1000.0);
+    if (_minPrice > _maxPrice) {
+      final t = _minPrice;
+      _minPrice = _maxPrice;
+      _maxPrice = t;
+    }
+    _privateRoom = readBool("private_room", false);
+    _withPhoto = readBool("with_photo", false);
+
+    notifyListeners();
+
+    await _enqueuePrefsWrite((prefs) async {
+      await prefs.setInt("search_listing_type_id", _selectedListingTypeId);
+      await prefs.setInt("search_location_index", _selectedLocationIndex);
+      await prefs.setInt("search_subway_line", _selectedSubwayLine);
+      await prefs.setInt("search_station_index", _selectedStationIndex);
+      await prefs.setInt("search_station_id", _selectedStationId);
+      await prefs.setInt("search_gender", _selectedGender);
+      await prefs.setDouble("search_min_price", _minPrice);
+      await prefs.setDouble("search_max_price", _maxPrice);
+      await prefs.setBool("search_private_room", _privateRoom);
+      await prefs.setBool("search_with_photo", _withPhoto);
+    });
+  }
+
+  void _scheduleRemotePersist() {
+    if (_suppressRemotePersist) return;
+    _remoteSaveDebounce?.cancel();
+    _remoteSaveDebounce = Timer(_remoteSaveDelay, () {
+      _remoteSaveDebounce = null;
+      unawaited(_flushRemotePersist());
+    });
+  }
+
+  Future<void> _flushRemotePersist() async {
+    if (!await SessionManager.isAuthenticated()) return;
+    try {
+      final payload = <String, dynamic>{
+        "listing_type_id": _selectedListingTypeId,
+        "location_index": _selectedLocationIndex,
+        "subway_line": _selectedSubwayLine,
+        "station_index": _selectedStationIndex,
+        "station_id": _selectedStationId,
+        "gender": _selectedGender,
+        "min_price": _minPrice,
+        "max_price": _maxPrice,
+        "private_room": _privateRoom,
+        "with_photo": _withPhoto,
+      };
+      await getIt<IUserSearchFiltersService>().saveMe(payload);
+    } catch (e) {
+      logger.d("SearchFiltersState: remote persist failed: $e");
+    }
+  }
 
   /// Serializes SharedPreferences writes to avoid races between un-awaited
   /// setter calls (common from modal sheets) and later restores.
@@ -239,6 +374,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   // Update location index
@@ -254,6 +390,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   // Update subway line
@@ -275,6 +412,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   // Update station index
@@ -296,6 +434,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   // Update station ID (new method)
@@ -317,6 +456,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   // Update gender
@@ -332,6 +472,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   // Update price range
@@ -349,6 +490,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   // Update private room preference
@@ -364,6 +506,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   Future<void> setWithPhoto(bool withPhoto) async {
@@ -378,10 +521,11 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   // Clear all search filters
-  Future<void> clearAllFilters() async {
+  Future<void> clearAllFilters({bool persistRemote = true}) async {
     _selectedListingTypeId = 2;
     _selectedLocationIndex = 0;
     _selectedSubwayLine = 0;
@@ -411,6 +555,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
+    if (persistRemote && !_suppressRemotePersist) _scheduleRemotePersist();
   }
 
   /// Restores fields and persisted prefs after a modal temporarily changed filters
@@ -448,6 +593,8 @@ class SearchFiltersState extends ChangeNotifier {
     } catch (e) {
       logger.d("Error restoring search filters snapshot: $e");
     }
+
+    if (!_suppressRemotePersist) _scheduleRemotePersist();
   }
 }
 

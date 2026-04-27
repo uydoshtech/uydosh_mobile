@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     blocked_until timestamp without time zone,
     blocked_reason text,
     blocked_by_admin_id integer,
+    search_filters jsonb, -- last home-search ribbon filters (synced from app)
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT users_pkey PRIMARY KEY (id),
