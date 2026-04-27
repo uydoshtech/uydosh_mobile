@@ -10,6 +10,7 @@ import "dart:async";
 import "package:dio/dio.dart";
 import "package:uy_dosh/base/api/auth_token_repository_i.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/logger/log_config.dart";
 import "package:uy_dosh/base/services/session_expired_handler.dart";
 
 class CustomOAuthInterceptor extends Interceptor {
@@ -18,6 +19,26 @@ class CustomOAuthInterceptor extends Interceptor {
   static const String retryKey = "retry";
   final IAuthTokenRepository tokenRepo;
   final Dio dio;
+
+  static bool get _shouldLogRequestResponse {
+    // Never print request headers/bodies unless explicitly enabled, and
+    // keep it debug-only even if someone flips flags in release.
+    return LogConfig.instance.enableRequestResponse &&
+        LogConfig.instance.logLevel == AppLogLevel.verbose;
+  }
+
+  static Map<String, dynamic> _redactHeaders(Map<String, dynamic> headers) {
+    final redacted = <String, dynamic>{...headers};
+    for (final k in headers.keys) {
+      if (k.toLowerCase() == "authorization") {
+        redacted[k] = "<redacted>";
+      }
+      if (k.toLowerCase() == "cookie") {
+        redacted[k] = "<redacted>";
+      }
+    }
+    return redacted;
+  }
 
   /// Avoid logging multi‑MB bodies (e.g. room-scan `usdzData`) — causes freezes/OOM in debug.
   static Object? _requestDataForLog(dynamic data) {
@@ -42,33 +63,33 @@ class CustomOAuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    logger.d(
-      "🔑 OAuthInterceptor: onRequest called for ${options.method} ${options.path}",
-    );
-    logger.d("🔑 OAuthInterceptor: Full URL: ${options.uri}");
-    logger.d(
-      "🔑 OAuthInterceptor: Request headers before auth: ${options.headers}",
-    );
-    logger.d("🔑 OAuthInterceptor: Request method: ${options.method}");
-    logger.d(
-      "🔑 OAuthInterceptor: Request data: ${_requestDataForLog(options.data)}",
-    );
-    logger.d(
-      "🔑 OAuthInterceptor: Request query parameters: ${options.queryParameters}",
-    );
+    if (_shouldLogRequestResponse) {
+      logger.v(
+        "🔑 OAuthInterceptor: ${options.method} ${options.path}",
+      );
+      logger.v("🔑 OAuthInterceptor: Full URL: ${options.uri}");
+      logger.v(
+        "🔑 OAuthInterceptor: Request headers before auth: ${_redactHeaders(options.headers)}",
+      );
+      logger.v(
+        "🔑 OAuthInterceptor: Request data: ${_requestDataForLog(options.data)}",
+      );
+      logger.v(
+        "🔑 OAuthInterceptor: Request query parameters: ${options.queryParameters}",
+      );
+    }
 
     await _addAuth(options);
 
-    logger.d(
-      "🔑 OAuthInterceptor: Request headers after auth: ${options.headers}",
-    );
-    final authHeader = options.headers["Authorization"];
-    logger.d(
-      "🔑 OAuthInterceptor: Authorization header set: ${authHeader != null && authHeader.toString().isNotEmpty ? "yes" : "no"}",
-    );
-    logger.d(
-      "🔑 OAuthInterceptor: Full request options: ${options.toString()}",
-    );
+    if (_shouldLogRequestResponse) {
+      logger.v(
+        "🔑 OAuthInterceptor: Request headers after auth: ${_redactHeaders(options.headers)}",
+      );
+      final authHeader = options.headers["Authorization"];
+      logger.v(
+        "🔑 OAuthInterceptor: Authorization header set: ${authHeader != null && authHeader.toString().isNotEmpty ? "yes" : "no"}",
+      );
+    }
 
     super.onRequest(options, handler);
   }
@@ -82,17 +103,23 @@ class CustomOAuthInterceptor extends Interceptor {
     final alreadyRetried = err.requestOptions.extra[retryKey] == true;
 
     if (statusCode != 401) {
-      logger.e({
-        "request": {
-          "method": err.requestOptions.method,
-          "path": err.requestOptions.path,
-          "headers": err.requestOptions.headers,
-          "data": _requestDataForLog(err.requestOptions.data),
-          "queryParameters": err.requestOptions.queryParameters,
+      final request = <String, dynamic>{
+        "method": err.requestOptions.method,
+        "path": err.requestOptions.path,
+      };
+      if (_shouldLogRequestResponse) {
+        request["headers"] = _redactHeaders(err.requestOptions.headers);
+        request["data"] = _requestDataForLog(err.requestOptions.data);
+        request["queryParameters"] = err.requestOptions.queryParameters;
+      }
+      logger.e(
+        {
+          "request": request,
+          "statusCode": statusCode,
+          "response": _shouldLogRequestResponse ? err.response?.data : "<omitted>",
         },
-        "statusCode": statusCode,
-        "response": err.response?.data,
-      }, error: err);
+        error: err,
+      );
       return super.onError(err, handler);
     }
 
@@ -183,30 +210,42 @@ class CustomOAuthInterceptor extends Interceptor {
 
   Future<bool> _addAuth(RequestOptions options) async {
     final accessToken = await tokenRepo.getAccessToken();
-    logger.d(
-      "🔑 OAuthInterceptor: Adding auth to ${options.method} ${options.path}",
-    );
-    logger.d("🔑 OAuthInterceptor: Token exists: ${accessToken != null}");
+    if (_shouldLogRequestResponse) {
+      logger.v(
+        "🔑 OAuthInterceptor: Adding auth to ${options.method} ${options.path}",
+      );
+      logger.v("🔑 OAuthInterceptor: Token exists: ${accessToken != null}");
+    }
     if (accessToken != null) {
-      logger.d("🔑 OAuthInterceptor: Token length: ${accessToken.length}");
+      if (_shouldLogRequestResponse) {
+        logger.v("🔑 OAuthInterceptor: Token length: ${accessToken.length}");
+      }
 
       // Check if token already has "Bearer " prefix
       String authHeader;
       if (accessToken.startsWith("Bearer ")) {
         authHeader = accessToken;
-        logger.d(
-          "🔑 OAuthInterceptor: Token already has Bearer prefix, using as-is",
-        );
+        if (_shouldLogRequestResponse) {
+          logger.v(
+            "🔑 OAuthInterceptor: Token already has Bearer prefix, using as-is",
+          );
+        }
       } else {
         authHeader = "Bearer $accessToken";
-        logger.d("🔑 OAuthInterceptor: Adding Bearer prefix to token");
+        if (_shouldLogRequestResponse) {
+          logger.v("🔑 OAuthInterceptor: Adding Bearer prefix to token");
+        }
       }
 
       options.headers["Authorization"] = authHeader;
-      logger.d("🔑 OAuthInterceptor: Authorization header updated");
+      if (_shouldLogRequestResponse) {
+        logger.v("🔑 OAuthInterceptor: Authorization header updated");
+      }
       return true;
     } else {
-      logger.d("❌ OAuthInterceptor: No access token available");
+      if (_shouldLogRequestResponse) {
+        logger.v("❌ OAuthInterceptor: No access token available");
+      }
     }
     return false;
   }
