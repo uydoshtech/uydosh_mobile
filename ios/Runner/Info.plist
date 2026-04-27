@@ -68,6 +68,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	
 	<!-- Google Sign-In Configuration -->
 	<key>CFBundleURLTypes</key>
