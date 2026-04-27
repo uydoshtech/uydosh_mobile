@@ -84,6 +84,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// real `ArchiveConversation` event only fires once the countdown elapses.
   final Set<int> _pendingArchiveIds = <int>{};
 
+  /// Per-conversation step counter for swipe-to-archive haptics.
+  final Map<int, int> _archiveSwipeHapticStepById = <int, int>{};
+
   /// Whether the user currently has at least one archived conversation. Drives
   /// visibility of the "Archive" entry points (app-bar action + pinned row) —
   /// no archive folder is exposed when the folder would be empty.
@@ -932,63 +935,70 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetCtx) {
         final theme = Theme.of(sheetCtx);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: GlassBottomSheetSurface(
-              borderRadius: radius,
-              child: Material(
-                type: MaterialType.transparency,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 10),
-                    Container(
-                      width: 38,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                    ),
-                    if (hasUnread)
-                      ListTile(
-                        leading: const ThemeIcon(Icons.mark_email_read_outlined),
-                        title: Text(
-                          L10n.get("mark_as_read", fallback: "Mark as read"),
+        final sheetMinHeight = MediaQuery.sizeOf(sheetCtx).height * 0.32;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: GlassBottomSheetSurface(
+            borderRadius: radius,
+            child: Material(
+              type: MaterialType.transparency,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: sheetMinHeight),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 10),
+                      Container(
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(99),
                         ),
-                        onTap: () {
-                          Navigator.of(sheetCtx).pop();
-                          context.read<MessagingBloc>().add(
-                                MarkMessagesAsRead(
-                                  conversationId: conversation.id,
-                                ),
-                              );
-                        },
                       ),
-                    ListTile(
-                      leading: const ThemeIcon(Icons.archive_outlined),
-                      title: Text(L10n.get("archive")),
-                      enabled: !hasUnread,
-                      subtitle: hasUnread
-                          ? Text(
-                              L10n.get("archive_failed_has_unread"),
-                              style: const TextStyle(fontSize: 12),
-                            )
-                          : null,
-                      onTap: hasUnread
-                          ? null
-                          : () {
-                              Navigator.of(sheetCtx).pop();
-                              _archiveConversation(conversation);
-                            },
-                    ),
-                  ],
+                      if (hasUnread)
+                        ListTile(
+                          leading: const ThemeIcon(Icons.mark_email_read_outlined),
+                          title: Text(
+                            L10n.get("mark_as_read", fallback: "Mark as read"),
+                          ),
+                          onTap: () {
+                            Navigator.of(sheetCtx).pop();
+                            context.read<MessagingBloc>().add(
+                                  MarkMessagesAsRead(
+                                    conversationId: conversation.id,
+                                  ),
+                                );
+                          },
+                        ),
+                      ListTile(
+                        leading: const ThemeIcon(Icons.archive_outlined),
+                        title: Text(L10n.get("archive")),
+                        enabled: !hasUnread,
+                        subtitle: hasUnread
+                            ? Text(
+                                L10n.get("archive_failed_has_unread"),
+                                style: const TextStyle(fontSize: 12),
+                              )
+                            : null,
+                        onTap: hasUnread
+                            ? null
+                            : () {
+                                Navigator.of(sheetCtx).pop();
+                                _archiveConversation(conversation);
+                              },
+                      ),
+                      SizedBox(height: sheetMinHeight * 0.35),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1008,7 +1018,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// Expiring the timer dispatches [ArchiveConversation] to the bloc, which
   /// performs the real optimistic removal + API call.
   void _archiveConversation(ConversationSummary conversation) {
-    HapticFeedbackUtils.impact();
+    HapticFeedbackUtils.tapticChain();
 
     final id = conversation.id;
 
@@ -1149,6 +1159,25 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     return Dismissible(
       key: ValueKey("conv-swipe-${conversation.id}"),
       direction: DismissDirection.endToStart,
+      onUpdate: (details) {
+        // Fire "chain" ticks as the swipe progresses (similar to pull-to-refresh
+        // stretch haptics): multiple small steps instead of a single impact.
+        //
+        // Dismissible reports progress in [0..1]. We map it to discrete steps
+        // so users feel ticks while dragging, not only after dismissal.
+        final steps = 7;
+        final currentStep = (details.progress * steps).floor();
+        final lastStep = _archiveSwipeHapticStepById[conversation.id] ?? 0;
+
+        if (currentStep > lastStep) {
+          for (var i = lastStep; i < currentStep; i++) {
+            HapticFeedbackUtils.selectionClick();
+          }
+          _archiveSwipeHapticStepById[conversation.id] = currentStep;
+        } else if (currentStep <= 0 && lastStep != 0) {
+          _archiveSwipeHapticStepById[conversation.id] = 0;
+        }
+      },
       confirmDismiss: (_) async {
         if (hasUnread) {
           _showArchiveWarning(L10n.get("archive_failed_has_unread"));
@@ -1156,7 +1185,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         }
         return true;
       },
-      onDismissed: (_) => _archiveConversation(conversation),
+      onDismissed: (_) {
+        _archiveSwipeHapticStepById.remove(conversation.id);
+        _archiveConversation(conversation);
+      },
       background: Container(
         alignment: AlignmentDirectional.centerEnd,
         padding: const EdgeInsetsDirectional.only(end: 24),

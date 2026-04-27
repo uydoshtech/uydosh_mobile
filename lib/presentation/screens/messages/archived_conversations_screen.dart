@@ -51,6 +51,7 @@ class _ArchivedConversationsScreenState
   String? _error;
   bool _loading = false;
   bool _showTip = false;
+  final Map<int, int> _unarchiveSwipeHapticStepById = <int, int>{};
 
   @override
   void initState() {
@@ -135,7 +136,7 @@ class _ArchivedConversationsScreenState
   }
 
   void _unarchive(ConversationSummary conversation) {
-    HapticFeedbackUtils.impact();
+    HapticFeedbackUtils.tapticChain();
     context
         .read<MessagingBloc>()
         .add(UnarchiveConversation(conversationId: conversation.id));
@@ -253,7 +254,25 @@ class _ArchivedConversationsScreenState
           return Dismissible(
             key: ValueKey("archived-swipe-${conversation.id}"),
             direction: DismissDirection.endToStart,
-            onDismissed: (_) => _unarchive(conversation),
+            onUpdate: (details) {
+              final steps = 7;
+              final currentStep = (details.progress * steps).floor();
+              final lastStep =
+                  _unarchiveSwipeHapticStepById[conversation.id] ?? 0;
+
+              if (currentStep > lastStep) {
+                for (var i = lastStep; i < currentStep; i++) {
+                  HapticFeedbackUtils.selectionClick();
+                }
+                _unarchiveSwipeHapticStepById[conversation.id] = currentStep;
+              } else if (currentStep <= 0 && lastStep != 0) {
+                _unarchiveSwipeHapticStepById[conversation.id] = 0;
+              }
+            },
+            onDismissed: (_) {
+              _unarchiveSwipeHapticStepById.remove(conversation.id);
+              _unarchive(conversation);
+            },
             background: _buildUnarchiveSwipeBackground(),
             child: ConversationTile(
               conversation: conversation,
@@ -344,42 +363,49 @@ class _ArchivedConversationsScreenState
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetCtx) {
         final theme = Theme.of(sheetCtx);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: GlassBottomSheetSurface(
-              borderRadius: radius,
-              child: Material(
-                type: MaterialType.transparency,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // When `showDragHandle` is true, Flutter draws the handle in
-                    // the sheet's Material. We render our own so it sits on the
-                    // glass surface consistently.
-                    const SizedBox(height: 10),
-                    Container(
-                      width: 38,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(99),
+        final sheetMinHeight = MediaQuery.sizeOf(sheetCtx).height * 0.32;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: GlassBottomSheetSurface(
+            borderRadius: radius,
+            child: Material(
+              type: MaterialType.transparency,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: sheetMinHeight),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // When `showDragHandle` is true, Flutter draws the handle in
+                      // the sheet's Material. We render our own so it sits on the
+                      // glass surface consistently.
+                      const SizedBox(height: 10),
+                      Container(
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
                       ),
-                    ),
-                    ListTile(
-                      leading: const ThemeIcon(Icons.unarchive_outlined),
-                      title: Text(L10n.get("unarchive")),
-                      onTap: () {
-                        Navigator.of(sheetCtx).pop();
-                        _unarchive(conversation);
-                      },
-                    ),
-                  ],
+                      ListTile(
+                        leading: const ThemeIcon(Icons.unarchive_outlined),
+                        title: Text(L10n.get("unarchive")),
+                        onTap: () {
+                          Navigator.of(sheetCtx).pop();
+                          _unarchive(conversation);
+                        },
+                      ),
+                      SizedBox(height: sheetMinHeight * 0.35),
+                    ],
+                  ),
                 ),
               ),
             ),
