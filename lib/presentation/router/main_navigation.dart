@@ -827,9 +827,10 @@ class MainNavigationState extends State<MainNavigation>
                   key: notificationsBellTutorialKey,
                   child: _threeDAppBarIconButton(
                     borderRadius: const BorderRadius.all(Radius.circular(999)),
-                    iconData: activeAlerts
-                        ? Icons.notifications
-                        : Icons.notifications_none_outlined,
+                    iconData:
+                        activeAlerts
+                            ? Icons.notifications_active
+                            : Icons.notifications_none_outlined,
                     onPressed: () {
                       context.pushNotifications();
                     },
