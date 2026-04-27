@@ -15,6 +15,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
+import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -244,6 +245,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (!mounted) return;
     if (!active) return;
     setState(() => _inlineSearchActive = true);
+    HomeInlineSearchState().setActive(true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _performSearch();
@@ -1070,6 +1072,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         if (mounted) {
           setState(() => _inlineSearchActive = true);
         }
+        HomeInlineSearchState().setActive(true);
         SharedPreferences.getInstance().then((p) {
           p.setBool(_kInlineSearchActivePrefsKey, true);
         });
@@ -1083,6 +1086,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (mounted) {
       setState(() => _inlineSearchActive = false);
     }
+    HomeInlineSearchState().setActive(false);
     SharedPreferences.getInstance().then((p) {
       p.setBool(_kInlineSearchActivePrefsKey, false);
     });

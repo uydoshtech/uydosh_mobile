@@ -12,6 +12,7 @@ import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
@@ -674,30 +675,36 @@ class MainNavigationState extends State<MainNavigation>
         );
     switch (_currentIndex) {
       case 0:
-        return BlocSelector<ListingsBloc, ListingsState, int?>(
-          selector: (state) => state.map(
-            initial: (_) => null,
-            loading: (_) => null,
-            loaded: (s) => s.total,
-            error: (_) => null,
-          ),
-          builder: (context, total) {
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                L10n.text("home", style: titleStyle),
-                if (total != null) ...[
-                  const SizedBox(width: 8),
-                  Text(
-                    "• $total",
-                    style: titleStyle.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: titleStyle.color?.withValues(alpha: 0.85),
-                    ),
-                  ),
-                ],
-              ],
+        return ListenableBuilder(
+          listenable: HomeInlineSearchState(),
+          builder: (context, _) {
+            final showCount = HomeInlineSearchState().isActive;
+            return BlocSelector<ListingsBloc, ListingsState, int?>(
+              selector: (state) => state.map(
+                initial: (_) => null,
+                loading: (_) => null,
+                loaded: (s) => s.total,
+                error: (_) => null,
+              ),
+              builder: (context, total) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    L10n.text("home", style: titleStyle),
+                    if (showCount && total != null) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        "($total)",
+                        style: titleStyle.copyWith(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: titleStyle.color?.withValues(alpha: 0.72),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
             );
           },
         );
