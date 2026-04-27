@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
@@ -87,8 +88,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         pageSize: _pageSize,
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _users.addAll(response);
         _hasMore = response.length >= _pageSize;
         if (_hasMore) {
@@ -97,14 +97,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       });
       _loadCountsForUsers(response);
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
       });
     } finally {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = false;
         _isLoadingMore = false;
       });
@@ -131,13 +129,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         page: 1,
         limit: 1000,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _listingCounts[user.id] = response.data.length;
       });
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _listingCounts[user.id] = -1;
       });
     } finally {
@@ -154,14 +150,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     try {
       final profile =
           await getIt<IUserProfileService>().getUserProfile(user.id);
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _userNames[user.id] = profile.name;
         _userAvatarUrls[user.id] = profile.avatarUrl;
       });
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _userNames[user.id] = null;
         _userAvatarUrls[user.id] = null;
       });
@@ -181,13 +175,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           await getIt<IComplaintService>().getUserListingComplaints(
         user.id,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _complaintCounts[user.id] = response.length;
       });
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _complaintCounts[user.id] = -1;
       });
     } finally {

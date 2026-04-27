@@ -7,6 +7,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
@@ -91,22 +92,19 @@ class _AdminSubwayLineHeatmapScreenState
         }),
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _lineCounts
           ..clear()
           ..addEntries(results);
         _hasError = _lineCounts.values.where((count) => count >= 0).isEmpty;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
       });
     } finally {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = false;
       });
     }

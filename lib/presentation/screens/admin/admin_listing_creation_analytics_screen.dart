@@ -3,6 +3,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/listing_creation_analytics_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
@@ -68,14 +69,12 @@ class _AdminListingCreationAnalyticsScreenState
       final days = _selectedDays > 0 ? _selectedDays : null;
       final analytics =
           await _analyticsService.getListingCreationAnalytics(days: days);
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _analytics = analytics;
         _isLoading = false;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
         _isLoading = false;

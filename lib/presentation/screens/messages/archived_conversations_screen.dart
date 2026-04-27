@@ -88,8 +88,7 @@ class _ArchivedConversationsScreenState
   }
 
   Future<void> _load() async {
-    if (!mounted) return;
-    setState(() {
+    setStateIfMounted(() {
       _loading = true;
       _error = null;
     });

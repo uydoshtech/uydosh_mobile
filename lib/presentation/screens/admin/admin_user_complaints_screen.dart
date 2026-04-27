@@ -3,6 +3,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
@@ -61,8 +62,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
     try {
       final categories =
           await getIt<IComplaintService>().getComplaintCategories();
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _categoriesById
           ..clear()
           ..addEntries(categories.map((cat) => MapEntry(cat.id ?? 0, cat)));
@@ -83,21 +83,18 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
           await getIt<IComplaintService>().getUserListingComplaints(
         widget.userId,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _complaints
           ..clear()
           ..addAll(response);
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
       });
     } finally {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+      setStateIfMounted(() => _isLoading = false);
     }
   }
 
@@ -111,8 +108,7 @@ class _AdminUserComplaintsScreenState extends State<AdminUserComplaintsScreen> {
         complaint.id ?? 0,
         status,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         final index = _complaints.indexWhere((item) => item.id == updated.id);
         if (index != -1) {
           _complaints[index] = updated;

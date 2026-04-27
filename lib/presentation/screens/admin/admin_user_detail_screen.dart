@@ -6,6 +6,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/apple_device_model_name.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/models/admin_user_device.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
@@ -62,14 +63,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
       final devices = await getIt<IAdminUserService>().getUserDevices(
         userId: _currentUser.id,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _devices = devices;
         _devicesLoading = false;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _devicesError = e.toString();
         _devicesLoading = false;
       });
@@ -81,8 +80,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     try {
       final profile =
           await getIt<IUserProfileService>().getUserProfile(_currentUser.id);
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _avatarUrl = profile.avatarUrl;
         _profileName = profile.name;
       });
@@ -612,8 +610,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         reason: reason,
         blockedUntil: blockedUntil,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _blocking = false;
         _currentUser = updated;
       });
@@ -622,8 +619,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         message: L10n.get("admin_user_detail_blocked_success"),
       );
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _blocking = false);
+      setStateIfMounted(() => _blocking = false);
       ToastTheme.showError(context, message: e.toString());
     }
   }
@@ -634,8 +630,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
       final updated = await getIt<IAdminUserService>().unblockUser(
         userId: _currentUser.id,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _blocking = false;
         _currentUser = updated;
       });
@@ -644,8 +639,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         message: L10n.get("admin_user_detail_unblocked_success"),
       );
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _blocking = false);
+      setStateIfMounted(() => _blocking = false);
       ToastTheme.showError(context, message: e.toString());
     }
   }
@@ -844,8 +838,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         userId: _currentUser.id,
         role: role,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _saving = false;
         _currentRole = updated.role;
       });
@@ -854,8 +847,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         message: L10n.get("admin_user_detail_role_updated"),
       );
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _saving = false);
+      setStateIfMounted(() => _saving = false);
       ToastTheme.showError(context, message: e.toString());
     }
   }

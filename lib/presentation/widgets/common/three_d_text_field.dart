@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/widgets/common/error_border_pulse.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 
 class ThreeDTextField extends StatefulWidget {
   const ThreeDTextField({
@@ -70,8 +71,7 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
   }
 
   void _onFocusChanged() {
-    if (!mounted) return;
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   @override

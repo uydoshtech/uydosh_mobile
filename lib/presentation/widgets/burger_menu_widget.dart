@@ -19,6 +19,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
@@ -101,9 +102,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       SessionManager.getGooglePhotoUrl(),
     ]);
 
-    if (!mounted) return;
-
-    setState(() {
+    setStateIfMounted(() {
       _cachedGoogleDisplayName = results[0];
       _cachedGooglePhotoUrl = results[1];
     });

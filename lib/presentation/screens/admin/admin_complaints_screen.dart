@@ -6,6 +6,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
@@ -85,8 +86,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
     try {
       final categories =
           await getIt<IComplaintService>().getComplaintCategories();
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _categoriesById
           ..clear()
           ..addEntries(categories.map((cat) => MapEntry(cat.id ?? 0, cat)));
@@ -114,8 +114,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
         status: _statusFilter,
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _complaints.addAll(response);
         _hasMore = response.length >= _pageSize;
         if (_hasMore) {
@@ -123,14 +122,12 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
         }
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
       });
     } finally {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = false;
         _isLoadingMore = false;
       });
@@ -160,8 +157,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
         complaint.id ?? 0,
         status,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         final index = _complaints.indexWhere((item) => item.id == updated.id);
         if (index != -1) {
           if (_statusFilter != null && updated.status != _statusFilter) {
@@ -314,8 +310,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
         service.getComplaintsCount(status: "resolved"),
         service.getComplaintsCount(status: "dismissed"),
       ]);
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _statusCounts = {
           "pending": counts[0],
           "resolved": counts[1],

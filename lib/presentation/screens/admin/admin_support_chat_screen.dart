@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/support_chat_message.dart";
 import "package:uy_dosh/domain/models/support_chat_thread.dart";
 import "package:uy_dosh/domain/services/support_chat_service.dart";
@@ -83,8 +84,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
         status: _statusFilter,
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         if (loadMore) {
           _threads.addAll(response.threads);
         } else {
@@ -97,14 +97,12 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
         }
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
       });
     } finally {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = false;
         _isLoadingMore = false;
       });
@@ -436,16 +434,14 @@ class _AdminSupportChatThreadScreenState
         page: 1,
         limit: 100,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _messages.clear();
         _messages.addAll(response.messages);
         _isLoading = false;
       });
       _scrollToBottom();
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+      setStateIfMounted(() => _isLoading = false);
       ToastTheme.showError(context, message: e.toString());
     }
   }
@@ -476,9 +472,8 @@ class _AdminSupportChatThreadScreenState
         widget.thread.id,
         body,
       );
-      if (!mounted) return;
       if (message != null) {
-        setState(() {
+        setStateIfMounted(() {
           _messages.add(SupportChatMessage(
             id: message.id,
             threadId: message.threadId,
@@ -492,12 +487,10 @@ class _AdminSupportChatThreadScreenState
         _scrollToBottom();
       }
     } catch (e) {
-      if (!mounted) return;
       ToastTheme.showError(context, message: e.toString());
       _messageController.text = body;
     } finally {
-      if (!mounted) return;
-      setState(() => _isSending = false);
+      setStateIfMounted(() => _isSending = false);
     }
   }
 

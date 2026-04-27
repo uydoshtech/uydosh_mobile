@@ -8,6 +8,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/phone_auth_service.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -125,8 +126,7 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
       );
 
       final codeSent = await handle.codeSent;
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _verificationId = codeSent.verificationId;
         _lastPhoneE164 = phone;
         _step = _Step.enterCode;
@@ -137,12 +137,10 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
         (_) => _codeFocus.requestFocus(),
       );
     } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      setState(() => _busy = false);
+      setStateIfMounted(() => _busy = false);
       _showFirebaseError(e);
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _busy = false);
+      setStateIfMounted(() => _busy = false);
       ToastTheme.showWarning(
         context,
         message: L10n.get("phone_verification_failed")
@@ -173,12 +171,10 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
       HapticFeedbackUtils.strongImpact();
       Navigator.of(context).pop(user);
     } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      setState(() => _busy = false);
+      setStateIfMounted(() => _busy = false);
       _showFirebaseError(e);
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _busy = false);
+      setStateIfMounted(() => _busy = false);
       ToastTheme.showWarning(
         context,
         message: L10n.get("phone_verification_failed")

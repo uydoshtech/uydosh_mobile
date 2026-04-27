@@ -12,6 +12,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
@@ -473,17 +474,15 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
   }
 
   void _triggerStationsHighlight(Iterable<int> stationIds) {
-    if (!mounted) return;
     final ids = stationIds.toSet();
     if (ids.isEmpty) return;
-    setState(() {
+    setStateIfMounted(() {
       for (final stationId in ids) {
         _highlightGen[stationId] = (_highlightGen[stationId] ?? 0) + 1;
       }
     });
     Future<void>.delayed(const Duration(milliseconds: 1100), () {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         for (final stationId in ids) {
           _highlightGen.remove(stationId);
         }
@@ -1361,8 +1360,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                               currentPrivateRoom: _selectedPrivateRoom,
                               currentWithPhoto: _selectedWithPhoto,
                               onApply: (result) async {
-                                if (!mounted) return;
-                                setState(() {
+                                setStateIfMounted(() {
                                   _selectedListingTypeId = result.listingTypeId;
                                   _selectedGender = result.gender ?? 0;
                                   _selectedSubwayLineId =

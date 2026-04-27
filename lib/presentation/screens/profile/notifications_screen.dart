@@ -21,6 +21,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -85,11 +86,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     setState(() => _pushStatusLoading = true);
     try {
       final status = await push.getNotificationStatus();
-      if (!mounted) return;
-      setState(() => _pushStatus = status);
+      setStateIfMounted(() => _pushStatus = status);
     } finally {
-      if (!mounted) return;
-      setState(() => _pushStatusLoading = false);
+      setStateIfMounted(() => _pushStatusLoading = false);
     }
   }
 
@@ -257,8 +256,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         return "$head… (len=${token.length})";
       }
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _pushPermission = status?.name;
         _apnsTokenPreview = preview(apns);
         _fcmTokenPreview = preview(fcm);
@@ -266,16 +264,14 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             backendToken != null && backendToken.trim().isNotEmpty;
       });
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _pushPermission = "error";
         _apnsTokenPreview = null;
         _fcmTokenPreview = null;
         _hasBackendSessionToken = false;
       });
     } finally {
-      if (!mounted) return;
-      setState(() => _pushDebugLoading = false);
+      setStateIfMounted(() => _pushDebugLoading = false);
     }
   }
 
@@ -512,8 +508,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       final dismissed = prefs.getBool(
               TooltipsState.keyNotificationsAlertsExplainerDismissed) ??
           false;
-      if (!mounted) return;
-      setState(() => _showAlertsExplainer = !dismissed);
+      setStateIfMounted(() => _showAlertsExplainer = !dismissed);
     } catch (_) {
       // If prefs are unavailable, keep default (show).
     }
@@ -532,15 +527,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     setState(() => _loading = true);
     try {
       final alerts = await getIt<ISearchAlertService>().listAlerts();
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _alerts = alerts;
         _loading = false;
       });
       ActiveSearchAlertsState().syncFromAlerts(alerts);
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _loading = false);
+      setStateIfMounted(() => _loading = false);
       if (e is DioException && e.response?.statusCode == 401) {
         ToastTheme.showError(
           context,
@@ -557,12 +550,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       alertId: a.id,
       enabled: enabled,
     );
-    if (!mounted) return;
     if (!ok) {
       ToastTheme.showError(context, message: L10n.get("error_generic"));
       return;
     }
-    setState(() {
+    setStateIfMounted(() {
       _alerts = _alerts
           .map(
             (x) => x.id == a.id
@@ -591,8 +583,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
     // Optimistically remove from list after the animation finishes.
     Future.delayed(duration, () {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _itemsBeingRemoved.remove(a.id);
         _alerts = _alerts.where((x) => x.id != a.id).toList();
       });
@@ -659,7 +650,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       });
       ActiveSearchAlertsState().syncFromAlerts(_alerts);
     } finally {
-      if (mounted) setState(() => _bulkWorking = false);
+      setStateIfMounted(() => _bulkWorking = false);
     }
   }
 
@@ -692,7 +683,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       setState(() => _alerts = const []);
       ActiveSearchAlertsState().syncFromAlerts(_alerts);
     } finally {
-      if (mounted) setState(() => _bulkWorking = false);
+      setStateIfMounted(() => _bulkWorking = false);
     }
   }
 

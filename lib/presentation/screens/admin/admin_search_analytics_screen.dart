@@ -5,6 +5,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
@@ -50,14 +51,12 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
     try {
       final days = _selectedDays > 0 ? _selectedDays : null;
       final analytics = await _analyticsService.getSearchAnalytics(days: days);
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _analytics = analytics;
         _isLoading = false;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
         _isLoading = false;

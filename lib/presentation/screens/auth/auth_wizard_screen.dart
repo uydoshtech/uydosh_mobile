@@ -219,8 +219,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       final countries = await _countryService.getCountries(
         LanguageState().currentLanguage,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _countries = countries;
       });
     } catch (error) {
@@ -452,8 +451,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       return;
     }
 
-    if (!mounted) return;
-    setState(() {
+    setStateIfMounted(() {
       _isAuthenticating = true;
       _isGoogleSignedIn = true; // share "is authenticated" gate with rest of wizard
       _currentUser = user;

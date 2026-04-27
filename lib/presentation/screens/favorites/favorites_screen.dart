@@ -395,8 +395,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
                 // After animation finishes, remove from the list.
                 Future.delayed(duration, () {
-                  if (!mounted) return;
-                  setState(() {
+                  setStateIfMounted(() {
                     _itemsBeingRemoved.remove(listing.id);
                     _favoriteListings.removeWhere(
                       (l) => l.id == listing.id,

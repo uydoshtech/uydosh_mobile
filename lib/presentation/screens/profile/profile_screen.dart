@@ -15,6 +15,7 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
@@ -104,9 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       SessionManager.getIsUserBlocked(),
     ]);
 
-    if (!mounted) return;
-
-    setState(() {
+    setStateIfMounted(() {
       _cachedGoogleDisplayName = results[0] as String?;
       _cachedGooglePhotoUrl = results[1] as String?;
       _cachedUserProfile = results[2] as UserProfile?;
@@ -128,8 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       SessionManager.getUserRole(),
       SessionManager.getIsUserBlocked(),
     ]);
-    if (!mounted) return;
-    setState(() {
+    setStateIfMounted(() {
       _userRole = results[0] as String?;
       _userBlocked = results[1]! as bool;
       _userRoleLoaded = true;
@@ -197,7 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               AchievementUnlockState().clearPendingAchievement(),
         );
       }
-      if (mounted) setState(() {});
+      setStateIfMounted(() {});
     } catch (_) {}
   }
 
@@ -220,18 +218,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         await SessionManager.storeUserRole(role);
       }
       await SessionManager.storeUserBlockedStatus(isBlocked);
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _userRole = role;
         _userBlocked = isBlocked;
         _userRoleLoaded = true;
       });
     } catch (_) {
-      if (mounted) {
-        setState(() {
-          _userRoleLoaded = true;
-        });
-      }
+      setStateIfMounted(() {
+        _userRoleLoaded = true;
+      });
     } finally {
       _refreshingRole = false;
     }
@@ -243,8 +238,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         listener: (context, state) {
           state.whenOrNull(
             loaded: (profile) {
-              if (!mounted) return;
-              setState(() {
+              setStateIfMounted(() {
                 _cachedUserProfile = profile;
               });
             },

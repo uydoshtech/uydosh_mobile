@@ -7,6 +7,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
@@ -74,8 +75,7 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
         limit: _pageLimit,
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         if (isRefresh) {
           _viewedListings = response.data;
         } else {
@@ -87,12 +87,11 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
       });
     } catch (e) {
       logger.d("ViewHistoryScreen: Error loading viewed listings: $e");
-      if (!mounted) return;
       final isAuthError = e.toString().contains("401") ||
           e.toString().contains("Unauthorized") ||
           e.toString().contains("Invalid or expired session token");
 
-      setState(() {
+      setStateIfMounted(() {
         if (isRefresh) _viewedListings = [];
         _isLoading = false;
         _hasError = true;
@@ -128,20 +127,17 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
         limit: _pageLimit,
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _viewedListings.addAll(response.data);
         _hasMoreData = response.hasMore;
         _isLoadingMore = false;
       });
     } catch (e) {
       logger.d("ViewHistoryScreen: Error loading more: $e");
-      if (mounted) {
-        setState(() {
-          _currentPage--;
-          _isLoadingMore = false;
-        });
-      }
+      setStateIfMounted(() {
+        _currentPage--;
+        _isLoadingMore = false;
+      });
     }
   }
 

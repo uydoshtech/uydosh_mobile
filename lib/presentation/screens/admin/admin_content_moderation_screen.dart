@@ -8,6 +8,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -67,8 +68,7 @@ class _AdminContentModerationScreenState
       final cameraRes = await _settingsService.getCustomCameraDisabledSetting();
       final contactsRes =
           await _settingsService.getListingContactsVisibleSetting();
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _blurEnabled = blurRes.enabled;
         // UI is positive: ON means enabled/shown.
         _geminiListingUiEnabled = !geminiRes.hidden;
@@ -84,8 +84,7 @@ class _AdminContentModerationScreenState
         visible: _listingContactsVisible,
       );
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
         _isLoading = false;
@@ -101,15 +100,13 @@ class _AdminContentModerationScreenState
         // Server stores "disabled", UI is "enabled".
         disabled: !value,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _lidarRoomScanEnabled = !res.disabled;
         _isSavingLidar = false;
       });
       ClientLidarRoomScanConfig.applyDisabled(disabled: res.disabled);
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _isSavingLidar = false);
+      setStateIfMounted(() => _isSavingLidar = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -128,15 +125,13 @@ class _AdminContentModerationScreenState
         // Server stores "disabled", UI is "enabled".
         disabled: !value,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _customCameraEnabled = !res.disabled;
         _isSavingCustomCamera = false;
       });
       ClientCustomCameraConfig.applyDisabled(disabled: res.disabled);
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _isSavingCustomCamera = false);
+      setStateIfMounted(() => _isSavingCustomCamera = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -155,15 +150,13 @@ class _AdminContentModerationScreenState
       final res = await _settingsService.setGeminiListingUiHidden(
         hidden: !value,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _geminiListingUiEnabled = !res.hidden;
         _isSavingGemini = false;
       });
       ClientGeminiListingUiConfig.applyHidden(hidden: res.hidden);
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _isSavingGemini = false);
+      setStateIfMounted(() => _isSavingGemini = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -181,14 +174,12 @@ class _AdminContentModerationScreenState
       final res = await _settingsService.setContentModerationBlurEnabled(
         enabled: value,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _blurEnabled = res.enabled;
         _isSaving = false;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _isSaving = false);
+      setStateIfMounted(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -207,13 +198,11 @@ class _AdminContentModerationScreenState
       final res = await _settingsService.setListingContactsVisible(
         visible: value,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _listingContactsVisible = res.visible;
       });
       ClientListingContactsConfig.applyVisible(visible: res.visible);
     } catch (e) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -222,8 +211,7 @@ class _AdminContentModerationScreenState
         ),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => _isSavingListingContacts = false);
+      setStateIfMounted(() => _isSavingListingContacts = false);
     }
   }
 
@@ -234,8 +222,7 @@ class _AdminContentModerationScreenState
       HapticFeedbackUtils.impact();
       await AdminFeatureFlagsState().setShowPriceInsights(value);
     } finally {
-      if (!mounted) return;
-      setState(() => _isSavingPriceInsights = false);
+      setStateIfMounted(() => _isSavingPriceInsights = false);
     }
   }
 
@@ -250,8 +237,7 @@ class _AdminContentModerationScreenState
         await TooltipsState().setEnabled(false);
       }
     } finally {
-      if (!mounted) return;
-      setState(() => _isSavingTooltips = false);
+      setStateIfMounted(() => _isSavingTooltips = false);
     }
   }
 

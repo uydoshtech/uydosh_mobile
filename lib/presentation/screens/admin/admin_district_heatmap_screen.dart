@@ -4,6 +4,7 @@ import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
@@ -89,8 +90,7 @@ class _AdminDistrictHeatmapScreenState
         }),
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _districtCounts
           ..clear()
           ..addEntries(results);
@@ -99,14 +99,12 @@ class _AdminDistrictHeatmapScreenState
             .isEmpty;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
       });
     } finally {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = false;
       });
     }

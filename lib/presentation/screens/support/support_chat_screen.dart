@@ -7,6 +7,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/support_chat_message.dart";
 import "package:uy_dosh/domain/models/support_chat_thread.dart";
@@ -60,15 +61,13 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
         limit: 50,
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _threads.clear();
         _threads.addAll(response.threads);
         _isLoading = false;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
         _isLoading = false;
@@ -93,7 +92,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       if (!mounted) return;
       ToastTheme.showError(context, message: e.toString());
     } finally {
-      if (mounted) setState(() => _creatingThread = false);
+      setStateIfMounted(() => _creatingThread = false);
     }
   }
 
@@ -418,8 +417,7 @@ class _UserSupportChatThreadScreenState
   Future<void> _loadCurrentUserInitials() async {
     try {
       final profile = await getIt<IUserProfileService>().getCurrentUserProfile();
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _currentUserInitials = StringUtils.extractInitials(profile.name);
       });
     } catch (_) {
@@ -442,16 +440,14 @@ class _UserSupportChatThreadScreenState
         page: 1,
         limit: 100,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _messages.clear();
         _messages.addAll(response.messages);
         _isLoading = false;
       });
       _scrollToBottom();
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+      setStateIfMounted(() => _isLoading = false);
       ToastTheme.showError(context, message: e.toString());
     }
   }

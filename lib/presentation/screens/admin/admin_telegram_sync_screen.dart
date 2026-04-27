@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
@@ -167,8 +168,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         pageSize: 200,
         role: "admin",
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _adminUsers
           ..clear()
           ..addAll(list);
@@ -176,8 +176,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         _selectedImportUserId = _defaultOwnerIdAfterLoad(list);
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _loadingAdmins = false;
         _adminsError = e.toString();
         _selectedImportUserId = null;
@@ -229,14 +228,12 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         skipListingImport: _skipListingImport,
         importUserId: importUserId,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _lastResult = r;
         _running = false;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _errorText = e.toString();
         _running = false;
       });
@@ -288,15 +285,13 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
       confirmLabel: L10n.get("admin_data_import_clear_confirm_action"),
     );
     if (!confirmed) return;
-    if (!mounted) return;
 
-    setState(() {
+    setStateIfMounted(() {
       _clearingListings = true;
       _errorText = null;
     });
     try {
       final r = await _service.clearAllListings();
-      if (!mounted) return;
       ToastTheme.showSuccess(
         context,
         message: L10n.getWithParams(
@@ -314,16 +309,11 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         ),
       );
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _errorText = e.toString();
       });
     } finally {
-      if (mounted) {
-        setState(() {
-          _clearingListings = false;
-        });
-      }
+      setStateIfMounted(() => _clearingListings = false);
     }
   }
 
@@ -334,15 +324,13 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
       confirmLabel: L10n.get("admin_data_import_clear_confirm_action"),
     );
     if (!confirmed) return;
-    if (!mounted) return;
 
-    setState(() {
+    setStateIfMounted(() {
       _clearingIngested = true;
       _errorText = null;
     });
     try {
       final r = await _service.clearAllIngestedMessages();
-      if (!mounted) return;
       ToastTheme.showSuccess(
         context,
         message: L10n.getWithParams(
@@ -356,16 +344,11 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         ),
       );
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _errorText = e.toString();
       });
     } finally {
-      if (mounted) {
-        setState(() {
-          _clearingIngested = false;
-        });
-      }
+      setStateIfMounted(() => _clearingIngested = false);
     }
   }
 
@@ -386,21 +369,15 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         chatKeyFilter: null,
         maxRows: maxRows,
       );
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(L10n.get("admin_telegram_export_done"))),
       );
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _errorText = e.toString();
       });
     } finally {
-      if (mounted) {
-        setState(() {
-          _exporting = false;
-        });
-      }
+      setStateIfMounted(() => _exporting = false);
     }
   }
 
@@ -412,14 +389,12 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     });
     try {
       final r = await _areaPriceCacheService.refreshCache();
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _areaPriceCacheResult = r;
         _refreshingAreaPriceCache = false;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _areaPriceCacheErrorText = e.toString();
         _refreshingAreaPriceCache = false;
       });

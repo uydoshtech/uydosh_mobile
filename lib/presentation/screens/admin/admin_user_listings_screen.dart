@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
@@ -81,8 +82,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
         limit: _pageSize,
       );
 
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         final newItems =
             response.data.where((item) => _listingIds.add(item.id)).toList();
         _listings.addAll(newItems);
@@ -92,14 +92,12 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
         }
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _hasError = true;
         _errorMessage = e.toString();
       });
     } finally {
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = false;
         _isLoadingMore = false;
       });

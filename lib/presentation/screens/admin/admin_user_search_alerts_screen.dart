@@ -6,6 +6,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/admin_user_search_alert_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
@@ -51,14 +52,12 @@ class _AdminUserSearchAlertsScreenState
       final alerts = await getIt<IAdminUserSearchAlertService>().listUserAlerts(
         userId: widget.userId,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _alerts = alerts;
         _loading = false;
       });
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _loading = false);
+      setStateIfMounted(() => _loading = false);
       if (e is DioException && e.response?.statusCode == 401) {
         // Admin auth expired; surface a generic error here.
         return;

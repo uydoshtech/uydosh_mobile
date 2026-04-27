@@ -13,6 +13,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/models/country.dart";
@@ -182,8 +183,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       final countries = await _countryService.getCountries(
         LanguageState().currentLanguage,
       );
-      if (!mounted) return;
-      setState(() => _countries = countries);
+      setStateIfMounted(() => _countries = countries);
     } catch (error, stack) {
       logger.e(
         "Failed to load countries on edit profile screen",
@@ -417,8 +417,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         return nameA.compareTo(nameB);
       });
 
-      if (!mounted) return;
-      setState(() => _regions = regions);
+      setStateIfMounted(() => _regions = regions);
       _isLoadingRegions.value = false;
 
       // Set the selected region based on the profile's regionId
@@ -447,8 +446,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     try {
       final universityService = getIt<IUniversityService>();
       final universities = await universityService.getUniversities();
-      if (!mounted) return;
-      setState(() => _universities = universities);
+      setStateIfMounted(() => _universities = universities);
       _isLoadingUniversities.value = false;
     } catch (e) {
       _isLoadingUniversities.value = false;
