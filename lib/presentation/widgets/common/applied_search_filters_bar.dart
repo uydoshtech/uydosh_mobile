@@ -85,6 +85,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             reverse: alignRight,
+            clipBehavior: Clip.none,
             child: Row(
               mainAxisAlignment:
                   alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,

@@ -676,13 +676,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return LiquidGlassPlate(
       height: _inlineSearchRibbonHeight,
       borderRadius: BorderRadius.circular(16),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.only(left: 12, right: 6),
       child: Row(
         children: [
           const ThemeIcon(Icons.tune, size: 18),
           const SizedBox(width: 10),
           Expanded(child: _buildInlineFiltersChips()),
-          const SizedBox(width: 10),
           BlocSelector<ListingsBloc, ListingsState, int?>(
             selector: (state) => state.map(
               initial: (_) => null,
@@ -693,7 +692,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             builder: (context, total) {
               if (total == null) return const SizedBox.shrink();
               return Padding(
-                padding: const EdgeInsets.only(right: 10),
+                padding: const EdgeInsets.only(right: 4),
                 child: Container(
                   width: 34,
                   height: 34,
@@ -717,9 +716,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ),
           IconButton(
             visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.all(8),
-            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-            icon: const ThemeIcon(Icons.close, size: 18),
+            padding: const EdgeInsets.all(6),
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            icon: const ThemeIcon(Icons.close, size: 16),
             onPressed: () {
               HapticFeedbackUtils.impact();
               _exitInlineSearch();
