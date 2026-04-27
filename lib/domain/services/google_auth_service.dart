@@ -1,16 +1,45 @@
 import "package:firebase_auth/firebase_auth.dart";
+import "package:firebase_crashlytics/firebase_crashlytics.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 
 class GoogleAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId:
         kIsWeb
             ? "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com"
             : null,
   );
+
+  Future<void> _recordGoogleSignInError(
+    Object error,
+    StackTrace stackTrace, {
+    required String step,
+  }) async {
+    if (kIsWeb) return;
+    try {
+      await _crashlytics.setCustomKey("auth_provider", "google");
+      await _crashlytics.setCustomKey("auth_flow", "sign_in");
+      await _crashlytics.setCustomKey("auth_step", step);
+
+      if (error is FirebaseAuthException) {
+        await _crashlytics.setCustomKey("firebase_auth_code", error.code);
+      }
+
+      await _crashlytics.recordError(
+        error,
+        stackTrace,
+        fatal: false,
+        reason: "Google sign-in failed",
+      );
+    } catch (loggingError) {
+      // Never allow telemetry failures to break auth flows.
+      logger.d("Crashlytics logging failed: $loggingError");
+    }
+  }
 
   // Get current user
   User? get currentUser => _auth.currentUser;
@@ -42,7 +71,8 @@ class GoogleAuthService {
       // Sign in to Firebase with the credential
       final userCredential = await _auth.signInWithCredential(credential);
       return userCredential;
-    } catch (e) {
+    } catch (e, st) {
+      await _recordGoogleSignInError(e, st, step: "signInWithGoogle");
       logger.d("Error signing in with Google: $e");
       rethrow;
     }

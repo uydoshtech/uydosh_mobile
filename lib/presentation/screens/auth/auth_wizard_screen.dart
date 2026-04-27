@@ -2,6 +2,7 @@ import "dart:async";
 import "dart:convert";
 
 import "package:firebase_auth/firebase_auth.dart";
+import "package:firebase_crashlytics/firebase_crashlytics.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
@@ -141,6 +142,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   // Firebase Auth
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId:
         kIsWeb
@@ -320,11 +322,22 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     });
 
     try {
+      if (!kIsWeb) {
+        await _crashlytics.setCustomKey("auth_provider", "google");
+        await _crashlytics.setCustomKey("auth_flow", "sign_in");
+        await _crashlytics.setCustomKey("auth_step", "google_sign_in_start");
+        _crashlytics.log("AuthWizard: google_sign_in_started");
+      }
+
       // Trigger the authentication flow
       final googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
         // User cancelled the sign-in
+        if (!kIsWeb) {
+          await _crashlytics.setCustomKey("auth_step", "google_sign_in_cancelled");
+          _crashlytics.log("AuthWizard: google_sign_in_cancelled");
+        }
         setState(() {
           _isAuthenticating = false;
         });
@@ -342,6 +355,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       );
 
       // Sign in to Firebase with the credential
+      if (!kIsWeb) {
+        await _crashlytics.setCustomKey(
+          "auth_step",
+          "firebase_auth_signInWithCredential",
+        );
+      }
       await _auth.signInWithCredential(credential);
 
       // Update state immediately after Firebase authentication succeeds
@@ -374,7 +393,29 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           duration: const Duration(seconds: 3),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      if (!kIsWeb) {
+        try {
+          await _crashlytics.setCustomKey("auth_provider", "google");
+          await _crashlytics.setCustomKey("auth_flow", "sign_in");
+          await _crashlytics.setCustomKey(
+            "auth_step",
+            "auth_wizard_sign_in_with_google",
+          );
+          if (e is FirebaseAuthException) {
+            await _crashlytics.setCustomKey("firebase_auth_code", e.code);
+          }
+          await _crashlytics.recordError(
+            e,
+            st,
+            fatal: false,
+            reason: "Google sign-in failed (AuthWizard)",
+          );
+        } catch (loggingError) {
+          logger.d("Crashlytics logging failed: $loggingError");
+        }
+      }
+
       getIt<AppAnalyticsService>().logSignInFailure(
         method: "google",
         errorType: e.toString().length > 100 ? e.toString().substring(0, 100) : e.toString(),
