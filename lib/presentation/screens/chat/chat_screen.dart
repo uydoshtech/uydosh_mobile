@@ -1317,8 +1317,9 @@ class _ChatScreenState extends State<ChatScreen> {
             ? question
             : question[0].toLowerCase() + question.substring(1);
     _messageController.text = "$greeting $lowercasedQuestion";
-    // Focus the text field to show the inserted text
-    FocusScope.of(context).requestFocus(_messageFocusNode);
+    // Don't steal focus / open keyboard when tapping a quick question.
+    // If keyboard is already open, tapping a chip should dismiss it.
+    FocusScope.of(context).unfocus();
   }
 
   /// True when the signed-in user owns the backing listing. Only returns true

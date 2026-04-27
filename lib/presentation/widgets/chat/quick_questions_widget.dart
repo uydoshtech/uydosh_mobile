@@ -40,8 +40,7 @@ class QuickQuestionsWidget extends StatelessWidget {
         final pillColor = themeState.pillColor;
         final pillTextColor = themeState.pillTextColor;
         final borderColor = themeState.borderColor;
-        final bottomPad =
-            MediaQuery.viewPaddingOf(context).bottom + 8;
+        final bottomPad = MediaQuery.viewPaddingOf(context).bottom + 12;
 
         final stripDecoration =
             blendWithGlassBackdrop
@@ -59,7 +58,7 @@ class QuickQuestionsWidget extends StatelessWidget {
         );
 
         return Container(
-          padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPad),
+          padding: EdgeInsets.fromLTRB(16, 8, 16, bottomPad),
           decoration: stripDecoration,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -85,7 +84,7 @@ class QuickQuestionsWidget extends StatelessWidget {
   }) {
     final children = <Widget>[];
     for (var i = 0; i < keys.length; i++) {
-      if (i > 0) children.add(const SizedBox(width: 8));
+      if (i > 0) children.add(const SizedBox(width: 10));
       final key = keys[i];
       children.add(
         _buildQuestionPill(
@@ -113,7 +112,7 @@ class QuickQuestionsWidget extends StatelessWidget {
         onQuestionTap(text, questionKey);
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(20),

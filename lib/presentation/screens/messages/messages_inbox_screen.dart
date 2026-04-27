@@ -942,16 +942,15 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       builder: (sheetCtx) {
         final theme = Theme.of(sheetCtx);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));
-        final sheetMinHeight = MediaQuery.sizeOf(sheetCtx).height * 0.32;
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: GlassBottomSheetSurface(
             borderRadius: radius,
             child: Material(
               type: MaterialType.transparency,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: sheetMinHeight),
-                child: SingleChildScrollView(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -960,13 +959,17 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                         width: 38,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.18,
+                          ),
                           borderRadius: BorderRadius.circular(99),
                         ),
                       ),
                       if (hasUnread)
                         ListTile(
-                          leading: const ThemeIcon(Icons.mark_email_read_outlined),
+                          leading: const ThemeIcon(
+                            Icons.mark_email_read_outlined,
+                          ),
                           title: Text(
                             L10n.get("mark_as_read", fallback: "Mark as read"),
                           ),
@@ -996,7 +999,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                                 _archiveConversation(conversation);
                               },
                       ),
-                      SizedBox(height: sheetMinHeight * 0.35),
                     ],
                   ),
                 ),
