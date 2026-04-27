@@ -261,8 +261,10 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
         (isDark
             ? scheme.surface.withValues(alpha: 0.08)
             : scheme.surface.withValues(alpha: 0.12));
-    final faceColor = base.withValues(alpha: isDark ? 0.38 : 0.55);
+    final faceColor =
+        widget.fillColor != null ? base : base.withValues(alpha: isDark ? 0.38 : 0.55);
     final stroke = widget.borderColor.withValues(alpha: isDark ? 0.60 : 0.70);
+    final useBackdropBlur = enableGlass && widget.fillColor == null;
 
     return SizedBox(
       height: 48,
@@ -290,7 +292,7 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (enableGlass)
+                    if (useBackdropBlur)
                       BackdropFilter(
                         filter: ImageFilter.blur(
                           sigmaX: isDark ? 18 : 22,
@@ -307,8 +309,9 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Colors.white.withValues(alpha: isDark ? 0.10 : 0.22),
-                            Colors.white.withValues(alpha: 0.0),
+                            Color.lerp(faceColor, Colors.white, isDark ? 0.10 : 0.18)!
+                                .withValues(alpha: isDark ? 0.35 : 0.28),
+                            faceColor.withValues(alpha: 0.0),
                           ],
                           stops: const [0.0, 0.62],
                         ),

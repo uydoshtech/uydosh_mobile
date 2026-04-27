@@ -197,7 +197,7 @@ class AppColors {
 
   // Gender colors
   static const Color genderMale = Color(0xFF2196F3); // Blue
-  static const Color genderFemale = Color(0xFFE91E63); // Pink
+  static const Color genderFemale = Color(0xFFC45A7C); // Muted rose
   static const Color genderOther = Color(0xFF757575); // Grey
 
   // Text colors for different themes

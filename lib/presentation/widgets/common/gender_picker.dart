@@ -1,5 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -99,11 +100,11 @@ class _GenderPickerState extends State<GenderPicker> {
   Color _getGenderColor(int gender) {
     switch (gender) {
       case 1:
-        return Colors.blue;
+        return AppColors.genderMale;
       case 2:
       default:
-        if (gender == 0) return Colors.grey;
-        return Colors.red;
+        if (gender == 0) return AppColors.genderOther;
+        return AppColors.genderFemale;
     }
   }
 
