@@ -23,13 +23,11 @@ import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
-import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
@@ -631,14 +629,9 @@ class MainNavigationState extends State<MainNavigation>
 
   List<Widget> _getScreens() {
     return [
-      BlocProvider(
-        create: (context) {
-          final bloc = ListingsBloc(getIt<IListingService>());
-          bloc.add(const ListingsEvent.searchListings(isRefresh: true));
-          return bloc;
-        },
-        child: HomeScreen(isHomeTabActive: _currentIndex == 0),
-      ),
+      // Home uses the [ListingsBloc] from [AppRouter.buildMainNavigation] so
+      // the shell AppBar count and the feed stay on the same bloc instance.
+      HomeScreen(isHomeTabActive: _currentIndex == 0),
       _favoritesTab,
       MessagesInboxScreen(
         showCustomHeader: false,

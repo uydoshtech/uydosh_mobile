@@ -380,8 +380,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
       return;
     }
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => MainNavigation(initialIndex: index),
+      MaterialPageRoute<void>(
+        builder: (context) => AppRouter.buildMainNavigation(initialIndex: index),
       ),
     );
   }

@@ -624,12 +624,14 @@ class _ListingDescriptionTranslationState
                   : 8,
         ),
         if (waitingForTranslation)
-          Text(
-            L10n.get("listing_translating_description"),
-            style: widget.textStyle.copyWith(
-              fontStyle: FontStyle.italic,
-              color: ListingDetailThemeHelper.descriptionTextColor,
-            ),
+          _ListingDescriptionTranslationSkeleton(
+            textStyle: widget.textStyle,
+            layoutProxyText:
+                ClientListingContactUiConfig.hidePublicContactDetails
+                    ? ListingContactRedaction.stripForPublicDisplay(
+                        widget.originalText,
+                      )
+                    : widget.originalText,
           )
         else
           _buildDescriptionWithTelegramLinks(
@@ -649,6 +651,131 @@ class _ListingDescriptionTranslationState
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Rounded bars while Gemini runs. Height follows a [TextPainter] layout of
+/// [layoutProxyText] (the description we already show) so the block matches
+/// the final [SelectableText] footprint more closely than a fixed bar stack.
+class _ListingDescriptionTranslationSkeleton extends StatelessWidget {
+  const _ListingDescriptionTranslationSkeleton({
+    required this.textStyle,
+    required this.layoutProxyText,
+  });
+
+  final TextStyle textStyle;
+  final String layoutProxyText;
+
+  static double _plainTextHeight(
+    BuildContext context,
+    String text,
+    TextStyle style,
+    double maxWidth,
+  ) {
+    final t = text.trim();
+    if (t.isEmpty || maxWidth <= 0) {
+      return 0;
+    }
+    final tp = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: Directionality.of(context),
+      locale: Localizations.maybeLocaleOf(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout(maxWidth: maxWidth);
+    return tp.size.height;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fs = textStyle.fontSize ?? 16;
+    final barHeight = (fs * 0.7).clamp(9.0, 15.0);
+    final gap = (fs * 0.35).clamp(5.0, 11.0);
+    final baseColor =
+        (textStyle.color ?? ListingDetailThemeHelper.descriptionTextColor)
+            .withValues(alpha: 0.15);
+    final minStackH = 4 * barHeight + 3 * gap;
+    // Translated copy is often a bit taller (e.g. RU vs EN); reserve ~1 line.
+    final expansionSlack = (textStyle.height ?? 1.0) * fs * 1.15;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        var maxW = constraints.maxWidth;
+        if (!maxW.isFinite || maxW <= 0) {
+          maxW = MediaQuery.sizeOf(context).width;
+        }
+        final measured = _plainTextHeight(
+          context,
+          layoutProxyText,
+          textStyle,
+          maxW,
+        );
+        final boxH = (measured > 0
+                ? measured + expansionSlack
+                : minStackH)
+            .clamp(minStackH, double.infinity);
+
+        return SizedBox(
+          width: double.infinity,
+          height: boxH,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SkeletonRule(
+                height: barHeight,
+                widthFactor: 1.0,
+                color: baseColor,
+              ),
+              SizedBox(height: gap),
+              _SkeletonRule(
+                height: barHeight,
+                widthFactor: 0.94,
+                color: baseColor,
+              ),
+              SizedBox(height: gap),
+              _SkeletonRule(
+                height: barHeight,
+                widthFactor: 0.88,
+                color: baseColor,
+              ),
+              SizedBox(height: gap),
+              _SkeletonRule(
+                height: barHeight,
+                widthFactor: 0.42,
+                color: baseColor,
+              ),
+              const Spacer(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SkeletonRule extends StatelessWidget {
+  const _SkeletonRule({
+    required this.height,
+    required this.widthFactor,
+    required this.color,
+  });
+
+  final double height;
+  final double widthFactor;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return FractionallySizedBox(
+      widthFactor: widthFactor.clamp(0.08, 1.0),
+      alignment: AlignmentDirectional.centerStart,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(height / 2),
+        ),
+      ),
     );
   }
 }

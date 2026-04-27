@@ -70,6 +70,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   final Map<int, ({SearchAlert alert, int index})> _optimisticallyRemoved =
       {}; // Rollback buffer for optimistic removals
 
+  /// Per-alert step counter for swipe-to-delete haptics (matches inbox archive).
+  final Map<int, int> _alertSwipeHapticStepById = {};
+
   AuthorizationStatus? _pushStatus;
   bool _pushStatusLoading = false;
 
@@ -566,7 +569,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     ActiveSearchAlertsState().syncFromAlerts(_alerts);
   }
 
-  void _deleteAlertAnimated(SearchAlert a, {required int index}) {
+  void _deleteAlertAnimated(
+    SearchAlert a, {
+    required int index,
+    bool animatedListTile = true,
+  }) {
     if (!mounted) return;
     if (_itemsBeingRemoved.contains(a.id)) return;
 
@@ -577,18 +584,26 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       _optimisticallyRemoved[a.id] = (alert: a, index: index);
     }
 
-    setState(() {
-      _itemsBeingRemoved.add(a.id);
-    });
+    if (animatedListTile) {
+      setState(() {
+        _itemsBeingRemoved.add(a.id);
+      });
 
-    // Optimistically remove from list after the animation finishes.
-    Future.delayed(duration, () {
-      setStateIfMounted(() {
-        _itemsBeingRemoved.remove(a.id);
+      // Optimistically remove from list after the animation finishes.
+      Future.delayed(duration, () {
+        setStateIfMounted(() {
+          _itemsBeingRemoved.remove(a.id);
+          _alerts = _alerts.where((x) => x.id != a.id).toList();
+        });
+        ActiveSearchAlertsState().syncFromAlerts(_alerts);
+      });
+    } else {
+      // [Dismissible] already slid the row off — drop from data immediately.
+      setState(() {
         _alerts = _alerts.where((x) => x.id != a.id).toList();
       });
       ActiveSearchAlertsState().syncFromAlerts(_alerts);
-    });
+    }
 
     // Delete on backend; rollback on failure.
     () async {
@@ -611,6 +626,76 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       ActiveSearchAlertsState().syncFromAlerts(_alerts);
       ToastTheme.showError(context, message: L10n.get("error_generic"));
     }();
+  }
+
+  /// Trailing swipe (end→start, i.e. left in LTR) with stepped haptics like
+  /// [MessagesInboxScreen._wrapWithArchiveSwipe].
+  Widget _wrapSearchAlertSwipeDelete({
+    required Widget child,
+    required SearchAlert alert,
+    required int alertIndex,
+  }) {
+    final ts = ThemeState();
+    final swipeFgColor = ts.isBlueTheme ? Colors.white : AppColors.error;
+    final swipeBgColor = ts.isBlueTheme
+        ? AppColors.error.withValues(alpha: 0.38)
+        : AppColors.error.withValues(alpha: 0.2);
+
+    return Dismissible(
+      key: ValueKey("search-alert-swipe-${alert.id}"),
+      direction: DismissDirection.endToStart,
+      onUpdate: (details) {
+        if (_bulkWorking) return;
+        final steps = 7;
+        final currentStep = (details.progress * steps).floor();
+        final lastStep = _alertSwipeHapticStepById[alert.id] ?? 0;
+
+        if (currentStep > lastStep) {
+          for (var i = lastStep; i < currentStep; i++) {
+            HapticFeedbackUtils.selectionClick();
+          }
+          _alertSwipeHapticStepById[alert.id] = currentStep;
+        } else if (currentStep <= 0 && lastStep != 0) {
+          _alertSwipeHapticStepById[alert.id] = 0;
+        }
+      },
+      confirmDismiss: (_) async {
+        if (_bulkWorking) return false;
+        return true;
+      },
+      onDismissed: (_) {
+        _alertSwipeHapticStepById.remove(alert.id);
+        HapticFeedbackUtils.tapticChain();
+        _deleteAlertAnimated(
+          alert,
+          index: alertIndex,
+          animatedListTile: false,
+        );
+      },
+      background: Container(
+        alignment: AlignmentDirectional.centerEnd,
+        padding: const EdgeInsetsDirectional.only(end: 22),
+        decoration: BoxDecoration(
+          color: swipeBgColor,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ThemeIcon(Icons.delete_outline, color: swipeFgColor),
+            const SizedBox(width: 8),
+            Text(
+              L10n.get("delete"),
+              style: TextStyle(
+                color: swipeFgColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+      child: child,
+    );
   }
 
   Future<void> _disableAllAlerts() async {
@@ -1217,6 +1302,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                         child: TheDotDropMenuButton<String>(
                                           enabled: !_bulkWorking,
                                           padding: EdgeInsets.zero,
+                                          visualScale: 0.8,
                                           onSelected: (value) {
                                             if (value == "toggle") {
                                               _toggleEnabled(a, !a.enabled);
@@ -1265,7 +1351,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           ),
                         );
 
-                        if (!isRemoving) return card;
+                        final wrapped = _wrapSearchAlertSwipeDelete(
+                          child: card,
+                          alert: a,
+                          alertIndex: alertIndex,
+                        );
+
+                        if (!isRemoving) return wrapped;
 
                         // Collapse + fade only while removing (match Favorites animation).
                         return TweenAnimationBuilder<double>(
@@ -1284,7 +1376,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                               ),
                             );
                           },
-                          child: card,
+                          child: wrapped,
                         );
                       },
                     ),

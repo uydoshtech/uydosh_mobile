@@ -17,6 +17,8 @@ class TheDotDropMenuButton<T> extends StatefulWidget {
     this.padding = const EdgeInsets.all(8.0),
     this.icon = Icons.more_vert,
     this.iconSize = 28,
+    /// Scales the circular chrome and icon (1.0 = default). Use e.g. 0.8 for ~20% smaller.
+    this.visualScale = 1.0,
     this.iconColor,
     this.initialValue,
     this.offset,
@@ -29,6 +31,7 @@ class TheDotDropMenuButton<T> extends StatefulWidget {
   final EdgeInsetsGeometry padding;
   final IconData icon;
   final double iconSize;
+  final double visualScale;
   final Color? iconColor;
   final T? initialValue;
   final Offset? offset;
@@ -63,6 +66,9 @@ class _TheDotDropMenuButtonState<T> extends State<TheDotDropMenuButton<T>> {
 
         final scheme = Theme.of(context).colorScheme;
         final pillRadius = BorderRadius.circular(999);
+        final scale = widget.visualScale.clamp(0.5, 1.5);
+        final innerPad = 6.0 * scale;
+        final effectiveIconSize = widget.iconSize * scale;
 
         return PopupMenuButton<T>(
           enabled: widget.enabled,
@@ -101,12 +107,12 @@ class _TheDotDropMenuButtonState<T> extends State<TheDotDropMenuButton<T>> {
                           : ThreeDSurfaceStyle.elevatedShadows(context),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(6),
+                  padding: EdgeInsets.all(innerPad),
                   child: Tooltip(
                     message: widget.tooltip ?? "",
                     child: ThemeIcon(
                       widget.icon,
-                      size: widget.iconSize,
+                      size: effectiveIconSize,
                       color:
                           widget.iconColor ??
                         (ThemeState().isBlueTheme

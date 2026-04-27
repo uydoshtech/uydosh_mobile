@@ -53,6 +53,9 @@ import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overla
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.dart";
 
+/// Matches empty-search Ghost + Primary CTAs (30px bell stack + 14px vertical padding).
+const double _kEmptySearchCtaButtonHeight = 58;
+
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _HomeScreenData {
   const _HomeScreenData({
@@ -821,11 +824,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           onPressed: _handleClearFiltersFromEmptyState,
                           icon: Icons.filter_alt_off,
                           text: L10n.get("search_clear_filters"),
+                          height: _kEmptySearchCtaButtonHeight,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           neumorphicSoftUi: true,
                         ),
                         const SizedBox(height: 12),
                         _NotifySearchAlertGhostButton(
+                          height: _kEmptySearchCtaButtonHeight,
                           label: L10n.get("search_alert_notify_me"),
                           onPressed: _isCreatingSearchAlert
                               ? null
@@ -1349,10 +1354,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 /// Notify-me control: expanding ring + bell wiggle on tap.
 class _NotifySearchAlertGhostButton extends StatefulWidget {
   const _NotifySearchAlertGhostButton({
+    required this.height,
     required this.label,
     required this.onPressed,
   });
 
+  final double height;
   final String label;
   final VoidCallback? onPressed;
 
@@ -1485,83 +1492,79 @@ class _NotifySearchAlertGhostButtonState
           fontWeight: FontWeight.w500,
         );
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return PrimaryButton(
-          onPressed: widget.onPressed == null ? null : _handlePressed,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          width: double.infinity,
-          borderRadius: BorderRadius.circular(20),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 30,
-                height: 30,
-                child: Stack(
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.none,
-                  children: [
-                    if (tapEnabled)
-                      AnimatedBuilder(
-                        animation: _controller,
-                        builder: (context, child) {
-                          return IgnorePointer(
-                            child: Opacity(
-                              opacity: _ringOpacity.value.clamp(0.0, 1.0),
-                              child: Transform.scale(
-                                scale: _ringScale.value,
-                                child: Container(
-                                  width: 16,
-                                  height: 16,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: ringColor.withValues(alpha: 0.85),
-                                      width: 1.5,
-                                    ),
-                                  ),
+    return PrimaryButton(
+      onPressed: widget.onPressed == null ? null : _handlePressed,
+      height: widget.height,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      width: double.infinity,
+      borderRadius: BorderRadius.circular(20),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 30,
+            height: 30,
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                if (tapEnabled)
+                  AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, child) {
+                      return IgnorePointer(
+                        child: Opacity(
+                          opacity: _ringOpacity.value.clamp(0.0, 1.0),
+                          child: Transform.scale(
+                            scale: _ringScale.value,
+                            child: Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: ringColor.withValues(alpha: 0.85),
+                                  width: 1.5,
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    AnimatedBuilder(
-                      animation:
-                          Listenable.merge([_idleController, _controller]),
-                      builder: (context, child) {
-                        final turns =
-                            (idleEnabled ? _idleBellTurns.value : 0.0) +
-                                (tapEnabled ? _bellTurns.value : 0.0);
-                        return Transform.rotate(
-                          angle: turns * 2 * math.pi,
-                          alignment: Alignment.topCenter,
-                          child: child,
-                        );
-                      },
-                      child: const ThemeIcon(
-                        Icons.notifications_active,
-                        size: 24,
-                      ),
-                    ),
-                  ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                AnimatedBuilder(
+                  animation: Listenable.merge([_idleController, _controller]),
+                  builder: (context, child) {
+                    final turns =
+                        (idleEnabled ? _idleBellTurns.value : 0.0) +
+                        (tapEnabled ? _bellTurns.value : 0.0);
+                    return Transform.rotate(
+                      angle: turns * 2 * math.pi,
+                      alignment: Alignment.topCenter,
+                      child: child,
+                    );
+                  },
+                  child: const ThemeIcon(
+                    Icons.notifications_active,
+                    size: 24,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  widget.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: false,
-                  style: textStyle,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              widget.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: textStyle,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

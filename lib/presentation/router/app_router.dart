@@ -20,14 +20,21 @@ class AppRouter {
   static GlobalKey<TutorialTargetWrapperState>
       get notificationsBellTutorialKey => router_keys.notificationsBellTutorialKey;
 
-  static Widget buildMainNavigation({bool attachKey = false}) => BlocProvider(
-    create: (context) {
-      final bloc = ListingsBloc(getIt<IListingService>());
-      bloc.add(const ListingsEvent.searchListings(isRefresh: true));
-      return bloc;
-    },
-    child: MainNavigation(key: attachKey ? mainNavigationKey : null),
-  );
+  static Widget buildMainNavigation({
+    bool attachKey = false,
+    int initialIndex = 0,
+  }) =>
+      BlocProvider(
+        create: (context) {
+          final bloc = ListingsBloc(getIt<IListingService>());
+          bloc.add(const ListingsEvent.searchListings(isRefresh: true));
+          return bloc;
+        },
+        child: MainNavigation(
+          key: attachKey ? mainNavigationKey : null,
+          initialIndex: initialIndex,
+        ),
+      );
 
   static Widget get initialRoute => buildMainNavigation(attachKey: true);
 
