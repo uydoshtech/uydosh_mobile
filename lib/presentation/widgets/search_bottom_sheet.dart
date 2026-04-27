@@ -88,7 +88,16 @@ class SearchBottomSheetWidget {
     void Function(SearchBottomSheetResult result)? onApply,
     String primaryLabelKey = "search",
     IconData primaryIcon = Icons.search,
-  }) {
+  }) async {
+    // Ensure first-time users see sensible defaults (role + gender) without
+    // overwriting any explicit saved search preferences.
+    //
+    // This is intentionally done here (not only in specific buttons) so any
+    // caller of the bottom sheet gets consistent behavior.
+    final searchFiltersState = SearchFiltersState();
+    await searchFiltersState.initialize();
+    await searchFiltersState.applyProfileValuesForSearchSheet();
+
     // Try to get existing blocs from context to avoid redundant fetches
     ListingsBloc? existingListingsBloc;
     LocationsBloc? existingLocationsBloc;
