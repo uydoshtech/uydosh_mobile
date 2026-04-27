@@ -24,6 +24,7 @@ import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
@@ -1916,6 +1917,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         return _buildPickerBottomSheet(
           sheetContext: sheetContext,
@@ -1999,6 +2001,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         return _buildPickerBottomSheet(
           sheetContext: sheetContext,
@@ -2047,6 +2050,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         return _buildPickerBottomSheet(
           sheetContext: sheetContext,
@@ -2101,8 +2105,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   }) {
     final theme = Theme.of(sheetContext);
     final isBlueTheme = ThemeState().isBlueTheme;
-    final baseColor =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
     final textColor =
         isBlueTheme ? Colors.white : theme.colorScheme.onSurface;
     final handleColor = (isBlueTheme ? Colors.white : Colors.black)
@@ -2110,60 +2112,63 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
     return SafeArea(
       top: false,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: baseColor,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        child: GlassBottomSheetSurface(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: handleColor,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: handleColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-            ),
-            SizedBox(
-              height: 220,
-              child: CupertinoPicker(
-                backgroundColor: Colors.transparent,
-                scrollController: controller,
-                itemExtent: itemExtent,
-                onSelectedItemChanged: onSelectedItemChanged,
-                children: [
-                  for (var i = 0; i < itemCount; i++) itemBuilder(i),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: GhostButtonFactory.iconText(
-                  onPressed: onConfirm,
-                  icon: Icons.check,
-                  text: L10n.get("confirm"),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  neumorphicSoftUi: true,
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
                 ),
-              ),
+                SizedBox(
+                  height: 220,
+                  child: CupertinoPicker(
+                    backgroundColor: Colors.transparent,
+                    scrollController: controller,
+                    itemExtent: itemExtent,
+                    onSelectedItemChanged: onSelectedItemChanged,
+                    children: [
+                      for (var i = 0; i < itemCount; i++) itemBuilder(i),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: GhostButtonFactory.iconText(
+                      onPressed: onConfirm,
+                      icon: Icons.check,
+                      text: L10n.get("confirm"),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      neumorphicSoftUi: true,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -12,6 +12,7 @@ import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -175,15 +176,22 @@ class _PhotoUploaderState extends State<PhotoUploader>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (context) {
         final theme = Theme.of(context);
         final sheetHeight = MediaQuery.sizeOf(context).height * 0.35;
+        const radius = BorderRadius.vertical(top: Radius.circular(20));
         return SafeArea(
-          child: SizedBox(
-            height: sheetHeight,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-            child: Column(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: SizedBox(
+              height: sheetHeight,
+              child: GlassBottomSheetSurface(
+                borderRadius: radius,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+                  child: Column(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -282,8 +290,10 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   ),
                 ),
               ],
+                  ),
+                ),
+              ),
             ),
-          ),
           ),
         );
       },

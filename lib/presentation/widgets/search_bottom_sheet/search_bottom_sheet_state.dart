@@ -12,7 +12,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   FixedExtentScrollController? _locationScrollController;
   Timer? _blinkTimer;
   bool _isBlinking = true;
-  double? _cachedSheetHeight;
   bool _metroLineChangedInThisSession = false;
   bool _isCreatingSearchAlert = false;
   int _searchAlertCelebrationTick = 0;
@@ -593,6 +592,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final mq = MediaQuery.of(context);
+    // "Available" height for the sheet content, accounting for the keyboard.
+    // The sheet will shrink-wrap its content up to this cap.
+    final maxSheetHeight = (mq.size.height - mq.viewInsets.bottom) * 0.9;
     final radius = const BorderRadius.only(
       topLeft: Radius.circular(20),
       topRight: Radius.circular(20),
@@ -610,67 +613,69 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           error: (_) {},
         );
       },
-      child: Container(
-        height: _cachedSheetHeight ??=
-            MediaQuery.of(context).size.height * 0.7 + 30,
-        decoration: BoxDecoration(
-          borderRadius: radius,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.10),
-              blurRadius: isDark ? 28 : 22,
-              spreadRadius: isDark ? 2 : 1,
-              offset: const Offset(0, -10),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: radius,
-          // Apple's UIBlurEffect = saturation boost + heavy gaussian blur +
-          // a thin translucent tint. We compose those in order.
-          child: BackdropFilter(
-            // Vibrancy: pull saturation up on whatever is behind the sheet so
-            // the blurred feed keeps its color identity (otherwise heavy
-            // blurs go grey).
-            filter: ColorFilter.matrix(_glassSaturationMatrix(
-              saturation: isDark ? 1.6 : 1.8,
-            )),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: isDark ? 32 : 40,
-                sigmaY: isDark ? 32 : 40,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxSheetHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.10),
+                blurRadius: isDark ? 28 : 22,
+                spreadRadius: isDark ? 2 : 1,
+                offset: const Offset(0, -10),
               ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: radius,
-                  // Very low-alpha tint - the blurred backdrop does the heavy
-                  // lifting visually, the tint just nudges it warm/cool to
-                  // match the theme.
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withValues(alpha: isDark ? 0.04 : 0.22),
-                      surfaceTint.withValues(alpha: isDark ? 0.18 : 0.30),
-                      theme.colorScheme.surface.withValues(
-                        alpha: isDark ? 0.14 : 0.28,
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: radius,
+            // Apple's UIBlurEffect = saturation boost + heavy gaussian blur +
+            // a thin translucent tint. We compose those in order.
+            child: BackdropFilter(
+              // Vibrancy: pull saturation up on whatever is behind the sheet so
+              // the blurred feed keeps its color identity (otherwise heavy
+              // blurs go grey).
+              filter: ColorFilter.matrix(_glassSaturationMatrix(
+                saturation: isDark ? 1.6 : 1.8,
+              )),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: isDark ? 32 : 40,
+                  sigmaY: isDark ? 32 : 40,
+                ),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: radius,
+                    // Very low-alpha tint - the blurred backdrop does the heavy
+                    // lifting visually, the tint just nudges it warm/cool to
+                    // match the theme.
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withValues(alpha: isDark ? 0.04 : 0.22),
+                        surfaceTint.withValues(alpha: isDark ? 0.18 : 0.30),
+                        theme.colorScheme.surface.withValues(
+                          alpha: isDark ? 0.14 : 0.28,
+                        ),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                    // Subtle top highlight ("specular" edge) - a hallmark of
+                    // iOS glass surfaces. Side/bottom borders stay invisible.
+                    border: Border(
+                      top: BorderSide(
+                        color:
+                            (isDark ? Colors.white : Colors.white).withValues(
+                          alpha: isDark ? 0.18 : 0.55,
+                        ),
+                        width: 0.6,
                       ),
-                    ],
-                    stops: const [0.0, 0.5, 1.0],
-                  ),
-                  // Subtle top highlight ("specular" edge) - a hallmark of
-                  // iOS glass surfaces. Side/bottom borders stay invisible.
-                  border: Border(
-                    top: BorderSide(
-                      color: (isDark ? Colors.white : Colors.white).withValues(
-                        alpha: isDark ? 0.18 : 0.55,
-                      ),
-                      width: 0.6,
                     ),
                   ),
-                ),
-              child: Column(
-                children: [
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                   // Handle bar
                   Container(
                     margin: const EdgeInsets.only(top: 12),
@@ -731,13 +736,14 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   ),
 
                   // Search filters
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: CustomScrollView(
+                      shrinkWrap: true,
+                      slivers: [
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          sliver: SliverToBoxAdapter(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -894,6 +900,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
             ),
             ),
           ),
+        ),
         ),
       ),
     );

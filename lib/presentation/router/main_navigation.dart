@@ -40,6 +40,7 @@ import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -364,145 +365,170 @@ class MainNavigationState extends State<MainNavigation>
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
         return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  ListenableBuilder(
-                    listenable: ThemeState(),
-                    builder: (context, child) {
-                      final themeState = ThemeState();
-                      final iconColor =
-                          themeState.isBlueTheme ? Colors.white : Colors.black;
-                      return ThemeIcon(
-                        Icons.person,
-                        color: iconColor,
-                        size: 22,
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      L10n.get("complete_profile_prompt_title"),
-                      style: Theme.of(sheetContext)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                L10n.get("complete_profile_prompt_body"),
-                style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
-                    ),
-              ),
-              const SizedBox(height: 16),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: completionPercent / 100,
-                  minHeight: 8,
-                  backgroundColor: Theme.of(sheetContext)
-                      .colorScheme
-                      .onSurfaceVariant
-                      .withValues(alpha: 0.2),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    ThemeState().isBlueTheme
-                        ? Colors.white
-                        : Theme.of(sheetContext).colorScheme.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "$completionPercent%",
-                style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-              if (hasAnyMissing) ...[
-                const SizedBox(height: 10),
-                Text(
-                  L10n.get("missing_fields_title"),
-                  style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 6),
-                if (primaryLabels.isNotEmpty)
-                  Text(
-                    primaryLabels,
-                    style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(sheetContext)
-                              .colorScheme
-                              .onSurfaceVariant,
-                        ),
-                  ),
-                if (hiddenCount > 0) ...[
-                  if (primaryLabels.isNotEmpty) const SizedBox(height: 4),
-                  Text(
-                    L10n.getWithParams(
-                      "complete_profile_prompt_more",
-                      params: {"count": hiddenCount.toString()},
-                    ),
-                    style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(sheetContext)
-                              .colorScheme
-                              .onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ],
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        HapticFeedbackUtils.impact();
-                        Navigator.of(sheetContext).pop();
-                      },
-                      child: Text(
-                        L10n.get("complete_profile_prompt_later"),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        HapticFeedbackUtils.impact();
-                        Navigator.of(sheetContext).pop();
-                        if (!mounted) return;
-                        final profile =
-                            await SessionManager.getCachedUserProfile();
-                        if (profile == null || !mounted) return;
-                        final result = await Navigator.of(context).push<bool>(
-                          MaterialPageRoute(
-                            builder: (_) => EditProfileScreen(profile: profile),
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: GlassBottomSheetSurface(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Material(
+              type: MaterialType.transparency,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Flutter's default drag handle is drawn on the sheet's
+                    // Material, but we render glass. Draw our own so it reads
+                    // correctly on the translucent surface.
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.18,
                           ),
-                        );
-                        if ((result ?? false) && mounted) {
-                          setState(() {});
-                        }
-                      },
-                      child: Text(
-                        L10n.get("complete_profile_prompt_cta"),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        ListenableBuilder(
+                          listenable: ThemeState(),
+                          builder: (context, child) {
+                            final themeState = ThemeState();
+                            final iconColor = themeState.isBlueTheme
+                                ? Colors.white
+                                : theme.colorScheme.onSurface;
+                            return ThemeIcon(
+                              Icons.person,
+                              color: iconColor,
+                              size: 22,
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            L10n.get("complete_profile_prompt_title"),
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      L10n.get("complete_profile_prompt_body"),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: completionPercent / 100,
+                        minHeight: 8,
+                        backgroundColor: theme.colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.2),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          ThemeState().isBlueTheme
+                              ? Colors.white
+                              : theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "$completionPercent%",
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (hasAnyMissing) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        L10n.get("missing_fields_title"),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      if (primaryLabels.isNotEmpty)
+                        Text(
+                          primaryLabels,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      if (hiddenCount > 0) ...[
+                        if (primaryLabels.isNotEmpty)
+                          const SizedBox(height: 4),
+                        Text(
+                          L10n.getWithParams(
+                            "complete_profile_prompt_more",
+                            params: {"count": hiddenCount.toString()},
+                          ),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              HapticFeedbackUtils.impact();
+                              Navigator.of(sheetContext).pop();
+                            },
+                            child: Text(
+                              L10n.get("complete_profile_prompt_later"),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              HapticFeedbackUtils.impact();
+                              Navigator.of(sheetContext).pop();
+                              if (!mounted) return;
+                              final profile =
+                                  await SessionManager.getCachedUserProfile();
+                              if (profile == null || !mounted) return;
+                              final result =
+                                  await Navigator.of(context).push<bool>(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      EditProfileScreen(profile: profile),
+                                ),
+                              );
+                              if ((result ?? false) && mounted) {
+                                setState(() {});
+                              }
+                            },
+                            child: Text(
+                              L10n.get("complete_profile_prompt_cta"),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
         );
       },

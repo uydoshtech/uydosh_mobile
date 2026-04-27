@@ -3,6 +3,7 @@ import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -95,8 +96,22 @@ class SearchBottomSheetWidget {
     // This is intentionally done here (not only in specific buttons) so any
     // caller of the bottom sheet gets consistent behavior.
     final searchFiltersState = SearchFiltersState();
+    final prefs = await SharedPreferences.getInstance();
+    final hadSavedListingTypeId = prefs.getInt("search_listing_type_id") != null;
+    final hadSavedGender = prefs.getInt("search_gender") != null;
+    final isFirstOpen = !hadSavedListingTypeId && !hadSavedGender;
+
     await searchFiltersState.initialize();
     await searchFiltersState.applyProfileValuesForSearchSheet();
+
+    // Some callers pass "defaults" (e.g. 2/male) on the first open which would
+    // override the profile-derived values inside the sheet initState. When we
+    // detect first open (no saved prefs yet), force-seed the sheet with the
+    // computed values instead.
+    final resolvedListingTypeId =
+        isFirstOpen ? searchFiltersState.selectedListingTypeId : currentListingTypeId;
+    final resolvedGender =
+        isFirstOpen ? searchFiltersState.selectedGender : currentGender;
 
     // Try to get existing blocs from context to avoid redundant fetches
     ListingsBloc? existingListingsBloc;
@@ -152,11 +167,11 @@ class SearchBottomSheetWidget {
           replaceCurrentRoute: replaceCurrentRoute,
           openedFromHomeScreen: openedFromHomeScreen,
           metroOnly: metroOnly,
-          currentListingTypeId: currentListingTypeId,
+          currentListingTypeId: resolvedListingTypeId,
           currentLocationId: currentLocationId,
           currentSubwayStationId: currentSubwayStationId,
           currentSubwayLineId: currentSubwayLineId,
-          currentGender: currentGender,
+          currentGender: resolvedGender,
           currentMinPrice: currentMinPrice,
           currentMaxPrice: currentMaxPrice,
           currentPrivateRoom: currentPrivateRoom,

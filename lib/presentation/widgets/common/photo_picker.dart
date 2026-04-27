@@ -11,6 +11,7 @@ import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -233,46 +234,65 @@ class _PhotoPickerState extends State<PhotoPicker> {
 
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (context) {
-        return DecoratedBox(
-          decoration: const BoxDecoration(color: Colors.transparent),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const ThemeIcon(Icons.camera_alt, size: 28),
-                  title: Text(
-                    L10n.get("take_photo"),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+        final theme = Theme.of(context);
+        final radius = const BorderRadius.vertical(top: Radius.circular(20));
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: GlassBottomSheetSurface(
+            borderRadius: radius,
+            child: Material(
+              type: MaterialType.transparency,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
                     ),
-                  ),
-                  onTap: () {
-                    HapticFeedbackUtils.impact();
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                ListTile(
-                  leading: const ThemeIcon(Icons.photo_library, size: 28),
-                  title: Text(
-                    L10n.get("choose_from_gallery"),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(height: 10),
+                    ListTile(
+                      leading: const ThemeIcon(Icons.camera_alt, size: 28),
+                      title: Text(
+                        L10n.get("take_photo"),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      onTap: () {
+                        HapticFeedbackUtils.impact();
+                        Navigator.of(context).pop();
+                        _pickImage(ImageSource.camera);
+                      },
                     ),
-                  ),
-                  onTap: () {
-                    HapticFeedbackUtils.impact();
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.gallery);
-                  },
+                    ListTile(
+                      leading: const ThemeIcon(Icons.photo_library, size: 28),
+                      title: Text(
+                        L10n.get("choose_from_gallery"),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      onTap: () {
+                        HapticFeedbackUtils.impact();
+                        Navigator.of(context).pop();
+                        _pickImage(ImageSource.gallery);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
-                const SizedBox(height: 20),
-              ],
+              ),
             ),
           ),
         );

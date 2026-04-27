@@ -18,6 +18,7 @@ import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -346,22 +347,44 @@ class _ArchivedConversationsScreenState
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetCtx) {
+        final theme = Theme.of(sheetCtx);
+        final radius = const BorderRadius.vertical(top: Radius.circular(20));
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const ThemeIcon(Icons.unarchive_outlined),
-                  title: Text(L10n.get("unarchive")),
-                  onTap: () {
-                    Navigator.of(sheetCtx).pop();
-                    _unarchive(conversation);
-                  },
+            child: GlassBottomSheetSurface(
+              borderRadius: radius,
+              child: Material(
+                type: MaterialType.transparency,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // When `showDragHandle` is true, Flutter draws the handle in
+                    // the sheet's Material. We render our own so it sits on the
+                    // glass surface consistently.
+                    const SizedBox(height: 10),
+                    Container(
+                      width: 38,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
+                    ListTile(
+                      leading: const ThemeIcon(Icons.unarchive_outlined),
+                      title: Text(L10n.get("unarchive")),
+                      onTap: () {
+                        Navigator.of(sheetCtx).pop();
+                        _unarchive(conversation);
+                      },
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );

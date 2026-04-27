@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
@@ -922,45 +923,65 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetCtx) {
+        final theme = Theme.of(sheetCtx);
+        final radius = const BorderRadius.vertical(top: Radius.circular(20));
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (hasUnread)
-                  ListTile(
-                    leading: const ThemeIcon(Icons.mark_email_read_outlined),
-                    title:
-                        Text(L10n.get("mark_as_read", fallback: "Mark as read")),
-                    onTap: () {
-                      Navigator.of(sheetCtx).pop();
-                      context
-                          .read<MessagingBloc>()
-                          .add(MarkMessagesAsRead(
-                            conversationId: conversation.id,
-                          ));
-                    },
-                  ),
-                ListTile(
-                  leading: const ThemeIcon(Icons.archive_outlined),
-                  title: Text(L10n.get("archive")),
-                  enabled: !hasUnread,
-                  subtitle: hasUnread
-                      ? Text(
-                          L10n.get("archive_failed_has_unread"),
-                          style: const TextStyle(fontSize: 12),
-                        )
-                      : null,
-                  onTap: hasUnread
-                      ? null
-                      : () {
+            child: GlassBottomSheetSurface(
+              borderRadius: radius,
+              child: Material(
+                type: MaterialType.transparency,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 10),
+                    Container(
+                      width: 38,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
+                    if (hasUnread)
+                      ListTile(
+                        leading: const ThemeIcon(Icons.mark_email_read_outlined),
+                        title: Text(
+                          L10n.get("mark_as_read", fallback: "Mark as read"),
+                        ),
+                        onTap: () {
                           Navigator.of(sheetCtx).pop();
-                          _archiveConversation(conversation);
+                          context.read<MessagingBloc>().add(
+                                MarkMessagesAsRead(
+                                  conversationId: conversation.id,
+                                ),
+                              );
                         },
+                      ),
+                    ListTile(
+                      leading: const ThemeIcon(Icons.archive_outlined),
+                      title: Text(L10n.get("archive")),
+                      enabled: !hasUnread,
+                      subtitle: hasUnread
+                          ? Text(
+                              L10n.get("archive_failed_has_unread"),
+                              style: const TextStyle(fontSize: 12),
+                            )
+                          : null,
+                      onTap: hasUnread
+                          ? null
+                          : () {
+                              Navigator.of(sheetCtx).pop();
+                              _archiveConversation(conversation);
+                            },
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
