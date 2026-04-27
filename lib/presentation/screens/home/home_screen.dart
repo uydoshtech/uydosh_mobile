@@ -172,7 +172,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   int _searchAlertCelebrationTick = 0;
   bool _inlineSearchActive = false;
   static const double _inlineSearchRibbonHeight = 56.0;
-  static const String _kInlineSearchActivePrefsKey = "home_inline_search_active";
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
@@ -222,6 +221,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // Listen to home refresh state for immediate refresh commands
     HomeRefreshState().addListener(_onHomeRefreshStateChanged);
 
+    // After logout, inline ribbon + filtered bloc path must drop even if this
+    // State object outlives the session-clear hook ordering.
+    AuthenticationState().addListener(_onAuthenticationChangedForInlineSearch);
+
     // Re-check tutorial when onboarding toggle changes (e.g. user turns it ON in settings)
     OnboardingState().addListener(_onOnboardingStateChanged);
 
@@ -247,8 +250,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Future<void> _restoreInlineSearchModeFromPrefs() async {
     if (widget.isSearchMode) return; // dedicated results screen manages itself
+    if (!await SessionManager.isAuthenticated()) return;
     final prefs = await SharedPreferences.getInstance();
-    final active = prefs.getBool(_kInlineSearchActivePrefsKey) ?? false;
+    final active = prefs.getBool(HomeInlineSearchState.activePrefsKey) ?? false;
     if (!mounted) return;
     if (!active) return;
     setState(() => _inlineSearchActive = true);
@@ -267,6 +271,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
       }
     }
+  }
+
+  void _onAuthenticationChangedForInlineSearch() {
+    if (!mounted) return;
+    if (AuthenticationState().isAuthenticated) return;
+    if (!_inlineSearchActive) return;
+    _exitInlineSearch();
   }
 
   /// Shows the first tutorial (search button) only on the home screen's main
@@ -364,6 +375,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     TutorialOverlayManager().dismissActive();
     routeObserver.unsubscribe(this);
     OnboardingState().removeListener(_onOnboardingStateChanged);
+    AuthenticationState().removeListener(_onAuthenticationChangedForInlineSearch);
     HomeRefreshState().removeListener(_onHomeRefreshStateChanged);
     ScrollUtils.disposeScrollController(_scrollController);
     super.dispose();
@@ -1115,7 +1127,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     setState(() => _inlineSearchActive = true);
     HomeInlineSearchState().setActive(true);
     final p = await SharedPreferences.getInstance();
-    await p.setBool(_kInlineSearchActivePrefsKey, true);
+    await p.setBool(HomeInlineSearchState.activePrefsKey, true);
     if (!mounted) return;
     _performSearch();
   }
@@ -1126,7 +1138,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
     HomeInlineSearchState().setActive(false);
     SharedPreferences.getInstance().then((p) async {
-      await p.setBool(_kInlineSearchActivePrefsKey, false);
+      await p.setBool(HomeInlineSearchState.activePrefsKey, false);
     });
     _dispatchFeedRefresh();
   }

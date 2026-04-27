@@ -31,6 +31,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/app_launch_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
+import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
@@ -139,8 +140,10 @@ void main() async {
     // (e.g. server-backed client config fetches).
     await configureDependencies();
 
-    SessionManager.onSessionCleared = () {
+    SessionManager.onSessionCleared = () async {
       SearchFiltersState().onSessionEnded();
+      await SearchFiltersState().clearAllFilters(persistRemote: false);
+      await HomeInlineSearchState().clearPersistedActiveForLogout();
     };
 
     // Keep the OS app icon badge in sync with unread messages.

@@ -9,8 +9,8 @@ import "package:uy_dosh/domain/models/user_profile.dart";
 // - These values are suitable for production use
 
 class SessionManager {
-  /// Optional hook after local session keys are removed (e.g. cancel debounced API writes).
-  static void Function()? onSessionCleared;
+  /// Optional hook after local session keys are removed (e.g. reset guest UI state).
+  static Future<void> Function()? onSessionCleared;
 
   static const String _tokenKey = "session_token";
   static const String _userIdKey = "user_id";
@@ -125,9 +125,12 @@ class SessionManager {
     await prefs.remove(_googlePhotoUrlKey);
     await prefs.remove(_userProfileCacheKey);
     await clearVerificationStatus();
-    try {
-      onSessionCleared?.call();
-    } catch (_) {}
+    final hook = onSessionCleared;
+    if (hook != null) {
+      try {
+        await hook();
+      } catch (_) {}
+    }
   }
 
   // Refresh session timestamp (extend validity)
