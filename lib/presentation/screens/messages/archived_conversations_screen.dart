@@ -10,6 +10,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
@@ -72,8 +73,7 @@ class _ArchivedConversationsScreenState
       }
       final dismissed =
           prefs.getBool(TooltipsState.keyArchivedChatsTipDismissed) ?? false;
-      if (!mounted) return;
-      setState(() => _showTip = !dismissed);
+      setStateIfMounted(() => _showTip = !dismissed);
     } catch (_) {
       // If prefs are unavailable, keep default (hidden).
     }
@@ -118,8 +118,7 @@ class _ArchivedConversationsScreenState
           final bTime = b.lastMessageAt ?? b.updatedAt;
           return bTime.compareTo(aTime);
         });
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _conversations = sorted;
         _loading = false;
       });
@@ -129,8 +128,7 @@ class _ArchivedConversationsScreenState
         error: e,
         stackTrace: stack,
       );
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _error = e.toString();
         _loading = false;
       });

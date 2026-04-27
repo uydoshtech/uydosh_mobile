@@ -21,6 +21,7 @@ import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
@@ -451,8 +452,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _loadSecurityRibbonState() async {
     try {
       final dismissed = await SessionManager.isChatSecurityRibbonDismissed();
-      if (!mounted) return;
-      setState(() => _showSecurityRibbon = !dismissed);
+      setStateIfMounted(() => _showSecurityRibbon = !dismissed);
     } catch (_) {
       // If prefs fail, keep ribbon visible.
     }
@@ -477,8 +477,7 @@ class _ChatScreenState extends State<ChatScreen> {
         SessionManager.getChatShowOriginal(widget.conversationId),
         SessionManager.getChatTranslationTarget(widget.conversationId),
       ]);
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _showOriginalAll = results[0] as bool;
         _targetLanguageOverride = results[1] as String?;
       });
@@ -709,8 +708,7 @@ class _ChatScreenState extends State<ChatScreen> {
           }
         }
         if (risk == "medium" || risk == "high") {
-          if (!mounted) return;
-          setState(() {
+          setStateIfMounted(() {
             _safetyWarningActive = true;
             _safetyWarningSeverity =
                 risk == "high"
@@ -1188,8 +1186,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   );
                 },
                 onAnimationComplete: () {
-                  if (!mounted) return;
-                  setState(() => _newMessageIds.remove(message.id));
+                  setStateIfMounted(() => _newMessageIds.remove(message.id));
                 },
                 currentUserProfile: _currentUserProfile,
                 otherUserInitials: widget.otherUserInitials,
@@ -1252,8 +1249,7 @@ class _ChatScreenState extends State<ChatScreen> {
         elapsed >= _minSkeletonDuration ? Duration.zero : _minSkeletonDuration - elapsed;
 
     Future<void>.delayed(remaining, () {
-      if (!mounted) return;
-      setState(() => _showRefreshSkeleton = false);
+      setStateIfMounted(() => _showRefreshSkeleton = false);
       if (!completer.isCompleted) completer.complete();
       _refreshCompleter = null;
       _refreshSkeletonStartedAt = null;

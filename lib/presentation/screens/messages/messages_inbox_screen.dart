@@ -16,6 +16,7 @@ import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
@@ -1045,8 +1046,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       // has already taken effect before this filter stops masking it —
       // avoids a one-frame flash where the chat pops back in.
       Future.microtask(() {
-        if (!mounted) return;
-        setState(() {
+        setStateIfMounted(() {
           _pendingArchiveIds.remove(id);
           // First archive of the session: reveal the archive entry point
           // without waiting for the next probe to round-trip.

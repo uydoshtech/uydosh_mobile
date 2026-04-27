@@ -1,9 +1,8 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/services/logout_service.dart";
+import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -74,9 +73,7 @@ class AuthRequiredState extends StatelessWidget {
   /// and navigate to the auth wizard. Safe to pass directly as [onLogin].
   static VoidCallback logoutAndReauthenticate(BuildContext context) {
     return () async {
-      await LogoutService().performLogout();
-      if (!context.mounted) return;
-      context.pushReplaceAuthWizard();
+      await AuthFlow.logoutAndReauthenticate(context);
     };
   }
 

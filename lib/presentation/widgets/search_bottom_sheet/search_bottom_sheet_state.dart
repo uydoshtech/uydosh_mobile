@@ -149,7 +149,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
   void _animateToMetroLine(int lineIndex) {
     if (!mounted) return;
-    setState(() {
+    setStateIfMounted(() {
       _searchFiltersState.setSubwayLine(lineIndex);
       if (lineIndex > 0) {
         _resetLocationPicker();

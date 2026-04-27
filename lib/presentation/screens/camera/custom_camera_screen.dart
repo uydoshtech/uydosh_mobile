@@ -9,6 +9,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
@@ -94,8 +95,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
-        if (!mounted) return;
-        setState(() {
+        setStateIfMounted(() {
           _initializing = false;
           _initError = L10n.get("camera_unavailable");
         });
@@ -115,8 +115,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       await _setUpController(_cameras[_cameraIndex]);
     } catch (e, st) {
       logger.e("Failed to init custom camera", error: e, stackTrace: st);
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _initializing = false;
         _initError = L10n.get("camera_unavailable");
       });
@@ -151,7 +150,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     } catch (e, st) {
       logger.e("Camera controller init failed", error: e, stackTrace: st);
       if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _initializing = false;
         _initError = L10n.get("camera_unavailable");
       });
@@ -160,8 +159,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       await previous?.dispose();
     }
 
-    if (!mounted) return;
-    setState(() {
+    setStateIfMounted(() {
       _initializing = false;
       _initError = null;
     });
@@ -175,8 +173,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     final next = order[(order.indexOf(_flashMode) + 1) % order.length];
     try {
       await controller.setFlashMode(next);
-      if (!mounted) return;
-      setState(() => _flashMode = next);
+      setStateIfMounted(() => _flashMode = next);
       HapticFeedbackUtils.impact();
     } catch (e) {
       if (kDebugMode) debugPrint("Failed to set flash mode: $e");
@@ -211,8 +208,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       } catch (_) {
         // Non-fatal.
       }
-      if (!mounted) return;
-      setState(() {
+      setStateIfMounted(() {
         _captured = file;
         _stage = _CaptureStage.review;
       });
