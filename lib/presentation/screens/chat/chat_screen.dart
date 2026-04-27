@@ -799,6 +799,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _chatComposerWithListener({required bool blendWithGlassBackdrop}) {
     return BlocListener<MessagingBloc, MessagingState>(
       listener: (context, state) {
+        if (!mounted) return;
         state.when(
           initial: () {},
           loading: () {},
@@ -905,6 +906,7 @@ class _ChatScreenState extends State<ChatScreen> {
             listeners: [
           BlocListener<MessagingBloc, MessagingState>(
             listener: (context, state) {
+              if (!mounted) return;
               state.when(
                 initial: () {},
                 loading: () {},
@@ -957,6 +959,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
             listener: (context, state) {
+              if (!mounted) return;
               state.when(
                 initial: () {},
                 loading: () {},

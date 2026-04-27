@@ -307,6 +307,12 @@ void _annotateCrashlyticsWithFlutterError(FlutterErrorDetails details) {
     final library = details.library ?? "unknown";
     crashlytics.setCustomKey("flutter_error_library", library);
 
+    final exceptionText = details.exceptionAsString();
+    crashlytics.setCustomKey(
+      "flutter_error_exception",
+      exceptionText.length > 240 ? exceptionText.substring(0, 240) : exceptionText,
+    );
+
     final ctx = details.context;
     if (ctx != null) {
       // `DiagnosticsNode.toString` keeps the human-readable context label
@@ -330,18 +336,15 @@ void _annotateCrashlyticsWithFlutterError(FlutterErrorDetails details) {
     // owners, and the widget tree path) and forward it to Crashlytics as
     // log lines. Each `log()` call shows up under the crash's "Logs" tab.
     final buffer = StringBuffer();
-    details.debugFillProperties(
-      DiagnosticPropertiesBuilder(),
-    ); // no-op safety
-    buffer.writeln(details.toStringShort());
-    buffer.writeln("Library: $library");
-    if (ctx != null) buffer.writeln("Context: $ctx");
-    final infoCollector = details.informationCollector;
-    if (infoCollector != null) {
-      for (final node in infoCollector()) {
-        buffer.writeln(node.toString());
-      }
-    }
+    buffer.writeln(details.toString());
+
+    // Also store a small excerpt as a key so it's visible without opening Logs.
+    final rendered = buffer.toString();
+    crashlytics.setCustomKey(
+      "flutter_error_rendered_excerpt",
+      rendered.length > 240 ? rendered.substring(0, 240) : rendered,
+    );
+
     // Stack of the exception (already in the report, but echoed here so the
     // log block is self-contained when triaging from the Logs tab).
     if (details.stack != null) {
