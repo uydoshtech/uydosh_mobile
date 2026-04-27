@@ -30,9 +30,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   late AnimationController _rotateController;
   late Animation<double> _rotateAnimation;
-  late AnimationController _trainController;
-  late Animation<double> _trainMoveAnimation;
-  late Animation<double> _trainBounceAnimation;
   late AnimationController _locationController;
   late Animation<double> _locationBounceAnimation;
   late AnimationController _shieldController;
@@ -44,7 +41,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     getIt<AppAnalyticsService>().logScreenView(screenName: "onboarding");
     getIt<AppAnalyticsService>().logOnboardingStarted();
     _setupRotateAnimation();
-    _setupTrainAnimation();
     _setupLocationAnimation();
     _setupShieldAnimation();
     _startAutoSwitchTimer();
@@ -65,24 +61,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
     // Start the rotation animation when the first page is shown
     _rotateController.repeat(reverse: true);
-  }
-
-  void _setupTrainAnimation() {
-    _trainController = AnimationUtils.createAnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3000),
-    );
-
-    _trainMoveAnimation = Tween<double>(begin: -20.0, end: 20.0).animate(
-      CurvedAnimation(parent: _trainController, curve: Curves.easeInOut),
-    );
-
-    _trainBounceAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _trainController, curve: Curves.elasticOut),
-    );
-
-    // Start the train animation
-    _trainController.repeat(reverse: true);
   }
 
   void _setupLocationAnimation() {
@@ -117,12 +95,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   void _startAutoSwitchTimer() {
     _autoSwitchTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (mounted && _currentPage < 3) {
+      if (mounted && _currentPage < 2) {
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
-      } else if (mounted && _currentPage == 3) {
+      } else if (mounted && _currentPage == 2) {
         // If on last page, navigate to main app
         _navigateToMainApp();
       }
@@ -135,7 +113,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _pageController.dispose();
     AnimationUtils.disposeAnimationControllers([
       _rotateController,
-      _trainController,
       _locationController,
       _shieldController,
     ]);
@@ -155,7 +132,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     if (skipped) {
       getIt<AppAnalyticsService>().logOnboardingSkipped(pageIndex: _currentPage);
     } else {
-      getIt<AppAnalyticsService>().logOnboardingCompleted(pageCount: 4);
+      getIt<AppAnalyticsService>().logOnboardingCompleted(pageCount: 3);
     }
     // Mark onboarding screens as seen (toggle is turned OFF after search tutorial)
     await OnboardingState().markOnboardingScreensSeen();
@@ -207,7 +184,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 child: PageView.builder(
                   controller: _pageController,
                   onPageChanged: _onPageChanged,
-                  itemCount: 4,
+                  itemCount: 3,
                   itemBuilder: (context, index) {
                     return _buildPage(index, colorScheme, onboardingColors);
                   },
@@ -222,7 +199,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     // Page indicator
                     SmoothPageIndicator(
                       controller: _pageController,
-                      count: 4,
+                      count: 3,
                       effect: WormEffect(
                         dotHeight: 8,
                         dotWidth: 8,
@@ -260,7 +237,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         TextButtonThemedCenteredFactory.textIcon(
                           onPressed: () {
                             HapticFeedbackUtils.impact();
-                            if (_currentPage < 3) {
+                            if (_currentPage < 2) {
                               _pageController.nextPage(
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeInOut,
@@ -274,7 +251,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             vertical: 16,
                           ),
                           text: L10n.get(
-                            _currentPage < 3
+                            _currentPage < 2
                                 ? "onboarding_next"
                                 : "onboarding_get_started",
                           ),
@@ -310,14 +287,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       _OnboardingPage(
         titleKey: "onboarding_title_2",
         descriptionKey: "onboarding_subtitle_2",
-        icon: Icons.train,
-        color: AppColors.secondary,
-        isFirstPage: false,
-      ),
-      _OnboardingPage(
-        titleKey: "onboarding_title_3",
-        descriptionKey: "onboarding_subtitle_3",
+        // Combined metro + district page uses the pin animation.
         icon: Icons.security,
+        // Keep the original "pin" red accent.
         color: colorScheme.error,
         isFirstPage: false,
       ),
@@ -345,39 +317,53 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           const SizedBox(height: 40),
 
-          // Title
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48.0),
-              child: Text(
-                L10n.get(page.titleKey),
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: onboardingColors.text,
-                  height: 1.2,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Slightly reduce side margins so longer locales wrap more naturally.
+              final horizontalPadding = (constraints.maxWidth * 0.12).clamp(
+                24.0,
+                40.0,
+              );
+
+              return Column(
+                children: [
+                  // Title
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Text(
+                        L10n.get(page.titleKey),
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: onboardingColors.text,
+                          height: 1.2,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
 
           const SizedBox(height: 20),
 
-          // Description
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48.0),
-              child: Text(
-                L10n.get(page.descriptionKey),
-                style: TextStyle(
-                  fontSize: 18,
-                  color: onboardingColors.textSecondary,
-                  letterSpacing: 1,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+                  // Description
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Text(
+                        L10n.get(page.descriptionKey),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: onboardingColors.textSecondary,
+                          letterSpacing: 1,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -524,54 +510,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Widget _buildIconContainer(_OnboardingPage page, ColorScheme colorScheme) {
-    // Special animation for train icon (second page)
-    if (page.icon == Icons.train) {
-      return AnimatedBuilder(
-        animation: _trainController,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(_trainMoveAnimation.value, 0),
-            child: Transform.scale(
-              scale: 0.8 + (_trainBounceAnimation.value * 0.2),
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: page.color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: page.color.withValues(alpha: 0.2),
-                    width: 2,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    // Main train icon
-                    Center(
-                      child: ThemeIcon(page.icon, size: 120, color: page.color),
-                    ),
-                    // Train tracks (subtle background)
-                    Positioned(
-                      bottom: 30,
-                      left: 20,
-                      right: 20,
-                      child: Container(
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: page.color.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
     // Special animation for shield icon (fourth page) - rotate back and forth, 1.5x size
     if (page.icon == Icons.verified_user) {
       return AnimatedBuilder(
@@ -618,7 +556,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               child: Center(
                 child: ThemeIconFactory.display(
                   icon: Icons.location_on,
-                  color: colorScheme.error,
+                  color: page.color,
                   size: 160,
                 ),
               ),

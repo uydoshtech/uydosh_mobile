@@ -491,17 +491,17 @@ class AppStrings {
       "delete": "Delete",
 
       // ===== ONBOARDING =====
-      "onboarding_title_1": "Find Your Perfect Roommates",
+      "onboarding_title_1": "Find Your Ideal Roommate",
       "onboarding_subtitle_1":
-          "Fast search for roommates for shared living throughout Tashkent",
-      "onboarding_title_2": "Search by Metro",
+          "Discover trusted roommates, shared apartments, and better living options across Tashkent — all in one place.",
+      "onboarding_title_2": "Search by Metro & District",
       "onboarding_subtitle_2":
-          "Search either by stations - or by the entire metro line",
+          "Find apartments and roommates faster by choosing your preferred metro stations, metro lines, or districts across Tashkent.",
       "onboarding_title_3": "Search by District",
       "onboarding_subtitle_3": "Convenient search by districts of Tashkent",
-      "onboarding_title_4": "Trustworthy Platform",
+      "onboarding_title_4": "Safe & Verified Community",
       "onboarding_subtitle_4":
-          "Verified users connecting for apartments and roommates",
+          "AI fraud detection, verified profiles, and a community complaint system help you find apartments and roommates with confidence.",
 
       "onboarding_get_started": "Get Started",
       "onboarding_skip": "Skip",
@@ -1634,17 +1634,17 @@ class AppStrings {
       "delete": "Удалить",
 
       // ===== ONBOARDING =====
-      "onboarding_title_1": "Найди своих идеальных соседей",
+      "onboarding_title_1": "Найди идеального соседа",
       "onboarding_subtitle_1":
-          "Быстрый поиск соседей для совместного проживания по всему Ташкенту",
-      "onboarding_title_2": "Поиск по метро",
+          "Находи проверенных соседей, варианты совместной аренды и лучшие условия проживания по всему Ташкенту — в одном месте.",
+      "onboarding_title_2": "Поиск по метро и районам",
       "onboarding_subtitle_2":
-          "Ищите либо по станциям - либо по всей линии метро",
+          "Находите квартиры и соседей быстрее, выбирая нужные станции, линии метро или районы по всему Ташкенту.",
       "onboarding_title_3": "Поиск по району",
       "onboarding_subtitle_3": "Удобный поиск по районам Ташкента",
-      "onboarding_title_4": "Надёжная платформа",
+      "onboarding_title_4": "Безопасное и проверенное сообщество",
       "onboarding_subtitle_4":
-          "Проверенные пользователи ищут квартиры и соседей",
+          "ИИ-детекция мошенничества, верифицированные профили и система жалоб сообщества помогают уверенно находить квартиры и соседей.",
 
       "onboarding_get_started": "Начать",
       "onboarding_skip": "Пропустить",
@@ -2792,17 +2792,17 @@ class AppStrings {
       "delete": "O'chirish",
 
       // ===== ONBOARDING =====
-      "onboarding_title_1": "O'zingizning mukammal xonadoshlaringizni toping",
+      "onboarding_title_1": "Ideal xonadoshingizni toping",
       "onboarding_subtitle_1":
-          "Butun Toshkent bo'ylab birgalikda yashash uchun xonadoshlarni tez qidirish",
-      "onboarding_title_2": "Metro bo'yicha qidiruv",
+          "Toshkent bo‘ylab ishonchli xonadoshlar, qo‘shma ijaralar va yaxshiroq yashash variantlarini bitta joyda toping.",
+      "onboarding_title_2": "Metro va tuman bo‘yicha qidiruv",
       "onboarding_subtitle_2":
-          "Yoki stansiyalar bo'yicha - yoki butun metro liniyasi bo'yicha qidiring",
+          "Toshkent bo‘ylab kerakli metro bekatlari, metro liniyalari yoki tumanlarni tanlab, kvartira va xonadoshlarni tezroq toping.",
       "onboarding_title_3": "Tuman bo'yicha qidiruv",
       "onboarding_subtitle_3": "Toshkent tumanlari bo'yicha qulay qidiruv",
-      "onboarding_title_4": "Ishonchli platforma",
+      "onboarding_title_4": "Xavfsiz va tasdiqlangan hamjamiyat",
       "onboarding_subtitle_4":
-          "Tekshirilgan foydalanuvchilar kvartiralar va xonadoshlar uchun",
+          "AI firibgarlikni aniqlashi, tasdiqlangan profillar va hamjamiyat shikoyat tizimi kvartira va xonadoshlarni ishonch bilan topishga yordam beradi.",
 
       "onboarding_get_started": "Boshlash",
       "onboarding_skip": "O'tkazib yuborish",

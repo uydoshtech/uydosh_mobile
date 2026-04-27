@@ -1010,18 +1010,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
-  String get onboarding_title_1 => 'Find Your Perfect Roommates';
+  String get onboarding_title_1 => 'Find Your Ideal Roommate';
 
   @override
   String get onboarding_subtitle_1 =>
-      'Fast search for roommates for shared living throughout Tashkent';
+      'Discover trusted roommates, shared apartments, and better living options across Tashkent — all in one place.';
 
   @override
-  String get onboarding_title_2 => 'Search by Metro';
+  String get onboarding_title_2 => 'Search by Metro & District';
 
   @override
   String get onboarding_subtitle_2 =>
-      'Search either by stations - or by the entire metro line';
+      'Find apartments and roommates faster by choosing your preferred metro stations, metro lines, or districts across Tashkent.';
 
   @override
   String get onboarding_title_3 => 'Search by District';
@@ -1031,11 +1031,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Convenient search by districts of Tashkent';
 
   @override
-  String get onboarding_title_4 => 'Trustworthy Platform';
+  String get onboarding_title_4 => 'Safe & Verified Community';
 
   @override
   String get onboarding_subtitle_4 =>
-      'Verified users connecting for apartments and roommates';
+      'AI fraud detection, verified profiles, and a community complaint system help you find apartments and roommates with confidence.';
 
   @override
   String get onboarding_get_started => 'Get Started';

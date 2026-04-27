@@ -1933,25 +1933,25 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding_title_1.
   ///
   /// In en, this message translates to:
-  /// **'Find Your Perfect Roommates'**
+  /// **'Find Your Ideal Roommate'**
   String get onboarding_title_1;
 
   /// No description provided for @onboarding_subtitle_1.
   ///
   /// In en, this message translates to:
-  /// **'Fast search for roommates for shared living throughout Tashkent'**
+  /// **'Discover trusted roommates, shared apartments, and better living options across Tashkent — all in one place.'**
   String get onboarding_subtitle_1;
 
   /// No description provided for @onboarding_title_2.
   ///
   /// In en, this message translates to:
-  /// **'Search by Metro'**
+  /// **'Search by Metro & District'**
   String get onboarding_title_2;
 
   /// No description provided for @onboarding_subtitle_2.
   ///
   /// In en, this message translates to:
-  /// **'Search either by stations - or by the entire metro line'**
+  /// **'Find apartments and roommates faster by choosing your preferred metro stations, metro lines, or districts across Tashkent.'**
   String get onboarding_subtitle_2;
 
   /// No description provided for @onboarding_title_3.
@@ -1969,13 +1969,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding_title_4.
   ///
   /// In en, this message translates to:
-  /// **'Trustworthy Platform'**
+  /// **'Safe & Verified Community'**
   String get onboarding_title_4;
 
   /// No description provided for @onboarding_subtitle_4.
   ///
   /// In en, this message translates to:
-  /// **'Verified users connecting for apartments and roommates'**
+  /// **'AI fraud detection, verified profiles, and a community complaint system help you find apartments and roommates with confidence.'**
   String get onboarding_subtitle_4;
 
   /// No description provided for @onboarding_get_started.

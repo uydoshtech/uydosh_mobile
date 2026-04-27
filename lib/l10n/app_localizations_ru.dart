@@ -1015,18 +1015,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get delete => 'Удалить';
 
   @override
-  String get onboarding_title_1 => 'Найди своих идеальных соседей';
+  String get onboarding_title_1 => 'Найди идеального соседа';
 
   @override
   String get onboarding_subtitle_1 =>
-      'Быстрый поиск соседей для совместного проживания по всему Ташкенту';
+      'Находи проверенных соседей, варианты совместной аренды и лучшие условия проживания по всему Ташкенту — в одном месте.';
 
   @override
-  String get onboarding_title_2 => 'Поиск по метро';
+  String get onboarding_title_2 => 'Поиск по метро и районам';
 
   @override
   String get onboarding_subtitle_2 =>
-      'Ищите либо по станциям - либо по всей линии метро';
+      'Находите квартиры и соседей быстрее, выбирая нужные станции, линии метро или районы по всему Ташкенту.';
 
   @override
   String get onboarding_title_3 => 'Поиск по району';
@@ -1035,11 +1035,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get onboarding_subtitle_3 => 'Удобный поиск по районам Ташкента';
 
   @override
-  String get onboarding_title_4 => 'Надёжная платформа';
+  String get onboarding_title_4 => 'Безопасное и проверенное сообщество';
 
   @override
   String get onboarding_subtitle_4 =>
-      'Проверенные пользователи ищут квартиры и соседей';
+      'ИИ-детекция мошенничества, верифицированные профили и система жалоб сообщества помогают уверенно находить квартиры и соседей.';
 
   @override
   String get onboarding_get_started => 'Начать';

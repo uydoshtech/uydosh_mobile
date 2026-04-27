@@ -25,8 +25,8 @@ class ChatSecurityRibbon extends StatelessWidget {
         final border = useGlass
             ? Colors.white.withValues(alpha: 0.18)
             : scheme.primary.withValues(alpha: 0.18);
-        final titleColor = ts.textColor;
-        final bodyColor = ts.secondaryTextColor;
+        final titleColor = ts.isBlueTheme ? Colors.white : ts.textColor;
+        final bodyColor = ts.isBlueTheme ? Colors.white : ts.secondaryTextColor;
         final shieldColor = ts.isBlueTheme ? Colors.white : scheme.primary;
 
         final ribbonContent = Container(
