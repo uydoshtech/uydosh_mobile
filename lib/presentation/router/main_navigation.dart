@@ -28,6 +28,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
+import "package:uy_dosh/presentation/blocs/listings_state.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router_keys.dart";
@@ -673,7 +674,33 @@ class MainNavigationState extends State<MainNavigation>
         );
     switch (_currentIndex) {
       case 0:
-        return L10n.text("home", style: titleStyle);
+        return BlocSelector<ListingsBloc, ListingsState, int?>(
+          selector: (state) => state.map(
+            initial: (_) => null,
+            loading: (_) => null,
+            loaded: (s) => s.total,
+            error: (_) => null,
+          ),
+          builder: (context, total) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                L10n.text("home", style: titleStyle),
+                if (total != null) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    "• $total",
+                    style: titleStyle.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: titleStyle.color?.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
+        );
       case 1:
         return L10n.text("favorites_title", style: titleStyle);
       case 2:

@@ -21,15 +21,18 @@ class ListingTypeIconBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = ListingTypeHelper.getColor(listingTypeCode);
     final icon = ListingTypeHelper.getIcon(listingTypeCode);
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     // "Looking for room" icon: a clearer, higher-contrast teal pairing.
     // Matches the design direction from the provided screenshot.
     final bool isRoomNeeded = listingTypeCode == "room_needed";
     final Color effectiveBorderColor =
         isRoomNeeded ? const Color(0xFF2A9DB1) : color;
-    final Color effectiveBackgroundColor = color.withValues(alpha: 0.1);
+    final Color effectiveBackgroundColor = isRoomNeeded && isLight
+        ? const Color(0xFFE6F6FF)
+        : color.withValues(alpha: 0.1);
     final Color effectiveIconColor =
-        isRoomNeeded ? const Color(0xFFE6F6FF) : color;
+        isRoomNeeded ? (isLight ? effectiveBorderColor : const Color(0xFFE6F6FF)) : color;
 
     return Container(
       padding: padding,

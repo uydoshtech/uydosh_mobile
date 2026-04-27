@@ -682,38 +682,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           const ThemeIcon(Icons.tune, size: 18),
           const SizedBox(width: 10),
           Expanded(child: _buildInlineFiltersChips()),
-          BlocSelector<ListingsBloc, ListingsState, int?>(
-            selector: (state) => state.map(
-              initial: (_) => null,
-              loading: (_) => null,
-              loaded: (s) => s.total,
-              error: (_) => null,
-            ),
-            builder: (context, total) {
-              if (total == null) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: BlueThemeColors.background,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    "$total",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
           IconButton(
             visualDensity: VisualDensity.compact,
             padding: const EdgeInsets.all(6),
