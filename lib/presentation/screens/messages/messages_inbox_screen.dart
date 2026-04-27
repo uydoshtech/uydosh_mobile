@@ -942,64 +942,71 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       builder: (sheetCtx) {
         final theme = Theme.of(sheetCtx);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));
+        final screenH = MediaQuery.sizeOf(sheetCtx).height;
+        // Keep the sheet feeling substantial even with 1–2 actions,
+        // but avoid the previously-too-tall 32% minimum.
+        final sheetMinHeight = (screenH * 0.20).clamp(165.0, 235.0);
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: GlassBottomSheetSurface(
             borderRadius: radius,
             child: Material(
               type: MaterialType.transparency,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(height: 10),
-                      Container(
-                        width: 38,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.18,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: sheetMinHeight),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 10),
+                        Container(
+                          width: 38,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.18,
+                            ),
+                            borderRadius: BorderRadius.circular(99),
                           ),
-                          borderRadius: BorderRadius.circular(99),
                         ),
-                      ),
-                      if (hasUnread)
+                        if (hasUnread)
+                          ListTile(
+                            leading: const ThemeIcon(
+                              Icons.mark_email_read_outlined,
+                            ),
+                            title: Text(
+                              L10n.get("mark_as_read", fallback: "Mark as read"),
+                            ),
+                            onTap: () {
+                              Navigator.of(sheetCtx).pop();
+                              context.read<MessagingBloc>().add(
+                                    MarkMessagesAsRead(
+                                      conversationId: conversation.id,
+                                    ),
+                                  );
+                            },
+                          ),
                         ListTile(
-                          leading: const ThemeIcon(
-                            Icons.mark_email_read_outlined,
-                          ),
-                          title: Text(
-                            L10n.get("mark_as_read", fallback: "Mark as read"),
-                          ),
-                          onTap: () {
-                            Navigator.of(sheetCtx).pop();
-                            context.read<MessagingBloc>().add(
-                                  MarkMessagesAsRead(
-                                    conversationId: conversation.id,
-                                  ),
-                                );
-                          },
+                          leading: const ThemeIcon(Icons.archive_outlined),
+                          title: Text(L10n.get("archive")),
+                          enabled: !hasUnread,
+                          subtitle: hasUnread
+                              ? Text(
+                                  L10n.get("archive_failed_has_unread"),
+                                  style: const TextStyle(fontSize: 12),
+                                )
+                              : null,
+                          onTap: hasUnread
+                              ? null
+                              : () {
+                                  Navigator.of(sheetCtx).pop();
+                                  _archiveConversation(conversation);
+                                },
                         ),
-                      ListTile(
-                        leading: const ThemeIcon(Icons.archive_outlined),
-                        title: Text(L10n.get("archive")),
-                        enabled: !hasUnread,
-                        subtitle: hasUnread
-                            ? Text(
-                                L10n.get("archive_failed_has_unread"),
-                                style: const TextStyle(fontSize: 12),
-                              )
-                            : null,
-                        onTap: hasUnread
-                            ? null
-                            : () {
-                                Navigator.of(sheetCtx).pop();
-                                _archiveConversation(conversation);
-                              },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
