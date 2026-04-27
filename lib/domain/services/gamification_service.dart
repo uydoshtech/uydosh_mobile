@@ -69,7 +69,7 @@ const List<Achievement> _allAchievements = [
   Achievement(
     id: "profile_complete",
     key: "achievement_profile_complete",
-    icon: Icons.check_circle,
+    icon: Icons.person,
     category: AchievementCategory.profile,
     isMajor: true,
   ),
