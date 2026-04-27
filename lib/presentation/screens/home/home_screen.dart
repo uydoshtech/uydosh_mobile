@@ -782,16 +782,29 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     color: _getWelcomeTitleColor(),
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 18),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: SizedBox(
                     width: double.infinity,
-                    child: _NotifySearchAlertGhostButton(
-                      label: L10n.get("search_alert_notify_me"),
-                      onPressed: _isCreatingSearchAlert
-                          ? null
-                          : _subscribeToSearchAlerts,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        GhostButtonFactory.iconText(
+                          onPressed: _handleClearFiltersFromEmptyState,
+                          icon: Icons.filter_alt_off,
+                          text: L10n.get("search_clear_filters"),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          neumorphicSoftUi: true,
+                        ),
+                        const SizedBox(height: 12),
+                        _NotifySearchAlertGhostButton(
+                          label: L10n.get("search_alert_notify_me"),
+                          onPressed: _isCreatingSearchAlert
+                              ? null
+                              : _subscribeToSearchAlerts,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -802,6 +815,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         ],
       ),
     );
+  }
+
+  Future<void> _handleClearFiltersFromEmptyState() async {
+    await _searchFiltersState.clearAllFilters();
+    await _searchFiltersState.ensureProfileDefaultsApplied();
+    if (!mounted) return;
+    // Clearing filters implies leaving inline-search mode entirely.
+    _exitInlineSearch();
   }
 
   void _maybeShowNoResultsAlertBellTutorial() {
@@ -1043,43 +1064,45 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       currentPrivateRoom: _searchFiltersState.privateRoom,
       currentWithPhoto: _searchFiltersState.withPhoto,
       onApply: (result) {
-        _searchFiltersState.setListingTypeId(result.listingTypeId);
-        _searchFiltersState.setGender(result.gender ?? 0);
-        _searchFiltersState.setPriceRange(result.minPrice, result.maxPrice);
-        _searchFiltersState.setPrivateRoom(result.privateRoom);
-        _searchFiltersState.setWithPhoto(result.withPhoto);
-
-        if (result.subwayLineId != null && (result.subwayLineId ?? 0) > 0) {
-          _searchFiltersState.setLocationIndex(0);
-          _searchFiltersState.setSubwayLine(result.subwayLineId!);
-        } else {
-          _searchFiltersState.setSubwayLine(0);
-        }
-
-        if (result.subwayStationId != null &&
-            (result.subwayStationId ?? 0) > 0) {
-          _searchFiltersState.setStationId(result.subwayStationId!);
-        } else {
-          _searchFiltersState.setStationId(0);
-        }
-
-        if (result.locationId != null && (result.locationId ?? 0) > 0) {
-          _searchFiltersState.setLocationIndex(result.locationId!);
-          _searchFiltersState.setSubwayLine(0);
-          _searchFiltersState.setStationId(0);
-        }
-
-        if (mounted) {
-          setState(() => _inlineSearchActive = true);
-        }
-        HomeInlineSearchState().setActive(true);
-        SharedPreferences.getInstance().then((p) {
-          p.setBool(_kInlineSearchActivePrefsKey, true);
-        });
-
-        _performSearch();
+        // Persist filter writes deterministically (important for web reloads).
+        _applyInlineSearchResult(result);
       },
     );
+  }
+
+  Future<void> _applyInlineSearchResult(SearchBottomSheetResult result) async {
+    await _searchFiltersState.setListingTypeId(result.listingTypeId);
+    await _searchFiltersState.setGender(result.gender ?? 0);
+    await _searchFiltersState.setPriceRange(result.minPrice, result.maxPrice);
+    await _searchFiltersState.setPrivateRoom(result.privateRoom);
+    await _searchFiltersState.setWithPhoto(result.withPhoto);
+
+    if (result.subwayLineId != null && (result.subwayLineId ?? 0) > 0) {
+      await _searchFiltersState.setLocationIndex(0);
+      await _searchFiltersState.setSubwayLine(result.subwayLineId!);
+    } else {
+      await _searchFiltersState.setSubwayLine(0);
+    }
+
+    if (result.subwayStationId != null && (result.subwayStationId ?? 0) > 0) {
+      await _searchFiltersState.setStationId(result.subwayStationId!);
+    } else {
+      await _searchFiltersState.setStationId(0);
+    }
+
+    if (result.locationId != null && (result.locationId ?? 0) > 0) {
+      await _searchFiltersState.setLocationIndex(result.locationId!);
+      await _searchFiltersState.setSubwayLine(0);
+      await _searchFiltersState.setStationId(0);
+    }
+
+    if (!mounted) return;
+    setState(() => _inlineSearchActive = true);
+    HomeInlineSearchState().setActive(true);
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kInlineSearchActivePrefsKey, true);
+    if (!mounted) return;
+    _performSearch();
   }
 
   void _exitInlineSearch() {
@@ -1087,8 +1110,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       setState(() => _inlineSearchActive = false);
     }
     HomeInlineSearchState().setActive(false);
-    SharedPreferences.getInstance().then((p) {
-      p.setBool(_kInlineSearchActivePrefsKey, false);
+    SharedPreferences.getInstance().then((p) async {
+      await p.setBool(_kInlineSearchActivePrefsKey, false);
     });
     _dispatchFeedRefresh();
   }
