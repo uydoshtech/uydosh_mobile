@@ -1106,6 +1106,7 @@ class AppStrings {
 
       "contact_user": "Contact User",
       "message": "Text in Chat",
+      "uydosh_chat": "UyDosh Chat",
 
       // ===== STATUS & STATE =====
       "delete_listing": "Delete Listing",
@@ -2246,6 +2247,7 @@ class AppStrings {
 
       "contact_user": "Связаться с пользователем",
       "message": "Написать в чат",
+      "uydosh_chat": "Чат UyDosh",
 
       // ===== STATUS & STATE =====
       "delete_listing": "Удалить объявление",
@@ -3389,6 +3391,7 @@ class AppStrings {
 
       "contact_user": "Foydalanuvchi bilan bog'lanish",
       "message": "Chatda yozish",
+      "uydosh_chat": "UyDosh Chat",
 
       // ===== STATUS & STATE =====
       "delete_listing": "E'loni o'chirish",

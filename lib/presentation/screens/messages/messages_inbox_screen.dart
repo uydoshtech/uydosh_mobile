@@ -9,6 +9,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
@@ -659,6 +660,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final scheme = Theme.of(context).colorScheme;
         final baseTint =
             isDark ? BlueThemeColors.background : scheme.surface;
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final enableGlass =
+            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
 
         // Important: don't clip the switch itself, otherwise its drop shadow
         // gets cut off at the bottom. Only the glass background is clipped.
@@ -675,7 +680,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                       // Blur is subtle on flat backgrounds, so we also apply a clear glass tint.
                       Positioned.fill(
                         child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                          filter: ImageFilter.blur(
+                            sigmaX: enableGlass ? 18 : 0,
+                            sigmaY: enableGlass ? 18 : 0,
+                          ),
                           child: const SizedBox.expand(),
                         ),
                       ),

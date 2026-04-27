@@ -2469,6 +2469,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get message => 'Yozish';
 
   @override
+  String get uydosh_chat => 'UyDosh Chat';
+
+  @override
   String get delete_listing => 'E\'loni o\'chirish';
 
   @override

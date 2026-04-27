@@ -2431,6 +2431,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get message => 'Write';
 
   @override
+  String get uydosh_chat => 'UyDosh Chat';
+
+  @override
   String get delete_listing => 'Delete Listing';
 
   @override

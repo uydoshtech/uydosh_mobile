@@ -12,6 +12,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -839,10 +840,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _blueGlassComposerPanel() {
     const topRadius = BorderRadius.vertical(top: Radius.circular(20));
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableGlass =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
     return ClipRRect(
       borderRadius: topRadius,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(
+          sigmaX: enableGlass ? 18 : 0,
+          sigmaY: enableGlass ? 18 : 0,
+        ),
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: topRadius,

@@ -2447,6 +2447,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get message => 'Написать';
 
   @override
+  String get uydosh_chat => 'Чат UyDosh';
+
+  @override
   String get delete_listing => 'Удалить объявление';
 
   @override

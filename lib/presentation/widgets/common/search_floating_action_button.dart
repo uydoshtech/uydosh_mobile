@@ -3,6 +3,7 @@ import "dart:ui" show ImageFilter;
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -186,7 +187,16 @@ class _LiquidGlassFabFace extends StatelessWidget {
     return ClipRRect(
       borderRadius: radius,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(
+          sigmaX: (AnimationSettingsState().uiAnimationsEnabled &&
+                  !(MediaQuery.maybeOf(context)?.disableAnimations ?? false))
+              ? 18
+              : 0,
+          sigmaY: (AnimationSettingsState().uiAnimationsEnabled &&
+                  !(MediaQuery.maybeOf(context)?.disableAnimations ?? false))
+              ? 18
+              : 0,
+        ),
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: radius,

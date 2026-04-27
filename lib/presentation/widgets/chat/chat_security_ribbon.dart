@@ -2,6 +2,7 @@ import "dart:ui";
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -102,9 +103,17 @@ class ChatSecurityRibbon extends StatelessWidget {
           );
         }
 
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final enableGlass =
+            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+
         return ClipRect(
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            filter: ImageFilter.blur(
+              sigmaX: enableGlass ? 18 : 0,
+              sigmaY: enableGlass ? 18 : 0,
+            ),
             child: Material(
               color: Colors.transparent,
               child: ribbonContent,

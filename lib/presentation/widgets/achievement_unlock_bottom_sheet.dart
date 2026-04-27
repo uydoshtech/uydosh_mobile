@@ -7,6 +7,7 @@ import "package:flutter_fireworks/flutter_fireworks.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
@@ -265,6 +266,10 @@ class _AchievementUnlockBottomSheetState
         final isLight = ThemeState().isLightTheme;
         final isBlueTheme = ThemeState().isBlueTheme;
         final isDark = theme.brightness == Brightness.dark;
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final enableGlass = AnimationSettingsState().uiAnimationsEnabled &&
+            !disableAnimations;
         final scheme = theme.colorScheme;
         final iconColor = isLight
             ? Colors.black
@@ -292,12 +297,14 @@ class _AchievementUnlockBottomSheetState
             // a thin translucent tint. We compose those in order.
             child: BackdropFilter(
               filter: ColorFilter.matrix(
-                _glassSaturationMatrix(saturation: isDark ? 1.6 : 1.8),
+                _glassSaturationMatrix(
+                  saturation: enableGlass ? (isDark ? 1.6 : 1.8) : 1.0,
+                ),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(
-                  sigmaX: isDark ? 32 : 40,
-                  sigmaY: isDark ? 32 : 40,
+                  sigmaX: enableGlass ? (isDark ? 32 : 40) : 0,
+                  sigmaY: enableGlass ? (isDark ? 32 : 40) : 0,
                 ),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -407,8 +414,14 @@ class _GlassBadge extends StatelessWidget {
       child: ClipOval(
         child: BackdropFilter(
           filter: ImageFilter.blur(
-            sigmaX: isDark ? 18 : 22,
-            sigmaY: isDark ? 18 : 22,
+            sigmaX: (AnimationSettingsState().uiAnimationsEnabled &&
+                    !(MediaQuery.maybeOf(context)?.disableAnimations ?? false))
+                ? (isDark ? 18 : 22)
+                : 0,
+            sigmaY: (AnimationSettingsState().uiAnimationsEnabled &&
+                    !(MediaQuery.maybeOf(context)?.disableAnimations ?? false))
+                ? (isDark ? 18 : 22)
+                : 0,
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(

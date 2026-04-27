@@ -1,6 +1,7 @@
 import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 
 /// Lightweight “glass” plate for controls that sit on top of a blurred sheet.
 ///
@@ -27,6 +28,10 @@ class LiquidGlassPlate extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableGlass =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
     final surfaceTint =
         Color.lerp(theme.colorScheme.surface, theme.colorScheme.primary, 0.10) ??
         theme.colorScheme.surface;
@@ -43,8 +48,8 @@ class LiquidGlassPlate extends StatelessWidget {
         clipBehavior: clipBehavior,
         child: BackdropFilter(
           filter: ImageFilter.blur(
-            sigmaX: isDark ? sigma : (sigma + 4),
-            sigmaY: isDark ? sigma : (sigma + 4),
+            sigmaX: enableGlass ? (isDark ? sigma : (sigma + 4)) : 0,
+            sigmaY: enableGlass ? (isDark ? sigma : (sigma + 4)) : 0,
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(

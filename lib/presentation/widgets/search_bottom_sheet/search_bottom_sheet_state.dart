@@ -593,6 +593,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mq = MediaQuery.of(context);
+    final enableGlass =
+        AnimationSettingsState().uiAnimationsEnabled && !mq.disableAnimations;
     // "Available" height for the sheet content, accounting for the keyboard.
     // The sheet will shrink-wrap its content up to this cap.
     final maxSheetHeight = (mq.size.height - mq.viewInsets.bottom) * 0.9;
@@ -636,12 +638,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               // the blurred feed keeps its color identity (otherwise heavy
               // blurs go grey).
               filter: ColorFilter.matrix(_glassSaturationMatrix(
-                saturation: isDark ? 1.6 : 1.8,
+                saturation: enableGlass ? (isDark ? 1.6 : 1.8) : 1.0,
               )),
               child: BackdropFilter(
                 filter: ImageFilter.blur(
-                  sigmaX: isDark ? 32 : 40,
-                  sigmaY: isDark ? 32 : 40,
+                  sigmaX: enableGlass ? (isDark ? 32 : 40) : 0,
+                  sigmaY: enableGlass ? (isDark ? 32 : 40) : 0,
                 ),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

@@ -927,6 +927,7 @@
   "share_subject_en": "UyDosh - Housing Listing",
   "contact_user": "Связаться с пользователем",
   "message": "Написать",
+  "uydosh_chat": "Чат UyDosh",
   "delete_listing": "Удалить объявление",
   "delete_listing_confirmation": "Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.",
   "delete_listing_success": "Объявление успешно удалено",

@@ -4619,6 +4619,12 @@ abstract class AppLocalizations {
   /// **'Write'**
   String get message;
 
+  /// No description provided for @uydosh_chat.
+  ///
+  /// In en, this message translates to:
+  /// **'UyDosh Chat'**
+  String get uydosh_chat;
+
   /// No description provided for @delete_listing.
   ///
   /// In en, this message translates to:

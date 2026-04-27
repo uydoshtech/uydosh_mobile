@@ -2,6 +2,7 @@ import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 
 /// Frosted bar behind a transparent [AppBar] toolbar (main shell).
 class LiquidGlassAppBarFlexibleSpace extends StatelessWidget {
@@ -16,6 +17,10 @@ class LiquidGlassAppBarFlexibleSpace extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final scheme = theme.colorScheme;
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableGlass =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
     // Keep the frosted tint anchored to the themed surface (not primary-tinted)
     // so the shell header reads the same on every tab regardless of body content.
     final baseTint = isDark ? BlueThemeColors.background : scheme.surface;
@@ -23,7 +28,7 @@ class LiquidGlassAppBarFlexibleSpace extends StatelessWidget {
     // Light: slightly higher opacity so the bar matches the canvas behind the
     // shell (see ThemePalette.screenCanvasColor) instead of picking up pure
     // white from listing cards under the blur.
-    final blurSigma = isDark ? 18.0 : 22.0;
+    final blurSigma = enableGlass ? (isDark ? 18.0 : 22.0) : 0.0;
     final tintAlpha = isDark ? 0.44 : 0.32;
     final sheenHigh = isDark ? 0.08 : 0.05;
 

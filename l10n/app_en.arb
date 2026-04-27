@@ -935,6 +935,7 @@
   "share_subject_en": "UyDosh - Housing Listing",
   "contact_user": "Contact User",
   "message": "Write",
+  "uydosh_chat": "UyDosh Chat",
   "delete_listing": "Delete Listing",
   "delete_listing_confirmation": "Are you sure you want to delete this listing? This action cannot be undone.",
   "delete_listing_success": "Listing deleted successfully",

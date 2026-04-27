@@ -14,6 +14,7 @@ import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/version_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -462,9 +463,16 @@ class _DrawerGlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableGlass =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
     return ClipRRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(
+          sigmaX: enableGlass ? 18 : 0,
+          sigmaY: enableGlass ? 18 : 0,
+        ),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: _DrawerColors.glassTint(context),

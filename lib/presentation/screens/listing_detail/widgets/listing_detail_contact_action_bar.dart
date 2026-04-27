@@ -3,11 +3,13 @@ import "dart:ui" show ImageFilter;
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/l10n_extension.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Sticky bottom action bar shown on the listing detail screen for
 /// non-owners. Exposes the two "start a conversation" channels (Telegram
@@ -52,83 +54,38 @@ class ListingDetailContactActionBar extends StatelessWidget {
     return AppColors.textLight;
   }
 
-  Color _getPrimaryFillColor() {
-    if (ThemeState().isLightTheme) return Colors.black;
-    if (ThemeState().isBlueTheme) return Colors.white;
-    return AppColors.primary;
-  }
-
-  Color _getPrimaryForegroundColor() {
-    if (ThemeState().isLightTheme) return Colors.white;
-    if (ThemeState().isBlueTheme) return const Color(0xFF1E3A5F);
-    return Colors.white;
-  }
-
   Widget _telegramButton(BuildContext context) {
     final accentColor = ListingDetailThemeHelper.iconColor;
     final secondaryTextColor = _getSecondaryTextColor();
-    return OutlinedButton.icon(
+    return _GlassNeumorphicCtaButton(
       onPressed: () {
         HapticFeedbackUtils.impact();
         onTelegram!.call();
       },
-      icon: ThemeIcon(
-        Icons.telegram,
-        size: 18,
-        color: accentColor,
-      ),
-      label: Text(
-        L10n.get("open_in_telegram"),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: secondaryTextColor,
-        ),
-      ),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        side: BorderSide(color: accentColor),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
+      icon: Icons.telegram,
+      iconColor: accentColor,
+      label: context.l10n.open_in_telegram,
+      labelColor: secondaryTextColor,
+      borderColor: accentColor,
     );
   }
 
   Widget _chatButton(BuildContext context) {
-    final primaryFill = _getPrimaryFillColor();
-    final primaryFg = _getPrimaryForegroundColor();
-    return ElevatedButton.icon(
+    // "UyDosh Chat" should be the primary CTA vs Telegram.
+    const brandGreen = Color(0xFF25C06D);
+    final primaryFg = Colors.white;
+    return _GlassNeumorphicCtaButton(
       onPressed: () {
         HapticFeedbackUtils.impact();
         onMessage();
       },
-      icon: ThemeIcon(
-        CupertinoIcons.bubble_left_bubble_right_fill,
-        size: 18,
-        color: primaryFg,
-      ),
-      label: Text(
-        L10n.get("message"),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: primaryFg,
-        ),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primaryFill,
-        foregroundColor: primaryFg,
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        elevation: 0,
-      ),
+      icon: CupertinoIcons.shield_fill,
+      iconColor: primaryFg,
+      label: context.l10n.uydosh_chat,
+      labelColor: primaryFg,
+      fillColor: brandGreen,
+      borderColor: brandGreen.withValues(alpha: 0.65),
+      fontWeight: FontWeight.w700,
     );
   }
 
@@ -176,13 +133,17 @@ class ListingDetailContactActionBar extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final scheme = theme.colorScheme;
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableGlass =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
     // Keep the frosted tint anchored to the themed surface so the footer
     // reads the same regardless of what's scrolling past behind it.
     final baseTint = isDark ? BlueThemeColors.background : scheme.surface;
 
     // Matched to [LiquidGlassAppBarFlexibleSpace] so the header and
     // footer have identical frost characteristics.
-    final blurSigma = isDark ? 18.0 : 22.0;
+    final blurSigma = enableGlass ? (isDark ? 18.0 : 22.0) : 0.0;
     final tintAlpha = isDark ? 0.44 : 0.32;
     final sheenHigh = isDark ? 0.08 : 0.05;
     final borderColor = (isDark ? Colors.white : Colors.black).withValues(
@@ -245,6 +206,147 @@ class ListingDetailContactActionBar extends StatelessWidget {
             ? _buildGlassBar(context)
             : _buildOpaqueBar(context);
       },
+    );
+  }
+}
+
+class _GlassNeumorphicCtaButton extends StatefulWidget {
+  const _GlassNeumorphicCtaButton({
+    required this.onPressed,
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.labelColor,
+    required this.borderColor,
+    this.fillColor,
+    this.fontWeight = FontWeight.w600,
+  });
+
+  final VoidCallback onPressed;
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final Color labelColor;
+  final Color borderColor;
+  final Color? fillColor;
+  final FontWeight fontWeight;
+
+  @override
+  State<_GlassNeumorphicCtaButton> createState() =>
+      _GlassNeumorphicCtaButtonState();
+}
+
+class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final scheme = theme.colorScheme;
+
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableGlass =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+
+    const radius = BorderRadius.all(Radius.circular(12));
+
+    final shadows = _pressed
+        ? ThreeDSurfaceStyle.pressedShadows(context)
+        : ThreeDSurfaceStyle.elevatedShadows(context);
+
+    final base =
+        widget.fillColor ??
+        (isDark
+            ? scheme.surface.withValues(alpha: 0.08)
+            : scheme.surface.withValues(alpha: 0.12));
+    final faceColor = base.withValues(alpha: isDark ? 0.38 : 0.55);
+    final stroke = widget.borderColor.withValues(alpha: isDark ? 0.60 : 0.70);
+
+    return SizedBox(
+      height: 48,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 90),
+        transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: radius,
+            splashFactory: NoSplash.splashFactory,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            onTap: widget.onPressed,
+            onHighlightChanged: (v) => setState(() => _pressed = v),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 90),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(borderRadius: radius, boxShadow: shadows),
+              child: ClipRRect(
+                borderRadius: radius,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (enableGlass)
+                      BackdropFilter(
+                        filter: ImageFilter.blur(
+                          sigmaX: isDark ? 18 : 22,
+                          sigmaY: isDark ? 18 : 22,
+                        ),
+                        child: const SizedBox.expand(),
+                      ),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: radius,
+                        color: faceColor,
+                        border: Border.all(color: stroke, width: 0.9),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withValues(alpha: isDark ? 0.10 : 0.22),
+                            Colors.white.withValues(alpha: 0.0),
+                          ],
+                          stops: const [0.0, 0.62],
+                        ),
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ThemeIcon(
+                              widget.icon,
+                              size: 18,
+                              color: widget.iconColor,
+                            ),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                widget.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: widget.fontWeight,
+                                  color: widget.labelColor,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

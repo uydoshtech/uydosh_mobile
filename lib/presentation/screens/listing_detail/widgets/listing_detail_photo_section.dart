@@ -4,6 +4,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter/widgets.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
@@ -69,8 +70,20 @@ class ListingDetailPhotoSection extends StatelessWidget {
                                 // look good in a horizontal carousel without distortion.
                                 ImageFiltered(
                                   imageFilter: ImageFilter.blur(
-                                    sigmaX: 18,
-                                    sigmaY: 18,
+                                    sigmaX: (AnimationSettingsState()
+                                                .uiAnimationsEnabled &&
+                                            !(MediaQuery.maybeOf(context)
+                                                    ?.disableAnimations ??
+                                                false))
+                                        ? 18
+                                        : 0,
+                                    sigmaY: (AnimationSettingsState()
+                                                .uiAnimationsEnabled &&
+                                            !(MediaQuery.maybeOf(context)
+                                                    ?.disableAnimations ??
+                                                false))
+                                        ? 18
+                                        : 0,
                                   ),
                                   child: CachedNetworkImage(
                                     imageUrl: buildPhotoUrl(photo.photoUrl),

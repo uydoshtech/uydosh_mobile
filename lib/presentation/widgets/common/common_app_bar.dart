@@ -2,6 +2,7 @@ import "dart:ui";
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -118,9 +119,13 @@ class _LiquidGlassAppBarBackground extends StatelessWidget {
     final base =
         theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface;
     final isLight = ThemeState().isLightTheme;
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableGlass =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
     // "Liquid glass": blur + translucent tint + subtle highlights.
     // Light theme: weaker tint so content behind the bar stays visible through the blur.
-    final blurSigma = isLight ? 22.0 : 18.0;
+    final blurSigma = enableGlass ? (isLight ? 22.0 : 18.0) : 0.0;
     final tintHigh = isLight ? 0.12 : 0.28;
     final tintLow = isLight ? 0.04 : 0.12;
     final sheenHigh = isLight ? 0.05 : 0.10;

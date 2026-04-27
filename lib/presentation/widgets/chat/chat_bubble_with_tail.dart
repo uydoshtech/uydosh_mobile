@@ -1,6 +1,7 @@
 import "dart:ui";
 
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/chat/bubble_with_tail_painter.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -146,7 +147,18 @@ class _GlassBubble extends StatelessWidget {
               tailHeight: tailHeight,
             ),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              filter: ImageFilter.blur(
+                sigmaX: (AnimationSettingsState().uiAnimationsEnabled &&
+                        !(MediaQuery.maybeOf(context)?.disableAnimations ??
+                            false))
+                    ? 18
+                    : 0,
+                sigmaY: (AnimationSettingsState().uiAnimationsEnabled &&
+                        !(MediaQuery.maybeOf(context)?.disableAnimations ??
+                            false))
+                    ? 18
+                    : 0,
+              ),
               child: const SizedBox.expand(),
             ),
           ),
