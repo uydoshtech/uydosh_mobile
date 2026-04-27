@@ -94,6 +94,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
+        if (!mounted) return;
         setState(() {
           _initializing = false;
           _initError = L10n.get("camera_unavailable");

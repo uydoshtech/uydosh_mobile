@@ -260,6 +260,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           logger.d(
             "🔐 AuthWizard: Firebase user exists but no backend session — authenticating with backend",
           );
+          if (!mounted) return;
           setState(() => _isAuthenticating = true);
 
           // Best-effort infer auth method from Firebase user data.
@@ -279,6 +280,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         // If anything goes wrong, keep the user in the wizard rather than
         // navigating into a state that will immediately 401-loop.
         logger.d("⚠️ AuthWizard: Existing session check failed: $e");
+        if (!mounted) return;
         setState(() => _isAuthenticating = false);
         return;
       } finally {
@@ -338,6 +340,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           await _crashlytics.setCustomKey("auth_step", "google_sign_in_cancelled");
           _crashlytics.log("AuthWizard: google_sign_in_cancelled");
         }
+        if (!mounted) return;
         setState(() {
           _isAuthenticating = false;
         });
@@ -364,6 +367,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       await _auth.signInWithCredential(credential);
 
       // Update state immediately after Firebase authentication succeeds
+      if (!mounted) return;
       setState(() {
         _isGoogleSignedIn = true;
       });
@@ -381,6 +385,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       // Now authenticate with your backend
       await _authenticateWithBackend();
 
+      if (!mounted) return;
       setState(() {
         _isAuthenticating = false;
       });
@@ -420,9 +425,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         method: "google",
         errorType: e.toString().length > 100 ? e.toString().substring(0, 100) : e.toString(),
       );
-      setState(() {
-        _isAuthenticating = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isAuthenticating = false;
+        });
+      }
 
       if (mounted) {
         final errorStr = e.toString();
@@ -449,6 +456,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _isAuthenticating = true;
       _isGoogleSignedIn = true; // share "is authenticated" gate with rest of wizard

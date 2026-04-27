@@ -290,6 +290,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   ),
                 )
                     .then((result) {
+                  if (!mounted) return;
                   if (result is Map) {
                     final resultUser = result["user"] as AdminUser?;
                     if (resultUser != null && resultUser.id == user.id) {

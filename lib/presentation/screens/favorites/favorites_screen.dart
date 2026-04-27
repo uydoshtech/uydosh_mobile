@@ -160,6 +160,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       logger.d(
         "❌ FavoritesScreen: User not authenticated, cannot load favorites",
       );
+      if (!mounted) return;
       setState(() {
         _favoriteListings = [];
         _isLoading = false;
@@ -208,6 +209,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         logger.d(
           "❌ FavoritesScreen: User not authenticated, cannot load favorites",
         );
+        if (!mounted) return;
         setState(() {
           _favoriteListings = [];
           _isLoading = false;
@@ -224,6 +226,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         limit: _pageLimit,
       );
 
+      if (!mounted) return;
       setState(() {
         if (isRefresh) {
           _favoriteListings = favoriteListings;
@@ -248,6 +251,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           e.toString().contains("Unauthorized") ||
           e.toString().contains("Invalid or expired session token");
 
+      if (!mounted) return;
       setState(() {
         if (isRefresh) {
           _favoriteListings = [];
@@ -257,25 +261,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       });
 
       // Show appropriate error message based on error type
-      if (mounted) {
-        String errorMessage;
+      String errorMessage;
 
-        if (isAuthError) {
-          errorMessage =
-              "Authentication required. Please log in again to view your favorites.";
-        } else if (e.toString().contains("network") ||
-            e.toString().contains("connection")) {
-          errorMessage =
-              "Network error. Please check your connection and try again.";
-        } else {
-          errorMessage = L10n.get("unable_to_load_favorites");
-        }
+      if (isAuthError) {
+        errorMessage =
+            "Authentication required. Please log in again to view your favorites.";
+      } else if (e.toString().contains("network") ||
+          e.toString().contains("connection")) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else {
+        errorMessage = L10n.get("unable_to_load_favorites");
+      }
 
-        if (isAuthError) {
-          ToastTheme.showInfo(context, message: errorMessage);
-        } else {
-          ToastTheme.showError(context, message: errorMessage);
-        }
+      if (isAuthError) {
+        ToastTheme.showInfo(context, message: errorMessage);
+      } else {
+        ToastTheme.showError(context, message: errorMessage);
       }
     }
   }
@@ -306,6 +307,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         limit: _pageLimit,
       );
 
+      if (!mounted) return;
       setState(() {
         _favoriteListings.addAll(moreFavorites);
         _hasMoreData = moreFavorites.length >= _pageLimit;
@@ -318,6 +320,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     } catch (e) {
       logger.d("❌ FavoritesScreen: Error loading more favorites: $e");
       _currentPage--; // Revert page increment
+      if (!mounted) return;
       setState(() {
         _isLoadingMore = false;
       });
