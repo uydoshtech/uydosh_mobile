@@ -1,20 +1,10 @@
 import "package:flutter_test/flutter_test.dart";
-import "package:mocktail/mocktail.dart";
-import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 
-class MockSubwayStationService extends Mock implements ISubwayStationService {}
-
 void main() {
-  late MockSubwayStationService mockSubwayStationService;
-
-  setUp(() {
-    mockSubwayStationService = MockSubwayStationService();
-  });
-
   group("SubwayStationsBloc", () {
     test("initial state is SubwayStationsState.initial", () {
-      final bloc = SubwayStationsBloc(mockSubwayStationService);
+      final bloc = SubwayStationsBloc();
       expect(bloc.state, const SubwayStationsState.initial());
       bloc.close();
     });
@@ -22,7 +12,7 @@ void main() {
     test("emits [loading, loaded] when fetchSubwayStations succeeds", () async {
       // SubwayStationsBloc uses MetroCache.getAllStations() - static data
       // No need to mock the service; the bloc uses MetroCache directly
-      final bloc = SubwayStationsBloc(mockSubwayStationService);
+      final bloc = SubwayStationsBloc();
 
       bloc.add(const SubwayStationsEvent.fetchSubwayStations());
 
@@ -49,7 +39,7 @@ void main() {
     test("emits [loading, loaded] when fetchSubwayStationsByLine succeeds",
         () async {
       // SubwayStationsBloc uses MetroCache.getStationsForLine() - static data
-      final bloc = SubwayStationsBloc(mockSubwayStationService);
+      final bloc = SubwayStationsBloc();
 
       bloc.add(const SubwayStationsEvent.fetchSubwayStationsByLine(line: 1));
 
@@ -74,7 +64,7 @@ void main() {
     });
 
     test("fetchSubwayStationsByLine with invalid line emits empty list", () async {
-      final bloc = SubwayStationsBloc(mockSubwayStationService);
+      final bloc = SubwayStationsBloc();
 
       bloc.add(const SubwayStationsEvent.fetchSubwayStationsByLine(line: 99));
 

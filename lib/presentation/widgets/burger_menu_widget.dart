@@ -399,7 +399,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
         ToastTheme.showSuccess(context, message: message);
 
         // Then perform logout
-        await LogoutService().performLogout(context);
+        await LogoutService().performLogout();
       },
     );
   }

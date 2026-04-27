@@ -55,7 +55,6 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
     if (renderObject is! RenderBox) return;
 
     final viewport = RenderAbstractViewport.of(renderObject);
-    if (viewport == null) return;
 
     final target = viewport
         .getOffsetToReveal(renderObject, alignment)
@@ -171,7 +170,6 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
   Widget build(BuildContext context) {
     final hasLocation = widget.listingDetail.location != null;
     final hasSubway = widget.listingDetail.subwayStation != null;
-    final hasMapContent = hasLocation || hasSubway;
 
     final chevronColor = ListingDetailThemeHelper.locationTextColor;
 

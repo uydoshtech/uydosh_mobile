@@ -58,7 +58,7 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<ILocationService>(
-    () => LocationService(getIt<IPublicApiClient>()),
+    () => LocationService(),
   );
 
   getIt.registerLazySingleton<ISubwayStationService>(
@@ -89,11 +89,11 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<IUniversityService>(
-    () => UniversityService(getIt<IPublicApiClient>()),
+    () => UniversityService(),
   );
 
   getIt.registerLazySingleton<IRegionService>(
-    () => RegionService(getIt<IPublicApiClient>()),
+    () => RegionService(),
   );
 
   getIt.registerLazySingleton<ICountryService>(

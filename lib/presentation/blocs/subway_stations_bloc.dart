@@ -2,7 +2,6 @@ import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
-import "package:uy_dosh/domain/services/subway_station_service.dart";
 
 part "subway_stations_bloc.freezed.dart";
 part "subway_stations_event.dart";
@@ -10,8 +9,7 @@ part "subway_stations_state.dart";
 
 class SubwayStationsBloc
     extends Bloc<SubwayStationsEvent, SubwayStationsState> {
-  SubwayStationsBloc(this._subwayStationService)
-    : super(const SubwayStationsState.initial()) {
+  SubwayStationsBloc() : super(const SubwayStationsState.initial()) {
     on<SubwayStationsEvent>((event, emit) async {
       await event.map(
         fetchSubwayStations: (e) async => _onFetchSubwayStations(emit),
@@ -20,8 +18,6 @@ class SubwayStationsBloc
       );
     });
   }
-
-  final ISubwayStationService _subwayStationService;
 
   Future<void> _onFetchSubwayStations(Emitter<SubwayStationsState> emit) async {
     emit(const SubwayStationsState.loading());

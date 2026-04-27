@@ -53,12 +53,11 @@ class FavoriteService implements IFavoriteService {
     try {
       logger.d("🌐 FavoriteService: Adding listing $listingId to favorites...");
 
-      final response = await _oauthApiClient
-          .post<Map<String, dynamic>, _AddToFavoritesRequest>(
-            "/favorites",
-            (data) => data as Map<String, dynamic>,
-            data: _AddToFavoritesRequest(listingId),
-          );
+      await _oauthApiClient.post<Map<String, dynamic>, _AddToFavoritesRequest>(
+        "/favorites",
+        (data) => data as Map<String, dynamic>,
+        data: _AddToFavoritesRequest(listingId),
+      );
 
       logger.d("✅ FavoriteService: Successfully added to favorites");
       return true;
@@ -83,11 +82,10 @@ class FavoriteService implements IFavoriteService {
         "🌐 FavoriteService: Removing listing $listingId from favorites...",
       );
 
-      final response = await _oauthApiClient
-          .delete<Map<String, dynamic>, _EmptyRequest>(
-            "/favorites/$listingId",
-            (data) => data as Map<String, dynamic>,
-          );
+      await _oauthApiClient.delete<Map<String, dynamic>, _EmptyRequest>(
+        "/favorites/$listingId",
+        (data) => data as Map<String, dynamic>,
+      );
 
       logger.d("✅ FavoriteService: Successfully removed from favorites");
       return true;

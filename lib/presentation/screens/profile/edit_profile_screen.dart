@@ -417,6 +417,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         return nameA.compareTo(nameB);
       });
 
+      if (!mounted) return;
       setState(() => _regions = regions);
       _isLoadingRegions.value = false;
 
@@ -446,6 +447,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     try {
       final universityService = getIt<IUniversityService>();
       final universities = await universityService.getUniversities();
+      if (!mounted) return;
       setState(() => _universities = universities);
       _isLoadingUniversities.value = false;
     } catch (e) {

@@ -1,4 +1,3 @@
-import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/cache/university_cache.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/university.dart";
@@ -11,9 +10,7 @@ abstract class IUniversityService {
 }
 
 class UniversityService implements IUniversityService {
-
-  UniversityService(this._publicApiClient);
-  final IPublicApiClient _publicApiClient;
+  UniversityService();
 
   @override
   Future<List<University>> getUniversities() async {

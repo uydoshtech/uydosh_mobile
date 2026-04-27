@@ -112,7 +112,6 @@ class _ListingDetailCompatibilitySectionState
     if (renderObject is! RenderBox) return;
 
     final viewport = RenderAbstractViewport.of(renderObject);
-    if (viewport == null) return;
 
     final target = viewport
         .getOffsetToReveal(renderObject, alignment)

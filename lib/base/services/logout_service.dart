@@ -27,7 +27,7 @@ class LogoutService {
 
   /// Centralized logout method that handles Firebase, backend, and local logout
   /// Note: Success toast should be shown by the calling UI before calling this method
-  Future<void> performLogout(BuildContext context) async {
+  Future<void> performLogout() async {
     logger.d("🚪 Starting centralized logout process...");
     getIt<AppAnalyticsService>().logSignOut();
     await getIt<AppAnalyticsService>().setUserId(null);
@@ -107,14 +107,15 @@ class LogoutService {
     logger.d("✅ Account deleted on backend");
 
     // Show success toast before logout (avoids context issues after navigation)
-    final message = _getDeleteAccountSuccessMessage(context);
+    if (!context.mounted) return;
+    final message = _getDeleteAccountSuccessMessage();
     ToastTheme.showSuccess(context, message: message);
 
-    await performLogout(context);
+    await performLogout();
     logger.d("✅ Delete account flow completed");
   }
 
-  static String _getDeleteAccountSuccessMessage(BuildContext context) {
+  static String _getDeleteAccountSuccessMessage() {
     try {
       return L10n.get("delete_account_success");
     } catch (_) {

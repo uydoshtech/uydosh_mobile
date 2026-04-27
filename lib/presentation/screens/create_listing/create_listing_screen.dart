@@ -35,8 +35,6 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_description_template_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
@@ -346,24 +344,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
   }
 
-  Color _getLocationIconColor() {
-    if (_selectedLocationIndex < 0) {
-      return Colors.grey; // Grey when no location is selected
-    }
-    // Alternate between different colors based on location index
-    final colors = [
-      Colors.red,
-      Colors.orange,
-      Colors.green,
-      Colors.blue,
-      Colors.purple,
-      Colors.teal,
-      Colors.indigo,
-      Colors.brown,
-    ];
-    return colors[_selectedLocationIndex % colors.length];
-  }
-
   void _dismissKeyboard() {
     FocusScope.of(context).unfocus();
   }
@@ -406,50 +386,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void _updateTitle() {
     final generatedTitle = _generateTitle();
     _titleController.text = generatedTitle;
-  }
-
-  // Theme-dependent color method for header background
-  Color _getHeaderBackgroundColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.surface; // Dark blue surface for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.white; // White for light theme
-    } else {
-      return Colors.white; // Default to light theme background
-    }
-  }
-
-  // Theme-dependent color method for primary buttons
-  Color _getPrimaryButtonColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.buttonPrimary; // Blue for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black for light theme
-    } else {
-      return Colors.black; // Default to light theme button color
-    }
-  }
-
-  // Theme-dependent color method for icons
-  Color _getIconColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.buttonPrimary; // Blue for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black for light theme
-    } else {
-      return Colors.black; // Default to light theme icon color
-    }
-  }
-
-  // Theme-dependent color method for loading indicators
-  Color _getLoadingIndicatorColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.buttonPrimary; // Blue for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black for light theme
-    } else {
-      return Colors.black; // Default to light theme indicator color
-    }
   }
 
   // Theme-dependent color method for borders

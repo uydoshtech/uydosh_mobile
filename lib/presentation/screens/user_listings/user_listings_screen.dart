@@ -11,7 +11,6 @@ import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
-import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
@@ -291,9 +290,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
                             (context) => BlocProvider(
                               create:
                                   (context) =>
-                                      SubwayStationsBloc(
-                                        getIt<ISubwayStationService>(),
-                                      ),
+                                      SubwayStationsBloc(),
                               child: BlocProvider(
                                 create:
                                     (context) =>

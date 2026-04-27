@@ -5,7 +5,6 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
-import "package:flutter/foundation.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -471,10 +470,6 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
         .replaceAll(RegExp("[’ʻ'`.]"), "")
         .replaceAll(RegExp(r"\s+"), " ")
         .trim();
-  }
-
-  void _triggerStationHighlight(int stationId) {
-    _triggerStationsHighlight([stationId]);
   }
 
   void _triggerStationsHighlight(Iterable<int> stationIds) {

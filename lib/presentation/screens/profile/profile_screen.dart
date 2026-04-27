@@ -509,7 +509,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 HapticFeedbackUtils.impact();
                 if (isSessionExpired) {
-                  LogoutService().performLogout(context);
+                  LogoutService().performLogout();
                 } else {
                   context.read<CurrentUserProfileBloc>().add(
                     const CurrentUserProfileEvent.fetchProfile(),
@@ -577,7 +577,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onConfirm: () async {
         final message = L10n.get("logout_success");
         ToastTheme.showSuccess(context, message: message);
-        await LogoutService().performLogout(context);
+        await LogoutService().performLogout();
       },
     );
   }

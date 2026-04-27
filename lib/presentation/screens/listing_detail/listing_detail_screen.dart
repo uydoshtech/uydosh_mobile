@@ -44,7 +44,6 @@ import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
-import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
@@ -157,7 +156,6 @@ class ListingDetailScreen extends StatefulWidget {
 class _ListingDetailScreenState extends State<ListingDetailScreen>
     with TickerProviderStateMixin {
   late AnimationController _heartAnimationController;
-  late Animation<double> _heartScaleAnimation;
   late AnimationController _warningBlinkController;
   late Animation<double> _warningBlinkAnimation;
   late final AnimationController _room3dRotateController;
@@ -186,11 +184,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     _heartAnimationController = AnimationUtils.createAnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 150),
-    );
-    _heartScaleAnimation = AnimationUtils.createScaleAnimation(
-      controller: _heartAnimationController,
-      begin: 1.0,
-      end: 1.3,
     );
 
     _warningBlinkController = AnimationUtils.createAnimationController(
@@ -930,7 +923,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
           providers: [
             BlocProvider<SubwayStationsBloc>(
               create: (context) =>
-                  SubwayStationsBloc(getIt<ISubwayStationService>()),
+                  SubwayStationsBloc(),
             ),
             BlocProvider<LocationsBloc>(
               create: (context) => LocationsBloc(getIt<ILocationService>()),

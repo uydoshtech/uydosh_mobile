@@ -1,4 +1,3 @@
-import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/cache/region_cache.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/region.dart";
@@ -8,9 +7,7 @@ abstract class IRegionService {
 }
 
 class RegionService implements IRegionService {
-
-  RegionService(this._publicApiClient);
-  final IPublicApiClient _publicApiClient;
+  RegionService();
 
   @override
   Future<List<Region>> getRegions() async {

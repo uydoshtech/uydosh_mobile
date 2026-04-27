@@ -24,7 +24,6 @@ import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
-import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
@@ -615,7 +614,7 @@ class MainNavigationState extends State<MainNavigation>
   // ---------------------------------------------------------------------------
   late final Widget _favoritesTab = const FavoritesScreen();
   late final Widget _createListingTab = BlocProvider(
-    create: (_) => SubwayStationsBloc(getIt<ISubwayStationService>()),
+    create: (_) => SubwayStationsBloc(),
     child: BlocProvider(
       create: (_) => LocationsBloc(getIt<ILocationService>()),
       child: const CreateListingScreen(),

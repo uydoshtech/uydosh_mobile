@@ -29,8 +29,6 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_description_template_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
@@ -404,26 +402,6 @@ class _EditListingScreenState extends State<EditListingScreen>
     _makingPhotoPrimaryIds.clear();
     _deletingPhotoIds.clear();
     super.dispose();
-  }
-
-  Color _getLocationIconColor() {
-    if (_selectedLocationIndex < 0) {
-      return Theme.of(
-        context,
-      ).colorScheme.onSurface.withOpacity(0.6); // Use theme color
-    }
-    // Use theme colors for better consistency
-    final colors = [
-      Theme.of(context).colorScheme.error, // Red
-      Theme.of(context).colorScheme.tertiary, // Orange/Amber
-      Theme.of(context).colorScheme.tertiary, // Green
-      Theme.of(context).colorScheme.primary, // Primary theme color
-      Theme.of(context).colorScheme.secondary, // Secondary theme color
-      Theme.of(context).colorScheme.tertiary, // Teal
-      Theme.of(context).colorScheme.secondary, // Indigo
-      Theme.of(context).colorScheme.secondary, // Pink
-    ];
-    return colors[_selectedLocationIndex % colors.length];
   }
 
   void _dismissKeyboard() {

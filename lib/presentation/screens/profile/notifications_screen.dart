@@ -574,17 +574,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     ActiveSearchAlertsState().syncFromAlerts(_alerts);
   }
 
-  Future<void> _deleteAlert(SearchAlert a) async {
-    final ok = await getIt<ISearchAlertService>().deleteAlert(alertId: a.id);
-    if (!mounted) return;
-    if (!ok) {
-      ToastTheme.showError(context, message: L10n.get("error_generic"));
-      return;
-    }
-    setState(() => _alerts = _alerts.where((x) => x.id != a.id).toList());
-    ActiveSearchAlertsState().syncFromAlerts(_alerts);
-  }
-
   void _deleteAlertAnimated(SearchAlert a, {required int index}) {
     if (!mounted) return;
     if (_itemsBeingRemoved.contains(a.id)) return;

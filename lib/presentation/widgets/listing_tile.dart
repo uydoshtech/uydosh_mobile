@@ -975,60 +975,6 @@ class _ListingTileState extends State<ListingTile>
     }
   }
 
-  /// Gets localized day name using LanguageState
-  String _getDayName(int weekday) {
-    switch (weekday) {
-      case 1:
-        return L10n.get("monday");
-      case 2:
-        return L10n.get("tuesday");
-      case 3:
-        return L10n.get("wednesday");
-      case 4:
-        return L10n.get("thursday");
-      case 5:
-        return L10n.get("friday");
-      case 6:
-        return L10n.get("saturday");
-      case 7:
-        return L10n.get("sunday");
-      default:
-        return "";
-    }
-  }
-
-  /// Gets localized month name using LanguageState
-  String _getMonthName(int month) {
-    switch (month) {
-      case 1:
-        return L10n.get("january");
-      case 2:
-        return L10n.get("february");
-      case 3:
-        return L10n.get("march");
-      case 4:
-        return L10n.get("april");
-      case 5:
-        return L10n.get("may");
-      case 6:
-        return L10n.get("june");
-      case 7:
-        return L10n.get("july");
-      case 8:
-        return L10n.get("august");
-      case 9:
-        return L10n.get("september");
-      case 10:
-        return L10n.get("october");
-      case 11:
-        return L10n.get("november");
-      case 12:
-        return L10n.get("december");
-      default:
-        return "";
-    }
-  }
-
   List<Amenity> _computeSortedAmenities(List<Amenity> amenities) {
     // Custom sorting: WiFi first, then air conditioning, then the rest
     final sortedAmenities = List<Amenity>.from(amenities);

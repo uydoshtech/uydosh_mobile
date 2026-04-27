@@ -1,4 +1,3 @@
-import "package:flutter/material.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 @Deprecated("Use ThemeIcon instead.")

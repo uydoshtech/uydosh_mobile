@@ -74,7 +74,7 @@ class AuthRequiredState extends StatelessWidget {
   /// and navigate to the auth wizard. Safe to pass directly as [onLogin].
   static VoidCallback logoutAndReauthenticate(BuildContext context) {
     return () async {
-      await LogoutService().performLogout(context);
+      await LogoutService().performLogout();
       if (!context.mounted) return;
       context.pushReplaceAuthWizard();
     };
