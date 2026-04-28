@@ -14,23 +14,53 @@ class ActiveSearchAlertsState extends ChangeNotifier {
       ActiveSearchAlertsState._internal();
 
   bool _hasActiveEnabledAlerts = false;
+  int _enabledAlertsCount = 0;
+  int _celebrationTick = 0;
 
   bool get hasActiveEnabledAlerts => _hasActiveEnabledAlerts;
+  int get enabledAlertsCount => _enabledAlertsCount;
+
+  /// Increments when the number of enabled alerts increases (used to trigger UI
+  /// celebration animations like the header bell shake).
+  int get celebrationTick => _celebrationTick;
+
+  /// Triggers a one-off celebration animation for UI elements (e.g. header bell)
+  /// when we already *know* an alert was created successfully, without waiting
+  /// for eventual consistency in `listAlerts()`.
+  void bumpCelebration() {
+    _celebrationTick++;
+    notifyListeners();
+    logger.d("ActiveSearchAlertsState: bumpCelebration -> tick=$_celebrationTick");
+  }
 
   /// Updates from a list already loaded in the UI (avoids an extra round trip).
   void syncFromAlerts(Iterable<SearchAlert> alerts) {
-    final has = alerts.any((a) => a.enabled);
-    if (_hasActiveEnabledAlerts == has) return;
+    final enabledCount = alerts.where((a) => a.enabled).length;
+    final has = enabledCount > 0;
+
+    final countChanged = _enabledAlertsCount != enabledCount;
+    final hasChanged = _hasActiveEnabledAlerts != has;
+
+    // Auto-celebrate when the user gains enabled alerts (e.g. adds a new alert).
+    if (enabledCount > _enabledAlertsCount) {
+      _celebrationTick++;
+    }
+
+    if (!countChanged && !hasChanged) return;
+    _enabledAlertsCount = enabledCount;
     _hasActiveEnabledAlerts = has;
     notifyListeners();
-    logger.d("ActiveSearchAlertsState: syncFromAlerts -> $has");
+    logger.d(
+      "ActiveSearchAlertsState: syncFromAlerts -> has=$has enabledCount=$enabledCount tick=$_celebrationTick",
+    );
   }
 
   /// Fetches alerts from the API. No-op when not authenticated.
   Future<void> refresh() async {
     if (!AuthenticationState().isAuthenticated) {
-      if (_hasActiveEnabledAlerts) {
+      if (_hasActiveEnabledAlerts || _enabledAlertsCount != 0) {
         _hasActiveEnabledAlerts = false;
+        _enabledAlertsCount = 0;
         notifyListeners();
         logger.d("ActiveSearchAlertsState: cleared (signed out)");
       }

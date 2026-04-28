@@ -1,4 +1,5 @@
 import "dart:async" show unawaited;
+import "dart:math" as math;
 
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:firebase_auth/firebase_auth.dart";
@@ -862,10 +863,9 @@ class MainNavigationState extends State<MainNavigation>
                   key: notificationsBellTutorialKey,
                   child: _threeDAppBarIconButton(
                     borderRadius: const BorderRadius.all(Radius.circular(999)),
-                    iconData:
-                        activeAlerts
-                            ? Icons.notifications_active
-                            : Icons.notifications_none_outlined,
+                    // iconData isn't used when iconWidget is provided; keep a stable default.
+                    iconData: Icons.notifications_none_outlined,
+                    iconWidget: _NotificationsBellIcon(active: activeAlerts),
                     onPressed: () {
                       context.pushNotifications();
                     },
@@ -1006,6 +1006,116 @@ class MainNavigationState extends State<MainNavigation>
           ),
         );
       },
+    );
+  }
+}
+
+class _NotificationsBellIcon extends StatefulWidget {
+  const _NotificationsBellIcon({required this.active});
+
+  final bool active;
+
+  @override
+  State<_NotificationsBellIcon> createState() => _NotificationsBellIconState();
+}
+
+class _NotificationsBellIconState extends State<_NotificationsBellIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _turns;
+  int _shakeRequestId = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 820),
+    );
+    _turns = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0, end: 0.10).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 18,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.10, end: -0.09).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 20,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -0.09, end: 0.055).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 22,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.055, end: 0).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 40,
+      ),
+    ]).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(covariant _NotificationsBellIcon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.active && widget.active) {
+      // Icon swap first, then shake shortly after to avoid jerking.
+      final requestId = ++_shakeRequestId;
+      Future<void>.delayed(const Duration(milliseconds: 180), () {
+        if (!mounted) return;
+        if (_shakeRequestId != requestId) return;
+        if (!widget.active) return;
+        _controller.forward(from: 0);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.rotate(
+          angle: _turns.value * 2 * math.pi,
+          alignment: Alignment.topCenter,
+          child: child,
+        );
+      },
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 160),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        transitionBuilder: (child, animation) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        layoutBuilder: (currentChild, previousChildren) {
+          return Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              ...previousChildren,
+              if (currentChild != null) currentChild,
+            ],
+          );
+        },
+        child: ThemeIcon(
+          key: ValueKey<bool>(widget.active),
+          widget.active
+              ? Icons.notifications_active
+              : Icons.notifications_none_outlined,
+          size: 26,
+        ),
+      ),
     );
   }
 }

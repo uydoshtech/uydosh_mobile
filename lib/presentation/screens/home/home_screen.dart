@@ -172,9 +172,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
   bool _isCreatingSearchAlert = false;
-  int _searchAlertCelebrationTick = 0;
+  // Celebration for the header bell is driven by `ActiveSearchAlertsState()`
+  // so it also triggers when alerts are created from other screens.
   bool _inlineSearchActive = false;
+  bool _inlineSearchClosing = false;
+  bool _inlineSearchSpacerExpanded = false;
+  int _inlineSearchExitRefreshToken = 0;
+  int _inlineSearchEnterSearchToken = 0;
   static const double _inlineSearchRibbonHeight = 56.0;
+  static const double _inlineSearchRibbonToListGap = 8.0;
   static const double _kFabGap = 12.0;
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
@@ -259,11 +265,22 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final active = prefs.getBool(HomeInlineSearchState.activePrefsKey) ?? false;
     if (!mounted) return;
     if (!active) return;
-    setState(() => _inlineSearchActive = true);
+    final token = ++_inlineSearchEnterSearchToken;
+    setState(() {
+      _inlineSearchActive = true;
+      _inlineSearchClosing = false;
+      _inlineSearchSpacerExpanded = true;
+    });
     HomeInlineSearchState().setActive(true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _performSearch();
+      unawaited(() async {
+        await Future.delayed(_homeRibbonAnimationDuration(context));
+        if (!mounted) return;
+        if (!_inlineSearchActive) return;
+        if (token != _inlineSearchEnterSearchToken) return;
+        _performSearch();
+      }());
     });
   }
 
@@ -696,6 +713,42 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
   }
 
+  Duration _homeRibbonAnimationDuration(BuildContext context) =>
+      _homeRibbonAnimationsEnabled(context)
+          ? const Duration(milliseconds: 750)
+          : Duration.zero;
+
+  double _feedBaseTopPadding() {
+    if (widget.isSearchMode) return 0;
+    final base = ThemeState().mainShellGlassExtraTopInset(context);
+    // Keep a small breathing room when no ribbon is shown, but avoid creating a
+    // noticeable empty band under the shell header.
+    return base;
+  }
+
+  double _feedRibbonSpacerHeight() {
+    if (widget.isSearchMode) return 0;
+    return _inlineSearchSpacerExpanded ? _inlineSearchRibbonHeight : 0;
+  }
+
+  Widget _buildAnimatedFeedTopSpacer({required double trailingSpacing}) {
+    // CommonListView applies `itemSpacing` as bottom padding to each item.
+    // If we place a spacer as item 0, it will get that spacing too, which would
+    // create an oversized gap between ribbon and first listing.
+    //
+    // We compensate by subtracting the spacing that will be added after this
+    // spacer, so the resulting "visual gap" equals [_inlineSearchRibbonToListGap].
+    final targetHeight = math.max(
+      0.0,
+      _feedRibbonSpacerHeight() + _inlineSearchRibbonToListGap - trailingSpacing,
+    );
+    return AnimatedContainer(
+      duration: _homeRibbonAnimationDuration(context),
+      curve: Curves.easeOutCubic,
+      height: targetHeight,
+    );
+  }
+
   Widget _buildInlineFiltersRibbonAnimated() {
     return ListenableBuilder(
       listenable: AnimationSettingsState(),
@@ -728,9 +781,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   key: const ValueKey("inline_filters_ribbon"),
                   child: _buildInlineFiltersRibbon(),
                 )
-              : const SizedBox.shrink(
-                  key: ValueKey("inline_filters_ribbon_empty"),
-                ),
+              : _inlineSearchClosing
+                  ? const SizedBox(
+                      key: ValueKey("inline_filters_ribbon_placeholder"),
+                      height: _inlineSearchRibbonHeight,
+                    )
+                  : const SizedBox.shrink(
+                      key: ValueKey("inline_filters_ribbon_empty"),
+                    ),
         );
       },
     );
@@ -744,29 +802,30 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // We pad list content down so it doesn't sit under the header/ribbon.
     if (widget.isSearchMode) return 0;
     final base = ThemeState().mainShellGlassExtraTopInset(context);
-    if (_inlineSearchActive) {
-      return base + _inlineSearchRibbonHeight + 8.0;
-    }
+    // This inset is used only for layout math outside the list content.
+    // The list itself keeps a stable base padding and animates a spacer item
+    // to avoid scroll-metric jumps when ribbon space changes.
     return base;
   }
 
   /// When the inline filter ribbon is on, skip the extra 16px so the gap under
   /// the ribbon matches the 8px used above it (`mainShellGlassExtraTopInset`).
   double _feedListTopPadding() {
-    final inset = _feedListGlassTopInset();
-    if (_inlineSearchActive) return inset;
-    // Keep a small breathing room when no ribbon is shown, but avoid creating a
-    // noticeable empty band under the shell header.
-    return 8.0 + inset;
+    // Kept for callers that still use this helper; list views use
+    // [_feedBaseTopPadding] + an animated spacer instead.
+    final base = _feedListGlassTopInset();
+    return 8.0 + base;
   }
 
   /// Scrollable wrapper so pull-to-refresh works when content is shorter than
   /// the viewport (welcome / empty states).
   Widget _buildPullToRefreshAroundFillChild(Widget child) {
-    final topPad = _feedListTopPadding();
+    final baseTopPad = _feedBaseTopPadding();
+    final edgeOffset =
+        baseTopPad + _feedRibbonSpacerHeight() + _inlineSearchRibbonToListGap;
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
-      edgeOffset: topPad,
+      edgeOffset: edgeOffset,
       child: PullToRefreshStretchHaptics(
         // Use a single scrollable with a single box child.
         // This avoids a Flutter web edge-case where swapping sliver vs. box
@@ -776,8 +835,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             return ListView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, 16.0),
+              padding: EdgeInsets.fromLTRB(16.0, baseTopPad, 16.0, 16.0),
               children: [
+                _buildAnimatedFeedTopSpacer(trailingSpacing: 0),
                 SizedBox(
                   height: constraints.maxHeight,
                   child: Center(child: child),
@@ -1139,9 +1199,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       }
 
       if (mounted) {
-        setState(() => _searchAlertCelebrationTick++);
+        // Header bell celebration is driven by `ActiveSearchAlertsState()`.
       }
 
+      // Trigger header bell "shake" immediately (don't wait for list refresh).
+      ActiveSearchAlertsState().bumpCelebration();
       await ActiveSearchAlertsState().refresh();
 
       // Ensure notifications are enabled (or guide user to settings).
@@ -1265,38 +1327,38 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadingState() {
-    final topPad = _feedListTopPadding();
+    final baseTopPad = _feedBaseTopPadding();
     return CommonListView(
-      padding: EdgeInsets.fromLTRB(14.0, topPad, 14.0, 16.0),
+      padding: EdgeInsets.fromLTRB(14.0, baseTopPad, 14.0, 16.0),
       itemSpacing: 16.0,
-      itemCount: 6,
-      itemBuilder: (context, index) => const ListingTileSkeleton(),
+      itemCount: 7,
+      itemBuilder: (context, index) {
+        if (index == 0) return _buildAnimatedFeedTopSpacer(trailingSpacing: 16.0);
+        return const ListingTileSkeleton();
+      },
     );
   }
 
   Widget _buildLoadedState(List<Listing> listings, bool hasMore) {
-    final topPadding = _feedListTopPadding();
+    final baseTopPad = _feedBaseTopPadding();
+    final edgeOffset =
+        baseTopPad + _feedRibbonSpacerHeight() + _inlineSearchRibbonToListGap;
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
-      edgeOffset: topPadding,
+      edgeOffset: edgeOffset,
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
-          itemCount: listings.length,
+          itemCount: listings.length + 1,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(
-            14.0,
-            topPadding,
-            14.0,
-            16.0,
-          ),
+          padding: EdgeInsets.fromLTRB(14.0, baseTopPad, 14.0, 16.0),
           itemBuilder: (context, index) {
-            final listing = listings[index];
+            if (index == 0) return _buildAnimatedFeedTopSpacer(trailingSpacing: 16.0);
+            final listing = listings[index - 1];
             return ListingTile(
               key: ValueKey(listing.id),
               listing: listing,
-              forceFavorite:
-                  false, // Home screen listings don"t force favorite state
-              showHeartIcon: false, // Don"t show heart icon on home screen
+              forceFavorite: false, // Home screen listings don't force favorite state
+              showHeartIcon: false, // Don't show heart icon on home screen
               showFavoriteIndicator:
                   true, // Show small heart when listing is in user favorites
               onFavoriteRemoved: null, // No callback needed for home screen
@@ -1308,8 +1370,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           showLoadMoreIndicator: hasMore,
           hasMore: hasMore,
           loadMoreIndicator: _buildLoadMoreIndicator(),
-          cacheExtent:
-              500, // Larger cache for smoother scrolling of large tiles
+          cacheExtent: 500, // Larger cache for smoother scrolling of large tiles
         ),
       ),
     );
@@ -1364,23 +1425,53 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
 
     if (!mounted) return;
-    setState(() => _inlineSearchActive = true);
+    final token = ++_inlineSearchEnterSearchToken;
+    setState(() {
+      _inlineSearchActive = true;
+      _inlineSearchClosing = false;
+      _inlineSearchSpacerExpanded = true;
+    });
     HomeInlineSearchState().setActive(true);
     final p = await SharedPreferences.getInstance();
     await p.setBool(HomeInlineSearchState.activePrefsKey, true);
     if (!mounted) return;
+    // Let the ribbon slide in and the list animate downward before we trigger
+    // the search fetch; otherwise the loading-state rebuild interrupts the
+    // motion and feels like a jump.
+    await Future.delayed(_homeRibbonAnimationDuration(context));
+    if (!mounted) return;
+    if (!_inlineSearchActive) return;
+    if (token != _inlineSearchEnterSearchToken) return;
     _performSearch();
   }
 
   void _exitInlineSearch() {
+    final refreshToken = ++_inlineSearchExitRefreshToken;
     if (mounted) {
-      setState(() => _inlineSearchActive = false);
+      setState(() {
+        _inlineSearchActive = false;
+        _inlineSearchClosing = true;
+        // Collapse spacer immediately so listings move up during ribbon slide-out.
+        _inlineSearchSpacerExpanded = false;
+      });
     }
     HomeInlineSearchState().setActive(false);
     SharedPreferences.getInstance().then((p) async {
       await p.setBool(HomeInlineSearchState.activePrefsKey, false);
     });
-    _dispatchFeedRefresh();
+    // Avoid triggering a fetch+rebuild while the ribbon is animating out.
+    // If the user quickly re-enters inline search, skip this refresh.
+    final animationsEnabled = _homeRibbonAnimationsEnabled(context);
+    unawaited(() async {
+      if (animationsEnabled) {
+        await Future.delayed(const Duration(milliseconds: 750));
+      }
+      if (!mounted) return;
+      if (_inlineSearchActive) return;
+      if (refreshToken != _inlineSearchExitRefreshToken) return;
+      setState(() => _inlineSearchClosing = false);
+      _dispatchFeedRefresh();
+    }());
   }
 
   // NOTE: We intentionally do NOT clear persisted filters when dismissing the
@@ -1511,11 +1602,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           padding: const EdgeInsets.only(right: 16.0),
           child: TutorialTargetWrapper(
             key: _alertBellTutorialKey,
-            child: NotifySearchAlertAppBarButton(
-              tooltip: L10n.get("search_alert_notify_me"),
-              enabled: !_isCreatingSearchAlert,
-              celebrationTick: _searchAlertCelebrationTick,
-              onPressed: _subscribeToSearchAlerts,
+            child: ListenableBuilder(
+              listenable: ActiveSearchAlertsState(),
+              builder: (context, _) {
+                return NotifySearchAlertAppBarButton(
+                  tooltip: L10n.get("search_alert_notify_me"),
+                  enabled: !_isCreatingSearchAlert,
+                  celebrationTick: ActiveSearchAlertsState().celebrationTick,
+                  onPressed: _subscribeToSearchAlerts,
+                );
+              },
             ),
           ),
         ),
