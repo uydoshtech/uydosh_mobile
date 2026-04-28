@@ -13,6 +13,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/phone_auth_service.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -300,54 +301,50 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: viewInsets.bottom),
-      child: Material(
-        color: AuthWizardTheme.getBottomSheetBackgroundColor(),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color:
-                        AuthWizardTheme.getBottomSheetHandleColor(context),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+      child: GlassBottomSheetSurface(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AuthWizardTheme.getBottomSheetHandleColor(context),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                _step == _Step.enterPhone
-                    ? L10n.get("sign_in_with_phone")
-                    : L10n.get("phone_code_entry_title"),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-                textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _step == _Step.enterPhone
+                  ? L10n.get("sign_in_with_phone")
+                  : L10n.get("phone_code_entry_title"),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: textColor,
               ),
-              const SizedBox(height: 8),
-              Text(
-                _step == _Step.enterPhone
-                    ? L10n.get("sign_in_with_phone_description")
-                    : L10n.get("phone_code_entry_description")
-                        .replaceAll("{phone}", _lastPhoneE164 ?? ""),
-                style: TextStyle(fontSize: 14, color: textColor.withValues(alpha: 0.7)),
-                textAlign: TextAlign.center,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _step == _Step.enterPhone
+                  ? L10n.get("sign_in_with_phone_description")
+                  : L10n.get("phone_code_entry_description")
+                      .replaceAll("{phone}", _lastPhoneE164 ?? ""),
+              style: TextStyle(
+                fontSize: 14,
+                color: textColor.withValues(alpha: 0.7),
               ),
-              const SizedBox(height: 20),
-              if (_step == _Step.enterPhone) _buildPhoneStep(textColor),
-              if (_step == _Step.enterCode) _buildCodeStep(textColor),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            if (_step == _Step.enterPhone) _buildPhoneStep(textColor),
+            if (_step == _Step.enterCode) _buildCodeStep(textColor),
+          ],
         ),
       ),
     );
@@ -643,94 +640,105 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
             final filtered = filter(_countrySearchController.text);
             return SafeArea(
               top: false,
-              child: Material(
-                color: AuthWizardTheme.getBottomSheetBackgroundColor(),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AuthWizardTheme.getBottomSheetHandleColor(ctx),
-                          borderRadius: BorderRadius.circular(2),
+              child: GlassBottomSheetSurface(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AuthWizardTheme.getBottomSheetHandleColor(ctx),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _countrySearchController,
+                      autofocus: true,
+                      style: TextStyle(color: themeTextColor),
+                      cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
+                      decoration: InputDecoration(
+                        labelText: L10n.get("search"),
+                        labelStyle: TextStyle(
+                          color: themeTextColor.withValues(alpha: 0.7),
+                        ),
+                        hintStyle: TextStyle(
+                          color: themeTextColor.withValues(alpha: 0.5),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: themeTextColor.withValues(alpha: 0.7),
+                        ),
+                        filled: true,
+                        fillColor: searchFill,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeTextColor.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: AuthWizardTheme.getBottomSheetCursorColor(),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _countrySearchController,
-                        autofocus: true,
-                        style: TextStyle(color: themeTextColor),
-                        cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
-                        decoration: InputDecoration(
-                          labelText: L10n.get("search"),
-                          labelStyle: TextStyle(color: themeTextColor.withValues(alpha: 0.7)),
-                          hintStyle: TextStyle(color: themeTextColor.withValues(alpha: 0.5)),
-                          prefixIcon: Icon(Icons.search, color: themeTextColor.withValues(alpha: 0.7)),
-                          filled: true,
-                          fillColor: searchFill,
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: themeTextColor.withValues(alpha: 0.2)),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AuthWizardTheme.getBottomSheetCursorColor()),
-                          ),
+                      onChanged: (_) => setModalState(() {}),
+                    ),
+                    const SizedBox(height: 12),
+                    Flexible(
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) => Divider(
+                          height: 1,
+                          color: themeTextColor.withValues(alpha: 0.08),
                         ),
-                        onChanged: (_) => setModalState(() {}),
-                      ),
-                      const SizedBox(height: 12),
-                      Flexible(
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          itemCount: filtered.length,
-                          separatorBuilder: (_, __) => Divider(
-                            height: 1,
-                            color: themeTextColor.withValues(alpha: 0.08),
-                          ),
-                          itemBuilder: (ctx, i) {
-                            final c = filtered[i];
-                            final name = localizations?.countryName(countryCode: c.countryCode) ?? c.name;
-                            final isSelected = c.phoneCode == _selectedDialCode;
-                            return ListTile(
-                              dense: true,
-                              leading: Text(c.flagEmoji, style: const TextStyle(fontSize: 22)),
-                              title: Text(
-                                name,
-                                style: TextStyle(
-                                  color: themeTextColor,
-                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                ),
+                        itemBuilder: (ctx, i) {
+                          final c = filtered[i];
+                          final name =
+                              localizations?.countryName(countryCode: c.countryCode) ??
+                                  c.name;
+                          final isSelected = c.phoneCode == _selectedDialCode;
+                          return ListTile(
+                            dense: true,
+                            leading: Text(
+                              c.flagEmoji,
+                              style: const TextStyle(fontSize: 22),
+                            ),
+                            title: Text(
+                              name,
+                              style: TextStyle(
+                                color: themeTextColor,
+                                fontWeight:
+                                    isSelected ? FontWeight.w700 : FontWeight.w500,
                               ),
-                              trailing: Text(
-                                "+${c.phoneCode}",
-                                style: TextStyle(
-                                  color: themeTextColor.withValues(alpha: 0.8),
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            ),
+                            trailing: Text(
+                              "+${c.phoneCode}",
+                              style: TextStyle(
+                                color: themeTextColor.withValues(alpha: 0.8),
+                                fontWeight: FontWeight.w600,
                               ),
-                              onTap: () {
-                                setState(() {
-                                  _selectedDialCode = c.phoneCode;
-                                  _selectedFlagEmoji = c.flagEmoji;
-                                });
-                                Navigator.of(ctx).pop();
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (mounted) _phoneFocus.requestFocus();
-                                });
-                              },
-                            );
-                          },
-                        ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                _selectedDialCode = c.phoneCode;
+                                _selectedFlagEmoji = c.flagEmoji;
+                              });
+                              Navigator.of(ctx).pop();
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) _phoneFocus.requestFocus();
+                              });
+                            },
+                          );
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             );
