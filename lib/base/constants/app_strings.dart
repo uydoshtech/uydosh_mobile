@@ -57,6 +57,7 @@ class AppStrings {
       "search_results": "Search Results",
       "close": "Close",
       "cancel": "Cancel",
+      "done": "Done",
       "about_uy_dosh": "About UyDosh",
       "user_license_agreement_title": "User License Agreement",
       "user_license_agreement_body":
@@ -1193,6 +1194,7 @@ class AppStrings {
       "search_results": "Результаты поиска",
       "close": "Закрыть",
       "cancel": "Отмена",
+      "done": "Готово",
       "about_uy_dosh": "Об UyDosh",
       "user_license_agreement_title": "Лицензионное соглашение пользователя",
       "user_license_agreement_body":
@@ -2350,6 +2352,7 @@ class AppStrings {
       "search_results": "Qidiruv natijalari",
       "close": "Yopish",
       "cancel": "Bekor qilish",
+      "done": "Tayyor",
       "about_uy_dosh": "UyDosh haqida",
       "user_license_agreement_title": "Foydalanuvchi litsenziya shartnomasi",
       "user_license_agreement_body":

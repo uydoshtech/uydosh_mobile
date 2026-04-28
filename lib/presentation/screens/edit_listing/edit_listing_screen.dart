@@ -1,4 +1,7 @@
+import "dart:math" as math;
+
 import "package:flutter/cupertino.dart";
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:intl/intl.dart";
@@ -53,7 +56,7 @@ class EditListingScreen extends StatefulWidget {
 }
 
 class _EditListingScreenState extends State<EditListingScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -107,6 +110,9 @@ class _EditListingScreenState extends State<EditListingScreen>
   late final AnimationController _savePulseController;
   late final Animation<double> _savePulseOpacity;
 
+  late final AnimationController _roomScanIconRotationController;
+  late final Animation<double> _roomScanIconRotationAnimation;
+
   void _markDirty() {
     if (mounted) setState(() {});
   }
@@ -142,7 +148,35 @@ class _EditListingScreenState extends State<EditListingScreen>
         curve: Curves.easeInOut,
       ),
     );
+
+    _roomScanIconRotationController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat();
+    _roomScanIconRotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _roomScanIconRotationController,
+        curve: Curves.linear,
+      ),
+    );
+
     _loadLocations();
+  }
+
+  Widget _buildRotatingRoomScanIcon() {
+    return AnimatedBuilder(
+      animation: _roomScanIconRotationAnimation,
+      builder: (context, child) {
+        return Transform.rotate(
+          angle: _roomScanIconRotationAnimation.value * 2 * math.pi,
+          child: child,
+        );
+      },
+      child: ThemeIcon(
+        Icons.view_in_ar,
+        color: ThemeState().isBlueTheme ? Colors.white : null,
+      ),
+    );
   }
 
   /// Text shown in the single description field (matches API: main `description` or per-language columns).
@@ -398,6 +432,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
     _savePulseController.dispose();
+    _roomScanIconRotationController.dispose();
     // Clean up any ongoing operations
     _makingPhotoPrimaryIds.clear();
     _deletingPhotoIds.clear();
@@ -1148,8 +1183,12 @@ class _EditListingScreenState extends State<EditListingScreen>
                         valueListenable:
                             ClientLidarRoomScanConfig.lidarRoomScanDisabled,
                         builder: (context, lidarDisabled, _) {
-                          if (!isIOSDevice ||
-                              lidarDisabled ||
+                          // For testing: show this on Chrome/Web and iOS.
+                          // On web, the scan screen still won't start scanning,
+                          // but the UI flow can be exercised end-to-end.
+                          final canShowOnThisDevice = isIOSDevice || kIsWeb;
+                          if (!canShowOnThisDevice ||
+                              (lidarDisabled && !kIsWeb) ||
                               _selectedListingTypeId == 1) {
                             return const SizedBox.shrink();
                           }
@@ -1177,12 +1216,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                       setState(() => _roomScanChanged = true);
                                     }
                                   },
-                                  icon: ThemeIcon(
-                                    Icons.view_in_ar,
-                                    color: ThemeState().isBlueTheme
-                                        ? Colors.white
-                                        : null,
-                                  ),
+                                  icon: _buildRotatingRoomScanIcon(),
                                   label: Text(
                                     L10n.get(
                                       (_roomScanChanged ||

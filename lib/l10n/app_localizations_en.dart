@@ -144,6 +144,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get done => 'Done';
+
+  @override
   String get about_uy_dosh => 'About UyDosh';
 
   @override

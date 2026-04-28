@@ -144,6 +144,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get cancel => 'Bekor qilish';
 
   @override
+  String get done => 'Tayyor';
+
+  @override
   String get about_uy_dosh => 'UyDosh haqida';
 
   @override

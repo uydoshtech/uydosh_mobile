@@ -35,6 +35,7 @@ class RoomPlanScanScreen extends StatefulWidget {
 class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     with SingleTickerProviderStateMixin {
   final _roomPlan = FlutterRoomplan();
+  static const MethodChannel _roomplanChannel = MethodChannel("rkg/flutter_roomplan");
   bool _uploading = false;
   bool _starting = false;
 
@@ -125,7 +126,13 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
         );
         return;
       }
-      await _roomPlan.startScan();
+      await _roomplanChannel.invokeMethod<void>("startScan", <String, dynamic>{
+        "enableMultiRoom": false,
+        "strings": <String, String>{
+          "cancel": L10n.get("cancel"),
+          "done": L10n.get("done"),
+        },
+      });
     } on MissingPluginException catch (e, st) {
       logger.e("Room scan plugin missing", error: e, stackTrace: st);
       if (!mounted) return;

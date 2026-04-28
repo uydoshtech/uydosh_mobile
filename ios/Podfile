@@ -222,17 +222,58 @@ post_install do |installer|
         '    private func setupUI() {',
         "#{helper}\n    private func setupUI() {"
       )
+      File.write(room_capture_file, src)
+    end
+  end
 
-      src = src.gsub('finishButton.setTitle("Finish", for: .normal)',
-                     'finishButton.setTitle(uydoshL("roomplan_finish", "Finish"), for: .normal)')
-      src = src.gsub('scanOtherRoomsButton.setTitle("Scan Other Rooms", for: .normal)',
-                     'scanOtherRoomsButton.setTitle(uydoshL("roomplan_scan_other_rooms", "Scan Other Rooms"), for: .normal)')
-      src = src.gsub('cancelButton.setTitle("Cancel", for: .normal)',
-                     'cancelButton.setTitle(uydoshL("roomplan_cancel", "Cancel"), for: .normal)')
-      src = src.gsub('doneButton.setTitle("Done", for: .normal)',
-                     'doneButton.setTitle(uydoshL("roomplan_done", "Done"), for: .normal)')
+  # Always ensure RoomCaptureViewController can accept Flutter-provided button titles
+  # (even if the localization patch above already ran in a previous install).
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: roomplan button overrides */'
+    unless src.include?(marker)
+      # Add override properties right after jsonFilePath.
+      unless src.include?('public var uydoshCancelTitle')
+        src = src.sub(
+          '    public  var jsonFilePath: String?',
+          "    public  var jsonFilePath: String?\n\n    #{marker}\n    public var uydoshCancelTitle: String?\n    public var uydoshDoneTitle: String?\n    public var uydoshFinishTitle: String?\n    public var uydoshScanOtherRoomsTitle: String?"
+        )
+      end
+
+      # Replace the setTitle calls with "override if provided" versions (idempotent-ish).
+      src = src.gsub(
+        'finishButton.setTitle(uydoshL("roomplan_finish", "Finish"), for: .normal)',
+        'finishButton.setTitle((uydoshFinishTitle?.isEmpty == false ? uydoshFinishTitle! : uydoshL("roomplan_finish", "Finish")), for: .normal)'
+      )
+      src = src.gsub(
+        'scanOtherRoomsButton.setTitle(uydoshL("roomplan_scan_other_rooms", "Scan Other Rooms"), for: .normal)',
+        'scanOtherRoomsButton.setTitle((uydoshScanOtherRoomsTitle?.isEmpty == false ? uydoshScanOtherRoomsTitle! : uydoshL("roomplan_scan_other_rooms", "Scan Other Rooms")), for: .normal)'
+      )
+      src = src.gsub(
+        'cancelButton.setTitle(uydoshL("roomplan_cancel", "Cancel"), for: .normal)',
+        'cancelButton.setTitle((uydoshCancelTitle?.isEmpty == false ? uydoshCancelTitle! : uydoshL("roomplan_cancel", "Cancel")), for: .normal)'
+      )
+      src = src.gsub(
+        'doneButton.setTitle(uydoshL("roomplan_done", "Done"), for: .normal)',
+        'doneButton.setTitle((uydoshDoneTitle?.isEmpty == false ? uydoshDoneTitle! : uydoshL("roomplan_done", "Done")), for: .normal)'
+      )
 
       File.write(room_capture_file, src)
+    end
+  end
+
+  # Allow passing button titles from Flutter to the RoomCaptureViewController instance.
+  flutter_roomplan_plugin_file = File.expand_path(File.join(__dir__, '.symlinks', 'plugins', 'flutter_roomplan', 'ios', 'Classes', 'FlutterRoomplanPlugin.swift'))
+  if File.exist?(flutter_roomplan_plugin_file)
+    src = File.read(flutter_roomplan_plugin_file)
+    marker = '/* uydosh: pass strings into RoomCaptureViewController */'
+    unless src.include?(marker)
+      # Inject right after roomVC is created.
+      src = src.gsub(
+        '        let roomVC = RoomCaptureViewController()',
+        "        let roomVC = RoomCaptureViewController()\n        #{marker}\n        if let strings = arguments?[\"strings\"] as? [String: String] {\n            roomVC.uydoshCancelTitle = strings[\"cancel\"]\n            roomVC.uydoshDoneTitle = strings[\"done\"]\n            roomVC.uydoshFinishTitle = strings[\"finish\"]\n            roomVC.uydoshScanOtherRoomsTitle = strings[\"scanOtherRooms\"]\n        }"
+      )
+      File.write(flutter_roomplan_plugin_file, src)
     end
   end
 end

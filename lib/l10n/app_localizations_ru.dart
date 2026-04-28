@@ -144,6 +144,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get cancel => 'Отмена';
 
   @override
+  String get done => 'Готово';
+
+  @override
   String get about_uy_dosh => 'Об UyDosh';
 
   @override
