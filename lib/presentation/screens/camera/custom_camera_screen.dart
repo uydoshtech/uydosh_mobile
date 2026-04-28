@@ -5,6 +5,7 @@ import "package:camera/camera.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -39,6 +40,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
 
   _CaptureStage _stage = _CaptureStage.live;
   XFile? _captured;
+  Future<void> _lifecycleOp = Future.value();
 
   @override
   void initState() {
@@ -81,18 +83,35 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final controller = _controller;
-    if (controller == null || !controller.value.isInitialized) return;
+    // The iOS permission sheet triggers an app lifecycle transition.
+    // If we dispose/re-init the camera controller without awaiting the dispose,
+    // the `camera` plugin can get stuck with a frozen texture on the first run.
+    _lifecycleOp = _lifecycleOp.then((_) async {
+      if (!mounted) return;
 
-    if (state == AppLifecycleState.inactive) {
-      controller.dispose();
-    } else if (state == AppLifecycleState.resumed) {
-      _setUpController(_cameras[_cameraIndex]);
-    }
+      if (state == AppLifecycleState.inactive ||
+          state == AppLifecycleState.paused) {
+        await _tearDownController();
+      } else if (state == AppLifecycleState.resumed) {
+        if (_stage != _CaptureStage.live) return;
+        if (_cameras.isEmpty) return;
+        await _ensureCameraPermission();
+        if (!mounted) return;
+        await _setUpController(_cameras[_cameraIndex]);
+      }
+    });
   }
 
   Future<void> _bootstrap() async {
     try {
+      final hasPermission = await _ensureCameraPermission();
+      if (!hasPermission) {
+        setStateIfMounted(() {
+          _initializing = false;
+          _initError = L10n.get("camera_unavailable");
+        });
+        return;
+      }
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         setStateIfMounted(() {
@@ -122,9 +141,36 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     }
   }
 
+  Future<bool> _ensureCameraPermission() async {
+    // `camera.initialize()` can implicitly show the permission prompt on iOS.
+    // Requesting permission ourselves avoids initializing while the app is
+    // transitioning through inactive/paused, which prevents first-run freezes.
+    try {
+      final status = await Permission.camera.status;
+      if (status.isGranted) return true;
+      final requested = await Permission.camera.request();
+      return requested.isGranted;
+    } catch (e, st) {
+      logger.w("Camera permission check failed", error: e, stackTrace: st);
+      return false;
+    }
+  }
+
+  Future<void> _tearDownController() async {
+    final previous = _controller;
+    if (previous == null) return;
+    _controller = null;
+    previous.removeListener(_onControllerValueChanged);
+    try {
+      await previous.dispose();
+    } catch (_) {
+      // Best-effort dispose; plugin can throw if already disposed.
+    }
+  }
+
   Future<void> _setUpController(CameraDescription description) async {
     final previous = _controller;
-    previous?.removeListener(_onControllerValueChanged);
+    await _tearDownController();
     final controller = CameraController(
       description,
       ResolutionPreset.high,
@@ -155,8 +201,6 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
         _initError = L10n.get("camera_unavailable");
       });
       return;
-    } finally {
-      await previous?.dispose();
     }
 
     setStateIfMounted(() {

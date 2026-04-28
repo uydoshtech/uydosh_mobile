@@ -382,6 +382,9 @@ class _ChatScreenState extends State<ChatScreen> {
         ? candidateIds.sublist(candidateIds.length - 50)
         : candidateIds;
     _translationInFlightIds.addAll(idsToRequest);
+    // Trigger a rebuild immediately so bubbles can show the "translating"
+    // indicator *before* the translated text arrives and swaps in.
+    if (mounted) setState(() {});
 
     try {
       final service = getIt<IMessagingService>();
@@ -426,6 +429,9 @@ class _ChatScreenState extends State<ChatScreen> {
       logger.d("💬 [ChatScreen] Translation request failed: $e");
     } finally {
       _translationInFlightIds.removeAll(idsToRequest);
+      // Ensure we remove any per-bubble loaders even when the server returns
+      // no translation rows (e.g. same-language content) and `changed==false`.
+      if (mounted) setState(() {});
     }
 
     // In explicit override mode, keep translating progressively in the
@@ -1018,7 +1024,10 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-          if (_targetLanguageOverride != null && _translationInFlightIds.isNotEmpty)
+          // Show a tiny global indicator whenever background translation is
+          // running (auto mode or explicit "Translate to…"). This prevents
+          // messages from "changing language out of nowhere".
+          if (_translationInFlightIds.isNotEmpty)
             Positioned(
               top: 0,
               left: 0,

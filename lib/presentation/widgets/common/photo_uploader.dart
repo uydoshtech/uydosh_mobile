@@ -176,122 +176,116 @@ class _PhotoUploaderState extends State<PhotoUploader>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (context) {
         final theme = Theme.of(context);
-        final sheetHeight = MediaQuery.sizeOf(context).height * 0.35;
         const radius = BorderRadius.vertical(top: Radius.circular(20));
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: SizedBox(
-              height: sheetHeight,
-              child: GlassBottomSheetSurface(
-                borderRadius: radius,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                  child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                ThemeIcon(
-                  CupertinoIcons.photo,
-                  size: 48,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  L10n.getWithParams(
-                    "listing_photos_count",
-                    params: {
-                      "current":
-                          "${(widget.existingPhotos.length + widget.selectedPhotos.length).clamp(0, widget.maxPhotos)}",
-                      "max": "${widget.maxPhotos}",
-                    },
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: GlassBottomSheetSurface(
+            borderRadius: radius,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  ThemeIcon(
+                    CupertinoIcons.photo,
+                    size: 48,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
                   ),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  child: ThreeDPillButton(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
+                  const SizedBox(height: 10),
+                  Text(
+                    L10n.getWithParams(
+                      "listing_photos_count",
+                      params: {
+                        "current":
+                            "${(widget.existingPhotos.length + widget.selectedPhotos.length).clamp(0, widget.maxPhotos)}",
+                        "max": "${widget.maxPhotos}",
+                      },
                     ),
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
-                    backgroundColor: theme.colorScheme.surface,
-                    onPressed: () {
-                      HapticFeedbackUtils.impact();
-                      Navigator.of(context).pop();
-                      _pickImage(ImageSource.camera);
-                    },
-                    child: Row(
-                      children: [
-                        const ThemeIcon(
-                          Icons.camera_alt_outlined,
-                          size: 28,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            L10n.get("take_photo"),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: theme.colorScheme.onSurface,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ThreeDPillButton(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      borderRadius: const BorderRadius.all(Radius.circular(16)),
+                      backgroundColor: theme.colorScheme.surface,
+                      onPressed: () {
+                        HapticFeedbackUtils.impact();
+                        Navigator.of(context).pop();
+                        _pickImage(ImageSource.camera);
+                      },
+                      child: Row(
+                        children: [
+                          const ThemeIcon(
+                            Icons.camera_alt_outlined,
+                            size: 28,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              L10n.get("take_photo"),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ThreeDPillButton(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
-                    backgroundColor: theme.colorScheme.surface,
-                    onPressed: () {
-                      HapticFeedbackUtils.impact();
-                      Navigator.of(context).pop();
-                      _pickImage(ImageSource.gallery);
-                    },
-                    child: Row(
-                      children: [
-                        const ThemeIcon(
-                          Icons.photo_library_outlined,
-                          size: 28,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            L10n.get("choose_from_gallery"),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: theme.colorScheme.onSurface,
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ThreeDPillButton(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      borderRadius: const BorderRadius.all(Radius.circular(16)),
+                      backgroundColor: theme.colorScheme.surface,
+                      onPressed: () {
+                        HapticFeedbackUtils.impact();
+                        Navigator.of(context).pop();
+                        _pickImage(ImageSource.gallery);
+                      },
+                      child: Row(
+                        children: [
+                          const ThemeIcon(
+                            Icons.photo_library_outlined,
+                            size: 28,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              L10n.get("choose_from_gallery"),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-                  ),
-                ),
+                ],
               ),
             ),
           ),
