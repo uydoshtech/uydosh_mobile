@@ -718,7 +718,23 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             visualDensity: VisualDensity.compact,
             padding: const EdgeInsets.all(6),
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            icon: const ThemeIcon(Icons.close, size: 16),
+            icon: DecoratedBox(
+              decoration: BoxDecoration(
+                color: BlueThemeColors.primary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.22),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(6),
+                child: Icon(Icons.close, size: 16, color: Colors.white),
+              ),
+            ),
             onPressed: () {
               HapticFeedbackUtils.impact();
               _exitInlineSearch();
