@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:math" as math;
 
 import "package:flutter/cupertino.dart";
@@ -41,6 +42,7 @@ import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -175,6 +177,53 @@ class _EditListingScreenState extends State<EditListingScreen>
       child: ThemeIcon(
         Icons.view_in_ar,
         color: ThemeState().isBlueTheme ? Colors.white : null,
+      ),
+    );
+  }
+
+  Future<void> _openRoomScan() async {
+    HapticFeedbackUtils.impact();
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => RoomPlanScanScreen(listingId: widget.listingDetail.id),
+      ),
+    );
+    if (!mounted) return;
+    if (changed == true) {
+      setState(() => _roomScanChanged = true);
+    }
+  }
+
+  Widget _buildNeumorphicRoomScanButton() {
+    final text = L10n.get(
+      (_roomScanChanged ||
+              (widget.listingDetail.pointCloudUrl?.isNotEmpty ?? false))
+          ? "replace_room_scan_3d"
+          : "add_room_scan_3d",
+    );
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 44),
+      child: ThreeDPillButton(
+        neumorphicSoftUi: true,
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        onPressed: () => unawaited(_openRoomScan()),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildRotatingRoomScanIcon(),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                text,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1199,43 +1248,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                               const SizedBox(height: 16),
                               SizedBox(
                                 width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  onPressed: () async {
-                                    HapticFeedbackUtils.impact();
-                                    final changed =
-                                        await Navigator.of(context).push<bool>(
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            RoomPlanScanScreen(
-                                          listingId: widget.listingDetail.id,
-                                        ),
-                                      ),
-                                    );
-                                    if (!mounted) return;
-                                    if (changed == true) {
-                                      setState(() => _roomScanChanged = true);
-                                    }
-                                  },
-                                  icon: _buildRotatingRoomScanIcon(),
-                                  label: Text(
-                                    L10n.get(
-                                      (_roomScanChanged ||
-                                              (widget
-                                                      .listingDetail
-                                                      .pointCloudUrl
-                                                      ?.isNotEmpty ??
-                                                  false))
-                                          ? "replace_room_scan_3d"
-                                          : "add_room_scan_3d",
-                                    ),
-                                    style: ThemeState().isBlueTheme
-                                        ? const TextStyle(color: Colors.white)
-                                        : null,
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(44),
-                                  ),
-                                ),
+                                child: _buildNeumorphicRoomScanButton(),
                               ),
                             ],
                           );
