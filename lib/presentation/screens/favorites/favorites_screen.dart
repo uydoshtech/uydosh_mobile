@@ -20,6 +20,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
+import "package:uy_dosh/presentation/widgets/common/roll_up_fade_out.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
@@ -424,24 +425,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             if (!isRemoving) return tile;
 
             // Collapse + fade only while removing.
-            return TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 1.0, end: 0.0),
-              duration: duration,
-              curve: Curves.easeInOutCubic,
-              builder: (context, t, child) {
-                return ClipRect(
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    heightFactor: t,
-                    child: Opacity(
-                      opacity: t.clamp(0.0, 1.0),
-                      child: child,
-                    ),
-                  ),
-                );
-              },
-              child: tile,
-            );
+            return RollUpFadeOut(duration: duration, child: tile);
           },
           showRefreshIndicator: false,
           showLoadMoreIndicator: _hasMoreData,

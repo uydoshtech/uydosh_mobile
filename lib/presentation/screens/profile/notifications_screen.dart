@@ -32,6 +32,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
+import "package:uy_dosh/presentation/widgets/common/roll_up_fade_out.dart";
 import "package:uy_dosh/presentation/widgets/common/the_dot_drop_menu_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -65,6 +66,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   bool _bulkWorking = false;
   List<SearchAlert> _alerts = const [];
   bool _showAlertsExplainer = true;
+  bool _alertsExplainerClosing = false;
   final Set<int> _itemsBeingRemoved =
       {}; // Track items being removed for animation
   final Map<int, ({SearchAlert alert, int index})> _optimisticallyRemoved =
@@ -524,6 +526,17 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       await prefs.setBool(
           TooltipsState.keyNotificationsAlertsExplainerDismissed, true);
     } catch (_) {}
+  }
+
+  Future<void> _closeAlertsExplainerAnimated() async {
+    if (_alertsExplainerClosing || !_showAlertsExplainer) return;
+    const duration = Duration(milliseconds: 300);
+    setState(() => _alertsExplainerClosing = true);
+    await Future.delayed(duration);
+    if (!mounted) return;
+    await _dismissAlertsExplainer();
+    if (!mounted) return;
+    setStateIfMounted(() => _alertsExplainerClosing = false);
   }
 
   Future<void> _load() async {
@@ -1101,10 +1114,18 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           const SizedBox(height: 12),
                         ],
                         if (showAlertsExplainer)
-                          _alertsExplainer(
-                            theme,
-                            onClose: _dismissAlertsExplainer,
-                            pushStatus: _pushStatus,
+                          Builder(
+                            builder: (context) {
+                              final explainer = _alertsExplainer(
+                                theme,
+                                onClose: _closeAlertsExplainerAnimated,
+                                pushStatus: _pushStatus,
+                              );
+                              if (_alertsExplainerClosing) {
+                                return RollUpFadeOut(child: explainer);
+                              }
+                              return explainer;
+                            },
                           ),
                         if (_pushDebugEnabled) ...[
                           const SizedBox(height: 12),
@@ -1154,14 +1175,18 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                         final adjustedIndex = i - 1;
                         final showExplainer = showAlertsExplainer;
                         if (showExplainer && adjustedIndex == 0) {
+                          final explainer = _alertsExplainer(
+                            theme,
+                            onClose: _closeAlertsExplainerAnimated,
+                            pushStatus: _pushStatus,
+                          );
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _alertsExplainer(
-                                theme,
-                                onClose: _dismissAlertsExplainer,
-                                pushStatus: _pushStatus,
-                              ),
+                              if (_alertsExplainerClosing)
+                                RollUpFadeOut(child: explainer)
+                              else
+                                explainer,
                               if (_pushDebugEnabled) ...[
                                 const SizedBox(height: 12),
                                 _pushDebugPanel(theme),
@@ -1360,24 +1385,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                         if (!isRemoving) return wrapped;
 
                         // Collapse + fade only while removing (match Favorites animation).
-                        return TweenAnimationBuilder<double>(
-                          tween: Tween<double>(begin: 1.0, end: 0.0),
-                          duration: duration,
-                          curve: Curves.easeInOutCubic,
-                          builder: (context, t, child) {
-                            return ClipRect(
-                              child: Align(
-                                alignment: Alignment.topCenter,
-                                heightFactor: t,
-                                child: Opacity(
-                                  opacity: t.clamp(0.0, 1.0),
-                                  child: child,
-                                ),
-                              ),
-                            );
-                          },
-                          child: wrapped,
-                        );
+                        return RollUpFadeOut(duration: duration, child: wrapped);
                       },
                     ),
             ),

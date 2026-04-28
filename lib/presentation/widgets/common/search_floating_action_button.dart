@@ -68,6 +68,10 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     }
 
     void onFabTap() {
+      // Ensure haptic is fired even when caller overrides `onPressed`.
+      // `_handleSearchPressed` is the default path and intentionally does not
+      // trigger haptics to avoid double feedback.
+      HapticFeedbackUtils.impact();
       (widget.onPressed ?? () => _handleSearchPressed(context))();
     }
 
@@ -149,8 +153,6 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
   }
 
   void _handleSearchPressed(BuildContext context) {
-    HapticFeedbackUtils.impact();
-
     widget.searchFiltersState.applyProfileValuesForSearchSheet().then((_) {
       if (!context.mounted) return;
       SearchBottomSheetWidget.show(
