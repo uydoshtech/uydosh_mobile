@@ -172,6 +172,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
   bool _isCreatingSearchAlert = false;
+  int? _lastKnownSearchTotal;
   // Celebration for the header bell is driven by `ActiveSearchAlertsState()`
   // so it also triggers when alerts are created from other screens.
   bool _inlineSearchActive = false;
@@ -1047,10 +1048,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _handleClearFiltersFromEmptyState() async {
-    await _searchFiltersState.clearAllFilters();
-    await _searchFiltersState.ensureProfileDefaultsApplied();
+    // Don't clear persisted filters here. This CTA is meant to recover from an
+    // empty feed by exiting inline-search mode, while keeping the user's last
+    // chosen filters in the search sheet.
     if (!mounted) return;
-    // Clearing filters implies leaving inline-search mode entirely.
     _exitInlineSearch();
   }
 
@@ -1231,6 +1232,20 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Future<void> _showCreateSearchAlertSheet() async {
     if (!mounted) return;
 
+    // Fast-path: if this exact alert already exists, don't open the sheet.
+    // Users shouldn't have to go through the CTA just to be told "already added".
+    if (AuthenticationState().isAuthenticated) {
+      final alreadyExists = await _doesCurrentSearchAlertAlreadyExist();
+      if (!mounted) return;
+      if (alreadyExists) {
+        ToastTheme.showInfo(
+          context,
+          message: L10n.get("search_alert_already_exists"),
+        );
+        return;
+      }
+    }
+
     final filters = _resolveSearchFilters(
       includeSafeFallbacks: false,
       explicitNullFallsBackToState: true,
@@ -1324,6 +1339,61 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         );
       },
     );
+  }
+
+  Future<bool> _doesCurrentSearchAlertAlreadyExist() async {
+    final filters = _resolveSearchFilters(
+      includeSafeFallbacks: true,
+      explicitNullFallsBackToState: true,
+    );
+
+    int? normalizeId(int? v) => (v != null && v > 0) ? v : null;
+    int? normalizeGender(int? v) => (v != null && v > 0) ? v : null;
+    bool normalizeBool(bool? v) => v ?? false;
+
+    // Keep these defaults in sync with `_subscribeToSearchAlerts()`.
+    final listingTypeId =
+        filters.listingTypeId ?? _searchFiltersState.selectedListingTypeId;
+    final locationId = normalizeId(filters.locationId);
+    final subwayStationId = normalizeId(filters.subwayStationId);
+    final subwayLineId = normalizeId(filters.subwayLineId);
+    final gender = normalizeGender(filters.gender);
+    final minPrice = filters.minPrice ?? 10.0;
+    final maxPrice = filters.maxPrice ?? 1000.0;
+    final privateRoomOnly = normalizeBool(filters.privateRoom);
+    final withPhotoOnly = normalizeBool(filters.withPhoto);
+
+    try {
+      final alerts = await getIt<ISearchAlertService>().listAlerts();
+
+      bool sameDouble(double? a, double b) =>
+          a != null && (a - b).abs() < 0.0001;
+
+      return alerts.any((a) {
+        // Treat nulls in API as "false"/"any" where applicable so we can match
+        // alerts created via sparse request payloads.
+        final aListingTypeId = normalizeId(a.listingTypeId) ?? listingTypeId;
+        final aLocationId = normalizeId(a.locationId);
+        final aSubwayStationId = normalizeId(a.subwayStationId);
+        final aSubwayLineId = normalizeId(a.subwayLineId);
+        final aGender = normalizeGender(a.gender);
+        final aPrivateRoomOnly = normalizeBool(a.privateRoom);
+        final aWithPhotoOnly = normalizeBool(a.withPhoto);
+
+        return aListingTypeId == listingTypeId &&
+            aLocationId == locationId &&
+            aSubwayStationId == subwayStationId &&
+            aSubwayLineId == subwayLineId &&
+            aGender == gender &&
+            sameDouble(a.minPrice, minPrice) &&
+            sameDouble(a.maxPrice, maxPrice) &&
+            aPrivateRoomOnly == privateRoomOnly &&
+            aWithPhotoOnly == withPhotoOnly;
+      });
+    } catch (_) {
+      // If we can't check quickly, fall back to showing the CTA sheet.
+      return false;
+    }
   }
 
   Widget _buildLoadingState() {
@@ -1549,21 +1619,31 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final appBarFg =
         Theme.of(context).appBarTheme.foregroundColor ?? Colors.white;
     return UydoshAppBar(
-      title: BlocSelector<ListingsBloc, ListingsState, int?>(
-        selector: (state) => state.map(
-          initial: (_) => null,
-          loading: (_) => null,
-          loaded: (loadedState) => loadedState.total,
-          error: (_) => null,
+      title: BlocConsumer<ListingsBloc, ListingsState>(
+        listenWhen: (previous, current) => current.maybeMap(
+          loaded: (s) => s.total != (previous.maybeMap(loaded: (p) => p.total, orElse: () => null)),
+          orElse: () => false,
         ),
-        builder: (context, count) {
-          final baseTitle = L10n.get("search_results");
-          final titleText =
-              (count == null || count <= 0) ? baseTitle : "$baseTitle: $count";
-          return Text(
-            titleText,
-            style: Theme.of(context).appBarTheme.titleTextStyle,
+        listener: (context, state) {
+          state.maybeMap(
+            loaded: (s) {
+              final total = s.total;
+              if (total != null && total > 0 && total != _lastKnownSearchTotal) {
+                setState(() => _lastKnownSearchTotal = total);
+              }
+            },
+            orElse: () {},
           );
+        },
+        builder: (context, state) {
+          final baseTitle = L10n.get("search_results");
+          final count = state.maybeMap(
+            loaded: (s) => s.total,
+            orElse: () => _lastKnownSearchTotal,
+          );
+          final titleText =
+              (count == null || count <= 0) ? baseTitle : "$baseTitle ($count)";
+          return Text(titleText, style: Theme.of(context).appBarTheme.titleTextStyle);
         },
       ),
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??

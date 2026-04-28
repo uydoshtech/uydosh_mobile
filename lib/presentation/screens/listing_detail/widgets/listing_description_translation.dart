@@ -378,14 +378,26 @@ class _ListingDescriptionTranslationState
     const pillHeight = 28.0;
     const radius = 14.0;
 
-    final borderColor = selected
-        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.85)
-        : ListingDetailThemeHelper.amenityChipBorderColor.withValues(alpha: 0.45);
+    final scheme = Theme.of(context).colorScheme;
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final baseBorder = ListingDetailThemeHelper.amenityChipBorderColor;
+    final selectedBorderColor = isBlueTheme
+        ? baseBorder.withValues(alpha: 0.95)
+        : scheme.primary.withValues(alpha: 0.9);
+    final borderColor =
+        selected ? selectedBorderColor : baseBorder.withValues(alpha: 0.45);
 
     // Blue theme primary matches the card background — spinner would disappear.
-    final progressColor = ThemeState().isBlueTheme
+    final progressColor = isBlueTheme
         ? ListingDetailThemeHelper.iconColor
-        : Theme.of(context).colorScheme.primary;
+        : scheme.primary;
+
+    final baseFill = ListingDetailThemeHelper.amenityChipBackgroundColor;
+    final fillColor = selected
+        ? (isBlueTheme
+            ? baseFill.withValues(alpha: 0.22)
+            : scheme.primary.withValues(alpha: 0.14))
+        : baseFill.withValues(alpha: 0.16);
 
     final content = Tooltip(
       message: L10n.get(tooltipKey),
@@ -404,10 +416,7 @@ class _ListingDescriptionTranslationState
                 color: borderColor,
                 width: selected ? 1.5 : 1,
               ),
-              color: Theme.of(context)
-                  .colorScheme
-                  .surfaceContainerHighest
-                  .withValues(alpha: 0.2),
+              color: fillColor,
             ),
             child: isLoading
                 ? SizedBox(

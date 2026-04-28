@@ -229,36 +229,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.only(top: 8),
           children: [
-            // ACCOUNT
-            ListenableBuilder(
-              listenable: AuthenticationState(),
-              builder: (context, child) {
-                final authed = AuthenticationState().isAuthenticated;
-                if (!authed) return const SizedBox.shrink();
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionHeader("settings_section_account"),
-                    _buildSectionCard(
-                      context,
-                      [
-                        _buildMenuItem(
-                          icon: Icons.person_outline,
-                          titleKey: "menu_profile",
-                          onTap: () {
-                            if (context.mounted) {
-                              context.pushProfile();
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              },
-            ),
-
             // PREFERENCES
             _buildSectionHeader("settings_section_preferences"),
             _buildSectionCard(

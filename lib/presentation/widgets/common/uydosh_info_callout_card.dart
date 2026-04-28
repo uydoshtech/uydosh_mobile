@@ -91,8 +91,9 @@ class UydoshInfoCalloutCard extends StatelessWidget {
       children: [
         card,
         Positioned(
-          top: 0,
-          right: 0,
+          // Keep the close icon slightly inset from the rounded corner.
+          top: 2,
+          right: 2,
           child: IconButton(
             tooltip: closeTooltip ??
                 MaterialLocalizations.of(context).closeButtonTooltip,

@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/roll_up_fade_out.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -51,6 +52,7 @@ class _ArchivedConversationsScreenState
   String? _error;
   bool _loading = false;
   bool _showTip = false;
+  bool _tipClosing = false;
   final Map<int, int> _unarchiveSwipeHapticStepById = <int, int>{};
 
   @override
@@ -86,6 +88,17 @@ class _ArchivedConversationsScreenState
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(TooltipsState.keyArchivedChatsTipDismissed, true);
     } catch (_) {}
+  }
+
+  Future<void> _closeTipAnimated() async {
+    if (_tipClosing || !_showTip) return;
+    const duration = Duration(milliseconds: 300);
+    setState(() => _tipClosing = true);
+    await Future.delayed(duration);
+    if (!mounted) return;
+    await _dismissTip();
+    if (!mounted) return;
+    setStateIfMounted(() => _tipClosing = false);
   }
 
   Future<void> _load() async {
@@ -256,7 +269,11 @@ class _ArchivedConversationsScreenState
         itemCount: items.length + headerOffset,
         itemBuilder: (context, index) {
           if (showTip && index == 0) {
-            return _buildTip(Theme.of(context));
+            final tip = _buildTip(Theme.of(context));
+            if (_tipClosing) {
+              return RollUpFadeOut(child: tip);
+            }
+            return tip;
           }
           final conversation = items[index - headerOffset];
           return Dismissible(
@@ -340,7 +357,7 @@ class _ArchivedConversationsScreenState
   Widget _buildTip(ThemeData theme) {
     final fg = theme.colorScheme.onSurfaceVariant;
     return UydoshInfoCalloutCard(
-      onClose: _dismissTip,
+      onClose: _closeTipAnimated,
       message: Text(
         L10n.get("archived_chats_tip"),
         style: TextStyle(color: fg, fontSize: 14, height: 1.25),
