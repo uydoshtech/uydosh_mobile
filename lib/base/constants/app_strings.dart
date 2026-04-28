@@ -170,6 +170,7 @@ class AppStrings {
       "no_messages": "No messages yet",
       "no_messages_description":
           "You haven't received any messages about your listings yet",
+      "mark_as_read": "Mark as read",
       "archive": "Archive",
       "unarchive": "Unarchive",
       "archived": "Archived",
@@ -1311,6 +1312,7 @@ class AppStrings {
       "no_messages": "Пока нет сообщений",
       "no_messages_description":
           "Вы еще не получили сообщений о ваших объявлениях",
+      "mark_as_read": "Отметить как прочитанное",
       "archive": "В архив",
       "unarchive": "Из архива",
       "archived": "Архив",
@@ -2475,6 +2477,7 @@ class AppStrings {
       "no_messages": "Hali xabarlar yo'q",
       "no_messages_description":
           "Siz hali e'lonlaringiz haqida xabar olmadingiz",
+      "mark_as_read": "O‘qilgan deb belgilash",
       "archive": "Arxivlash",
       "unarchive": "Arxivdan chiqarish",
       "archived": "Arxiv",

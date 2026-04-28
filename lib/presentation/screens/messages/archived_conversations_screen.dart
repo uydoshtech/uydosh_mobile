@@ -155,6 +155,14 @@ class _ArchivedConversationsScreenState
     ToastTheme.showSuccess(
       context,
       message: L10n.get("chat_unarchived"),
+      onClosed: (reason) {
+        if (!mounted) return;
+        if (reason != ToastDismissReason.completed) return;
+        final items = _conversations ?? const <ConversationSummary>[];
+        if (items.isEmpty) {
+          Navigator.of(context).maybePop();
+        }
+      },
     );
   }
 

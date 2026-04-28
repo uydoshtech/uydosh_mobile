@@ -1129,10 +1129,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        clipBehavior: Clip.antiAlias,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
         padding: EdgeInsets.zero,
-        content: ThreeDElevatedSurface(
-          baseColor: ThemeState().cardColor,
+        content: _GlassySnackBarSurface(
+          borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 10, 10),
             child: _ArchiveCountdownContent(
@@ -1769,6 +1771,88 @@ class _ArchiveCountdownContentState extends State<_ArchiveCountdownContent>
           ),
         ],
       ),
+    );
+  }
+}
+
+class _GlassySnackBarSurface extends StatelessWidget {
+  const _GlassySnackBarSurface({
+    required this.child,
+    required this.borderRadius,
+  });
+
+  final Widget child;
+  final BorderRadius borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: AnimationSettingsState(),
+      builder: (context, _) {
+        final theme = Theme.of(context);
+        final scheme = theme.colorScheme;
+        final isDark = theme.brightness == Brightness.dark;
+
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final enableGlass =
+            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+
+        final baseSurface = isDark ? Colors.black : scheme.surface;
+        final surfaceTint =
+            Color.lerp(baseSurface, scheme.primary, isDark ? 0.06 : 0.08) ??
+                baseSurface;
+
+        final decoration = BoxDecoration(
+          borderRadius: borderRadius,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: isDark ? 0.06 : 0.26),
+              surfaceTint.withValues(alpha: isDark ? 0.22 : 0.30),
+              baseSurface.withValues(alpha: isDark ? 0.24 : 0.28),
+            ],
+            stops: const [0.0, 0.55, 1.0],
+          ),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isDark ? 0.16 : 0.40),
+            width: 0.7,
+          ),
+        );
+
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: borderRadius,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.38 : 0.14),
+                blurRadius: isDark ? 26 : 22,
+                spreadRadius: isDark ? 1.5 : 1,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: borderRadius,
+            child: enableGlass
+                ? BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: isDark ? 22 : 26,
+                      sigmaY: isDark ? 22 : 26,
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: DecoratedBox(decoration: decoration, child: child),
+                    ),
+                  )
+                : Material(
+                    color: Colors.transparent,
+                    child: DecoratedBox(decoration: decoration, child: child),
+                  ),
+          ),
+        );
+      },
     );
   }
 }

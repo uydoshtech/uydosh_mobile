@@ -359,7 +359,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       return _buildEmptyState();
     }
 
-    final topPad = 16.0 + ThemeState().mainShellGlassExtraTopInset(context);
+    final topPad = 8.0 + ThemeState().mainShellGlassExtraTopInset(context);
     return UydoshRefreshIndicator.mainShell(
       onRefresh: () => _loadFavoriteListings(isRefresh: true),
       edgeOffset: topPad,

@@ -189,7 +189,10 @@ extension ThemeHelper on ThemeState {
     // When enabled, body is rendered behind the AppBar, so lists must offset by
     // the device top padding to avoid content appearing under the header.
     if (!(isBlueTheme || isLightTheme)) return 0;
-    return MediaQuery.paddingOf(context).top + 8;
+    // Only account for the status bar / notch. Screens add their own
+    // content spacing; adding an additional constant here tended to create a
+    // visible "dead strip" under the shell header on some devices.
+    return MediaQuery.paddingOf(context).top;
   }
 
   /// Chat input bar background (container behind the field).

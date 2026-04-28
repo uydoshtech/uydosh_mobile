@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 
+enum ToastDismissReason { completed, preempted }
+
 /// ToastTheme provides a centralized way to show toast messages throughout the app.
 ///
 /// Toast positioning:
@@ -22,12 +24,20 @@ class ToastTheme {
 
   // Keep track of current toast overlay
   static OverlayEntry? _currentToastOverlay;
+  static VoidCallback? _currentToastOnDismissed;
+  static void Function(ToastDismissReason reason)? _currentToastOnClosed;
 
   /// Dismisses the current toast if one is showing
   static void dismissCurrent() {
     if (_currentToastOverlay != null) {
       _currentToastOverlay!.remove();
       _currentToastOverlay = null;
+      final cb = _currentToastOnDismissed;
+      _currentToastOnDismissed = null;
+      cb?.call();
+      final closed = _currentToastOnClosed;
+      _currentToastOnClosed = null;
+      closed?.call(ToastDismissReason.preempted);
     }
   }
 
@@ -37,6 +47,8 @@ class ToastTheme {
     required String message,
     Duration? duration,
     bool useRollingAnimation = true,
+    VoidCallback? onDismissed,
+    void Function(ToastDismissReason reason)? onClosed,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -44,6 +56,8 @@ class ToastTheme {
         message: message,
         backgroundColor: AppColors.statusActive,
         duration: duration ?? _defaultDuration,
+        onDismissed: onDismissed,
+        onClosed: onClosed,
       );
     } else {
       _showSnackBar(
@@ -75,6 +89,8 @@ class ToastTheme {
     required String message,
     Duration? duration,
     bool useRollingAnimation = true,
+    VoidCallback? onDismissed,
+    void Function(ToastDismissReason reason)? onClosed,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -82,6 +98,8 @@ class ToastTheme {
         message: message,
         backgroundColor: AppColors.error,
         duration: duration ?? _defaultDuration,
+        onDismissed: onDismissed,
+        onClosed: onClosed,
       );
     } else {
       _showSnackBar(
@@ -113,6 +131,8 @@ class ToastTheme {
     required String message,
     Duration? duration,
     bool useRollingAnimation = true,
+    VoidCallback? onDismissed,
+    void Function(ToastDismissReason reason)? onClosed,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -120,6 +140,8 @@ class ToastTheme {
         message: message,
         backgroundColor: AppColors.warning,
         duration: duration ?? _defaultDuration,
+        onDismissed: onDismissed,
+        onClosed: onClosed,
       );
     } else {
       _showSnackBar(
@@ -151,6 +173,8 @@ class ToastTheme {
     required String message,
     Duration? duration,
     bool useRollingAnimation = true,
+    VoidCallback? onDismissed,
+    void Function(ToastDismissReason reason)? onClosed,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -158,6 +182,8 @@ class ToastTheme {
         message: message,
         backgroundColor: BlueThemeColors.primaryLight,
         duration: duration ?? _defaultDuration,
+        onDismissed: onDismissed,
+        onClosed: onClosed,
       );
     } else {
       _showSnackBar(
@@ -190,6 +216,8 @@ class ToastTheme {
     required Color backgroundColor,
     Duration? duration,
     bool useRollingAnimation = true,
+    VoidCallback? onDismissed,
+    void Function(ToastDismissReason reason)? onClosed,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -197,6 +225,8 @@ class ToastTheme {
         message: message,
         backgroundColor: backgroundColor,
         duration: duration ?? _defaultDuration,
+        onDismissed: onDismissed,
+        onClosed: onClosed,
       );
     } else {
       _showSnackBar(
@@ -229,6 +259,8 @@ class ToastTheme {
     required String message,
     required Color backgroundColor,
     required Duration duration,
+    VoidCallback? onDismissed,
+    void Function(ToastDismissReason reason)? onClosed,
   }) {
     if (!context.mounted) return;
 
@@ -241,6 +273,8 @@ class ToastTheme {
       message: message,
       backgroundColor: backgroundColor,
       duration: duration,
+      onDismissed: onDismissed,
+      onClosed: onClosed,
     );
   }
 
@@ -250,6 +284,8 @@ class ToastTheme {
     required String message,
     required Color backgroundColor,
     required Duration duration,
+    VoidCallback? onDismissed,
+    void Function(ToastDismissReason reason)? onClosed,
   }) {
     // Dismiss any existing toast
     dismissCurrent();
@@ -266,11 +302,19 @@ class ToastTheme {
             onDismiss: () {
               overlayEntry.remove();
               _currentToastOverlay = null;
+              final cb = _currentToastOnDismissed;
+              _currentToastOnDismissed = null;
+              cb?.call();
+              final closed = _currentToastOnClosed;
+              _currentToastOnClosed = null;
+              closed?.call(ToastDismissReason.completed);
             },
           ),
     );
 
     _currentToastOverlay = overlayEntry;
+    _currentToastOnDismissed = onDismissed;
+    _currentToastOnClosed = onClosed;
     overlay.insert(overlayEntry);
   }
 

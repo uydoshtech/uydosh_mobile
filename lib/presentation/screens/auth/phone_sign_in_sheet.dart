@@ -574,7 +574,13 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
   void _showPhoneCountryPicker() {
     final themeTextColor = AuthWizardTheme.getBottomSheetTextColor();
     final searchFill = themeTextColor.withValues(alpha: 0.08);
-    const favorites = <String>[
+
+    final service = cp.CountryService();
+    final all = service.getAll();
+
+    // Ex‑Soviet countries (plus USA at the bottom).
+    // Kept in a stable, predictable order; search results preserve this order.
+    const allowedIsoOrder = <String>[
       "UZ",
       "RU",
       "KZ",
@@ -582,27 +588,31 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
       "TJ",
       "TM",
       "AZ",
+      "AM",
+      "GE",
       "BY",
       "UA",
-      "TR",
-      "US",
+      "MD",
+      "EE",
+      "LV",
+      "LT",
+      "US", // always last
     ];
 
-    final service = cp.CountryService();
-    final localizations = cp.CountryLocalizations.of(context);
-    final all = service.getAll();
-    final favoriteSet = favorites.toSet();
-    final favoriteCountries = all.where((c) => favoriteSet.contains(c.countryCode)).toList();
-    final otherCountries = all.where((c) => !favoriteSet.contains(c.countryCode)).toList()
-      ..sort((a, b) {
-        final an = (localizations?.countryName(countryCode: a.countryCode) ?? a.name).toLowerCase();
-        final bn = (localizations?.countryName(countryCode: b.countryCode) ?? b.name).toLowerCase();
-        return an.compareTo(bn);
-      });
+    final byIso = <String, cp.Country>{
+      for (final c in all) c.countryCode: c,
+    };
+    final allowedCountries = <cp.Country>[
+      for (final iso in allowedIsoOrder)
+        if (byIso.containsKey(iso)) byIso[iso]!,
+    ];
 
-    List<cp.Country> filter(String rawQuery) {
+    List<cp.Country> filter(
+      String rawQuery,
+      cp.CountryLocalizations? localizations,
+    ) {
       var q = rawQuery.trim().toLowerCase();
-      if (q.isEmpty) return <cp.Country>[...favoriteCountries, ...otherCountries];
+      if (q.isEmpty) return List<cp.Country>.from(allowedCountries);
       if (q.startsWith("+")) q = q.substring(1).trim();
 
       // Tiny synonym help for common adjective searches.
@@ -613,21 +623,20 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
         "kyrgyz": "kyrgyzstan",
         "tajik": "tajikistan",
         "turkmen": "turkmenistan",
-        "turkish": "turkey",
         "american": "united states",
       };
       q = synonyms[q] ?? q;
 
       bool matches(cp.Country c) {
-        final name = (localizations?.countryName(countryCode: c.countryCode) ?? c.name).toLowerCase();
+        final name =
+            (localizations?.countryName(countryCode: c.countryCode) ?? c.name)
+                .toLowerCase();
         if (c.phoneCode.startsWith(q)) return true;
         if (c.countryCode.toLowerCase().startsWith(q)) return true;
         return name.contains(q);
       }
 
-      final fav = favoriteCountries.where(matches).toList();
-      final rest = otherCountries.where(matches).toList();
-      return <cp.Country>[...fav, ...rest];
+      return allowedCountries.where(matches).toList();
     }
 
     showModalBottomSheet<void>(
@@ -635,114 +644,128 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setModalState) {
-            final filtered = filter(_countrySearchController.text);
-            return SafeArea(
-              top: false,
-              child: GlassBottomSheetSurface(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AuthWizardTheme.getBottomSheetHandleColor(ctx),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _countrySearchController,
-                      autofocus: true,
-                      style: TextStyle(color: themeTextColor),
-                      cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
-                      decoration: InputDecoration(
-                        labelText: L10n.get("search"),
-                        labelStyle: TextStyle(
-                          color: themeTextColor.withValues(alpha: 0.7),
-                        ),
-                        hintStyle: TextStyle(
-                          color: themeTextColor.withValues(alpha: 0.5),
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: themeTextColor.withValues(alpha: 0.7),
-                        ),
-                        filled: true,
-                        fillColor: searchFill,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: themeTextColor.withValues(alpha: 0.2),
+        final appLocale = Locale(L10n.currentLanguage);
+        return Localizations.override(
+          context: ctx,
+          locale: appLocale,
+          child: StatefulBuilder(
+            builder: (ctx, setModalState) {
+              final localizations = cp.CountryLocalizations.of(ctx);
+              final filtered = filter(_countrySearchController.text, localizations);
+              return SafeArea(
+                top: false,
+                child: AnimatedPadding(
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeOut,
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                  ),
+                  child: GlassBottomSheetSurface(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AuthWizardTheme.getBottomSheetHandleColor(ctx),
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AuthWizardTheme.getBottomSheetCursorColor(),
-                          ),
-                        ),
-                      ),
-                      onChanged: (_) => setModalState(() {}),
-                    ),
-                    const SizedBox(height: 12),
-                    Flexible(
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, __) => Divider(
-                          height: 1,
-                          color: themeTextColor.withValues(alpha: 0.08),
-                        ),
-                        itemBuilder: (ctx, i) {
-                          final c = filtered[i];
-                          final name =
-                              localizations?.countryName(countryCode: c.countryCode) ??
-                                  c.name;
-                          final isSelected = c.phoneCode == _selectedDialCode;
-                          return ListTile(
-                            dense: true,
-                            leading: Text(
-                              c.flagEmoji,
-                              style: const TextStyle(fontSize: 22),
+                        const SizedBox(height: 12),
+                        Flexible(
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, __) => Divider(
+                              height: 1,
+                              color: themeTextColor.withValues(alpha: 0.08),
                             ),
-                            title: Text(
-                              name,
-                              style: TextStyle(
-                                color: themeTextColor,
-                                fontWeight:
-                                    isSelected ? FontWeight.w700 : FontWeight.w500,
-                              ),
-                            ),
-                            trailing: Text(
-                              "+${c.phoneCode}",
-                              style: TextStyle(
-                                color: themeTextColor.withValues(alpha: 0.8),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            onTap: () {
-                              setState(() {
-                                _selectedDialCode = c.phoneCode;
-                                _selectedFlagEmoji = c.flagEmoji;
-                              });
-                              Navigator.of(ctx).pop();
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted) _phoneFocus.requestFocus();
-                              });
+                            itemBuilder: (ctx, i) {
+                              final c = filtered[i];
+                              final name =
+                                  localizations?.countryName(countryCode: c.countryCode) ??
+                                      c.name;
+                              final isSelected = c.phoneCode == _selectedDialCode;
+                              return ListTile(
+                                dense: true,
+                                leading: Text(
+                                  c.flagEmoji,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
+                                title: Text(
+                                  name,
+                                  style: TextStyle(
+                                    color: themeTextColor,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                                trailing: Text(
+                                  "+${c.phoneCode}",
+                                  style: TextStyle(
+                                    color: themeTextColor.withValues(alpha: 0.8),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedDialCode = c.phoneCode;
+                                    _selectedFlagEmoji = c.flagEmoji;
+                                  });
+                                  Navigator.of(ctx).pop();
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (mounted) _phoneFocus.requestFocus();
+                                  });
+                                },
+                              );
                             },
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _countrySearchController,
+                          autofocus: true,
+                          style: TextStyle(color: themeTextColor),
+                          cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
+                          decoration: InputDecoration(
+                            labelText: L10n.get("search"),
+                            labelStyle: TextStyle(
+                              color: themeTextColor.withValues(alpha: 0.7),
+                            ),
+                            hintStyle: TextStyle(
+                              color: themeTextColor.withValues(alpha: 0.5),
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: themeTextColor.withValues(alpha: 0.7),
+                            ),
+                            filled: true,
+                            fillColor: searchFill,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeTextColor.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: AuthWizardTheme.getBottomSheetCursorColor(),
+                              ),
+                            ),
+                          ),
+                          onChanged: (_) => setModalState(() {}),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     ).whenComplete(() {

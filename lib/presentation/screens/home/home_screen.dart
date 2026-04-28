@@ -702,7 +702,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       builder: (context, _) {
         final enabled = _homeRibbonAnimationsEnabled(context);
         return AnimatedSwitcher(
-          duration: enabled ? const Duration(milliseconds: 900) : Duration.zero,
+          duration: enabled ? const Duration(milliseconds: 750) : Duration.zero,
           reverseDuration:
               enabled ? const Duration(milliseconds: 750) : Duration.zero,
           switchInCurve: Curves.easeOutCubic,
@@ -755,7 +755,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   double _feedListTopPadding() {
     final inset = _feedListGlassTopInset();
     if (_inlineSearchActive) return inset;
-    return 16.0 + inset;
+    // Keep a small breathing room when no ribbon is shown, but avoid creating a
+    // noticeable empty band under the shell header.
+    return 8.0 + inset;
   }
 
   /// Scrollable wrapper so pull-to-refresh works when content is shorter than
@@ -1179,16 +1181,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       backgroundColor: Colors.transparent,
       builder: (context) {
         final theme = Theme.of(context);
-        final sheetBg = theme.colorScheme.surface;
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Material(
-            color: sheetBg,
-            elevation: 0,
+          child: LiquidGlassPlate(
             borderRadius: BorderRadius.circular(20),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            sigma: 18,
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            child: Material(
+              color: Colors.transparent,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1220,14 +1221,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     listingTypeId: filters.listingTypeId ??
                         _searchFiltersState.selectedListingTypeId,
                     gender: filters.gender,
-                    locationId: (filters.locationId != null && filters.locationId! > 0)
-                        ? filters.locationId
-                        : null,
-                    subwayStationId:
-                        (filters.subwayStationId != null && filters.subwayStationId! > 0)
-                            ? filters.subwayStationId
+                    locationId:
+                        (filters.locationId != null && filters.locationId! > 0)
+                            ? filters.locationId
                             : null,
-                    subwayLineId: (filters.subwayLineId != null && filters.subwayLineId! > 0)
+                    subwayStationId: (filters.subwayStationId != null &&
+                            filters.subwayStationId! > 0)
+                        ? filters.subwayStationId
+                        : null,
+                    subwayLineId: (filters.subwayLineId != null &&
+                            filters.subwayLineId! > 0)
                         ? filters.subwayLineId
                         : null,
                     minPrice: filters.minPrice,
