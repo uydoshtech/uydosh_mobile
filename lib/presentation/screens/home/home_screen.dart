@@ -614,11 +614,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           if (data.isLoading) {
             return _buildLoadingState();
           }
+          // While the inline-search ribbon animates out we intentionally delay
+          // the actual refresh fetch. During that gap, keep the UI in a
+          // "loading" presentation to avoid flashing the welcome/empty states.
+          if (_inlineSearchClosing && data.listings.isEmpty) {
+            return _buildLoadingState();
+          }
           if (data.hasError) {
             return _buildErrorState(data.errorMessage);
           }
           if (data.listings.isEmpty) {
-            return (widget.isSearchMode || _inlineSearchActive)
+            return (widget.isSearchMode || _inlineSearchActive || _inlineSearchClosing)
                 ? _buildEmptySearchState()
                 : _buildInitialState();
           }

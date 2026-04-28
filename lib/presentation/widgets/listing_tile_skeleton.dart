@@ -109,9 +109,40 @@ class ListingTileSkeleton extends StatelessWidget {
                     radius: 6,
                     color: baseColor,
                   ),
-                  // Keep the skeleton compact (most real tiles don't show every
-                  // optional row at once). If you want a "tall" variant later,
-                  // we can add a separate widget.
+                  // Add a small optional "meta" row so the skeleton matches the
+                  // average real-tile height without becoming overly tall.
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _SkeletonBox(
+                        width: 18,
+                        height: 18,
+                        radius: 6,
+                        color: baseColor,
+                      ),
+                      const SizedBox(width: 8),
+                      _SkeletonBox(
+                        width: 18,
+                        height: 18,
+                        radius: 6,
+                        color: baseColor,
+                      ),
+                      const SizedBox(width: 8),
+                      _SkeletonBox(
+                        width: 18,
+                        height: 18,
+                        radius: 6,
+                        color: baseColor,
+                      ),
+                      const SizedBox(width: 10),
+                      _SkeletonBox(
+                        width: 120,
+                        height: 12,
+                        radius: 6,
+                        color: baseColor,
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
