@@ -201,4 +201,38 @@ post_install do |installer|
       File.write(room_capture_file, src)
     end
   end
+
+  # Localize hardcoded UI strings in flutter_roomplan's RoomCaptureViewController.
+  # Upstream uses hardcoded English titles for top buttons.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: localize roomplan buttons */'
+    unless src.include?(marker)
+      # Inject helper + swap hardcoded titles.
+      # Keep the code simple: strings resolved from Runner's Localizable.strings.
+      helper = [
+        '',
+        "    #{marker}",
+        '    private func uydoshL(_ key: String, _ fallback: String) -> String {',
+        '        NSLocalizedString(key, tableName: nil, bundle: Bundle.main, value: fallback, comment: "")',
+        '    }',
+      ].join("\n")
+
+      src = src.sub(
+        '    private func setupUI() {',
+        "#{helper}\n    private func setupUI() {"
+      )
+
+      src = src.gsub('finishButton.setTitle("Finish", for: .normal)',
+                     'finishButton.setTitle(uydoshL("roomplan_finish", "Finish"), for: .normal)')
+      src = src.gsub('scanOtherRoomsButton.setTitle("Scan Other Rooms", for: .normal)',
+                     'scanOtherRoomsButton.setTitle(uydoshL("roomplan_scan_other_rooms", "Scan Other Rooms"), for: .normal)')
+      src = src.gsub('cancelButton.setTitle("Cancel", for: .normal)',
+                     'cancelButton.setTitle(uydoshL("roomplan_cancel", "Cancel"), for: .normal)')
+      src = src.gsub('doneButton.setTitle("Done", for: .normal)',
+                     'doneButton.setTitle(uydoshL("roomplan_done", "Done"), for: .normal)')
+
+      File.write(room_capture_file, src)
+    end
+  end
 end
