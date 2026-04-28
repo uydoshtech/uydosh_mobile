@@ -752,6 +752,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       showLabel: false,
       alignRight: false,
       height: _inlineSearchRibbonHeight,
+      // Reserve space so the last chip never scrolls under the trailing close button.
+      // (44px tap target + a little breathing room for chip shadows)
+      endPadding: 56,
     );
   }
 

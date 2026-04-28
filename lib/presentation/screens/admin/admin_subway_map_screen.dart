@@ -1112,6 +1112,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                                     privateRoom: _selectedPrivateRoom,
                                     withPhoto: _selectedWithPhoto,
                                     showLabel: true,
+                                    // Reserve space so chip shadows don't crowd the trailing search FAB.
+                                    endPadding: 72,
                                   ),
                                 ),
                               );

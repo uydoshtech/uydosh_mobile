@@ -27,6 +27,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
     this.alignRight = false,
     this.height = 56,
     this.chipSize = 36,
+    this.endPadding = 0,
   });
 
   final VoidCallback onPressed;
@@ -44,6 +45,10 @@ class AppliedSearchFiltersBar extends StatelessWidget {
   final bool alignRight;
   final double height;
   final double chipSize;
+  /// Extra scroll content padding on the trailing edge. Useful when this bar
+  /// sits next to trailing actions (e.g. close/camera/lock) so the last chip
+  /// never scrolls underneath those buttons.
+  final double endPadding;
 
   bool get _hasCustomPriceRange {
     if (minPrice == null && maxPrice == null) return false;
@@ -85,33 +90,40 @@ class AppliedSearchFiltersBar extends StatelessWidget {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             reverse: alignRight,
+            // Keep chip shadows/glass feel intact; rely on trailing padding
+            // to keep chips from visually colliding with trailing actions.
             clipBehavior: Clip.none,
-            child: Row(
-              mainAxisAlignment:
-                  alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                if (showLabel) ...[
-                  ThemeIcon(
-                    Icons.tune,
-                    size: 18,
-                    color: onBar,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    "$label :",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+            child: Padding(
+              padding: alignRight
+                  ? EdgeInsets.only(left: endPadding)
+                  : EdgeInsets.only(right: endPadding),
+              child: Row(
+                mainAxisAlignment:
+                    alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (showLabel) ...[
+                    ThemeIcon(
+                      Icons.tune,
+                      size: 18,
                       color: onBar,
-                      height: 1.0,
                     ),
-                  ),
-                  const SizedBox(width: 10),
+                    const SizedBox(width: 6),
+                    Text(
+                      "$label :",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: onBar,
+                        height: 1.0,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  ...indicators,
                 ],
-                ...indicators,
-              ],
+              ),
             ),
           ),
         ),
