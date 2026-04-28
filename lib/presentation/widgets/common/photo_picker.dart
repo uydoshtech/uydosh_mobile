@@ -116,7 +116,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
         // Default: native camera via image_picker. If the admin switch is
         // flipped on, use our in-app custom camera (watermark overlay).
         String? capturedPath;
-        if (ClientCustomCameraConfig.customCameraDisabled.value) {
+        if (!ClientCustomCameraConfig.customCameraDisabled.value) {
           capturedPath = await Navigator.of(context).push<String>(
             MaterialPageRoute(
               builder: (_) => const CustomCameraScreen(),

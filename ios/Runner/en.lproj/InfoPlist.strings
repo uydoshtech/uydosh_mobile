@@ -1,0 +1,4 @@
+"NSCameraUsageDescription" = "This app uses the camera for listing photos and, on supported devices, for 3D room scans.";
+"NSPhotoLibraryUsageDescription" = "This app needs access to photo library to select photos for your listings.";
+"NSLocationWhenInUseUsageDescription" = "This app uses your location to show nearby listings and metro stations.";
+
