@@ -2064,7 +2064,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
       width: double.infinity,
       child: ListingDetailTileShell(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
+          // Keep horizontal padding consistent with other listing-detail tiles
+          // (e.g. compatibility ExpansionTile uses 20px). This ensures the
+          // trailing heart aligns vertically with the chevron below.
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,

@@ -138,13 +138,20 @@ class ListingDetailMetaBadges extends StatelessWidget {
             ],
           ),
         ),
-        // "Add to favorites" heart — pinned to the rightmost edge of the
-        // tile. Visible only to authenticated users who don't own this
-        // listing. Uses the same scale-pulse animation as the home/favorites
-        // listing tiles for visual consistency.
-        _FavoriteHeartChip(
-          listingId: listingDetail.id,
-          ownerUserId: listingDetail.user.id,
+        // Match ExpansionTile's trailing icon slot (48dp) so the heart's
+        // *icon center* aligns with the chevron center in tiles below.
+        SizedBox(
+          width: 48,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Transform.translate(
+              offset: const Offset(4, 0),
+              child: _FavoriteHeartChip(
+                listingId: listingDetail.id,
+                ownerUserId: listingDetail.user.id,
+              ),
+            ),
+          ),
         ),
       ],
     );

@@ -563,6 +563,8 @@ Companion design docs in this repo:
   `BlocSelector` patterns and rebuild counts.
 - [`MEMORY_MANAGEMENT_IMPROVEMENTS.md`](MEMORY_MANAGEMENT_IMPROVEMENTS.md) —
   scroll throttling, controller disposal, image cache tuning.
+- [`docs/ANIMATION_GUIDELINES.md`](docs/ANIMATION_GUIDELINES.md) — how to use
+  `AnimationController`s and tickers safely (no leaks, no ticker mixin errors).
 - [`THEME_README.md`](THEME_README.md) — the 3D-neumorphic design system.
 - [`VERSION_MANAGEMENT.md`](VERSION_MANAGEMENT.md) — versioning + release
   workflow.
