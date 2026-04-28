@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -43,8 +44,58 @@ class SearchFloatingActionButton extends StatefulWidget {
       _SearchFloatingActionButtonState();
 }
 
-class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton> {
+class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
+    with SingleTickerProviderStateMixin {
   bool _pressed = false;
+  late final AnimationSettingsState _animationSettings;
+  late final AnimationController _idleController;
+  late final Animation<double> _idleTurns;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationSettings = AnimationSettingsState();
+    _idleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 960),
+    );
+    _idleTurns = Tween<double>(begin: -0.012, end: 0.012).animate(
+      CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
+    );
+    _animationSettings.addListener(_syncFromSettings);
+    _syncFromSettings();
+  }
+
+  void _syncFromSettings() {
+    if (!mounted) return;
+    final idleEnabled = _animationSettings.bellIdleEnabled &&
+        _animationSettings.uiAnimationsEnabled &&
+        widget.iconData == Icons.add_alert;
+    if (idleEnabled) {
+      if (!_idleController.isAnimating) {
+        _idleController.repeat(reverse: true);
+      }
+    } else {
+      _idleController.stop();
+      _idleController.value = 0.5;
+    }
+    setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchFloatingActionButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.iconData != widget.iconData) {
+      _syncFromSettings();
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationSettings.removeListener(_syncFromSettings);
+    _idleController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,10 +142,14 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
           onTapUp: (_) => setPressed(false),
           onTapCancel: () => setPressed(false),
           onTap: onFabTap,
-          child: _FabIcon(
+          child: _AnimatedFabIcon(
             iconData: widget.iconData,
             size: widget.iconSize,
             color: fg,
+            idleTurns: _idleTurns,
+            wiggle: widget.iconData == Icons.add_alert &&
+                _animationSettings.bellIdleEnabled &&
+                _animationSettings.uiAnimationsEnabled,
           ),
         ),
       ),
@@ -128,10 +183,14 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
                 base,
               ),
             ),
-            child: _FabIcon(
+            child: _AnimatedFabIcon(
               iconData: widget.iconData,
               size: widget.iconSize,
               color: fg,
+              idleTurns: _idleTurns,
+              wiggle: widget.iconData == Icons.add_alert &&
+                  _animationSettings.bellIdleEnabled &&
+                  _animationSettings.uiAnimationsEnabled,
             ),
           ),
         ),
@@ -171,25 +230,43 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
   }
 }
 
-class _FabIcon extends StatelessWidget {
-  const _FabIcon({
+class _AnimatedFabIcon extends StatelessWidget {
+  const _AnimatedFabIcon({
     required this.iconData,
     required this.size,
     required this.color,
+    required this.idleTurns,
+    required this.wiggle,
   });
 
   final IconData iconData;
   final double? size;
   final Color color;
+  final Animation<double> idleTurns;
+  final bool wiggle;
 
   @override
   Widget build(BuildContext context) {
+    final icon = Icon(
+      iconData,
+      size: (size ?? 25.0) * 1.1,
+      color: color,
+    );
+
     return Center(
-      child: Icon(
-        iconData,
-        size: (size ?? 25.0) * 1.1,
-        color: color,
-      ),
+      child: wiggle
+          ? AnimatedBuilder(
+              animation: idleTurns,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: idleTurns.value * 2 * 3.1415926535897932,
+                  alignment: Alignment.topCenter,
+                  child: child,
+                );
+              },
+              child: icon,
+            )
+          : icon,
     );
   }
 }

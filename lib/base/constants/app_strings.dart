@@ -1041,6 +1041,8 @@ class AppStrings {
       "search": "Search",
       "filters_bar_label": "Filters",
       "search_alert_notify_me": "Notify when available",
+      "search_alert_cta_title": "Get alerts for this search?",
+      "search_alert_cta_create": "Create alert",
       "search_clear_filters": "Clear filters",
       "search_alert_login_required":
           "Sign in to get notifications for this search.",
@@ -2197,6 +2199,8 @@ class AppStrings {
       "search": "Поиск",
       "filters_bar_label": "Фильтры",
       "search_alert_notify_me": "Уведомлять о появлении",
+      "search_alert_cta_title": "Уведомлять по этому поиску?",
+      "search_alert_cta_create": "Создать уведомление",
       "search_clear_filters": "Сбросить фильтры",
       "search_alert_login_required":
           "Войдите, чтобы получать уведомления по этому поиску.",
@@ -3358,6 +3362,8 @@ class AppStrings {
       "search": "Qidirish",
       "filters_bar_label": "Filtrlar",
       "search_alert_notify_me": "Paydo bo‘lsa xabar berish",
+      "search_alert_cta_title": "Ushbu qidiruv bo‘yicha xabarlar?",
+      "search_alert_cta_create": "Bildirishnoma yaratish",
       "search_clear_filters": "Filtrlarni tozalash",
       "search_alert_login_required":
           "Bu qidiruv bo'yicha bildirishnomalar uchun tizimga kiring.",

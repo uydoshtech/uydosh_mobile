@@ -175,6 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   int _searchAlertCelebrationTick = 0;
   bool _inlineSearchActive = false;
   static const double _inlineSearchRibbonHeight = 56.0;
+  static const double _kFabGap = 12.0;
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
@@ -615,40 +616,123 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         clipBehavior: Clip.none,
         children: [
           listContent,
-          if (!widget.isSearchMode && _inlineSearchActive)
+          if (!widget.isSearchMode)
             Positioned(
               left: 12,
               right: 12,
               top: ThemeState().mainShellGlassExtraTopInset(context),
-              child: _buildInlineFiltersRibbon(),
+              child: _buildInlineFiltersRibbonAnimated(),
             ),
-          // Positioned floating action button (wrapped for tutorial targeting)
           Positioned(
             right: 16,
             bottom: 30, // Moved down a bit from 100
-            child: TutorialTargetWrapper(
-              key: _searchButtonTutorialKey,
-              child: ListenableBuilder(
-                listenable: AnimationSettingsState(),
-                builder: (context, _) {
-                  return TutorialPulseWrapper(
-                    enabled: false,
-                    variant: TutorialPulseVariant.floatingActionButton,
-                    child: SearchFloatingActionButton(
-                      searchFiltersState: _searchFiltersState,
-                      onPressed: widget.isSearchMode ? null : _openInlineSearchFromFab,
-                      iconData: Icons.search,
-                      replaceCurrentRoute: widget.isSearchMode,
-                      openedFromHomeScreen: widget.isHomeTabActive,
-                      elevation: ThemeState().isBlueTheme ? null : 8,
+            child: BlocSelector<ListingsBloc, ListingsState, bool>(
+              selector: (state) {
+                final hasAny = state.map(
+                  initial: (_) => false,
+                  loading: (_) => false,
+                  loaded: (s) => s.listings.isNotEmpty,
+                  error: (_) => false,
+                );
+                return (widget.isSearchMode || _inlineSearchActive) && hasAny;
+              },
+              builder: (context, showSearchAlertFab) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (showSearchAlertFab) ...[
+                      Transform.scale(
+                        scale: 0.92,
+                        child: SearchFloatingActionButton(
+                          searchFiltersState: _searchFiltersState,
+                          onPressed: _isCreatingSearchAlert
+                              ? null
+                              : _showCreateSearchAlertSheet,
+                          iconData: Icons.add_alert,
+                          tooltip: L10n.get("search_alert_notify_me"),
+                          replaceCurrentRoute: false,
+                          openedFromHomeScreen: widget.isHomeTabActive,
+                          elevation: ThemeState().isBlueTheme ? null : 8,
+                        ),
+                      ),
+                      const SizedBox(height: _kFabGap),
+                    ],
+                    TutorialTargetWrapper(
+                      key: _searchButtonTutorialKey,
+                      child: ListenableBuilder(
+                        listenable: AnimationSettingsState(),
+                        builder: (context, _) {
+                          return TutorialPulseWrapper(
+                            enabled: false,
+                            variant: TutorialPulseVariant.floatingActionButton,
+                            child: SearchFloatingActionButton(
+                              searchFiltersState: _searchFiltersState,
+                              onPressed: widget.isSearchMode
+                                  ? null
+                                  : _openInlineSearchFromFab,
+                              iconData: Icons.search,
+                              replaceCurrentRoute: widget.isSearchMode,
+                              openedFromHomeScreen: widget.isHomeTabActive,
+                              elevation: ThemeState().isBlueTheme ? null : 8,
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  );
-                },
-              ),
+                  ],
+                );
+              },
             ),
           ),
         ],
       ),
+    );
+  }
+
+  bool _homeRibbonAnimationsEnabled(BuildContext context) {
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    return AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+  }
+
+  Widget _buildInlineFiltersRibbonAnimated() {
+    return ListenableBuilder(
+      listenable: AnimationSettingsState(),
+      builder: (context, _) {
+        final enabled = _homeRibbonAnimationsEnabled(context);
+        return AnimatedSwitcher(
+          duration: enabled ? const Duration(milliseconds: 900) : Duration.zero,
+          reverseDuration:
+              enabled ? const Duration(milliseconds: 750) : Duration.zero,
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) {
+            // Use a larger travel distance so the slide is clearly visible.
+            final slide = Tween<Offset>(
+              begin: const Offset(-1.0, 0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            );
+            final fade = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+            return ClipRect(
+              child: SlideTransition(
+                position: slide,
+                child: FadeTransition(opacity: fade, child: child),
+              ),
+            );
+          },
+          child: _inlineSearchActive
+              ? KeyedSubtree(
+                  key: const ValueKey("inline_filters_ribbon"),
+                  child: _buildInlineFiltersRibbon(),
+                )
+              : const SizedBox.shrink(
+                  key: ValueKey("inline_filters_ribbon_empty"),
+                ),
+        );
+      },
     );
   }
 
@@ -1078,6 +1162,103 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         setState(() => _isCreatingSearchAlert = false);
       }
     }
+  }
+
+  Future<void> _showCreateSearchAlertSheet() async {
+    if (!mounted) return;
+
+    final filters = _resolveSearchFilters(
+      includeSafeFallbacks: false,
+      explicitNullFallsBackToState: true,
+    );
+
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final theme = Theme.of(context);
+        final sheetBg = theme.colorScheme.surface;
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Material(
+            color: sheetBg,
+            elevation: 0,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          L10n.get("search_alert_cta_title"),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ThreeDAppBarIconButton(
+                        iconData: Icons.close,
+                        onPressed: () => Navigator.of(context).pop(),
+                        semanticsLabel: MaterialLocalizations.of(context)
+                            .closeButtonTooltip,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(999)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  AppliedSearchFiltersBar(
+                    onPressed: () {},
+                    listingTypeId: filters.listingTypeId ??
+                        _searchFiltersState.selectedListingTypeId,
+                    gender: filters.gender,
+                    locationId: (filters.locationId != null && filters.locationId! > 0)
+                        ? filters.locationId
+                        : null,
+                    subwayStationId:
+                        (filters.subwayStationId != null && filters.subwayStationId! > 0)
+                            ? filters.subwayStationId
+                            : null,
+                    subwayLineId: (filters.subwayLineId != null && filters.subwayLineId! > 0)
+                        ? filters.subwayLineId
+                        : null,
+                    minPrice: filters.minPrice,
+                    maxPrice: filters.maxPrice,
+                    privateRoom: filters.privateRoom,
+                    withPhoto: filters.withPhoto,
+                    total: null,
+                    showLabel: false,
+                    alignRight: false,
+                    height: 46,
+                    chipSize: 34,
+                  ),
+                  const SizedBox(height: 14),
+                  PrimaryButton(
+                    onPressed: _isCreatingSearchAlert
+                        ? null
+                        : () async {
+                            Navigator.of(context).pop();
+                            await _subscribeToSearchAlerts();
+                          },
+                    height: 52,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Text(L10n.get("search_alert_cta_create")),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildLoadingState() {
