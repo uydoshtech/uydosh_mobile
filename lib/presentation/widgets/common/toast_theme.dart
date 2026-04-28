@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "dart:ui";
 import "package:uy_dosh/base/constants/app_colors.dart";
 
 enum ToastDismissReason { completed, preempted }
@@ -21,6 +22,46 @@ class ToastTheme {
   ); // 6 seconds
 
   static Color _foregroundOn(Color backgroundColor) => Colors.white;
+
+  static const double _toastCornerRadius = 12;
+  static const double _toastBlurSigma = 16;
+  static const double _toastFillOpacity = 0.82;
+
+  static Widget _glassySurface({
+    required Color baseColor,
+    required Widget child,
+    BorderRadius? borderRadius,
+  }) {
+    final r = borderRadius ?? BorderRadius.circular(_toastCornerRadius);
+    return ClipRRect(
+      borderRadius: r,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: _toastBlurSigma,
+          sigmaY: _toastBlurSigma,
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: baseColor.withOpacity(_toastFillOpacity),
+            borderRadius: r,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.22),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.14),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
 
   // Keep track of current toast overlay
   static OverlayEntry? _currentToastOverlay;
@@ -328,15 +369,26 @@ class ToastTheme {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            message,
-            style: TextStyle(
-              color: _foregroundOn(backgroundColor),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+          content: _glassySurface(
+            baseColor: backgroundColor,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: _foregroundOn(backgroundColor),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
-          backgroundColor: backgroundColor,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           duration: duration,
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
@@ -438,34 +490,25 @@ class _RollingToastContentState extends State<_RollingToastContent>
             scale: _scaleAnimation.value,
             child: Opacity(
               opacity: _opacityAnimation.value,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: widget.backgroundColor,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Text(
-                  widget.message,
-                  style: TextStyle(
-                    color: foregroundColor,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    decoration: TextDecoration.none,
-                    decorationColor: Colors.transparent,
-                    decorationThickness: 0,
+              child: ToastTheme._glassySurface(
+                baseColor: widget.backgroundColor,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
                   ),
-                  textAlign: TextAlign.center,
+                  child: Text(
+                    widget.message,
+                    style: TextStyle(
+                      color: foregroundColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.none,
+                      decorationColor: Colors.transparent,
+                      decorationThickness: 0,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),
@@ -585,35 +628,28 @@ class _TopToastOverlayState extends State<_TopToastOverlay>
               scale: _scaleAnimation.value,
               child: Opacity(
                 opacity: _opacityAnimation.value,
-                child: Container(
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: widget.backgroundColor,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                        spreadRadius: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ToastTheme._glassySurface(
+                    baseColor: widget.backgroundColor,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    widget.message,
-                    style: TextStyle(
-                      color: foregroundColor,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.none,
-                      decorationColor: Colors.transparent,
-                      decorationThickness: 0,
+                      child: Text(
+                        widget.message,
+                        style: TextStyle(
+                          color: foregroundColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.none,
+                          decorationColor: Colors.transparent,
+                          decorationThickness: 0,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ),

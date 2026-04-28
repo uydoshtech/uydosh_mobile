@@ -591,10 +591,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final mq = MediaQuery.of(context);
-    final enableGlass =
-        AnimationSettingsState().uiAnimationsEnabled && !mq.disableAnimations;
     // "Available" height for the sheet content, accounting for the keyboard.
     // The sheet will shrink-wrap its content up to this cap.
     final maxSheetHeight = (mq.size.height - mq.viewInsets.bottom) * 0.9;
@@ -602,9 +599,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       topLeft: Radius.circular(20),
       topRight: Radius.circular(20),
     );
-    final surfaceTint = Color.lerp(
-            theme.colorScheme.surface, theme.colorScheme.primary, 0.08) ??
-        theme.colorScheme.surface;
 
     return BlocListener<SubwayStationsBloc, SubwayStationsState>(
       listener: (context, state) {
@@ -617,67 +611,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       },
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxSheetHeight),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.10),
-                blurRadius: isDark ? 28 : 22,
-                spreadRadius: isDark ? 2 : 1,
-                offset: const Offset(0, -10),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: radius,
-            // Apple's UIBlurEffect = saturation boost + heavy gaussian blur +
-            // a thin translucent tint. We compose those in order.
-            child: BackdropFilter(
-              // Vibrancy: pull saturation up on whatever is behind the sheet so
-              // the blurred feed keeps its color identity (otherwise heavy
-              // blurs go grey).
-              filter: ColorFilter.matrix(_glassSaturationMatrix(
-                saturation: enableGlass ? (isDark ? 1.6 : 1.8) : 1.0,
-              )),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: enableGlass ? (isDark ? 32 : 40) : 0,
-                  sigmaY: enableGlass ? (isDark ? 32 : 40) : 0,
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: radius,
-                    // Very low-alpha tint - the blurred backdrop does the heavy
-                    // lifting visually, the tint just nudges it warm/cool to
-                    // match the theme.
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white.withValues(alpha: isDark ? 0.04 : 0.22),
-                        surfaceTint.withValues(alpha: isDark ? 0.18 : 0.30),
-                        theme.colorScheme.surface.withValues(
-                          alpha: isDark ? 0.14 : 0.28,
-                        ),
-                      ],
-                      stops: const [0.0, 0.5, 1.0],
-                    ),
-                    // Subtle top highlight ("specular" edge) - a hallmark of
-                    // iOS glass surfaces. Side/bottom borders stay invisible.
-                    border: Border(
-                      top: BorderSide(
-                        color:
-                            (isDark ? Colors.white : Colors.white).withValues(
-                          alpha: isDark ? 0.18 : 0.55,
-                        ),
-                        width: 0.6,
-                      ),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+        child: GlassBottomSheetSurface(
+          borderRadius: radius,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
                   // Handle bar
                   Container(
                     margin: const EdgeInsets.only(top: 12),
@@ -899,10 +837,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   ),
                 ],
               ),
-            ),
-            ),
-          ),
-        ),
         ),
       ),
     );
@@ -1079,18 +1013,3 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 ///
 /// Standard Rec. 601 luminance weights are used: 0.2126 R, 0.7152 G,
 /// 0.0722 B.
-List<double> _glassSaturationMatrix({required double saturation}) {
-  const lumR = 0.2126;
-  const lumG = 0.7152;
-  const lumB = 0.0722;
-  final invSat = 1 - saturation;
-  final r = invSat * lumR;
-  final g = invSat * lumG;
-  final b = invSat * lumB;
-  return <double>[
-    r + saturation, g, b, 0, 0,
-    r, g + saturation, b, 0, 0,
-    r, g, b + saturation, 0, 0,
-    0, 0, 0, 1, 0,
-  ];
-}

@@ -47,6 +47,7 @@ class _NotifySearchAlertAppBarButtonState
   late final AnimationController _savedController;
   late final Animation<double> _savedBellTurns;
   late final Animation<double> _savedScale;
+  late final Animation<double> _savedShakeX;
   late final Animation<double> _savedRingScale;
   late final Animation<double> _savedRingOpacity;
 
@@ -173,6 +174,41 @@ class _NotifySearchAlertAppBarButtonState
           CurveTween(curve: Curves.easeOut),
         ),
         weight: 54,
+      ),
+    ]).animate(_savedController);
+
+    // Adds a more obvious "shake" (horizontal) on successful save.
+    // Kept subtle to avoid motion sickness; combined with existing rotation.
+    _savedShakeX = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0, end: -2.6).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 14,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -2.6, end: 2.6).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 18,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 2.6, end: -2.0).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 16,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -2.0, end: 1.2).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 14,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.2, end: 0).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 38,
       ),
     ]).animate(_savedController);
 
@@ -358,12 +394,16 @@ class _NotifySearchAlertAppBarButtonState
                                 (tapEnabled ? _tapBellTurns.value : 0.0) +
                                 (tapEnabled ? _savedBellTurns.value : 0.0);
                         final scale = tapEnabled ? _savedScale.value : 1.0;
+                        final dx = tapEnabled ? _savedShakeX.value : 0.0;
                         return Transform.scale(
                           scale: scale,
-                          child: Transform.rotate(
-                            angle: turns * 2 * math.pi,
-                            alignment: Alignment.topCenter,
-                            child: _icon(iconColor),
+                          child: Transform.translate(
+                            offset: Offset(dx, 0),
+                            child: Transform.rotate(
+                              angle: turns * 2 * math.pi,
+                              alignment: Alignment.topCenter,
+                              child: _icon(iconColor),
+                            ),
                           ),
                         );
                       },
