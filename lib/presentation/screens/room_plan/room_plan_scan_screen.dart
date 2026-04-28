@@ -5,10 +5,12 @@ import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/native_language_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -109,6 +111,11 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     if (!isIOSDevice) return;
     setState(() => _starting = true);
     try {
+      // Ensure native RoomPlan UI is presented under the app-selected locale.
+      await NativeLanguageService.setPreferredLanguage(
+        LanguageState().currentLanguage,
+      );
+
       final supported = await _roomPlan.isSupported();
       if (!supported) {
         if (!mounted) return;

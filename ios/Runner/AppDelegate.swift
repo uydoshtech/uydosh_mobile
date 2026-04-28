@@ -39,6 +39,47 @@ final class RoomUsdzViewerPlugin: NSObject, FlutterPlugin {
   }
 }
 
+/// Registers the `uydosh/native_language` method channel to allow Flutter to
+/// sync the in-app selected language to iOS native UI (e.g. RoomPlan).
+final class NativeLanguagePlugin: NSObject, FlutterPlugin {
+  static func register(with registrar: FlutterPluginRegistrar) {
+    let channel = FlutterMethodChannel(
+      name: "uydosh/native_language",
+      binaryMessenger: registrar.messenger()
+    )
+    let instance = NativeLanguagePlugin()
+    registrar.addMethodCallDelegate(instance, channel: channel)
+  }
+
+  func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    guard call.method == "setPreferredLanguage" else {
+      result(FlutterMethodNotImplemented)
+      return
+    }
+    guard
+      let args = call.arguments as? [String: Any],
+      let code = args["languageCode"] as? String,
+      !code.isEmpty
+    else {
+      result(
+        FlutterError(
+          code: "bad_args",
+          message: "Expected {languageCode: String}",
+          details: call.arguments
+        )
+      )
+      return
+    }
+
+    // Setting AppleLanguages is best-effort. Many native controllers read the
+    // preferred language at presentation time.
+    UserDefaults.standard.set([code], forKey: "AppleLanguages")
+    UserDefaults.standard.set(code, forKey: "AppleLocale")
+    UserDefaults.standard.synchronize()
+    result(true)
+  }
+}
+
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
@@ -52,6 +93,11 @@ final class RoomUsdzViewerPlugin: NSObject, FlutterPlugin {
     // Register the native USDZ viewer as a real plugin (scene-safe).
     if let registrar = self.registrar(forPlugin: "RoomUsdzViewerPlugin") {
       RoomUsdzViewerPlugin.register(with: registrar)
+    }
+
+    // Register native language sync for native UI.
+    if let registrar = self.registrar(forPlugin: "NativeLanguagePlugin") {
+      NativeLanguagePlugin.register(with: registrar)
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
