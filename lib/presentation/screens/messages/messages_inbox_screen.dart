@@ -321,7 +321,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           appBar: widget.showCustomHeader ? _buildCustomHeader() : null,
           body: _buildContent(),
           floatingActionButton: _hasArchivedChats
-              ? _ArchivedChatsFab(onPressed: _openArchivedConversations)
+              ? Padding(
+                // Lift the pill above the main bottom bar.
+                padding: const EdgeInsets.only(bottom: 24),
+                child: _ArchivedChatsFab(onPressed: _openArchivedConversations),
+              )
               : null,
         );
       },
@@ -1407,37 +1411,83 @@ class _ArchivedChatsFab extends StatelessWidget {
       listenable: ThemeState(),
       builder: (context, _) {
         final themeState = ThemeState();
-        // cardColor matches the surrounding inbox tiles so the pill reads as
-        // "part of this screen" rather than a flashy global CTA — archive is
-        // secondary navigation, not a primary action.
-        final backgroundColor = themeState.cardColor;
-        final iconColor = themeState.cardIconColor;
-        final textColor = themeState.textColor;
+        final scheme = Theme.of(context).colorScheme;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
+        final iconColor = themeState.isBlueTheme ? Colors.white : themeState.cardIconColor;
+        final textColor = themeState.isBlueTheme ? Colors.white : themeState.textColor;
+
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final enableGlass =
+            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+
+        final baseTint =
+            themeState.isBlueTheme
+                ? BlueThemeColors.background
+                : (themeState.isLightTheme ? scheme.surface : themeState.cardColor);
+
+        const radius = BorderRadius.all(Radius.circular(999));
 
         return Semantics(
           button: true,
           label: L10n.get("archived_chats"),
-          child: ThreeDPillButton(
-            onPressed: () {
-              HapticFeedbackUtils.selection();
-              onPressed();
-            },
-            backgroundColor: backgroundColor,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.archive_outlined, size: 20, color: iconColor),
-                const SizedBox(width: 8),
-                Text(
-                  L10n.get("archived_chats"),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
+          child: Material(
+            type: MaterialType.transparency,
+            child: ClipRRect(
+              borderRadius: radius,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: enableGlass ? 18 : 0,
+                  sigmaY: enableGlass ? 18 : 0,
+                ),
+                child: InkWell(
+                  borderRadius: radius,
+                  onTap: () {
+                    HapticFeedbackUtils.selection();
+                    onPressed();
+                  },
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: radius,
+                      color: baseTint.withValues(alpha: isDark ? 0.14 : 0.18),
+                      border: Border.all(
+                        color: (themeState.isBlueTheme ? Colors.white : scheme.onSurface)
+                            .withValues(alpha: themeState.isBlueTheme ? 0.18 : 0.10),
+                        width: 0.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.10),
+                          blurRadius: 18,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.archive_outlined, size: 20, color: iconColor),
+                          const SizedBox(width: 8),
+                          Text(
+                            L10n.get("archived_chats"),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         );
