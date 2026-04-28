@@ -6,6 +6,7 @@ import "package:firebase_crashlytics/firebase_crashlytics.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/cache/country_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -321,6 +322,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       _isAuthenticating = true;
     });
 
+    String stage = "google_sign_in_start";
     try {
       if (!kIsWeb) {
         await _crashlytics.setCustomKey("auth_provider", "google");
@@ -330,6 +332,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
 
       // Trigger the authentication flow
+      stage = "google_sign_in";
       final googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -345,10 +348,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
 
       // Obtain the auth details from the request
+      stage = "google_auth_tokens";
       final googleAuth =
           await googleUser.authentication;
 
       // Create a new credential
+      stage = "firebase_credential";
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -361,6 +366,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           "firebase_auth_signInWithCredential",
         );
       }
+      stage = "firebase_sign_in";
       await _auth.signInWithCredential(credential);
 
       // Update state immediately after Firebase authentication succeeds
@@ -379,6 +385,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       );
 
       // Now authenticate with your backend
+      stage = "backend_auth";
       await _authenticateWithBackend();
 
       setStateIfMounted(() {
@@ -418,7 +425,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
       getIt<AppAnalyticsService>().logSignInFailure(
         method: "google",
+        stage: stage,
+        errorCode: _extractAuthErrorCode(e),
         errorType: e.toString().length > 100 ? e.toString().substring(0, 100) : e.toString(),
+      );
+      // Dedicated event for easier GA4 funnel debugging.
+      getIt<AppAnalyticsService>().logLoginError(
+        method: "google",
+        stage: stage,
+        errorCode: _extractAuthErrorCode(e),
+        errorMessage: e.toString(),
       );
       if (mounted) {
         setState(() {
@@ -458,6 +474,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       _authMethod = _AuthMethod.phone;
     });
 
+    String stage = "backend_auth";
     try {
       if ((user.displayName ?? "").isNotEmpty && _nameController.text.isEmpty) {
         _nameController.text = user.displayName!;
@@ -468,6 +485,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         photoUrl: user.photoURL,
       );
 
+      stage = "backend_auth";
       await _authenticateWithBackend(authMethod: _AuthMethod.phone);
 
       if (mounted) {
@@ -482,9 +500,17 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     } catch (e) {
       getIt<AppAnalyticsService>().logSignInFailure(
         method: "phone",
+        stage: stage,
+        errorCode: _extractAuthErrorCode(e),
         errorType: e.toString().length > 100
             ? e.toString().substring(0, 100)
             : e.toString(),
+      );
+      getIt<AppAnalyticsService>().logLoginError(
+        method: "phone",
+        stage: stage,
+        errorCode: _extractAuthErrorCode(e),
+        errorMessage: e.toString(),
       );
       if (mounted) {
         setState(() => _isAuthenticating = false);
@@ -495,6 +521,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
       }
     }
+  }
+
+  String? _extractAuthErrorCode(Object error) {
+    if (error is FirebaseAuthException) return "firebase_auth:${error.code}";
+    // This can surface on iOS/web for auth flows.
+    if (error is PlatformException) {
+      final code = (error.code).trim();
+      return code.isEmpty ? null : "platform:$code";
+    }
+    return null;
   }
 
   // Authenticate with your backend after Firebase Sign-In - FIRST OCCURRENCE

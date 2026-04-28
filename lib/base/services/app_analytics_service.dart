@@ -71,7 +71,15 @@ class AppAnalyticsService {
     );
   }
 
+  /// Standard GA4/Firebase "login" event (recommended).
+  /// See: FirebaseAnalytics.logLogin
+  Future<void> logLogin({required String method}) async {
+    await _analytics.logLogin(loginMethod: method);
+  }
+
   Future<void> logSignInSuccess({required String method}) async {
+    // Also emit the standard GA4 "login" event for easier reporting.
+    await logLogin(method: method);
     await _analytics.logEvent(
       name: "sign_in_success",
       parameters: {"method": method},
@@ -80,15 +88,45 @@ class AppAnalyticsService {
 
   Future<void> logSignInFailure({
     required String method,
+    String? stage,
+    String? errorCode,
     String? errorType,
   }) async {
     await _analytics.logEvent(
       name: "sign_in_failure",
       parameters: {
         "method": method,
+        if (stage != null) "stage": stage,
+        if (errorCode != null) "error_code": errorCode,
         if (errorType != null) "error_type": errorType,
       },
     );
+  }
+
+  /// More detailed login error event for debugging funnels.
+  /// Keep params compact (GA4 parameter limits apply).
+  Future<void> logLoginError({
+    required String method,
+    required String stage,
+    String? errorCode,
+    String? errorMessage,
+  }) async {
+    String? truncatedMessage;
+    if (errorMessage != null) {
+      final msg = errorMessage.trim();
+      if (msg.isNotEmpty) {
+        truncatedMessage = msg.length > 120 ? msg.substring(0, 120) : msg;
+      }
+    }
+
+    final parameters = <String, Object>{
+      "method": method,
+      "stage": stage,
+    };
+    if (errorCode != null) parameters["error_code"] = errorCode;
+    if (truncatedMessage != null) parameters["message"] = truncatedMessage;
+
+    await _analytics.logEvent(name: "login_error", parameters: parameters);
   }
 
   Future<void> logSignOut() async {

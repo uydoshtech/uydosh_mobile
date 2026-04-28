@@ -709,37 +709,69 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       height: _inlineSearchRibbonHeight,
       borderRadius: BorderRadius.circular(16),
       padding: const EdgeInsets.only(left: 12, right: 6),
-      child: Row(
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          const ThemeIcon(Icons.tune, size: 18),
-          const SizedBox(width: 10),
-          Expanded(child: _buildInlineFiltersChips()),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.all(6),
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            icon: DecoratedBox(
-              decoration: BoxDecoration(
-                color: BlueThemeColors.primary,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.22),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+          Row(
+            children: [
+              // Reserve space for the tune icon which is drawn above the chips.
+              const SizedBox(width: 18, height: 18),
+              const SizedBox(width: 10),
+              Expanded(child: _buildInlineFiltersChips()),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.all(6),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                icon: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: BlueThemeColors.primary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.22),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ],
+                  child: const Padding(
+                    padding: EdgeInsets.all(6),
+                    child: Icon(Icons.close, size: 16, color: Colors.white),
+                  ),
+                ),
+                onPressed: () {
+                  HapticFeedbackUtils.impact();
+                  _exitInlineSearch();
+                },
+                tooltip: L10n.get("close"),
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(6),
-                child: Icon(Icons.close, size: 16, color: Colors.white),
+            ],
+          ),
+          PositionedDirectional(
+            start: 0,
+            top: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Center(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: BlueThemeColors.primary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.22),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(6),
+                    child: Icon(Icons.tune, size: 16, color: Colors.white),
+                  ),
+                ),
               ),
             ),
-            onPressed: () {
-              HapticFeedbackUtils.impact();
-              _exitInlineSearch();
-            },
-            tooltip: L10n.get("close"),
           ),
         ],
       ),

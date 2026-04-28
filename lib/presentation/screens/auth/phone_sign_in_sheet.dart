@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:country_picker/country_picker.dart" as cp;
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/foundation.dart" show kDebugMode;
 import "package:flutter/material.dart";
@@ -7,6 +8,7 @@ import "package:flutter/services.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/phone_auth_service.dart";
@@ -48,10 +50,15 @@ const String _kFirebaseTestPhoneNumber = "+1 0000000000";
 
 class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
   late final IPhoneAuthService _phoneAuth;
-  final _phoneController = TextEditingController(text: "+998 ");
+  late final AppAnalyticsService _analytics;
+  final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
   final _phoneFocus = FocusNode();
   final _codeFocus = FocusNode();
+
+  // Selected country code for phone login. This prefix is not user-editable.
+  String _selectedDialCode = "998";
+  String _selectedFlagEmoji = "🇺🇿";
 
   _Step _step = _Step.enterPhone;
   bool _busy = false;
@@ -64,6 +71,7 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
   void initState() {
     super.initState();
     _phoneAuth = getIt<IPhoneAuthService>();
+    _analytics = getIt<AppAnalyticsService>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _phoneController.selection = TextSelection.fromPosition(
@@ -84,13 +92,27 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
     super.dispose();
   }
 
-  String _normalizePhone(String raw) => raw.replaceAll(RegExp(r"[^\d+]"), "");
+  String _normalizeNationalNumber(String raw) => raw.replaceAll(RegExp(r"[^\d]"), "");
+
+  String _buildE164() {
+    final national = _normalizeNationalNumber(_phoneController.text);
+    return "+$_selectedDialCode$national";
+  }
+
+  String _stripE164PrefixForHint(String e164Example) {
+    // Example strings currently include "+998 ...". Once we show the dial code
+    // as a separate non-editable prefix, show only the national part as hint.
+    return e164Example.replaceFirst(RegExp(r"^\+\d+\s*"), "");
+  }
 
   /// Debug-only: prefill the phone field with the Firebase test number so the
   /// flow can be verified end-to-end without burning real SMS quota.
   /// The fixed SMS code is whatever you configured in Firebase Console.
   void _prefillTestNumber() {
-    _phoneController.text = _kFirebaseTestPhoneNumber;
+    // Match Firebase test number default: +1 0000000000
+    _selectedDialCode = "1";
+    _selectedFlagEmoji = "🇺🇸";
+    _phoneController.text = _kFirebaseTestPhoneNumber.replaceFirst(RegExp(r"^\+\d+\s*"), "");
     _phoneController.selection = TextSelection.fromPosition(
       TextPosition(offset: _phoneController.text.length),
     );
@@ -98,7 +120,7 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
 
   Future<void> _onSendCode() async {
     HapticFeedbackUtils.impact();
-    final phone = _normalizePhone(_phoneController.text);
+    final phone = _buildE164();
     if (!_phoneAuth.isValidE164(phone)) {
       ToastTheme.showWarning(
         context,
@@ -109,6 +131,8 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
 
     setState(() => _busy = true);
     try {
+      // Helps measure drop-off before/after SMS dispatch.
+      unawaited(_analytics.logSignInStarted(method: "phone"));
       final handle = await _phoneAuth.verifyPhoneNumber(phone);
 
       // Race the two outcomes. Whichever wins drives the UI.
@@ -138,9 +162,25 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
       );
     } on FirebaseAuthException catch (e) {
       setStateIfMounted(() => _busy = false);
+      unawaited(
+        _analytics.logLoginError(
+          method: "phone",
+          stage: "phone_send_code",
+          errorCode: "firebase_auth:${e.code}",
+          errorMessage: e.message ?? e.code,
+        ),
+      );
       _showFirebaseError(e);
     } catch (e) {
       setStateIfMounted(() => _busy = false);
+      unawaited(
+        _analytics.logLoginError(
+          method: "phone",
+          stage: "phone_send_code",
+          errorCode: e is PlatformException ? "platform:${e.code}" : null,
+          errorMessage: e.toString(),
+        ),
+      );
       ToastTheme.showWarning(
         context,
         message: L10n.get("phone_verification_failed")
@@ -172,9 +212,25 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
       Navigator.of(context).pop(user);
     } on FirebaseAuthException catch (e) {
       setStateIfMounted(() => _busy = false);
+      unawaited(
+        _analytics.logLoginError(
+          method: "phone",
+          stage: "phone_submit_code",
+          errorCode: "firebase_auth:${e.code}",
+          errorMessage: e.message ?? e.code,
+        ),
+      );
       _showFirebaseError(e);
     } catch (e) {
       setStateIfMounted(() => _busy = false);
+      unawaited(
+        _analytics.logLoginError(
+          method: "phone",
+          stage: "phone_submit_code",
+          errorCode: e is PlatformException ? "platform:${e.code}" : null,
+          errorMessage: e.toString(),
+        ),
+      );
       ToastTheme.showWarning(
         context,
         message: L10n.get("phone_verification_failed")
@@ -305,27 +361,36 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextField(
-          controller: _phoneController,
-          focusNode: _phoneFocus,
-          keyboardType: TextInputType.phone,
-          enabled: !_busy,
-          cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
-          style: TextStyle(color: textColor, fontSize: 18),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r"[\d+\s]")),
-            LengthLimitingTextInputFormatter(20),
-          ],
-          decoration: InputDecoration(
-            hintText: L10n.get("phone_number_example"),
-            hintStyle: TextStyle(color: textColor.withValues(alpha: 0.4)),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildCountryPrefixPicker(textColor),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextField(
+                controller: _phoneController,
+                focusNode: _phoneFocus,
+                keyboardType: TextInputType.phone,
+                enabled: !_busy,
+                cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
+                style: TextStyle(color: textColor, fontSize: 18),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r"[\d\s()-]")),
+                  LengthLimitingTextInputFormatter(20),
+                ],
+                decoration: InputDecoration(
+                  hintText: _stripE164PrefixForHint(L10n.get("phone_number_example")),
+                  hintStyle: TextStyle(color: textColor.withValues(alpha: 0.4)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: textColor.withValues(alpha: 0.04),
+                ),
+                onSubmitted: (_) => _onSendCode(),
+              ),
             ),
-            filled: true,
-            fillColor: textColor.withValues(alpha: 0.04),
-          ),
-          onSubmitted: (_) => _onSendCode(),
+          ],
         ),
         if (kDebugMode) ...[
           const SizedBox(height: 8),
@@ -437,6 +502,91 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildCountryPrefixPicker(Color textColor) {
+    final bg = textColor.withValues(alpha: 0.04);
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: Theme.of(context).inputDecorationTheme.enabledBorder?.borderSide ??
+          BorderSide(color: textColor.withValues(alpha: 0.15)),
+    );
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 112),
+      child: InkWell(
+        onTap: _busy ? null : _showPhoneCountryPicker,
+        borderRadius: BorderRadius.circular(12),
+        child: InputDecorator(
+          decoration: InputDecoration(
+            border: border,
+            enabledBorder: border,
+            focusedBorder: border.copyWith(
+              borderSide: BorderSide(
+                color: AuthWizardTheme.getBottomSheetCursorColor(),
+              ),
+            ),
+            filled: true,
+            fillColor: bg,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_selectedFlagEmoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              Text(
+                "+$_selectedDialCode",
+                style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(width: 6),
+              Icon(
+                Icons.unfold_more,
+                size: 18,
+                color: textColor.withValues(alpha: 0.7),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPhoneCountryPicker() {
+    final themeTextColor = AuthWizardTheme.getBottomSheetTextColor();
+    cp.showCountryPicker(
+      context: context,
+      favorite: const <String>["UZ", "RU", "KZ", "KG", "TJ", "TM", "AZ", "BY", "UA", "TR", "US"],
+      onSelect: (c) {
+        setState(() {
+          _selectedDialCode = c.phoneCode;
+          _selectedFlagEmoji = c.flagEmoji;
+        });
+        // Keep focus on the number field for fast entry.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _phoneFocus.requestFocus();
+        });
+      },
+      countryListTheme: cp.CountryListThemeData(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        backgroundColor: AuthWizardTheme.getBottomSheetBackgroundColor(),
+        textStyle: TextStyle(color: themeTextColor),
+        inputDecoration: InputDecoration(
+          labelText: L10n.get("search"),
+          labelStyle: TextStyle(color: themeTextColor.withValues(alpha: 0.7)),
+          hintStyle: TextStyle(color: themeTextColor.withValues(alpha: 0.5)),
+          prefixIcon: Icon(Icons.search, color: themeTextColor.withValues(alpha: 0.7)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: themeTextColor.withValues(alpha: 0.2)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AuthWizardTheme.getBottomSheetCursorColor()),
+          ),
+        ),
+      ),
     );
   }
 }

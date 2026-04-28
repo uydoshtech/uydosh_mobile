@@ -103,6 +103,7 @@ dependencies:
   dio_cache_interceptor: ^4.0.6
   device_info_plus: ^12.4.0
   package_info_plus: ^9.0.1
+  country_picker: ^2.0.27
 
 dev_dependencies:
   flutter_test:
