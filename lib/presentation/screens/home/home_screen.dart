@@ -172,7 +172,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
   bool _isCreatingSearchAlert = false;
-  int? _lastKnownSearchTotal;
+  bool _searchCountReady = false;
   // Celebration for the header bell is driven by `ActiveSearchAlertsState()`
   // so it also triggers when alerts are created from other screens.
   bool _inlineSearchActive = false;
@@ -1626,27 +1626,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         Theme.of(context).appBarTheme.foregroundColor ?? Colors.white;
     return UydoshAppBar(
       title: BlocConsumer<ListingsBloc, ListingsState>(
-        listenWhen: (previous, current) => current.maybeMap(
-          loaded: (s) => s.total != (previous.maybeMap(loaded: (p) => p.total, orElse: () => null)),
-          orElse: () => false,
-        ),
+        listenWhen: (previous, current) =>
+            !_searchCountReady && current.maybeMap(loaded: (_) => true, orElse: () => false),
         listener: (context, state) {
-          state.maybeMap(
-            loaded: (s) {
-              final total = s.total;
-              if (total != null && total > 0 && total != _lastKnownSearchTotal) {
-                setState(() => _lastKnownSearchTotal = total);
-              }
-            },
-            orElse: () {},
-          );
+          // Once *new* results arrive, allow showing the count.
+          if (!_searchCountReady &&
+              state.maybeMap(loaded: (_) => true, orElse: () => false) &&
+              mounted) {
+            setState(() => _searchCountReady = true);
+          }
         },
         builder: (context, state) {
           final baseTitle = L10n.get("search_results");
-          final count = state.maybeMap(
-            loaded: (s) => s.total,
-            orElse: () => _lastKnownSearchTotal,
-          );
+          final count = (_searchCountReady)
+              ? state.maybeMap(loaded: (s) => s.total, orElse: () => null)
+              : null;
           final titleText =
               (count == null || count <= 0) ? baseTitle : "$baseTitle ($count)";
           return Text(titleText, style: Theme.of(context).appBarTheme.titleTextStyle);
@@ -1712,6 +1706,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   void _dispatchSearch({required bool isRefresh}) {
     final listingsBloc = context.read<ListingsBloc>();
+
+    // Hide the old count immediately so it can't flash from a previous `loaded`
+    // state while this new search is being dispatched.
+    if (isRefresh && mounted) {
+      setState(() => _searchCountReady = false);
+    }
 
     // When opened from metro map with only station: use station-only API (no transfer expansion, no other filters)
     final isStationOnlyFromMap = widget.useExplicitFiltersOnly &&

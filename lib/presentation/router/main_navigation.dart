@@ -675,39 +675,7 @@ class MainNavigationState extends State<MainNavigation>
         );
     switch (_currentIndex) {
       case 0:
-        return ListenableBuilder(
-          listenable: HomeInlineSearchState(),
-          builder: (context, _) {
-            final showCount = HomeInlineSearchState().isActive;
-            return BlocSelector<ListingsBloc, ListingsState, int?>(
-              selector: (state) => state.map(
-                initial: (_) => null,
-                loading: (_) => null,
-                loaded: (s) => s.total,
-                error: (_) => null,
-              ),
-              builder: (context, total) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    L10n.text("home", style: titleStyle),
-                    if (showCount && total != null) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        "($total)",
-                        style: titleStyle.copyWith(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: titleStyle.color?.withValues(alpha: 0.72),
-                        ),
-                      ),
-                    ],
-                  ],
-                );
-              },
-            );
-          },
-        );
+        return _HomeListingsAppBarTitle(titleStyle: titleStyle);
       case 1:
         return L10n.text("favorites_title", style: titleStyle);
       case 2:
@@ -1004,6 +972,64 @@ class MainNavigationState extends State<MainNavigation>
               );
             },
           ),
+        );
+      },
+    );
+  }
+}
+
+class _HomeListingsAppBarTitle extends StatefulWidget {
+  const _HomeListingsAppBarTitle({required this.titleStyle});
+
+  final TextStyle titleStyle;
+
+  @override
+  State<_HomeListingsAppBarTitle> createState() => _HomeListingsAppBarTitleState();
+}
+
+class _HomeListingsAppBarTitleState extends State<_HomeListingsAppBarTitle> {
+  bool _countReady = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: HomeInlineSearchState(),
+      builder: (context, _) {
+        final inlineActive = HomeInlineSearchState().isActive;
+
+        return BlocConsumer<ListingsBloc, ListingsState>(
+          listener: (context, state) {
+            final isInlineActive = HomeInlineSearchState().isActive;
+            final nextReady = state.maybeMap(
+              loaded: (_) => isInlineActive,
+              orElse: () => false,
+            );
+            if (nextReady != _countReady && mounted) {
+              setState(() => _countReady = nextReady);
+            }
+          },
+          builder: (context, state) {
+            final total = state.maybeMap(loaded: (s) => s.total, orElse: () => null);
+            final showCount = inlineActive && _countReady && total != null && total > 0;
+
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                L10n.text("home", style: widget.titleStyle),
+                if (showCount) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    "($total)",
+                    style: widget.titleStyle.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: widget.titleStyle.color?.withValues(alpha: 0.72),
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
         );
       },
     );

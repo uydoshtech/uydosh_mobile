@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "dart:math" as math;
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -113,8 +114,14 @@ class UydoshRefreshIndicator extends StatelessWidget {
                 ? const Color(0xFF2A2A2A)
                 : Colors.white;
 
+        // Flutter positions the refresh spinner using `displacement`, not
+        // `edgeOffset`. In screens that draw content behind headers/ribbons we
+        // pass a non-zero `edgeOffset` to keep pull-to-refresh usable, but we
+        // also need to push the spinner down so it doesn't render behind the UI.
+        final effectiveDisplacement = math.max(displacement, edgeOffset + 12.0);
+
         return RefreshIndicator(
-          displacement: displacement,
+          displacement: effectiveDisplacement,
           edgeOffset: edgeOffset,
           onRefresh: () async {
             // Reuse the same subtle "favorites add" sound for refresh.
