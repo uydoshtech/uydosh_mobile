@@ -279,17 +279,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _openPrivacyPolicy(context);
                   },
                 ),
-                _buildMenuItem(
-                  icon: Icons.description,
-                  titleKey: "menu_user_license_agreement",
-                  onTap: () {
-                    _showLegalDialog(
-                      context,
-                      titleKey: "user_license_agreement_title",
-                      bodyKey: "user_license_agreement_body",
-                    );
-                  },
-                ),
+                // _buildMenuItem(
+                //   icon: Icons.description,
+                //   titleKey: "menu_user_license_agreement",
+                //   onTap: () {
+                //     _showLegalDialog(
+                //       context,
+                //       titleKey: "user_license_agreement_title",
+                //       bodyKey: "user_license_agreement_body",
+                //     );
+                //   },
+                // ),
               ],
             ),
 
