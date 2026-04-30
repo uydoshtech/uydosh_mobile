@@ -1061,6 +1061,7 @@ class AppStrings {
           "Station {station} is already covered by your {line} line alert.",
       "search_alert_permission":
           "Enable notifications in settings to receive alerts.",
+      "search_alert_bell_hint": "Get notifications about similar listings",
       "tutorial_search_description":
           "Tap here to filter listings by location, price, room type, and more.",
       "tutorial_profile_description":
@@ -2223,6 +2224,7 @@ class AppStrings {
           "Станция {station} уже входит в ваше оповещение по линии {line}.",
       "search_alert_permission":
           "Включите уведомления в настройках, чтобы получать оповещения.",
+      "search_alert_bell_hint": "Получать уведомления о похожих объявлениях",
       "tutorial_search_description":
           "Нажмите здесь, чтобы фильтровать объявления по району, цене, типу комнаты и другим параметрам.",
       "tutorial_profile_description":
@@ -3388,6 +3390,7 @@ class AppStrings {
           "{station} bekati allaqachon {line} liniyasi bo‘yicha bildirishnomangizga kiradi.",
       "search_alert_permission":
           "Bildirishnomalar uchun sozlamalarda ruxsat bering.",
+      "search_alert_bell_hint": "O'xshash e'lonlar haqida bildirishnomalar olish",
       "tutorial_search_description":
           "E'lonlarni tuman, narx, xona turi va boshqa parametrlar bo'yicha filtrlash uchun bosing.",
       "tutorial_profile_description":

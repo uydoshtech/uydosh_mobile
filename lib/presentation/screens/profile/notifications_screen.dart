@@ -929,11 +929,10 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
   Widget _summaryWidget(SearchAlert a, ThemeData theme) {
     final lang = L10n.currentLanguage;
-    final lines = <Widget>[];
+    final chips = <Widget>[];
 
-    final topRow = <Widget>[];
     if (a.listingTypeId != null) {
-      topRow.add(
+      chips.add(
         ListingTypeBadge(
           listingTypeCode: ListingTypeHelper.getCodeFromId(a.listingTypeId!),
           fontSize: 12,
@@ -944,7 +943,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     if (a.gender != null) {
       final genderText = a.gender == 2 ? L10n.get("female") : L10n.get("male");
       final genderIcon = a.gender == 2 ? Icons.female : Icons.male;
-      topRow.add(
+      chips.add(
         _iconTextBadge(
           theme: theme,
           icon: genderIcon,
@@ -956,7 +955,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     if (a.minPrice != null || a.maxPrice != null) {
       final min = (a.minPrice ?? a.maxPrice ?? 0).round();
       final max = (a.maxPrice ?? a.minPrice ?? 0).round();
-      topRow.add(
+      chips.add(
         PriceRangeBadge(
           minPrice: min,
           maxPrice: max,
@@ -970,14 +969,10 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         ),
       );
     }
-    if (topRow.isNotEmpty) {
-      lines.add(Wrap(spacing: 8, runSpacing: 8, children: topRow));
-    }
 
-    final locationAndMetro = <Widget>[];
     if (a.locationId != null) {
       final name = LocationCache.getLocationName(a.locationId!, lang);
-      locationAndMetro.add(
+      chips.add(
         _iconTextBadge(
           theme: theme,
           icon: Icons.location_on_outlined,
@@ -1002,7 +997,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       final lineColor = AppColors.getMetroLineColor(resolvedLineId);
       final stationsCount =
           MetroCache.getStationsForLine(resolvedLineId).length;
-      locationAndMetro.add(
+      chips.add(
         _iconTextBadge(
           theme: theme,
           leading: MLetterIcon(size: 18, color: lineColor),
@@ -1020,7 +1015,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       final name = MetroCache.getStationDisplayName(stationId, lang);
       // Avoid rendering an "empty" metro badge when cache can't resolve the id.
       if (name.trim().isNotEmpty) {
-        locationAndMetro.add(
+        chips.add(
           _iconTextBadge(
             theme: theme,
             icon: Icons.train,
@@ -1032,11 +1027,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         );
       }
     }
-    if (locationAndMetro.isNotEmpty) {
-      lines.add(Wrap(spacing: 8, runSpacing: 8, children: locationAndMetro));
-    }
     if ((a.privateRoom ?? false) == true) {
-      lines.add(
+      chips.add(
         _iconTextBadge(
           theme: theme,
           icon: Icons.lock_outline,
@@ -1045,7 +1037,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       );
     }
     if ((a.withPhoto ?? false) == true) {
-      lines.add(
+      chips.add(
         _iconTextBadge(
           theme: theme,
           icon: Icons.photo_camera_outlined,
@@ -1053,25 +1045,14 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         ),
       );
     }
-    if (lines.isEmpty) {
+    if (chips.isEmpty) {
       return Text(
         "-",
         style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
       );
     }
 
-    const vGap = 10.0;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(lines.length, (i) {
-        final w = lines[i];
-        if (i == 0) return w;
-        return Padding(
-          padding: const EdgeInsets.only(top: vGap),
-          child: w,
-        );
-      }),
-    );
+    return Wrap(spacing: 8, runSpacing: 8, children: chips);
   }
 
   @override

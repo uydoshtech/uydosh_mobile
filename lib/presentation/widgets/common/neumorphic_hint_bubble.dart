@@ -1,5 +1,6 @@
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 /// Side of the bubble where the speech-bubble tail emerges.
 enum HintBubbleTailSide { top, bottom }
@@ -20,6 +21,8 @@ class NeumorphicHintBubble extends StatelessWidget {
     this.maxWidth = 240,
     this.tailSide = HintBubbleTailSide.bottom,
     this.tailHorizontalOffset = 0,
+    this.onClose,
+    this.closeTooltip,
   });
 
   /// Pre-built rich text body shown inside the bubble.
@@ -34,6 +37,14 @@ class NeumorphicHintBubble extends StatelessWidget {
   /// Offset (logical pixels) of the tail center from the bubble's
   /// horizontal center. Positive = right, negative = left.
   final double tailHorizontalOffset;
+
+  /// When non-null, renders a small "x" close button in the top-right of the
+  /// bubble. Consumers are responsible for hiding the bubble in response.
+  final VoidCallback? onClose;
+
+  /// Optional tooltip for the close button. Defaults to the platform close
+  /// label.
+  final String? closeTooltip;
 
   static const double _tailWidth = 14;
   static const double _tailHeight = 7;
@@ -72,11 +83,16 @@ class NeumorphicHintBubble extends StatelessWidget {
       ),
     ];
 
+    // Reserve extra horizontal room for the close button so the message text
+    // never crowds the "x". Symmetric on both sides keeps the text visually
+    // centered inside the bubble.
+    final hasClose = onClose != null;
+    final horizontalPad = hasClose ? 22.0 : 14.0;
     final padding = tailSide == HintBubbleTailSide.bottom
-        ? const EdgeInsets.fromLTRB(14, 9, 14, 9 + _tailHeight)
-        : const EdgeInsets.fromLTRB(14, 9 + _tailHeight, 14, 9);
+        ? EdgeInsets.fromLTRB(horizontalPad, 9, horizontalPad, 9 + _tailHeight)
+        : EdgeInsets.fromLTRB(horizontalPad, 9 + _tailHeight, horizontalPad, 9);
 
-    return CustomPaint(
+    final Widget bubble = CustomPaint(
       painter: _BubblePainter(
         fillGradient: fillGradient,
         innerHighlightGradient: innerHighlightGradient,
@@ -98,6 +114,44 @@ class NeumorphicHintBubble extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    if (!hasClose) return bubble;
+
+    final closeTopOffset =
+        tailSide == HintBubbleTailSide.top ? _tailHeight + 1.0 : 1.0;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        bubble,
+        Positioned(
+          top: closeTopOffset,
+          right: 1,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: () {
+                HapticFeedbackUtils.impact();
+                onClose!();
+              },
+              child: Tooltip(
+                message: closeTooltip ??
+                    MaterialLocalizations.of(context).closeButtonTooltip,
+                child: const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: Icon(
+                    Icons.close,
+                    size: 14,
+                    color: Color(0xFF555555),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

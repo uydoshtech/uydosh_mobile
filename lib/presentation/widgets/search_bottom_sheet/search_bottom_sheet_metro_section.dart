@@ -1,23 +1,28 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
+import "package:uy_dosh/presentation/widgets/tutorial/metro_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 /// Metro line and station pickers section for the search bottom sheet.
-class SearchBottomSheetMetroSection extends StatelessWidget {
+class SearchBottomSheetMetroSection extends StatefulWidget {
   const SearchBottomSheetMetroSection({required this.searchFiltersState, required this.currentStations, required this.metroLineScrollController, required this.stationPickerController, required this.onSubwayLineChanged, required this.onStationChanged, required this.metroLineTutorialKey, required this.metroStationTutorialKey, required this.getLocalizedName, super.key,
   });
 
@@ -32,7 +37,65 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
   final String Function({String? nameUz, String? nameRu, String? nameEn})
       getLocalizedName;
 
+  @override
+  State<SearchBottomSheetMetroSection> createState() =>
+      _SearchBottomSheetMetroSectionState();
+}
+
+class _SearchBottomSheetMetroSectionState
+    extends State<SearchBottomSheetMetroSection> {
+  /// User-dismissed flag for the "search across all stations of line X" hint.
+  /// Loaded from SharedPreferences so the dismissal survives across sheet
+  /// re-openings and app restarts. Until prefs resolve we keep the hint
+  /// hidden to avoid a flicker where it briefly shows then disappears.
+  bool _allStationsHintDismissed = true;
+
   static Color _getLineColor(int line) => AppColors.getMetroLineColor(line);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAllStationsHintDismissed();
+    TooltipsState().addListener(_onTooltipsStateChanged);
+  }
+
+  @override
+  void dispose() {
+    TooltipsState().removeListener(_onTooltipsStateChanged);
+    super.dispose();
+  }
+
+  void _onTooltipsStateChanged() {
+    if (!mounted) return;
+    // Re-read the per-tip dismissal flag too: when the user re-enables tips
+    // from settings, [TooltipsState.enableAndResetAll] resets per-tip flags
+    // back to false and we want this section to surface the hint again
+    // without requiring a full sheet remount.
+    _loadAllStationsHintDismissed();
+  }
+
+  Future<void> _loadAllStationsHintDismissed() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dismissed =
+          prefs.getBool(TooltipsState.keyMetroAllStationsHintDismissed) ??
+              false;
+      setStateIfMounted(() => _allStationsHintDismissed = dismissed);
+    } catch (_) {
+      // If prefs are unavailable, keep the hint hidden by default.
+    }
+  }
+
+  Future<void> _dismissAllStationsHint() async {
+    setStateIfMounted(() => _allStationsHintDismissed = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(
+        TooltipsState.keyMetroAllStationsHintDismissed,
+        true,
+      );
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,48 +104,26 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AnimatedSize(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeInOut,
-          alignment: Alignment.bottomCenter,
-          clipBehavior: Clip.none,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            switchInCurve: Curves.easeOutBack,
-            switchOutCurve: Curves.easeIn,
-            transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: ScaleTransition(
-                alignment: Alignment.bottomCenter,
-                scale: Tween<double>(begin: 0.9, end: 1).animate(animation),
-                child: child,
-              ),
-            ),
-            child: _shouldShowHint
-                ? Padding(
-                    key: const ValueKey("metro-hint"),
-                    padding: const EdgeInsets.fromLTRB(0, 4, 8, 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Expanded(child: SizedBox.shrink()),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: NeumorphicHintBubble(
-                              message: _buildHintSpan(context, theme),
-                            ),
-                          ),
-                        ),
-                      ],
+        TooltipFade(
+          visible: _shouldShowHint,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 4, 8, 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                const Expanded(child: SizedBox.shrink()),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: NeumorphicHintBubble(
+                      message: _buildHintSpan(context, theme),
+                      onClose: _dismissAllStationsHint,
                     ),
-                  )
-                : const SizedBox(
-                    key: ValueKey("metro-hint-empty"),
-                    height: 0,
-                    width: double.infinity,
                   ),
+                ),
+              ],
+            ),
           ),
         ),
         _buildPickersRow(context, theme),
@@ -95,7 +136,7 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
       children: [
         Expanded(
           child: TutorialTargetWrapper(
-            key: metroLineTutorialKey,
+            key: widget.metroLineTutorialKey,
             child: LiquidGlassPlate(
               height: 80,
               borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
@@ -105,11 +146,11 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                     child: CupertinoPicker(
                       backgroundColor: Colors.transparent,
                       itemExtent: 40,
-                      scrollController: metroLineScrollController,
+                      scrollController: widget.metroLineScrollController,
                       onSelectedItemChanged: (index) {
                         HapticFeedbackUtils.impact();
                         SendSoundUtils.playSelectionSound();
-                        onSubwayLineChanged(index);
+                        widget.onSubwayLineChanged(index);
                       },
                       children: [
                         Center(
@@ -193,9 +234,9 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: TutorialTargetWrapper(
-            key: metroStationTutorialKey,
-            child: searchFiltersState.selectedSubwayLine > 0 &&
-                    currentStations.isNotEmpty
+            key: widget.metroStationTutorialKey,
+            child: widget.searchFiltersState.selectedSubwayLine > 0 &&
+                    widget.currentStations.isNotEmpty
                 ? _buildMetroStationPicker(context, theme)
                 : _buildMetroStationPlaceholder(context, theme),
           ),
@@ -205,17 +246,24 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
   }
 
   bool get _shouldShowHint =>
-      searchFiltersState.selectedSubwayLine > 0 &&
-      searchFiltersState.selectedStationId == 0 &&
-      currentStations.isNotEmpty;
+      // Suppress entirely while the metro coach-mark tutorial is on screen so
+      // the bubble doesn't fight for attention with the spotlight overlay.
+      !MetroTutorialOverlay.isActive &&
+      // Honor the global tooltips toggle (Settings > Tips).
+      TooltipsState().enabled &&
+      // Respect per-tip dismissal (small "x" in the bubble corner).
+      !_allStationsHintDismissed &&
+      widget.searchFiltersState.selectedSubwayLine > 0 &&
+      widget.searchFiltersState.selectedStationId == 0 &&
+      widget.currentStations.isNotEmpty;
 
   TextSpan _buildHintSpan(BuildContext context, ThemeData _) {
     final raw = L10n.get("all_stations_explanation")
-        .replaceAll("{count}", "${currentStations.length}")
+        .replaceAll("{count}", "${widget.currentStations.length}")
         .replaceAll(
           "{line}",
           MetroCache.getLineName(
-            searchFiltersState.selectedSubwayLine,
+            widget.searchFiltersState.selectedSubwayLine,
             LanguageState().currentLanguage,
           ),
         );
@@ -256,11 +304,11 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
             child: CupertinoPicker(
               backgroundColor: Colors.transparent,
               itemExtent: 40,
-              scrollController: stationPickerController,
+              scrollController: widget.stationPickerController,
               onSelectedItemChanged: (index) {
                 HapticFeedbackUtils.impact();
                 SendSoundUtils.playSelectionSound();
-                onStationChanged(index);
+                widget.onStationChanged(index);
               },
               children: [
                 Center(
@@ -269,9 +317,9 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                     children: [
                       ThemeIcon(
                         Icons.train,
-                        color: searchFiltersState.selectedSubwayLine > 0
+                        color: widget.searchFiltersState.selectedSubwayLine > 0
                             ? _getLineColor(
-                                searchFiltersState.selectedSubwayLine,
+                                widget.searchFiltersState.selectedSubwayLine,
                               )
                             : theme.colorScheme.onSurfaceVariant,
                         size: 22,
@@ -281,7 +329,7 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                         child: Text(
                           L10n.plural(
                             "all_stations_count",
-                            currentStations.length,
+                            widget.currentStations.length,
                           ),
                           style: TextStyle(
                             fontSize: 16,
@@ -297,7 +345,7 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                     ],
                   ),
                 ),
-                ...currentStations.map((station) {
+                ...widget.currentStations.map((station) {
                   final transferInfo =
                       MetroCache.getTransferStationInfo(station.id);
                   return Center(
@@ -312,7 +360,7 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            getLocalizedName(
+                            widget.getLocalizedName(
                               nameUz: station.nameUz,
                               nameRu: station.nameRu,
                               nameEn: station.nameEn,

@@ -14,6 +14,11 @@ class MetroTutorialOverlay {
   static Timer? _cycleTimer;
   static OverlayEntry? _overlayEntry;
 
+  /// Whether the metro tutorial overlay is currently visible. Lets sibling
+  /// widgets (e.g. the inline metro hint bubble) suppress themselves so they
+  /// don't appear on top of the tutorial spotlight.
+  static bool get isActive => _overlayEntry != null;
+
   /// Shows the metro controls tutorial with two rectangular highlights.
   static void show(
     BuildContext context, {

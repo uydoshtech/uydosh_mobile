@@ -44,46 +44,61 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: widget.borderRadius,
-            border: Border.all(
-              width: widget.borderWidth,
-              color: Colors.transparent,
-            ),
-          ),
-          child: DecoratedBox(
+    // The inner card (margin + child) doesn't depend on the animation tick,
+    // so we hoist it into the AnimatedBuilder `child` slot. This means each
+    // ~16ms frame only rebuilds the two outer DecoratedBox widgets (one
+    // transparent border + one sweep-gradient ring) instead of also
+    // rebuilding the entire `widget.child` subtree (a full ListingTile).
+    //
+    // RepaintBoundary isolates the rotating ring's repaints from neighbours
+    // — without it, the parent ListView treats this whole region as dirty
+    // every frame, which can show up as raster-thread spikes when several
+    // featured tiles are visible.
+    final inner = Container(
+      margin: EdgeInsets.all(widget.borderWidth),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: widget.borderRadius,
+      ),
+      child: widget.child,
+    );
+
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _animation,
+        child: inner,
+        builder: (context, child) {
+          return DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: widget.borderRadius,
-              gradient: SweepGradient(
-                colors: const [
-                  Colors.red,
-                  Colors.orange,
-                  Colors.yellow,
-                  Colors.green,
-                  Colors.blue,
-                  Colors.indigo,
-                  Colors.purple,
-                  Colors.red,
-                ],
-                startAngle: _animation.value * 2 * math.pi,
-                endAngle: (_animation.value * 2 * math.pi) + 2 * math.pi,
+              border: Border.all(
+                width: widget.borderWidth,
+                color: Colors.transparent,
               ),
             ),
-            child: Container(
-              margin: EdgeInsets.all(widget.borderWidth),
+            child: DecoratedBox(
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
                 borderRadius: widget.borderRadius,
+                gradient: SweepGradient(
+                  colors: const [
+                    Colors.red,
+                    Colors.orange,
+                    Colors.yellow,
+                    Colors.green,
+                    Colors.blue,
+                    Colors.indigo,
+                    Colors.purple,
+                    Colors.red,
+                  ],
+                  startAngle: _animation.value * 2 * math.pi,
+                  endAngle: (_animation.value * 2 * math.pi) + 2 * math.pi,
+                ),
               ),
-              child: widget.child,
+              child: child,
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

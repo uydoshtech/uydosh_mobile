@@ -223,8 +223,11 @@ class LogConfig {
     consolePrefix = "🐛";
   }
 
-  // Print current configuration
+  // Print current configuration. No-op outside debug builds — these `print`
+  // calls go straight to the OS log even in release otherwise (they aren't
+  // routed through the gated `logger.d` extension).
   void printConfig() {
+    if (!kDebugMode) return;
     print("=== LOG CONFIGURATION ===");
     print("Log Level: $_logLevel");
     print("Colors: $_enableColors");

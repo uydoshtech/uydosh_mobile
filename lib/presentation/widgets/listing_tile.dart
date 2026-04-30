@@ -80,6 +80,12 @@ class _ListingTileState extends State<ListingTile>
   Timer? _viewCountDelayTimer;
   String? _cachedFormattedMoveInDate;
   List<Amenity>? _cachedSortedAmenities;
+  // Cached merged listenable for the favorite-related state. Allocating a
+  // `_CombiningListenable` per build (in build()) caused every visible tile
+  // in the feed to attach/detach listeners on three notifiers on every
+  // rebuild — material on long scrolls. We rebuild it only when the
+  // listing id changes (the FavoritesState key).
+  late Listenable _favoriteListenable;
 
   static const _viewCountLoadDelay = Duration(milliseconds: 300);
 
@@ -91,10 +97,17 @@ class _ListingTileState extends State<ListingTile>
         : null;
   }
 
+  Listenable _buildFavoriteListenable() => Listenable.merge([
+        AuthenticationState(),
+        UserListingState(),
+        FavoritesState().listenableFor(widget.listing.id),
+      ]);
+
   @override
   void initState() {
     super.initState();
     _updateCachedValues();
+    _favoriteListenable = _buildFavoriteListenable();
     if (widget.showActiveStatus) {
       // Delay view count load so tiles that scroll off quickly don't fire requests
       _viewCountDelayTimer = Timer(_viewCountLoadDelay, () {
@@ -122,6 +135,11 @@ class _ListingTileState extends State<ListingTile>
         oldWidget.listing.moveInDate != widget.listing.moveInDate ||
         oldWidget.listing.amenities != widget.listing.amenities) {
       _updateCachedValues();
+    }
+    if (oldWidget.listing.id != widget.listing.id) {
+      // Listing identity changed — rebuild the merged listenable so we listen
+      // to the right per-id FavoritesState notifier.
+      _favoriteListenable = _buildFavoriteListenable();
     }
   }
 
@@ -278,22 +296,20 @@ class _ListingTileState extends State<ListingTile>
     // the feed to also rebuild on ANY `ThemeState.notifyListeners()` call —
     // e.g. `ThemeState.initialize()` firing after the feed rendered — for
     // zero correctness benefit.
-    return RepaintBoundary(
-      child: Builder(
-        builder: (context) {
-          final descriptionSnippet = _descriptionSnippetForPublicTile();
-          final borderRadius = BorderRadius.circular(12);
-          final scheme = Theme.of(context).colorScheme;
-          final bg = scheme.surface;
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          final darkShadow = Colors.black.withValues(
-            alpha: isDark ? 0.45 : 0.20,
-          );
-          final lightShadow = Colors.white.withValues(
-            alpha: isDark ? 0.06 : 0.65,
-          );
+    final descriptionSnippet = _descriptionSnippetForPublicTile();
+    final borderRadius = BorderRadius.circular(12);
+    final scheme = Theme.of(context).colorScheme;
+    final bg = scheme.surface;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final darkShadow = Colors.black.withValues(
+      alpha: isDark ? 0.45 : 0.20,
+    );
+    final lightShadow = Colors.white.withValues(
+      alpha: isDark ? 0.06 : 0.65,
+    );
 
-          final cardWidget = DecoratedBox(
+    final cardWidget = RepaintBoundary(
+      child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
               gradient: LinearGradient(
@@ -510,13 +526,7 @@ class _ListingTileState extends State<ListingTile>
                           // Heart icon in top-right corner - only show when showHeartIcon is true and user is authenticated
                           if (widget.showHeartIcon)
                             ListenableBuilder(
-                              listenable: Listenable.merge([
-                                AuthenticationState(),
-                                UserListingState(),
-                                FavoritesState().listenableFor(
-                                  widget.listing.id,
-                                ),
-                              ]),
+                              listenable: _favoriteListenable,
                               builder: (context, child) {
                                 if (!AuthenticationState().isAuthenticated) {
                                   return const SizedBox.shrink();
@@ -608,13 +618,7 @@ class _ListingTileState extends State<ListingTile>
                           if (!widget.showHeartIcon &&
                               widget.showFavoriteIndicator)
                             ListenableBuilder(
-                              listenable: Listenable.merge([
-                                AuthenticationState(),
-                                UserListingState(),
-                                FavoritesState().listenableFor(
-                                  widget.listing.id,
-                                ),
-                              ]),
+                              listenable: _favoriteListenable,
                               builder: (context, child) {
                                 if (!AuthenticationState().isAuthenticated) {
                                   return const SizedBox.shrink();
@@ -901,21 +905,18 @@ class _ListingTileState extends State<ListingTile>
                 ),
               ),
             ),
-          );
-
-        // Wrap with RGB rotating border if featured
-        if (ListingUtils.isCurrentlyFeatured(widget.listing)) {
-          return AnimatedFeaturedBorder(
-            borderWidth: 3.0,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
-            child: cardWidget,
-          );
-        }
-
-        return cardWidget;
-        },
       ),
     );
+
+    if (ListingUtils.isCurrentlyFeatured(widget.listing)) {
+      return AnimatedFeaturedBorder(
+        borderWidth: 3.0,
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        child: cardWidget,
+      );
+    }
+
+    return cardWidget;
   }
 
   Color _getLineColor(int line) {

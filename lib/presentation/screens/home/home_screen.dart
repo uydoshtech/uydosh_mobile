@@ -21,6 +21,7 @@ import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -46,6 +47,7 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
@@ -214,6 +216,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final GlobalKey<TutorialTargetWrapperState> _alertBellTutorialKey =
       GlobalKey<TutorialTargetWrapperState>();
   bool _noResultsAlertTutorialShownThisSession = false;
+  // Persisted user dismissal of the empty-search bell hint bubble. Until the
+  // SharedPreferences read resolves we keep the hint hidden to avoid a brief
+  // flicker.
+  bool _bellHintDismissed = true;
 
   @override
   void initState() {
@@ -264,10 +270,44 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     getIt<AppAnalyticsService>().logScreenView(screenName: "home");
 
+    unawaited(_loadBellHintDismissed());
+    TooltipsState().addListener(_onTooltipsStateChanged);
+
     // Show search button tutorial on first visit to browse screen (with delay)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
     });
+  }
+
+  Future<void> _loadBellHintDismissed() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dismissed =
+          prefs.getBool(TooltipsState.keyEmptySearchBellHintDismissed) ?? false;
+      if (!mounted) return;
+      setState(() => _bellHintDismissed = dismissed);
+    } catch (_) {
+      // If prefs are unavailable, keep the hint hidden by default.
+    }
+  }
+
+  Future<void> _dismissBellHint() async {
+    if (!mounted) return;
+    setState(() => _bellHintDismissed = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(
+        TooltipsState.keyEmptySearchBellHintDismissed,
+        true,
+      );
+    } catch (_) {}
+  }
+
+  void _onTooltipsStateChanged() {
+    // Re-read the per-tip flag after [TooltipsState.enableAndResetAll] clears
+    // it so the bell hint reappears without forcing a screen remount.
+    if (!mounted) return;
+    unawaited(_loadBellHintDismissed());
   }
 
   Future<void> _bootstrapHomeSearchFilters() async {
@@ -422,6 +462,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     OnboardingState().removeListener(_onOnboardingStateChanged);
     AuthenticationState().removeListener(_onAuthenticationChangedForInlineSearch);
     HomeRefreshState().removeListener(_onHomeRefreshStateChanged);
+    TooltipsState().removeListener(_onTooltipsStateChanged);
     ScrollUtils.disposeScrollController(_scrollController);
     super.dispose();
   }
@@ -749,42 +790,34 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       // 56 (search FAB) + 12 (gap) + 52 (bell FAB scaled .92) + 4 px breathing room
                       bottom: 124,
                       right: 0,
-                      child: IgnorePointer(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 260),
-                          switchInCurve: Curves.easeOutBack,
-                          switchOutCurve: Curves.easeIn,
-                          transitionBuilder: (child, animation) =>
-                              FadeTransition(
-                            opacity: animation,
-                            child: ScaleTransition(
-                              alignment: Alignment.bottomRight,
-                              scale: Tween<double>(begin: 0.9, end: 1)
-                                  .animate(animation),
-                              child: child,
+                      // No IgnorePointer here: the bubble carries an "x" close
+                      // button that needs to receive taps. The bubble itself
+                      // is small and right-anchored, so it doesn't shadow the
+                      // FAB stack underneath.
+                      child: TooltipFade(
+                        // Stack-positioned: skip layout collapse so the
+                        // bubble simply fades in/out at its anchor.
+                        collapse: false,
+                        duration: const Duration(milliseconds: 260),
+                        visible: fabState.showFab &&
+                            fabState.isEmpty &&
+                            TooltipsState().enabled &&
+                            !_bellHintDismissed,
+                        child: Align(
+                          alignment: Alignment.bottomRight,
+                          child: NeumorphicHintBubble(
+                            maxWidth: 220,
+                            tailHorizontalOffset: 80,
+                            onClose: _dismissBellHint,
+                            message: TextSpan(
+                              text: L10n.get("search_alert_bell_hint"),
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                height: 1.3,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
-                          child: (fabState.showFab && fabState.isEmpty)
-                              ? Align(
-                                  key: const ValueKey("empty-bell-hint"),
-                                  alignment: Alignment.bottomRight,
-                                  child: NeumorphicHintBubble(
-                                    maxWidth: 220,
-                                    tailHorizontalOffset: 80,
-                                    message: TextSpan(
-                                      text:
-                                          L10n.get("search_alert_bell_hint"),
-                                      style: const TextStyle(
-                                        fontSize: 13.5,
-                                        height: 1.3,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : const SizedBox.shrink(
-                                  key: ValueKey("empty-bell-hint-empty"),
-                                ),
                         ),
                       ),
                     ),

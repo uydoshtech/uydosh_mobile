@@ -87,8 +87,12 @@ class ListingDetailPhotoSection extends StatelessWidget {
                                   child: CachedNetworkImage(
                                     imageUrl: buildPhotoUrl(photo.photoUrl),
                                     fit: BoxFit.cover,
-                                    memCacheWidth: 800,
-                                    memCacheHeight: 800,
+                                    // Background is blurred at sigma:18, so
+                                    // sub-300px detail is invisible. 320 is a
+                                    // ~4× memory reduction over the prior 800
+                                    // (~0.4 MB vs ~2.5 MB per cached entry).
+                                    memCacheWidth: 320,
+                                    memCacheHeight: 320,
                                     fadeInDuration:
                                         const Duration(milliseconds: 300),
                                     fadeInCurve: Curves.easeOut,
@@ -115,12 +119,15 @@ class ListingDetailPhotoSection extends StatelessWidget {
                                   color: Colors.black.withValues(alpha: 0.12),
                                 ),
                                 // Foreground: the real photo, never distorted.
+                                // 720 fits the detail card at typical phone
+                                // density without overpaying for unused
+                                // resolution (full-screen viewer keeps 1080).
                                 Center(
                                   child: CachedNetworkImage(
                                     imageUrl: buildPhotoUrl(photo.photoUrl),
                                     fit: BoxFit.contain,
-                                    memCacheWidth: 1080,
-                                    memCacheHeight: 1080,
+                                    memCacheWidth: 720,
+                                    memCacheHeight: 720,
                                     fadeInDuration:
                                         const Duration(milliseconds: 300),
                                     fadeInCurve: Curves.easeOut,

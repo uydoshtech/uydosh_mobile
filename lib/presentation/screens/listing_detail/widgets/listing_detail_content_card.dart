@@ -148,7 +148,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
             onTap: removeOnce,
           ),
           Positioned(
-            left: globalPosition.dx.clamp(12.0, MediaQuery.of(context).size.width - 150),
+            left: globalPosition.dx.clamp(12.0, MediaQuery.sizeOf(context).width - 150),
             top: globalPosition.dy - 48,
             child: GestureDetector(
               onTap: removeOnce,

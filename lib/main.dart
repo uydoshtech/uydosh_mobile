@@ -189,46 +189,56 @@ void main() async {
     unawaited(AnimationSettingsState().initialize());
     unawaited(_bootstrapSearchFiltersColdStart());
 
-    logger.d(
-      "🔐 Main: AuthenticationState initialized. Current status: ${AuthenticationState().isAuthenticated}",
-    );
+    if (kDebugMode) {
+      logger.d(
+        "🔐 Main: AuthenticationState initialized. Current status: ${AuthenticationState().isAuthenticated}",
+      );
+    }
 
     // Force refresh authentication status after a delay to ensure Firebase is ready
     Future.delayed(const Duration(seconds: 2), () {
-      logger.d("🔐 Main: Force refreshing authentication status...");
+      if (kDebugMode) {
+        logger.d("🔐 Main: Force refreshing authentication status...");
+      }
       AuthenticationState().refreshAuthenticationStatus();
     });
 
-    // Display saved preferences in console
-    logger.d("=== APP STARTUP - SAVED PREFERENCES ===");
-    logger.d(
-      "🌍 Language: ${LanguageState().currentLanguage} (${LanguageDisplayHelper.getLanguageDisplayName(LanguageState().currentLanguage)})",
-    );
-    logger.d(
-      "🎨 Theme: ${ThemeState().currentTheme} (${ThemeState().currentThemeDisplayName})",
-    );
-    logger.d(
-      '🔐 Authentication: ${AuthenticationState().isAuthenticated ? "AUTHENTICATED" : "NOT AUTHENTICATED"}',
-    );
-    logger.d(
-      '🎓 Onboarding: ${OnboardingState().showOnboarding ? "ENABLED" : "DISABLED"}',
-    );
-    logger.d(
-      '🚀 Launch: firstEver=${AppLaunchState().isFirstLaunchEver}, '
-      'firstOfVersion=${AppLaunchState().isFirstLaunchOfCurrentVersion}, '
-      'lastOpenedVersion=${AppLaunchState().lastOpenedVersion}, '
-      'currentVersion=${AppLaunchState().currentVersion}',
-    );
-    logger.d(
-      '📳 Haptics: ${HapticFeedbackState().isEnabled ? "ENABLED" : "DISABLED"}',
-    );
-    logger.d(
-      '🔊 Sound effects: ${SoundEffectsState().isEnabled ? "ENABLED" : "DISABLED"}',
-    );
-    logger.d(
-      "🔍 Search Filters: listingType=${SearchFiltersState().selectedListingTypeId}, location=${SearchFiltersState().selectedLocationIndex}, line=${SearchFiltersState().selectedSubwayLine}, station=${SearchFiltersState().selectedStationIndex}",
-    );
-    logger.d("========================================");
+    // Display saved preferences in console (debug-only — Dart evaluates
+    // string interpolation arguments eagerly, so without this guard the
+    // expensive .currentLanguage / .currentTheme / etc. reads + string
+    // allocation would still happen on every release cold start before
+    // the gated `logger.d` extension short-circuits).
+    if (kDebugMode) {
+      logger.d("=== APP STARTUP - SAVED PREFERENCES ===");
+      logger.d(
+        "🌍 Language: ${LanguageState().currentLanguage} (${LanguageDisplayHelper.getLanguageDisplayName(LanguageState().currentLanguage)})",
+      );
+      logger.d(
+        "🎨 Theme: ${ThemeState().currentTheme} (${ThemeState().currentThemeDisplayName})",
+      );
+      logger.d(
+        '🔐 Authentication: ${AuthenticationState().isAuthenticated ? "AUTHENTICATED" : "NOT AUTHENTICATED"}',
+      );
+      logger.d(
+        '🎓 Onboarding: ${OnboardingState().showOnboarding ? "ENABLED" : "DISABLED"}',
+      );
+      logger.d(
+        '🚀 Launch: firstEver=${AppLaunchState().isFirstLaunchEver}, '
+        'firstOfVersion=${AppLaunchState().isFirstLaunchOfCurrentVersion}, '
+        'lastOpenedVersion=${AppLaunchState().lastOpenedVersion}, '
+        'currentVersion=${AppLaunchState().currentVersion}',
+      );
+      logger.d(
+        '📳 Haptics: ${HapticFeedbackState().isEnabled ? "ENABLED" : "DISABLED"}',
+      );
+      logger.d(
+        '🔊 Sound effects: ${SoundEffectsState().isEnabled ? "ENABLED" : "DISABLED"}',
+      );
+      logger.d(
+        "🔍 Search Filters: listingType=${SearchFiltersState().selectedListingTypeId}, location=${SearchFiltersState().selectedLocationIndex}, line=${SearchFiltersState().selectedSubwayLine}, station=${SearchFiltersState().selectedStationIndex}",
+      );
+      logger.d("========================================");
+    }
 
     // Bloc.observer = AppBlocObserver.instance(); // Disabled to reduce logging
 
@@ -701,6 +711,70 @@ class _SplashScreenState extends State<SplashScreen>
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
+        // `sizeOf` subscribes only to size changes (orientation/window
+        // resize), unlike `MediaQuery.of` which also rebuilds for keyboard
+        // insets, padding, textScaler, etc. Splash doesn't care about any of
+        // those, so this drops needless rebuilds.
+        final size = MediaQuery.sizeOf(context);
+        final width = size.width;
+        final isNarrow = width < 400;
+
+        // Pre-build the static title widget once and reuse it via the
+        // `child` slot of the title `AnimatedBuilder` below — only the
+        // `Transform.translate` offset needs to recompute per tick, so the
+        // RichText/TextSpan/Container subtree no longer rebuilds at 60 fps.
+        final titleWidget = Center(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: width * 0.9),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Uy",
+                    style: TextStyle(
+                      fontSize: isNarrow ? 28 : 32,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFFFF0000),
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "Dosh",
+                    style: TextStyle(
+                      fontSize: isNarrow ? 28 : 32,
+                      fontWeight: FontWeight.bold,
+                      color: _getThemeTextColor(),
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        final subtitleWidget = Center(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: width * 0.8),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Text(
+              L10n.get("splash_subtitle"),
+              style: TextStyle(
+                fontSize: isNarrow ? 12.8 : 14.4,
+                color: _getThemeSecondaryTextColor(),
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        );
+
         return Scaffold(
           body: DecoratedBox(
             decoration: BoxDecoration(
@@ -712,119 +786,49 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             child: Center(
-              child: AnimatedBuilder(
-                animation: Listenable.merge([
-                  _fadeController,
-                  _titleController,
-                  _subtitleController,
-                ]),
-                builder: (context, child) {
-                  return FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.25,
-                        ), // Add top spacing
-                        // Animated SVG Logo
-                        const AnimatedSvgLogo(
-                          size: 180, // 50% larger (120 * 1.5)
-                          animationDuration: Duration(milliseconds: 4000),
-                        ),
-                        const SizedBox(height: 0),
-                        // Title animation
-                        Transform.translate(
-                          offset: Offset(
-                            _titleSlideAnimation.value *
-                                MediaQuery.of(context).size.width *
-                                0.5,
-                            0,
-                          ),
-                          child: Center(
-                            child: Container(
-                              constraints: BoxConstraints(
-                                maxWidth:
-                                    MediaQuery.of(context).size.width * 0.9,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24.0,
-                              ),
-                              child: RichText(
-                                textAlign: TextAlign.center,
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: "Uy",
-                                      style: TextStyle(
-                                        fontSize:
-                                            MediaQuery.of(context).size.width < 400
-                                                ? 28
-                                                : 32,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFFFF0000), // Red (255, 0, 0)
-                                        letterSpacing: 2,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: "Dosh",
-                                      style: TextStyle(
-                                        fontSize:
-                                            MediaQuery.of(context).size.width < 400
-                                                ? 28
-                                                : 32,
-                                        fontWeight: FontWeight.bold,
-                                        color: _getThemeTextColor(),
-                                        letterSpacing: 2,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        // Subtitle animation
-                        Transform.translate(
-                          offset: Offset(
-                            _subtitleSlideAnimation.value *
-                                MediaQuery.of(context).size.width *
-                                0.5,
-                            0,
-                          ),
-                          child: Center(
-                            child: Container(
-                              constraints: BoxConstraints(
-                                maxWidth:
-                                    MediaQuery.of(context).size.width * 0.8,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32.0,
-                              ),
-                              child: Text(
-                                L10n.get("splash_subtitle"),
-                                style: TextStyle(
-                                  fontSize:
-                                      MediaQuery.of(context).size.width < 400
-                                          ? 12.8
-                                          : 14.4, // 20% smaller (16*0.8, 18*0.8)
-                                  color: _getThemeSecondaryTextColor(),
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1,
-                                  height: 1.4,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(height: size.height * 0.25),
+                    const AnimatedSvgLogo(
+                      size: 180,
+                      animationDuration: Duration(milliseconds: 4000),
                     ),
-                  );
-                },
+                    const SizedBox(height: 0),
+                    // Title slide: only this AnimatedBuilder rebuilds per
+                    // title-controller tick, and only the Transform itself is
+                    // rebuilt — the RichText subtree is passed via `child`.
+                    AnimatedBuilder(
+                      animation: _titleSlideAnimation,
+                      child: titleWidget,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(
+                            _titleSlideAnimation.value * width * 0.5,
+                            0,
+                          ),
+                          child: child,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    AnimatedBuilder(
+                      animation: _subtitleSlideAnimation,
+                      child: subtitleWidget,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(
+                            _subtitleSlideAnimation.value * width * 0.5,
+                            0,
+                          ),
+                          child: child,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -928,7 +932,8 @@ class _QuickSplashScreenState extends State<QuickSplashScreen>
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
-        final width = MediaQuery.of(context).size.width;
+        final size = MediaQuery.sizeOf(context);
+        final width = size.width;
         return Scaffold(
           body: DecoratedBox(
             decoration: BoxDecoration(
@@ -945,7 +950,7 @@ class _QuickSplashScreenState extends State<QuickSplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+                    SizedBox(height: size.height * 0.25),
                     const QuickSplashLogo(size: 180),
                     const SizedBox(height: 0),
                     Center(

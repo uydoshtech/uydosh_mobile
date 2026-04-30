@@ -1,4 +1,4 @@
-.PHONY: help bump-build bump-patch bump-minor bump-major version
+.PHONY: help bump-build bump-patch bump-minor bump-major version build-apk build-aab build-ios
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -29,4 +29,16 @@ commit-version: bump-build ## Bump version and commit changes
 	@git add pubspec.yaml lib/presentation/widgets/burger_menu_widget.dart lib/base/constants/app_version.dart
 	@git commit -m "Bump version [skip ci]"
 	@echo "Version bumped and committed!"
+
+# Release build targets — always pass --tree-shake-icons so Flutter strips
+# unused glyphs from MaterialIcons / CupertinoIcons (~1.5–3 MB saved).
+
+build-apk: ## Build release APK with tree-shaken icons
+	flutter build apk --release --tree-shake-icons
+
+build-aab: ## Build release Android App Bundle with tree-shaken icons
+	flutter build appbundle --release --tree-shake-icons
+
+build-ios: ## Build release iOS IPA with tree-shaken icons
+	flutter build ipa --release --tree-shake-icons
 

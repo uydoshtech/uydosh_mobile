@@ -551,7 +551,11 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
+                  // Pin both dimensions so cover-cropped tiles in the
+                  // photo grid don't get cached at the framework's guessed
+                  // height (which can balloon when fed `double.infinity`).
                   memCacheWidth: 400,
+                  memCacheHeight: 400,
                   fadeInDuration: const Duration(milliseconds: 200),
                   fadeInCurve: Curves.easeOut,
                   placeholder:

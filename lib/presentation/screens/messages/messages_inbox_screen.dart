@@ -748,7 +748,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             bottom: 2,
             child: Container(
               width:
-                  (MediaQuery.of(context).size.width - 32 - 4) /
+                  (MediaQuery.sizeOf(context).width - 32 - 4) /
                   2, // Parent horizontal padding (16*2) and thumb inset (2*2)
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(22),
