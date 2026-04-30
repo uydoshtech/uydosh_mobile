@@ -734,6 +734,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   clipBehavior: Clip.none,
                   alignment: Alignment.bottomRight,
                   children: [
+                    // Phantom sizer: forces this Stack's bounds to also cover
+                    // the area above the FAB column where the empty-state
+                    // hint bubble lives. Without it, the bubble (added via a
+                    // [Positioned] at `bottom: 124`) sits above the Stack's
+                    // hit-test rect — Flutter then paints it (Clip.none) but
+                    // routes taps to whatever is below, so the close "x"
+                    // never receives them.
+                    const SizedBox(width: 220, height: 260),
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.end,

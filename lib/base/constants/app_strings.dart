@@ -1466,7 +1466,7 @@ class AppStrings {
       "all_stations_count_few": "Все {count} станции",
       "all_stations_count_many": "Все {count} станций",
       "all_stations_explanation":
-          "Поиск вдоль ВСЕЙ линии <b>{line}</b> по <b>{count}</b> станциям",
+          "Поиск вдоль всей линии <b>{line}</b> по <b>{count}</b> станциям",
       "entire_line_stations": "Вся линия {line}: {count} станций",
       "entire_line_stations_one": "Вся линия {line}: {count} станция",
       "entire_line_stations_few": "Вся линия {line}: {count} станции",

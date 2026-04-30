@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
@@ -50,6 +52,15 @@ class _SearchBottomSheetMetroSectionState
   /// hidden to avoid a flicker where it briefly shows then disappears.
   bool _allStationsHintDismissed = true;
 
+  /// Debounce gate for the all-stations hint. Cycling through metro lines
+  /// reloads stations in rapid succession; without a settle delay the hint
+  /// would flicker on/off and visibly jerk the layout. We only flip this
+  /// to `true` after the user has paused on a line for [_hintDebounceDelay].
+  bool _hintDebounceSettled = false;
+  Timer? _hintDebounceTimer;
+  int _lastSeenLine = 0;
+  static const Duration _hintDebounceDelay = Duration(milliseconds: 300);
+
   static Color _getLineColor(int line) => AppColors.getMetroLineColor(line);
 
   @override
@@ -57,12 +68,40 @@ class _SearchBottomSheetMetroSectionState
     super.initState();
     _loadAllStationsHintDismissed();
     TooltipsState().addListener(_onTooltipsStateChanged);
+    _lastSeenLine = widget.searchFiltersState.selectedSubwayLine;
+    _scheduleHintDebounce(_lastSeenLine);
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchBottomSheetMetroSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final currentLine = widget.searchFiltersState.selectedSubwayLine;
+    if (currentLine != _lastSeenLine) {
+      _lastSeenLine = currentLine;
+      _scheduleHintDebounce(currentLine);
+    }
   }
 
   @override
   void dispose() {
+    _hintDebounceTimer?.cancel();
     TooltipsState().removeListener(_onTooltipsStateChanged);
     super.dispose();
+  }
+
+  /// Restart the debounce window every time the user changes metro lines so
+  /// rapid cycling doesn't surface the hint mid-scroll. When [line] is 0 the
+  /// hint can never show, so we just clear the gate immediately.
+  void _scheduleHintDebounce(int line) {
+    _hintDebounceTimer?.cancel();
+    if (_hintDebounceSettled) {
+      setStateIfMounted(() => _hintDebounceSettled = false);
+    }
+    if (line <= 0) return;
+    _hintDebounceTimer = Timer(_hintDebounceDelay, () {
+      if (!mounted) return;
+      setState(() => _hintDebounceSettled = true);
+    });
   }
 
   void _onTooltipsStateChanged() {
@@ -253,6 +292,9 @@ class _SearchBottomSheetMetroSectionState
       TooltipsState().enabled &&
       // Respect per-tip dismissal (small "x" in the bubble corner).
       !_allStationsHintDismissed &&
+      // Only surface after the user has settled on a line (debounced) so the
+      // bubble doesn't strobe in/out while they cycle through lines.
+      _hintDebounceSettled &&
       widget.searchFiltersState.selectedSubwayLine > 0 &&
       widget.searchFiltersState.selectedStationId == 0 &&
       widget.currentStations.isNotEmpty;

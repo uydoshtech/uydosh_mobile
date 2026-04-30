@@ -83,14 +83,15 @@ class NeumorphicHintBubble extends StatelessWidget {
       ),
     ];
 
-    // Reserve extra horizontal room for the close button so the message text
-    // never crowds the "x". Symmetric on both sides keeps the text visually
-    // centered inside the bubble.
+    // Reserve extra room on the right for the close button so the message
+    // text never crowds the "x". The left padding stays at the default so the
+    // text block shifts visually left, giving the close button breathing room.
     final hasClose = onClose != null;
-    final horizontalPad = hasClose ? 22.0 : 14.0;
+    final leftPad = 14.0;
+    final rightPad = hasClose ? 36.0 : 14.0;
     final padding = tailSide == HintBubbleTailSide.bottom
-        ? EdgeInsets.fromLTRB(horizontalPad, 9, horizontalPad, 9 + _tailHeight)
-        : EdgeInsets.fromLTRB(horizontalPad, 9 + _tailHeight, horizontalPad, 9);
+        ? EdgeInsets.fromLTRB(leftPad, 9, rightPad, 9 + _tailHeight)
+        : EdgeInsets.fromLTRB(leftPad, 9 + _tailHeight, rightPad, 9);
 
     final Widget bubble = CustomPaint(
       painter: _BubblePainter(
@@ -118,34 +119,39 @@ class NeumorphicHintBubble extends StatelessWidget {
 
     if (!hasClose) return bubble;
 
+    // Push the tap target inside the bubble's rounded corner so the icon
+    // visually sits on the bubble surface, while keeping a comfortable
+    // 28x28 tap target for finger accuracy.
     final closeTopOffset =
-        tailSide == HintBubbleTailSide.top ? _tailHeight + 1.0 : 1.0;
+        tailSide == HintBubbleTailSide.top ? _tailHeight + 4.0 : 4.0;
     return Stack(
       clipBehavior: Clip.none,
       children: [
         bubble,
         Positioned(
           top: closeTopOffset,
-          right: 1,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(999),
+          right: 4,
+          child: Tooltip(
+            message: closeTooltip ??
+                MaterialLocalizations.of(context).closeButtonTooltip,
+            // [GestureDetector] with [HitTestBehavior.opaque] guarantees the
+            // entire 28x28 area receives taps, regardless of the icon's
+            // smaller painted footprint inside it.
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () {
                 HapticFeedbackUtils.impact();
                 onClose!();
               },
-              child: Tooltip(
-                message: closeTooltip ??
-                    MaterialLocalizations.of(context).closeButtonTooltip,
-                child: const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: Icon(
-                    Icons.close,
-                    size: 14,
-                    color: Color(0xFF555555),
-                  ),
+              child: Container(
+                width: 28,
+                height: 28,
+                alignment: Alignment.center,
+                color: Colors.transparent,
+                child: const Icon(
+                  Icons.close,
+                  size: 16,
+                  color: Color(0xFF555555),
                 ),
               ),
             ),
