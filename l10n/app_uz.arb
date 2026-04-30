@@ -262,7 +262,7 @@
       }
     }
   },
-  "all_stations_explanation": "Liniya <b>{line}</b> bo'ylab <b>{count}</b> bekat orqali qidiruv",
+  "all_stations_explanation": "<b>{line}</b> liniyasining barcha <b>{count}</b> bekatlari bo'ylab qidiruv",
   "@all_stations_explanation": {
     "placeholders": {
       "line": {
@@ -884,6 +884,7 @@
   "search": "Qidirish",
   "filters_bar_label": "Filtrlar",
   "search_alert_notify_me": "Xabar berilsin",
+  "search_alert_bell_hint": "O'xshash e'lonlar haqida bildirishnomalar olish",
   "search_alert_login_required": "Bu qidiruv bo'yicha bildirishnomalar uchun tizimga kiring.",
   "search_alert_created": "Mos e'lonlar chiqqanda xabar beramiz.",
   "search_alert_failed": "Bildirishnomani saqlab bo'lmadi. Qayta urinib ko'ring.",

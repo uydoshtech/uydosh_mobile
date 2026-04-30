@@ -262,6 +262,75 @@ post_install do |installer|
     end
   end
 
+  # Inject a small UyDosh logo overlay on top of Apple's native RoomCaptureView,
+  # pinned to the bottom-right corner. Apple does not allow replacing the built-in
+  # coaching animation (the phone-over-box illustration) or its instruction text,
+  # so this is a watermark that sits alongside Apple's UI for branding.
+  # The logo is loaded from the Flutter asset bundle (assets/icon/app_logo.png)
+  # via FlutterDartProject.lookupKey(forAsset:), so we don't duplicate the file.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: logo overlay on capture view */'
+    unless src.include?(marker)
+      # Call our overlay setup right after the RoomCaptureView is added (so the
+      # logo ends up above it in the view hierarchy).
+      src = src.sub(
+        "        setupRoomCaptureView()\n        activityIndicator.stopAnimating()",
+        "        setupRoomCaptureView()\n        uydoshAddLogoOverlay()\n        activityIndicator.stopAnimating()"
+      )
+
+      overlay = [
+        '',
+        "    #{marker}",
+        '    private func uydoshAddLogoOverlay() {',
+        '        let imageView = UIImageView()',
+        '        imageView.translatesAutoresizingMaskIntoConstraints = false',
+        '        imageView.contentMode = .scaleAspectFit',
+        '        imageView.alpha = 0.9',
+        '        imageView.isUserInteractionEnabled = false',
+        '        imageView.accessibilityIdentifier = "uydoshLogoOverlay"',
+        '        // Soft shadow so the logo stays legible over varied AR scenes.',
+        '        imageView.layer.shadowColor = UIColor.black.cgColor',
+        '        imageView.layer.shadowOpacity = 0.45',
+        '        imageView.layer.shadowRadius = 4',
+        '        imageView.layer.shadowOffset = CGSize(width: 0, height: 1)',
+        '        // Load the transparent UyDosh brand mark (no blue square background).',
+        '        let key = FlutterDartProject.lookupKey(forAsset: "assets/icon/components/brand_logo_transparent.png")',
+        '        if let path = Bundle.main.path(forResource: key, ofType: nil),',
+        '           let image = UIImage(contentsOfFile: path) {',
+        '            imageView.image = image',
+        '        }',
+        '        view.addSubview(imageView)',
+        '        NSLayoutConstraint.activate([',
+        '            imageView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),',
+        '            imageView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),',
+        '            imageView.widthAnchor.constraint(equalToConstant: 56),',
+        '            imageView.heightAnchor.constraint(equalToConstant: 56),',
+        '        ])',
+        '    }',
+      ].join("\n")
+
+      src = src.sub(
+        '    private func resetScanningSession() {',
+        "#{overlay}\n    private func resetScanningSession() {"
+      )
+      File.write(room_capture_file, src)
+    end
+  end
+
+  # Migration: ensure the logo overlay loads the transparent brand mark
+  # (no blue background). Idempotent: a no-op once already migrated.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    if src.include?('lookupKey(forAsset: "assets/icon/app_logo.png")')
+      src = src.gsub(
+        'lookupKey(forAsset: "assets/icon/app_logo.png")',
+        'lookupKey(forAsset: "assets/icon/components/brand_logo_transparent.png")'
+      )
+      File.write(room_capture_file, src)
+    end
+  end
+
   # Allow passing button titles from Flutter to the RoomCaptureViewController instance.
   flutter_roomplan_plugin_file = File.expand_path(File.join(__dir__, '.symlinks', 'plugins', 'flutter_roomplan', 'ios', 'Classes', 'FlutterRoomplanPlugin.swift'))
   if File.exist?(flutter_roomplan_plugin_file)

@@ -591,7 +591,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String all_stations_explanation(String line, String count) {
-    return 'Liniya <b>$line</b> bo\'ylab <b>$count</b> bekat orqali qidiruv';
+    return '<b>$line</b> liniyasining barcha <b>$count</b> bekatlari bo\'ylab qidiruv';
   }
 
   @override
@@ -2340,6 +2340,10 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get search_alert_notify_me => 'Xabar berilsin';
+
+  @override
+  String get search_alert_bell_hint =>
+      'O\'xshash e\'lonlar haqida bildirishnomalar olish';
 
   @override
   String get search_alert_login_required =>

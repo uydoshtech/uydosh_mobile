@@ -9,6 +9,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -37,6 +38,59 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedSize(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeInOut,
+          alignment: Alignment.bottomCenter,
+          clipBehavior: Clip.none,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOutBack,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                alignment: Alignment.bottomCenter,
+                scale: Tween<double>(begin: 0.9, end: 1).animate(animation),
+                child: child,
+              ),
+            ),
+            child: _shouldShowHint
+                ? Padding(
+                    key: const ValueKey("metro-hint"),
+                    padding: const EdgeInsets.fromLTRB(0, 4, 8, 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Expanded(child: SizedBox.shrink()),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: NeumorphicHintBubble(
+                              message: _buildHintSpan(context, theme),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox(
+                    key: ValueKey("metro-hint-empty"),
+                    height: 0,
+                    width: double.infinity,
+                  ),
+          ),
+        ),
+        _buildPickersRow(context, theme),
+      ],
+    );
+  }
+
+  Widget _buildPickersRow(BuildContext context, ThemeData theme) {
     return Row(
       children: [
         Expanded(
@@ -148,6 +202,48 @@ class SearchBottomSheetMetroSection extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  bool get _shouldShowHint =>
+      searchFiltersState.selectedSubwayLine > 0 &&
+      searchFiltersState.selectedStationId == 0 &&
+      currentStations.isNotEmpty;
+
+  TextSpan _buildHintSpan(BuildContext context, ThemeData _) {
+    final raw = L10n.get("all_stations_explanation")
+        .replaceAll("{count}", "${currentStations.length}")
+        .replaceAll(
+          "{line}",
+          MetroCache.getLineName(
+            searchFiltersState.selectedSubwayLine,
+            LanguageState().currentLanguage,
+          ),
+        );
+
+    const baseStyle = TextStyle(
+      fontSize: 14.5,
+      height: 1.3,
+      color: Colors.black,
+    );
+    final boldStyle = baseStyle.copyWith(fontWeight: FontWeight.w700);
+
+    final spans = <TextSpan>[];
+    final boldRegex = RegExp("<b>(.*?)</b>");
+    var lastIndex = 0;
+    for (final Match match in boldRegex.allMatches(raw)) {
+      if (match.start > lastIndex) {
+        spans.add(TextSpan(
+          text: raw.substring(lastIndex, match.start),
+          style: baseStyle,
+        ));
+      }
+      spans.add(TextSpan(text: match.group(1), style: boldStyle));
+      lastIndex = match.end;
+    }
+    if (lastIndex < raw.length) {
+      spans.add(TextSpan(text: raw.substring(lastIndex), style: baseStyle));
+    }
+    return TextSpan(children: spans);
   }
 
   Widget _buildMetroStationPicker(BuildContext context, ThemeData theme) {

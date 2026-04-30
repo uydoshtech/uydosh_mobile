@@ -1147,7 +1147,7 @@ abstract class AppLocalizations {
   /// No description provided for @all_stations_explanation.
   ///
   /// In en, this message translates to:
-  /// **'Search along the entire line <b>{line}</b> through <b>{count}</b> stations'**
+  /// **'Search across all <b>{count}</b> stations of the <b>{line}</b> line'**
   String all_stations_explanation(String line, String count);
 
   /// No description provided for @entire_line_stations.
@@ -4395,6 +4395,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notify me'**
   String get search_alert_notify_me;
+
+  /// No description provided for @search_alert_bell_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notifications about similar listings'**
+  String get search_alert_bell_hint;
 
   /// No description provided for @search_alert_login_required.
   ///

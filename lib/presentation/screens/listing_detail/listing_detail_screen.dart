@@ -2314,7 +2314,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
                 isToggling: s.isToggling,
               ),
               builder: (context, ownerState) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.only(bottom: 4),
                 child: ListingDetailOwnerToolbar(
                   listingDetail: listingDetail,
                   viewCount: ownerState.viewCount,

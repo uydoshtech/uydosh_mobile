@@ -585,7 +585,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String all_stations_explanation(String line, String count) {
-    return 'Поиск вдоль ВСЕЙ линии <b>$line</b> по <b>$count</b> станциям';
+    return 'Поиск по всем <b>$count</b> станциям линии <b>$line</b>';
   }
 
   @override
@@ -2317,6 +2317,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get search_alert_notify_me => 'Уведомлять';
+
+  @override
+  String get search_alert_bell_hint =>
+      'Получать уведомления о похожих объявлениях';
 
   @override
   String get search_alert_login_required =>

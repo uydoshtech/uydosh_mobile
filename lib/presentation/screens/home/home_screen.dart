@@ -43,6 +43,7 @@ import "package:uy_dosh/presentation/widgets/common/notify_search_alert_app_bar_
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -56,6 +57,27 @@ import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.d
 
 /// Matches empty-search Ghost + Primary CTAs (30px bell stack + 14px vertical padding).
 const double _kEmptySearchCtaButtonHeight = 58;
+
+/// Selector payload for the bottom-right search FAB stack: whether the bell
+/// "create alert" FAB should be visible (i.e. a search has run in the
+/// current context) and whether that search returned zero results — used
+/// to surface the [NeumorphicHintBubble] above the bell.
+class _SearchAlertFabState {
+  const _SearchAlertFabState({required this.showFab, required this.isEmpty});
+
+  final bool showFab;
+  final bool isEmpty;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _SearchAlertFabState &&
+          other.showFab == showFab &&
+          other.isEmpty == isEmpty;
+
+  @override
+  int get hashCode => Object.hash(showFab, isEmpty);
+}
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _HomeScreenData {
@@ -651,58 +673,119 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           Positioned(
             right: 16,
             bottom: 30, // Moved down a bit from 100
-            child: BlocSelector<ListingsBloc, ListingsState, bool>(
+            child: BlocSelector<ListingsBloc, ListingsState, _SearchAlertFabState>(
               selector: (state) {
-                final hasAny = state.map(
-                  initial: (_) => false,
-                  loading: (_) => false,
-                  loaded: (s) => s.listings.isNotEmpty,
-                  error: (_) => false,
+                final inSearchContext =
+                    widget.isSearchMode || _inlineSearchActive;
+                final loaded =
+                    state.maybeMap(loaded: (_) => true, orElse: () => false);
+                final isEmpty = state.maybeMap(
+                  loaded: (s) => s.listings.isEmpty,
+                  orElse: () => false,
                 );
-                return (widget.isSearchMode || _inlineSearchActive) && hasAny;
+                return _SearchAlertFabState(
+                  showFab: inSearchContext && loaded,
+                  isEmpty: inSearchContext && isEmpty,
+                );
               },
-              builder: (context, showSearchAlertFab) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+              builder: (context, fabState) {
+                return Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.bottomRight,
                   children: [
-                    if (showSearchAlertFab) ...[
-                      Transform.scale(
-                        scale: 0.92,
-                        child: SearchFloatingActionButton(
-                          searchFiltersState: _searchFiltersState,
-                          onPressed: _isCreatingSearchAlert
-                              ? null
-                              : _showCreateSearchAlertSheet,
-                          iconData: Icons.add_alert,
-                          tooltip: L10n.get("search_alert_notify_me"),
-                          replaceCurrentRoute: false,
-                          openedFromHomeScreen: widget.isHomeTabActive,
-                          elevation: ThemeState().isBlueTheme ? null : 8,
-                        ),
-                      ),
-                      const SizedBox(height: _kFabGap),
-                    ],
-                    TutorialTargetWrapper(
-                      key: _searchButtonTutorialKey,
-                      child: ListenableBuilder(
-                        listenable: AnimationSettingsState(),
-                        builder: (context, _) {
-                          return TutorialPulseWrapper(
-                            enabled: false,
-                            variant: TutorialPulseVariant.floatingActionButton,
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (fabState.showFab) ...[
+                          Transform.scale(
+                            scale: 0.92,
                             child: SearchFloatingActionButton(
                               searchFiltersState: _searchFiltersState,
-                              onPressed: widget.isSearchMode
+                              onPressed: _isCreatingSearchAlert
                                   ? null
-                                  : _openInlineSearchFromFab,
-                              iconData: Icons.search,
-                              replaceCurrentRoute: widget.isSearchMode,
+                                  : _showCreateSearchAlertSheet,
+                              iconData: Icons.add_alert,
+                              tooltip: L10n.get("search_alert_notify_me"),
+                              replaceCurrentRoute: false,
                               openedFromHomeScreen: widget.isHomeTabActive,
                               elevation: ThemeState().isBlueTheme ? null : 8,
                             ),
-                          );
-                        },
+                          ),
+                          const SizedBox(height: _kFabGap),
+                        ],
+                        TutorialTargetWrapper(
+                          key: _searchButtonTutorialKey,
+                          child: ListenableBuilder(
+                            listenable: AnimationSettingsState(),
+                            builder: (context, _) {
+                              return TutorialPulseWrapper(
+                                enabled: false,
+                                variant:
+                                    TutorialPulseVariant.floatingActionButton,
+                                child: SearchFloatingActionButton(
+                                  searchFiltersState: _searchFiltersState,
+                                  onPressed: widget.isSearchMode
+                                      ? null
+                                      : _openInlineSearchFromFab,
+                                  iconData: Icons.search,
+                                  replaceCurrentRoute: widget.isSearchMode,
+                                  openedFromHomeScreen: widget.isHomeTabActive,
+                                  elevation:
+                                      ThemeState().isBlueTheme ? null : 8,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Hint bubble pointing DOWN at the bell FAB. Surfaces only
+                    // when the search came back empty so users discover that
+                    // they can save the search and be notified later. Width
+                    // is right-anchored so the tail (offset 80px right of
+                    // center) lands directly above the bell.
+                    Positioned(
+                      // 56 (search FAB) + 12 (gap) + 52 (bell FAB scaled .92) + 4 px breathing room
+                      bottom: 124,
+                      right: 0,
+                      child: IgnorePointer(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 260),
+                          switchInCurve: Curves.easeOutBack,
+                          switchOutCurve: Curves.easeIn,
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(
+                            opacity: animation,
+                            child: ScaleTransition(
+                              alignment: Alignment.bottomRight,
+                              scale: Tween<double>(begin: 0.9, end: 1)
+                                  .animate(animation),
+                              child: child,
+                            ),
+                          ),
+                          child: (fabState.showFab && fabState.isEmpty)
+                              ? Align(
+                                  key: const ValueKey("empty-bell-hint"),
+                                  alignment: Alignment.bottomRight,
+                                  child: NeumorphicHintBubble(
+                                    maxWidth: 220,
+                                    tailHorizontalOffset: 80,
+                                    message: TextSpan(
+                                      text:
+                                          L10n.get("search_alert_bell_hint"),
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        height: 1.3,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox.shrink(
+                                  key: ValueKey("empty-bell-hint-empty"),
+                                ),
+                        ),
                       ),
                     ),
                   ],

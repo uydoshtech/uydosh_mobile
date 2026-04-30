@@ -584,7 +584,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String all_stations_explanation(String line, String count) {
-    return 'Search along the entire line <b>$line</b> through <b>$count</b> stations';
+    return 'Search across all <b>$count</b> stations of the <b>$line</b> line';
   }
 
   @override
@@ -2303,6 +2303,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get search_alert_notify_me => 'Notify me';
+
+  @override
+  String get search_alert_bell_hint =>
+      'Get notifications about similar listings';
 
   @override
   String get search_alert_login_required =>

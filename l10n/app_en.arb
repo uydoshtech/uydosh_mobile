@@ -262,7 +262,7 @@
       }
     }
   },
-  "all_stations_explanation": "Search along the entire line <b>{line}</b> through <b>{count}</b> stations",
+  "all_stations_explanation": "Search across all <b>{count}</b> stations of the <b>{line}</b> line",
   "@all_stations_explanation": {
     "placeholders": {
       "line": {
@@ -884,6 +884,7 @@
   "search": "Search",
   "filters_bar_label": "Filters",
   "search_alert_notify_me": "Notify me",
+  "search_alert_bell_hint": "Get notifications about similar listings",
   "search_alert_login_required": "Sign in to get notifications for this search.",
   "search_alert_created": "You will be notified when matching listings are posted.",
   "search_alert_failed": "Could not save this alert. Try again.",

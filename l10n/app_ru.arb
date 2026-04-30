@@ -254,7 +254,7 @@
       }
     }
   },
-  "all_stations_explanation": "Поиск вдоль ВСЕЙ линии <b>{line}</b> по <b>{count}</b> станциям",
+  "all_stations_explanation": "Поиск по всем <b>{count}</b> станциям линии <b>{line}</b>",
   "@all_stations_explanation": {
     "placeholders": {
       "line": {
@@ -876,6 +876,7 @@
   "search": "Поиск",
   "filters_bar_label": "Фильтры",
   "search_alert_notify_me": "Уведомлять",
+  "search_alert_bell_hint": "Получать уведомления о похожих объявлениях",
   "search_alert_login_required": "Войдите, чтобы получать уведомления по этому поиску.",
   "search_alert_created": "Мы сообщим, когда появятся подходящие объявления.",
   "search_alert_failed": "Не удалось сохранить оповещение. Попробуйте снова.",

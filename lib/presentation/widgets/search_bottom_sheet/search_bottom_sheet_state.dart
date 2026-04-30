@@ -10,8 +10,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   FixedExtentScrollController? _stationPickerController;
   FixedExtentScrollController? _metroLineScrollController;
   FixedExtentScrollController? _locationScrollController;
-  Timer? _blinkTimer;
-  bool _isBlinking = true;
   bool _metroLineChangedInThisSession = false;
   bool _isCreatingSearchAlert = false;
   int _searchAlertCelebrationTick = 0;
@@ -36,15 +34,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     // Position is synced in [LocationPicker] once locations load (controller
     // is created before the async locations list exists).
     _locationScrollController = FixedExtentScrollController();
-
-    // Initialize blink timer
-    _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      if (mounted) {
-        setState(() {
-          _isBlinking = !_isBlinking;
-        });
-      }
-    });
 
     // Use the current search parameters to restore the correct state
     if (widget.currentListingTypeId != null) {
@@ -199,7 +188,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     _stationPickerController?.dispose();
     _metroLineScrollController?.dispose();
     _locationScrollController?.dispose();
-    _blinkTimer?.cancel();
     super.dispose();
   }
 
@@ -618,7 +606,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
             children: [
                   // Handle bar
                   Container(
-                    margin: const EdgeInsets.only(top: 8),
+                    margin: const EdgeInsets.only(top: 6),
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
@@ -781,30 +769,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                                   },
                                 ),
 
-                                // Explanatory text container - always reserved to prevent interface jerking
-                                Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 10.0),
-                                    child: SizedBox(
-                                      height:
-                                          20, // Fixed height to reserve space
-
-                                      child: _searchFiltersState
-                                                      .selectedSubwayLine >
-                                                  0 &&
-                                              _searchFiltersState
-                                                      .selectedStationId ==
-                                                  0
-                                          ? _buildRichTextExplanation(
-                                              context,
-                                              theme,
-                                            )
-                                          : const SizedBox
-                                              .shrink(), // Empty space when text shouldn"t show
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 12),
 
                                 // Price, Private Room, Search button
                                 SearchBottomSheetSecondaryFilters(
@@ -932,79 +897,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     }
   }
 
-  /// Builds a RichText widget that supports bold formatting for the explanation text
-  Widget _buildRichTextExplanation(BuildContext context, ThemeData theme) {
-    final explanationText = L10n.get("all_stations_explanation")
-        .replaceAll("{count}", "${_currentStations.length}")
-        .replaceAll(
-          "{line}",
-          MetroCache.getLineName(
-            _searchFiltersState.selectedSubwayLine,
-            LanguageState().currentLanguage,
-          ),
-        );
-
-    // Parse the text and create TextSpans for bold formatting
-    final spans = <TextSpan>[];
-    final boldRegex = RegExp("<b>(.*?)</b>");
-    var lastIndex = 0;
-
-    for (final Match match in boldRegex.allMatches(explanationText)) {
-      // Add text before the bold tag
-      if (match.start > lastIndex) {
-        spans.add(
-          TextSpan(
-            text: explanationText.substring(lastIndex, match.start),
-            style: TextStyle(
-              fontSize: 13,
-              color: theme.colorScheme.onSurfaceVariant,
-              fontStyle: FontStyle.normal,
-            ),
-          ),
-        );
-      }
-
-      // Add bold and underlined text
-      spans.add(
-        TextSpan(
-          text: match.group(1),
-          style: TextStyle(
-            fontSize: 13,
-            color: theme.colorScheme.onSurfaceVariant,
-            fontStyle: FontStyle.normal,
-            fontWeight: FontWeight.bold,
-            decoration: TextDecoration.underline,
-            decorationThickness: 1.0,
-          ),
-        ),
-      );
-
-      lastIndex = match.end;
-    }
-
-    // Add remaining text after the last bold tag
-    if (lastIndex < explanationText.length) {
-      spans.add(
-        TextSpan(
-          text: explanationText.substring(lastIndex),
-          style: TextStyle(
-            fontSize: 13,
-            color: theme.colorScheme.onSurfaceVariant,
-            fontStyle: FontStyle.normal,
-          ),
-        ),
-      );
-    }
-
-    return AnimatedOpacity(
-      opacity: _isBlinking ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 500),
-      child: RichText(
-        text: TextSpan(children: spans),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
 }
 
 /// Returns a 4x5 color matrix that scales the saturation of a source image

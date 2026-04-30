@@ -1,11 +1,9 @@
-import "dart:async";
 import "dart:io";
 
 import "package:camera/camera.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
-import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -37,10 +35,18 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
   bool _initializing = true;
   bool _capturing = false;
   String? _initError;
+  // Optional underlying detail (e.g. CameraException code/message). Surfaced
+  // under the friendly error headline so we can diagnose first-run AVFoundation
+  // failures without making the user dig through `flutter logs`.
+  String? _initErrorDetail;
 
   _CaptureStage _stage = _CaptureStage.live;
   XFile? _captured;
-  Future<void> _lifecycleOp = Future.value();
+  // Guards against the lifecycle handler tearing down a controller that
+  // `_bootstrap()` is still bringing up — without this, an `inactive`
+  // lifecycle event mid-bootstrap leaves the screen stuck on the error
+  // state because we never re-run bootstrap after `resumed`.
+  bool _bootstrapping = false;
 
   @override
   void initState() {
@@ -83,40 +89,49 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // The iOS permission sheet triggers an app lifecycle transition.
-    // If we dispose/re-init the camera controller without awaiting the dispose,
-    // the `camera` plugin can get stuck with a frozen texture on the first run.
-    _lifecycleOp = _lifecycleOp.then((_) async {
-      if (!mounted) return;
-
-      if (state == AppLifecycleState.inactive ||
-          state == AppLifecycleState.paused) {
-        await _tearDownController();
-      } else if (state == AppLifecycleState.resumed) {
-        if (_stage != _CaptureStage.live) return;
-        if (_cameras.isEmpty) return;
-        await _ensureCameraPermission();
-        if (!mounted) return;
-        await _setUpController(_cameras[_cameraIndex]);
-      }
-    });
+    // Only react to lifecycle transitions when we already have a fully
+    // initialized controller. iOS fires `inactive` while AVFoundation is
+    // showing its first-run permission dialog, and tearing down the
+    // half-initialized controller during that window is exactly what used
+    // to leave the screen stuck on "Camera is unavailable". This mirrors
+    // the original (working) implementation from `caa469d`.
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    if (_bootstrapping) return;
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      _tearDownController();
+    } else if (state == AppLifecycleState.resumed) {
+      if (_stage != _CaptureStage.live) return;
+      if (_cameras.isEmpty) return;
+      _setUpController(_cameras[_cameraIndex]);
+    }
   }
 
   Future<void> _bootstrap() async {
+    if (_bootstrapping) return;
+    _bootstrapping = true;
+    setStateIfMounted(() {
+      _initializing = true;
+      _initError = null;
+      _initErrorDetail = null;
+    });
     try {
-      final hasPermission = await _ensureCameraPermission();
-      if (!hasPermission) {
-        setStateIfMounted(() {
-          _initializing = false;
-          _initError = L10n.get("camera_unavailable");
-        });
-        return;
-      }
+      // Don't pre-check camera permission via `permission_handler`: on iOS
+      // it requires build-time preprocessor macros (`PERMISSION_CAMERA=1`)
+      // in the Podfile, and without them every status read returns `denied`
+      // even when iOS has actually granted access — which is exactly how
+      // the previous "camera permissions" change broke this screen. The
+      // `camera` plugin's iOS implementation calls AVFoundation's
+      // `requestAccess(for: .video)` itself inside `initialize()`, which is
+      // the source of truth and returns a clean `CameraAccessDenied`
+      // `CameraException` if the user actually denied access. Let it.
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         setStateIfMounted(() {
           _initializing = false;
           _initError = L10n.get("camera_unavailable");
+          _initErrorDetail = "no cameras returned by availableCameras()";
         });
         return;
       }
@@ -137,23 +152,20 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       setStateIfMounted(() {
         _initializing = false;
         _initError = L10n.get("camera_unavailable");
+        _initErrorDetail = _describeError(e);
       });
+    } finally {
+      _bootstrapping = false;
     }
   }
 
-  Future<bool> _ensureCameraPermission() async {
-    // `camera.initialize()` can implicitly show the permission prompt on iOS.
-    // Requesting permission ourselves avoids initializing while the app is
-    // transitioning through inactive/paused, which prevents first-run freezes.
-    try {
-      final status = await Permission.camera.status;
-      if (status.isGranted) return true;
-      final requested = await Permission.camera.request();
-      return requested.isGranted;
-    } catch (e, st) {
-      logger.w("Camera permission check failed", error: e, stackTrace: st);
-      return false;
+  /// Compact, user-readable rendering of a `CameraException` (or any other
+  /// thrown error) for the on-screen detail line.
+  String _describeError(Object e) {
+    if (e is CameraException) {
+      return "${e.code}: ${e.description ?? ""}".trim();
     }
+    return e.toString();
   }
 
   Future<void> _tearDownController() async {
@@ -169,7 +181,6 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
   }
 
   Future<void> _setUpController(CameraDescription description) async {
-    final previous = _controller;
     await _tearDownController();
     final controller = CameraController(
       description,
@@ -177,30 +188,55 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
-    _controller = controller;
 
     try {
+      // Important: do NOT assign `_controller = controller` before
+      // `initialize()` completes. iOS can fire spurious `inactive`/`paused`
+      // lifecycle events while AVCaptureSession spins up (e.g. during the
+      // orientation unlock from `setPreferredOrientations` in initState).
+      // If the lifecycle handler sees a half-initialized controller in
+      // `_controller`, it tears it down mid-init and `initialize()` throws,
+      // leaving the screen stuck on "Camera is unavailable". Assign only
+      // after we know init succeeded.
       await controller.initialize();
-      controller.addListener(_onControllerValueChanged);
-      // Intentionally do NOT lock capture orientation here. The preview /
-      // UI is pinned to portrait via `setPreferredOrientations` in
-      // initState, which keeps the live feed from stretching on rotation.
-      // Capture orientation, however, should follow the device's physical
-      // tilt so shots taken with the phone held sideways are saved as
-      // genuine landscape images (matches Apple's stock Camera behavior).
-      try {
-        await controller.setFlashMode(_flashMode);
-      } catch (e) {
-        if (kDebugMode) debugPrint("setFlashMode failed: $e");
-      }
     } catch (e, st) {
       logger.e("Camera controller init failed", error: e, stackTrace: st);
+      try {
+        await controller.dispose();
+      } catch (_) {
+        // Best-effort.
+      }
       if (!mounted) return;
       setStateIfMounted(() {
         _initializing = false;
         _initError = L10n.get("camera_unavailable");
+        _initErrorDetail = _describeError(e);
       });
       return;
+    }
+
+    // Screen was disposed (or torn down by lifecycle) while init was in
+    // flight. Dispose this orphan controller so we don't leak the AV
+    // session.
+    if (!mounted || _controller != null) {
+      try {
+        await controller.dispose();
+      } catch (_) {}
+      return;
+    }
+
+    _controller = controller;
+    controller.addListener(_onControllerValueChanged);
+    // Intentionally do NOT lock capture orientation here. The preview /
+    // UI is pinned to portrait via `setPreferredOrientations` in
+    // initState, which keeps the live feed from stretching on rotation.
+    // Capture orientation, however, should follow the device's physical
+    // tilt so shots taken with the phone held sideways are saved as
+    // genuine landscape images (matches Apple's stock Camera behavior).
+    try {
+      await controller.setFlashMode(_flashMode);
+    } catch (e) {
+      if (kDebugMode) debugPrint("setFlashMode failed: $e");
     }
 
     setStateIfMounted(() {
@@ -328,10 +364,53 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            _initError!,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
-            textAlign: TextAlign.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _initError!,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              if (_initErrorDetail != null && _initErrorDetail!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _initErrorDetail!,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.65),
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 16),
+              TextButton.icon(
+                onPressed: _bootstrapping
+                    ? null
+                    : () {
+                        HapticFeedbackUtils.impact();
+                        _bootstrap();
+                      },
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                label: Text(
+                  L10n.get("retake"),
+                  style: const TextStyle(color: Colors.white),
+                ),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -382,31 +461,21 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
 
   Widget _buildLogoWatermark() {
     // Vertically align with the shutter button inside the bottom bar.
-    // Bottom bar: padding bottom = bottomPadding + 20, top = 16,
-    // shutter button height = 76 → shutter center sits
-    // (bottomPadding + 20 + 38) from the screen bottom. The logo badge
-    // is ~64px tall (48 icon + 8 padding on each side), so to center it
-    // on the same line we offset it by (shutterCenter - 32).
+    // Shutter button is 84px tall; centering a ~64px logo on the same line
+    // means (shutterCenter - 32) from the screen bottom.
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     return Positioned(
       right: 24,
       bottom: bottomPadding + 26,
       child: IgnorePointer(
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.35),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.25),
-            ),
-          ),
-          child: Image.asset(
-            "assets/icon/app_logo.png",
-            width: 48,
-            height: 48,
-            fit: BoxFit.contain,
-          ),
+        // Transparent brand mark — no rounded chip / dark backdrop. The PNG
+        // already has a transparent background, and a soft drop shadow keeps
+        // it legible over varied scenes without competing visual weight.
+        child: Image.asset(
+          "assets/icon/components/brand_logo_transparent.png",
+          width: 64,
+          height: 64,
+          fit: BoxFit.contain,
         ),
       ),
     );
