@@ -14,7 +14,7 @@ enum HintBubbleTailSide { top, bottom }
 /// Visual recipe:
 ///  - A backdrop blur clipped to the bubble's path so whatever sits behind
 ///    the bubble (sheet glass, dark feed) shows through softened.
-///  - A warm cream-white translucent tint on top of the blur.
+///  - A very light grey translucent tint on top of the blur.
 ///  - A subtle top-left highlight gradient for a "lit from above" feel.
 ///  - A 1px white stroke along the bubble outline.
 ///  - A soft drop shadow for separation from the underlying surface.
@@ -79,14 +79,14 @@ class NeumorphicHintBubble extends StatelessWidget {
     final enableBlur =
         AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
 
-    // Warm cream-white tint with high luminance + low alpha so the backdrop
+    // Very light grey tint with high luminance + low alpha so the backdrop
     // shows through. Two stops give the surface a gentle top-light feel.
     const fillGradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        Color(0xE6FFFDF6), // ~90% alpha cream-white
-        Color(0xCCF6EAD2), // ~80% alpha warm beige
+        Color(0xE6FBFBFB), // ~90% alpha near-white
+        Color(0xCCECECEC), // ~80% alpha very light grey
       ],
     );
     // Subtle top-left highlight that emulates light hitting glass.
