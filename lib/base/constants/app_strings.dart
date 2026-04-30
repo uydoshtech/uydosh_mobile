@@ -256,6 +256,8 @@ class AppStrings {
       "room_scan_instructions":
           "Before starting the 3D scan\n\n• Turn on good lighting\n• Move slowly, avoid sudden movements\n• Hold your phone at chest level\n• Scan walls, corners, windows, and doors\n• Try to cover the whole room\n\nThis will help create an accurate 3D model of your home",
       "room_scan_start": "Start scan",
+      "room_scan_finish": "Finish",
+      "room_scan_scan_other_rooms": "Scan Other Rooms",
       "room_scan_uploading": "Uploading…",
       "room_scan_success": "3D scan saved",
       "room_scan_error": "Could not save scan. Try again.",
@@ -1401,6 +1403,8 @@ class AppStrings {
       "room_scan_instructions":
           "Перед началом 3D-сканирования\n\n• Включите хорошее освещение\n• Двигайтесь медленно, без резких движений\n• Держите телефон на уровне груди\n• Сканируйте стены, углы, окна и двери\n• Постарайтесь охватить всю комнату\n\nЭто поможет создать точную 3D-модель вашего жилья",
       "room_scan_start": "Начать сканирование",
+      "room_scan_finish": "Завершить",
+      "room_scan_scan_other_rooms": "Сканировать другие комнаты",
       "room_scan_uploading": "Загрузка…",
       "room_scan_success": "3D-скан сохранён",
       "room_scan_error": "Не удалось сохранить скан. Попробуйте снова.",
@@ -2568,6 +2572,8 @@ class AppStrings {
       "room_scan_instructions":
           "3D skanlashni boshlashdan oldin\n\n• Yaxshi yoritishni yoqing\n• Sekin harakat qiling, keskin harakatlarsiz\n• Telefonni ko‘krak balandligida ushlang\n• Devorlar, burchaklar, derazalar va eshiklarni skanerlang\n• Butun xonani qamrab olishga harakat qiling\n\nBu uyingizning aniq 3D modelini yaratishga yordam beradi",
       "room_scan_start": "Skanlashni boshlash",
+      "room_scan_finish": "Yakunlash",
+      "room_scan_scan_other_rooms": "Boshqa xonalarni skanerlash",
       "room_scan_uploading": "Yuklanmoqda…",
       "room_scan_success": "3D skan saqlandi",
       "room_scan_error": "Skanni saqlab bo'lmadi. Qayta urinib ko'ring.",

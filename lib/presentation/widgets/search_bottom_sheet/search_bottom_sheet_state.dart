@@ -618,7 +618,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
             children: [
                   // Handle bar
                   Container(
-                    margin: const EdgeInsets.only(top: 12),
+                    margin: const EdgeInsets.only(top: 8),
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
@@ -629,7 +629,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
                   // Search header
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                     child: Row(
                       children: [
                         ThemeIcon(

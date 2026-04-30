@@ -53,92 +53,92 @@ class ListingTileSkeleton extends StatelessWidget {
           children: [
             Padding(
               // Match `ListingTile`'s vertical rhythm to avoid skeleton being taller.
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
                       _SkeletonBox(
+                        width: 26,
+                        height: 26,
+                        radius: 7,
+                        color: baseColor,
+                      ),
+                      const SizedBox(width: 8),
+                      _SkeletonBox(
                         width: 22,
                         height: 22,
+                        radius: 11,
+                        color: baseColor,
+                      ),
+                      const SizedBox(width: 8),
+                      _SkeletonBox(
+                        width: 20,
+                        height: 20,
+                        radius: 6,
+                        color: baseColor,
+                      ),
+                      const Spacer(),
+                      _SkeletonBox(
+                        width: 24,
+                        height: 24,
+                        radius: 12,
+                        color: baseColor,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _SkeletonBox(
+                    width: double.infinity,
+                    height: 14,
+                    radius: 7,
+                    color: baseColor,
+                  ),
+                  const SizedBox(height: 8),
+                  _SkeletonBox(
+                    width: 240,
+                    height: 12,
+                    radius: 6,
+                    color: baseColor,
+                  ),
+                  const SizedBox(height: 10),
+                  _SkeletonBox(
+                    width: 216,
+                    height: 12,
+                    radius: 6,
+                    color: baseColor,
+                  ),
+                  // Add a small optional "meta" row so the skeleton matches the
+                  // average real-tile height without becoming overly tall.
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _SkeletonBox(
+                        width: 17,
+                        height: 17,
                         radius: 6,
                         color: baseColor,
                       ),
                       const SizedBox(width: 8),
                       _SkeletonBox(
-                        width: 18,
-                        height: 18,
-                        radius: 9,
+                        width: 17,
+                        height: 17,
+                        radius: 6,
                         color: baseColor,
                       ),
                       const SizedBox(width: 8),
                       _SkeletonBox(
-                        width: 16,
-                        height: 16,
-                        radius: 5,
-                        color: baseColor,
-                      ),
-                      const Spacer(),
-                      _SkeletonBox(
-                        width: 20,
-                        height: 20,
-                        radius: 10,
-                        color: baseColor,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  _SkeletonBox(
-                    width: double.infinity,
-                    height: 12,
-                    radius: 6,
-                    color: baseColor,
-                  ),
-                  const SizedBox(height: 6),
-                  _SkeletonBox(
-                    width: 200,
-                    height: 10,
-                    radius: 5,
-                    color: baseColor,
-                  ),
-                  const SizedBox(height: 8),
-                  _SkeletonBox(
-                    width: 180,
-                    height: 10,
-                    radius: 5,
-                    color: baseColor,
-                  ),
-                  // Add a small optional "meta" row so the skeleton matches the
-                  // average real-tile height without becoming overly tall.
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _SkeletonBox(
-                        width: 14,
-                        height: 14,
-                        radius: 5,
-                        color: baseColor,
-                      ),
-                      const SizedBox(width: 8),
-                      _SkeletonBox(
-                        width: 14,
-                        height: 14,
-                        radius: 5,
-                        color: baseColor,
-                      ),
-                      const SizedBox(width: 8),
-                      _SkeletonBox(
-                        width: 14,
-                        height: 14,
-                        radius: 5,
+                        width: 17,
+                        height: 17,
+                        radius: 6,
                         color: baseColor,
                       ),
                       const SizedBox(width: 10),
                       _SkeletonBox(
-                        width: 100,
-                        height: 10,
-                        radius: 5,
+                        width: 120,
+                        height: 12,
+                        radius: 6,
                         color: baseColor,
                       ),
                     ],
@@ -152,9 +152,9 @@ class ListingTileSkeleton extends StatelessWidget {
               bottom: 0,
               child: Center(
                 child: _SkeletonBox(
-                  width: 14,
-                  height: 20,
-                  radius: 5,
+                  width: 17,
+                  height: 24,
+                  radius: 6,
                   color: baseColor,
                 ),
               ),

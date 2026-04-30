@@ -393,11 +393,10 @@ class _UydoshHouseRefreshIndicatorState
                           elevation: widget.elevation,
                           rotationTurns: showSpinningIndicator
                               ? _spinController.value
-                              // While dragging, give the icon a small
-                              // pre-rotation that scales with pull progress so
-                              // it feels alive (mirrors the original arrow
-                              // animation).
-                              : _positionController.value * 0.75,
+                              // Spin a few full turns across the drag so the
+                              // icon clearly carries momentum into the
+                              // continuous spin once refresh fires.
+                              : _positionController.value * 2.5,
                           semanticsLabel: widget.semanticsLabel ??
                               MaterialLocalizations.of(context)
                                   .refreshIndicatorSemanticLabel,

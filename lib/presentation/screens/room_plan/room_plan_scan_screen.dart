@@ -131,6 +131,8 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
         "strings": <String, String>{
           "cancel": L10n.get("cancel"),
           "done": L10n.get("done"),
+          "finish": L10n.get("room_scan_finish"),
+          "scanOtherRooms": L10n.get("room_scan_scan_other_rooms"),
         },
       });
     } on MissingPluginException catch (e, st) {
