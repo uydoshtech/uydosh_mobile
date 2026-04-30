@@ -457,6 +457,52 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       }
       _loadCompatibility(listingDetail.user.id);
     }
+    _loadSimilarListingsCount(listingDetail);
+  }
+
+  /// Loads how many active listings match the "similar" filter for this
+  /// listing — excluding the current listing itself. The result is used to
+  /// hide the "view similar" tile when there's nothing to navigate to.
+  Future<void> _loadSimilarListingsCount(ListingDetail listingDetail) async {
+    final pageBloc = context.read<ListingDetailPageBloc>();
+    if (pageBloc.state.isLoadingSimilarListingsCount &&
+        pageBloc.state.similarListingsCountListingId == listingDetail.id) {
+      return;
+    }
+    pageBloc.setLoadingSimilarListingsCount(listingDetail.id);
+
+    try {
+      final stationId = listingDetail.subwayStation?.id;
+      final locationId = listingDetail.location?.id;
+      final price = _similarPriceRange(listingDetail);
+
+      // Fetch up to 2 results so we can detect "only the current listing
+      // matches" without paying for a full page.
+      final response = await getIt<IListingService>().getListings(
+        page: 1,
+        limit: 2,
+        listingTypeId: listingDetail.listingTypeId,
+        subwayStationId: stationId,
+        locationId: stationId == null ? locationId : null,
+        gender: listingDetail.gender,
+        minPrice: price?.min,
+        maxPrice: price?.max,
+      );
+
+      // If `total > 1` there's guaranteed to be at least one listing other
+      // than the current one. Otherwise inspect the (small) page payload to
+      // see whether the single match (if any) is the current listing itself.
+      final hasOther = response.total > 1 ||
+          response.data.any((l) => l.id != listingDetail.id);
+      final otherCount = hasOther ? 1 : 0;
+
+      if (!mounted) return;
+      pageBloc.setSimilarListingsCount(listingDetail.id, otherCount);
+    } catch (e) {
+      logger.d("Error loading similar listings count: $e");
+      if (!mounted) return;
+      pageBloc.setSimilarListingsCountError();
+    }
   }
 
   Future<void> _recordView(int listingId) async {
@@ -2316,9 +2362,26 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
             onOpenInYandexMaps: () => _confirmOpenInYandexMaps(listingDetail),
             onAuthorTap: () => _navigateToProfile(listingDetail.user.id),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: _viewSimilarTile(listingDetail),
+          BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
+              ({int? count, int? listingId})>(
+            selector: (s) => (
+              count: s.similarListingsCount,
+              listingId: s.similarListingsCountListingId,
+            ),
+            builder: (context, sim) {
+              // Hide the tile only when we know for certain there are no
+              // other matching listings for this listing. While the count
+              // is loading or unknown we keep the tile visible to avoid
+              // layout flicker.
+              final isFresh = sim.listingId == listingDetail.id;
+              if (isFresh && (sim.count ?? -1) <= 0) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: _viewSimilarTile(listingDetail),
+              );
+            },
           ),
           if (compatibilitySection != null)
             Padding(

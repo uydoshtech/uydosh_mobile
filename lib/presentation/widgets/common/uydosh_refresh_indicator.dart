@@ -3,9 +3,13 @@ import "dart:math" as math;
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_house_refresh_indicator.dart";
 
-/// [RefreshIndicator] with [color] and [backgroundColor] aligned to app themes
-/// (blue vs light), matching home / favorites pull-to-refresh styling.
+/// House-icon pull-to-refresh indicator with [color] and [backgroundColor]
+/// aligned to app themes (blue vs light), matching home / favorites
+/// pull-to-refresh styling. Visually identical badge dimensions to
+/// Flutter's [RefreshIndicator]; the inner spinner is a small rotating
+/// house icon.
 class UydoshRefreshIndicator extends StatelessWidget {
   const UydoshRefreshIndicator({
     required this.onRefresh,
@@ -18,7 +22,6 @@ class UydoshRefreshIndicator extends StatelessWidget {
     this.notificationPredicate = _defaultUydoshNotificationPredicate,
     this.semanticsLabel,
     this.semanticsValue,
-    this.strokeWidth = RefreshProgressIndicator.defaultStrokeWidth,
     this.triggerMode = RefreshIndicatorTriggerMode.onEdge,
     this.elevation = 2.0,
   });
@@ -38,7 +41,6 @@ class UydoshRefreshIndicator extends StatelessWidget {
     this.triggerMode = RefreshIndicatorTriggerMode.anywhere,
     this.semanticsLabel,
     this.semanticsValue,
-    this.strokeWidth = RefreshProgressIndicator.defaultStrokeWidth,
     this.elevation = 2.0,
   })  : color = null,
         backgroundColor = null;
@@ -62,7 +64,6 @@ class UydoshRefreshIndicator extends StatelessWidget {
   final ScrollNotificationPredicate notificationPredicate;
   final String? semanticsLabel;
   final String? semanticsValue;
-  final double strokeWidth;
   final RefreshIndicatorTriggerMode triggerMode;
   final double elevation;
 
@@ -120,7 +121,7 @@ class UydoshRefreshIndicator extends StatelessWidget {
         // also need to push the spinner down so it doesn't render behind the UI.
         final effectiveDisplacement = math.max(displacement, edgeOffset + 12.0);
 
-        return RefreshIndicator(
+        return UydoshHouseRefreshIndicator(
           displacement: effectiveDisplacement,
           edgeOffset: edgeOffset,
           onRefresh: () async {
@@ -137,7 +138,6 @@ class UydoshRefreshIndicator extends StatelessWidget {
           notificationPredicate: notificationPredicate,
           semanticsLabel: semanticsLabel,
           semanticsValue: semanticsValue,
-          strokeWidth: strokeWidth,
           triggerMode: triggerMode,
           elevation: elevation,
           child: child,

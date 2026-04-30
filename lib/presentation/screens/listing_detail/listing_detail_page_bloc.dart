@@ -21,6 +21,9 @@ class ListingDetailPageState {
     this.compatibilityError,
     this.ownerName,
     this.ownerNameListingUserId,
+    this.similarListingsCount,
+    this.similarListingsCountListingId,
+    this.isLoadingSimilarListingsCount = false,
   });
 
   final bool isToggling;
@@ -40,6 +43,13 @@ class ListingDetailPageState {
   final String? ownerName;
   final int? ownerNameListingUserId;
 
+  /// Number of "similar" listings excluding the current one. When this is
+  /// known and equal to 0 the UI hides the "view similar" affordance because
+  /// the only result would be the current listing itself.
+  final int? similarListingsCount;
+  final int? similarListingsCountListingId;
+  final bool isLoadingSimilarListingsCount;
+
   ListingDetailPageState copyWith({
     bool? isToggling,
     bool? isDeleting,
@@ -57,6 +67,9 @@ class ListingDetailPageState {
     String? compatibilityError,
     String? ownerName,
     int? ownerNameListingUserId,
+    int? similarListingsCount,
+    int? similarListingsCountListingId,
+    bool? isLoadingSimilarListingsCount,
   }) {
     return ListingDetailPageState(
       isToggling: isToggling ?? this.isToggling,
@@ -83,6 +96,12 @@ class ListingDetailPageState {
       ownerName: ownerName ?? this.ownerName,
       ownerNameListingUserId:
           ownerNameListingUserId ?? this.ownerNameListingUserId,
+      similarListingsCount:
+          similarListingsCount ?? this.similarListingsCount,
+      similarListingsCountListingId:
+          similarListingsCountListingId ?? this.similarListingsCountListingId,
+      isLoadingSimilarListingsCount: isLoadingSimilarListingsCount ??
+          this.isLoadingSimilarListingsCount,
     );
   }
 
@@ -105,7 +124,10 @@ class ListingDetailPageState {
         _listEquals(other.compatibilityDifferences, compatibilityDifferences) &&
         other.compatibilityError == compatibilityError &&
         other.ownerName == ownerName &&
-        other.ownerNameListingUserId == ownerNameListingUserId;
+        other.ownerNameListingUserId == ownerNameListingUserId &&
+        other.similarListingsCount == similarListingsCount &&
+        other.similarListingsCountListingId == similarListingsCountListingId &&
+        other.isLoadingSimilarListingsCount == isLoadingSimilarListingsCount;
   }
 
   bool _listEquals<T>(List<T> a, List<T> b) {
@@ -133,6 +155,9 @@ class ListingDetailPageState {
         compatibilityError,
         ownerName,
         ownerNameListingUserId,
+        similarListingsCount,
+        similarListingsCountListingId,
+        isLoadingSimilarListingsCount,
       ]);
 }
 
@@ -226,5 +251,24 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           ownerName: name,
           ownerNameListingUserId: listingUserId,
         ),
+      );
+
+  void setLoadingSimilarListingsCount(int listingId) => emit(
+        state.copyWith(
+          isLoadingSimilarListingsCount: true,
+          similarListingsCountListingId: listingId,
+        ),
+      );
+
+  void setSimilarListingsCount(int listingId, int count) => emit(
+        state.copyWith(
+          similarListingsCount: count,
+          similarListingsCountListingId: listingId,
+          isLoadingSimilarListingsCount: false,
+        ),
+      );
+
+  void setSimilarListingsCountError() => emit(
+        state.copyWith(isLoadingSimilarListingsCount: false),
       );
 }

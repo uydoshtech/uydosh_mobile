@@ -276,7 +276,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
       if (err != null) {
         if (err == SearchAlertService.alreadyExistsErrorToken) {
-          ToastTheme.showSuccess(context,
+          ToastTheme.showWarning(context,
               message: L10n.get("search_alert_already_exists"));
         } else {
           ToastTheme.showError(

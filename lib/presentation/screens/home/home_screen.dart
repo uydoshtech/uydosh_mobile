@@ -27,6 +27,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -1192,7 +1193,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
       if (err != null) {
         if (err == SearchAlertService.alreadyExistsErrorToken) {
-          ToastTheme.showSuccess(
+          ToastTheme.showWarning(
             context,
             message: L10n.get("search_alert_already_exists"),
           );
@@ -1238,13 +1239,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Future<void> _showCreateSearchAlertSheet() async {
     if (!mounted) return;
 
-    // Fast-path: if this exact alert already exists, don't open the sheet.
-    // Users shouldn't have to go through the CTA just to be told "already added".
+    // Fast-path: if this exact alert (or a broader one that already covers it)
+    // is on file, don't open the sheet. Users shouldn't have to go through the
+    // CTA just to be told "already added".
     if (AuthenticationState().isAuthenticated) {
       final alreadyExists = await _doesCurrentSearchAlertAlreadyExist();
       if (!mounted) return;
       if (alreadyExists) {
-        ToastTheme.showInfo(
+        ToastTheme.showWarning(
           context,
           message: L10n.get("search_alert_already_exists"),
         );
@@ -1375,6 +1377,33 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       bool sameDouble(double? a, double b) =>
           a != null && (a - b).abs() < 0.0001;
 
+      // Line that the currently-selected station belongs to (if any). Used to
+      // detect that a broader "entire line" alert already covers this station.
+      final currentStationLineId = (subwayStationId != null)
+          ? MetroCache.getStationById(subwayStationId)?.line
+          : null;
+
+      bool stationCoveredByAlert(SearchAlert a) {
+        if (subwayStationId == null) return false;
+
+        // Multi-station alerts: treat as a match if the current station is one
+        // of the alert's targets. The backend stores `subway_station_id = NULL`
+        // when `subway_station_ids` is set, so a strict id-equality check
+        // would otherwise miss this case.
+        final ids = a.subwayStationIds;
+        if (ids != null && ids.contains(subwayStationId)) return true;
+
+        if (currentStationLineId == null) return false;
+
+        // "Entire line" alert: targets the line, no specific station, and
+        // doesn't carry a single-station id either.
+        final isLineAlert = a.subwayLineId != null &&
+            a.subwayLineId == currentStationLineId &&
+            (a.subwayStationId == null || a.subwayStationId! <= 0) &&
+            (ids == null || ids.length > 1);
+        return isLineAlert;
+      }
+
       return alerts.any((a) {
         // Treat nulls in API as "false"/"any" where applicable so we can match
         // alerts created via sparse request payloads.
@@ -1386,15 +1415,27 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         final aPrivateRoomOnly = normalizeBool(a.privateRoom);
         final aWithPhotoOnly = normalizeBool(a.withPhoto);
 
-        return aListingTypeId == listingTypeId &&
-            aLocationId == locationId &&
-            aSubwayStationId == subwayStationId &&
-            aSubwayLineId == subwayLineId &&
+        // Non-location criteria must always agree.
+        final nonLocationMatch = aListingTypeId == listingTypeId &&
             aGender == gender &&
             sameDouble(a.minPrice, minPrice) &&
             sameDouble(a.maxPrice, maxPrice) &&
             aPrivateRoomOnly == privateRoomOnly &&
             aWithPhotoOnly == withPhotoOnly;
+        if (!nonLocationMatch) return false;
+
+        // Exact location/metro tuple match (mirrors backend duplicate check).
+        final exactLocationMatch = aLocationId == locationId &&
+            aSubwayStationId == subwayStationId &&
+            aSubwayLineId == subwayLineId;
+        if (exactLocationMatch) return true;
+
+        // Coverage: an existing alert that already covers the current station
+        // (multi-station list or "entire line") should also block re-adding,
+        // matching the behavior of `_subscribeToSearchAlerts`.
+        if (locationId == null && stationCoveredByAlert(a)) return true;
+
+        return false;
       });
     } catch (_) {
       // If we can't check quickly, fall back to showing the CTA sheet.
