@@ -1,19 +1,23 @@
-import "package:flutter/foundation.dart";
+import "dart:ui" show ImageFilter;
+
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 /// Side of the bubble where the speech-bubble tail emerges.
 enum HintBubbleTailSide { top, bottom }
 
-/// Speech-bubble shaped contextual hint with a neumorphic "soft UI" raised
-/// face: light from the top-left (subtle gradient + outer halo) and a darker
-/// shadow falling from the bottom-right.
+/// Frosted-glass speech-bubble used for inline contextual hints (e.g. the
+/// "search across all stations of line X" hint above the metro station
+/// picker, or the bell hint pointing at the search-alert FAB).
 ///
-/// Designed for inline contextual hints like the "search across all
-/// stations of line X" hint above the metro station picker, or the bell
-/// hint pointing at the search-alert button. The tail position is fully
-/// configurable so a single instance can attach to any anchor in the
-/// surrounding layout.
+/// Visual recipe:
+///  - A backdrop blur clipped to the bubble's path so whatever sits behind
+///    the bubble (sheet glass, dark feed) shows through softened.
+///  - A warm cream-white translucent tint on top of the blur.
+///  - A subtle top-left highlight gradient for a "lit from above" feel.
+///  - A 1px white stroke along the bubble outline.
+///  - A soft drop shadow for separation from the underlying surface.
 class NeumorphicHintBubble extends StatelessWidget {
   const NeumorphicHintBubble({
     required this.message,
@@ -52,15 +56,41 @@ class NeumorphicHintBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Reserve extra room on the right for the close button so the message
+    // text never crowds the "x". The left padding stays at the default so the
+    // text block shifts visually left, giving the close button breathing room.
+    final hasClose = onClose != null;
+    const leftPad = 14.0;
+    final rightPad = hasClose ? 36.0 : 14.0;
+    final padding = tailSide == HintBubbleTailSide.bottom
+        ? EdgeInsets.fromLTRB(leftPad, 9, rightPad, 9 + _tailHeight)
+        : EdgeInsets.fromLTRB(leftPad, 9 + _tailHeight, rightPad, 9);
+
+    final clipper = _BubbleClipper(
+      radius: _radius,
+      tailWidth: _tailWidth,
+      tailHeight: _tailHeight,
+      tailSide: tailSide,
+      tailHorizontalOffset: tailHorizontalOffset,
+    );
+
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableBlur =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+
+    // Warm cream-white tint with high luminance + low alpha so the backdrop
+    // shows through. Two stops give the surface a gentle top-light feel.
     const fillGradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        Colors.white,
-        Color(0xFFE2E4EC),
+        Color(0xE6FFFDF6), // ~90% alpha cream-white
+        Color(0xCCF6EAD2), // ~80% alpha warm beige
       ],
     );
-    const innerHighlightGradient = LinearGradient(
+    // Subtle top-left highlight that emulates light hitting glass.
+    const highlightGradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
@@ -69,52 +99,78 @@ class NeumorphicHintBubble extends StatelessWidget {
       ],
       stops: [0.0, 0.55],
     );
-    const borderColor = Color(0x14000000);
-    const elevationShadows = <BoxShadow>[
-      BoxShadow(
-        color: Color(0x40FFFFFF),
-        offset: Offset(-4, -4),
-        blurRadius: 12,
-      ),
-      BoxShadow(
-        color: Color(0x66000000),
-        offset: Offset(6, 7),
-        blurRadius: 18,
-      ),
-    ];
+    // Soft white outline so the bubble reads even on bright backdrops.
+    const strokeColor = Color(0x73FFFFFF); // ~45% white
+    const dropShadow = BoxShadow(
+      color: Color(0x4D000000), // 30% black
+      offset: Offset(0, 6),
+      blurRadius: 18,
+    );
 
-    // Reserve extra room on the right for the close button so the message
-    // text never crowds the "x". The left padding stays at the default so the
-    // text block shifts visually left, giving the close button breathing room.
-    final hasClose = onClose != null;
-    final leftPad = 14.0;
-    final rightPad = hasClose ? 36.0 : 14.0;
-    final padding = tailSide == HintBubbleTailSide.bottom
-        ? EdgeInsets.fromLTRB(leftPad, 9, rightPad, 9 + _tailHeight)
-        : EdgeInsets.fromLTRB(leftPad, 9 + _tailHeight, rightPad, 9);
-
-    final Widget bubble = CustomPaint(
-      painter: _BubblePainter(
-        fillGradient: fillGradient,
-        innerHighlightGradient: innerHighlightGradient,
-        borderColor: borderColor,
-        tailWidth: _tailWidth,
-        tailHeight: _tailHeight,
-        tailSide: tailSide,
-        tailHorizontalOffset: tailHorizontalOffset,
-        radius: _radius,
-        elevationShadows: elevationShadows,
-      ),
-      child: Padding(
-        padding: padding,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxWidth),
-          child: RichText(
-            text: message,
-            textAlign: TextAlign.center,
-          ),
+    final content = Padding(
+      padding: padding,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: RichText(
+          text: message,
+          textAlign: TextAlign.center,
         ),
       ),
+    );
+
+    final Widget bubble = Stack(
+      children: [
+        // 1. Drop shadow behind everything.
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _BubbleShadowPainter(
+              clipper: clipper,
+              shadow: dropShadow,
+            ),
+          ),
+        ),
+        // 2. Glass backdrop blur + warm tint, clipped to the bubble outline.
+        Positioned.fill(
+          child: ClipPath(
+            clipper: clipper,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: enableBlur ? 18 : 0,
+                sigmaY: enableBlur ? 18 : 0,
+              ),
+              child: const DecoratedBox(
+                decoration: BoxDecoration(gradient: fillGradient),
+              ),
+            ),
+          ),
+        ),
+        // 3. Inner top-left highlight.
+        Positioned.fill(
+          child: IgnorePointer(
+            child: ClipPath(
+              clipper: clipper,
+              child: const DecoratedBox(
+                decoration: BoxDecoration(gradient: highlightGradient),
+              ),
+            ),
+          ),
+        ),
+        // 4. Border stroke.
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              painter: _BubbleBorderPainter(
+                clipper: clipper,
+                color: strokeColor,
+                strokeWidth: 1,
+              ),
+            ),
+          ),
+        ),
+        // 5. The text content. Acts as the only non-positioned child so the
+        //    Stack sizes itself to it.
+        content,
+      ],
     );
 
     if (!hasClose) return bubble;
@@ -162,139 +218,151 @@ class NeumorphicHintBubble extends StatelessWidget {
   }
 }
 
-class _BubblePainter extends CustomPainter {
-  _BubblePainter({
-    required this.fillGradient,
-    required this.innerHighlightGradient,
-    required this.borderColor,
+/// Builds the speech-bubble path (rounded rect with a triangular tail).
+Path _buildBubblePath(
+  Size size, {
+  required double radius,
+  required double tailWidth,
+  required double tailHeight,
+  required HintBubbleTailSide tailSide,
+  required double tailHorizontalOffset,
+}) {
+  final w = size.width;
+  final h = size.height;
+  final r = radius;
+  final tailCenterX = (w / 2 + tailHorizontalOffset)
+      .clamp(r + tailWidth / 2, w - r - tailWidth / 2);
+
+  if (tailSide == HintBubbleTailSide.bottom) {
+    final bodyBottom = h - tailHeight;
+    return Path()
+      ..moveTo(r, 0)
+      ..lineTo(w - r, 0)
+      ..arcToPoint(Offset(w, r), radius: Radius.circular(r))
+      ..lineTo(w, bodyBottom - r)
+      ..arcToPoint(Offset(w - r, bodyBottom), radius: Radius.circular(r))
+      ..lineTo(tailCenterX + tailWidth / 2, bodyBottom)
+      ..lineTo(tailCenterX, h)
+      ..lineTo(tailCenterX - tailWidth / 2, bodyBottom)
+      ..lineTo(r, bodyBottom)
+      ..arcToPoint(Offset(0, bodyBottom - r), radius: Radius.circular(r))
+      ..lineTo(0, r)
+      ..arcToPoint(Offset(r, 0), radius: Radius.circular(r))
+      ..close();
+  }
+  final bodyTop = tailHeight;
+  return Path()
+    ..moveTo(r, bodyTop)
+    ..lineTo(tailCenterX - tailWidth / 2, bodyTop)
+    ..lineTo(tailCenterX, 0)
+    ..lineTo(tailCenterX + tailWidth / 2, bodyTop)
+    ..lineTo(w - r, bodyTop)
+    ..arcToPoint(Offset(w, bodyTop + r), radius: Radius.circular(r))
+    ..lineTo(w, h - r)
+    ..arcToPoint(Offset(w - r, h), radius: Radius.circular(r))
+    ..lineTo(r, h)
+    ..arcToPoint(Offset(0, h - r), radius: Radius.circular(r))
+    ..lineTo(0, bodyTop + r)
+    ..arcToPoint(Offset(r, bodyTop), radius: Radius.circular(r))
+    ..close();
+}
+
+class _BubbleClipper extends CustomClipper<Path> {
+  const _BubbleClipper({
+    required this.radius,
     required this.tailWidth,
     required this.tailHeight,
     required this.tailSide,
     required this.tailHorizontalOffset,
-    required this.radius,
-    required this.elevationShadows,
   });
 
-  final LinearGradient fillGradient;
-  final LinearGradient innerHighlightGradient;
-  final Color borderColor;
+  final double radius;
   final double tailWidth;
   final double tailHeight;
   final HintBubbleTailSide tailSide;
   final double tailHorizontalOffset;
-  final double radius;
-  final List<BoxShadow> elevationShadows;
 
-  Path _createBubblePath(Size size) {
-    final w = size.width;
-    final h = size.height;
-    final r = radius;
-    final tailCenterX = (w / 2 + tailHorizontalOffset)
-        .clamp(r + tailWidth / 2, w - r - tailWidth / 2);
+  @override
+  Path getClip(Size size) => _buildBubblePath(
+        size,
+        radius: radius,
+        tailWidth: tailWidth,
+        tailHeight: tailHeight,
+        tailSide: tailSide,
+        tailHorizontalOffset: tailHorizontalOffset,
+      );
 
-    if (tailSide == HintBubbleTailSide.bottom) {
-      final bodyBottom = h - tailHeight;
-      return Path()
-        ..moveTo(r, 0)
-        ..lineTo(w - r, 0)
-        ..arcToPoint(Offset(w, r), radius: Radius.circular(r))
-        ..lineTo(w, bodyBottom - r)
-        ..arcToPoint(Offset(w - r, bodyBottom), radius: Radius.circular(r))
-        ..lineTo(tailCenterX + tailWidth / 2, bodyBottom)
-        ..lineTo(tailCenterX, h)
-        ..lineTo(tailCenterX - tailWidth / 2, bodyBottom)
-        ..lineTo(r, bodyBottom)
-        ..arcToPoint(Offset(0, bodyBottom - r), radius: Radius.circular(r))
-        ..lineTo(0, r)
-        ..arcToPoint(Offset(r, 0), radius: Radius.circular(r))
-        ..close();
-    } else {
-      final bodyTop = tailHeight;
-      return Path()
-        ..moveTo(r, bodyTop)
-        ..lineTo(tailCenterX - tailWidth / 2, bodyTop)
-        ..lineTo(tailCenterX, 0)
-        ..lineTo(tailCenterX + tailWidth / 2, bodyTop)
-        ..lineTo(w - r, bodyTop)
-        ..arcToPoint(Offset(w, bodyTop + r), radius: Radius.circular(r))
-        ..lineTo(w, h - r)
-        ..arcToPoint(Offset(w - r, h), radius: Radius.circular(r))
-        ..lineTo(r, h)
-        ..arcToPoint(Offset(0, h - r), radius: Radius.circular(r))
-        ..lineTo(0, bodyTop + r)
-        ..arcToPoint(Offset(r, bodyTop), radius: Radius.circular(r))
-        ..close();
-    }
-  }
+  @override
+  bool shouldReclip(covariant _BubbleClipper oldClipper) =>
+      oldClipper.radius != radius ||
+      oldClipper.tailWidth != tailWidth ||
+      oldClipper.tailHeight != tailHeight ||
+      oldClipper.tailSide != tailSide ||
+      oldClipper.tailHorizontalOffset != tailHorizontalOffset;
+}
+
+class _BubbleShadowPainter extends CustomPainter {
+  _BubbleShadowPainter({required this.clipper, required this.shadow});
+
+  final _BubbleClipper clipper;
+  final BoxShadow shadow;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = _createBubblePath(size);
-    final bounds = path.getBounds();
-
-    for (final shadow in elevationShadows) {
-      _paintPathDropShadow(canvas, path, shadow);
-    }
-
+    if (shadow.color.a == 0) return;
+    final path = clipper.getClip(size);
+    canvas.save();
+    canvas.translate(shadow.offset.dx, shadow.offset.dy);
     canvas.drawPath(
       path,
       Paint()
-        ..shader = fillGradient.createShader(bounds)
+        ..color = shadow.color
         ..isAntiAlias = true
-        ..style = PaintingStyle.fill,
-    );
-
-    canvas.save();
-    canvas.clipPath(path);
-    canvas.drawRect(
-      bounds,
-      Paint()
-        ..shader = innerHighlightGradient.createShader(bounds)
-        ..isAntiAlias = true,
+        ..maskFilter = MaskFilter.blur(
+          BlurStyle.normal,
+          _blurRadiusToSigma(shadow.blurRadius),
+        ),
     );
     canvas.restore();
+  }
 
+  @override
+  bool shouldRepaint(covariant _BubbleShadowPainter oldDelegate) =>
+      oldDelegate.shadow != shadow ||
+      oldDelegate.clipper.shouldReclip(clipper);
+}
+
+class _BubbleBorderPainter extends CustomPainter {
+  _BubbleBorderPainter({
+    required this.clipper,
+    required this.color,
+    required this.strokeWidth,
+  });
+
+  final _BubbleClipper clipper;
+  final Color color;
+  final double strokeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
     canvas.drawPath(
-      path,
+      clipper.getClip(size),
       Paint()
-        ..color = borderColor
+        ..color = color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
+        ..strokeWidth = strokeWidth
         ..isAntiAlias = true,
     );
   }
 
   @override
-  bool shouldRepaint(covariant _BubblePainter oldDelegate) =>
-      fillGradient != oldDelegate.fillGradient ||
-      innerHighlightGradient != oldDelegate.innerHighlightGradient ||
-      borderColor != oldDelegate.borderColor ||
-      tailWidth != oldDelegate.tailWidth ||
-      tailHeight != oldDelegate.tailHeight ||
-      tailSide != oldDelegate.tailSide ||
-      tailHorizontalOffset != oldDelegate.tailHorizontalOffset ||
-      radius != oldDelegate.radius ||
-      !listEquals(elevationShadows, oldDelegate.elevationShadows);
+  bool shouldRepaint(covariant _BubbleBorderPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.strokeWidth != strokeWidth ||
+      oldDelegate.clipper.shouldReclip(clipper);
 }
 
 double _blurRadiusToSigma(double radius) {
   if (radius <= 0) return 0;
   return radius * 0.57735 + 0.5;
-}
-
-void _paintPathDropShadow(Canvas canvas, Path path, BoxShadow shadow) {
-  if (shadow.color.a == 0) return;
-  canvas.save();
-  canvas.translate(shadow.offset.dx, shadow.offset.dy);
-  canvas.drawPath(
-    path,
-    Paint()
-      ..color = shadow.color
-      ..isAntiAlias = true
-      ..maskFilter = MaskFilter.blur(
-        BlurStyle.normal,
-        _blurRadiusToSigma(shadow.blurRadius),
-      ),
-  );
-  canvas.restore();
 }

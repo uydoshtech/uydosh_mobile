@@ -59,7 +59,7 @@ class _SearchBottomSheetMetroSectionState
   bool _hintDebounceSettled = false;
   Timer? _hintDebounceTimer;
   int _lastSeenLine = 0;
-  static const Duration _hintDebounceDelay = Duration(milliseconds: 300);
+  static const Duration _hintDebounceDelay = Duration(milliseconds: 1000);
 
   static Color _getLineColor(int line) => AppColors.getMetroLineColor(line);
 
